@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/pod_interval.h"
@@ -160,22 +161,22 @@ class CORE_EXPORT InteractiveDetector
     bool was_hidden;
   };
 
-  // Stores sufficiently long quiet windows on main thread and network.
-  Vector<WTF::PODInterval<base::TimeTicks>> main_thread_quiet_windows_;
+  // Stores sufficiently long quiet windows on the network.
   Vector<WTF::PODInterval<base::TimeTicks>> network_quiet_windows_;
 
-  // Start times of currently active main thread and network quiet windows.
-  // Null base::TimeTicks values indicate main thread or network is not quiet at
-  // the moment.
-  base::TimeTicks active_main_thread_quiet_window_start_;
+  // Stores long tasks in order to compute Total Blocking Time (TBT) once Time
+  // To Interactive (TTI) is known.
+  Vector<WTF::PODInterval<base::TimeTicks>> long_tasks_;
+
+  // Start time of currently active network quiet windows.
+  // Null base::TimeTicks values indicate network is not quiet at the moment.
   base::TimeTicks active_network_quiet_window_start_;
 
-  // Adds currently active quiet main thread and network quiet windows to the
-  // vectors. Should be called before calling
-  // FindInteractiveCandidate.
-  void AddCurrentlyActiveQuietIntervals(base::TimeTicks current_time);
-  // Undoes AddCurrentlyActiveQuietIntervals.
-  void RemoveCurrentlyActiveQuietIntervals();
+  // Adds currently active quiet network quiet window to the
+  // vector. Should be called before calling FindInteractiveCandidate.
+  void AddCurrentlyActiveNetworkQuietInterval(base::TimeTicks current_time);
+  // Undoes AddCurrentlyActiveNetworkQuietInterval.
+  void RemoveCurrentlyActiveNetworkQuietInterval();
 
   std::unique_ptr<NetworkActivityChecker> network_activity_checker_;
   int ActiveConnections();
@@ -192,6 +193,8 @@ class CORE_EXPORT InteractiveDetector
   void TimeToInteractiveTimerFired(TimerBase*);
   void CheckTimeToInteractiveReached();
   void OnTimeToInteractiveDetected();
+  std::unique_ptr<TracedValue> ComputeTimeToInteractiveTraceArgs();
+  base::TimeDelta ComputeTotalBlockingTime();
 
   Vector<VisibilityChangeEvent> visibility_change_events_;
   bool initially_hidden_;
@@ -204,7 +207,8 @@ class CORE_EXPORT InteractiveDetector
   // long task before that quiet window, or lower_bound, whichever is bigger -
   // this is called the Interactive Candidate. Returns 0.0 if no such quiet
   // window is found.
-  base::TimeTicks FindInteractiveCandidate(base::TimeTicks lower_bound);
+  base::TimeTicks FindInteractiveCandidate(base::TimeTicks lower_bound,
+                                           base::TimeTicks current_time);
 
   // LongTaskObserver implementation
   void OnLongTaskDetected(base::TimeTicks start_time,

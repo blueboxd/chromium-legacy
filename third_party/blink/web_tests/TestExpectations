@@ -215,7 +215,7 @@ crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Fai
 
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-getImageData-smooth.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
-crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
+crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
@@ -446,6 +446,9 @@ crbug.com/1056492 external/wpt/svg/painting/reftests/marker-path-001.svg [ Failu
 
 # Slightly flaky timeouts (about 1 in 30)
 crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Crash Pass Timeout ]
+
+# Slightly flaky timeouts
+crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Timeout ]
 
 # ====== Paint team owned tests to here ======
 
@@ -6704,3 +6707,5 @@ crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.h
 # Sheriff 2020-02-28
 crbug.com/1057036 [ Mac ] virtual/controls-refresh/calendar-picker/date-picker-ax.html [ Pass Timeout ]
 crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.html [ Pass Timeout ]
+crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtools/oopif/oopif-storage.js [ Pass Timeout ]
+crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]

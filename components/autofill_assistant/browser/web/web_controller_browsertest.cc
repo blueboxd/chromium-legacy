@@ -432,6 +432,30 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
+  bool GetElementPosition(const Selector& selector, RectF* rect_output) {
+    base::RunLoop run_loop;
+    bool result;
+    web_controller_->GetElementPosition(
+        selector,
+        base::BindOnce(&WebControllerBrowserTest::OnGetElementPosition,
+                       base::Unretained(this), run_loop.QuitClosure(), &result,
+                       rect_output));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnGetElementPosition(base::OnceClosure done_callback,
+                            bool* result_output,
+                            RectF* rect_output,
+                            bool non_empty,
+                            const RectF& rect) {
+    if (non_empty) {
+      *rect_output = rect;
+    }
+    *result_output = non_empty;
+    std::move(done_callback).Run();
+  }
+
   // Make sure scrolling is necessary for #scroll_container , no matter the
   // screen height
   void SetupScrollContainerHeights() {
@@ -1452,6 +1476,29 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
   EXPECT_THAT(end_state,
               AnyOf(DOCUMENT_LOADED, DOCUMENT_INTERACTIVE, DOCUMENT_COMPLETE));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementPosition) {
+  RectF document_element_rect;
+  Selector document_element({"#full_height_section"});
+  EXPECT_TRUE(GetElementPosition(document_element, &document_element_rect));
+
+  // This element must be after the full_height_section!
+  RectF iframe_element_rect;
+  Selector iframe_element({"#iframe", "#touch_area"});
+  EXPECT_TRUE(GetElementPosition(iframe_element, &iframe_element_rect));
+
+  EXPECT_GT(iframe_element_rect.top, document_element_rect.bottom);
+
+  // Make sure the element is within the iframe.
+  RectF iframe_rect;
+  Selector iframe({"#iframe"});
+  EXPECT_TRUE(GetElementPosition(iframe, &iframe_rect));
+
+  EXPECT_GT(iframe_element_rect.left, iframe_rect.left);
+  EXPECT_LT(iframe_element_rect.right, iframe_rect.right);
+  EXPECT_GT(iframe_element_rect.top, iframe_rect.top);
+  EXPECT_LT(iframe_element_rect.bottom, iframe_rect.bottom);
 }
 
 }  // namespace autofill_assistant

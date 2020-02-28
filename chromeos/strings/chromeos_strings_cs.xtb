@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1195447618553298278">Neznámá chyba.</translation>
 <translation id="1482734542997480527">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která také může sledovat vaši aktivitu.</translation>
+<translation id="150962533380566081">Neplatný kód PUK.</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
+<translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1930797645656624981">Služba metod zadávání systému Chrome OS</translation>
 <translation id="1979103255016296513">Uběhl termín pro změnu hesla</translation>
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Aplikace</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="3008341117444806826">OBNOVIT</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Neplatný kód PIN.</translation>
 <translation id="3838338534323494292">Nové heslo</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Zkuste to znovu. Zbývající pokusy: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která má přístup k veškeré uživatelské aktivitě, včetně navštívených webových stránek, hesel a e‑mailu.</translation>
 <translation id="4227825898293920515">Platnost hesla vyprší za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Platnost lístku Kerberos brzy vyprší</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Na obrazovce nevidím nic, s čím vám můžu pomoct.
 Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5275776633505022322">Zbývající pokusy: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Zkuste to znovu.</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5332948983412042822">Zvolte si nové</translation>
 <translation id="5457599981699367932">Použít jako host</translation>

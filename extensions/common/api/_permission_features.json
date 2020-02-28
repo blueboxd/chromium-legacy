@@ -201,8 +201,12 @@
   },
   "crashReportPrivate": {
     "channel": "dev",
-    "extension_types": ["extension"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
+      "0EA6B717932AD64C469C1CCB6911457733295907",  // Secure Shell App (stable)
+      "58B0C2968C335964D5433E89CA4D86628A0E3D4B",  // Secure Shell App (dev)
+      "3BC1ED0B3E6EFDC7BD4D3D1D75D44B52DEE0A226",  // Secure Shell Ext (stable)
+      "38C361D4A0726CE45D3572D65071B6BDB3092371",  // Secure Shell Ext (dev)
       "06BE211D5F014BAB34BC22D9DDA09C63A81D828E"   // http://crbug.com/946241
     ]
   },
@@ -432,6 +436,10 @@
       "97B23E01B2AA064E8332EE43A7A85C628AADC3F2",  // Sample app_remoting app.
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Media Router Dev
       "226CF815E39A363090A1E547D53063472B8279FA",  // Media Router Stable
+      "0EA6B717932AD64C469C1CCB6911457733295907",  // Secure Shell App (stable)
+      "58B0C2968C335964D5433E89CA4D86628A0E3D4B",  // Secure Shell App (dev)
+      "3BC1ED0B3E6EFDC7BD4D3D1D75D44B52DEE0A226",  // Secure Shell Ext (stable)
+      "38C361D4A0726CE45D3572D65071B6BDB3092371",  // Secure Shell Ext (dev)
       // TODO (ntang) Remove the following 2 hashes by 12/31/2017.
       "B620CF4203315F9F2E046EDED22C7571A935958D",  // http://crbug.com/510270
       "B206D8716769728278D2D300349C6CB7D7DE2EF9",  // http://crbug.com/510270

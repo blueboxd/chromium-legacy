@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '817bf7ab8a7e40c6e0f799cdd0af45b441d3758e',
+  'v8_revision': 'c6bde393d2886dd8ba3dcd064a1dc2dac31531dd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1e1d74467e0df0596f1e8ed81b5553ed5cb9ebd6',
+  'angle_revision': 'fb551728d77bd2fca79d2616edf3e8a064be2352',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -879,7 +879,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1e247059f49b0aae00a650c6714719dd091dd77c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4f489240742b845ad5e71302e61a843e73ac2473',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1230,7 +1230,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'e43a2a568976b495cbbb8d4ec8f89cc1563c5518',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f447425f9f7f676bf22d3c5e4a78f30d43c92c95',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1431,7 +1431,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'cabed431f8c8e29cb6a318805148f9fb141221b5',
+    Var('webrtc_git') + '/src.git' + '@' + '4f3c4fcb1f26606af9e7ce0420d1fa8fbc95d82f',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

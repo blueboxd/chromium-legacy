@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/testing/mock_clipboard_host.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace base {
 class TickClock;
@@ -74,8 +75,7 @@ class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
   // Navigate to |url| providing an empty response but
   // URL and security origin of the Document will be set to |url|.
   void NavigateTo(const KURL& url,
-                  const String& feature_policy_header = String(),
-                  const String& csp_header = String());
+                  const WTF::HashMap<String, String>& headers = {});
 
   Document& GetDocument() const;
   Page& GetPage() const;

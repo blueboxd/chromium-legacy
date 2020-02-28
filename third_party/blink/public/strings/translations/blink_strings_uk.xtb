@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">пункт меню</translation>
 <translation id="10623998915015855">перемикач</translation>
 <translation id="1088086359088493902">Секунди</translation>
+<translation id="1142001580032786438">Показувати засіб вибору тижня</translation>
 <translation id="1171774979989969504">Введіть електронну адресу.</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">додатково</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">пошук</translation>
 <translation id="4812940957355064477">Введіть число.</translation>
 <translation id="4912536737030637138">бібліографічний запис</translation>
+<translation id="4915360478455618802">Засіб вибору часу</translation>
 <translation id="492244087561876220">коментар</translation>
+<translation id="4950364064308314478">Показувати засіб вибору місцевих дати й часу</translation>
 <translation id="4971739861736909480">Вибрано <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Вибрано <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Увімкнути звук</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="8346634859695247203">розділ</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
+<translation id="839593075537728968">Значення має бути від <ph name="MINIMUM_TIME" /> до <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">минуло часу: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">частина</translation>
 <translation id="8433900881053900389">панель інструментів</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">зміст</translation>
 <translation id="8613126697340063924">керувати віддаленим відтворенням</translation>
 <translation id="862370744433916922">підзаголовок</translation>
+<translation id="8634971699417195529">Показувати засіб вибору місяця</translation>
 <translation id="8711688047404765493">вихід</translation>
 <translation id="8750798805984357768">Виберіть один із запропонованих варіантів.</translation>
 <translation id="8808573423886751634">розділ</translation>

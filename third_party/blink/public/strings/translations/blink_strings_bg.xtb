@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">елемент от меню</translation>
 <translation id="10623998915015855">бутон за превключване</translation>
 <translation id="1088086359088493902">Секунди</translation>
+<translation id="1142001580032786438">Показване на инструмента за избор на седмица</translation>
 <translation id="1171774979989969504">Моля, въведете имейл адрес.</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">допълнение</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Моля, въведете номер.</translation>
 <translation id="4912536737030637138">библиографски запис</translation>
+<translation id="4915360478455618802">Показване на инструмента за избор на час</translation>
 <translation id="492244087561876220">коментар</translation>
+<translation id="4950364064308314478">Показване на инструмента за избор на локална дата и час</translation>
 <translation id="4971739861736909480">Избрано е „<ph name="ACCNAME" />“</translation>
 <translation id="4975562563186953947">Избрани: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Включване на звука</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Надписи</translation>
 <translation id="8346634859695247203">секция</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>
+<translation id="839593075537728968">Стойността трябва да бъде между <ph name="MINIMUM_TIME" /> и <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">изминало време: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">част</translation>
 <translation id="8433900881053900389">лента с инструменти</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">съдържание</translation>
 <translation id="8613126697340063924">управление на отдалеченото възпроизвеждане</translation>
 <translation id="862370744433916922">подзаглавие</translation>
+<translation id="8634971699417195529">Показване на инструмента за избор на месец</translation>
 <translation id="8711688047404765493">изход</translation>
 <translation id="8750798805984357768">Моля, изберете една от тези опции.</translation>
 <translation id="8808573423886751634">глава</translation>

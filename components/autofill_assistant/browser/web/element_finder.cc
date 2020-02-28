@@ -116,6 +116,12 @@ bool ConvertPseudoType(const PseudoType pseudo_type,
 }
 }  // namespace
 
+ElementFinder::Result::Result() = default;
+
+ElementFinder::Result::~Result() = default;
+
+ElementFinder::Result::Result(const Result& to_copy) = default;
+
 ElementFinder::ElementFinder(content::WebContents* web_contents,
                              DevtoolsClient* devtools_client,
                              const Selector& selector,
@@ -349,6 +355,13 @@ void ElementFinder::OnDescribeNode(
     element_result_->container_frame_selector_index = index;
     element_result_->container_frame_host =
         FindCorrespondingRenderFrameHost(node->GetFrameId());
+
+    Result result_frame;
+    result_frame.container_frame_selector_index =
+        element_result_->container_frame_selector_index;
+    result_frame.container_frame_host = element_result_->container_frame_host;
+    result_frame.object_id = object_id;
+    element_result_->frame_stack.emplace_back(result_frame);
 
     if (!element_result_->container_frame_host) {
       VLOG(1) << __func__ << " Failed to find corresponding owner frame.";

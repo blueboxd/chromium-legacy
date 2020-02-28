@@ -212,8 +212,6 @@ GLuint SynchronizeAndImportMailbox(gpu::gles2::GLES2Interface* gl,
 static constexpr size_t kNumYUVPlanes = 3;
 struct YUVPlaneTextureInfo {
   GrGLTextureInfo texture = {0, 0};
-  GLint minFilter = 0;
-  GLint magFilter = 0;
   bool is_shared_image = false;
 };
 using YUVTexturesInfo = std::array<YUVPlaneTextureInfo, kNumYUVPlanes>;
@@ -247,13 +245,6 @@ YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
 
     yuv_textures_info[i].texture.fTarget = mailbox_holder.texture_target;
     yuv_textures_info[i].texture.fFormat = skia_texture_format;
-
-    gl->BindTexture(mailbox_holder.texture_target,
-                    yuv_textures_info[i].texture.fID);
-    gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MIN_FILTER,
-                          &yuv_textures_info[i].minFilter);
-    gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MAG_FILTER,
-                          &yuv_textures_info[i].magFilter);
   }
 
   return yuv_textures_info;
@@ -266,12 +257,6 @@ void DeleteYUVTextures(const VideoFrame* video_frame,
   DCHECK(gl);
 
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
-    gl->BindTexture(yuv_textures_info[i].texture.fTarget,
-                    yuv_textures_info[i].texture.fID);
-    gl->TexParameteri(yuv_textures_info[i].texture.fTarget,
-                      GL_TEXTURE_MIN_FILTER, yuv_textures_info[i].minFilter);
-    gl->TexParameteri(yuv_textures_info[i].texture.fTarget,
-                      GL_TEXTURE_MAG_FILTER, yuv_textures_info[i].magFilter);
     if (yuv_textures_info[i].is_shared_image)
       gl->EndSharedImageAccessDirectCHROMIUM(yuv_textures_info[i].texture.fID);
     gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);

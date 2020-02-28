@@ -225,8 +225,10 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
-    case ui::NativeTheme::kColorId_ButtonHoverColor:
-      return GetBgColor("GtkButton#button:hover");
+    // TODO(thomasanderson): Add this once this CL lands:
+    // https://chromium-review.googlesource.com/c/chromium/src/+/2053144
+    // case ui::NativeTheme::kColorId_ButtonHoverColor:
+    //   return GetBgColor("GtkButton#button:hover");
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
@@ -242,10 +244,12 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetBgColor("GtkButton#button.text-button:disabled");
     case ui::NativeTheme::kColorId_ButtonBorderColor:
       return GetBorderColor("GtkButton#button.text-button");
-    case ui::NativeTheme::kColorId_ProminentButtonHoverColor:
-      return GetBgColor(
-          "GtkTreeView#treeview.view "
-          "GtkTreeView#treeview.view.cell:selected:focus:hover");
+    // TODO(thomasanderson): Add this once this CL lands:
+    // https://chromium-review.googlesource.com/c/chromium/src/+/2053144
+    // case ui::NativeTheme::kColorId_ProminentButtonHoverColor:
+    //   return GetBgColor(
+    //       "GtkTreeView#treeview.view "
+    //       "GtkTreeView#treeview.view.cell:selected:focus:hover");
 
     // ToggleButton
     case ui::NativeTheme::kColorId_ToggleButtonTrackColorOff:

@@ -5,6 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -96,10 +97,8 @@ polymer_modulizer("prefs") {
   js_file = "prefs.js"
   html_file = "prefs.html"
   html_type = "dom-module"
-  auto_imports = [
-    "ui/webui/resources/html/assert.html|assert",
-    "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
-  ]
+  auto_imports =
+      settings_auto_imports + [ "ui/webui/resources/html/assert.html|assert" ]
 }
 
 js_modulizer("modulize") {

@@ -375,6 +375,11 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="381841723434055211">Telefoninumbrid</translation>
 <translation id="3819178904835489326">Tuvastati <ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist</translation>
 <translation id="3822502789641063741">Kas tühj. saidi salvestusruum?</translation>
+<translation id="3849365399446680203">Kui kasutate AR-i, võib sellel saidil olla võimalik:
+• luua teie keskkonnast 3D-kaart;
+• jälgida kaamera liikumist.
+
+Ainult teie näete, mida kaamera vaatab. See sait ei näe teie kaamera pilti.</translation>
 <translation id="3859306556332390985">Keri edasi</translation>
 <translation id="388596076286380598">Hankige artikleid, videoid ja muud sisu teile meeldivatelt saitidelt – isegi kui võrguühendus on halb või puudub.</translation>
 <translation id="3894427358181296146">Kausta lisamine</translation>
@@ -722,6 +727,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Muuda järjehoidjat</translation>
 <translation id="6406506848690869874">Sünkroonimine</translation>
+<translation id="6410973561433500075">Kas siseneda domeenil <ph name="DOMAIN" /> AR-i?</translation>
 <translation id="641643625718530986">Printimine ...</translation>
 <translation id="6416782512398055893">Alla on laaditud <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Veebi tõlkimine</translation>

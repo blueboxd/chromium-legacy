@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">今天</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2501278716633472235">返回</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2704606927547763573">已複製</translation>
+<translation id="2968755619301702150">憑證檢視者</translation>
 <translation id="3115898365077584848">顯示資料</translation>
 <translation id="3295602654194328831">隱藏資料</translation>
 <translation id="3479552764303398839">略過</translation>

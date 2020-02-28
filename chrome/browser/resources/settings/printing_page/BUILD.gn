@@ -94,11 +94,10 @@ polymer_modulizer("printing_page") {
   html_file = "printing_page.html"
   html_type = "dom-module"
   namespace_rewrites = settings_namespace_rewrites
-  auto_imports =
-      settings_auto_imports + [
-        "chrome/browser/resources/settings/route.html|routes",
-        "chrome/browser/resources/settings/router.html|Route, Router",
-      ]
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Router",
+                 ]
 }
 
 js_modulizer("modulize") {

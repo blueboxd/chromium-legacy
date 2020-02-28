@@ -1,0 +1,39 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+component("gc") {
+  sources = [
+    "core/gc.cc",
+    "core/gc_export.h",
+  ]
+
+  deps = []
+
+  defines = [ "GC_IMPLEMENTATION=1" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = []
+
+  deps = [
+    ":gc",
+    "//testing/gtest",
+  ]
+}
+
+# Convenience target to allow just building GC-related tests for local development.
+test("gc_unittests") {
+  testonly = true
+
+  sources = [ "test/run_all_unittests.cc" ]
+
+  deps = [
+    ":unit_tests",
+    "//testing/gtest",
+  ]
+}

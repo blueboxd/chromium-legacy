@@ -9102,8 +9102,8 @@ TEST_F(HostResolverManagerDnsTest,
   // ResolveContext. MockDnsClient skips most other interaction with
   // ResolveContext.
   dns_client_->SetForceDohServerAvailable(false);
-  context.SetProbeSuccess(0u /* doh_server_index */, true /* success */,
-                          dns_client_->GetCurrentSession());
+  context.RecordServerSuccess(0u /* server_index */, true /* is_doh_server */,
+                              dns_client_->GetCurrentSession());
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
       base::nullopt, &context, context.host_cache()));
@@ -9141,8 +9141,8 @@ TEST_F(HostResolverManagerDnsTest,
   // ResolveContext. MockDnsClient skips most other interaction with
   // ResolveContext.
   dns_client_->SetForceDohServerAvailable(false);
-  context.SetProbeSuccess(0u /* doh_server_index */, true /* success */,
-                          dns_client_->GetCurrentSession());
+  context.RecordServerSuccess(0u /* server_index */, true /* is_doh_server */,
+                              dns_client_->GetCurrentSession());
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("secure", 80), NetworkIsolationKey(), NetLogWithSource(),
       base::nullopt, &context, context.host_cache()));

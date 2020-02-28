@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1195447618553298278">Errore ezezaguna.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta baliteke zure jardueren jarraipena egin ahal izatea.</translation>
+<translation id="150962533380566081">PUK kodeak ez du balio.</translation>
 <translation id="1510238584712386396">Abiarazlea</translation>
 <translation id="1734367976349034509">Enpresak kudeatzen du gailu hau</translation>
+<translation id="1905710495812624430">Saiakera-muga gainditu da.</translation>
 <translation id="1930797645656624981">Chrome OS sistemako idazketa-metodoaren zerbitzua</translation>
 <translation id="1979103255016296513">Pasahitza iraungita dago eta aldatu egin behar da</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> domeinuak kudeatzen du gailu hau.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Aplikazioak</translation>
 <translation id="2872961005593481000">Itzali</translation>
 <translation id="3008341117444806826">FRESKATU</translation>
+<translation id="3169472444629675720">Ezagutu</translation>
+<translation id="3820172043799983114">PIN kodeak ez du balio.</translation>
 <translation id="3838338534323494292">Pasahitz berria</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Saiatu berriro. Gelditzen diren saiakerak: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta erabiltzaileen jarduera guztiak atzi ditzake; besteak beste, bisitatutako webguneak, erabilitako pasahitzak eta posta elektronikoa.</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> barru iraungiko da pasahitza</translation>
 <translation id="4429881212383817840">Laster iraungiko da Kerberos-eko zerbitzu-eskaera</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Ezin dizut lagundu pantailako ezerekin.
 Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5222676887888702881">Amaitu saioa</translation>
+<translation id="5275776633505022322">Gelditzen diren saiakerak: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Saiatu berriro.</translation>
 <translation id="5317780077021120954">Gorde</translation>
 <translation id="5332948983412042822">Aukeratu beste bat</translation>
 <translation id="5457599981699367932">Arakatu gonbidatu gisa</translation>

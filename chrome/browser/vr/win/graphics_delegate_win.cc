@@ -122,8 +122,7 @@ mojo::PlatformHandle GraphicsDelegateWin::GetTexture() {
     return {};
 
   gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer_->CloneHandle();
-  return mojo::PlatformHandle(
-      base::win::ScopedHandle(gpu_handle.dxgi_handle.GetHandle()));
+  return mojo::PlatformHandle(std::move(gpu_handle.dxgi_handle));
 }
 
 gfx::RectF GraphicsDelegateWin::GetLeft() {

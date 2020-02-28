@@ -387,8 +387,7 @@ cr.define('settings', function() {
           break;
         case settings.StatusAction.SIGNOUT_AND_SIGNIN:
           if (this.syncStatus.domain) {
-            router.navigateTo(
-                /** @type {!settings.Route} */ (router.getRoutes().SIGN_OUT));
+            router.navigateTo(router.getRoutes().SIGN_OUT);
           } else {
             // Silently sign the user out without deleting their profile and
             // prompt them to sign back in.
@@ -397,8 +396,7 @@ cr.define('settings', function() {
           }
           break;
         case settings.StatusAction.UPGRADE_CLIENT:
-          router.navigateTo(
-              /** @type {!settings.Route} */ (router.getRoutes().ABOUT));
+          router.navigateTo(router.getRoutes().ABOUT);
           break;
         case settings.StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS:
           this.syncBrowserProxy_.startKeyRetrieval();
@@ -406,8 +404,7 @@ cr.define('settings', function() {
         case settings.StatusAction.ENTER_PASSPHRASE:
         case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
         default:
-          router.navigateTo(
-              /** @type {!settings.Route} */ (router.getRoutes().SYNC));
+          router.navigateTo(router.getRoutes().SYNC);
       }
     },
 
@@ -447,8 +444,7 @@ cr.define('settings', function() {
     onTurnOffButtonTap_() {
       /* This will route to people_page's disconnect dialog. */
       const router = settings.Router.getInstance();
-      router.navigateTo(
-          /** @type {!settings.Route} */ (router.getRoutes().SIGN_OUT));
+      router.navigateTo(router.getRoutes().SIGN_OUT);
     },
 
     /** @private */

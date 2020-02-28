@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/updater/mac/installer.h"
+
 #import <Cocoa/Cocoa.h>
 
-#include <string>
 #include <vector>
-
-#include "chrome/updater/mac/installer.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace updater {
@@ -92,19 +94,29 @@ bool UnmountDMG(const base::FilePath& mounted_dmg_path) {
 }
 
 bool RunScript(const base::FilePath& mounted_dmg_path,
-               const base::FilePath::StringPieceType script_name) {
+               const base::FilePath::StringPieceType script_name,
+               const std::string& arguments) {
   if (!base::PathExists(mounted_dmg_path)) {
     DLOG(ERROR) << "File path (" << mounted_dmg_path << ") does not exist.";
     return false;
   }
-  const base::FilePath script_file_path = mounted_dmg_path.Append(script_name);
+  base::FilePath script_file_path = mounted_dmg_path.Append(script_name);
   if (!base::PathExists(script_file_path)) {
     DLOG(ERROR) << "Script file path (" << script_file_path
                 << ") does not exist.";
     return false;
   }
 
+  // TODO(copacitt): Improve the way we parse args for CommandLine object.
+  // http://crbug.com/1056818
   base::CommandLine command(script_file_path);
+  if (!arguments.empty()) {
+    base::CommandLine::StringVector argv =
+        base::SplitString(arguments, base::kWhitespaceASCII,
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    argv.insert(argv.begin(), script_file_path.value());
+    command = base::CommandLine(argv);
+  }
 
   std::string output;
   if (!base::GetAppOutput(command, &output)) {
@@ -117,7 +129,8 @@ bool RunScript(const base::FilePath& mounted_dmg_path,
 
 }  // namespace
 
-bool InstallFromDMG(const base::FilePath& dmg_file_path) {
+bool InstallFromDMG(const base::FilePath& dmg_file_path,
+                    const std::string& arguments) {
   std::string mount_point;
   if (!MountDMG(dmg_file_path, &mount_point))
     return false;
@@ -126,9 +139,8 @@ bool InstallFromDMG(const base::FilePath& dmg_file_path) {
     DLOG(ERROR) << "No mount point.";
     return false;
   }
-
   const base::FilePath mounted_dmg_path = base::FilePath(mount_point);
-  bool result = RunScript(mounted_dmg_path, ".install.sh");
+  bool result = RunScript(mounted_dmg_path, ".install.sh", arguments);
 
   if (!UnmountDMG(mounted_dmg_path))
     DLOG(WARNING) << "Could not unmount the DMG: " << mounted_dmg_path;

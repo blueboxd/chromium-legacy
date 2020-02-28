@@ -375,6 +375,11 @@
 <translation id="381841723434055211">ስልክ ቁጥሮች</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
+<translation id="3849365399446680203">እርስዎ በኤአር ውስጥ ሳሉ ይህ ጣቢያ የሚከተሉትን ማድረግ ይችላል፦
+• የአካባቢዎ የ3ል ካርታ መፍጠር
+• የካሜራን እንቅስቃሴን መከታተል
+
+እርስዎ ብቻ ነዎት ካሜራዎ ምን እየተመለከተ እንደሆነ ማየት የሚችሉት። ጣቢያው የካሜራዎን ምስሎች ማየት አይችልም።</translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
 <translation id="388596076286380598">ምንም እንኳ እርስዎ ከመስመር ውጭ ቢሆኑም ወይም የእርስዎ ግንኙነት ደካማ ቢሆንም እርስዎ ከሚወዷቸው ጣቢያዎች ጽሑፎችን፣ ቪዲዮዎችን፣ እና ሌላ ይዘት ያግኙ።</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
@@ -722,6 +727,7 @@
 <translation id="6395288395575013217">አገናኝ</translation>
 <translation id="6404511346730675251">ዕልባት አርትዕ</translation>
 <translation id="6406506848690869874">አመሳስል</translation>
+<translation id="6410973561433500075">ኤአር ከ<ph name="DOMAIN" /> ይግባ?</translation>
 <translation id="641643625718530986">አትም…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> ሜባ ወርዷል</translation>
 <translation id="6427112570124116297">ድሩን ያስተርጉሙ</translation>

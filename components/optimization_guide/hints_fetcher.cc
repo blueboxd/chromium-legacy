@@ -92,7 +92,17 @@ HintsFetcher::HintsFetcher(
   DCHECK(features::IsRemoteFetchingEnabled());
 }
 
-HintsFetcher::~HintsFetcher() = default;
+HintsFetcher::~HintsFetcher() {
+  if (active_url_loader_) {
+    if (hints_fetched_callback_)
+      std::move(hints_fetched_callback_).Run(base::nullopt);
+    base::UmaHistogramExactLinear(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest."
+        "ActiveRequestCanceled." +
+            GetStringNameForRequestContext(request_context_),
+        1, 1);
+  }
+}
 
 // static
 void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {

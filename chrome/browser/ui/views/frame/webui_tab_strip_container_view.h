@@ -89,7 +89,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   class DragToOpenHandler;
 
   // Called as we are dragged open.
-  void UpdateHeightForDragToOpen(int height_delta);
+  void UpdateHeightForDragToOpen(float height_delta);
 
   // Called when drag-to-open finishes. If |fling_to_open| is true, the
   // user released their touch with a high enough velocity that we
@@ -145,7 +145,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
-  base::Optional<int> current_drag_height_;
+  base::Optional<float> current_drag_height_;
 
   // When opened, if currently open. Used to calculate metric for how
   // long the tab strip is kept open.

@@ -624,6 +624,43 @@ void ParamTraits<base::ScopedFD>::Log(const param_type& p, std::string* l) {
 }
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
+#if defined(OS_WIN)
+void ParamTraits<base::win::ScopedHandle>::Write(base::Pickle* m,
+                                                 const param_type& p) {
+  const bool valid = p.IsValid();
+  WriteParam(m, valid);
+  if (!valid)
+    return;
+
+  HandleWin handle(p.Get());
+  WriteParam(m, handle);
+}
+
+bool ParamTraits<base::win::ScopedHandle>::Read(const base::Pickle* m,
+                                                base::PickleIterator* iter,
+                                                param_type* r) {
+  r->Close();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+  if (!valid)
+    return true;
+
+  HandleWin handle;
+  if (!ReadParam(m, iter, &handle))
+    return false;
+
+  r->Set(handle.get_handle());
+  return true;
+}
+
+void ParamTraits<base::win::ScopedHandle>::Log(const param_type& p,
+                                               std::string* l) {
+  l->append(base::StringPrintf("ScopedHandle(%p)", p.Get()));
+}
+#endif  // defined(OS_WIN)
+
 #if defined(OS_FUCHSIA)
 void ParamTraits<zx::vmo>::Write(base::Pickle* m, const param_type& p) {
   // This serialization must be kept in sync with

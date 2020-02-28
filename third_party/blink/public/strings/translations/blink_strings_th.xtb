@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">รายการเมนู</translation>
 <translation id="10623998915015855">ปุ่มสลับ</translation>
 <translation id="1088086359088493902">วินาที</translation>
+<translation id="1142001580032786438">แสดงเครื่องมือเลือกสัปดาห์</translation>
 <translation id="1171774979989969504">โปรดป้อนที่อยู่อีเมล</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1188858454923323853">ส่วนเสริม</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4812940957355064477">โปรดป้อนตัวเลข</translation>
 <translation id="4912536737030637138">รายการบรรณานุกรม</translation>
+<translation id="4915360478455618802">แสดงเครื่องมือเลือกเวลา</translation>
 <translation id="492244087561876220">ความคิดเห็น</translation>
+<translation id="4950364064308314478">แสดงเครื่องมือเลือกวันที่และเวลาท้องถิ่น</translation>
 <translation id="4971739861736909480">เลือก <ph name="ACCNAME" /> ไว้</translation>
 <translation id="4975562563186953947">เลือกไว้ <ph name="SELECTED_COUNT" /> รายการ</translation>
 <translation id="4992066212339426712">เปิดเสียง</translation>
@@ -249,6 +252,7 @@
 <translation id="860475260694818407">สารบัญ</translation>
 <translation id="8613126697340063924">ควบคุมการเล่นระยะไกล</translation>
 <translation id="862370744433916922">คำบรรยาย</translation>
+<translation id="8634971699417195529">แสดงเครื่องมือเลือกเดือน</translation>
 <translation id="8711688047404765493">เอาต์พุต</translation>
 <translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="8808573423886751634">บท</translation>

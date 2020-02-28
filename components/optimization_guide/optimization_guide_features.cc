@@ -190,6 +190,9 @@ base::TimeDelta GetHintsFetchRefreshDuration() {
 }
 
 size_t MaxConcurrentPageNavigationFetches() {
+  // If overridden, this needs to be large enough where we do not thrash the
+  // inflight page navigations since if we approach the limit here, we will
+  // abort the oldest page navigation fetch that is in flight.
   return GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "max_concurrent_page_navigation_fetches", 20);

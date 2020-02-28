@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constant to indicate selection index is not set.
-const NO_SELECT_INDEX = -1;
-
 /**
  * Class to handle navigating text. Currently, only
  * navigation and selection in editable text fields is supported.
  */
 class TextNavigationManager {
+  /** @private */
   constructor() {
     /** @private {number} */
-    this.selectionStartIndex_ = NO_SELECT_INDEX;
+    this.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
 
     /** @private {number} */
-    this.selectionEndIndex_ = NO_SELECT_INDEX;
+    this.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
 
     /** @private {chrome.automation.AutomationNode} */
     this.selectionStartObject_;
@@ -30,13 +28,18 @@ class TextNavigationManager {
     this.selectionListener_ = this.onNavChange_.bind(this);
   }
 
+  static initialize() {
+    TextNavigationManager.instance = new TextNavigationManager();
+  }
+
   /**
    * Jumps to the beginning of the text field (does nothing
    * if already at the beginning).
    */
-  jumpToBeginning() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(false /* resetCursor */);
+  static jumpToBeginning() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(false /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.HOME, {ctrl: true});
   }
@@ -45,9 +48,10 @@ class TextNavigationManager {
    * Jumps to the end of the text field (does nothing if
    * already at the end).
    */
-  jumpToEnd() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(false /* resetCursor */);
+  static jumpToEnd() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(false /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.END, {ctrl: true});
   }
@@ -57,9 +61,10 @@ class TextNavigationManager {
    * if there are no more characters preceding the current
    * location of the caret).
    */
-  moveBackwardOneChar() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(true /* resetCursor */);
+  static moveBackwardOneChar() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.LEFT_ARROW);
   }
@@ -69,9 +74,10 @@ class TextNavigationManager {
    * if there are no more characters following the current
    * location of the caret).
    */
-  moveForwardOneChar() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(true /* resetCursor */);
+  static moveForwardOneChar() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW);
   }
@@ -82,9 +88,10 @@ class TextNavigationManager {
    * text caret is in the middle of a word, moves the caret
    * to the beginning of that word.
    */
-  moveBackwardOneWord() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(false /* resetCursor */);
+  static moveBackwardOneWord() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(false /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.LEFT_ARROW, {ctrl: true});
   }
@@ -95,9 +102,10 @@ class TextNavigationManager {
    * in the middle of a word, moves the caret to the end of
    * that word.
    */
-  moveForwardOneWord() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(false /* resetCursor */);
+  static moveForwardOneWord() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(false /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW, {ctrl: true});
   }
@@ -107,9 +115,10 @@ class TextNavigationManager {
    * if there are no lines above the current location of
    * the caret).
    */
-  moveUpOneLine() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(true /* resetCursor */);
+  static moveUpOneLine() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.UP_ARROW);
   }
@@ -119,9 +128,10 @@ class TextNavigationManager {
    * if there are no lines below the current location of
    * the caret).
    */
-  moveDownOneLine() {
-    if (this.currentlySelecting_) {
-      this.setupDynamicSelection_(true /* resetCursor */);
+  static moveDownOneLine() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
   }
@@ -141,8 +151,8 @@ class TextNavigationManager {
    */
   setupDynamicSelection_(needToResetCursor) {
     if (needToResetCursor) {
-      if (this.currentlySelecting() &&
-          this.selectionEndIndex_ != NO_SELECT_INDEX) {
+      if (TextNavigationManager.currentlySelecting() &&
+          this.selectionEndIndex_ != TextNavigationManager.NO_SELECT_INDEX) {
         // Move the cursor to the end of the existing selection.
         chrome.automation.setDocumentSelection({
           anchorObject: this.selectionEndObject_,
@@ -162,8 +172,8 @@ class TextNavigationManager {
    * @private
    */
   saveSelection_() {
-    if (this.selectionStartIndex_ == NO_SELECT_INDEX ||
-        this.selectionEndIndex_ == NO_SELECT_INDEX) {
+    if (this.selectionStartIndex_ == TextNavigationManager.NO_SELECT_INDEX ||
+        this.selectionEndIndex_ == TextNavigationManager.NO_SELECT_INDEX) {
       console.log(
           'Selection bounds are not set properly:', this.selectionStartIndex_,
           this.selectionEndIndex_);
@@ -189,7 +199,7 @@ class TextNavigationManager {
    * Reset the selectionStartIndex to NO_SELECT_INDEX.
    */
   resetSelStartIndex() {
-    this.selectionStartIndex_ = NO_SELECT_INDEX;
+    this.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
   }
 
   /**
@@ -214,10 +224,12 @@ class TextNavigationManager {
    * Returns if the selection start index is set in the current node.
    * @return {boolean}
    */
-  currentlySelecting() {
+  static currentlySelecting() {
+    const manager = TextNavigationManager.instance;
     return (
-        this.selectionStartIndex_ !== NO_SELECT_INDEX &&
-        this.currentlySelecting_);
+        manager.selectionStartIndex_ !==
+            TextNavigationManager.NO_SELECT_INDEX &&
+        manager.currentlySelecting_);
   }
 
   /**
@@ -230,14 +242,14 @@ class TextNavigationManager {
    * @private
    */
   getSelectionIndexFromNode_(node, getStart) {
-    let indexFromNode = NO_SELECT_INDEX;
+    let indexFromNode = TextNavigationManager.NO_SELECT_INDEX;
     if (getStart) {
       indexFromNode = node.textSelStart;
     } else {
       indexFromNode = node.textSelEnd;
     }
     if (indexFromNode === undefined) {
-      return NO_SELECT_INDEX;
+      return TextNavigationManager.NO_SELECT_INDEX;
     }
     return indexFromNode;
   }
@@ -246,13 +258,14 @@ class TextNavigationManager {
    * Sets the selectionStart variable based on the selection of the current
    * node. Also sets the currently selecting boolean to true.
    */
-  saveSelectStart() {
+  static saveSelectStart() {
+    const manager = TextNavigationManager.instance;
     chrome.automation.getFocus((focusedNode) => {
-      this.selectionStartObject_ = focusedNode;
-      this.selectionStartIndex_ = this.getSelectionIndexFromNode_(
-          this.selectionStartObject_,
+      manager.selectionStartObject_ = focusedNode;
+      manager.selectionStartIndex_ = manager.getSelectionIndexFromNode_(
+          manager.selectionStartObject_,
           true /* We are getting the start index.*/);
-      this.currentlySelecting_ = true;
+      manager.currentlySelecting_ = true;
     });
   }
 
@@ -264,7 +277,7 @@ class TextNavigationManager {
    */
   onNavChange_() {
     this.manageNavigationListener_(false);
-    if (this.currentlySelecting) {
+    if (this.currentlySelecting_) {
       this.saveSelectEnd();
     }
   }
@@ -290,11 +303,12 @@ class TextNavigationManager {
    * Reset the currentlySelecting variable to false, reset the selection
    * indices, and remove the listener on navigation.
    */
-  resetCurrentlySelecting() {
-    this.currentlySelecting_ = false;
-    this.manageNavigationListener_(false /** Removing listener */);
-    this.selectionStartIndex_ = NO_SELECT_INDEX;
-    this.selectionEndIndex_ = NO_SELECT_INDEX;
+  static resetCurrentlySelecting() {
+    const manager = TextNavigationManager.instance;
+    manager.currentlySelecting_ = false;
+    manager.manageNavigationListener_(false /** Removing listener */);
+    manager.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
+    manager.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
   }
 
   /**
@@ -310,3 +324,6 @@ class TextNavigationManager {
     });
   }
 }
+
+// Constant to indicate selection index is not set.
+TextNavigationManager.NO_SELECT_INDEX = -1;

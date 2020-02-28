@@ -14,6 +14,7 @@ test_namespace_rewrites = [
   "MockInteractions.tap|tap",
   "MockInteractions.up|up",
   "test_util.eventToPromise|eventToPromise",
+  "test_util.fakeDataBind|fakeDataBind",
   "test_util.flushTasks|flushTasks",
   "test_util.isChildVisible|isChildVisible",
   "test_util.isVisible|isVisible",

@@ -271,6 +271,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
@@ -3036,6 +3037,10 @@ void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
     // the overlay element.
     overlay_element->PseudoStateChanged(CSSSelector::kPseudoXrOverlay);
   }
+
+  // The DOM overlay may change the effective root element. Need to update
+  // compositing inputs to avoid a mismatch in CompositingRequirementsUpdater.
+  GetLayoutView()->Layer()->SetNeedsCompositingInputsUpdate();
 
   // Ensure that the graphics layer tree gets fully rebuilt on changes,
   // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be

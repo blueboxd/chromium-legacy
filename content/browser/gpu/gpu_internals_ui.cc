@@ -758,7 +758,7 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.
   GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
-      kGpuInfoRequestAll, /*delayed*/ false);
+      kGpuInfoRequestAll, /*delayed=*/false);
 
   // Run callback immediately in case the info is ready and no update in the
   // future.

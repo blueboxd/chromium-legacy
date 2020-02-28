@@ -20,6 +20,16 @@
 #include "ui/events/blink/blink_features.h"
 
 namespace {
+
+// Used to generate a unique id when emitting the "Long Navigation to First
+// Contentful Paint" trace event.
+int g_num_trace_events_in_process = 0;
+
+// The threshold to emit a trace event is the 99th percentile
+// of the histogram on Windows Stable as of Feb 26th, 2020.
+constexpr base::TimeDelta kFirstContentfulPaintTraceThreshold =
+    base::TimeDelta::FromMilliseconds(12388);
+
 // TODO(bmcquade): If other observers want to log histograms based on load type,
 // promote this enum to page_load_metrics_observer.h.
 enum PageLoadType {
@@ -373,6 +383,23 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartToFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value() -
                             timing.parse_timing->parse_start.value());
+
+    // Emit a trace event to highlight a long navigation to first contentful
+    // paint.
+    if (timing.paint_timing->first_contentful_paint >
+        kFirstContentfulPaintTraceThreshold) {
+      base::TimeTicks navigation_start = GetDelegate().GetNavigationStart();
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "latency", "Long Navigation to First Contentful Paint",
+          TRACE_ID_LOCAL(g_num_trace_events_in_process), navigation_start);
+      TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+          "latency", "Long Navigation to First Contentful Paint",
+          TRACE_ID_LOCAL(g_num_trace_events_in_process),
+          navigation_start +
+              timing.paint_timing->first_contentful_paint.value());
+      g_num_trace_events_in_process++;
+    }
+
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramFirstContentfulPaintInitiatingProcess,
         GetDelegate().GetUserInitiatedInfo().browser_initiated

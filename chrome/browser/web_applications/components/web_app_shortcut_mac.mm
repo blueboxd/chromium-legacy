@@ -1053,9 +1053,17 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
               forKey:app_mode::kCFBundleDocumentTypesKey];
   }
 
-  base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
-  [plist setObject:base::mac::FilePathToNSString(app_name)
-            forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
+  if (IsMultiProfile()) {
+    [plist setObject:base::SysUTF16ToNSString(info_->title)
+              forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
+  } else {
+    // The appropriate bundle name is |info_->title|. Avoiding changing the
+    // behavior of non-multi-profile apps when fixing
+    // https://crbug.com/1021804.
+    base::FilePath app_name = app_path.BaseName().RemoveFinalExtension();
+    [plist setObject:base::mac::FilePathToNSString(app_name)
+              forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
+  }
 
   return [plist writeToFile:plist_path atomically:YES];
 }

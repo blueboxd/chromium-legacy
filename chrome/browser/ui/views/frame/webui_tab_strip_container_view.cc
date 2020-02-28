@@ -170,24 +170,28 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
         drag_in_progress_ = true;
+        container_->UpdateHeightForDragToOpen(event->details().scroll_y_hint());
         event->SetHandled();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
-        DCHECK(drag_in_progress_);
-        container_->UpdateHeightForDragToOpen(event->details().scroll_y());
-        event->SetHandled();
+        if (drag_in_progress_) {
+          container_->UpdateHeightForDragToOpen(event->details().scroll_y());
+          event->SetHandled();
+        }
         break;
       case ui::ET_GESTURE_SCROLL_END:
-        DCHECK(drag_in_progress_);
-        container_->EndDragToOpen(false);
-        event->SetHandled();
-        drag_in_progress_ = false;
+        if (drag_in_progress_) {
+          container_->EndDragToOpen(false);
+          event->SetHandled();
+          drag_in_progress_ = false;
+        }
         break;
       case ui::ET_GESTURE_SWIPE:
         // If a touch is released at high velocity, the scroll gesture
-        // is "converted" to a swipe gesture. Note that a
-        // ET_GESTURE_SCROLL_END event will not be sent. ET_GESTURE_END
-        // is still sent after, however.
+        // is "converted" to a swipe gesture. ET_GESTURE_END is still
+        // sent after. From logging, it seems like ET_GESTURE_SCROLL_END
+        // is sometimes also sent after this. It will be ignored here
+        // since |drag_in_progress_| is set to false.
         DCHECK(drag_in_progress_);
         container_->EndDragToOpen(event->details().swipe_down());
         event->SetHandled();
@@ -391,7 +395,7 @@ void WebUITabStripContainerView::CloseContainer() {
   iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
 }
 
-void WebUITabStripContainerView::UpdateHeightForDragToOpen(int height_delta) {
+void WebUITabStripContainerView::UpdateHeightForDragToOpen(float height_delta) {
   if (!current_drag_height_) {
     // If we are visible and aren't already dragging, ignore; either we are
     // animating open, or the touch would've triggered autoclose.
@@ -403,8 +407,9 @@ void WebUITabStripContainerView::UpdateHeightForDragToOpen(int height_delta) {
     animation_.Reset();
   }
 
-  current_drag_height_ = base::ClampToRange(
-      *current_drag_height_ + height_delta, 0, desired_height_);
+  current_drag_height_ =
+      base::ClampToRange(*current_drag_height_ + height_delta, 0.0f,
+                         static_cast<float>(desired_height_));
   PreferredSizeChanged();
 }
 
@@ -433,8 +438,12 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     bool target_visible) {
   if (target_visible) {
     SetVisible(true);
-    animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
-    animation_.Show();
+    PreferredSizeChanged();
+    if (animation_.GetCurrentValue() < 1.0) {
+      animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
+      animation_.Show();
+    }
+
     web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     time_at_open_ = base::TimeTicks::Now();
 
@@ -454,8 +463,14 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
       time_at_open_ = base::nullopt;
     }
 
-    animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
-    animation_.Hide();
+    if (animation_.GetCurrentValue() > 0.0) {
+      animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
+      animation_.Hide();
+    } else {
+      PreferredSizeChanged();
+      SetVisible(false);
+    }
+
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
 
     // Tapping in the WebUI tab strip gives keyboard focus to the
@@ -564,7 +579,7 @@ int WebUITabStripContainerView::GetHeightForWidth(int w) const {
                                              desired_height_);
   }
   if (current_drag_height_)
-    return *current_drag_height_;
+    return std::round(*current_drag_height_);
 
   return GetVisible() ? desired_height_ : 0;
 }

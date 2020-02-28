@@ -170,7 +170,13 @@ const base::Feature kDocumentPolicy{"DocumentPolicy",
 // device IDs will not be available.
 // TODO(crbug.com/1019176): remove the feature in M82.
 const base::Feature kEnumerateDevicesHideDeviceIDs{
-    "EnumerateDevicesHideDeviceIDs", base::FEATURE_ENABLED_BY_DEFAULT};
+  "EnumerateDevicesHideDeviceIDs",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // When a screen reader is detected, allow users the option of letting
 // Google provide descriptions for unlabeled images.
@@ -832,9 +838,10 @@ const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
 const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the WebNFC API is enabled:
-// https://w3c.github.io/web-nfc/
-const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
+// Kill switch for the WebNFC feature. This feature can be enabled for all sites
+// using the kEnableExperimentalWebPlatformFeatures flag or by a particular site
+// if it includes an Origin Trial key.  https://w3c.github.io/web-nfc/
+const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

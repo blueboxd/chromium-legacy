@@ -51,6 +51,11 @@ class MODULES_EXPORT VideoRequestAnimationFrameImpl final
   void RegisterCallbackForTest(
       VideoFrameRequestCallbackCollection::VideoFrameCallback*);
 
+  // Utility functions to limit the clock resolution of fields, for security
+  // reasons.
+  static double GetClampedTimeInMillis(base::TimeDelta time);
+  static double GetCoarseClampedTimeInSeconds(base::TimeDelta time);
+
   // Used to keep track of whether or not we have already scheduled a call to
   // ExecuteFrameCallbacks() in the next rendering steps.
   bool pending_execution_ = false;

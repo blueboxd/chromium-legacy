@@ -87,7 +87,6 @@ void InteractiveDetector::SetNavigationStartTime(
   base::TimeTicks initial_timer_fire_time =
       navigation_start_time + kTimeToInteractiveWindow;
 
-  active_main_thread_quiet_window_start_ = navigation_start_time;
   active_network_quiet_window_start_ = navigation_start_time;
   StartOrPostponeCITimer(initial_timer_fire_time);
 }
@@ -345,13 +344,7 @@ void InteractiveDetector::OnLongTaskDetected(base::TimeTicks start_time,
   // We should not be receiving long task notifications after Time to
   // Interactive has already been reached.
   DCHECK(interactive_time_.is_null());
-  base::TimeDelta quiet_window_length =
-      start_time - active_main_thread_quiet_window_start_;
-  if (quiet_window_length >= kTimeToInteractiveWindow) {
-    main_thread_quiet_windows_.emplace_back(
-        active_main_thread_quiet_window_start_, start_time);
-  }
-  active_main_thread_quiet_window_start_ = end_time;
+  long_tasks_.emplace_back(start_time, end_time);
   StartOrPostponeCITimer(end_time + kTimeToInteractiveWindow);
 }
 
@@ -406,7 +399,7 @@ void InteractiveDetector::TimeToInteractiveTimerFired(TimerBase*) {
   CheckTimeToInteractiveReached();
 }
 
-void InteractiveDetector::AddCurrentlyActiveQuietIntervals(
+void InteractiveDetector::AddCurrentlyActiveNetworkQuietInterval(
     base::TimeTicks current_time) {
   // Network is currently quiet.
   if (!active_network_quiet_window_start_.is_null()) {
@@ -416,78 +409,81 @@ void InteractiveDetector::AddCurrentlyActiveQuietIntervals(
                                           current_time);
     }
   }
-
-  // Since this code executes on the main thread, we know that no task is
-  // currently running on the main thread. We can therefore skip checking.
-  // main_thread_quiet_window_being != 0.0.
-  if (current_time - active_main_thread_quiet_window_start_ >=
-      kTimeToInteractiveWindow) {
-    main_thread_quiet_windows_.emplace_back(
-        active_main_thread_quiet_window_start_, current_time);
-  }
 }
 
-void InteractiveDetector::RemoveCurrentlyActiveQuietIntervals() {
+void InteractiveDetector::RemoveCurrentlyActiveNetworkQuietInterval() {
   if (!network_quiet_windows_.IsEmpty() &&
       network_quiet_windows_.back().Low() ==
           active_network_quiet_window_start_) {
     network_quiet_windows_.pop_back();
   }
-
-  if (!main_thread_quiet_windows_.IsEmpty() &&
-      main_thread_quiet_windows_.back().Low() ==
-          active_main_thread_quiet_window_start_) {
-    main_thread_quiet_windows_.pop_back();
-  }
 }
 
 base::TimeTicks InteractiveDetector::FindInteractiveCandidate(
-    base::TimeTicks lower_bound) {
-  // Main thread iterator.
-  auto* it_mt = main_thread_quiet_windows_.begin();
+    base::TimeTicks lower_bound,
+    base::TimeTicks current_time) {
   // Network iterator.
   auto* it_net = network_quiet_windows_.begin();
+  // Long tasks iterator.
+  auto* it_lt = long_tasks_.begin();
 
-  while (it_mt < main_thread_quiet_windows_.end() &&
+  base::TimeTicks main_quiet_start = page_event_times_.nav_start;
+
+  while (main_quiet_start < current_time &&
          it_net < network_quiet_windows_.end()) {
-    if (it_mt->High() <= lower_bound) {
-      it_mt++;
+    base::TimeTicks main_quiet_end =
+        it_lt == long_tasks_.end() ? current_time : it_lt->Low();
+    base::TimeTicks next_main_quiet_start =
+        it_lt == long_tasks_.end() ? current_time : it_lt->High();
+    if (main_quiet_end - main_quiet_start < kTimeToInteractiveWindow) {
+      // The main thread quiet window is too short.
+      ++it_lt;
+      main_quiet_start = next_main_quiet_start;
+      continue;
+    }
+    if (main_quiet_end <= lower_bound) {
+      // The main thread quiet window is before |lower_bound|.
+      ++it_lt;
+      main_quiet_start = next_main_quiet_start;
       continue;
     }
     if (it_net->High() <= lower_bound) {
-      it_net++;
+      // The network quiet window is before |lower_bound|.
+      ++it_net;
       continue;
     }
 
     // First handling the no overlap cases.
     // [ main thread interval ]
     //                                     [ network interval ]
-    if (it_mt->High() <= it_net->Low()) {
-      it_mt++;
+    if (main_quiet_end <= it_net->Low()) {
+      ++it_lt;
+      main_quiet_start = next_main_quiet_start;
       continue;
     }
     //                                     [ main thread interval ]
     // [   network interval   ]
-    if (it_net->High() <= it_mt->Low()) {
-      it_net++;
+    if (it_net->High() <= main_quiet_start) {
+      ++it_net;
       continue;
     }
 
     // At this point we know we have a non-empty overlap after lower_bound.
     base::TimeTicks overlap_start =
-        std::max({it_mt->Low(), it_net->Low(), lower_bound});
-    base::TimeTicks overlap_end = std::min(it_mt->High(), it_net->High());
+        std::max({main_quiet_start, it_net->Low(), lower_bound});
+    base::TimeTicks overlap_end = std::min(main_quiet_end, it_net->High());
     base::TimeDelta overlap_duration = overlap_end - overlap_start;
     if (overlap_duration >= kTimeToInteractiveWindow) {
-      return std::max(lower_bound, it_mt->Low());
+      return std::max(lower_bound, main_quiet_start);
     }
 
     // The interval with earlier end time will not produce any more overlap, so
     // we move on from it.
-    if (it_mt->High() <= it_net->High()) {
-      it_mt++;
+    if (main_quiet_end <= it_net->High()) {
+      ++it_lt;
+      main_quiet_start = next_main_quiet_start;
     } else {
-      it_net++;
+      ++it_net;
     }
   }
 
@@ -512,10 +508,10 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
     return;
   }
 
-  AddCurrentlyActiveQuietIntervals(current_time);
-  const base::TimeTicks interactive_candidate =
-      FindInteractiveCandidate(page_event_times_.first_contentful_paint);
-  RemoveCurrentlyActiveQuietIntervals();
+  AddCurrentlyActiveNetworkQuietInterval(current_time);
+  const base::TimeTicks interactive_candidate = FindInteractiveCandidate(
+      page_event_times_.first_contentful_paint, current_time);
+  RemoveCurrentlyActiveNetworkQuietInterval();
 
   // No Interactive Candidate found.
   if (interactive_candidate.is_null())
@@ -529,19 +525,47 @@ void InteractiveDetector::CheckTimeToInteractiveReached() {
 
 void InteractiveDetector::OnTimeToInteractiveDetected() {
   LongTaskDetector::Instance().UnregisterObserver(this);
-  main_thread_quiet_windows_.clear();
   network_quiet_windows_.clear();
 
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+      "loading,rail", "InteractiveTime", interactive_time_, "frame",
+      ToTraceValue(GetSupplementable()->GetFrame()), "args",
+      ComputeTimeToInteractiveTraceArgs());
+
+  long_tasks_.clear();
+}
+
+std::unique_ptr<TracedValue>
+InteractiveDetector::ComputeTimeToInteractiveTraceArgs() {
+  // We log the trace event even if there is user input, but annotate the event
+  // with whether that happened.
   bool had_user_input_before_interactive =
       !page_event_times_.first_invalidating_input.is_null() &&
       page_event_times_.first_invalidating_input < interactive_time_;
 
-  // We log the trace event even if there is user input, but annotate the event
-  // with whether that happened.
-  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
-      "loading,rail", "InteractiveTime", interactive_time_, "frame",
-      ToTraceValue(GetSupplementable()->GetFrame()),
-      "had_user_input_before_interactive", had_user_input_before_interactive);
+  auto dict = std::make_unique<TracedValue>();
+  dict->SetBoolean("had_user_input_before_interactive",
+                   had_user_input_before_interactive);
+  dict->SetDouble("total_blocking_time_ms",
+                  ComputeTotalBlockingTime().InMillisecondsF());
+  return dict;
+}
+
+base::TimeDelta InteractiveDetector::ComputeTotalBlockingTime() {
+  // We follow the same logic as the lighthouse computation in
+  // https://github.com/GoogleChrome/lighthouse/blob/f150573b5970cc90c8d0c2214f5738df5cde8a31/lighthouse-core/computed/metrics/total-blocking-time.js#L60-L74.
+  // In particular, tasks are clipped [FCP, TTI], and then all positive values
+  // of (task_length - 50) are added to the blocking time.
+  base::TimeDelta total_blocking_time;
+  for (const auto& long_task : long_tasks_) {
+    base::TimeTicks clipped_start =
+        std::max(long_task.Low(), page_event_times_.first_contentful_paint);
+    base::TimeTicks clipped_end = std::min(long_task.High(), interactive_time_);
+    total_blocking_time +=
+        std::max(base::TimeDelta(), clipped_end - clipped_start -
+                                        base::TimeDelta::FromMilliseconds(50));
+  }
+  return total_blocking_time;
 }
 
 void InteractiveDetector::ContextDestroyed() {

@@ -29,7 +29,6 @@
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_widget_delegate.h"

@@ -85,7 +85,11 @@ GPU_EXPORT std::string GetIntelGpuGeneration(uint32_t vendor_id,
 // If multiple Intel GPUs are detected, this returns the latest generation.
 GPU_EXPORT IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info);
 
-GPU_EXPORT void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info);
+// If this function is called in browser process (|in_browser_process| is set
+// to true), don't collect total disk space (which may block) and D3D related
+// info.
+GPU_EXPORT void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info,
+                                      bool in_browser_process);
 GPU_EXPORT void RecordDevicePerfInfoHistograms();
 
 #if defined(OS_WIN)

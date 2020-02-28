@@ -99,6 +99,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMediaApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kNativeRuleBasedTyping;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kNewOsSettingsSearch;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kParentalControlsSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kPrintJobManagementApp;

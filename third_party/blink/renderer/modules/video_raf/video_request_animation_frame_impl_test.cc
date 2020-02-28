@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -82,19 +83,25 @@ class MetadataHelper {
     if (initialized)
       return;
 
+    // We don't want any time ticks be a multiple of 5us, otherwise, we couldn't
+    // tell whether or not the implementation clamped their values. Therefore,
+    // we manually set the values for a deterministic test, and make sure we
+    // have sub-microsecond resolution for those values.
     base::TimeTicks now = base::TimeTicks::Now();
+
     metadata_.presented_frames = 42;
-    metadata_.presentation_time = now + base::TimeDelta::FromMilliseconds(10);
+    metadata_.presentation_time =
+        now + base::TimeDelta::FromMillisecondsD(10.1234);
     metadata_.expected_presentation_time =
-        now + base::TimeDelta::FromMilliseconds(26);
+        now + base::TimeDelta::FromMillisecondsD(26.3467);
     metadata_.width = 320;
     metadata_.height = 480;
     metadata_.presentation_timestamp = base::TimeDelta::FromSecondsD(3.14);
     metadata_.metadata.SetTimeDelta(media::VideoFrameMetadata::PROCESSING_TIME,
-                                    base::TimeDelta::FromMilliseconds(60));
+                                    base::TimeDelta::FromMillisecondsD(60.982));
     metadata_.metadata.SetTimeTicks(
         media::VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-        now + base::TimeDelta::FromMilliseconds(5));
+        now + base::TimeDelta::FromMillisecondsD(5.6785));
     metadata_.metadata.SetDouble(media::VideoFrameMetadata::RTP_TIMESTAMP,
                                  12345);
 
@@ -123,38 +130,68 @@ class VideoRafParameterVerifierCallback
 
     auto* expected = MetadataHelper::GetDefaultMedatada();
     EXPECT_EQ(expected->presented_frames, metadata->presentedFrames());
-    EXPECT_EQ(TicksToMillisecondsF(expected->presentation_time),
-              metadata->presentationTime());
-    EXPECT_EQ(TicksToMillisecondsF(expected->expected_presentation_time),
-              metadata->expectedPresentationTime());
     EXPECT_EQ((unsigned int)expected->width, metadata->width());
     EXPECT_EQ((unsigned int)expected->height, metadata->height());
     EXPECT_EQ(expected->presentation_timestamp.InSecondsF(),
               metadata->presentationTimestamp());
 
-    base::TimeDelta processing_time;
-    EXPECT_TRUE(expected->metadata.GetTimeDelta(
-        media::VideoFrameMetadata::PROCESSING_TIME, &processing_time));
-    EXPECT_EQ(processing_time.InSecondsF(), metadata->elapsedProcessingTime());
-
-    base::TimeTicks capture_time;
-    EXPECT_TRUE(expected->metadata.GetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
-    EXPECT_EQ(TicksToMillisecondsF(capture_time), metadata->captureTime());
-
     double rtp_timestamp;
     EXPECT_TRUE(expected->metadata.GetDouble(
         media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp));
     EXPECT_EQ(rtp_timestamp, metadata->rtpTimestamp());
+
+    // Verify that values were correctly clamped.
+    VerifyTicksClamping(expected->presentation_time,
+                        metadata->presentationTime(), "presentation_time");
+    VerifyTicksClamping(expected->expected_presentation_time,
+                        metadata->expectedPresentationTime(),
+                        "expected_presentation_time");
+
+    base::TimeTicks capture_time;
+    EXPECT_TRUE(expected->metadata.GetTimeTicks(
+        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
+    VerifyTicksClamping(capture_time, metadata->captureTime(), "capture_time");
+
+    base::TimeDelta processing_time;
+    EXPECT_TRUE(expected->metadata.GetTimeDelta(
+        media::VideoFrameMetadata::PROCESSING_TIME, &processing_time));
+    EXPECT_EQ(ClampElapsedProcessingTime(processing_time),
+              metadata->elapsedProcessingTime());
+    EXPECT_NE(processing_time.InSecondsF(), metadata->elapsedProcessingTime());
   }
 
   double last_now() { return now_; }
   bool was_invoked() { return was_invoked_; }
 
  private:
+  void VerifyTicksClamping(base::TimeTicks reference,
+                           double actual,
+                           std::string name) {
+    EXPECT_EQ(TicksToClampedMillisecondsF(reference), actual)
+        << name << " was not clamped properly.";
+    EXPECT_NE(TicksToMillisecondsF(reference), actual)
+        << "Did not successfully test clamping for " << name;
+  }
+
+  double TicksToClampedMillisecondsF(base::TimeTicks ticks) {
+    constexpr double kSecondsToMillis = 1000.0;
+    return Performance::ClampTimeResolution(
+               timing_.MonotonicTimeToZeroBasedDocumentTime(ticks)
+                   .InSecondsF()) *
+           kSecondsToMillis;
+  }
+
   double TicksToMillisecondsF(base::TimeTicks ticks) {
     return timing_.MonotonicTimeToZeroBasedDocumentTime(ticks)
         .InMillisecondsF();
+  }
+
+  static double ClampElapsedProcessingTime(base::TimeDelta time) {
+    constexpr double kProcessingTimeResolution = 100e-6;
+    double interval = floor(time.InSecondsF() / kProcessingTimeResolution);
+    double clamped_time = interval * kProcessingTimeResolution;
+
+    return clamped_time;
   }
 
   double now_;

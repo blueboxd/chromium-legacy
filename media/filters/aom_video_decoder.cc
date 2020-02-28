@@ -229,11 +229,12 @@ void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   std::move(bound_decode_cb).Run(DecodeStatus::OK);
 }
 
-void AomVideoDecoder::Reset(const base::Closure& reset_cb) {
+void AomVideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = DecoderState::kNormal;
   timestamps_.clear();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   std::move(closure));
 }
 
 void AomVideoDecoder::CloseDecoder() {

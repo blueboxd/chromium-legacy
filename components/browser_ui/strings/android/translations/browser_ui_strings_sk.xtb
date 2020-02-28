@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2501278716633472235">Prejsť späť</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 zablokovaný súbor cookie}few{# zablokované súbory cookie}many{# cookies blocked}other{# zablokovaných súborov cookie}}</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2704606927547763573">Skopírované</translation>
+<translation id="2968755619301702150">Zobrazovač certifikátov</translation>
 <translation id="3115898365077584848">Zobraziť informácie</translation>
 <translation id="3295602654194328831">Skryť informácie</translation>
 <translation id="3479552764303398839">Teraz nie</translation>

@@ -259,7 +259,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   // Start and finish a reset.
   void DoReset() {
     bool reset_complete = false;
-    mcvd_->Reset(base::BindRepeating(
+    mcvd_->Reset(base::BindOnce(
         [](bool* reset_complete) { *reset_complete = true; }, &reset_complete));
     base::RunLoop().RunUntilIdle();
     if (!reset_complete) {
@@ -597,7 +597,7 @@ TEST_P(MediaCodecVideoDecoderTest, TransitionToSameSurfaceIsIgnored) {
 TEST_P(MediaCodecVideoDecoderTest,
        ResetBeforeCodecInitializedSucceedsImmediately) {
   InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   testing::Mock::VerifyAndClearExpectations(&reset_cb);
@@ -635,7 +635,7 @@ TEST_P(MediaCodecVideoDecoderTest, ResetDoesNotFlushAnAlreadyFlushedCodec) {
 
   // The codec is still in the flushed state so Reset() doesn't need to flush.
   EXPECT_CALL(*codec, Flush()).Times(0);
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   testing::Mock::VerifyAndClearExpectations(&decode_cb_);
@@ -651,7 +651,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
   // The reset should not complete immediately because the codec needs to be
   // drained.
   EXPECT_CALL(*codec, Flush()).Times(0);
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run()).Times(0);
   mcvd_->Reset(reset_cb.Get());
 
@@ -720,7 +720,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
   // The reset should complete immediately because the codec is not VP8 so
   // it doesn't need draining.  We don't expect a call to Flush on the codec
   // since it will be deferred until the first decode after the reset.
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   // The reset should complete before destroying the codec, since TearDown will
@@ -739,7 +739,7 @@ TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
   // The reset should complete immediately because the codec is not VP8 so
   // it doesn't need draining.  We don't expect a call to Flush on the codec
   // since it will be deferred until the first decode after the reset.
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   // The reset should complete before destroying the codec, since TearDown will
@@ -756,7 +756,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, TeardownCompletesPendingReset) {
   codec->AcceptOneInput();
   PumpCodec();
 
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run()).Times(0);
   mcvd_->Reset(reset_cb.Get());
   EXPECT_CALL(reset_cb, Run());

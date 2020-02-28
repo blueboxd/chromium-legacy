@@ -89,7 +89,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       FidoAuthenticator* authenticator,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response);
-  void HandleTouch(FidoAuthenticator* authenticator);
+  void CollectPINThenSendRequest(FidoAuthenticator* authenticator);
+  void StartPINFallbackForInternalUv(FidoAuthenticator* authenticator);
+  void SetPINThenSendRequest(FidoAuthenticator* authenticator);
+  void HandleInternalUvLocked(FidoAuthenticator* authenticator);
   void HandleInapplicableAuthenticator(FidoAuthenticator* authenticator);
   void OnHavePIN(std::string pin);
   void OnRetriesResponse(CtapDeviceResponseCode status,
@@ -99,6 +102,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
                     base::Optional<pin::EmptyResponse> response);
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
+  void OnUvRetriesResponse(CtapDeviceResponseCode status,
+                           base::Optional<pin::RetriesResponse> response);
+  void OnHaveUvToken(FidoAuthenticator* authenticator,
+                     CtapDeviceResponseCode status,
+                     base::Optional<pin::TokenResponse> response);
+  void DispatchRequestWithToken(pin::TokenResponse token);
 
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;

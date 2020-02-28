@@ -36,6 +36,7 @@ class CustomizeDialogElement extends PolymerElement {
       selectedPage_: {
         type: String,
         value: 'backgrounds',
+        observer: 'onSelectedPageChange_',
       },
     };
   }
@@ -113,6 +114,11 @@ class CustomizeDialogElement extends PolymerElement {
     e.preventDefault();
     e.stopPropagation();
     this.selectedPage_ = e.target.getAttribute('page-name');
+  }
+
+  /** @private */
+  onSelectedPageChange_() {
+    this.$.pages.scrollTop = 0;
   }
 }
 

@@ -7,9 +7,13 @@
  * to interact with the browser.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @interface */
-  class LanguagesBrowserProxy {
+  /* #export */ class LanguagesBrowserProxy {
     // <if expr="chromeos or is_win">
     /**
      * Sets the prospective UI language to the chosen language. This won't
@@ -35,7 +39,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.LanguagesBrowserProxy}
    */
-  class LanguagesBrowserProxyImpl {
+  /* #export */ class LanguagesBrowserProxyImpl {
     // <if expr="chromeos or is_win">
     /** @override */
     setProspectiveUILanguage(languageCode) {

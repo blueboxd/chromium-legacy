@@ -137,6 +137,8 @@ class HintsFetcherTest : public testing::Test {
                                                GetMockClock());
   }
 
+  void ResetHintsFetcher() { hints_fetcher_.reset(); }
+
  private:
   void RunUntilIdle() {
     task_environment_.RunUntilIdle();
@@ -156,6 +158,20 @@ class HintsFetcherTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherTest);
 };
 
+TEST_F(HintsFetcherTest,
+       FetchOptimizationGuideServiceHintsLogsHistogramUponExiting) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_TRUE(FetchHints({"foo.com"}, {} /* urls */));
+  VerifyHasPendingFetchRequests();
+  ResetHintsFetcher();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled."
+      "BatchUpdate",
+      1, 1);
+}
+
 TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   base::HistogramTester histogram_tester;
 
@@ -173,6 +189,10 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
       HintsFetcherRequestStatus::kSuccess, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled."
+      "BatchUpdate",
+      0);
 }
 
 // Tests to ensure that multiple hint fetches by the same object cannot be in

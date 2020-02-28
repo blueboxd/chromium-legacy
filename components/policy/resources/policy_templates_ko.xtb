@@ -197,9 +197,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1257550411839719984">기본 다운로드 디렉터리 설정</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
 <translation id="127264587838521316"><ph name="PRODUCT_NAME" /> 확장 프로그램 설치 요청 사용</translation>
-<translation id="1288785611471943470">이 정책은 지원이 중단되었으며 버전 84 이후부터는 삭제될 예정이므로 대신 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />를 사용하시기 바랍니다. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />를 사용 중지하는 것은 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />를 사용 중지하는 것과 동일합니다. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />를 사용 설정하거나 이 설정을 설정하지 않으면 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />를 설정하지 않는 것과 같습니다.
+<translation id="1288785611471943470">이 정책은 지원이 중단되었으며 버전 84 이후부터는 삭제될 예정이므로 대신 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />을(를) 사용하시기 바랍니다. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />을(를) 사용 중지하는 것은 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />을(를) 사용 중지하는 것과 동일합니다. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />을(를) 사용 설정하거나 이 설정을 설정하지 않으면 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />을(를) 설정하지 않는 것과 같습니다.
 
-      이 설정을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송하도록 선택하지 못하게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자는 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
+      이 설정을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송을 선택하지 못하게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자는 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
 
       https://developers.google.com/safe-browsing에서 세이프 브라우징을 자세히 알아보세요.</translation>
 <translation id="1290634681382861275">USB, 블루투스, 정책 새로고침, 개발자 모드 등을 포함하여 기타 설정을 제어합니다.</translation>
@@ -752,6 +752,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 목록의 각 항목은 확장 프로그램 유형의 일치 패턴(https://developer.chrome.com/extensions/match_patterns 참조)을 보입니다. 사용자는 이 목록의 항목과 일치하는 URL에서 항목을 쉽게 설치할 수 있습니다. *.crx 파일과 다운로드 시작 페이지(예: 리퍼러) 위치는 이러한 패턴에 따라 허용되어야 합니다.
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />이(가) 이 정책보다 우선 적용됩니다. 다시 말해, 이 목록의 사이트에서 발생하더라도 차단 목록에 있는 확장 프로그램은 설치되지 않습니다.</translation>
+<translation id="2145735238144543545">필수 클라이언트 인증서</translation>
 <translation id="214901426630414675">양면 인쇄 모드 제한</translation>
 <translation id="2149330464730004005">컬러 인쇄 제한</translation>
 <translation id="2151831603578119302">접근성 기능 단축키 사용</translation>
@@ -761,17 +762,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       수동 인증은 명시적인 사용자 인증 정보가 자격 확인/응답 유형의 NTLM/Kerberos/Negotiate 방식을 통해 제공되지 않는 경우 기본 사용자 인증 정보를 사용하는 HTTP 인증입니다.
 
-      <ph name="REGULAR_ONLY_OPTION_NAME" />(값 0)를 설정하면 일반 세션에만 수동 인증을 사용할 수 있습니다. 시크릿 모드와 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
+      <ph name="REGULAR_ONLY_OPTION_NAME" />을(를) 설정하면(값 0) 일반 세션에만 수동 인증을 사용할 수 있습니다. 시크릿 모드와 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />(값 1)를 설정하면 시크릿 모드와 일반 세션에서 수동 인증을 사용할 수 있습니다 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
+      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />을(를) 설정하면(값 1) 시크릿 모드와 일반 세션에서 수동 인증을 사용할 수 있습니다 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />(값 2)를 설정하면 게스트 세션과 일반 세션에서 수동 인증을 사용할 수 있습니다. 시크릿 모드 세션에서는 수동 인증을 사용할 수 없습니다.
+      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />을(를) 설정하면(값 2) 게스트 세션과 일반 세션에서 수동 인증을 사용할 수 있습니다. 시크릿 모드 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="ALL_OPTION_NAME" />(값 3)을 설정하면 모든 세션에서 수동 인증을 사용할 수 있습니다.
+      <ph name="ALL_OPTION_NAME" />을(를) 설정하면(값 3) 모든 세션에서 수동 인증을 사용할 수 있습니다.
 
       일반 프로필에서는 수동 인증을 항상 사용할 수 있습니다.
 
-      정책을 설정하지 않으면 향후 <ph name="PRODUCT_NAME" /> 버전에서 허용되지 않으므로 시크릿 모드와 게스트 세션에서 수동 인증을 사용할 수 없게 됩니다.</translation>
+      정책을 설정하지 않으면 향후 <ph name="PRODUCT_NAME" /> 버전에서 시크릿 모드와 게스트 세션에서 수동 인증이 허용되지 않으므로 이를 사용할 수 없게 됩니다.</translation>
 <translation id="2160336427036785721">메모리 절약을 위해 탭 삭제(탭에 사용된 메모리는 회수되며 전환 시 탭이 다시 로드됨)를 시작하기 전에 단일 <ph name="PRODUCT_NAME" /> 인스턴스에서 사용할 수 있는 메모리의 양을 설정합니다.
 
       정책이 설정되면 브라우저가 메모리 절약을 위해 제한 초과 시 탭을 삭제하기 시작합니다. 하지만 브라우저가 항상 제한 하에서 실행된다고 보장하지 않습니다. 1,024 미만의 값은 1,024로 반올림됩니다.
@@ -779,7 +780,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 설정되지 않으면 컴퓨터의 물리적 메모리양이 부족하다고 감지된 후에만 브라우저에서 메모리 절약을 시도하기 시작합니다.</translation>
 <translation id="2164922809922345834"><ph name="PRODUCT_NAME" />에서 네이티브 창 오클루전을 사용 설정합니다.
 
-      이 설정을 사용하면 CPU 및 전원 소모를 줄이기 위해 <ph name="PRODUCT_NAME" />에서 창이 다른 창에 의해 언제 가려지는지 감지하여 픽셀 색상 설정 작업을 일시중지합니다.
+      이 설정을 사용하면 CPU 및 전원 소모를 줄이기 위해 <ph name="PRODUCT_NAME" />에서 창이 다른 창에 의해 가려지면 이를 감지하여 픽셀 색상 설정 작업을 일시정지합니다.
 
       이 설정을 사용 중지하면 <ph name="PRODUCT_NAME" />에서 창이 다른 창에 의해 가려지는지 감지하지 않습니다.
 
@@ -923,11 +924,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       변형을 사용하면 새로운 브라우저 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_NAME" />의 변형본을 제공할 수 있습니다.
 
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />(값 0)를 설정하거나 정책을 설정하지 않으면 로그인 화면의 브라우저에 모든 변형을 적용할 수 있습니다.
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />을(를) 설정하거나(값 0) 정책을 설정하지 않으면 로그인 화면에서 브라우저에 모든 변형을 적용할 수 있습니다.
 
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />(값 1)를 설정하면 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />을(를) 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 로그인 화면에서 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
 
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />(값 2)를 설정하면 로그인 화면의 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />을(를) 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드는 <ph name="PRODUCT_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못하게 할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="237494535617297575">알림 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -947,7 +948,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
 이 정책을 설정하면 사용자는 값을 재정의할 수 없습니다.
 
-이 정책을 설정하지 않으면 처음에는 개인정보 보호 화면이 사용 중지되며 사용자가 제어할 수 있습니다.</translation>
+이 정책을 설정하지 않으면 처음에는 개인정보 보호 화면이 사용 중지되지만 사용자가 이를 제어할 수 있습니다.</translation>
 <translation id="2418507228189425036"><ph name="PRODUCT_NAME" />에서 인터넷 사용 기록 저장을 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 설정을 사용하면 인터넷 사용 기록이 저장되지 않으며 탭 동기화도 사용 중지됩니다.
@@ -1239,6 +1240,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
           이 정책은 선택사항입니다. 설정하지 않으면 기본값인 UTF-8이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="2678503605767349615">필수 기기 수준 클라이언트 인증서</translation>
 <translation id="268577405881275241">데이터 압축 프록시 기능 사용</translation>
 <translation id="2693108589792503178">비밀번호 변경 URL을 설정합니다.</translation>
 <translation id="2694143893026486692">고정 돋보기 사용 설정됨</translation>
@@ -1303,6 +1305,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
           이 정책이 설정되지 않으면 관리되는 기기의 기본값은 False입니다.</translation>
 <translation id="2787173078141616821">Android 상태에 관한 정보 보고</translation>
 <translation id="2799297758492717491">URL 패턴의 허용 목록에서 미디어 자동 재생 허용</translation>
+<translation id="2801065672151277034">인증서 관리 설정</translation>
 <translation id="2801155097555584385">배터리 충전을 시작할 지점을 퍼센트로 맞춤설정합니다.</translation>
 <translation id="2801230735743888564">기기가 오프라인일 때 사용자가 공룡 부활절 달걀 게임을 플레이할 수 있도록 허용합니다.
 
@@ -1379,6 +1382,10 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       사용 중지하면 '터치하여 검색'이 완전히 사용 중지됩니다.
 
       설정하지 않으면 위에 설명된 사용 설정한 경우와 동일하게 적용됩니다.</translation>
+<translation id="2854607717796010700">기기 메모리에 관한 정보를 보고합니다.
+
+      정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
+      True로 설정된 경우 기기 메모리 정보가 보고됩니다.</translation>
 <translation id="285480231336205327">고대비 모드 사용</translation>
 <translation id="2854919890879212089"><ph name="PRODUCT_NAME" />이(가) 가장 최근에 사용한 프린터 대신 시스템 기본 프린터를 인쇄 미리보기에서 기본으로 선택하게 합니다.
 
@@ -1619,7 +1626,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
           'CookiesBlockedForUrls' 및 'CookiesSessionOnlyForUrls' 정책도 참조하세요. 이 세 정책 간에 충돌하는 URL 패턴이 없어야 합니다. 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
 <translation id="3339271789059866414">시스템 프록시 서비스 이용 가능 여부 및 시스템 서비스에 대한 프록시 사용자 인증 정보를 구성합니다.
       정책이 설정되지 않은 경우 시스템 프록시 서비스를 사용할 수 없습니다.</translation>
-<translation id="3356657927302977341">Linux용 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용할지 여부를 설정합니다.
+<translation id="3356657927302977341">Linux용 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용할지 여부를 구성합니다.
 
 True로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용하도록 허용됩니다.
 
@@ -1934,6 +1941,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책을 설정하면 사용자가 변경하거나 재정의할 수 없습니다.
 
           이 정책을 설정하지 않으면 처음에는 터치 키보드를 사용하지 않도록 설정되지만 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
+<translation id="3821861026311587684">계정 인증이 해제되면 사용자를 강제로 로그아웃합니다.</translation>
 <translation id="382476126209906314">원격 액세스 호스트에 대한 TalkGadget 프리픽스 구성</translation>
 <translation id="3824972131618513497">전원 관리 및 재부팅과 관련된 설정을 제어합니다.</translation>
 <translation id="3826475866868158882">Google 위치 서비스가 사용 설정됨</translation>
@@ -2345,6 +2353,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
 <translation id="4332177773549877617">Android 앱 설치 이벤트 로깅</translation>
+<translation id="4343382787226139147">기기 관리 프로토콜을 사용하여 등록해야 하는 클라이언트 인증서를 지정합니다.</translation>
 <translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
 
       이 정책을 2로 설정하면 방해가 되는 광고가 포함된 사이트에서 광고가 차단됩니다.
@@ -3592,11 +3601,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6273015149273504999">
       로그인 화면에서 사용자가 개입하지 않아도 자동 설치되며 사용자가 제거하거나 사용 중지할 수 없는 앱 및 확장 프로그램 목록을 지정합니다.
 
-      앱/확장 프로그램의 향후 버전에서 요청하는 추가 권한을 비롯해 앱/확장 프로그램에서 요청한 권한은 사용자와의 상호작용 없이도 암묵적으로 부여됩니다. <ph name="PRODUCT_NAME" />에서는 확장 프로그램에서 요청할 수 있는 권한 집합이 제한됩니다.
+      앱/확장 프로그램의 향후 버전에서 요청하는 추가 권한을 비롯해 앱/확장 프로그램에서 요청한 권한은 사용자가 개입하지 않아도 암묵적으로 부여됩니다. <ph name="PRODUCT_NAME" />에서는 확장 프로그램에서 요청할 수 있는 권한 집합이 제한됩니다.
 
       보안 및 개인정보 보호를 위해 <ph name="PRODUCT_NAME" />에 허용 목록으로 지정된 앱과 확장 프로그램만 설치할 수 있으며 기타 모든 항목은 무시됩니다.
 
-      이전에 강제 설치되었으나 이 목록에서 삭제된 앱 또는 확장 프로그램은 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거됩니다.
+      이전에 강제 설치된 앱 또는 확장 프로그램이 이 목록에서 제거되었다면 이는 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거됩니다.
 
       이 정책의 각 항목은 세미콜론(<ph name="SEMICOLON" />)으로 구분된 확장 프로그램 ID 및 '업데이트' URL(선택사항)로 구성된 문자열입니다. 확장 프로그램 ID는 32자리 문자열로, 예를 들어 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" />에서 확인할 수 있습니다. '업데이트' URL을 지정하는 경우 <ph name="LINK_TO_EXTENSION_DOC1" />에 명시된 것과 같이 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL(현재 'https://clients2.google.com/service/update2/crx')이 사용됩니다. 이 정책에서 설정된 '업데이트' URL은 최초 설치 시에만 사용되며 이후에 확장 프로그램 업데이트에서는 확장 프로그램의 매니페스트에 명시된 업데이트 URL이 사용됩니다.
 
@@ -3616,6 +3625,10 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           유휴 작업이 로그아웃 또는 종료인 경우에만 경고 메시지가 표시됩니다.</translation>
 <translation id="6310223829319187614">사용자가 로그인할 때 도메인 이름 자동완성 기능을 사용합니다.</translation>
+<translation id="631081324835911099">기본 계정의 인증 토큰이 무효화되면 사용자를 강제로 로그아웃합니다.
+        이 정책을 사용하면 Google 웹 속성의 제한된 콘텐츠에 사용자가 액세스하지 못하게 할 수 있습니다.
+        정책이 True로 설정되면 인증 토큰이 무효화되었을 때 사용자가 토큰 복구를 시도하는 즉시 로그아웃됩니다.
+        False로 설정되거나 설정되지 않은 경우 사용자가 인증 해제된 상태에서 작업을 계속할 수 있습니다.</translation>
 <translation id="6315673513957120120">사용자가 SSL 오류가 있는 사이트를 탐색하면 Chrome에서 경고 페이지를 표시합니다. 기본적으로 또는 이 정책이 'true'로 설정된 경우 사용자는 이 경고 페이지를 클릭하여 탐색할 수 있습니다.
       이 정책을 'false'로 설정하면 사용자가 경고 페이지를 클릭하여 탐색할 수 없습니다.</translation>
 <translation id="6319198883324703402">첫 번째 사용자 재실행 알림 시간을 설정합니다.</translation>
@@ -4033,7 +4046,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책은 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 정책이 중지되어야 적용됩니다. 중지되지 않으면 화면 어둡게 하기 지연 시간이 머신러닝 모델에 의해 결정되기 때문에 이 정책이 무시됩니다.
 
           배율은 100% 이상이어야 합니다.</translation>
-<translation id="7086720321892395256">개인정보 보호 화면 기능과 관련해 사용자 및 기기 정책을 설정합니다.</translation>
+<translation id="7086720321892395256">개인정보 보호 화면 기능과 관련해 사용자 및 기기 정책을 제어합니다.</translation>
 <translation id="710003290625031750">확장된 스키마 설명:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용하도록 설정합니다.
 
@@ -4299,6 +4312,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7443616896860707393">교차 도메인 HTTP 기본 인증 프롬프트</translation>
 <translation id="7448430478749155471">로그인 화면에서 텍스트 읽어주기 사용</translation>
 <translation id="7458437477941640506">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하지 않습니다. 이 경우 업데이트도 사용 중지됩니다.</translation>
+<translation id="7459601923199346224">인증서 관리를 위한 사용자 및 기기 정책을 관리합니다.</translation>
 <translation id="7464991223784276288">일치하는 URL의 쿠키를 현재 세션으로 제한</translation>
 <translation id="7469554574977894907">추천 검색어 사용</translation>
 <translation id="747275827471712187">이 사이트에서 쿠키의 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌리기</translation>
@@ -4595,6 +4609,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7937491150792971922">여러 출처의 확장 프로그램 설치 목록 정책 병합</translation>
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
+<translation id="7951605113561734721">기기 관리 프로토콜을 사용하여 등록해야 하는 기기 수준 클라이언트 인증서를 지정합니다.</translation>
 <translation id="7952007677054834789"><ph name="PRODUCT_NAME" />에서 시작 시 로드될 페이지, 기본 홈페이지, 기본 새 탭 페이지를 구성하고 사용자가 변경하지 못하게 합니다.
 
       사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않으면 사용자는 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 계속해서 설정할 수 있습니다.
@@ -5036,6 +5051,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
           true로 설정하거나 아무런 설정이 되지 않은 경우 콘텐츠 보호에 원격 인증을 사용할 수 있습니다.</translation>
 <translation id="8650974590712548439">Windows 클라이언트의 Windows 레지스트리 위치:</translation>
+<translation id="8653085952260859632">메모리 정보 보고</translation>
 <translation id="8654286232573430130">통합 인증을 허용할 서버를 지정합니다. 통합 인증은 <ph name="PRODUCT_NAME" />이(가) 허용 목록에 있는 서버 또는 프록시에서 인증 요청을 받은 경우에만 사용하도록 설정됩니다.
 
           여러 개의 서버 이름은 콤마(,)로 구분되며 와일드카드(*)를 사용할 수 있습니다.

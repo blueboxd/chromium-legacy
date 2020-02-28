@@ -54,16 +54,24 @@ class CORE_EXPORT MediaSource : public URLRegistrable,
                      : nullptr;
   }
 
-  // Called when an HTMLMediaElement is attempting to attach to this object,
-  // and helps enforce attachment to at most one element at a time.
-  // If already attached, returns false. Otherwise, must be in
-  // 'closed' state, and returns true to indicate attachment success.
+  // These two methods are called in sequence when an HTMLMediaElement is
+  // attempting to attach to this object.  The WebMediaSource is not available
+  // to the element initially, so between the two calls, the attachment could be
+  // considered partially setup.
+  // If already attached, StartAttachingToMediaElement() returns false.
+  // Otherwise, must be in 'closed' state, and returns true to indicate
+  // attachment success.
+  // CompleteAttachingToMediaElement() provides the MediaSource with the
+  // underlying WebMediaSource, enabling parsing of media provided by the
+  // application for playback, for example.
   // Reattachment allowed by first calling close() (even if already in
   // 'closed').
   // Once attached, the source uses the element to synchronously service some
   // API operations like duration change that may need to initiate seek.
-  virtual bool AttachToElement(HTMLMediaElement*) = 0;
-  virtual void SetWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) = 0;
+  virtual bool StartAttachingToMediaElement(HTMLMediaElement*) = 0;
+  virtual void CompleteAttachingToMediaElement(
+      std::unique_ptr<WebMediaSource>) = 0;
+
   virtual void Close() = 0;
   virtual bool IsClosed() const = 0;
   virtual double duration() const = 0;

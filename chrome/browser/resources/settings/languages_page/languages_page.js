@@ -11,7 +11,7 @@ cr.define('settings', function() {
    * @type {number} Millisecond delay that can be used when closing an action
    *      menu to keep it briefly on-screen.
    */
-  const kMenuCloseDelay = 100;
+  /* #export */ const kMenuCloseDelay = 100;
 
   /**
    * Name of the language setting is shown uma histogram.
@@ -631,7 +631,8 @@ cr.define('settings', function() {
      * @private
      */
     onEditDictionaryTap_() {
-      settings.Router.getInstance().navigateTo(settings.routes.EDIT_DICTIONARY);
+      settings.Router.getInstance().navigateTo(
+          /** @type {!settings.Route} */ (settings.routes.EDIT_DICTIONARY));
     },
 
     /**

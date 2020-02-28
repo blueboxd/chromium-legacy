@@ -13,9 +13,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace IPC {
 namespace {
@@ -229,6 +234,24 @@ TEST(IPCMessageUtilsTest, StrongAlias) {
 
   EXPECT_EQ(input, output);
 }
+
+#if defined(OS_WIN)
+TEST(IPCMessageUtilsTest, ScopedHandle) {
+  HANDLE raw_dupe_handle;
+  ASSERT_TRUE(::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(),
+                                ::GetCurrentProcess(), &raw_dupe_handle, 0,
+                                FALSE, DUPLICATE_SAME_ACCESS));
+  base::win::ScopedHandle dupe_handle(raw_dupe_handle);
+
+  Message message(0, 0, Message::PRIORITY_LOW);
+  WriteParam(&message, dupe_handle);
+
+  base::PickleIterator iter(message);
+  base::win::ScopedHandle read_handle;
+  EXPECT_TRUE(ReadParam(&message, &iter, &read_handle));
+  EXPECT_TRUE(read_handle.IsValid());
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace
 }  // namespace IPC

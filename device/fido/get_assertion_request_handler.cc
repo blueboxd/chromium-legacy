@@ -619,21 +619,7 @@ void GetAssertionRequestHandler::OnHavePINToken(
     return;
   }
 
-  observer()->FinishCollectToken();
-  state_ = State::kWaitingForSecondTouch;
-  CtapGetAssertionRequest request(request_);
-  request.pin_auth = response->PinAuth(request.client_data_hash);
-  request.pin_protocol = pin::kProtocolVersion;
-  // If doing a PIN operation then we don't ask the authenticator to also do
-  // internal UV.
-  request.user_verification = UserVerificationRequirement::kDiscouraged;
-
-  ReportGetAssertionRequestTransport(authenticator_);
-
-  authenticator_->GetAssertion(
-      std::move(request),
-      base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                     weak_factory_.GetWeakPtr(), authenticator_));
+  DispatchRequestWithToken(std::move(*response));
 }
 
 void GetAssertionRequestHandler::OnUvRetriesResponse(
@@ -718,11 +704,16 @@ void GetAssertionRequestHandler::OnHaveUvToken(
   }
 
   CancelActiveAuthenticators(authenticator->GetId());
-  observer()->FinishCollectToken();
   authenticator_ = authenticator;
+  DispatchRequestWithToken(std::move(*response));
+}
+
+void GetAssertionRequestHandler::DispatchRequestWithToken(
+    pin::TokenResponse token) {
+  observer()->FinishCollectToken();
   state_ = State::kWaitingForSecondTouch;
   CtapGetAssertionRequest request(request_);
-  request.pin_auth = response->PinAuth(request.client_data_hash);
+  request.pin_auth = token.PinAuth(request.client_data_hash);
   request.pin_protocol = pin::kProtocolVersion;
   // Do not do internal UV again.
   request.user_verification = UserVerificationRequirement::kDiscouraged;

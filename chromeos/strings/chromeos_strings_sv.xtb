@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1195447618553298278">Okänt fel.</translation>
 <translation id="1482734542997480527">Den här enheten hanteras av <ph name="ENROLLMENT_DOMAIN" />, som kan ha möjlighet att övervaka din aktivitet.</translation>
+<translation id="150962533380566081">Ogiltig PUK-kod.</translation>
 <translation id="1510238584712386396">Startprogram</translation>
 <translation id="1734367976349034509">Enheten är företagshanterad</translation>
+<translation id="1905710495812624430">Du har försökt för många gånger.</translation>
 <translation id="1930797645656624981">Tjänst för inmatningsmetod för Chrome OS</translation>
 <translation id="1979103255016296513">Tiden för att ändra lösenordet har gått ut</translation>
 <translation id="2049639323467105390">Den här enheten hanteras av <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="3008341117444806826">UPPDATERA</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Ogiltig pinkod</translation>
 <translation id="3838338534323494292">Nytt lösenord</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Försök igen. Återstående försök: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> hanterar den här enheten och har tillgång till all användaraktivitet, inklusive besökta webbsidor, lösenord och e-post.</translation>
 <translation id="4227825898293920515">Lösenordet upphör att gälla om <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos-biljetten upphör snart att gälla</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Det finns inget på skärmen som jag kan hjälpa till med.
 Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5222676887888702881">Logga ut</translation>
+<translation id="5275776633505022322">Återstående försök: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Försök igen.</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5332948983412042822">Välj ett nytt nu</translation>
 <translation id="5457599981699367932">Använd som gäst</translation>

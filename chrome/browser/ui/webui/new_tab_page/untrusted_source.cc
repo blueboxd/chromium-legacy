@@ -45,7 +45,7 @@ void UntrustedSource::StartDataRequest(
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   if (path == "promo") {
     if (!promo_service_) {
-      std::string empty = "";
+      std::string empty;
       std::move(callback).Run(base::RefCountedString::TakeString(&empty));
       return;
     }

@@ -40,14 +40,6 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
-const char* const kGetBoundingClientRectAsList =
-    R"(function(node) {
-      const r = node.getBoundingClientRect();
-      return [window.scrollX + r.left,
-              window.scrollY + r.top,
-              window.scrollX + r.right,
-              window.scrollY + r.bottom];
-    })";
 
 const char* const kGetVisualViewport =
     R"({ const v = window.visualViewport;
@@ -1518,47 +1510,25 @@ void WebController::OnFindElementForPosition(
     std::move(callback).Run(false, empty);
     return;
   }
-
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(result->object_id).Build());
-  devtools_client_->GetRuntime()->CallFunctionOn(
-      runtime::CallFunctionOnParams::Builder()
-          .SetObjectId(result->object_id)
-          .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kGetBoundingClientRectAsList))
-          .SetReturnByValue(true)
-          .Build(),
-      result->node_frame_id,
-      base::BindOnce(&WebController::OnGetElementPositionResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  std::unique_ptr<ElementRectGetter> getter =
+      std::make_unique<ElementRectGetter>(devtools_client_.get());
+  auto* ptr = getter.get();
+  pending_workers_.emplace_back(std::move(getter));
+  ptr->Start(
+      std::move(result),
+      base::BindOnce(&WebController::OnGetElementRectResult,
+                     weak_ptr_factory_.GetWeakPtr(), ptr, std::move(callback)));
 }
 
-void WebController::OnGetElementPositionResult(
+void WebController::OnGetElementRectResult(
+    ElementRectGetter* getter_to_release,
     base::OnceCallback<void(bool, const RectF&)> callback,
-    const DevtoolsClient::ReplyStatus& reply_status,
-    std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status =
-      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
-  if (!status.ok() || !result->GetResult()->HasValue() ||
-      !result->GetResult()->GetValue()->is_list() ||
-      result->GetResult()->GetValue()->GetList().size() != 4u) {
-    VLOG(2) << __func__ << " Failed to get element position: " << status;
-    RectF empty;
-    std::move(callback).Run(false, empty);
-    return;
-  }
-  const auto& list = result->GetResult()->GetValue()->GetList();
-  // Value::GetDouble() is safe to call without checking the value type; it'll
-  // return 0.0 if the value has the wrong type.
-
-  RectF rect;
-  rect.left = static_cast<float>(list[0].GetDouble());
-  rect.top = static_cast<float>(list[1].GetDouble());
-  rect.right = static_cast<float>(list[2].GetDouble());
-  rect.bottom = static_cast<float>(list[3].GetDouble());
-
-  std::move(callback).Run(true, rect);
+    bool has_rect,
+    const RectF& element_rect) {
+  base::EraseIf(pending_workers_, [getter_to_release](const auto& worker) {
+    return worker.get() == getter_to_release;
+  });
+  std::move(callback).Run(has_rect, element_rect);
 }
 
 void WebController::GetOuterHtml(

@@ -17,17 +17,12 @@
 #include "base/time/time.h"
 #include "base/trace_event/thread_instruction_count.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
 #include "third_party/perfetto/include/perfetto/tracing/event_context.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_thread_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
-
-namespace perfetto {
-class StartupTraceWriter;
-}  // namespace perfetto
 
 namespace tracing {
 
@@ -61,7 +56,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
       std::vector<std::tuple<IndexType, IndexData, InterningIndexEntry>>;
 
   TrackEventThreadLocalEventSink(
-      std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
+      std::unique_ptr<perfetto::TraceWriter> trace_writer,
       uint32_t session_id,
       bool disable_interning,
       bool proto_writer_filtering_enabled);
@@ -174,7 +169,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
 
   const bool privacy_filtering_enabled_;
 
-  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
+  std::unique_ptr<perfetto::TraceWriter> trace_writer_;
   uint32_t session_id_;
   bool disable_interning_;
   uint32_t sink_id_;

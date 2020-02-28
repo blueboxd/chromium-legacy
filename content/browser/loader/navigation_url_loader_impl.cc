@@ -760,11 +760,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         DCHECK(proxied_factory_remote_.is_valid());
         // We don't worry about reconnection since it's a single navigation.
         network_loader_factory_->Clone(std::move(proxied_factory_receiver_));
-        factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-            std::move(proxied_factory_remote_));
-      } else {
-        factory = network_loader_factory_;
+        // Replace the network factory with the proxied version since this may
+        // need to be used in redirects, and we've already consumed
+        // |proxied_factory_receiver_|.
+        network_loader_factory_ =
+            base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+                std::move(proxied_factory_remote_));
       }
+      factory = network_loader_factory_;
     }
     url_chain_.push_back(resource_request_->url);
     *out_options = GetURLLoaderOptions(

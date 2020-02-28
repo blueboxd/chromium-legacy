@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">ធាតុម៉ឺនុយ</translation>
 <translation id="10623998915015855">ប៊ូតុងបិទបើក</translation>
 <translation id="1088086359088493902">វិនាទី</translation>
+<translation id="1142001580032786438">បង្ហាញ​ផ្ទាំង​ជ្រើសរើស​សប្តាហ៍</translation>
 <translation id="1171774979989969504">សូមបញ្ចូលអាសយដ្ឋានអ៊ីម៉ែល</translation>
 <translation id="1178581264944972037">ផ្អាក</translation>
 <translation id="1188858454923323853">បន្ថែម</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">ស្វែងរក</translation>
 <translation id="4812940957355064477">សូមបញ្ចូលលេខ។</translation>
 <translation id="4912536737030637138">ធាតុគន្ថនិទ្ទេស</translation>
+<translation id="4915360478455618802">បង្ហាញ​ផ្ទាំង​ជ្រើសរើស​ម៉ោង</translation>
 <translation id="492244087561876220">មតិ</translation>
+<translation id="4950364064308314478">បង្ហាញ​ផ្ទាំង​ជ្រើសរើស​ម៉ោង និង​កាលបរិច្ឆេទ​ក្នុងស្រុក</translation>
 <translation id="4971739861736909480">បាន​ជ្រើសរើស <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> បានជ្រើសរើស</translation>
 <translation id="4992066212339426712">បើកសម្លេង</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">អត្ថបទពិពណ៌នា</translation>
 <translation id="8346634859695247203">ផ្នែក</translation>
 <translation id="835897206747267392">តម្លៃគ្មានសុពលភាព។</translation>
+<translation id="839593075537728968">តម្លៃត្រូវតែ​ស្ថិតនៅ​ចន្លោះ <ph name="MINIMUM_TIME" /> និង <ph name="MAXIMUM_TIME" />។</translation>
 <translation id="8403857369060869934">រយៈពេល​ដែលកន្លងផុត៖ <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">ផ្នែក</translation>
 <translation id="8433900881053900389">របារឧបករណ៍</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">តារាង​ខ្លឹមសារ</translation>
 <translation id="8613126697340063924">គ្រប់គ្រងការចាក់ពីចម្ងាយ</translation>
 <translation id="862370744433916922">ចំណង​ជើងរង</translation>
+<translation id="8634971699417195529">បង្ហាញ​ផ្ទាំង​ជ្រើសរើស​ខែ</translation>
 <translation id="8711688047404765493">ទិន្នផល</translation>
 <translation id="8750798805984357768">សូមជ្រើសរើសមួយក្នុងចំណោមជម្រើសទាំងនេះ។</translation>
 <translation id="8808573423886751634">ជំពូក</translation>

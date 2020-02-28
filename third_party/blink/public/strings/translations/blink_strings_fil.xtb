@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">item sa menu</translation>
 <translation id="10623998915015855">button sa pag-toggle</translation>
 <translation id="1088086359088493902">Segundo</translation>
+<translation id="1142001580032786438">Ipakita ang picker ng linggo</translation>
 <translation id="1171774979989969504">Mangyaring magpasok ng email address.</translation>
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="1188858454923323853">complementary</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Mangyaring maglagay ng numero.</translation>
 <translation id="4912536737030637138">entry sa bibliograpiya</translation>
+<translation id="4915360478455618802">Ipakita ang picker ng oras</translation>
 <translation id="492244087561876220">komento</translation>
+<translation id="4950364064308314478">Ipakita ang picker ng lokal na petsa at oras</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> ang napili</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ang napili</translation>
 <translation id="4992066212339426712">I-unmute</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Mga Caption</translation>
 <translation id="8346634859695247203">seksyon</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
+<translation id="839593075537728968">Dapat na nasa pagitan ng <ph name="MINIMUM_TIME" /> at <ph name="MAXIMUM_TIME" /> ang value.</translation>
 <translation id="8403857369060869934">lumipas na oras: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">bahagi</translation>
 <translation id="8433900881053900389">toolbar</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">talaan ng nilalaman</translation>
 <translation id="8613126697340063924">kontrolin ang malayuang pag-playback</translation>
 <translation id="862370744433916922">subtitle</translation>
+<translation id="8634971699417195529">Ipakita ang picker ng buwan</translation>
 <translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Mangyaring pumili ng isa sa mga opsyong ito.</translation>
 <translation id="8808573423886751634">kabanata</translation>

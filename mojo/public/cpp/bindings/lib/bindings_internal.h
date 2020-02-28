@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -263,6 +264,14 @@ struct MojomTypeTraits<T, true> {
 
 template <typename T>
 struct MojomTypeTraits<ScopedHandleBase<T>, false> {
+  using Data = Handle_Data;
+  using DataAsArrayElement = Data;
+
+  static const MojomTypeCategory category = MojomTypeCategory::kHandle;
+};
+
+template <>
+struct MojomTypeTraits<PlatformHandle, false> {
   using Data = Handle_Data;
   using DataAsArrayElement = Data;
 

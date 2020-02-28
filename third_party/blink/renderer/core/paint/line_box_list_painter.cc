@@ -74,9 +74,7 @@ void BuildBackplate(const InlineFlowBox* box,
   }
 }
 
-}  // anonymous namespace
-
-static void AddURLRectsForInlineChildrenRecursively(
+void AddURLRectsForInlineChildrenRecursively(
     const LayoutObject& layout_object,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
@@ -90,6 +88,8 @@ static void AddURLRectsForInlineChildrenRecursively(
   }
 }
 
+}  // anonymous namespace
+
 bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
                                      const PaintInfo& paint_info,
                                      const PhysicalOffset& paint_offset) const {
@@ -99,12 +99,6 @@ bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
   // The only way an inline could paint like this is if it has a layer.
   DCHECK(layout_object.IsLayoutBlock() ||
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
-
-  if (paint_info.phase == PaintPhase::kForeground &&
-      paint_info.ShouldAddUrlMetadata()) {
-    AddURLRectsForInlineChildrenRecursively(layout_object, paint_info,
-                                            paint_offset);
-  }
 
   // If we have no lines then we have no work to do.
   if (!line_box_list_.First())
@@ -127,6 +121,12 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;
+
+  if (paint_info.phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    AddURLRectsForInlineChildrenRecursively(layout_object, paint_info,
+                                            paint_offset);
+  }
 
   if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
@@ -158,8 +158,9 @@ void LineBoxListPainter::PaintBackplate(
     const LayoutBoxModelObject& layout_object,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
-  if (paint_info.phase != PaintPhase::kForcedColorsModeBackplate ||
-      !ShouldPaint(layout_object, paint_info, paint_offset))
+  DCHECK_EQ(paint_info.phase, PaintPhase::kForcedColorsModeBackplate);
+
+  if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
 
   // Only paint backplates behind text when forced-color-adjust is auto.

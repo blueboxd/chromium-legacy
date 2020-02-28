@@ -13,6 +13,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -109,6 +110,8 @@ class CORE_EXPORT WebFrameWidgetBase
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
   void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
+  void ApplyViewportChangesForTesting(
+      const ApplyViewportChangesArgs& args) override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,

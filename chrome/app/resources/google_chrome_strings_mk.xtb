@@ -106,6 +106,7 @@
 <translation id="4293420128516039005">Најавете се за да го синхронизирате и персонализирате Chrome на сите ваши уреди</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">Chrome може да ве штити од упад во податоците, злонамерни екстензии и друго</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> е додадена на Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Во тек е друга операција на Google Chrome. Обидете се повторно подоцна.</translation>
@@ -176,7 +177,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="6885412569789873916">Апликации на Chrome Beta</translation>
 <translation id="6943584222992551122">Податоците од прелистување на ова лице ќе се избришат од уредов. За да ги вратите податоците, најавете се на Chrome како <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Дојдовно правило за Google Chrome Beta за овозможување mDNS-сообраќај.</translation>
-<translation id="6982337800632491844"><ph name="DOMAIN" /> бара да ги прочитате и да ги прифатите следните Услови на користење пред да го користите уредот. Условите не ги прошируваат, менуваат или ограничуваат Условите на ОС Google Chrome.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN" /> бара да ги прочитате и да ги прифатите следните Услови за користење пред да го користите уредот. Условите не ги прошируваат, менуваат или ограничуваат Условите на ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome се ажурираше, но не сте го употребиле најмалку 30 дена.</translation>
 <translation id="7098166902387133879">Google Chrome го користи вашиот микрофон.</translation>
 <translation id="7106741999175697885">Управник со задачи - Google Chrome</translation>
@@ -203,12 +204,14 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="7777080907402804672">Ако сликата нема корисен опис, Chrome ќе се обиде да ви обезбеди опис. За да се создаваат описи, сликите се испраќаат до Google. Ова може да го исклучите во „Поставки“ во секое време.</translation>
 <translation id="7781002470561365167">Достапна е нова верзија на Google Chrome.</translation>
 <translation id="7787950393032327779">Се чини дека профилот го користи друг процес на Google Chrome (<ph name="PROCESS_ID" />) на друг компјутер (<ph name="HOST_NAME" />). Chrome го заклучи профилот за да не се оштети. Ако сте сигурни дека ниеден друг процес не го користи профилот, може да го отклучите профилот и повторно да стартувате Chrome.</translation>
+<translation id="7801699035218095297">Google Chrome се обидува да копира лозинки. Внесете ја лозинката за Windows за да се дозволи ова.</translation>
 <translation id="7808348361785373670">Отстрани од Chrome</translation>
 <translation id="7825851276765848807">Инсталацијата не успеа поради неодредена грешка. Преземете го Google Chrome повторно.</translation>
 <translation id="7855730255114109580">Google Chrome е ажуриран</translation>
 <translation id="7890208801193284374">Доколку споделувате компјутер, пријателите и семејството може да прелистуваат одделно и да го поставуваат Chrome токму онака како што сакаат.</translation>
 <translation id="7896673875602241923">Некој претходно се најави на Chrome од овој компјутер како <ph name="ACCOUNT_EMAIL_LAST" />. Создајте нов корисник на Chrome за да ги чувате информациите одделно.</translation>
 <translation id="7916016681687251387">Chrome OS не можеше да ги синхронизира вашите податоци. Поправете сега.</translation>
+<translation id="7930071585467473040">Google Chrome се обидува да копира лозинки.</translation>
 <translation id="7962410387636238736">Компјутеров веќе нема да добива ажурирања за Google Chrome затоа што Windows XP и Windows Vista веќе не се поддржуваат</translation>
 <translation id="8008534537613507642">Преинсталирај го Chrome</translation>
 <translation id="8013993649590906847">Ако сликата нема корисен опис, Chrome ќе се обиде да ви обезбеди опис. За да се создаваат описи, сликите се испраќаат до Google.</translation>

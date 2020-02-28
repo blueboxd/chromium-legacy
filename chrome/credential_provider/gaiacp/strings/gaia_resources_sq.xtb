@@ -1,43 +1,23 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
-<translation id="1337778609052285767">Fjalëkalimi aktual nuk i përmbush kërkesat për kompleksitetin Kontakto me administratorin tënd.</translation>
-<translation id="1337821341856692531">Nëse vazhdohet pa futur fjalëkalimin aktual të Windows mund të shkaktojë humbje të pakthyeshme të informacionit.</translation>
 <translation id="1383286653814676580">Përdoret për të ekzekutuar faqen e identifikimit të "Ofruesit të kredencialeve të Google".</translation>
-<translation id="1894475569413661128">Identifikohu duke përdorur llogarinë e punës.</translation>
-<translation id="2329184763010379754">Lejohet që të identifikohet vetëm përdoruesi që e ka kyçur këtë kompjuter.</translation>
-<translation id="2398071111662077301">Ekrani i identifikimit të Google nuk mund të ngarkohet për shkak të një problemi në instalimin e Chrome. Kontakto me administratorin tënd.</translation>
-<translation id="2469311484561825731">Identifikimi në llogarinë e punës dështoi. Sigurohu që kompjuteri të ketë lidhje interneti, më pas provo përsëri.</translation>
-<translation id="2679096858700291438">Ke futur një fjalëkalim të pasaktë të Windows. Provo përsëri.</translation>
-<translation id="2831078752570172210">Llogaria jote është bllokuar. Kontakto me administratorin e sistemit.</translation>
 <translation id="2844349213149998955">Nuk lejohet identifikimi me një llogari personale në këtë pajisje. Identifikohu me një llogari pune.</translation>
-<translation id="2995851317559936311">Ndryshimi i fjalëkalimit lejohet vetëm në kontrolluesin e domenit. Kontakto me administratorin tënd.</translation>
 <translation id="3306357053520292004">Një përdorues në këtë kompjuter është shtuar tashmë duke përdorur këtë llogari. Identifikohu me një llogari tjetër.</translation>
 <translation id="3926852373333893095">Vetëm përdoruesit e GSuite për ndërmarrjet lejohen të identifikohen.</translation>
 <translation id="4057329986137569701">Ndodhi një gabim i brendshëm.</translation>
 <translation id="4267670563222825190">Nuk mund të gjendej asnjë përdorues domeni për llogarinë tënde. Kontakto me administratorin tënd.</translation>
-<translation id="4300229033992784001">Fjalëkalimi i llogarisë sate ka ndryshuar. Fut fjalëkalimin aktual të Windows për të sinkronizuar llogarinë tënde të Windows me llogarinë tënde të punës.</translation>
-<translation id="4669462973597624151">Përpjekja për ndryshimin e fjalëkalimit dështoi. Kontakto me administratorin tënd.</translation>
 <translation id="4706454071748629324">Dështoi shtimi i një përdoruesi të ri. Ky kompjuter lejon që të krijohet vetëm një përdorues duke përdorur një llogari pune.</translation>
 <translation id="5186761973554910131">Një emër i pavlefshëm kompjuteri është dhënë gjatë përpjekjes për ndryshimin e fjalëkalimit. Kontakto me administratorin tënd.</translation>
 <translation id="6033715878377252112">Ndihmësi i "Ofruesit të kredencialeve të Google" për Windows</translation>
 <translation id="6149399665202317746">"Ofruesi i kredencialeve të Google" për Windows</translation>
-<translation id="6239180560789153226">Në pajisjen tënde mungojnë informacionet për rikuperimin. Identifikohu duke përdorur llogarinë e punës së Google.</translation>
 <translation id="6463752215771576050">Ky kompjuter nuk mund të regjistrohet për menaxhimin e ndërmarrjes.  Identifikohu me një llogari pune tjetër.</translation>
 <translation id="6657585470893396449">Fjalëkalimi</translation>
-<translation id="6937049691815837345">Pajisja jote ka nevojë për regjistrimin me menaxhimin e pajisjes. Identifikohu duke përdorur llogarinë e punës së Google.</translation>
 <translation id="7209941495304122410">Fut fjalëkalimin e Windows</translation>
-<translation id="7357241217513796177">Sigurohu që ke një lidhje interneti dhe provo përsëri.</translation>
 <translation id="7536769223115622137">Shto llogarinë e punës</translation>
-<translation id="7811865856574012727">Administratori yt ka kufizuar identifikimin e pajisjes në domenet e mëposhtme: <ph name="EMAIL_DOMAINS" />. Provo përsëri duke përdorur një llogari të vlefshme pune.</translation>
-<translation id="7856245195110636219">Nuk mund të vazhdojë pa futur fjalëkalimin aktual të Windows. Kontakto me një administrator të sistemit.</translation>
 <translation id="8109730953933509335">Ndryshimi i fjalëkalimit është provuar për një përdorues të pavlefshëm. Kontakto me administratorin tënd.</translation>
 <translation id="8639729688781680518">Harrova fjalëkalimin e Windows</translation>
 <translation id="866458870819756755">Nuk mund të krijohej një përdorues.</translation>
 <translation id="8875753657315897487">Identifikohu duke përdorur llogarinë e punës</translation>
-<translation id="8973975512230260387">Sesioni ka skaduar. Identifikohu duke përdorur llogarinë e punës së Google.</translation>
 <translation id="9055998212250844221">Llogaria e përdoruesit është krijuar nga "Ofruesi i kredencialeve të Google" për Windows</translation>
-<translation id="9135619837062629367">Nuk lejohet identifikimi me këtë llogari. Provo një llogari tjetër.</translation>
-<translation id="938261200229736272">Fjalëkalimi i llogarisë është shumë i shkurtër. Kontakto me administratorin tënd.</translation>
-<translation id="998002716857524853">Identifikohu duke përdorur llogarinë e punës së GSuite.</translation>
 </translationbundle>

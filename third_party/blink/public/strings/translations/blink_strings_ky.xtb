@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">менюдагы нерсе</translation>
 <translation id="10623998915015855">которгуч баскычы</translation>
 <translation id="1088086359088493902">Секунддар</translation>
+<translation id="1142001580032786438">Апта тандагычты көрсөтүү</translation>
 <translation id="1171774979989969504">Электрондук почта дарегин киргизиңиз.</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
 <translation id="1188858454923323853">кошумча</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">издөө</translation>
 <translation id="4812940957355064477">Номер киргизиңиз.</translation>
 <translation id="4912536737030637138">библиографиялык жазуу</translation>
+<translation id="4915360478455618802">Убакыт тандагычты көрсөтүү</translation>
 <translation id="492244087561876220">пикир</translation>
+<translation id="4950364064308314478">Жергиликтүү күн менен убакытты тандагычты көрсөтүү</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> тандалды</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> тандалды</translation>
 <translation id="4992066212339426712">Үнүн чыгаруу</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Коштомо жазуулар</translation>
 <translation id="8346634859695247203">бөлүм</translation>
 <translation id="835897206747267392">Жараксыз маани.</translation>
+<translation id="839593075537728968">Маани <ph name="MINIMUM_TIME" /> – <ph name="MAXIMUM_TIME" /> ортосунда болушу керек.</translation>
 <translation id="8403857369060869934">мөөнөтү аяктаган убакыт: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">бөлүм</translation>
 <translation id="8433900881053900389">куралдар тилкеси</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">мазмуну</translation>
 <translation id="8613126697340063924">алыстан ойнотууну көзөмөлдөө</translation>
 <translation id="862370744433916922">кичи жазуулар</translation>
+<translation id="8634971699417195529">Ай тандагычты көрсөтүү</translation>
 <translation id="8711688047404765493">чыгаруу</translation>
 <translation id="8750798805984357768">Булардын бирин тандаңыз.</translation>
 <translation id="8808573423886751634">бөлүм</translation>

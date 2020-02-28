@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {FakeInputMethodPrivate} from 'chrome://test/settings/fake_input_method_private.m.js';
+// #import {FakeLanguageSettingsPrivate} from 'chrome://test/settings/fake_language_settings_private.m.js';
+// #import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @implements {settings.LanguagesBrowserProxy} */
-  class TestLanguagesBrowserProxy extends TestBrowserProxy {
+  /* #export */ class TestLanguagesBrowserProxy extends TestBrowserProxy {
     constructor() {
       const methodNames = [];
       if (cr.isChromeOS || cr.isWindows) {
@@ -45,6 +52,7 @@ cr.define('settings', function() {
     };
   }
 
+  // #cr_define_end
   return {
     TestLanguagesBrowserProxy: TestLanguagesBrowserProxy,
   };

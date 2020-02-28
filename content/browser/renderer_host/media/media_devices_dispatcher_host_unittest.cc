@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -281,8 +282,12 @@ class MediaDevicesDispatcherHostTest
           enumerated_devices_[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].empty());
 
     EXPECT_FALSE(DoesContainRawIds(enumerated_devices_));
+#if defined(OS_ANDROID)
+    EXPECT_TRUE(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_));
+#else
     EXPECT_EQ(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_),
               permission_override_value);
+#endif
   }
 
   bool DoesContainRawIds(

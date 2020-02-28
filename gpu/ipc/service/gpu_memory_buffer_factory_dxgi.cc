@@ -82,7 +82,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
   if (!BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return handle;
 
-  handle.dxgi_handle = IPC::PlatformFileForTransit(texture_handle);
+  handle.dxgi_handle.Set(texture_handle);
   handle.type = gfx::DXGI_SHARED_HANDLE;
   handle.id = id;
 
@@ -107,10 +107,8 @@ GpuMemoryBufferFactoryDXGI::CreateImageForGpuMemoryBuffer(
   if (handle.type != gfx::DXGI_SHARED_HANDLE)
     return nullptr;
   // Transfer ownership of handle to GLImageDXGI.
-  base::win::ScopedHandle handle_owner;
-  handle_owner.Set(handle.dxgi_handle.GetHandle());
   auto image = base::MakeRefCounted<gl::GLImageDXGI>(size, nullptr);
-  if (!image->InitializeHandle(std::move(handle_owner), 0, format))
+  if (!image->InitializeHandle(std::move(handle.dxgi_handle), 0, format))
     return nullptr;
   return image;
 }

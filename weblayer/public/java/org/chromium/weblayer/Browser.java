@@ -19,7 +19,7 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Browser contains any number of Tabs, with one active Tab. The active Tab is visible to the user,
@@ -153,7 +153,7 @@ public class Browser {
      * @return The Tabs
      */
     @NonNull
-    public List<Tab> getTabs() {
+    public Set<Tab> getTabs() {
         ThreadCheck.ensureOnUiThread();
         return Tab.getTabsInBrowser(this);
     }

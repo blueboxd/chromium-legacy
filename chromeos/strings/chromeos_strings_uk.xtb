@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="1195447618553298278">Невідома помилка.</translation>
 <translation id="1482734542997480527">Сайт <ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і може відстежувати ваші дії.</translation>
+<translation id="150962533380566081">Недійсний PUK-код.</translation>
 <translation id="1510238584712386396">Панель запуску</translation>
 <translation id="1734367976349034509">Цим пристроєм керує адміністратор підприємства</translation>
+<translation id="1905710495812624430">Перевищено максимальну кількість дозволених спроб.</translation>
 <translation id="1930797645656624981">Сервіс методів введення в ОС Chrome</translation>
 <translation id="1979103255016296513">Час для зміни пароля минув</translation>
 <translation id="2049639323467105390">Цим пристроєм керує домен <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="3008341117444806826">ОНОВИТИ</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Недійсний PIN-код.</translation>
 <translation id="3838338534323494292">Новий пароль</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Повторіть спробу. Залишилося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і має доступ до всіх дій користувача, зокрема відвіданих сторінок, паролів і електронних листів.</translation>
 <translation id="4227825898293920515">Термін дії пароля закінчиться через <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Термін дії квитка Kerberos незабаром минає</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">На екрані не знайдено елементів, проблеми з якими я можу вирішити.
 Торкніться значка мікрофона, щоб поставити запитання.</translation>
 <translation id="5222676887888702881">Вийти</translation>
+<translation id="5275776633505022322">Залишилося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Повторіть спробу.</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5332948983412042822">Виберіть новий зараз</translation>
 <translation id="5457599981699367932">Переглядати в режимі гостя</translation>

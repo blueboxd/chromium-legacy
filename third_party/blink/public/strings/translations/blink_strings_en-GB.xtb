@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Captions</translation>
 <translation id="8346634859695247203">section</translation>
 <translation id="835897206747267392">Invalid value.</translation>
+<translation id="839593075537728968">Value must be between <ph name="MINIMUM_TIME" /> and <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">elapsed time: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">part</translation>
 <translation id="8433900881053900389">toolbar</translation>

@@ -77,13 +77,6 @@ class DateTimeLocalPicker extends HTMLElement {
       case 'ArrowRight':
       case 'PageUp':
       case 'PageDown':
-      case 't':
-      case 'm':
-      case 'M':
-      case 'y':
-      case 'Y':
-      case 'd':
-      case 'D':
         if (event.target.matches('.calendar-table-view, .time-column') &&
             this.hasSelectedDate) {
           window.pagePopupController.setValue(this.selectedValue);

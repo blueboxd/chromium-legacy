@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
+<translation id="1195447618553298278">Nepoznata greška.</translation>
 <translation id="1482734542997480527">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i moguće je da može pratiti vaše aktivnosti.</translation>
+<translation id="150962533380566081">Nevažeći PUK.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
+<translation id="1905710495812624430">Prekoračen je maksimalan broj dozvoljenih pokušaja.</translation>
 <translation id="1930797645656624981">Usluga načina unosa Chrome OS-a</translation>
 <translation id="1979103255016296513">Vrijeme za promjenu lozinke je isteklo</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja domena <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
+<translation id="3169472444629675720">Otkrijte</translation>
+<translation id="3820172043799983114">Nevažeći PIN.</translation>
 <translation id="3838338534323494292">Nova lozinka</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo. Broj preostalih pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posjećene web stranice, lozinke i e-poštu.</translation>
 <translation id="4227825898293920515">Lozinka će isteći za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Ne mogu pronaći ništa na ekranu u vezi s čim mogu pomoći.
 Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="5275776633505022322">Broj preostalih pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo.</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5332948983412042822">Sada odaberite novu lozinku</translation>
 <translation id="5457599981699367932">Pregledajte kao gost</translation>

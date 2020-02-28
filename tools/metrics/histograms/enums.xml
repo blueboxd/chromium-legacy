@@ -31841,6 +31841,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Trigger string mismatch"/>
   <int value="8" label="Not regular browser"/>
   <int value="9" label="Incognito mode disabled"/>
+  <int value="10" label="Cookies are blocked"/>
+  <int value="11" label="Third-party cookies are blocked"/>
 </enum>
 
 <enum name="HasDiscreteGpu">
@@ -38344,6 +38346,7 @@ from previous Chrome versions.
   <int value="-555341956" label="AutofillSaveAndFillVPA:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
+  <int value="-544685871" label="NewOsSettingsSearch:enabled"/>
   <int value="-544629557" label="CSSBackdropFilter:enabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
@@ -39172,6 +39175,7 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
   <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
+  <int value="471519375" label="NewOsSettingsSearch:disabled"/>
   <int value="471969274" label="MediaControlsExpandGesture:enabled"/>
   <int value="473958125" label="OmniboxWrapPopupPosition:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
@@ -48566,11 +48570,11 @@ Called by update_net_trust_anchors.py.-->
     progress.
   </int>
   <int value="6"
-      label="Fetch race not attempted due to too many concurrent page
-             navigation fetches">
+      label="Deprecated: Fetch race not attempted due to too many concurrent
+             page navigation fetches">
     The fetch race was not attempted for the host and URL of the current
     navigation since there are too many page navigation fetches currently in
-    flight.
+    flight. Deprecated in 02/2020.
   </int>
 </enum>
 

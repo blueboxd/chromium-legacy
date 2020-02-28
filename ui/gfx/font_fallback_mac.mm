@@ -12,7 +12,10 @@
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/strings/sys_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_fallback_skia_impl.h"
+#include "ui/gfx/platform_font.h"
 
 // CTFontCopyDefaultCascadeListForLanguages() doesn't exist in the 10.6 SDK.
 // There is only the following. It doesn't exist in the public header files,
@@ -43,30 +46,6 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
 
 
 namespace gfx {
-namespace {
-
-// CTFontCreateForString() sometimes re-wraps its result in a new CTFontRef with
-// identical attributes. This wastes time shaping the text run and confounds
-// Skia's internal typeface cache.
-bool FontsEqual(CTFontRef lhs, CTFontRef rhs) {
-  if (lhs == rhs)
-    return true;
-
-  // Compare ATSFontRef typeface IDs. These are typedef uint32_t. Typically if
-  // RenderText decided to hunt for a fallback in the first place, this check
-  // fails and FontsEqual returns here.
-  if (CTFontGetPlatformFont(lhs, nil) != CTFontGetPlatformFont(rhs, nil))
-    return false;
-
-  // Comparing addresses of descriptors seems to be sufficient for other cases.
-  base::ScopedCFTypeRef<CTFontDescriptorRef> lhs_descriptor(
-      CTFontCopyFontDescriptor(lhs));
-  base::ScopedCFTypeRef<CTFontDescriptorRef> rhs_descriptor(
-      CTFontCopyFontDescriptor(rhs));
-  return lhs_descriptor.get() == rhs_descriptor.get();
-}
-
-}  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   DCHECK(font.GetNativeFont());
@@ -105,15 +84,20 @@ bool GetFallbackFont(const Font& font,
                      const std::string& locale,
                      base::StringPiece16 text,
                      Font* result) {
-  base::ScopedCFTypeRef<CFStringRef> cf_string(CFStringCreateWithCharacters(
-      kCFAllocatorDefault, text.data(), text.length()));
-  CTFontRef ct_font = base::mac::NSToCFCast(font.GetNativeFont());
-  base::ScopedCFTypeRef<CTFontRef> ct_result(
-      CTFontCreateForString(ct_font, cf_string, {0, text.length()}));
-  if (FontsEqual(ct_font, ct_result))
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
+
+  sk_sp<SkTypeface> fallback_typeface =
+      GetSkiaFallbackTypeface(font, locale, text);
+
+  if (!fallback_typeface)
     return false;
 
-  *result = Font(base::mac::CFToNSCast(ct_result.get()));
+  // Fallback needs to keep the exact SkTypeface, as re-matching the font using
+  // family name and styling information loses access to the underlying platform
+  // font handles and is not guaranteed to result in the correct typeface, see
+  // https://crbug.com/1003829
+  *result = Font(PlatformFont::CreateFromSkTypeface(
+      std::move(fallback_typeface), font.GetFontSize(), base::nullopt));
   return true;
 }
 

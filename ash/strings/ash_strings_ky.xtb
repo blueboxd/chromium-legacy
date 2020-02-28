@@ -77,7 +77,7 @@
 <translation id="1885785240814121742">Кулпуну манжа изи менен ачуу</translation>
 <translation id="1919743966458266018">Тапшырмалар башкаргычын ача турган кыска жол өзгөргөн. <ph name="OLD_SHORTCUT" /> ордуна <ph name="NEW_SHORTCUT" /> колдонуңуз.</translation>
 <translation id="1923539912171292317">Автоматтык чыкылдатуулар</translation>
-<translation id="1928739107511554905">Жаңыртуу үчүн, туташкан баскычтопту үзбөй туруп, сенсордук экрандын жардамы менен Chromebook'ту өчүрүп-күйгүзүңүз.</translation>
+<translation id="1928739107511554905">Жаңыртуу үчүн, туташкан баскычтопту үзбөй туруп, сенсордук экрандын жардамы менен, Chromebook'ту өчүрүп-күйгүзүңүз.</translation>
 <translation id="1951012854035635156">Жардамчы</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Тилди тандаңыз</translation>
@@ -260,7 +260,7 @@
 <translation id="4261870227682513959">Билдирмелердин жөндөөлөрүн көрсөтүү. Билдирмелер өчүк</translation>
 <translation id="4269883910223712419">Бул түзмөктүн администратору төмөнкүлөрдү аткара алат:</translation>
 <translation id="4279490309300973883">Чагылыштыруу</translation>
-<translation id="4296136865091727875"><ph name="COUNT" /> билдирменин баарын тазалоо</translation>
+<translation id="4296136865091727875"><ph name="COUNT" /> билдирменин баарын өчүрүү</translation>
 <translation id="4303223480529385476">Статус аймагын жайып көрсөтүү</translation>
 <translation id="4321179778687042513">Ctrl</translation>
 <translation id="4321776623976362024">Жогорку контрастты колдонуу үчүн тез баскычты бастыңыз. Ал күйгүзүлсүнбү?</translation>
@@ -364,6 +364,7 @@
 <translation id="5777841717266010279">Экран бөлүшүү токтотулсунбу?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> бөлмөсүндөгү <ph name="ROUTE_TITLE" /> токтотулсун</translation>
+<translation id="5860033963881614850">Өчүк</translation>
 <translation id="5895138241574237353">Өчүрүп күйгүзүү</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
@@ -404,7 +405,7 @@
 <translation id="639644700271529076">CAPS LOCK өчүк</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="642644398083277086">Бардык билдирмелерди тазалоо</translation>
+<translation id="642644398083277086">Бардык билдирмелерди өчүрүү</translation>
 <translation id="643147933154517414">Баары даяр</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> бөлмөсүндөгү <ph name="ROUTE_TITLE" /></translation>
 <translation id="6452181791372256707">Четке кагуу</translation>
@@ -480,6 +481,7 @@
 <translation id="7405710164030118432">Бул түзмөктүн кулпусун ачуу үчүн, Family Link'теги ата-эненин кирүү кодун териңиз</translation>
 <translation id="742594950370306541">Камера колдонулууда.</translation>
 <translation id="743058460480092004">Камера менен микрофон колдонулууда.</translation>
+<translation id="7466449121337984263">Сенсорго тийиңиз</translation>
 <translation id="7497767806359279797">Тилди жана баскычтопту тандоо</translation>
 <translation id="7526573455193969409">Тармак көзөмөлдөнүшү мүмкүн</translation>
 <translation id="7536035074519304529">IP дареги: <ph name="ADDRESS" /></translation>

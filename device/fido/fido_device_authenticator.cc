@@ -209,16 +209,20 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   using ClientPinAvailability =
       AuthenticatorSupportedOptions::ClientPinAvailability;
 
-  // Authenticators with built-in UV can use that. (Fallback to PIN is not yet
-  // implemented.)
+  const auto device_support = Options()->client_pin_availability;
+  const bool can_collect_pin = observer && observer->SupportsPIN();
+
+  // Authenticators with built-in UV can use that.
   if (Options()->user_verification_availability ==
       AuthenticatorSupportedOptions::UserVerificationAvailability::
           kSupportedAndConfigured) {
-    return MakeCredentialPINDisposition::kNoPIN;
+    // TODO(crbug.com/1056317): implement inline bioenrollment.
+    return device_support == ClientPinAvailability::kSupportedAndPinSet &&
+                   can_collect_pin
+               ? MakeCredentialPINDisposition::kUsePINForFallback
+               : MakeCredentialPINDisposition::kNoPIN;
   }
 
-  const auto device_support = Options()->client_pin_availability;
-  const bool can_collect_pin = observer && observer->SupportsPIN();
 
   // CTAP 2.0 requires a PIN for credential creation once a PIN has been set.
   // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.

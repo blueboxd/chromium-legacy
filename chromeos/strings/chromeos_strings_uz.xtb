@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
+<translation id="1195447618553298278">Noma’lum xatolik.</translation>
 <translation id="1482734542997480527">Bu qurilma <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi va faoliyatingiz kuzatilishi mumkin.</translation>
+<translation id="150962533380566081">PUK kod xato.</translation>
 <translation id="1510238584712386396">Ishga tushirish paneli</translation>
 <translation id="1734367976349034509">Bu korporativ qurilma</translation>
+<translation id="1905710495812624430">Urinishlar soni cheklovdan oshib ketdi.</translation>
 <translation id="1930797645656624981">Chrome OS matn kiritish xizmati</translation>
 <translation id="1979103255016296513">Parolni almashtirish muddati tugadi</translation>
 <translation id="2049639323467105390">Bu qurilma <ph name="DOMAIN" /> tomonidan boshqariladi</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Ilovalar</translation>
 <translation id="2872961005593481000">Ishni tamomlash</translation>
 <translation id="3008341117444806826">YANGILASH</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">PIN kod xato.</translation>
 <translation id="3838338534323494292">Yangi parol</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Qaytadan urining. <ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
 <translation id="4003259559679196451">Bu qurilma va uning foydalanuvchilari harakatlari, ochilgan sahifalar, parollar va emaillar <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
 <translation id="4227825898293920515">Parol muddati tugashiga <ph name="TIME" /> qoldi</translation>
 <translation id="4429881212383817840">Kerberos chiptasi amal qilish muddati tezda tugaydi</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Ekranda men yordam bera oladigan hech narsa topilmadi.
 Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="5222676887888702881">Tizimdan chiqish</translation>
+<translation id="5275776633505022322"><ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Qaytadan urining.</translation>
 <translation id="5317780077021120954">Saqlash</translation>
 <translation id="5332948983412042822">Hoziroq yangi parol tanlang</translation>
 <translation id="5457599981699367932">Mehmon sifatida kezish</translation>

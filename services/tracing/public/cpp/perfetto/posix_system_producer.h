@@ -54,6 +54,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   void SetNewSocketForTesting(const char* socket);
 
   // PerfettoProducer implementation.
+  void SetupStartupTracing() override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;

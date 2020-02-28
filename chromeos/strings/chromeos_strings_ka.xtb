@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
+<translation id="1195447618553298278">უცნობი შეცდომა.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> მართავს ამ მოწყობილობას და შეუძლია თქვენი აქტივობის მონიტორინგი.</translation>
+<translation id="150962533380566081">PUK კოდი არასწორია.</translation>
 <translation id="1510238584712386396">გამშვები</translation>
 <translation id="1734367976349034509">ამ მოწყობილობას მართავს ორგანიზაცია</translation>
+<translation id="1905710495812624430">გადაჭარბებულია მცდელობათა მაქსიმალური რაოდენობა.</translation>
 <translation id="1930797645656624981">Chrome OS-ის შეყვანის მეთოდის სერვისი</translation>
 <translation id="1979103255016296513">პაროლის შეცვლა დაგვიანებულია</translation>
 <translation id="2049639323467105390">ეს მოწყობილობა იმართება <ph name="DOMAIN" />-ის მიერ.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">პროგრამები</translation>
 <translation id="2872961005593481000">გამორთვა</translation>
 <translation id="3008341117444806826">განახლება</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">PIN-კოდი არასწორია.</translation>
 <translation id="3838338534323494292">ახალი პაროლი</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> გთხოვთ, ცადოთ ხელახლა. მცდელობების დარჩენილი რაოდენობა: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> მართავს ამ მოწყობილობას და აქვს წვდომა მომხმარებლების ნებისმიერ აქტივობაზე, მათ შორის, მონახულებულ ვებგვერდებზე, პაროლებსა და ელფოსტაზე.</translation>
 <translation id="4227825898293920515">პაროლი ძალაშია <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ბილეთის მოქმედების ვადა მალე იწურება</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">თქვენს ეკრანზე ვერაფერი მოიძებნა, რითაც თქვენს დახმარებას შევძლებდი.
 გთხოვთ, შეეხოთ მიკროფონს და მკითხოთ, რაც გსურთ.</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
+<translation id="5275776633505022322">მცდელობების დარჩენილი რაოდენობა: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> გთხოვთ, ცადოთ ხელახლა.</translation>
 <translation id="5317780077021120954">შენახვა</translation>
 <translation id="5332948983412042822">ახლავე აირჩიეთ ახალი</translation>
 <translation id="5457599981699367932">დათვალიერება სტუმრის სტატუსით</translation>

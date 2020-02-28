@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2501278716633472235">Mine tagasi</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 küpsisefail on blokeeritud}other{# küpsisefaili on blokeeritud}}</translation>
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
+<translation id="2968755619301702150">Sertifikaadikuvaja</translation>
 <translation id="3115898365077584848">Kuva teave</translation>
 <translation id="3295602654194328831">Peida teave</translation>
 <translation id="3479552764303398839">Mitte praegu</translation>

@@ -661,11 +661,26 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     bool delayed) {
 #if defined(OS_WIN)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::TimeDelta delta;
+  if (delayed &&
+      !command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
+    delta = base::TimeDelta::FromSeconds(120);
+  }
+
   base::OnceClosure task = base::BindOnce(
-      [](bool delayed) {
+      [](base::TimeDelta delta) {
         GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
         if (manager->Dx12VulkanRequested())
           return;
+
+        base::CommandLine* command_line =
+            base::CommandLine::ForCurrentProcess();
+        if (command_line->HasSwitch(
+                switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
+          manager->UpdateDx12VulkanRequestStatus(false);
+          return;
+        }
 
         // No info collection for software GL implementation (id == 0xffff) or
         // abnormal situation (id == 0). There are a few crash reports on
@@ -675,7 +690,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
         // because the ID is not available yet.
         const gpu::GPUInfo::GPUDevice gpu = manager->GetGPUInfo().gpu;
         if ((gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) ||
-            (delayed && gpu.vendor_id == 0 && gpu.device_id == 0)) {
+            (!delta.is_zero() && gpu.vendor_id == 0 && gpu.device_id == 0)) {
           manager->UpdateDx12VulkanRequestStatus(false);
           return;
         }
@@ -692,19 +707,18 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
             base::BindOnce(
                 [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_info,
                    const gpu::DevicePerfInfo& device_perf_info) {
-                  GpuDataManagerImpl::GetInstance()
-                      ->UpdateDx12VulkanDevicePerfInfo(dx12_vulkan_info,
-                                                       device_perf_info);
+                  GpuDataManagerImpl* manager =
+                      GpuDataManagerImpl::GetInstance();
+                  manager->UpdateDx12VulkanInfo(dx12_vulkan_info);
+                  // UpdateDx12VulkanInfo() needs to be called before
+                  // UpdateDevicePerfInfo() because only the latter calls
+                  // NotifyGpuInfoUpdate().
+                  manager->UpdateDevicePerfInfo(device_perf_info);
                 }));
       },
-      delayed);
+      delta);
 
-  if (delayed) {
-    base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
-                          base::TimeDelta::FromSeconds(120));
-  } else {
-    base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(task));
-  }
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task), delta);
 #endif
 }
 
@@ -827,11 +841,17 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNode(
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateDx12VulkanDevicePerfInfo(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info,
-    const gpu::DevicePerfInfo& device_perf_info) {
+void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
   gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
   gpu_info_dx12_vulkan_valid_ = true;
+  // No need to call NotifyGpuInfoUpdate() because UpdateDx12VulkanInfo() is
+  // always called together with UpdateDevicePerfInfo, which calls
+  // NotifyGpuInfoUpdate().
+}
+
+void GpuDataManagerImplPrivate::UpdateDevicePerfInfo(
+    const gpu::DevicePerfInfo& device_perf_info) {
   gpu::DevicePerfInfo mutable_device_perf_info = device_perf_info;
   CollectExtraDevicePerfInfo(gpu_info_, &mutable_device_perf_info);
   gpu::SetDevicePerfInfo(mutable_device_perf_info);
@@ -860,8 +880,11 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanRequestStatus(
   gpu_info_dx12_vulkan_requested_ = true;
   gpu_info_dx12_vulkan_request_failed_ = !request_continues;
 
-  if (gpu_info_dx12_vulkan_request_failed_)
-    NotifyGpuInfoUpdate();
+  if (gpu_info_dx12_vulkan_request_failed_) {
+    gpu::DevicePerfInfo device_perf_info;
+    gpu::CollectDevicePerfInfo(&device_perf_info, /*in_browser_process=*/true);
+    UpdateDevicePerfInfo(device_perf_info);
+  }
 }
 
 bool GpuDataManagerImplPrivate::Dx12VulkanRequested() const {

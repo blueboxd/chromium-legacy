@@ -82,6 +82,7 @@ public class ShareSheetCoordinator {
                     activity.getResources().getString(R.string.sharing_screenshot),
                     (shareParams)
                             -> {
+                        RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
                         mBottomSheetController.hideContent(bottomSheet, true);
                         Tab tab = mActivityTabProvider.get();
                         ScreenshotCoordinator screenshotCoordinator =
@@ -96,6 +97,7 @@ public class ShareSheetCoordinator {
         PropertyModel copyPropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
                 activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
+                    RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
                     Tab tab = mActivityTabProvider.get();
                     NavigationEntry entry =
@@ -139,6 +141,7 @@ public class ShareSheetCoordinator {
                 activity.getResources().getString(R.string.qr_code_share_icon_label),
                 (currentActivity)
                         -> {
+                    RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
                     mBottomSheetController.hideContent(bottomSheet, true);
                     QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(activity);
                     qrCodeCoordinator.show();

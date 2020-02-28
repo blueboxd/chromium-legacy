@@ -1934,6 +1934,36 @@ cr.define('device_page_tests', function() {
         Polymer.dom.flush();
         assertEquals('59.5 KB', getStorageItemSubLabelFromId('appsSize'));
       });
+
+      test('other users size', async function() {
+        // The other users row is visible by default, displaying
+        // "calculating...".
+        assertFalse(isHidden(storagePage.$$('#otherUsersSize')));
+        assertEquals(
+            'Other users', getStorageItemLabelFromId('otherUsersSize'));
+        assertEquals(
+            'Calculating…', getStorageItemSubLabelFromId('otherUsersSize'));
+
+        // Simulate absence of other users.
+        cr.webUIListenerCallback(
+            'storage-other-users-size-changed', '0 B', true);
+        Polymer.dom.flush();
+        assertTrue(isHidden(storagePage.$$('#otherUsersSize')));
+
+        // Send other users callback with a size that is not null.
+        cr.webUIListenerCallback(
+            'storage-other-users-size-changed', '322 MB', false);
+        Polymer.dom.flush();
+        assertFalse(isHidden(storagePage.$$('#otherUsersSize')));
+        assertEquals('322 MB', getStorageItemSubLabelFromId('otherUsersSize'));
+
+        // If the user is in Guest mode, the row is not visible.
+        storagePage.isGuest_ = true;
+        cr.webUIListenerCallback(
+            'storage-other-users-size-changed', '322 MB', false);
+        Polymer.dom.flush();
+        assertTrue(isHidden(storagePage.$$('#otherUsersSize')));
+      });
     });
   });
 

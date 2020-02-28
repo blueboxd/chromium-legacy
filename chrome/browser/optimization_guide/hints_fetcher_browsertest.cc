@@ -108,6 +108,7 @@ enum class HintsFetcherRemoteResponseType {
   kSuccessful = 0,
   kUnsuccessful = 1,
   kMalformed = 2,
+  kHung = 3,
 };
 
 constexpr char kGoogleHost[] = "www.google.com";
@@ -427,6 +428,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
       std::string serialized_request = "Not a proto";
       response->set_content(serialized_request);
+    } else if (response_type_ == HintsFetcherRemoteResponseType::kHung) {
+      return std::make_unique<net::test_server::HungResponse>();
     } else {
       NOTREACHED();
     }
@@ -505,9 +508,12 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
 
   void SetUp() override {
     // Enable OptimizationHintsFetching with |kRemoteOptimizationGuideFetching|.
-    scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kRemoteOptimizationGuideFetching},
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            {optimization_guide::features::kOptimizationHints, {}},
+            {optimization_guide::features::kRemoteOptimizationGuideFetching,
+             {{"max_concurrent_page_navigation_fetches", "2"}}},
+        },
         {});
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
@@ -792,6 +798,30 @@ IN_PROC_BROWSER_TEST_F(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 1),
             1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        HintsFetcherWithResponsesHungShouldRecordWhenActiveRequestCanceled)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+
+  SetResponseType(HintsFetcherRemoteResponseType::kHung);
+
+  // Set the ECT to force a fetch at navigation time.
+  g_browser_process->network_quality_tracker()
+      ->ReportEffectiveConnectionTypeForTesting(
+          net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("https://hung.com/1"));
+  ui_test_utils::NavigateToURL(browser(), GURL("https://hung.com/2"));
+  ui_test_utils::NavigateToURL(browser(), GURL("https://hung.com/3"));
+
+  // We expect that one request was canceled.
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled."
+      "PageNavigation",
+      1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(

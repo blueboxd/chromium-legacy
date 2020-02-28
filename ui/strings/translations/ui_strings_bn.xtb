@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">আপনার মোবাইল ডিভাইস <ph name="TITLE" /> থেকে পড়ুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
-<translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3909791450649380159">কা&amp;ট করুন</translation>
 <translation id="3990502903496589789">ডান প্রান্ত</translation>
@@ -236,7 +235,7 @@
 <translation id="8772073294905169192">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
 <translation id="8798099450830957504">ডিফল্ট</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ফোল্ডার</translation>
-<translation id="883911313571074303">ইমেজ ব্যাখ্যা করুন</translation>
+<translation id="883911313571074303">ছবি ব্যাখ্যা করুন</translation>
 <translation id="8841375032071747811">ফিরে যাওয়ার বোতাম</translation>
 <translation id="8867568208303837180">পাঠানো হচ্ছে…</translation>
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>

@@ -18,7 +18,6 @@
 #include "cc/paint/paint_canvas.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"

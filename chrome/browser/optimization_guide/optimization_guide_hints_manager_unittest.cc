@@ -2828,7 +2828,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
   hints_manager()->RegisterOptimizationTypes(
-      {optimization_guide::proto::RESOURCE_LOADING});
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
 
   InitializeWithDefaultConfig("1.0.0.0");
 
@@ -2839,38 +2839,35 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       BuildTestHintsFetcherFactory(
           {HintsFetcherEndState::kFetchSuccessWithURLHints}));
 
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle_with_hints =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_with_url_keyed_hint());
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle2 =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          url_without_hints());
-  std::unique_ptr<content::MockNavigationHandle> navigation_handle3 =
-      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://doesntmatter.com/"));
+  std::unique_ptr<content::MockNavigationHandle>
+      navigation_handle_without_hints =
+          CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+              GURL("https://doesntmatter.com/"));
+  std::unique_ptr<content::MockNavigationHandle>
+      navigation_handle_without_hints2 =
+          CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+              url_without_hints());
 
   // Attempt to fetch a hint but initiate the next navigations right away to
   // simulate being mid-fetch.
   base::HistogramTester histogram_tester;
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
-                                               base::DoNothing());
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle2.get(),
-                                               base::DoNothing());
-  hints_manager()->OnNavigationStartOrRedirect(navigation_handle3.get(),
-                                               base::DoNothing());
-  // The third one is over the max so should not be recorded.
+  hints_manager()->OnNavigationStartOrRedirect(
+      navigation_handle_with_hints.get(), base::DoNothing());
+  hints_manager()->OnNavigationStartOrRedirect(
+      navigation_handle_without_hints.get(), base::DoNothing());
+  hints_manager()->OnNavigationStartOrRedirect(
+      navigation_handle_without_hints2.get(), base::DoNothing());
+
+  // The third one is over the max and should evict another one.
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 2);
+      "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 3);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 1, 1);
   histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 2, 1);
-  // We expect a sample to be recorded with too many concurrent fetches.
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
-      optimization_guide::RaceNavigationFetchAttemptStatus::
-          kRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
-      1);
+      "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 2, 2);
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,

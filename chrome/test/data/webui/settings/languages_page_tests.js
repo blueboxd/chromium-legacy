@@ -2,9 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('languages_page_tests', function() {
+// clang-format off
+// #import {CrSettingsPrefs, kMenuCloseDelay, LanguagesBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+// #import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// #import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
+// clang-format on
+
+  window.languages_page_tests = {};
+
   /** @enum {string} */
-  const TestNames = {
+  window.languages_page_tests.TestNames = {
     AddLanguagesDialog: 'add languages dialog',
     LanguageMenu: 'language menu',
     Spellcheck: 'spellcheck_all',
@@ -73,7 +86,7 @@ cr.define('languages_page_tests', function() {
       PolymerTest.clearBody();
     });
 
-    suite(TestNames.AddLanguagesDialog, function() {
+    suite(languages_page_tests.TestNames.AddLanguagesDialog, function() {
       let dialog;
       let dialogItems;
       let cancelButton;
@@ -117,8 +130,10 @@ cr.define('languages_page_tests', function() {
           dialogClosedObserver = new MutationObserver(onMutation);
           dialogClosedObserver.observe(languagesPage.root, {childList: true});
 
-          actionButton = assert(dialog.$$('.action-button'));
-          cancelButton = assert(dialog.$$('.cancel-button'));
+          actionButton = dialog.$$('.action-button');
+          assertTrue(!!actionButton);
+          cancelButton = dialog.$$('.cancel-button');
+          assertTrue(!!cancelButton);
           Polymer.dom.flush();
 
           // The fixed-height dialog's iron-list should stamp far fewer than
@@ -239,18 +254,20 @@ cr.define('languages_page_tests', function() {
       });
     });
 
-    suite(TestNames.LanguageMenu, function() {
+    suite(languages_page_tests.TestNames.LanguageMenu, function() {
       /*
        * Finds, asserts and returns the menu item for the given i18n key.
        * @param {string} i18nKey Name of the i18n string for the item's text.
        * @return {!HTMLElement} Menu item.
        */
       function getMenuItem(i18nKey) {
-        const i18nString = assert(loadTimeData.getString(i18nKey));
+        const i18nString = loadTimeData.getString(i18nKey);
+        assertTrue(!!i18nString);
         const menuItems = actionMenu.querySelectorAll('.dropdown-item');
         const menuItem = Array.from(menuItems).find(
             item => item.textContent.trim() == i18nString);
-        return assert(menuItem, 'Menu item "' + i18nKey + '" not found');
+        assertTrue(!!menuItem, 'Menu item "' + i18nKey + '" not found');
+        return menuItem;
       }
 
       /*
@@ -316,7 +333,8 @@ cr.define('languages_page_tests', function() {
         let item = null;
 
         const listItems = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
+        const domRepeat = languagesCollapse.querySelector('dom-repeat');
+        assertTrue(!!domRepeat);
 
         let num_visibles = 0;
         Array.from(listItems).forEach(function(el) {
@@ -405,7 +423,8 @@ cr.define('languages_page_tests', function() {
 
         // Find the new language item.
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
+        const domRepeat = languagesCollapse.querySelector('dom-repeat');
+        assertTrue(!!domRepeat);
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'no';
@@ -432,7 +451,8 @@ cr.define('languages_page_tests', function() {
             ['en-US'], languageHelper.prefs.translate_blocked_languages.value);
 
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
+        const domRepeat = languagesCollapse.querySelector('dom-repeat');
+        assertTrue(!!domRepeat);
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'en-US';
@@ -447,7 +467,8 @@ cr.define('languages_page_tests', function() {
 
       test('remove language when starting with 2 languages', function() {
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
+        const domRepeat = languagesCollapse.querySelector('dom-repeat');
+        assertTrue(!!domRepeat);
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'sw';
@@ -515,7 +536,7 @@ cr.define('languages_page_tests', function() {
       });
     });
 
-    suite(TestNames.Spellcheck, function() {
+    suite(languages_page_tests.TestNames.Spellcheck, function() {
       test('structure', function() {
         const spellCheckCollapse = languagesPage.$.spellCheckCollapse;
         const spellCheckSettingsExist = !!spellCheckCollapse;
@@ -720,7 +741,7 @@ cr.define('languages_page_tests', function() {
       });
     });
 
-    suite(TestNames.SpellcheckOfficialBuild, function() {
+    suite(languages_page_tests.TestNames.SpellcheckOfficialBuild, function() {
       test('enabling and disabling the spelling service', () => {
         const previousValue =
             languagesPage.prefs.spellcheck.use_spelling_service.value;
@@ -741,6 +762,3 @@ cr.define('languages_page_tests', function() {
       });
     });
   });
-
-  return {TestNames: TestNames};
-});

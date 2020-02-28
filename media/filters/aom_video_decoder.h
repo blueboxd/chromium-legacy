@@ -35,7 +35,7 @@ class MEDIA_EXPORT AomVideoDecoder : public VideoDecoder {
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
-  void Reset(const base::Closure& reset_cb) override;
+  void Reset(base::OnceClosure closure) override;
 
  private:
   enum class DecoderState {

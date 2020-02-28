@@ -113,12 +113,13 @@ enum class RaceNavigationFetchAttemptStatus {
   kRaceNavigationFetchHostAndURL,
   // A race for the current navigation's URL is already in progress.
   kRaceNavigationFetchAlreadyInProgress,
-  // A race for the current navigation's URL was not attempted because there
-  // were too many concurrent page navigation fetches in flight.
-  kRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
+  // DEPRECATED: A race for the current navigation's URL was not attempted
+  // because there were too many concurrent page navigation fetches in flight.
+  kDeprecatedRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
 
   // Add new values above this line.
-  kMaxValue = kRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
+  kMaxValue =
+      kDeprecatedRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
 };
 
 // The statuses for a prediction model in the prediction manager when requested

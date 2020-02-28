@@ -27,6 +27,15 @@ class AppElement extends PolymerElement {
 
   static get properties() {
     return {
+      /** @private */
+      promoLoaded_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
+      promoUrl_: String,
+
       /** @private {!newTabPage.mojom.Theme} */
       theme_: Object,
 
@@ -44,10 +53,9 @@ class AppElement extends PolymerElement {
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
     /** @private {?number} */
     this.setThemeListenerId_ = null;
-    /** @private {boolean} */
-    this.promoLoaded_ = false;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
+    this.promoUrl_ = BrowserProxy.getInstance().promoUrl;
   }
 
   /** @override */

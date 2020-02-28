@@ -15,7 +15,6 @@
 #include "cc/trees/swap_promise.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/widget_messages.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/mock_render_process.h"

@@ -196,8 +196,8 @@ class FakeVideoDecoderTest
 
   void ResetAndExpect(CallbackResult result) {
     is_reset_pending_ = true;
-    decoder_->Reset(base::Bind(&FakeVideoDecoderTest::OnDecoderReset,
-                               base::Unretained(this)));
+    decoder_->Reset(base::BindOnce(&FakeVideoDecoderTest::OnDecoderReset,
+                                   base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     ExpectResetResult(result);
   }

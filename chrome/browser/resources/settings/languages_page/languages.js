@@ -11,7 +11,6 @@
  */
 
 (function() {
-'use strict';
 
 const MoveType = chrome.languageSettingsPrivate.MoveType;
 

@@ -1183,6 +1183,11 @@ const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
     "New implementation of tabstrip animations.";
 
+const char kNewOsSettingsSearchName[] = "New OS Settings Search";
+const char kNewOsSettingsSearchDescription[] =
+    "Enables New OS Settings search with fuzzy matching, and disables the old "
+    "OS settings search using exact string matching.";
+
 const char kTextureLayerSkipWaitForActivationName[] = "Parallelize layers";
 const char kTextureLayerSkipWaitForActivationDescription[] =
     "Don't wait for layer activation before beginning new frame.";

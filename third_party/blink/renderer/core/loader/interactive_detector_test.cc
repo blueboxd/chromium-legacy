@@ -141,6 +141,14 @@ class InteractiveDetectorTest : public testing::Test {
 
   base::TimeTicks GetInteractiveTime() { return detector_->interactive_time_; }
 
+  void SetTimeToInteractive(base::TimeTicks interactive_time) {
+    detector_->interactive_time_ = interactive_time;
+  }
+
+  base::TimeDelta GetTotalBlockingTime() {
+    return detector_->ComputeTotalBlockingTime();
+  }
+
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 
@@ -597,6 +605,80 @@ TEST_F(InteractiveDetectorTest, TotalInputDelay) {
   EXPECT_EQ(int64_t(70), GetDetector()->GetTotalInputDelay().InMilliseconds());
   EXPECT_EQ(int64_t(10),
             GetDetector()->GetTotalAdjustedInputDelay().InMilliseconds());
+}
+
+// In tests for Total Blocking Time (TBT) we call SetTimeToInteractive() instead
+// of allowing TimeToInteractive to occur because the computation is gated
+// behind tracing being enabled, which means that they won't run by default. In
+// addition, further complication stems from the fact that the vector of
+// longtasks is cleared at the end of OnTimeToInteractiveDetected(). Therefore,
+// the simplest solution is to manually set all of the relevant variables and
+// check the correctness of the method ComputeTotalBlockingTime(). This can be
+// revisited if we move TBT computations to occur outside of the trace event.
+TEST_F(InteractiveDetectorTest, TotalBlockingTimeZero) {
+  base::TimeTicks t0 = Now();
+  SimulateNavigationStart(t0);
+  // Set a high number of active connections, so that
+  // OnTimeToInteractiveDetected() is not called by accident.
+  SetActiveConnections(5);
+  SimulateFCPDetected(
+      /* fcp_time */ t0 + base::TimeDelta::FromMilliseconds(100),
+      /* detection_time */ t0 + base::TimeDelta::FromMilliseconds(100));
+
+  // Longtask of duration 51ms, but only 50ms occur after FCP.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(99),
+                   t0 + base::TimeDelta::FromMilliseconds(150));
+  // Longtask of duration 59ms, but only 49ms occur before TTI.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(201),
+                   t0 + base::TimeDelta::FromMilliseconds(260));
+  SetTimeToInteractive(t0 + base::TimeDelta::FromMilliseconds(250));
+  EXPECT_EQ(GetTotalBlockingTime(), base::TimeDelta());
+}
+
+TEST_F(InteractiveDetectorTest, TotalBlockingTimeNonZero) {
+  base::TimeTicks t0 = Now();
+  SimulateNavigationStart(t0);
+  // Set a high number of active connections, so that
+  // OnTimeToInteractiveDetected() is not called by accident.
+  SetActiveConnections(5);
+  SimulateFCPDetected(
+      /* fcp_time */ t0 + base::TimeDelta::FromMilliseconds(100),
+      /* detection_time */ t0 + base::TimeDelta::FromMilliseconds(100));
+
+  // Longtask fully before FCP.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(30),
+                   t0 + base::TimeDelta::FromMilliseconds(89));
+  // Longtask of duration 70ms, 60 ms of which occur after FCP. +10ms to TBT.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(90),
+                   t0 + base::TimeDelta::FromMilliseconds(160));
+  // Longtask of duration 80ms between FCP and TTI. +30ms to TBT.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(200),
+                   t0 + base::TimeDelta::FromMilliseconds(280));
+  // Longtask of duration 90ms, 70ms of which occur before TTI. +20ms to TBT.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(300),
+                   t0 + base::TimeDelta::FromMilliseconds(390));
+  // Longtask fully after TTI.
+  SimulateLongTask(t0 + base::TimeDelta::FromMilliseconds(371),
+                   t0 + base::TimeDelta::FromMilliseconds(472));
+  SetTimeToInteractive(t0 + base::TimeDelta::FromMilliseconds(370));
+  EXPECT_EQ(GetTotalBlockingTime(), base::TimeDelta::FromMilliseconds(60));
+}
+
+TEST_F(InteractiveDetectorTest, TotalBlockingSingleTask) {
+  base::TimeTicks t0 = Now();
+  SimulateNavigationStart(t0);
+  // Set a high number of active connections, so that
+  // OnTimeToInteractiveDetected() is not called by accident.
+  SetActiveConnections(5);
+  SimulateFCPDetected(
+      /* fcp_time */ t0 + base::TimeDelta::FromMilliseconds(100),
+      /* detection_time */ t0 + base::TimeDelta::FromMilliseconds(100));
+
+  // Longtask of duration 1s, from navigation start.
+  SimulateLongTask(t0, t0 + base::TimeDelta::FromSeconds(1));
+  SetTimeToInteractive(t0 + base::TimeDelta::FromMilliseconds(500));
+  // Truncated longtask is of length 400. So TBT is 400 - 50 = 350
+  EXPECT_EQ(GetTotalBlockingTime(), base::TimeDelta::FromMilliseconds(350));
 }
 
 }  // namespace blink

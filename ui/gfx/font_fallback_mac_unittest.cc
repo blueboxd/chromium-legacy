@@ -34,8 +34,6 @@ TEST(FontFallbackMacTest, GetFallbackFont) {
   const base::string16 emoji = base::UTF8ToUTF16("😋");
 
   gfx::Font fallback;
-  EXPECT_FALSE(
-      GetFallbackFont(arial, kDefaultApplicationLocale, ascii, &fallback));
   EXPECT_TRUE(
       GetFallbackFont(arial, kDefaultApplicationLocale, hebrew, &fallback));
   EXPECT_EQ("Lucida Grande", fallback.GetFontName());

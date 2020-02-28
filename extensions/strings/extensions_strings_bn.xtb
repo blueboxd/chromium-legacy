@@ -9,7 +9,7 @@
 <translation id="1468038450257740950">WebGL সমর্থিত নয়৷</translation>
 <translation id="149347756975725155">এক্সটেনশন আইকন '<ph name="ICON" />' লোড করা যায়নি৷</translation>
 <translation id="1803557475693955505">পৃষ্ঠভূমি পৃষ্ঠা '<ph name="BACKGROUND_PAGE" />' লোড করা যায়নি৷</translation>
-<translation id="2159915644201199628">ইমেজ ডিকোড করা যায়নি: '<ph name="IMAGE_NAME" />'</translation>
+<translation id="2159915644201199628">ছবি ডিকোড করা যায়নি: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">স্থানীয়করণ ব্যবহৃত হয়েছে, কিন্তু default_locale তালিকাতে উল্লেখ ছিল না৷</translation>
 <translation id="2576842806987913196">এই নামের একটি CRX ফাইল ইতিমধ্যে বিদ্যমান আছে৷</translation>
 <translation id="2785530881066938471">বর্তমান স্ক্রিপ্টটির জন্য <ph name="RELATIVE_PATH" /> ফাইলটি লোড করতে পারা যায়নি৷ এটি UTF-8 এনকোড হওয়া নেই৷</translation>

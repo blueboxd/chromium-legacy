@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1195447618553298278">Tuntematon virhe.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tätä laitetta ja voi ehkä seurata toimintaasi.</translation>
+<translation id="150962533380566081">Virheellinen PUK-koodi</translation>
 <translation id="1510238584712386396">Käynnistysohjelma</translation>
 <translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
+<translation id="1905710495812624430">Yritysten enimmäismäärä ylitettiin.</translation>
 <translation id="1930797645656624981">Chrome-käyttöjärjestelmän syöttöpalvelu</translation>
 <translation id="1979103255016296513">Salasanan vaihto myöhässä</translation>
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Sovellukset</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="3008341117444806826">PÄIVITÄ</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Virheellinen PIN-koodi</translation>
 <translation id="3838338534323494292">Uusi salasana</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Yritä uudelleen. Yrityksiä jäljellä: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tätä laitetta ja pääsee näkemään kaiken käyttäjätoiminnan, kuten avatut verkkosivustot, salasanat ja sähköpostit.</translation>
 <translation id="4227825898293920515">Salasana vanhenee: <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos-tukipyyntö vanhenee pian</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">En löydä näytöltä mitään, minkä kanssa voisin auttaa sinua.
 Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
+<translation id="5275776633505022322">Yrityksiä jäljellä: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Yritä uudelleen.</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5332948983412042822">Valitse uusi nyt</translation>
 <translation id="5457599981699367932">Selaa vierailijana</translation>

@@ -25,6 +25,7 @@
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_position_getter.h"
+#include "components/autofill_assistant/browser/web/element_rect_getter.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
@@ -342,6 +343,9 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
+  void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSelectOption(
       const std::string& value,
       DropdownSelectStrategy select_strategy,
@@ -349,9 +353,6 @@ class WebController {
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
-                      const DevtoolsClient::ReplyStatus& reply_status,
-                      std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForHighlightElement(
@@ -473,10 +474,11 @@ class WebController {
       base::OnceCallback<void(bool, const RectF&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-  void OnGetElementPositionResult(
+  void OnGetElementRectResult(
+      ElementRectGetter* getter_to_release,
       base::OnceCallback<void(bool, const RectF&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
+      bool has_rect,
+      const RectF& element_rect);
 
   // Creates a new instance of DispatchKeyEventParams for the specified type and
   // unicode codepoint.

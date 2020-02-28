@@ -128,7 +128,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (gpu_preferences_.enable_perf_data_collection) {
     // This is only enabled on the info collection GPU process.
     DevicePerfInfo device_perf_info;
-    CollectDevicePerfInfo(&device_perf_info);
+    CollectDevicePerfInfo(&device_perf_info, /*in_browser_process=*/false);
     device_perf_info_ = device_perf_info;
   }
 

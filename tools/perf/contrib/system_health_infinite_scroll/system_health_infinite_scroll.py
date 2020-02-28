@@ -26,7 +26,10 @@ class SystemHealthInfiniteScroll(system_health.MobileCommonSystemHealth):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = super(SystemHealthInfiniteScroll,
                     self).CreateCoreTimelineBasedMeasurementOptions()
-    options.SetTimelineBasedMetrics(['tbmv3:scroll_jank_metric'])
+    options.SetTimelineBasedMetrics([
+        'tbmv3:scroll_jank_metric',
+        'tbmv3:janky_scroll_periods',
+    ])
     return options
 
   def CreateStorySet(self, options):

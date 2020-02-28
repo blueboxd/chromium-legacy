@@ -49,7 +49,7 @@ class NavigationPredictorPreconnectClient
       const GURL& document_url) const;
 
   // MaybePreconnectNow preconnects to an origin server if it's allowed.
-  void MaybePreconnectNow();
+  void MaybePreconnectNow(size_t preconnects_attempted);
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;

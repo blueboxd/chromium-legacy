@@ -211,9 +211,9 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
 
     // Reset |video_decoder_| and wait for completion.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    video_decoder_->Reset(base::BindRepeating(&VideoDecoderAdapter::OnReset,
-                                              weak_factory_.GetWeakPtr(),
-                                              run_loop.QuitClosure()));
+    video_decoder_->Reset(base::BindOnce(&VideoDecoderAdapter::OnReset,
+                                         weak_factory_.GetWeakPtr(),
+                                         run_loop.QuitClosure()));
     run_loop.Run();
   }
 

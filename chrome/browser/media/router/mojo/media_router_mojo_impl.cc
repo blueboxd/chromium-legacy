@@ -327,13 +327,9 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
                        presentation_id, origin, web_contents, timeout,
                        incognito, std::move(mr_callback)));
   } else {
-    int tab_id = -1;
-    // A Cast SDK enabled website (e.g. Google Slides) may use the mirroring app
-    // ID rather than the tab mirroring URN.
-    if (source.IsTabMirroringSource() ||
-        source.id().find(kMirroringAppUri) == 0) {
-      tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
-    }
+    // Previously the tab ID was set to -1 for non-mirroring sessions, which
+    // mostly works, but it breaks auto-joining.
+    const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
     media_route_providers_[provider_id]->CreateRoute(
         source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
         std::move(mr_callback));

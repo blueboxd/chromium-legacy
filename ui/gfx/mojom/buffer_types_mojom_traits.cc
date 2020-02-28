@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/shared_memory_mojom_traits.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_hardware_buffer_handle.h"
@@ -105,7 +104,7 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
 #if defined(OS_WIN)
       DCHECK(handle.dxgi_handle.IsValid());
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewDxgiHandle(
-          mojo::WrapPlatformFile(handle.dxgi_handle.GetHandle()));
+          mojo::PlatformHandle(std::move(handle.dxgi_handle)));
 #else
       break;
 #endif
@@ -182,12 +181,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #elif defined(OS_WIN)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::DXGI_HANDLE: {
       out->type = gfx::DXGI_SHARED_HANDLE;
-      HANDLE handle;
-      MojoResult unwrap_result = mojo::UnwrapPlatformFile(
-          std::move(platform_handle->get_dxgi_handle()), &handle);
-      if (unwrap_result != MOJO_RESULT_OK)
-        return false;
-      out->dxgi_handle = IPC::PlatformFileForTransit(handle);
+      out->dxgi_handle = platform_handle->get_dxgi_handle().TakeHandle();
       return true;
     }
 #elif defined(OS_ANDROID)

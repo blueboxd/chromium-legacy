@@ -16,16 +16,17 @@ import unittest
 import re
 import subprocess
 
-def run_extractor(file):
+
+def run_extractor(file, *extra_args):
   script_path = os.path.join('..', 'extractor.py')
-  cmd_line = ["python", script_path, '--no-filter', file]
+  cmd_line = ("python", script_path, '--no-filter', file) + extra_args
   return subprocess.Popen(
       cmd_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def get_expected_files(source_file):
-  stdout_file = re.sub('\.cc$', '-stdout.txt', source_file)
-  stderr_file = re.sub('\.cc$', '-stderr.txt', source_file)
+  stdout_file = re.sub(r'\.cc$', '-stdout.txt', source_file)
+  stderr_file = re.sub(r'\.cc$', '-stderr.txt', source_file)
   return (stdout_file, stderr_file)
 
 
@@ -48,7 +49,6 @@ def remove_tracebacks(str):
 
 class ExtractorTest(unittest.TestCase):
   def testExtractor(self):
-    os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
     for source_file in glob.glob('*.cc'):
       print("Running test on %s..." % source_file)
       (stdout_file, stderr_file) = get_expected_files(source_file)
@@ -67,7 +67,6 @@ class ExtractorTest(unittest.TestCase):
 
 
 def generate_expected_files():
-  os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
   for source_file in glob.glob('*.cc'):
     proc = run_extractor(source_file)
     (stdout, stderr) = proc.communicate()
@@ -86,6 +85,14 @@ if __name__ == '__main__':
       '--generate-expected-files', action='store_true',
       help='Generate "-stdout.txt" and "-stderr.txt" for file in test_data')
   args = parser.parse_args()
+
+  # Set directory for both test and gen command to the test_data folder.
+  os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
+
+  # Run the extractor script with --generate-compdb to ensure the
+  # compile_commands.json file exists in the default output directory.
+  proc = run_extractor(os.devnull, '--generate-compdb')
+  proc.communicate()  # Wait until extractor finishes running.
 
   if args.generate_expected_files:
     generate_expected_files()

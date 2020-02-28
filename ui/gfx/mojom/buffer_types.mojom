@@ -101,7 +101,7 @@ union GpuMemoryBufferPlatformHandle {
   handle<platform> mach_port;
 
   [EnableIf=is_win]
-  handle dxgi_handle;
+  handle<platform> dxgi_handle;
 
   [EnableIf=is_android]
   AHardwareBufferHandle android_hardware_buffer_handle;

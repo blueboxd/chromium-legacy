@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Titlovi</translation>
 <translation id="8346634859695247203">odjeljak</translation>
 <translation id="835897206747267392">Nevažeća vrijednost.</translation>
+<translation id="839593075537728968">Vrijednost mora biti između <ph name="MINIMUM_TIME" /> i <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">proteklo vrijeme: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">dio</translation>
 <translation id="8433900881053900389">alatna traka</translation>

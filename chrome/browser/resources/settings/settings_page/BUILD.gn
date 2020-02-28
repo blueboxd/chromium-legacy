@@ -150,7 +150,6 @@ polymer_modulizer("settings_subpage") {
                    "chrome/browser/resources/settings/router.html|RouteObserverBehavior,Router",
                    "third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior.html|IronResizableBehavior",
                    "ui/webui/resources/html/assert.html|assert",
-                   "ui/webui/resources/html/find_shortcut_behavior.html|FindShortcutBehavior",
                    "ui/webui/resources/html/polymer.html|html, Polymer, afterNextRender",
                  ]
   namespace_rewrites = settings_namespace_rewrites +

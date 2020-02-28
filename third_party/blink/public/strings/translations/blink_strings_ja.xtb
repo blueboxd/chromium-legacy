@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">メニュー項目</translation>
 <translation id="10623998915015855">切り替えボタン</translation>
 <translation id="1088086359088493902">秒</translation>
+<translation id="1142001580032786438">週選択ツールを表示します</translation>
 <translation id="1171774979989969504">メール アドレスを入力してください。</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1188858454923323853">捕捉</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">検索</translation>
 <translation id="4812940957355064477">数字を入力してください。</translation>
 <translation id="4912536737030637138">文献情報</translation>
+<translation id="4915360478455618802">時間選択ツールを表示します</translation>
 <translation id="492244087561876220">コメント</translation>
+<translation id="4950364064308314478">ローカル日時選択ツールを表示します</translation>
 <translation id="4971739861736909480">「<ph name="ACCNAME" />」は選択済みです</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> 件選択</translation>
 <translation id="4992066212339426712">ミュートを解除</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">字幕</translation>
 <translation id="8346634859695247203">セクション</translation>
 <translation id="835897206747267392">値が無効です。</translation>
+<translation id="839593075537728968">値は <ph name="MINIMUM_TIME" />～<ph name="MAXIMUM_TIME" /> の範囲で指定してください。</translation>
 <translation id="8403857369060869934">経過時間: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">部</translation>
 <translation id="8433900881053900389">ツールバー</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">目次</translation>
 <translation id="8613126697340063924">リモート再生をコントロール</translation>
 <translation id="862370744433916922">副題</translation>
+<translation id="8634971699417195529">月選択ツールを表示します</translation>
 <translation id="8711688047404765493">出力</translation>
 <translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>
 <translation id="8808573423886751634">章</translation>

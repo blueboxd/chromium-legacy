@@ -93,8 +93,7 @@ cr.define('settings', function() {
    * @return {!SettingsRoutes}
    */
   function createBrowserSettingsRoutes() {
-    /** @type {!SettingsRoutes} */
-    const r = {};
+    const r = /** @type {!SettingsRoutes} */ ({});
 
     // Root pages.
     r.BASIC = new settings.Route('/');
@@ -226,9 +225,8 @@ cr.define('settings', function() {
     // On pop state, do not push the state onto the window.history again.
     const routerInstance = settings.Router.getInstance();
     routerInstance.setCurrentRoute(
-        /** @type {!settings.Route} */ (
-            routerInstance.getRouteForPath(window.location.pathname) ||
-            routerInstance.getRoutes().BASIC),
+        routerInstance.getRouteForPath(window.location.pathname) ||
+            routerInstance.getRoutes().BASIC,
         new URLSearchParams(window.location.search), true);
   });
 

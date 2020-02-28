@@ -26,7 +26,7 @@ class GPU_EXPORT GpuMemoryBufferImplDXGI : public GpuMemoryBufferImpl {
       gfx::DXGI_SHARED_HANDLE;
 
   static std::unique_ptr<GpuMemoryBufferImplDXGI> CreateFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

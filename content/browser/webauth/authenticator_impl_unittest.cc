@@ -3935,7 +3935,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUVToken) {
 
 // Test exhausting all internal user verification attempts on an authenticator
 // that does not support PINs.
-TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
+TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvFails) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
@@ -3969,7 +3969,7 @@ TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
 
 // Test exhausting all internal user verification attempts on an authenticator
 // that supports PINs.
-TEST_F(UVTokenAuthenticatorImplTest, UvTokenFallBackToPin) {
+TEST_F(UVTokenAuthenticatorImplTest, GetAssertionFallBackToPin) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
@@ -3996,6 +3996,119 @@ TEST_F(UVTokenAuthenticatorImplTest, UvTokenFallBackToPin) {
   auto options = get_credential_options();
   TestGetAssertionCallback callback_receiver;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(0, expected_retries);
+  EXPECT_TRUE(test_client_.collected_pin());
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
+TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUVToken) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+
+    for (const auto uv : {device::UserVerificationRequirement::kDiscouraged,
+                          device::UserVerificationRequirement::kPreferred,
+                          device::UserVerificationRequirement::kRequired}) {
+      SCOPED_TRACE(UVToString(uv));
+
+      auto options = make_credential_options(uv);
+      // UV cannot be satisfied without fingerprints.
+      const bool should_timeout =
+          !fingerprints_enrolled &&
+          uv == device::UserVerificationRequirement::kRequired;
+      if (should_timeout) {
+        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
+      }
+
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (should_timeout) {
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+      } else {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+        EXPECT_EQ(fingerprints_enrolled, HasUV(callback_receiver));
+      }
+    }
+  }
+}
+
+// Test exhausting all internal user verification attempts on an authenticator
+// that does not support PINs.
+TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvFails) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  config.pin_support = false;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  int expected_retries = 5;
+  virtual_device_factory_->mutable_state()->uv_retries = expected_retries;
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        EXPECT_EQ(--expected_retries,
+                  virtual_device_factory_->mutable_state()->uv_retries);
+        return true;
+      });
+
+  auto options = make_credential_options();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(0, expected_retries);
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
+// Test exhausting all internal user verification attempts on an authenticator
+// that supports PINs.
+TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialFallBackToPin) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  config.pin_support = true;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  virtual_device_factory_->mutable_state()->pin = kTestPIN;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  int expected_retries = 5;
+  virtual_device_factory_->mutable_state()->uv_retries = expected_retries;
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        EXPECT_EQ(--expected_retries,
+                  virtual_device_factory_->mutable_state()->uv_retries);
+        return true;
+      });
+
+  auto options = make_credential_options();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
   callback_receiver.WaitForCallback();
 
   EXPECT_EQ(0, expected_retries);

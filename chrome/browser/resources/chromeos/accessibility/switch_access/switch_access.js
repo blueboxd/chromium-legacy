@@ -19,6 +19,7 @@ class SwitchAccess {
       Commands.initialize();
       KeyboardRootNode.startWatchingVisibility();
       SwitchAccessPreferences.initialize();
+      TextNavigationManager.initialize();
     });
   }
 

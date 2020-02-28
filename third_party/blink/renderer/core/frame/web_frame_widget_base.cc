@@ -440,6 +440,14 @@ void WebFrameWidgetBase::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
                                       GetLocalFrameViewForAnimationScrolling());
 }
 
+void WebFrameWidgetBase::ApplyViewportChangesForTesting(
+    const ApplyViewportChangesArgs& args) {
+  // TODO(dtapuska): Temporarily just call ApplyViewportChanges.
+  // ApplyViewportChanges will eventually be removed when compositing moves into
+  // |widget_base_|.
+  ApplyViewportChanges(args);
+}
+
 void WebFrameWidgetBase::RequestAnimationAfterDelay(
     const base::TimeDelta& delay) {
   DCHECK(request_animation_after_delay_timer_.get());

@@ -297,7 +297,7 @@ struct SharedBufferVideoFrameData {
 // This defines video frame data stored in dmabuf.
 struct DmabufVideoFrameData {
   // Size depends on media::VideoFrame::NumPlanes with frame format.
-  array<handle> dmabuf_fds;
+  array<handle<platform>> dmabuf_fds;
 };
 
 struct GpuMemoryBufferVideoFrameData {

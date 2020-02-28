@@ -223,7 +223,13 @@ void StorageHandler::UpdateStorageItem(const std::string& event_name,
     message = ui::FormatBytes(total_bytes);
   }
 
-  FireWebUIListener(event_name, base::Value(message));
+  if (event_name == "storage-other-users-size-changed") {
+    bool no_other_users = (total_bytes == 0);
+    FireWebUIListener(event_name, base::Value(message),
+                      base::Value(no_other_users));
+  } else {
+    FireWebUIListener(event_name, base::Value(message));
+  }
 }
 
 void StorageHandler::UpdateSizeStat(const std::string& event_name,

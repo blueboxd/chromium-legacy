@@ -23,6 +23,9 @@ export class BrowserProxy {
     factory.createPageHandler(
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());
+
+    /** @type {string} */
+    this.promoUrl = 'chrome-untrusted://new-tab-page/promo';
   }
 
   /** @param {string} href */

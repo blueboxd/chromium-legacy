@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {CrSettingsPrefs, LanguagesBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+// #import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
+// #import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
+// #import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
+// #import {fakeDataBind} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 suite('settings-languages', function() {
   /**
    * @param {!Array<string>} expected
@@ -67,7 +77,7 @@ suite('settings-languages', function() {
 
   test('get language', function() {
     // If a language code is not found, try language without location.
-    lang = languageHelper.getLanguage('en-CN');
+    let lang = languageHelper.getLanguage('en-CN');
     assertEquals('en', lang.code);
 
     // The old language code for Hebriew is supported.

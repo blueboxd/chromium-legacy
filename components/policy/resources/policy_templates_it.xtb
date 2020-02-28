@@ -184,7 +184,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
 <translation id="127264587838521316">Attiva le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" /></translation>
-<translation id="1288785611471943470">Questo criterio è obsoleto e verrà rimosso dopo la versione 84, utilizza invece <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> o non configurare questa impostazione equivale a non configurare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+<translation id="1288785611471943470">Questo criterio è obsoleto e verrà rimosso dopo la versione 84; utilizza invece <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Attivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> o non configurare questa impostazione equivale a non configurare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
 
       L'impostazione di questo criterio su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questo criterio viene impostato su true o non viene configurato, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla funzionalità Navigazione sicura per contribuire a rilevare app e siti pericolosi.
 
@@ -715,6 +715,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Ogni voce di questo elenco è un pattern di corrispondenza in stile di estensione (vedi https://developer.chrome.com/extensions/match_patterns). Gli utenti potranno installare facilmente elementi da qualsiasi URL che corrisponda a una voce nell'elenco. Questi pattern devono consentire sia la posizione del file *.crx sia la pagina da cui viene avviato il download (ossia il referrer).
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ha la precedenza su questa norma. Ciò significa che un'estensione presente nella lista nera non verrà installata, anche se è di un sito presente in questo elenco.</translation>
+<translation id="2145735238144543545">Certificati client richiesti</translation>
 <translation id="214901426630414675">Limita la modalità di stampa fronte/retro</translation>
 <translation id="2149330464730004005">Attiva la stampa a colori</translation>
 <translation id="2151831603578119302">Attiva le scorciatoie delle funzioni di accessibilità</translation>
@@ -722,15 +723,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2156755242840687300">Server di stampa esterni attivi</translation>
 <translation id="2159024114213303519">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
 
-      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non ne sono esplicitamente fornite altre tramite schemi NTLM/Kerberos/Negotiate challenge/response.
+      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non sono fornite credenziali esplicite tramite schemi NTLM/Kerberos/Negotiate challenge/response.
 
-      L'impostazione di <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0), consente l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
+      L'impostazione di <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0) consente l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
 
-      L'impostazione di <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1), consente l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
+      L'impostazione di <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1) consente l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
 
-      L'impostazione di <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2), consente l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
+      L'impostazione di <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2) consente l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
 
-      L'impostazione di <ph name="ALL_OPTION_NAME" /> (valore 3), consente l'autenticazione ambientale per tutte le sessioni.
+      L'impostazione di <ph name="ALL_OPTION_NAME" /> (valore 3) consente l'autenticazione ambientale per tutte le sessioni.
 
       Tieni presente che l'autenticazione ambientale è sempre consentita per i profili standard.
 
@@ -740,9 +741,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se il criterio viene impostato, una volta superato il limite il browser inizierà a eliminare le schede per risparmiare memoria. Non vi è, tuttavia, alcuna garanzia che il browser venga sempre eseguito al di sotto di tale limite. Qualsiasi valore inferiore a 1024 verrà arrotondato per eccesso a 1024.
 
       Se questo criterio non viene impostato, il browser farà dei tentativi per risparmiare memoria solo una volta rilevato che la memoria fisica del computer è in esaurimento.</translation>
-<translation id="2164922809922345834">Attiva Copertura finestra nativa in <ph name="PRODUCT_NAME" />.
+<translation id="2164922809922345834">Consente di attivare Copertura finestra nativa in <ph name="PRODUCT_NAME" />.
 
-      Se questa impostazione viene attivata, per ridurre la CPU e il consumo energetico, <ph name="PRODUCT_NAME" /> rileverà quando una finestra è coperta da altre finestre e sospende i pixel di stampa del lavoro.
+      Se questa impostazione viene attivata, per ridurre la CPU e il consumo energetico, <ph name="PRODUCT_NAME" /> rileverà quando una finestra è coperta da altre finestre e sospenderà la creazione di pixel.
 
       Se questa impostazione viene disattivata, <ph name="PRODUCT_NAME" /> non rileverà quando una finestra è coperta da altre finestre.
 
@@ -882,9 +883,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2345547870894930157">Attiva DNS over HTTPS senza fallback non sicuro</translation>
 <translation id="2368120844613930637">L'impostazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" /> nella schermata di accesso.
 
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser attivando o disattivando in modo selettivo le funzionalità già esistenti.
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser, attivando o disattivando in modo selettivo le funzionalità già esistenti.
 
-      L'impostazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consente a tutte le varianti di essere applicate al browser nella schermata di accesso.
+      L'impostazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consente di applicare al browser tutte le varianti nella schermata di accesso.
 
       L'impostazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> esclusivamente correzioni della stabilità o varianti considerate critiche per la sicurezza nella schermata di accesso.
 
@@ -898,7 +899,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questo criterio viene impostato su false o non viene impostato, la casella di controllo "Apri sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
-<translation id="2413022450179356125">Attiva o disattiva la funzionalità Schermata sulla privacy.
+<translation id="2413022450179356125">Consente di attivare o disattivare la funzionalità Schermata sulla privacy.
 
 Se questo criterio viene impostato su True, la Schermata sulla privacy sarà sempre attiva.
 
@@ -1188,6 +1189,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2665422249821137126">Attiva il puntatore grande nella schermata di accesso</translation>
 <translation id="2672012807430078509">Controlla l'attivazione del protocollo di autenticazione NTLM per i montaggi SMB</translation>
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="2678503605767349615">Certificati client a livello di dispositivo richiesti</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
 <translation id="2694143893026486692">Lente d'ingrandimento ancorata attivata</translation>
@@ -1252,6 +1254,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Se questo criterio non viene impostato, il valore predefinito è False per i dispositivi gestiti.</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
+<translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
 <translation id="2801155097555584385">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica</translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
@@ -1328,6 +1331,10 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa impostazione viene disattivata, la funzionalità Tocca per cercare verrà disattivata completamente.
 
       Non impostare questo criterio equivale ad attivarlo; vedi la descrizione precedente.</translation>
+<translation id="2854607717796010700">Consente di segnalare informazioni sulla memoria del dispositivo.
+
+      Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
+      Se viene impostato su true, le informazioni sulla memoria del dispositivo vengono segnalate.</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
 <translation id="2854919890879212089">Consente di impostare in <ph name="PRODUCT_NAME" /> l'uso della stampante predefinita del sistema, anziché della stampante usata più di recente, come opzione predefinita della finestra Anteprima di stampa.
 
@@ -1874,6 +1881,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questa norma viene viene impostata, gli utenti non potranno modificarla o sostituirla.
 
           Se questa norma non viene impostata, inizialmente la tastiera sullo schermo è disattivata, ma l'utente la può attivare in qualsiasi momento.</translation>
+<translation id="3821861026311587684">Forza la disconnessione dell'utente quando il suo account non è più autenticato</translation>
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
 <translation id="3824972131618513497">Consente di controllare le impostazioni relative alla gestione dell'alimentazione e al riavvio.</translation>
 <translation id="3826475866868158882">Servizi di geolocalizzazione di Google attivi</translation>
@@ -2271,6 +2279,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
+<translation id="4343382787226139147">Consente di specificare i certificati client che dovrebbero essere registrati usando il protocollo di gestione del dispositivo.</translation>
 <translation id="4346674324214534449">Consente di stabilire se bloccare o meno gli annunci su siti con annunci invasivi.
 
       Se questa norma viene impostata su 2, gli annunci verranno bloccati sui siti con annunci invasivi.
@@ -3467,11 +3476,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Tieni presente che, per motivi di sicurezza e privacy, è consentita l'installazione solo di app ed estensioni consentite raggruppate in <ph name="PRODUCT_NAME" />. Tutti gli altri elementi verranno ignorati.
 
-      Se un'app o un'estensione con installazione forzata è stata precedentemente rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+      Se un'app o un'estensione di cui è stata precedentemente forzata l'installazione viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
 
-      Ogni elemento elencato del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attiva la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML manifest di aggiornamento come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
+      Ogni elemento nell'elenco del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL "di aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attiva la modalità sviluppatore. L'URL "di aggiornamento", se specificato, deve indirizzare a un documento XML manifest di aggiornamento come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Tieni presente che l'URL "di aggiornamento" impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
 
-      Ad esempio, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> dell'URL "di aggiornamento" standard del Chrome Web Store. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
+      Ad esempio, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> dall'URL "di aggiornamento" standard del Chrome Web Store. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -3487,6 +3496,10 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           L'avviso viene mostrato solo se l'azione stabilita in caso di inattività è la disconnessione o lo spegnimento.</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
+<translation id="631081324835911099">Consente di forzare la disconnessione dell'utente quando il token di autenticazione del suo account principale non è più valido.
+        Questo criterio può proteggere l'utente dall'accesso a contenuti con limitazioni sulle proprietà web di Google.
+        Se questo criterio viene impostato su True, l'utente sarà disconnesso dall'account non appena il suo token di autenticazione non sarà più valido e se i tentativi di ripristinarlo non andranno a buon fine.
+        Se questo criterio viene impostato su False o non viene impostato, l'utente può continuare le proprie operazioni in uno stato non autenticato.</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6319198883324703402">Imposta il tempo della prima notifica del riavvio per l'utente</translation>
@@ -4155,6 +4168,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7443616896860707393">Richieste di autenticazione di base HTTP tra origini</translation>
 <translation id="7448430478749155471">Attiva Seleziona per ascoltare nella schermata di accesso</translation>
 <translation id="7458437477941640506">Non eseguire il rollback alla versione target se la versione del sistema operativo è più nuova del target. Anche gli aggiornamenti sono disattivati.</translation>
+<translation id="7459601923199346224">Consente di controllare i criteri relativi agli utenti e ai dispositivi per la gestione dei certificati.</translation>
 <translation id="7464991223784276288">Limita i cookie degli URL corrispondenti alla sessione corrente</translation>
 <translation id="7469554574977894907">Attiva suggerimenti di ricerca</translation>
 <translation id="747275827471712187">Ripristina il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente per i cookie su questi siti</translation>
@@ -4444,6 +4458,7 @@ L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.
 <translation id="7937491150792971922">Unisci norme di più fonti relative all'elenco di installazione delle estensioni</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="7941975817681987555">Non prevedere le azioni di rete su qualsiasi connessione di rete</translation>
+<translation id="7951605113561734721">Consente di specificare i certificati client a livello di dispositivo che dovrebbero essere registrati usando il protocollo di gestione del dispositivo.</translation>
 <translation id="7952007677054834789">Consente di configurare le pagine da caricare all'avvio, la pagina iniziale predefinita e la pagina Nuova scheda predefinita in <ph name="PRODUCT_NAME" />; inoltre, impedisce agli utenti di modificare queste impostazioni.
 
       Le impostazioni della pagina iniziale dell'utente sono completamente bloccate se hai selezionato la pagina iniziale come pagina Nuova scheda oppure se hai specificato un URL che funga da pagina iniziale. Se non specifichi l'URL della pagina iniziale, l'utente può ancora impostare la pagina iniziale come pagina Nuova scheda se specifica "chrome://newtab".
@@ -4542,7 +4557,7 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 <translation id="8141795997560411818">Questa norma non impedisce all'utente di utilizzare l'app Google Drive per Android. Se vuoi impedire l'accesso a Google Drive, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
 <translation id="8142894094385450823">Questa norma consente di impostare le impostazioni internazionali consigliate per una sessione gestita</translation>
 <translation id="8146727383888924340">Consenti agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS</translation>
-<translation id="8147132931626030921">Configura lo stato della funzionalità Schermata sulla privacy nella schermata di accesso.
+<translation id="8147132931626030921">Consente di impostare lo stato della funzionalità Schermata sulla privacy nella schermata di accesso.
 
 Se questo criterio è impostato su True, la Schermata sulla privacy verrà attivata quando la schermata di accesso viene visualizzata.
 
@@ -4861,6 +4876,7 @@ Se questa impostazione viene impostata su false, il dispositivo non utilizzerà 
 
 Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazione remota potrebbe essere utilizzata per la protezione dei contenuti.</translation>
 <translation id="8650974590712548439">Posizione del Registro di sistema di Windows per client Windows:</translation>
+<translation id="8653085952260859632">Segnala informazioni sulla memoria</translation>
 <translation id="8654286232573430130">Consente di specificare quali server devono essere autorizzati per l'autenticazione integrata. L'autenticazione integrata è attivata solo quando <ph name="PRODUCT_NAME" /> riceve una richiesta di autenticazione da un proxy o da un server che si trova in questo elenco di autorizzazione.
 
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
@@ -5115,7 +5131,7 @@ https://www.w3.org/TR/secure-contexts/
       Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
 
       Il valore della norma deve essere specificato in millisecondi. I valori sono limitati a un intervallo compreso tra 30 secondi e 24 ore.</translation>
-<translation id="9040042535845939426">Imposta lo stato della Schermata sulla privacy nella schermata di accesso</translation>
+<translation id="9040042535845939426">Imposta lo stato di Schermata sulla privacy nella schermata di accesso</translation>
 <translation id="9050853837490399534">Questa norma consente di stabilire se il dispositivo debba essere aggiornato a una build di correzione rapida.
 
       Se il valore della norma viene impostato su un token associato a una build di correzione rapida, il dispositivo verrà aggiornato alla build di correzione rapida corrispondente se l'aggiornamento non è bloccato da un'altra norma.

@@ -202,18 +202,13 @@ void PageTestBase::InsertStyleElement(const std::string& style_rules) {
 }
 
 void PageTestBase::NavigateTo(const KURL& url,
-                              const String& feature_policy_header,
-                              const String& csp_header) {
+                              const WTF::HashMap<String, String>& headers) {
   auto params =
       WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url);
-  if (!feature_policy_header.IsEmpty()) {
-    params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
-                                        feature_policy_header);
-  }
-  if (!csp_header.IsEmpty()) {
-    params->response.SetHttpHeaderField(http_names::kContentSecurityPolicy,
-                                        csp_header);
-  }
+
+  for (const auto& header : headers)
+    params->response.SetHttpHeaderField(header.key, header.value);
+
   GetFrame().Loader().CommitNavigation(std::move(params),
                                        nullptr /* extra_data */);
 

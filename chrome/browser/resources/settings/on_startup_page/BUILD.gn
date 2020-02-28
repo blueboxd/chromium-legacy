@@ -185,7 +185,6 @@ polymer_modulizer("startup_urls_page") {
   html_file = "startup_urls_page.html"
   html_type = "dom-module"
   auto_imports = [
-    "ui/webui/resources/cr_elements/cr_scrollable_behavior.html|CrScrollableBehavior",
     "ui/webui/resources/html/assert.html|assert",
     "chrome/browser/resources/settings/on_startup_page/startup_url_entry.html|EDIT_STARTUP_URL_EVENT",
     "chrome/browser/resources/settings/on_startup_page/startup_urls_page_browser_proxy.html|StartupPageInfo, StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl",

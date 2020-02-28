@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #intro-text {
-  padding-bottom: 58px;
+  padding-bottom: 48px;
 }
 
 #ready-img {
@@ -25,4 +25,24 @@
 
 #toggles-container {
   width: 50%;
+}
+
+@media screen and (max-height: 736px) {
+  #intro-text {
+    padding-bottom: 24px;
+  }
+}
+
+@media screen and (max-height: 536px) {
+  #intro-text {
+    padding-bottom: 16px;
+  }
+
+  #ready-img {
+    height: 160px;
+  }
+
+  .vertical-line {
+    height: 160px;
+  }
 }

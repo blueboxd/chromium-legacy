@@ -552,8 +552,8 @@ TEST_F(DocumentTest, OutgoingReferrer) {
 }
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"), "",
-             "sandbox allow-scripts");
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"),
+             {{http_names::kContentSecurityPolicy, "sandbox allow-scripts"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
@@ -588,11 +588,13 @@ TEST_F(DocumentTest, StyleVersion) {
 }
 
 TEST_F(DocumentTest, EnforceSandboxFlags) {
-  NavigateTo(KURL("http://example.test/"), "", "sandbox allow-same-origin");
+  NavigateTo(KURL("http://example.test/"), {{http_names::kContentSecurityPolicy,
+                                             "sandbox allow-same-origin"}});
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  NavigateTo(KURL("http://example.test/"), "", "sandbox");
+  NavigateTo(KURL("http://example.test/"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
@@ -602,16 +604,19 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
   url::AddStandardScheme("very-special-scheme", url::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
+  NavigateTo(KURL("very-special-scheme://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
-  NavigateTo(KURL("very-special-scheme://example.test"), "", "sandbox");
+  NavigateTo(KURL("very-special-scheme://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  NavigateTo(KURL("https://example.test"), "", "sandbox");
+  NavigateTo(KURL("https://example.test"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
@@ -859,7 +864,8 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 }
 
 TEST_F(DocumentTest, SandboxDisablesAppCache) {
-  NavigateTo(KURL("https://test.com/foobar/document"), "", "sandbox");
+  NavigateTo(KURL("https://test.com/foobar/document"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
 
   GetDocument().Loader()->SetApplicationCacheHostForTesting(
       MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
@@ -1034,7 +1040,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  NavigateTo(KURL("https://www.example.com/"), "", "sandbox");
+  NavigateTo(KURL("https://www.example.com/"),
+             {{http_names::kContentSecurityPolicy, "sandbox"}});
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);

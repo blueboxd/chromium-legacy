@@ -401,10 +401,11 @@ void MediaSourceImpl::Trace(Visitor* visitor) {
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
-void MediaSourceImpl::SetWebMediaSourceAndOpen(
+void MediaSourceImpl::CompleteAttachingToMediaElement(
     std::unique_ptr<WebMediaSource> web_media_source) {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("media", "MediaSourceImpl::attachToElement",
-                                  TRACE_ID_LOCAL(this));
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "media", "MediaSourceImpl::StartAttachingToMediaElement",
+      TRACE_ID_LOCAL(this));
   DCHECK(web_media_source);
   DCHECK(!web_media_source_);
   DCHECK(attached_element_);
@@ -843,14 +844,15 @@ void MediaSourceImpl::Close() {
   SetReadyState(ClosedKeyword());
 }
 
-bool MediaSourceImpl::AttachToElement(HTMLMediaElement* element) {
+bool MediaSourceImpl::StartAttachingToMediaElement(HTMLMediaElement* element) {
   if (attached_element_)
     return false;
 
   DCHECK(IsClosed());
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("media", "MediaSourceImpl::attachToElement",
-                                    TRACE_ID_LOCAL(this));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "media", "MediaSourceImpl::StartAttachingToMediaElement",
+      TRACE_ID_LOCAL(this));
   attached_element_ = element;
   return true;
 }

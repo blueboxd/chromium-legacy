@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {CrSettingsPrefs, LanguagesBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
+// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+// #import {FakeLanguageSettingsPrivate} from 'chrome://test/settings/fake_language_settings_private.m.js';
+// #import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
+// clang-format on
+
 suite('settings-edit-dictionary-page', function() {
   function getFakePrefs() {
     const fakePrefs = [

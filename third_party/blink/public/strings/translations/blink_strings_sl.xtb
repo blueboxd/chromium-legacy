@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Napisi</translation>
 <translation id="8346634859695247203">razdelek</translation>
 <translation id="835897206747267392">Neveljavna vrednost.</translation>
+<translation id="839593075537728968">Vrednost mora biti med <ph name="MINIMUM_TIME" /> in <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">pretečeni čas: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">del</translation>
 <translation id="8433900881053900389">orodna vrstica</translation>

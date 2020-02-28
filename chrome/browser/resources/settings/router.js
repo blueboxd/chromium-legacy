@@ -9,8 +9,8 @@
 cr.define('settings', function() {
   /**
    * @typedef {{
-   *   BASIC: (settings.Route|undefined),
-   *   ADVANCED: (settings.Route|undefined),
+   *   BASIC: !settings.Route,
+   *   ADVANCED: !settings.Route,
    * }}
    */
   /* #export */ let MinimumRoutes;
@@ -152,7 +152,7 @@ cr.define('settings', function() {
        * or settings.initializeRouteFromUrl.
        * @type {!settings.Route}
        */
-      this.currentRoute = /** @type {!settings.Route} */ (this.routes_.BASIC);
+      this.currentRoute = this.routes_.BASIC;
 
       /**
        * The current query parameters. This is updated only by
@@ -255,7 +255,7 @@ cr.define('settings', function() {
       // The ADVANCED route only serves as a parent of subpages, and should not
       // be possible to navigate to it directly.
       if (route == this.routes_.ADVANCED) {
-        route = /** @type {!settings.Route} */ (this.routes_.BASIC);
+        route = this.routes_.BASIC;
       }
 
       const params = opt_dynamicParameters || new URLSearchParams();
@@ -292,9 +292,7 @@ cr.define('settings', function() {
       if (previousRoute && previousRoute.depth <= this.currentRoute.depth) {
         window.history.back();
       } else {
-        this.navigateTo(
-            this.currentRoute.parent ||
-            /** @type {!settings.Route} */ (this.routes_.BASIC));
+        this.navigateTo(this.currentRoute.parent || this.routes_.BASIC);
       }
     }
 
@@ -342,7 +340,7 @@ cr.define('settings', function() {
     resetRouteForTesting() {
       this.initializeRouteFromUrlCalled_ = false;
       this.wasLastRouteChangePopstate_ = false;
-      this.currentRoute = /** @type {!settings.Route} */ (this.routes_.BASIC);
+      this.currentRoute = this.routes_.BASIC;
       this.currentQueryParameters_ = new URLSearchParams();
     }
   }

@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">ставка на менито</translation>
 <translation id="10623998915015855">преклопно копче</translation>
 <translation id="1088086359088493902">Секунди</translation>
+<translation id="1142001580032786438">Прикажи го избирачот за седмица</translation>
 <translation id="1171774979989969504">Внесете адреса на е-пошта.</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">комплементарно</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Внесете број.</translation>
 <translation id="4912536737030637138">библиографски запис</translation>
+<translation id="4915360478455618802">Прикажи го избирачот за време</translation>
 <translation id="492244087561876220">коментар</translation>
+<translation id="4950364064308314478">Прикажи го избирачот за локален датум и време</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" />, избрано</translation>
 <translation id="4975562563186953947">Избрани: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Вклучи звук</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Титлови</translation>
 <translation id="8346634859695247203">секција</translation>
 <translation id="835897206747267392">Неважечка вредност.</translation>
+<translation id="839593075537728968">Вредноста мора да биде помеѓу <ph name="MINIMUM_TIME" /> и <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">изминато време: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">дел</translation>
 <translation id="8433900881053900389">алатник</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">содржина</translation>
 <translation id="8613126697340063924">контролирај ја далечинската репродукција</translation>
 <translation id="862370744433916922">поднаслов</translation>
+<translation id="8634971699417195529">Прикажи го избирачот за месец</translation>
 <translation id="8711688047404765493">излез</translation>
 <translation id="8750798805984357768">Изберете една од опциите.</translation>
 <translation id="8808573423886751634">поглавје</translation>

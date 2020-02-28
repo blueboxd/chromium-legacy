@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 informasjonskapsel er blokkert}other{# informasjonskapsler er blokkert}}</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2704606927547763573">Kopiert</translation>
+<translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="3115898365077584848">Vis informasjon</translation>
 <translation id="3295602654194328831">Skjul informasjonen</translation>
 <translation id="3479552764303398839">Ikke nå</translation>

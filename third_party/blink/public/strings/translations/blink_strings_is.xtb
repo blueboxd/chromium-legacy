@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Skjátextar</translation>
 <translation id="8346634859695247203">hluti</translation>
 <translation id="835897206747267392">Ógilt gildi.</translation>
+<translation id="839593075537728968">Gildið verður að vera á milli <ph name="MINIMUM_TIME" /> og <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">liðinn tími: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">hluti</translation>
 <translation id="8433900881053900389">tækjastika</translation>

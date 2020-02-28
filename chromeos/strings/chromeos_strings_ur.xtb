@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
+<translation id="1195447618553298278">نامعلوم خرابی۔</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> اس آلہ کا نظم کرتا ہے اور آپ کی سرگرمی کو مانیٹر کرنے کا اہل ہو سکتا ہے۔</translation>
+<translation id="150962533380566081">‏غلط PUK۔</translation>
 <translation id="1510238584712386396">لانچر</translation>
 <translation id="1734367976349034509">یہ آلہ انٹرپرائز کے زیرِ انتظام ہے</translation>
+<translation id="1905710495812624430">زیادہ سے زیادہ مجاز کوششوں سے تجاوز کرگیا۔</translation>
 <translation id="1930797645656624981">‏Chrome OS اندراج کے طریقہ کی سروس</translation>
 <translation id="1979103255016296513">پاس ورڈ تبدیل کرنے میں تاخیر ہو گئی ہے</translation>
 <translation id="2049639323467105390">یہ آلہ <ph name="DOMAIN" /> کے زیر انتظام ہے۔</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">اطلاقات</translation>
 <translation id="2872961005593481000">بند کریں</translation>
 <translation id="3008341117444806826">ریفریش کریں</translation>
+<translation id="3169472444629675720">دریافت کریں</translation>
+<translation id="3820172043799983114">‏غلط PIN۔</translation>
 <translation id="3838338534323494292">نیا پاس ورڈ</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> براہ کرم دوبارہ کوشش کریں۔ باقی کوششیں: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> اس آلے کا نظم کرتا ہے اور ملاحظہ کردہ ویب صفحات، پاس ورڈز اور ای میل سمیت صارف کی تمام سرگرمی تک رسائی حاصل کر سکتا ہے۔</translation>
 <translation id="4227825898293920515">پاس ورڈ کی میعاد <ph name="TIME" /> میں ختم ہونے والی ہے</translation>
 <translation id="4429881212383817840">‏Kerberos کی ٹکٹ کی میعاد جلد ہی ختم ہو جائے گی</translation>
@@ -21,6 +27,8 @@
 <translation id="4890353053343094602">فوری طور پر نیا پاس ورڈ منتخب کریں</translation>
 <translation id="5212543919916444558">مجھے آپ کی اسکرین پر ایسا کچھ نہیں ملا جس سے متعلق میں آپ کی مدد کر سکوں۔ مجھ سے کچھ بھی پوچھنے کے لیے مائیک کو تھپتھپانے کی کوشش کریں۔</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
+<translation id="5275776633505022322">باقی کوششیں: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="5317780077021120954">محفوظ کریں</translation>
 <translation id="5332948983412042822">ابھی ایک نیا پاس ورڈ منتخب کریں</translation>
 <translation id="5457599981699367932">مہمان کے بطور براؤز کریں</translation>

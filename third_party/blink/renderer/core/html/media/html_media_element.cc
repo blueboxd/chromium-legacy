@@ -1192,7 +1192,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 
   media_source_ = MediaSource::Lookup(url.GetString());
   if (media_source_) {
-    if (media_source_->AttachToElement(this)) {
+    if (media_source_->StartAttachingToMediaElement(this)) {
       // If the associated feature is enabled, auto-revoke the MediaSource
       // object URL that was used for attachment on successful (start of)
       // attachment. This can help reduce memory bloat later if the app does not
@@ -3992,7 +3992,8 @@ void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
 
 void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {
   SetShouldDelayLoadEvent(false);
-  media_source_->SetWebMediaSourceAndOpen(base::WrapUnique(web_media_source));
+  media_source_->CompleteAttachingToMediaElement(
+      base::WrapUnique(web_media_source));
 }
 
 bool HTMLMediaElement::IsInteractiveContent() const {

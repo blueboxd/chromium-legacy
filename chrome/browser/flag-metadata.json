@@ -1579,7 +1579,7 @@
     "owners": [ "enne", "khushalsagar" ],
     "expiry_milestone": 86
   },
-    {
+  {
     "name": "enable-paint-holding",
     "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 86
@@ -2589,6 +2589,11 @@
     "name": "new-net-error-page-ui",
     "owners": [ "harringtond" ],
     "expiry_milestone": 75
+  },
+  {
+    "name": "new-os-settings-search",
+    "owners": ["cros-customization@google.com", "hsuregan", "khorimoto" ],
+    "expiry_milestone": 86
   },
   {
     "name": "new-tabstrip-animation",

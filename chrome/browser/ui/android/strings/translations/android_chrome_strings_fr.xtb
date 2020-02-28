@@ -375,6 +375,11 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
+<translation id="3849365399446680203">En mode RA, le site pourrait effectuer les actions suivantes :
+• Créer un plan 3D de votre environnement
+• Suivre les mouvements de la caméra
+
+Vous seul voyez les images de votre caméra. Le site n'y a pas accès.</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
 <translation id="388596076286380598">Consultez des articles, des vidéos et d'autres contenus sur les sites qui vous intéressent, même si vous êtes hors connexion ou si votre connexion est mauvaise.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -431,7 +436,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="4298388696830689168">Sites associés</translation>
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="4314815835985389558">Gérer la synchronisation</translation>
-<translation id="4321739720395210191">Impossible d'ouvrir l'appareil photo. Redémarrez l'appareil et réessayez.</translation>
+<translation id="4321739720395210191">Impossible d'ouvrir l'appareil photo. Redémarrez votre appareil et réessayez.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="4353114845960720315">En mode RV, le site pourrait accéder aux informations suivantes :</translation>
 <translation id="4378154925671717803">Téléphone</translation>
@@ -722,6 +727,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6395288395575013217">LIEN</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
+<translation id="6410973561433500075">Activer la RA à partir du site <ph name="DOMAIN" /> ?</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
 <translation id="6427112570124116297">Traduire le Web</translation>
@@ -967,7 +973,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8218622182176210845">Gérer votre compte</translation>
 <translation id="8224471946457685718">Télécharger des articles pour vous via le Wi-Fi</translation>
 <translation id="8232956427053453090">Conserver les données</translation>
-<translation id="8233540874193135768">Pour scanner un code QR, utilisez un appareil disposant d'une caméra.</translation>
+<translation id="8233540874193135768">Pour scanner un code QR, utilisez un appareil disposant d'un appareil photo.</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="825412236959742607">Cette page utilise trop de mémoire, Chrome a donc supprimé du contenu.</translation>
 <translation id="8260126382462817229">Essayez de vous connecter de nouveau à votre compte.</translation>

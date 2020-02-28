@@ -190,7 +190,7 @@ polymer_modulizer("appearance_page") {
                    "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
                    "chrome/browser/resources/settings/page_visibility.html|AppearancePageVisibility",
                    "chrome/browser/resources/settings/route.html|routes",
-                   "chrome/browser/resources/settings/router.html|Route, Router",
+                   "chrome/browser/resources/settings/router.html|Router",
                  ]
   namespace_rewrites = settings_namespace_rewrites
 }

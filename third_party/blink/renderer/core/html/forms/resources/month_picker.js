@@ -105,14 +105,6 @@ class MonthPicker extends HTMLElement {
 
   onKeyDown_ = (event) => {
     switch (event.key) {
-      case 't':
-        if (this.selectedMonth) {
-          window.pagePopupController.setValueAndClosePopup(
-              0, this.selectedMonth.toString());
-        } else {
-          window.pagePopupController.closePopup();
-        }
-        break;
       case 'Enter':
         // Don't do anything here if user has hit Enter on 'This month'
         // button.  We'll handle that in this.onTodayButtonClick_.

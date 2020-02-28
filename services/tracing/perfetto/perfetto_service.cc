@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
@@ -62,7 +63,6 @@ PerfettoService::PerfettoService(
   // Chromium uses scraping of the shared memory chunks to ensure that data
   // from threads without a MessageLoop doesn't get lost.
   service_->SetSMBScrapingEnabled(true);
-  DCHECK(service_);
 
   receivers_.set_disconnect_handler(base::BindRepeating(
       &PerfettoService::OnServiceDisconnect, base::Unretained(this)));
@@ -85,12 +85,25 @@ void PerfettoService::BindReceiver(
 
 void PerfettoService::ConnectToProducerHost(
     mojo::PendingRemote<mojom::ProducerClient> producer_client,
-    mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver) {
-  auto new_producer = std::make_unique<ProducerHost>();
+    mojo::PendingReceiver<mojom::ProducerHost> producer_host_receiver,
+    mojo::ScopedSharedBufferHandle shared_memory,
+    uint64_t shared_memory_buffer_page_size_bytes) {
+  if (!shared_memory.is_valid()) {
+    mojo::ReportBadMessage("Producer connection request without valid SMB");
+    return;
+  }
+
+  auto new_producer = std::make_unique<ProducerHost>(&perfetto_task_runner_);
   uint32_t producer_pid = receivers_.current_context();
-  new_producer->Initialize(std::move(producer_client), service_.get(),
-                           base::StrCat({mojom::kPerfettoProducerNamePrefix,
-                                         base::NumberToString(producer_pid)}));
+  DCHECK(shared_memory.is_valid());
+  if (!new_producer->Initialize(
+          std::move(producer_client), service_.get(),
+          base::StrCat({mojom::kPerfettoProducerNamePrefix,
+                        base::NumberToString(producer_pid)}),
+          std::move(shared_memory), shared_memory_buffer_page_size_bytes)) {
+    mojo::ReportBadMessage("Producer connection failed");
+    return;
+  }
 
   ++num_active_connections_[producer_pid];
   producer_receivers_.Add(std::move(new_producer),

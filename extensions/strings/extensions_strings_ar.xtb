@@ -9,7 +9,7 @@
 <translation id="1468038450257740950">‏WebGL غير متوافق.</translation>
 <translation id="149347756975725155">تعذر تحميل رمز الإضافة '<ph name="ICON" />'.</translation>
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE" />'.</translation>
-<translation id="2159915644201199628">تعذر فك تشفير الصورة: '<ph name="IMAGE_NAME" />'</translation>
+<translation id="2159915644201199628">تعذر فك ترميز الصورة: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">‏تم استخدام التعريب، ولكن لم يتم تحديد default_locale في البيان.</translation>
 <translation id="2576842806987913196">‏هناك ملف CRX بهذا الاسم فعلاً.</translation>
 <translation id="2785530881066938471">‏تعذر تحميل الملف '<ph name="RELATIVE_PATH" />' للنص البرمجي للمحتوى. لأنه ليس بتشفير UTF-8.</translation>

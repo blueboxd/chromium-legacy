@@ -19,6 +19,8 @@
     "storage",
     "terminalPrivate",
     "unlimitedStorage",
-    "accessibilityFeatures.read"
+    "accessibilityFeatures.read",
+    "crashReportPrivate",
+    "metricsPrivate"
   ]
 }

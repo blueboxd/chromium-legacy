@@ -47,13 +47,14 @@
   // Initialize and configure RecentTabsTableViewController.
   RecentTabsTableViewController* recentTabsTableViewController =
       [[RecentTabsTableViewController alloc] init];
-  recentTabsTableViewController.browser = self.browser;
+  recentTabsTableViewController.browserState = self.browserState;
   recentTabsTableViewController.loadStrategy = self.loadStrategy;
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
   id<ApplicationCommands> handler =
       HandlerForProtocol(dispatcher, ApplicationCommands);
   recentTabsTableViewController.handler = handler;
   recentTabsTableViewController.presentationDelegate = self;
+  recentTabsTableViewController.webStateList = self.browser->GetWebStateList();
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]

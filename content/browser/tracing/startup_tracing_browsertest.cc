@@ -132,8 +132,9 @@ class LargeTraceEventData : public base::trace_event::ConvertableToTraceFormat {
 // the SMB once the full tracing service starts up. This is to catch common
 // deadlocks.
 IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
-  tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
-      /*privacy_filtering_enabled=*/false);
+  tracing::SetupStartupTracingForProcess(
+      /*privacy_filtering_enabled=*/false,
+      /*enable_sampler_profiler=*/false);
 
   auto config = tracing::TraceStartupConfig::GetInstance()
                     ->GetDefaultBrowserStartupConfig();

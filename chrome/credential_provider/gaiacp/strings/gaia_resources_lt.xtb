@@ -1,43 +1,23 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="1337778609052285767">Dabartinis slaptažodis neatitinka slaptažodžio sudėtingumo reikalavimų. Susisiekite su administratoriumi.</translation>
-<translation id="1337821341856692531">Tęsiant neįvedus dabartinio „Windows“ slaptažodžio gali būti negrįžtamai prarasta informacija.</translation>
 <translation id="1383286653814676580">Naudojama „Google“ prisijungimo duomenų teikėjo prisijungimo puslapiui vykdyti.</translation>
-<translation id="1894475569413661128">Prisijunkite naudodami darbo paskyrą.</translation>
-<translation id="2329184763010379754">Prisijungti gali tik naudotojas, kuris užrakino šį kompiuterį.</translation>
-<translation id="2398071111662077301">Nepavyko įkelti „Google“ prisijungimo ekrano dėl diegiant „Chrome“ įvykusios klaidos. Susisiekite su administratoriumi.</translation>
-<translation id="2469311484561825731">Nepavyko prisijungti prie darbo paskyros. Įsitikinkite, kad kompiuteris prijungtas prie interneto, tada bandykite dar kartą.</translation>
-<translation id="2679096858700291438">Įvedėte netinkamą „Windows“ slaptažodį. Bandykite dar kartą.</translation>
-<translation id="2831078752570172210">Jūsų paskyra buvo užrakinta. Susisiekite su sistemos administratoriumi.</translation>
 <translation id="2844349213149998955">Šiame įrenginyje neleidžiama prisijungti naudojant asmeninę paskyrą. Prisijunkite naudodami darbo paskyrą.</translation>
-<translation id="2995851317559936311">Pakeisti slaptažodį galima tik naudojant domeno valdiklį. Susisiekite su administratoriumi.</translation>
 <translation id="3306357053520292004">Naudotojas šiame kompiuteryje jau pridėtas naudojant šią paskyrą. Prisijunkite naudodami kitą paskyrą.</translation>
 <translation id="3926852373333893095">Prisijungti gali tik „G Suite Enterprise“ naudotojai.</translation>
 <translation id="4057329986137569701">Įvyko vidinė klaida.</translation>
 <translation id="4267670563222825190">Nerasta nė vieno jūsų paskyros domeno naudotojo. Susisiekite su administratoriumi.</translation>
-<translation id="4300229033992784001">Jūsų paskyros slaptažodis pakeistas. Kad galėtumėte sinchronizuoti „Windows“ paskyrą su darbo paskyra, įveskite dabartinį „Windows“ slaptažodį.</translation>
-<translation id="4669462973597624151">Nepavyko pakeisti slaptažodžio. Susisiekite su administratoriumi.</translation>
 <translation id="4706454071748629324">Nepavyko pridėti naujo naudotojo. Šiuo kompiuteriu galima sukurti tik vieną naudotoją naudojant darbo paskyrą.</translation>
 <translation id="5186761973554910131">Bandant pakeisti slaptažodį pateiktas netinkamas kompiuterio pavadinimas. Susisiekite su administratoriumi.</translation>
 <translation id="6033715878377252112">„Windows“ pagalbos priemonės „Google“ prisijungimo duomenų teikėjas</translation>
 <translation id="6149399665202317746">Sistemos „Windows“ „Google“ prisijungimo duomenų teikėjas</translation>
-<translation id="6239180560789153226">Įrenginyje nėra atkūrimo informacijos. Prisijunkite naudodami „Google“ darbo paskyrą.</translation>
 <translation id="6463752215771576050">Nepavyksta užregistruoti šio kompiuterio kaip tvarkomo įmonėje.  Prisijunkite naudodami kitą darbo paskyrą.</translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
-<translation id="6937049691815837345">Įrenginį reikia užregistruoti įrenginių tvarkymo programoje. Prisijunkite naudodami „Google“ darbo paskyrą.</translation>
 <translation id="7209941495304122410">Įveskite „Windows“ slaptažodį</translation>
-<translation id="7357241217513796177">Įsitikinkite, kad yra tinklo ryšys, ir bandykite dar kartą.</translation>
 <translation id="7536769223115622137">Pridėti darbo paskyrą</translation>
-<translation id="7811865856574012727">Administratorius apribojo įrenginio prisijungimą prie šių domenų: <ph name="EMAIL_DOMAINS" />. Bandykite dar kartą naudodami tinkamą darbo paskyrą.</translation>
-<translation id="7856245195110636219">Negalima tęsti neįvedus dabartinio „Windows“ slaptažodžio. Susisiekite su sistemos administratoriumi.</translation>
 <translation id="8109730953933509335">Bandyta pakeisti netinkamo naudotojo slaptažodį. Susisiekite su administratoriumi.</translation>
 <translation id="8639729688781680518">Pamiršti „Windows“ slaptažodį</translation>
 <translation id="866458870819756755">Nepavyko sukurti naudotojo.</translation>
 <translation id="8875753657315897487">Prisijunkite naudodami darbo paskyrą</translation>
-<translation id="8973975512230260387">Baigėsi seanso laikas. Prisijunkite naudodami „Google“ darbo paskyrą.</translation>
 <translation id="9055998212250844221">Naudotojo paskyra, sukurta sistemos „Windows“ „Google“ prisijungimo duomenų teikėjo</translation>
-<translation id="9135619837062629367">Neleidžiama prisijungti naudojant šią paskyrą. Pabandykite naudoti kitą paskyrą.</translation>
-<translation id="938261200229736272">Paskyros slaptažodis per trumpas. Susisiekite su administratoriumi.</translation>
-<translation id="998002716857524853">Prisijunkite naudodami „G Suite“ darbo paskyrą.</translation>
 </translationbundle>

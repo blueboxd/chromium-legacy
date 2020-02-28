@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
+<translation id="1195447618553298278">Непозната грешка.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> управува со уредов и може да ја следи вашата активност.</translation>
+<translation id="150962533380566081">Погрешен PUK.</translation>
 <translation id="1510238584712386396">Стартер</translation>
 <translation id="1734367976349034509">Со уредов управува претпријатие</translation>
+<translation id="1905710495812624430">Максималниот број дозволени обиди е надминат.</translation>
 <translation id="1930797645656624981">Услуга за метод за внесување во Chrome OS</translation>
 <translation id="1979103255016296513">Измина рокот за промена на лозинката</translation>
 <translation id="2049639323467105390">Овој уред е управуван од <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Апликации</translation>
 <translation id="2872961005593481000">Исклучи</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
+<translation id="3169472444629675720">Откриј</translation>
+<translation id="3820172043799983114">Неважечки PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Обидете се повторно. Преостанати обиди: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управува со уредов и има пристап до целата активност на корисникот, вклучувајќи ги посетените веб-страници, лозинките и е-поштата.</translation>
 <translation id="4227825898293920515">Лозинката истекува за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Билетот на Kerberos истекува наскоро</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Не можам да најдам ништо на екранот со што би можел ви помогнам.
 Допрете го микрофонот за да ме прашате нешто.</translation>
 <translation id="5222676887888702881">Одјави се</translation>
+<translation id="5275776633505022322">Преостанати обиди: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Обидете се повторно.</translation>
 <translation id="5317780077021120954">Зачувај</translation>
 <translation id="5332948983412042822">Може да изберете нова сега</translation>
 <translation id="5457599981699367932">Прелистувај како гостин</translation>

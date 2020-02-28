@@ -50,7 +50,7 @@ polymer_modulizer("search_page") {
   namespace_rewrites = settings_namespace_rewrites
   auto_imports = [
     "chrome/browser/resources/settings/route.html|routes",
-    "chrome/browser/resources/settings/router.html|Router,Route",
+    "chrome/browser/resources/settings/router.html|Router",
     "chrome/browser/resources/settings/search_engines_page/search_engines_browser_proxy.html|SearchEnginesBrowserProxyImpl,SearchEnginesBrowserProxy,SearchEngine",
     "ui/webui/resources/html/cr.html|addWebUIListener",
   ]

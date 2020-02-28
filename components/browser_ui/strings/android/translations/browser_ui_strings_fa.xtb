@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2501278716633472235">بازگشت</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{۱ کوکی مسدود شده است}one{# کوکی مسدود شده است}other{# کوکی مسدود شده است}}</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2704606927547763573">کپی شد</translation>
+<translation id="2968755619301702150">بیننده گواهی</translation>
 <translation id="3115898365077584848">نمایش دادن اطلاعات</translation>
 <translation id="3295602654194328831">پنهان کردن اطلاعات</translation>
 <translation id="3479552764303398839">اکنون نه</translation>

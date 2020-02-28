@@ -344,7 +344,7 @@ jumbo_component("gfx") {
     ]
   }
 
-  if (is_android || is_fuchsia || is_win) {
+  if (is_android || is_fuchsia || is_win || is_mac) {
     sources += [
       "font_fallback_skia_impl.cc",
       "font_fallback_skia_impl.h",

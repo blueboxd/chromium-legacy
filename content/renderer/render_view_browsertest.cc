@@ -48,7 +48,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -607,7 +606,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   args.browser_controls_constraint = cc::BrowserControlsState::kHidden;
   args.scroll_gesture_did_end = false;
 
-  view()->GetWebView()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->GetWebView()->MainFrameWidget()->ApplyViewportChangesForTesting(args);
   EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Create a new remote child, and get its proxy. Unloading will force creation
@@ -624,7 +623,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
 
   // Reset the flag, make sure both children respond.
   args.is_pinch_gesture_active = false;
-  view()->GetWebView()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->GetWebView()->MainFrameWidget()->ApplyViewportChangesForTesting(args);
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
   EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
 }

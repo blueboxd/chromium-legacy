@@ -205,6 +205,10 @@ class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
   ~ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder() {
     DCHECK_NE(race_attempt_status_,
               optimization_guide::RaceNavigationFetchAttemptStatus::kUnknown);
+    DCHECK_NE(
+        race_attempt_status_,
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kDeprecatedRaceNavigationFetchNotAttemptedTooManyConcurrentFetches);
     base::UmaHistogramEnumeration(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         race_attempt_status_);
@@ -243,6 +247,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
               profile_path.AddExtensionASCII(
                   optimization_guide::kOptimizationGuideHintStore),
               background_task_runner_))),
+      page_navigation_hints_fetchers_(
+          optimization_guide::features::MaxConcurrentPageNavigationFetches()),
       hints_fetcher_factory_(
           std::make_unique<optimization_guide::HintsFetcherFactory>(
               url_loader_factory,
@@ -600,7 +606,7 @@ void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
   if (!get_hints_response.has_value() || !get_hints_response.value()) {
     if (navigation_url) {
       PrepareToInvokeRegisteredCallbacks(*navigation_url);
-      page_navigation_hints_fetchers_.erase(*navigation_url);
+      CleanUpFetcherForNavigation(*navigation_url);
     }
     return;
   }
@@ -633,7 +639,7 @@ void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
 
   if (navigation_url) {
     PrepareToInvokeRegisteredCallbacks(*navigation_url);
-    page_navigation_hints_fetchers_.erase(*navigation_url);
+    CleanUpFetcherForNavigation(*navigation_url);
   }
 
   for (const auto& host : page_navigation_hosts_requested)
@@ -641,9 +647,16 @@ void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
 }
 
 bool OptimizationGuideHintsManager::IsHintBeingFetchedForNavigation(
-    const GURL& navigation_url) const {
-  return page_navigation_hints_fetchers_.find(navigation_url) !=
+    const GURL& navigation_url) {
+  return page_navigation_hints_fetchers_.Get(navigation_url) !=
          page_navigation_hints_fetchers_.end();
+}
+
+void OptimizationGuideHintsManager::CleanUpFetcherForNavigation(
+    const GURL& navigation_url) {
+  auto it = page_navigation_hints_fetchers_.Peek(navigation_url);
+  if (it != page_navigation_hints_fetchers_.end())
+    page_navigation_hints_fetchers_.Erase(it);
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
@@ -1148,23 +1161,15 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
   }
 
-  if (page_navigation_hints_fetchers_.size() >=
-      optimization_guide::features::MaxConcurrentPageNavigationFetches()) {
-    race_navigation_recorder.set_race_attempt_status(
-        optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchNotAttemptedTooManyConcurrentFetches);
-    return;
-  }
-
   DCHECK(hints_fetcher_factory_);
-  page_navigation_hints_fetchers_[url] =
-      hints_fetcher_factory_->BuildInstance();
+  auto it = page_navigation_hints_fetchers_.Put(
+      url, hints_fetcher_factory_->BuildInstance());
 
   UMA_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches",
       page_navigation_hints_fetchers_.size());
 
-  page_navigation_hints_fetchers_.at(url)->FetchOptimizationGuideServiceHints(
+  it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(

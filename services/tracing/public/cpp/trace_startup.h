@@ -17,10 +17,26 @@ namespace tracing {
 // for this process.
 bool COMPONENT_EXPORT(TRACING_CPP) IsTracingInitialized();
 
-// TraceLog with config based on the command line flags. Also hooks up service
-// callbacks in TraceLog if necessary. The latter is required when the perfetto
-// tracing backend is used.
+// Hooks up hooks up service callbacks in TraceLog for the perfetto backend and,
+// if startup tracing command line flags are present, enables TraceLog with a
+// config based on the flags. In zygote children, this should only be called
+// after mojo is initialized, as the zygote's sandbox prevents creation of the
+// tracing SMB before that point.
+//
+// TODO(eseckler): Consider allocating the SMB in parent processes outside the
+// sandbox and supply it via the command line. Then, we can revert to call this
+// earlier and from fewer places again.
 void COMPONENT_EXPORT(TRACING_CPP) EnableStartupTracingIfNeeded();
+
+// Prepare ProducerClient and trace event and/or sampler profiler data sources
+// for startup tracing with chrome's tracing service. Note that TraceLog still
+// needs to be enabled separately.
+//
+// TODO(eseckler): Figure out what startup tracing APIs should look like with
+// the client lib.
+void COMPONENT_EXPORT(TRACING_CPP)
+    SetupStartupTracingForProcess(bool privacy_filtering_enabled,
+                                  bool enable_sampler_profiler);
 
 // Initialize tracing components that require task runners. Will switch
 // IsTracingInitialized() to return true.

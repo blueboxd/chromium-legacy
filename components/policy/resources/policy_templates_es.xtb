@@ -753,6 +753,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
           Todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones (consulta la página https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente elementos procedentes de cualquier URL que coincida con un elemento de la lista. Estos patrones deben permitir tanto la ubicación del archivo *.crx como la página en la que se inicia la descarga (es decir, la URL referente).
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> prevalece sobre esta política, lo que significa que las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio web incluido en esta lista.</translation>
+<translation id="2145735238144543545">Certificados de cliente obligatorios</translation>
 <translation id="214901426630414675">Restringir impresión por las dos caras</translation>
 <translation id="2149330464730004005">Habilitar impresión en color</translation>
 <translation id="2151831603578119302">Habilitar las combinaciones de teclas para las funciones de accesibilidad</translation>
@@ -772,7 +773,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 
       Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
 
-      Si no se establece esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que este tipo de autenticación no estará permitida.</translation>
+      Si no se asigna ningún valor a esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que este tipo de autenticación no estará permitida.</translation>
 <translation id="2160336427036785721">Configura la cantidad de memoria que una única instancia de <ph name="PRODUCT_NAME" /> puede usar antes de que se empiecen a descartar pestañas (es decir, se liberará la memoria que usa una pestaña y esta se tendrá que volver a cargar cuando se vuelva a acceder a ella) para ahorrar memoria.
 
       Si se define esta política, el navegador empezará a descartar pestañas para ahorrar memoria cuando se supere el límite de memoria. Sin embargo, no se garantiza que el navegador se ejecute siempre por debajo de ese límite. Cualquier valor que sea inferior a 1024 se establecerá como 1024.
@@ -780,7 +781,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si no se define esta política, el navegador solo intentará ahorrar memoria cuando detecte que la cantidad de memoria física del equipo es baja.</translation>
 <translation id="2164922809922345834">Habilita la oclusión de ventana nativa en <ph name="PRODUCT_NAME" />.
 
-      Si se habilita esta opción, <ph name="PRODUCT_NAME" /> detectará si una ventana está tapada por otras ventanas y, en ese caso, dejará de dibujar píxeles para reducir el consumo eléctrico y de CPU.
+      Si se habilita esta opción, <ph name="PRODUCT_NAME" /> detectará si una ventana está tapada por otras ventanas y, en ese caso, dejará de mostrar píxeles para reducir el consumo de energía y de CPU.
 
       Si se inhabilita esta opción, <ph name="PRODUCT_NAME" /> no detectará si una ventana está tapada por otras ventanas.
 
@@ -920,11 +921,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Las plantillas con formato incorrecto se ignorarán.</translation>
 <translation id="2331539005176436538">Habilitar variaciones referentes solo a correcciones críticas en la pantalla de inicio de sesión</translation>
 <translation id="2345547870894930157">Habilitar DNS-over-HTTPS sin alternativa insegura</translation>
-<translation id="2368120844613930637">Configurar esta política permite especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" /> en la pantalla de inicio de sesión.
+<translation id="2368120844613930637">Configura esta política para especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" /> en la pantalla de inicio de sesión.
 
       Las variaciones proporcionan un medio para ofrecer modificaciones a <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
 
-      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se define la política, se permitirá que se apliquen todas las variaciones al navegador en la pantalla de inicio de sesión.
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones al navegador en la pantalla de inicio de sesión.
 
       Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen a <ph name="PRODUCT_NAME" /> las variaciones que se consideren correcciones críticas de seguridad o de estabilidad en la pantalla de inicio de sesión.
 
@@ -1243,6 +1244,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Esta política es opcional. Si no se establece se usará el valor predeterminado, es decir, UTF-8.
 
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
+<translation id="2678503605767349615">Certificados de cliente de todo el dispositivo obligatorios</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseñas.</translation>
 <translation id="2694143893026486692">Lupa fijada habilitada</translation>
@@ -1307,6 +1309,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si no se le asigna ningún valor, se le asignará de forma automática el valor "False" para dispositivos gestionados.</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
 <translation id="2799297758492717491">Permitir reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
+<translation id="2801065672151277034">Ajustes de gestión de certificados</translation>
 <translation id="2801155097555584385">Define un porcentaje personalizado de inicio de carga de la batería</translation>
 <translation id="2801230735743888564">Permite que los usuarios jueguen al juego del huevo de pascua de dinosaurio sin conexión.
 
@@ -1383,6 +1386,10 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si inhabilitas esta opción, se inhabilitará por completo Tocar para buscar.
 
       Si no se establece ningún valor para esta política, se considerará que está habilitada (consulta la descripción anterior).</translation>
+<translation id="2854607717796010700">Enviar información sobre la memoria de un dispositivo.
+
+      Si se asigna el valor "false" a esta política o no se establece ningún valor, no se enviará ninguna información.
+      Si se le asigna el valor "true", se enviará la información sobre la memoria del dispositivo.</translation>
 <translation id="285480231336205327">Habilitar modo de contraste alto</translation>
 <translation id="2854919890879212089">Hace que <ph name="PRODUCT_NAME" /> utilice la impresora predeterminada del sistema como opción predeterminada en la vista previa de impresión en lugar de la última impresora utilizada.
 
@@ -1939,6 +1946,7 @@ Si esta política se establece en False, el teclado en pantalla siempre estará 
 Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
 Si no se establece esta política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="3821861026311587684">Forzar el cierre de la sesión del usuario si su cuenta deja de estar autorizada</translation>
 <translation id="382476126209906314">Configurar el prefijo TalkGadget para hosts de acceso remoto</translation>
 <translation id="3824972131618513497">Controla los ajustes relacionados con el reinicio y la gestión de la batería.</translation>
 <translation id="3826475866868158882">Se han habilitado los servicios de ubicación de Google</translation>
@@ -2352,6 +2360,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de descargas de aplicaciones para Android</translation>
+<translation id="4343382787226139147">Especifica los certificados de cliente que deberían registrarse usando el protocolo de gestión de dispositivos.</translation>
 <translation id="4346674324214534449">Te permite decidir si se deberían bloquear los anuncios en los sitios web con anuncios invasivos.
 
       Si se le asigna el valor 2 a esta política, se bloquearán los anuncios en los sitios web con anuncios invasivos.
@@ -3594,15 +3603,15 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si inhabilitas esta opción o si no estableces esta política, el SPN de Kerberos generado no incluirá un puerto en ningún caso.</translation>
 <translation id="6261643884958898336">Proporcionar información de identificación de equipos</translation>
 <translation id="6273015149273504999">
-      Permite especificar una lista de aplicaciones y extensiones que se instalan de forma automática en la pantalla de inicio de sesión sin la intervención del usuario, que no podrá desinstalarlas ni inhabilitarlas.
+      Permite especificar una lista de aplicaciones y extensiones que se instalan de forma silenciosa en la pantalla de inicio de sesión sin la intervención del usuario, que no podrá desinstalarlas ni inhabilitarlas.
 
       Los permisos solicitados por las aplicaciones o extensiones se aceptan de forma implícita, sin la intervención del usuario, incluidos los permisos que soliciten las próximas versiones de las aplicaciones o extensiones. <ph name="PRODUCT_NAME" /> restringe el conjunto de permisos que pueden solicitar las extensiones.
 
       Ten en cuenta que, por motivos de seguridad y de privacidad, solo se pueden instalar las aplicaciones y extensiones de la lista de aplicaciones y extensiones permitidas incluida en <ph name="PRODUCT_NAME" />. Cualquier otro elemento se ignorará.
 
-      Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se elimina de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
+      Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se quita de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
 
-      Cada elemento de la lista de la política es una cadena que contiene un ID de extensión y, opcionalmente, una URL de "actualización" separados por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el modo desarrollador. La URL de "actualización", si se especifica, debe dirigir a un documento XML de un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se utiliza la URL de actualización de Chrome Web Store, que actualmente es "https://clients2.google.com/service/update2/crx". Ten en cuenta que la URL de "actualización" definida en esta política solo se usa en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el archivo de manifiesto de la extensión.
+      Cada elemento de la lista de la política es una cadena que contiene un ID de extensión y, opcionalmente, una URL de "actualización" separados por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la cadena de 32 letras que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el modo desarrollador. La URL de "actualización", si se especifica, debe dirigir a un documento XML de un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se utiliza la URL de "actualización" de Chrome Web Store, que actualmente es "https://clients2.google.com/service/update2/crx". Ten en cuenta que la URL de "actualización" definida en esta política solo se usa en la instalación inicial. Las actualizaciones posteriores de la extensión usarán la URL de "actualización" indicada en el archivo de manifiesto de la extensión.
 
       Por ejemplo, <ph name="LOGIN_SCREEN_EXTENSION_POLICY_EXAMPLE" /> instala la aplicación <ph name="SMART_CARD_CONNECTOR_APP_NAME" /> desde la URL de "actualización" estándar de Chrome Web Store. Para obtener más información sobre cómo alojar extensiones, consulta <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="6281043242780654992">Configura las políticas relativas a los mensajes nativos. Los hosts de mensajes nativos de la lista negra se inhabilitarán a menos que se incluyan en la lista blanca.</translation>
@@ -3620,6 +3629,10 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           El mensaje de advertencia solo se muestra si el modo de inactividad cierra la sesión o apaga el equipo.</translation>
 <translation id="6310223829319187614">Habilitar la opción de autocompletar nombre de dominio durante el inicio de sesión del usuario</translation>
+<translation id="631081324835911099">Forzar el cierre de la sesión del usuario si el token de autenticación de su cuenta principal deja de ser válido.
+        Esta política puede proteger al usuario frente al acceso a contenido restringido en propiedades web de Google.
+        Si se asigna el valor "true" a esta política, se cerrará la sesión del usuario en cuanto su token de autenticación deje de ser válido e intente restaurar este error de token.
+        Si se asigna el valor "false" a esta política o no se establece ningún valor, el usuario podrá seguir trabajando sin autenticación.</translation>
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios intentan acceder a sitios web con errores SSL. De forma predeterminada o cuando se establezca el valor true en esta política, los usuarios podrán hacer clic para ignorar estas páginas de advertencia.
       Si se asigna el valor false, los usuarios no tendrán permiso para ignorar ninguna página de advertencia.</translation>
 <translation id="6319198883324703402">Define el tiempo transcurrido desde la primera notificación para que el usuario reinicie</translation>
@@ -4301,6 +4314,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7448430478749155471">Habilita la función Enunciar Selección en la pantalla de inicio de sesión</translation>
 <translation id="7458437477941640506">No vuelve a instalar la versión de destino si la versión del SO es más reciente que la de destino. También inhabilita las actualizaciones.</translation>
+<translation id="7459601923199346224">Controla las políticas de usuarios y dispositivos para gestionar certificados.</translation>
 <translation id="7464991223784276288">Limitar las cookies de las URL coincidentes de la sesión actual</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
 <translation id="747275827471712187">Volver a la configuración antigua de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" /> en estos sitios web</translation>
@@ -4595,6 +4609,7 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="7937491150792971922">Combina políticas de lista de instalación de extensiones de varias fuentes</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
+<translation id="7951605113561734721">Especifica los certificados de cliente de todo el dispositivo que deberían registrarse usando el protocolo de gestión de dispositivos.</translation>
 <translation id="7952007677054834789">Permite configurar las páginas que se cargan al abrir el navegador, la página principal predeterminada y la página Nueva pestaña predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios las cambien.
 
       Para bloquear completamente la configuración de la página de inicio del usuario, es necesario definirla como la página Nueva pestaña o definirla como URL y especificar una URL de página principal. Si no se especifica la URL de la página principal, el usuario podrá definir la página Nueva pestaña como página principal especificando "chrome://newtab".
@@ -4700,7 +4715,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8141795997560411818">Esta política no impide que el usuario utilice la aplicación Google Drive para Android. Si quieres evitar el acceso a esta aplicación, también tendrás que inhabilitar la descarga de Google Drive para Android.</translation>
 <translation id="8142894094385450823">Establecer las configuraciones regionales recomendadas para una sesión administrada</translation>
 <translation id="8146727383888924340">Permitir a los usuarios canjear ofertas a través del servicio de registro de Chrome OS</translation>
-<translation id="8147132931626030921">Define el estado de la función de la pantalla de privacidad en la pantalla de inicio de sesión.
+<translation id="8147132931626030921">Define el estado de la función de pantalla de privacidad en la pantalla de inicio de sesión.
 
 Si se asigna el valor "True" a esta política, la pantalla de privacidad se habilitará cuando se muestre la pantalla de inicio de sesión.
 
@@ -5023,6 +5038,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
           Si esta opción está establecida en True o no está configurada, se podrá utilizar la confirmación remota para la protección del contenido.</translation>
 <translation id="8650974590712548439">Ubicación del registro de Windows para clientes de Windows:</translation>
+<translation id="8653085952260859632">Enviar información sobre la memoria</translation>
 <translation id="8654286232573430130">Especifica qué servidores deben incluirse en la lista de admisión para la autenticación integrada. La autenticación integrada solo se habilita cuando <ph name="PRODUCT_NAME" /> recibe una prueba de autenticación de un proxy o de un servidor que esté incluido en esa lista.
 
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).

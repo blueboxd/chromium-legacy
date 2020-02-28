@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">item menu</translation>
 <translation id="10623998915015855">tombol</translation>
 <translation id="1088086359088493902">Detik</translation>
+<translation id="1142001580032786438">Tampilkan alat pilih minggu</translation>
 <translation id="1171774979989969504">Masukkan alamat email.</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1188858454923323853">komplementer</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Masukkan nomor.</translation>
 <translation id="4912536737030637138">entri bibliografi</translation>
+<translation id="4915360478455618802">Tampilkan alat pilih waktu</translation>
 <translation id="492244087561876220">komentar</translation>
+<translation id="4950364064308314478">Tampilkan alat pilih tanggal dan waktu setempat</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> dipilih</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> dipilih</translation>
 <translation id="4992066212339426712">Bunyikan</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Teks</translation>
 <translation id="8346634859695247203">bagian</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
+<translation id="839593075537728968">Nilai harus antara <ph name="MINIMUM_TIME" /> dan <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">waktu berlalu: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">bagian</translation>
 <translation id="8433900881053900389">bilah alat</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">daftar isi</translation>
 <translation id="8613126697340063924">kontrol pemutaran jarak jauh</translation>
 <translation id="862370744433916922">subjudul</translation>
+<translation id="8634971699417195529">Tampilkan alat pilih bulan</translation>
 <translation id="8711688047404765493">keluaran</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="8808573423886751634">bab</translation>

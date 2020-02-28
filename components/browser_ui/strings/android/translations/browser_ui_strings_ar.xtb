@@ -9,8 +9,10 @@
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2501278716633472235">الرجوع</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{تم حظر ملف تعريف ارتباط واحد.}zero{تم حظر # ملف تعريف ارتباط.}two{تم حظر ملفَّي تعريف ارتباط.}few{تم حظر # ملفات تعريف ارتباط.}many{تم حظر # ملف تعريف ارتباط.}other{تم حظر # ملف تعريف ارتباط.}}</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
+<translation id="2968755619301702150">عارض الشهادات</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
@@ -39,7 +41,7 @@
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963642900430330478">تُعدُّ هذه الصفحة خطيرة. معلومات موقع الويب</translation>
-<translation id="6965382102122355670">موافق</translation>
+<translation id="6965382102122355670">حسنًا</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
 <translation id="7087918508125750058">تم تحديد <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>

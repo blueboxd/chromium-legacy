@@ -129,8 +129,7 @@ void XRFrameTransport::FrameSubmit(
     // passed over IPC.
     gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer->CloneHandle();
     vr_presentation_provider->SubmitFrameWithTextureHandle(
-        vr_frame_id, mojo::PlatformHandle(base::win::ScopedHandle(
-                         gpu_handle.dxgi_handle.GetHandle())));
+        vr_frame_id, mojo::PlatformHandle(std::move(gpu_handle.dxgi_handle)));
 #else
     NOTIMPLEMENTED();
 #endif

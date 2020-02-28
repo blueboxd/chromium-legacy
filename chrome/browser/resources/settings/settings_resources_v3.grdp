@@ -146,6 +146,31 @@
              use_base_dir="false"
              type="BINDATA" />
   </if>
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_LANGUAGES_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/languages.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_LANGUAGES_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/languages_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_ADD_LANGUAGES_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/add_languages_dialog.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_LANGUAGES_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/languages_page.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <if expr="not is_macosx">
+    <include name="IDR_SETTINGS_LANGUAGES_PAGE_EDIT_DICTIONARY_PAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/edit_dictionary_page.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_LIFETIME_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/lifetime_browser_proxy.m.js"
            use_base_dir="false"

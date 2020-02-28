@@ -916,22 +916,26 @@ IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info) {
   return latest;
 }
 
-void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info) {
+void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info,
+                           bool in_browser_process) {
   DCHECK(device_perf_info);
   device_perf_info->total_physical_memory_mb =
       static_cast<uint32_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
-  device_perf_info->total_disk_space_mb = EstimateAmountOfTotalDiskSpaceMB();
+  if (!in_browser_process)
+    device_perf_info->total_disk_space_mb = EstimateAmountOfTotalDiskSpaceMB();
   device_perf_info->hardware_concurrency =
       static_cast<uint32_t>(std::thread::hardware_concurrency());
 
 #if defined(OS_WIN)
   device_perf_info->system_commit_limit_mb = GetSystemCommitLimitMb();
-  D3D_FEATURE_LEVEL d3d11_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
-  bool has_discrete_gpu = false;
-  if (CollectD3D11FeatureInfo(&d3d11_feature_level, &has_discrete_gpu)) {
-    device_perf_info->d3d11_feature_level = d3d11_feature_level;
-    device_perf_info->has_discrete_gpu =
-        has_discrete_gpu ? HasDiscreteGpu::kYes : HasDiscreteGpu::kNo;
+  if (!in_browser_process) {
+    D3D_FEATURE_LEVEL d3d11_feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
+    bool has_discrete_gpu = false;
+    if (CollectD3D11FeatureInfo(&d3d11_feature_level, &has_discrete_gpu)) {
+      device_perf_info->d3d11_feature_level = d3d11_feature_level;
+      device_perf_info->has_discrete_gpu =
+          has_discrete_gpu ? HasDiscreteGpu::kYes : HasDiscreteGpu::kNo;
+    }
   }
 #endif
 }

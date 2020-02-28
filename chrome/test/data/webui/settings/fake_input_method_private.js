@@ -14,7 +14,7 @@ cr.define('settings', function() {
    * @constructor
    * @implements {InputMethodPrivate}
    */
-  function FakeInputMethodPrivate() {}
+  /* #export */ function FakeInputMethodPrivate() {}
 
   FakeInputMethodPrivate.prototype = {
     getCurrentInputMethod: function(callback) {
@@ -33,5 +33,6 @@ cr.define('settings', function() {
     },
   };
 
+  // #cr_define_end
   return {FakeInputMethodPrivate: FakeInputMethodPrivate};
 });

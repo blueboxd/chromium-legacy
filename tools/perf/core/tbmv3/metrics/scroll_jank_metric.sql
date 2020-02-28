@@ -2,6 +2,15 @@
 -- Use of this source code is governed by a BSD-style license that can be
 -- found in the LICENSE file.
 
+-- The metric finds periods in a trace when scroll update events started
+-- but didn't finish. The idea is that it's perceived by the user as a scroll
+-- delay, i.e. jank.
+-- Note that there's a similar metric in janky_scroll_periods.sql that uses
+-- a slightly different approach to estimate jankiness. Keeping two metrics
+-- around is a temporary measure for experimental purposes. In the end we want
+-- to leave only one of them.
+-- TODO(khokhlov): Remove one of these metrics.
+
 -- This selects GestureScrollUpdate events. Note the result is a table not a
 -- view to speed up the metric computation.
 CREATE TABLE input_latency_events AS

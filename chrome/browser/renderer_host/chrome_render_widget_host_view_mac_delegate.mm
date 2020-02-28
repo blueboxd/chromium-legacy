@@ -196,13 +196,13 @@ using content::RenderViewHost;
 - (void)checkSpelling:(id)sender {
   content::WebContents* webContents = content::WebContents::FromRenderViewHost(
       RenderViewHost::From(_renderWidgetHost));
-  DCHECK(webContents && webContents->GetFocusedFrame());
-
-  mojo::Remote<spellcheck::mojom::SpellCheckPanel>
-      focused_spell_check_panel_client;
-  webContents->GetFocusedFrame()->GetRemoteInterfaces()->GetInterface(
-      focused_spell_check_panel_client.BindNewPipeAndPassReceiver());
-  focused_spell_check_panel_client->AdvanceToNextMisspelling();
+  if (webContents && webContents->GetFocusedFrame()) {
+    mojo::Remote<spellcheck::mojom::SpellCheckPanel>
+        focused_spell_check_panel_client;
+    webContents->GetFocusedFrame()->GetRemoteInterfaces()->GetInterface(
+        focused_spell_check_panel_client.BindNewPipeAndPassReceiver());
+    focused_spell_check_panel_client->AdvanceToNextMisspelling();
+  }
 }
 
 // This message is sent by the spelling panel whenever a word is ignored.

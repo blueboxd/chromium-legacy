@@ -345,10 +345,10 @@ void VideoDecoderClient::ResetTask() {
   // TODO(dstaessens@) Allow resetting to any point in the stream.
   encoded_data_helper_->Rewind();
 
-  base::RepeatingClosure reset_done_cb = base::BindRepeating(
+  decoder_->Reset(base::BindOnce(
       CallbackThunk<decltype(&VideoDecoderClient::ResetDoneTask)>, weak_this_,
-      decoder_client_thread_.task_runner(), &VideoDecoderClient::ResetDoneTask);
-  decoder_->Reset(reset_done_cb);
+      decoder_client_thread_.task_runner(),
+      &VideoDecoderClient::ResetDoneTask));
   FireEvent(VideoPlayerEvent::kResetting);
 }
 

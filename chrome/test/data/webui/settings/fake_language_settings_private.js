@@ -6,12 +6,18 @@
  * @fileoverview Fake implementation of chrome.languageSettingsPrivate
  * for testing.
  */
+
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 cr.define('settings', function() {
   /**
    * Fake of the chrome.languageSettingsPrivate API.
    * @implements {LanguageSettingsPrivate}
    */
-  class FakeLanguageSettingsPrivate extends TestBrowserProxy {
+  /* #export */ class FakeLanguageSettingsPrivate extends TestBrowserProxy {
     constructor() {
       // List of method names expected to be tested with whenCalled()
       super([
@@ -355,7 +361,7 @@ cr.define('settings', function() {
       const inputMethod = this.componentExtensionImes.find(function(ime) {
         return ime.id == inputMethodId;
       });
-      assertTrue(!!inputMethod);
+      assert(!!inputMethod);
       inputMethod.enabled = true;
       const prefPath = 'prefs.settings.language.preload_engines.value';
       const enabledInputMethods = this.settingsPrefs_.get(prefPath).split(',');
@@ -373,7 +379,7 @@ cr.define('settings', function() {
       const inputMethod = this.componentExtensionImes.find(function(ime) {
         return ime.id == inputMethodId;
       });
-      assertTrue(!!inputMethod);
+      assert(!!inputMethod);
       inputMethod.enabled = false;
       this.settingsPrefs_.set(
           'prefs.settings.language.preload_engines.value',
@@ -396,7 +402,7 @@ cr.define('settings', function() {
   }
 
   // List of language-related preferences suitable for testing.
-  function getFakeLanguagePrefs() {
+  /* #export */ function getFakeLanguagePrefs() {
     const fakePrefs = [
       {
         key: 'browser.enable_spellchecking',
@@ -469,6 +475,7 @@ cr.define('settings', function() {
     }
     return fakePrefs;
   }
+  // #cr_define_end
   return {
     FakeLanguageSettingsPrivate: FakeLanguageSettingsPrivate,
     getFakeLanguagePrefs: getFakeLanguagePrefs,

@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">메뉴 항목</translation>
 <translation id="10623998915015855">전환 버튼</translation>
 <translation id="1088086359088493902">초</translation>
+<translation id="1142001580032786438">주 선택도구 표시</translation>
 <translation id="1171774979989969504">이메일 주소를 입력하세요.</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1188858454923323853">상호 보완</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">검색</translation>
 <translation id="4812940957355064477">숫자를 입력하세요.</translation>
 <translation id="4912536737030637138">참고문헌 항목</translation>
+<translation id="4915360478455618802">시간 선택도구 표시</translation>
 <translation id="492244087561876220">댓글</translation>
+<translation id="4950364064308314478">현지 날짜 및 시간 선택도구 표시</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> 선택됨</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />개 선택됨</translation>
 <translation id="4992066212339426712">음소거 해제</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">자막</translation>
 <translation id="8346634859695247203">섹션</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>
+<translation id="839593075537728968">값은 <ph name="MINIMUM_TIME" />에서 <ph name="MAXIMUM_TIME" /> 사이여야 합니다.</translation>
 <translation id="8403857369060869934">경과 시간: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">부</translation>
 <translation id="8433900881053900389">툴바</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">목차</translation>
 <translation id="8613126697340063924">원격 재생 제어</translation>
 <translation id="862370744433916922">부제</translation>
+<translation id="8634971699417195529">월 선택도구 표시</translation>
 <translation id="8711688047404765493">출력</translation>
 <translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="8808573423886751634">장</translation>

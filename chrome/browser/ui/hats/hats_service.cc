@@ -21,6 +21,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -84,7 +89,9 @@ enum class ShouldShowSurveyReasons {
   kNoTriggerStringMismatch = 7,
   kNoNotRegularBrowser = 8,
   kNoIncognitoDisabled = 9,
-  kMaxValue = kNoIncognitoDisabled,
+  kNoCookiesBlocked = 10,
+  kNoThirdPartyCookiesBlocked = 11,
+  kMaxValue = kNoThirdPartyCookiesBlocked,
 };
 
 }  // namespace
@@ -137,6 +144,31 @@ void HatsService::LaunchSurvey(const std::string& trigger) {
         UMA_HISTOGRAM_ENUMERATION(
             kHatsShouldShowSurveyReasonHistogram,
             ShouldShowSurveyReasons::kNoIncognitoDisabled);
+        return;
+      }
+
+      // HaTS cannot be accessed when cookies are blocked.
+      if (profile_->GetPrefs()->GetInteger(
+              content_settings::WebsiteSettingsRegistry::GetInstance()
+                  ->Get(ContentSettingsType::COOKIES)
+                  ->default_value_pref_name()) == CONTENT_SETTING_BLOCK) {
+        UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
+                                  ShouldShowSurveyReasons::kNoCookiesBlocked);
+        return;
+      }
+
+      // HaTS cannot be accessed when third-party cookies are blocked.
+      // TODO(crbug/1056654): Confirm whether third-party cookie blocking in
+      // incognito mode should affect HaTS.
+      if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies) ||
+          (base::FeatureList::IsEnabled(
+               content_settings::kImprovedCookieControls) &&
+           static_cast<content_settings::CookieControlsMode>(
+               profile_->GetPrefs()->GetInteger(prefs::kCookieControlsMode)) !=
+               content_settings::CookieControlsMode::kOff)) {
+        UMA_HISTOGRAM_ENUMERATION(
+            kHatsShouldShowSurveyReasonHistogram,
+            ShouldShowSurveyReasons::kNoThirdPartyCookiesBlocked);
         return;
       }
 

@@ -114,7 +114,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "device/fido/hid/fido_hid_discovery.h"
 #include "device/gamepad/gamepad_service.h"
-#include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
@@ -1412,15 +1411,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_WIN)
-  if (!parsed_command_line_.HasSwitch(
-          switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
-    // The default is to delay the secondary GPU process for 120 seconds.
-    bool delayed = !parsed_command_line_.HasSwitch(
-        switches::kNoDelayForDX12VulkanInfoCollection);
-    GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
-        kGpuInfoRequestDx12Vulkan, delayed);
-  }
-
+  // Launch the info collection GPU process to collect DX12 and Vulkan support
+  // information. Not to affect Chrome startup, this is done in a delayed mode,
+  // i.e., 120 seconds after Chrome startup.
+  GpuDataManagerImpl::GetInstance()->RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+      kGpuInfoRequestDx12Vulkan, /*delayed=*/true);
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {

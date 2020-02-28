@@ -188,9 +188,9 @@
 <translation id="1257550411839719984">設定預設的下載目錄</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
 <translation id="127264587838521316">啟用 <ph name="PRODUCT_NAME" /> 擴充功能安裝要求</translation>
-<translation id="1288785611471943470">這項政策已遭淘汰，並將在第 84 版後移除，請改用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同於停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。啟用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 或不設定這項政策等同於不設定 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。
+<translation id="1288785611471943470">這項政策已遭淘汰，並將在第 84 版後移除，請改用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同於停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。啟用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 或未設定這項政策等同於未設定 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。
 
-      如果將這項政策設為 False，使用者無法選擇將部分系統資訊和網頁內容傳送到 Google 伺服器。如果設為 True 或不予設定，使用者可以將部分系統資訊和網頁內容傳送給「安全瀏覽」服務，以協助我們偵測不安全的應用程式和網站。
+      如果將這項政策設為 False，使用者無法選擇將部分系統資訊和網頁內容傳送到 Google 伺服器。如果設為 True 或未設定，使用者可以將部分系統資訊和網頁內容傳送給「安全瀏覽」服務，以協助我們偵測不安全的應用程式和網站。
 
       如要進一步瞭解「安全瀏覽」服務，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1290634681382861275">管理其他設定，包括 USB、藍牙、政策更新、開發人員模式等等。</translation>
@@ -733,6 +733,7 @@
           這份清單中的每個項目皆為擴充功能形式的比對模式 (請參閱 https://developer.chrome.com/extensions/match_patterns)。任何網址只要與這份清單中的任意項目相符，使用者便可輕鬆安裝該網址提供的檔案。*.crx 檔案位置和下載來源網頁 (即參照網址) 都必須與這份清單中的模式相符。
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 的效力優於這項政策。換句話說，系統不會安裝黑名單上的任何擴充功能，即使將該功能的來源網站加到這份清單中也一樣。</translation>
+<translation id="2145735238144543545">必須提供用戶端憑證</translation>
 <translation id="214901426630414675">限制使用雙面列印模式</translation>
 <translation id="2149330464730004005">啟用彩色列印</translation>
 <translation id="2151831603578119302">啟用無障礙功能快速鍵</translation>
@@ -752,7 +753,7 @@
 
       請注意，系統一律允許在一般設定檔中執行背景驗證。
 
-      如果不設定這項政策，在日後推出的 <ph name="PRODUCT_NAME" /> 版本中，使用者會因為系統不允許的緣故，無法在無痕模式工作階段和訪客工作階段中執行背景驗證。</translation>
+      如果未設定這項政策，在日後推出的 <ph name="PRODUCT_NAME" /> 版本中，使用者會因為系統不允許的緣故，無法在無痕模式工作階段和訪客工作階段中執行背景驗證。</translation>
 <translation id="2160336427036785721">設定單一 <ph name="PRODUCT_NAME" /> 例項可用的記憶體大小。超過此值後，系統會開始捨棄分頁以節省記憶體。這表示系統會釋放分頁所用的記憶體，而當使用者切換至該分頁時，系統必須重新載入該分頁。
 
       設定這項政策後，如果超過記憶體使用限制，瀏覽器會開始捨棄分頁以節省記憶體。不過，我們無法保證瀏覽器運作時，記憶體使用量會一律在限制值以下。1024 以下的值會進位到 1024。
@@ -764,7 +765,7 @@
 
       如果停用這項設定，<ph name="PRODUCT_NAME" /> 不會偵測是否有視窗覆蓋情形。
 
-      如果不設定這項政策，系統會啟用遮蔽偵測功能。</translation>
+      如果未設定這項政策，系統會啟用遮蔽偵測功能。</translation>
 <translation id="2166472654199325139">不要針對成人內容篩選網站。</translation>
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
 <translation id="217013996107840632">從替代瀏覽器切換到 Chrome 所使用的指令列參數。</translation>
@@ -900,7 +901,7 @@
 
       變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版瀏覽器的情況下提供對 <ph name="PRODUCT_NAME" /> 的修改項目。
 
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或不予設定，使用者可以在登入畫面上將所有變化版本套用到瀏覽器。
+      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以在登入畫面上將所有變化版本套用到瀏覽器。
 
       如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者在登入畫面上只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_NAME" />。
 
@@ -922,7 +923,7 @@
 
 設好這項政策後，使用者即無法覆寫設定值。
 
-如果不設定這項政策，系統預設會停用隱私保護畫面，但使用者可以自行變更。</translation>
+如果未設定這項政策，系統預設會停用隱私保護畫面，但使用者可以自行變更。</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 的瀏覽記錄儲存功能，並禁止使用者變更這項設定。
 
       如果啟用這項設定，系統將不會儲存瀏覽記錄 (分頁同步功能會一並遭到停用)。
@@ -1205,6 +1206,7 @@
 <translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
+<translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
 <translation id="2693108589792503178">設定變更密碼網址。</translation>
 <translation id="2694143893026486692">停駐放大鏡已啟用</translation>
@@ -1269,6 +1271,7 @@
           如果未設定這項政策，受管理裝置上的預設值為 False。</translation>
 <translation id="2787173078141616821">回報 Android 狀態的相關資訊</translation>
 <translation id="2799297758492717491">允許符合網址模式許可清單的網頁自動播放媒體</translation>
+<translation id="2801065672151277034">憑證管理設定</translation>
 <translation id="2801155097555584385">自訂電池開始充電值 (以百分比表示)</translation>
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
@@ -1341,6 +1344,10 @@
       如果你停用這項設定，系統會完全停用「輕觸搜尋」功能。
 
       不設定這項政策等同於設為啟用，詳情請參閱上述說明。</translation>
+<translation id="2854607717796010700">回報有關裝置記憶體的資訊。
+
+      如果將這項政策設為 False 或不予設定，系統將不會回報這項資訊。
+      如果設為 True，系統會回報裝置記憶體的資訊。</translation>
 <translation id="285480231336205327">啟用高反差模式</translation>
 <translation id="2854919890879212089">讓 <ph name="PRODUCT_NAME" /> 使用系統預設印表機做為預覽列印中的預設選擇，取代最近使用的印表機。
 
@@ -1575,7 +1582,7 @@
       如果不設定這項政策，將無法使用系統 Proxy 服務。</translation>
 <translation id="3356657927302977341">設定 Linux 上的 <ph name="PRODUCT_NAME" /> 是否要使用原生通知。
 
-如果設為 True 或不予設定，<ph name="PRODUCT_NAME" /> 可以使用原生通知。
+如果設為 True 或未設定，則 <ph name="PRODUCT_NAME" /> 可以使用原生通知。
 
 如果設為 False，<ph name="PRODUCT_NAME" /> 不會使用原生通知。<ph name="PRODUCT_NAME" /> 的訊息中心將做為備用選項。</translation>
 <translation id="3373364525435227558">針對受管理工作階段設定一或多個建議語言代碼，方便使用者從中擇一使用。
@@ -1881,6 +1888,7 @@
           如果設定了這項政策，使用者將無法予以變更或覆寫。
 
           如未設定這項政策，螢幕小鍵盤將預設為停用，但使用者可以隨時啟用這項功能。</translation>
+<translation id="3821861026311587684">強制登出帳戶驗證狀態失效的使用者</translation>
 <translation id="382476126209906314">為遠端存取主機設定 TalkGadget 前置詞</translation>
 <translation id="3824972131618513497">控管電源管理和重新啟動的相關設定。</translation>
 <translation id="3826475866868158882">已啟用 Google 定位服務</translation>
@@ -2275,6 +2283,7 @@
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="4332177773549877617">Android 應用程式安裝記錄事件</translation>
+<translation id="4343382787226139147">指定應使用裝置管理通訊協定註冊的用戶端憑證。</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
 
       如果將這項政策的值設為 2，含侵入式廣告的網站將無法顯示廣告。
@@ -3480,6 +3489,10 @@
 
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
+<translation id="631081324835911099">強制登出主要帳戶驗證憑證失效的使用者。
+        這項政策可以避免使用者存取 Google 網路資源上的受限制內容。
+        如果將這項政策設為 True，當使用者的驗證憑證失效，且嘗試復原這項憑證失敗時，系統會將使用者登出。
+        如果將這項政策設為 False 或不予設定，使用者可以在未經驗證的狀態下繼續執行作業。</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
 <translation id="6319198883324703402">設定第一次通知使用者重新啟動的時間</translation>
@@ -4143,6 +4156,7 @@
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
 <translation id="7448430478749155471">在登入畫面上啟用隨選朗讀功能</translation>
 <translation id="7458437477941640506">如果作業系統版本比目標版本還新，則不復原至目標版本，且一併停用更新。</translation>
+<translation id="7459601923199346224">控管憑證管理的使用者和裝置政策。</translation>
 <translation id="7464991223784276288">將來自相符網址的 Cookie 限制在目前的工作階段中</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
 <translation id="747275827471712187">將這些網站上的 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為</translation>
@@ -4426,6 +4440,7 @@
 <translation id="7937491150792971922">合併多個來源的擴充功能安裝清單政策</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
+<translation id="7951605113561734721">指定應使用裝置管理通訊協定註冊的裝置通用用戶端憑證。</translation>
 <translation id="7952007677054834789">設定 <ph name="PRODUCT_NAME" /> 的起始載入頁面、預設首頁和預設新分頁，並禁止使用者變更這些設定。
 
       如果你選取使用者的首頁做為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果你沒有指定首頁網址，那麼使用者只要將網址設為「chrome://newtab」，就能以新分頁做為首頁。
@@ -4533,7 +4548,7 @@
 
 設好這項政策後，使用者即無法在登入畫面顯示時覆寫設定值。
 
-如果不設定這項政策，系統預設會停用隱私保護畫面，但使用者仍可在登入畫面顯示時變更設定。</translation>
+如果未設定這項政策，系統預設會停用隱私保護畫面，但使用者仍可在登入畫面顯示時變更設定。</translation>
 <translation id="8148901634826284024">啟用高反差模式協助功能。
 
           如果你將這項政策設為 True，系統將一律啟用高反差模式。
@@ -4852,6 +4867,7 @@
 
           如果設定為 True 或未設定，系統便會對受保護內容使用遠端證明。</translation>
 <translation id="8650974590712548439">Windows 用戶端的 Windows 登錄檔位置：</translation>
+<translation id="8653085952260859632">回報記憶體資訊</translation>
 <translation id="8654286232573430130">指定要將哪些伺服器加入整合驗證許可清單。只有在 <ph name="PRODUCT_NAME" /> 收到允許清單中的 Proxy 或伺服器傳來的驗證要求時，系統才會啟用整合驗證。
 
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。

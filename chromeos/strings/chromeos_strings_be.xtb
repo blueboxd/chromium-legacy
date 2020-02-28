@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="be">
+<translation id="1195447618553298278">Невядомая памылка.</translation>
 <translation id="1482734542997480527">Дамен "<ph name="ENROLLMENT_DOMAIN" />" кіруе гэтай прыладай і можа адсочваць вашы дзеянні.</translation>
+<translation id="150962533380566081">Няправільны PUK-код.</translation>
 <translation id="1510238584712386396">Панэль запуску</translation>
 <translation id="1734367976349034509">Прылада знаходзіцца пад кіраваннем арганізацыі</translation>
+<translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1930797645656624981">Сэрвіс метадаў уводу Chrome OS</translation>
 <translation id="1979103255016296513">Пратэрмінавана змена пароля</translation>
 <translation id="2049639323467105390">Гэта прылада знаходзіцца пад кіраваннем <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Праграмы</translation>
 <translation id="2872961005593481000">Завяршыць працу</translation>
 <translation id="3008341117444806826">АБНАВІЦЬ</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Несапраўдны PIN-код.</translation>
 <translation id="3838338534323494292">Новы пароль</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Паўтарыце спробу. Засталося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">Дамен "<ph name="ENROLLMENT_DOMAIN" />" кіруе гэтай прыладай і мае доступ да ўсіх дзеянняў карыстальніка, у тым ліку да гісторыі наведаных вэб-старонак, да пароляў і электроннай пошты.</translation>
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Дзеянне білета Kerberos хутка скончыцца</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Я не магу знайсці на экране нічога, з чым я мог бы вам дапамагчы.
 Каб спытаць мяне аб чым-небудзь, паспрабуйце дакрануцца да мікрафона.</translation>
 <translation id="5222676887888702881">Выйсці</translation>
+<translation id="5275776633505022322">Засталося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Паўтарыце спробу.</translation>
 <translation id="5317780077021120954">Захаваць</translation>
 <translation id="5332948983412042822">Задайце новы</translation>
 <translation id="5457599981699367932">Праглядаць як госць</translation>

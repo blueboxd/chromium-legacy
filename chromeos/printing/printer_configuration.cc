@@ -99,7 +99,7 @@ base::StringPiece HostAndPort(base::StringPiece uri) {
     hostname_end = uri.size();
   }
 
-  CHECK_GT(hostname_end, hostname_start);
+  CHECK_GE(hostname_end, hostname_start);
   return uri.substr(hostname_start, hostname_end - hostname_start);
 }
 

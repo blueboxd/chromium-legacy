@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 
@@ -64,13 +63,13 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
 
 #if defined(OS_LINUX)
   if (input->storage_type() == media::VideoFrame::STORAGE_DMABUFS) {
-    std::vector<mojo::ScopedHandle> dmabuf_fds;
+    std::vector<mojo::PlatformHandle> dmabuf_fds;
 
     const size_t num_planes = media::VideoFrame::NumPlanes(input->format());
     dmabuf_fds.reserve(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
       const int dmabuf_fd = HANDLE_EINTR(dup(input->DmabufFds()[i].get()));
-      dmabuf_fds.emplace_back(mojo::WrapPlatformFile(dmabuf_fd));
+      dmabuf_fds.emplace_back(base::ScopedFD(dmabuf_fd));
       DCHECK(dmabuf_fds.back().is_valid());
     }
 
@@ -170,7 +169,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     media::mojom::DmabufVideoFrameDataDataView dmabuf_data;
     data.GetDmabufDataDataView(&dmabuf_data);
 
-    std::vector<mojo::ScopedHandle> dmabuf_fds_data;
+    std::vector<mojo::PlatformHandle> dmabuf_fds_data;
     if (!dmabuf_data.ReadDmabufFds(&dmabuf_fds_data))
       return false;
 
@@ -198,9 +197,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     std::vector<base::ScopedFD> dmabuf_fds;
     dmabuf_fds.reserve(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
-      base::PlatformFile platform_file;
-      mojo::UnwrapPlatformFile(std::move(dmabuf_fds_data[i]), &platform_file);
-      dmabuf_fds.emplace_back(platform_file);
+      dmabuf_fds.push_back(dmabuf_fds_data[i].TakeFD());
       DCHECK(dmabuf_fds.back().is_valid());
     }
     frame = media::VideoFrame::WrapExternalDmabufs(

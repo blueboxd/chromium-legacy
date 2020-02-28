@@ -94,8 +94,9 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
   static bool isTypeSupported(const String& type);
 
   // html/media/MediaSource interface implementation
-  bool AttachToElement(HTMLMediaElement*) override;
-  void SetWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
+  bool StartAttachingToMediaElement(HTMLMediaElement*) override;
+  void CompleteAttachingToMediaElement(
+      std::unique_ptr<WebMediaSource>) override;
   void Close() override;
   bool IsClosed() const override;
   double duration() const override;

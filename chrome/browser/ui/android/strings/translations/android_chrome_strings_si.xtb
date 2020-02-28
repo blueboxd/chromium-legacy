@@ -375,6 +375,11 @@
 <translation id="381841723434055211">දුරකථන අංක</translation>
 <translation id="3819178904835489326">බාගැනීම් <ph name="NUMBER_OF_DOWNLOADS" />ක් මැකිණි</translation>
 <translation id="3822502789641063741">අඩවි ආචයනය හිස් කරනවා ද?</translation>
+<translation id="3849365399446680203">ඔබ VR තුළ සිටින විට, මෙම අඩවියට හැකි වීමට ඉඩ ඇත:
+• ඔබේ පරිසරයේ ත්‍රිමාන සිතියමක් සෑදීම
+• කැමරා චලනය හඹා යෑම
+
+ඔබේ කැමරාව බලන දේ දැකිය හැක්කේ ඔබට පමණි. අඩවියට ඔබේ කැමරාවේ රූප දැකිය නොහැක.</translation>
 <translation id="3859306556332390985">ඉදිරියට සොයන්න</translation>
 <translation id="388596076286380598">ඔබ නොබැඳි හෝ ඔබේ සබැඳුම දුර්වල වුවත්, ඔබ කැමති අඩවි වලින් ලිපි, වීඩියෝ සහ වෙනත් අන්තර්ගතයන් ලබා ගන්න.</translation>
 <translation id="3894427358181296146">ෆෝල්ඩරය එක් කරන්න</translation>
@@ -722,6 +727,7 @@
 <translation id="6395288395575013217">සබැඳිය</translation>
 <translation id="6404511346730675251">පිටු සලකුණ සංස්කරණය කරන්න</translation>
 <translation id="6406506848690869874">සමමුහුව</translation>
+<translation id="6410973561433500075"><ph name="DOMAIN" /> සිට VR වෙත ඇතුළු වන්න ද?</translation>
 <translation id="641643625718530986">මුද්‍රණය කරන්න...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB බාගැනිණි</translation>
 <translation id="6427112570124116297">වෙබ් අඩවිය පරිවර්තන කරන්න</translation>

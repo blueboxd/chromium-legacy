@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">elemento del menú</translation>
 <translation id="10623998915015855">botón de activación</translation>
 <translation id="1088086359088493902">Segundos</translation>
+<translation id="1142001580032786438">Mostrar el selector de semanas</translation>
 <translation id="1171774979989969504">Ingresa una dirección de correo electrónico.</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="1188858454923323853">complementario</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Debes ingresar un número.</translation>
 <translation id="4912536737030637138">entrada de bibliografía</translation>
+<translation id="4915360478455618802">Mostrar el selector de hora</translation>
 <translation id="492244087561876220">comentario</translation>
+<translation id="4950364064308314478">Mostrar el selector de fecha y hora locales</translation>
 <translation id="4971739861736909480">Seleccionaste <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> elementos seleccionados</translation>
 <translation id="4992066212339426712">Dejar de silenciar</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Subtítulos</translation>
 <translation id="8346634859695247203">sección</translation>
 <translation id="835897206747267392">Valor no válido.</translation>
+<translation id="839593075537728968">El valor debe estar entre <ph name="MINIMUM_TIME" /> y <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">tiempo transcurrido: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">parte</translation>
 <translation id="8433900881053900389">barra de herramientas</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">índice</translation>
 <translation id="8613126697340063924">controlar la reproducción remota</translation>
 <translation id="862370744433916922">subtítulo</translation>
+<translation id="8634971699417195529">Mostrar el selector de meses</translation>
 <translation id="8711688047404765493">salida</translation>
 <translation id="8750798805984357768">Selecciona una de estas opciones.</translation>
 <translation id="8808573423886751634">capítulo</translation>

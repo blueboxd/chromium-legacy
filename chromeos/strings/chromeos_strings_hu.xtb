@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1195447618553298278">Ismeretlen hiba.</translation>
 <translation id="1482734542997480527">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, és előfordulhat, hogy megfigyeli az Ön tevékenységeit.</translation>
+<translation id="150962533380566081">Érvénytelen PUK-kód.</translation>
 <translation id="1510238584712386396">Indító</translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
+<translation id="1905710495812624430">Elérte az engedélyezett kísérletek maximális számát.</translation>
 <translation id="1930797645656624981">Chrome OS beviteli módszere szolgáltatás</translation>
 <translation id="1979103255016296513">Esedékes a jelszó frissítése</translation>
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="3008341117444806826">FRISSÍTÉS</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Érvénytelen PIN-kód.</translation>
 <translation id="3838338534323494292">Új jelszó</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Próbálja újra. Még <ph name="ATTEMPTS_LEFT" /> próbálkozás maradt</translation>
 <translation id="4003259559679196451">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, ezért hozzáfér az összes felhasználói tevékenységhez, köztük a felkeresett webhelyekhez, a jelszavakhoz és az e-mailekhez.</translation>
 <translation id="4227825898293920515">A jelszó <ph name="TIME" /> múlva lejár</translation>
 <translation id="4429881212383817840">A Kerberos-jegy hamarosan lejár</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Nem találok semmi olyat a képernyőn, amellyel kapcsolatban segíthetnék.
 Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
+<translation id="5275776633505022322"><ph name="ATTEMPTS_LEFT" /> kísérlet maradt</translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Próbálja újra.</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5332948983412042822">Válasszon most új jelszót</translation>
 <translation id="5457599981699367932">Böngészés vendégként</translation>

@@ -101,6 +101,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   void OnHaveUvToken(FidoAuthenticator* authenticator,
                      CtapDeviceResponseCode status,
                      base::Optional<pin::TokenResponse> response);
+  void DispatchRequestWithToken(pin::TokenResponse token);
 
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;

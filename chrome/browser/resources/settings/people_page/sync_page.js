@@ -395,8 +395,7 @@ Polymer({
     this.setupCancelConfirmed_ = true;
     this.$$('#setupCancelDialog').close();
     const router = settings.Router.getInstance();
-    router.navigateTo(
-        /** @type {!settings.Route} */ (router.getRoutes().BASIC));
+    router.navigateTo(router.getRoutes().BASIC);
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
   },
@@ -438,8 +437,7 @@ Polymer({
       // firing). Triggering navigation from within an observer leads to some
       // undefined behavior and runtime errors.
       requestAnimationFrame(() => {
-        router.navigateTo(
-            /** @type {!settings.Route} */ (router.getRoutes().SYNC));
+        router.navigateTo(router.getRoutes().SYNC);
         this.showSetupCancelDialog_ = true;
         // Flush to make sure that the setup cancel dialog is attached.
         Polymer.dom.flush();
@@ -627,8 +625,7 @@ Polymer({
         return;
       case settings.PageStatus.DONE:
         if (router.getCurrentRoute() == router.getRoutes().SYNC) {
-          router.navigateTo(
-              /** @type {!settings.Route} */ (router.getRoutes().PEOPLE));
+          router.navigateTo(router.getRoutes().PEOPLE);
         }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
@@ -693,8 +690,7 @@ Polymer({
   /** @private */
   onSyncAdvancedTap_() {
     const router = settings.Router.getInstance();
-    router.navigateTo(
-        /** @type {!settings.Route} */ (router.getRoutes().SYNC_ADVANCED));
+    router.navigateTo(router.getRoutes().SYNC_ADVANCED);
   },
 
   /**
@@ -713,8 +709,7 @@ Polymer({
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
     const router = settings.Router.getInstance();
-    router.navigateTo(
-        /** @type {!settings.Route} */ (router.getRoutes().BASIC));
+    router.navigateTo(router.getRoutes().BASIC);
   },
 
   /**

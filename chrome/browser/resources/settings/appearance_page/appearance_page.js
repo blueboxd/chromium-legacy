@@ -164,8 +164,7 @@ Polymer({
 
   /** @private */
   onCustomizeFontsTap_() {
-    settings.Router.getInstance().navigateTo(
-        /** @type {!settings.Route} */ (settings.routes.FONTS));
+    settings.Router.getInstance().navigateTo(settings.routes.FONTS);
   },
 
   /** @private */

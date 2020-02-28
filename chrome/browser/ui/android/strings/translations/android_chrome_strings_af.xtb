@@ -375,6 +375,11 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="381841723434055211">Foonnommers</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> aflaaie is uitgevee</translation>
 <translation id="3822502789641063741">Vee werfberging uit?</translation>
+<translation id="3849365399446680203">Terwyl jy in AR is, kan hierdie werf dalk:
+• 'n 3D-kaart van jou omgewing skep
+• kamerabeweging naspoor
+
+Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente sien nie.</translation>
 <translation id="3859306556332390985">Soek vorentoe</translation>
 <translation id="388596076286380598">Kry artikels, video's en ander inhoud vanaf werwe waarvan jy hou, selfs as jy vanlyn is of as jou verbinding swak is.</translation>
 <translation id="3894427358181296146">Voeg vouer by</translation>
@@ -514,7 +519,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4882831918239250449">Beheer hoe jou blaaigeskiedenis gebruik word om Search, advertensies en meer te personaliseer</translation>
 <translation id="4883854917563148705">Bestuurde instellings kan nie teruggestel word nie</translation>
 <translation id="4885273946141277891">Ongesteunde aantal Chrome-gevalle.</translation>
-<translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteit-toestel en -data te gebruik (aanbeveel)</translation>
+<translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteittoestel en -data te gebruik (aanbeveel)</translation>
 <translation id="4910889077668685004">Betalingprogramme</translation>
 <translation id="4913161338056004800">Stel statistiek terug</translation>
 <translation id="4913169188695071480">Hou op herlaai</translation>
@@ -722,12 +727,13 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6395288395575013217">SKAKEL</translation>
 <translation id="6404511346730675251">Wysig boekmerk</translation>
 <translation id="6406506848690869874">Sinkronisering</translation>
+<translation id="6410973561433500075">Voer AR van <ph name="DOMAIN" /> af in?</translation>
 <translation id="641643625718530986">Druk tans uit …</translation>
 <translation id="6416782512398055893">Het <ph name="MBS" /> MB afgelaai</translation>
 <translation id="6427112570124116297">Vertaal die Web</translation>
 <translation id="6433501201775827830">Kies jou soekenjin</translation>
 <translation id="6437478888915024427">Bladsy-inligting</translation>
-<translation id="6439114592976064011">Keer werwe om jou virtuelerealiteit-toestel en -data te gebruik</translation>
+<translation id="6439114592976064011">Keer werwe om jou virtuelerealiteittoestel en -data te gebruik</translation>
 <translation id="6441734959916820584">Naam is te lank</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# prent}other{# prente}}</translation>
 <translation id="6447558397796644647">Kan nie daardie boekmerk opspoor nie. Gaan jou spelling na of voeg 'n nuwe boekmerk by.</translation>

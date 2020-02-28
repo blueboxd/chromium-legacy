@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/1057147): add tests for chrome-untrusted://new-tab-page files.
 document.addEventListener('DOMContentLoaded', () => {
   // Remove the <style> from the raw promo since we want to style the promo
   // ourselves.

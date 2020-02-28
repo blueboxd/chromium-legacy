@@ -27,7 +27,20 @@ TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMG) {
   const base::FilePath dmg_file_path =
       test_data_dir.Append(FILE_PATH_LITERAL("updater_setup_test_dmg.dmg"));
   ASSERT_TRUE(base::PathExists(dmg_file_path));
-  ASSERT_TRUE(updater::InstallFromDMG(dmg_file_path));
+  ASSERT_TRUE(updater::InstallFromDMG(dmg_file_path, ""));
+}
+
+TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithArgs) {
+  // Get the path to the test file.
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("updater"));
+  ASSERT_TRUE(base::PathExists(test_data_dir));
+  // Get the DMG path and check that it exists.
+  const base::FilePath dmg_file_path =
+      test_data_dir.Append(FILE_PATH_LITERAL("updater_setup_test_dmg.dmg"));
+  ASSERT_TRUE(base::PathExists(dmg_file_path));
+  ASSERT_TRUE(updater::InstallFromDMG(dmg_file_path, "-arg1 -arg2"));
 }
 
 }  // namespace updater_setup

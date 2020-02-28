@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">položka nabídky</translation>
 <translation id="10623998915015855">přepínací tlačítko</translation>
 <translation id="1088086359088493902">Sekundy</translation>
+<translation id="1142001580032786438">Zobrazit výběr týdne</translation>
 <translation id="1171774979989969504">Zadejte prosím e-mailovou adresu.</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1188858454923323853">doplňkové</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadejte prosím číslo.</translation>
 <translation id="4912536737030637138">bibliografická položka</translation>
+<translation id="4915360478455618802">Zobrazit výběr času</translation>
 <translation id="492244087561876220">komentář</translation>
+<translation id="4950364064308314478">Zobrazit výběr místního data a času</translation>
 <translation id="4971739861736909480">Vybráno: <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Vybráno: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Zapnout zvuk</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="8346634859695247203">oddíl</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>
+<translation id="839593075537728968">Hodnota musí být v rozsahu <ph name="MINIMUM_TIME" /> až <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">uplynulý čas: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">část</translation>
 <translation id="8433900881053900389">lišta</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">obsah</translation>
 <translation id="8613126697340063924">ovládání vzdáleného přehrávání</translation>
 <translation id="862370744433916922">titulek</translation>
+<translation id="8634971699417195529">Zobrazit výběr měsíce</translation>
 <translation id="8711688047404765493">výstup</translation>
 <translation id="8750798805984357768">Vyberte jednu z těchto možností.</translation>
 <translation id="8808573423886751634">kapitola</translation>

@@ -293,8 +293,8 @@ void MojoVideoDecoderService::OnReaderRead(
 }
 
 void MojoVideoDecoderService::OnReaderFlushed() {
-  decoder_->Reset(base::BindRepeating(&MojoVideoDecoderService::OnDecoderReset,
-                                      weak_this_));
+  decoder_->Reset(
+      base::BindOnce(&MojoVideoDecoderService::OnDecoderReset, weak_this_));
 }
 
 void MojoVideoDecoderService::OnDecoderDecoded(

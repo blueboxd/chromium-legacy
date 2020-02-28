@@ -154,6 +154,8 @@ jumbo_static_library("browser") {
     "web/element_finder.h",
     "web/element_position_getter.cc",
     "web/element_position_getter.h",
+    "web/element_rect_getter.cc",
+    "web/element_rect_getter.h",
     "web/web_controller.cc",
     "web/web_controller.h",
     "web/web_controller_util.cc",

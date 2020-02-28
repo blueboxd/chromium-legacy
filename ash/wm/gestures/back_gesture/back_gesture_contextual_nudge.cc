@@ -11,7 +11,6 @@
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -26,8 +25,10 @@ namespace {
 // Width of the contextual nudge.
 constexpr int kBackgroundWidth = 160;
 
-// Color of the contextual nudge.
-constexpr SkColor kBackgroundColor = SkColorSetA(SK_ColorBLACK, 153);  // 60%
+// Colors of the contextual nudge background gradient.
+constexpr SkColor kBackgroundStartColor =
+    SkColorSetA(SK_ColorBLACK, 153);  // 60%
+constexpr SkColor kBackgroundEndColor = SkColorSetARGB(0, 168, 168, 168);
 
 // Radius of the circle in the middle of the contextual nudge.
 constexpr int kCircleRadius = 20;
@@ -92,40 +93,6 @@ std::unique_ptr<views::Widget> CreateWidget() {
   return widget;
 }
 
-class GradientLayerDelegate : public ui::LayerDelegate {
- public:
-  GradientLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
-    layer_.set_delegate(this);
-    layer_.SetFillsBoundsOpaquely(false);
-  }
-
-  ~GradientLayerDelegate() override { layer_.set_delegate(nullptr); }
-
-  ui::Layer* layer() { return &layer_; }
-
- private:
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    const gfx::Size size = layer()->size();
-    ui::PaintRecorder recorder(context, size);
-
-    cc::PaintFlags flags;
-    flags.setBlendMode(SkBlendMode::kSrc);
-    flags.setAntiAlias(false);
-    flags.setShader(
-        gfx::CreateGradientShader(gfx::Point(), gfx::Point(size.width(), 0),
-                                  SK_ColorBLACK, SK_ColorTRANSPARENT));
-    recorder.canvas()->DrawRect(gfx::Rect(gfx::Point(), size), flags);
-  }
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-
-  ui::Layer layer_;
-
-  GradientLayerDelegate(const GradientLayerDelegate&) = delete;
-  GradientLayerDelegate& operator=(const GradientLayerDelegate&) = delete;
-};
-
 }  // namespace
 
 class BackGestureContextualNudge::ContextualNudgeView
@@ -133,15 +100,11 @@ class BackGestureContextualNudge::ContextualNudgeView
       public ui::ImplicitAnimationObserver {
  public:
   explicit ContextualNudgeView(base::OnceClosure callback)
-      : suggestion_view_(new SuggestionView(this)),
-        callback_(std::move(callback)) {
+      : callback_(std::move(callback)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
-    gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
-    layer()->SetMaskLayer(gradient_layer_delegate_->layer());
-
-    AddChildView(suggestion_view_);
+    suggestion_view_ = AddChildView(std::make_unique<SuggestionView>(this));
 
     show_timer_.Start(
         FROM_HERE, kPauseBeforeShowAnimationDuration, this,
@@ -308,10 +271,7 @@ class BackGestureContextualNudge::ContextualNudgeView
 
   // views::View:
   void Layout() override {
-    const gfx::Rect bounds = GetLocalBounds();
-    gradient_layer_delegate_->layer()->SetBounds(bounds);
-
-    gfx::Rect rect(bounds);
+    gfx::Rect rect = GetLocalBounds();
     rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
     rect.set_x(-kCircleRadius);
     suggestion_view_->SetBoundsRect(rect);
@@ -320,7 +280,15 @@ class BackGestureContextualNudge::ContextualNudgeView
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     views::View::OnPaint(canvas);
-    canvas->DrawColor(kBackgroundColor);
+
+    // Draw the gradient background.
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setShader(
+        gfx::CreateGradientShader(gfx::Point(), gfx::Point(width(), 0),
+                                  kBackgroundStartColor, kBackgroundEndColor));
+    canvas->DrawRect(gfx::Rect(size()), flags);
   }
 
   // ui::ImplicitAnimationObserver:
@@ -340,8 +308,6 @@ class BackGestureContextualNudge::ContextualNudgeView
       suggestion_view_->ScheduleBounceAnimation();
     }
   }
-
-  std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
 
   // Created by ContextualNudgeView. Owned by views hierarchy.
   SuggestionView* suggestion_view_ = nullptr;

@@ -37,6 +37,10 @@ import './default_browser_page/default_browser_page.m.js';
 import './system_page/system_page.m.js';
 // </if>
 
+// <if expr="not is_macosx">
+import './languages_page/edit_dictionary_page.m.js';
+// </if>
+
 // <if expr="_google_chrome and is_win">
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.m.js';
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.m.js';
@@ -55,6 +59,8 @@ export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
+export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
+export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';

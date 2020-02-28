@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1195447618553298278">Tundmatu viga.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja saab võib-olla jälgida teie tegevusi.</translation>
+<translation id="150962533380566081">Vale PUK-kood.</translation>
 <translation id="1510238584712386396">Käivitaja</translation>
 <translation id="1734367976349034509">Seda seadet haldab ettevõte</translation>
+<translation id="1905710495812624430">Katsete maksimaalne arv on ületatud.</translation>
 <translation id="1930797645656624981">Chrome OS sisestusmeetodi teenus</translation>
 <translation id="1979103255016296513">Parooli muutmise tähtaeg on möödunud</translation>
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="3008341117444806826">VÄRSKENDA</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Vale PIN-kood.</translation>
 <translation id="3838338534323494292">Uus parool</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Proovige uuesti. Katseid jäänud: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja sellel on juurdepääs kogu kasutaja tegevusele, sh külastatud veebilehtedele, paroolidele ning e-postile.</translation>
 <translation id="4227825898293920515">Parooli aegumiseni on jäänud <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberose pilet aegub peagi</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Ma ei leia teie ekraanilt midagi, mille puhul saaksin aidata.
 Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
+<translation id="5275776633505022322">Katseid jäänud: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Proovige uuesti.</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5332948983412042822">Valige kohe uus</translation>
 <translation id="5457599981699367932">Sirvi külalisena</translation>

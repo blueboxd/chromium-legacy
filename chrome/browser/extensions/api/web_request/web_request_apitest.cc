@@ -2734,6 +2734,30 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest,
   RunServiceWorkerFetchTest("empty.js");
 }
 
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest,
+                       ServiceWorkerFallbackAfterRedirect) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallRequestHeaderModifyingExtension();
+
+  RegisterServiceWorker("/fetch_event_passthrough.js", "/echoheader");
+
+  // Make sure the request is intercepted with no redirect.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/echoheader?foo"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ("bar", EvalJs(web_contents, "document.body.textContent;"));
+
+  // Make sure the request is intercepted with a redirect.
+  GURL redirect_url = embedded_test_server()->GetURL(
+      "/server-redirect?" +
+      embedded_test_server()->GetURL("/echoheader?foo").spec());
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
+  EXPECT_EQ("bar", EvalJs(web_contents, "document.body.textContent;"));
+}
+
 // An extension should be able to modify the request header for service worker
 // script by using WebRequest API.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerScript) {

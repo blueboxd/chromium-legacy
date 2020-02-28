@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -182,6 +183,26 @@ IN_PROC_BROWSER_TEST_F(
   // Expect another one.
   WaitForPreresolveCount(4);
   EXPECT_EQ(4, preresolve_done_count_);
+}
+
+// Test that we preconnect after the last preconnect timed out.
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout,
+    CappedAtFiveAttempts) {
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Expect 1 navigation preresolve and 5 repeated onLoad calls.
+  WaitForPreresolveCount(6);
+  EXPECT_EQ(6, preresolve_done_count_);
+
+  // We should not see additional preresolves.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  EXPECT_EQ(6, preresolve_done_count_);
 }
 
 class NavigationPredictorPreconnectClientBrowserTestWithHoldback

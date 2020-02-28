@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Textning</translation>
 <translation id="8346634859695247203">avsnitt</translation>
 <translation id="835897206747267392">Ogiltigt värde.</translation>
+<translation id="839593075537728968">Värdet måste vara mellan <ph name="MINIMUM_TIME" /> och <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">tid som gått: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">del</translation>
 <translation id="8433900881053900389">verktygsfält</translation>

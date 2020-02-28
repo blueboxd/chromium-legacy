@@ -3079,13 +3079,7 @@ YearListView.prototype.onKeyDown = function(event) {
   var key = event.key;
   var eventHandled = false;
   if (key == 't') {
-    if (global.params.isFormControlsRefreshEnabled && this.type === 'month') {
-      var newSelection = this.getValidRangeNearestToDay(
-          Day.createFromToday(), /*lookForwardFirst*/ true);
-      if (newSelection) {
-        this.setSelectedMonthAndUpdateView(newSelection);
-      }
-    } else {
+    if (!global.params.isFormControlsRefreshEnabled) {
       eventHandled = this._moveHighlightTo(Month.createFromToday());
       if (global.params.isFormControlsRefreshEnabled) {
         this.dispatchEvent(
@@ -4868,10 +4862,6 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
 
   if (!event.target.matches('.today-button-refresh') && this._selection) {
     switch (key) {
-      case 't':
-        this.setSelection(this.getValidRangeNearestToDay(
-            Day.createFromToday(), /*lookForwardFirst*/ true));
-        break;
       case 'PageUp':
         var previousMonth = this.currentMonth().previous();
         if (previousMonth && previousMonth >= this.config.minimumValue) {
@@ -4887,23 +4877,6 @@ CalendarPicker.prototype.onCalendarTableKeyDownRefresh = function(event) {
               nextMonth, CalendarPicker.NavigationBehavior.WithAnimation);
           this.ensureSelectionIsWithinCurrentMonth();
         }
-        break;
-      case 'm':
-      case 'M':
-        offset = offset || 1;
-        // Fall-through.
-      case 'y':
-      case 'Y':
-        offset = offset || MonthsPerYear;
-        // Fall-through.
-      case 'd':
-      case 'D':
-        offset = offset || MonthsPerYear * 10;
-        this.setCurrentMonth(
-            event.shiftKey ? this.currentMonth().previous(offset) :
-                             this.currentMonth().next(offset),
-            CalendarPicker.NavigationBehavior.WithAnimation);
-        this.ensureSelectionIsWithinCurrentMonth();
         break;
       case 'ArrowUp':
       case 'ArrowDown':
@@ -5091,14 +5064,6 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
         window.pagePopupController.setValue(this.getSelectedValue());
       }
       break;
-    case 't':
-      if (global.params.isFormControlsRefreshEnabled &&
-          event.target.matches('.calendar-table-view') &&
-          this.type !== 'datetime-local' && this._selection) {
-        window.pagePopupController.setValueAndClosePopup(
-            0, this.getSelectedValue());
-      }
-      break;
     case 'Enter':
       // Submit the popup for an Enter keypress except when the user is
       // hitting Enter to activate the month switcher button, Today button,
@@ -5135,11 +5100,7 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
       // Fall-through.
     case 'd':
     case 'D':
-      if (global.params.isFormControlsRefreshEnabled) {
-        if (this.type !== 'datetime-local') {
-          window.pagePopupController.setValue(this.getSelectedValue());
-        }
-      } else {
+      if (!global.params.isFormControlsRefreshEnabled) {
         offset = offset || MonthsPerYear * 10;
         var oldFirstVisibleRow =
             this.calendarTableView

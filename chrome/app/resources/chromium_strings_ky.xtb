@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Жеке жөндөлөөрүңүз окулбай жатат.
 
 Айрым мүмкүнчүлүктөр иштебегендиктен, жеке жөндөөлөрдөгү өзгөрүүлөр сакталбайт.</translation>
+<translation id="1098170124587656448">Chromium сырсөздөрүңүздү коопсуз сактоого, кооптуу кеңейтүүлөрдөн жана башкалардан коргоого жардам берет</translation>
 <translation id="1104942323762546749">Chromium сырсөздөрүңүздү экспорттогону жатат. Ага уруксат берүү үчүн Windows аккаунтуңуздун сырсөзүн териңиз.</translation>
 <translation id="113122355610423240">Chromium демейки серепчи катары колдонулат</translation>
 <translation id="1185134272377778587">Chromium жөнүндө</translation>
@@ -69,6 +70,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="388648406173476553">Chromium'ду ыңгайлаштыруу жана көзөмөлдөө. Сиздин аракетиңиз талап кылынат – чоо-жайын көрүү үчүн чыкылдатыңыз.</translation>
 <translation id="3889543394854987837">Chromium'ду ачып, серептеп баштоо үчүн ысымыңызды чыкылдатыңыз.</translation>
+<translation id="3945058413678539331">Chromium сырсөздөрдү көчүрүүгө аракет кылууда. Уруксат берүү үчүн Windows сырсөзүңүздү жазыңыз.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />Учурдагы жөндөөлөр<ph name="END_LINK" /> жөнүндө кабар берип, Chromium'ду өркүндөтүүгө кол кабыш кылыңыз</translation>
 <translation id="4050175100176540509">Эң акыркы версияда коопсуздукту бекемдөө каражаттары менен жаңы мүмкүнчүлүктөр камтылган.</translation>
 <translation id="421369550622382712">Chromium үчүн укмуш колдонмолор, оюндар, кеңейтүүлөр жана темаларды таап алыңыз.</translation>
@@ -112,7 +114,7 @@
 <translation id="5862307444128926510">Chromium'га кош келиңиз</translation>
 <translation id="5895138241574237353">Өчүрүп күйгүзүү</translation>
 <translation id="5987687638152509985">Шайкештирип баштоо үчүн Chromium'ду жаңыртыңыз</translation>
-<translation id="6013050204643758987">Chromium OS тутуму, <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета-версиясы)<ph name="END_LINK_LINUX_OSS" /> сыяктуу, кошумча <ph name="BEGIN_LINK_CROS_OSS" />баштапкы коду ачык программалык камсыздоонун<ph name="END_LINK_CROS_OSS" /> жардамы менен иштейт.</translation>
+<translation id="6013050204643758987">Chromium OS тутуму, <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета-версиясы)<ph name="END_LINK_LINUX_OSS" /> сыяктуу, кошумча <ph name="BEGIN_LINK_CROS_OSS" />баштапкы коду ачык программалык камсыздоонун<ph name="END_LINK_CROS_OSS" /> жардамы менен, иштейт.</translation>
 <translation id="6055895534982063517">Chromium'дун чагылгандай тездик менен иштеген жаңы версиясы бар.</translation>
 <translation id="6063093106622310249">&amp;Chromiumда ачуу</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> Chromium'га кошулду</translation>
@@ -191,6 +193,7 @@ Chromium жөндөөлөрүңүздү калыбына келтире алба
 <translation id="8013436988911883588">Chromium'га уруксат берилгенден кийин вебсайттар уруксат сурай алышат.</translation>
 <translation id="81770708095080097">Бул файл кооптуу, ошондуктан Chromium аны бөгөттөп койду.</translation>
 <translation id="8248265253516264921">Эгер сүрөттөрдүн түшүндүрмөсү жок болсо, Chromium аны түшүндүрүп берүүгө аракет кылат. Түшүндүрмөлөрдү даярдоо үчүн, сүрөттөр Google'га жөнөтүлөт. Аны жөндөөлөрдөн каалаган убакта өчүрүп койсоңуз болот.</translation>
+<translation id="8276522524898344151">Chromium сырсөздөрдү көчүрүүгө аракет кылып жатат.</translation>
 <translation id="8290862415967981663">Бул файл кооптуу болушу мүмкүн, ошондуктан Chromium аны бөгөттөп койду.</translation>
 <translation id="8330519371938183845">Chromium'ду бардык түзмөктөрүңүздө шайкештирип, жекелештирүү үчүн аккаунтуңузга кириңиз</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> мурда Chromium'ду пайдаланчу</translation>
@@ -210,7 +213,7 @@ Chromium жөндөөлөрүңүздү калыбына келтире алба
 <translation id="8862326446509486874">Тутум деңгээлинде орнотууга тийиштүү укугуңуз жок. Орноткучту Администратор катары кайра иштетип көрүңүз.</translation>
 <translation id="8897323336392112261">Chromium'ду иштетип баштаганда же Башкы бет баскычы чыкылдатылганда, кайсы бет көрсөтүлө тургандыгын көзөмөлдөйт.</translation>
 <translation id="8907580949721785412">Chromium сырсөздөрдү көрсөткөнгө аракет кылууда. Уруксат берүү үчүн Windows сырсөзүңүздү жазыңыз.</translation>
-<translation id="8941642502866065432">Chromium жаңыртылбай жатат</translation>
+<translation id="8941642502866065432">Chromium жаңырбай жатат</translation>
 <translation id="8974095189086268230">Chromium OS кошумча <ph name="BEGIN_LINK_CROS_OSS" />ачык булак программасы<ph name="END_LINK_CROS_OSS" /> тарабынан мүмкүн болду.</translation>
 <translation id="9019929317751753759">Жеке маалыматыңызды коргоо үчүн, айрым Chromium кеңейтүүлөрүн өчүрүп койдук, себеби <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ичинде аларга байланыштуу маалымат жок. Демек, бул курамдык бөлүктөр тымызын орнотулган.</translation>
 <translation id="9089354809943900324">Chromium эскирип калган.</translation>

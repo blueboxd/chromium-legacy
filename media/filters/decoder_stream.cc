@@ -903,8 +903,8 @@ void DecoderStream<StreamType>::ResetDecoder() {
       << state_;
   DCHECK(reset_cb_);
 
-  decoder_->Reset(base::BindRepeating(
-      &DecoderStream<StreamType>::OnDecoderReset, weak_factory_.GetWeakPtr()));
+  decoder_->Reset(base::BindOnce(&DecoderStream<StreamType>::OnDecoderReset,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 template <DemuxerStream::Type StreamType>

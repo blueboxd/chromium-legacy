@@ -5,7 +5,6 @@
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 
 #include "content/renderer/compositor/compositor_dependencies.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"

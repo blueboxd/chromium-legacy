@@ -92,6 +92,110 @@ TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', () => {
 });
 GEN('#endif');
 
+// Test fixture for the chrome://os-settings/controls/settings_slider
+// eslint-disable-next-line no-var
+var OSSettingsSliderTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'controls/settings_slider.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      BROWSER_SETTINGS_PATH + 'settings_slider_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsSliderTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// Test fixture for the chrome://os-settings/controls/settings_textarea
+// eslint-disable-next-line no-var
+var OSSettingsTextAreaTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'controls/settings_textarea.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'settings_textarea_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsTextAreaTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// Test fixture for the chrome://os-settings/controls/settings_toggle_button
+// eslint-disable-next-line no-var
+var OSSettingsToggleButtonTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'controls/settings_toggle_button.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'settings_toggle_button_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsToggleButtonTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// Test fixture for the chrome://os-settings/prefs/pref_util page
+// eslint-disable-next-line no-var
+var OSSettingsPrefUtilTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'prefs/pref_util.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'pref_util_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPrefUtilTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// Test fixture for the chrome://os-settings/prefs/prefs page
+// eslint-disable-next-line no-var
+var OSSettingsPrefsTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'prefs/prefs.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      BROWSER_SETTINGS_PATH + 'prefs_test_cases.js',
+      BROWSER_SETTINGS_PATH + 'prefs_tests.js'
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPrefsTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Test fixture for the chrome://os-settings/accounts page
 // eslint-disable-next-line no-var
 var OSSettingsAddUsersTest = class extends OSSettingsBrowserTest {

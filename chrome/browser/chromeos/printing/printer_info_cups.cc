@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/printing/printer_info.h"
@@ -203,10 +204,8 @@ void QueryIppPrinter(const std::string& host,
   // QueryPrinterImpl could block on a network call for a noticable amount of
   // time (100s of ms). Also the user is waiting on this result.  Thus, run at
   // USER_VISIBLE with MayBlock.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits{base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-                       base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&QueryPrinterImpl, host, port, path, encrypted),
       base::BindOnce(&OnPrinterQueried, std::move(callback)));
 }

@@ -26,12 +26,6 @@ class MenuManager {
     this.navigationManager_ = navigationManager;
 
     /**
-     * The text navigation manager.
-     * @private {!TextNavigationManager}
-     */
-    this.textNavigationManager_ = new TextNavigationManager();
-
-    /**
      * The root node of the screen.
      * @private {!chrome.automation.AutomationNode}
      */
@@ -503,8 +497,7 @@ class MenuManager {
     const newSelectionState = this.nodeHasSelection_();
     if (this.selectionExists_ != newSelectionState) {
       this.selectionExists_ = newSelectionState;
-      if (this.menuOriginNode_ &&
-          !this.textNavigationManager_.currentlySelecting()) {
+      if (this.menuOriginNode_ && !TextNavigationManager.currentlySelecting()) {
         const currentMenuId = this.menuPanel_.currentMenuId();
         if (currentMenuId) {
           this.openMenu_(this.menuOriginNode_, currentMenuId);
@@ -535,7 +528,7 @@ class MenuManager {
         autoNode.state[StateType.FOCUSED]) {
       actions.push(SAConstants.MenuAction.MOVE_CURSOR);
       actions.push(SAConstants.MenuAction.SELECT_START);
-      if (this.textNavigationManager_.currentlySelecting()) {
+      if (TextNavigationManager.currentlySelecting()) {
         actions.push(SAConstants.MenuAction.SELECT_END);
       }
       if (this.selectionExists_) {
@@ -591,28 +584,28 @@ class MenuManager {
         }
         return;
       case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
-        this.textNavigationManager_.jumpToBeginning();
+        TextNavigationManager.jumpToBeginning();
         return;
       case SAConstants.MenuAction.JUMP_TO_END_OF_TEXT:
-        this.textNavigationManager_.jumpToEnd();
+        TextNavigationManager.jumpToEnd();
         return;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
-        this.textNavigationManager_.moveBackwardOneChar();
+        TextNavigationManager.moveBackwardOneChar();
         return;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
-        this.textNavigationManager_.moveBackwardOneWord();
+        TextNavigationManager.moveBackwardOneWord();
         return;
       case SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
-        this.textNavigationManager_.moveDownOneLine();
+        TextNavigationManager.moveDownOneLine();
         return;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
-        this.textNavigationManager_.moveForwardOneChar();
+        TextNavigationManager.moveForwardOneChar();
         return;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
-        this.textNavigationManager_.moveForwardOneWord();
+        TextNavigationManager.moveForwardOneWord();
         return;
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
-        this.textNavigationManager_.moveUpOneLine();
+        TextNavigationManager.moveUpOneLine();
         return;
       case SAConstants.MenuAction.CUT:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
@@ -624,13 +617,13 @@ class MenuManager {
         EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
         return;
       case SAConstants.MenuAction.SELECT_START:
-        this.textNavigationManager_.saveSelectStart();
+        TextNavigationManager.saveSelectStart();
         if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
         }
         return;
       case SAConstants.MenuAction.SELECT_END:
-        this.textNavigationManager_.resetCurrentlySelecting();
+        TextNavigationManager.resetCurrentlySelecting();
         if (this.menuOriginNode_) {
           this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
         }

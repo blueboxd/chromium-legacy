@@ -228,12 +228,12 @@ base::FilePath Installer::GetCurrentInstallDir() const {
   return GetAppInstallDir(app_id_).AppendASCII(pv_.GetString());
 }
 
-#if !defined(OS_WIN)
+#if defined(OS_LINUX)
 int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
                                        const std::string& arguments) {
   NOTREACHED();
   return -1;
 }
-#endif  // OS_WIN
+#endif  // OS_LINUX
 
 }  // namespace updater

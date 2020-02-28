@@ -21,8 +21,3 @@
     /* intentionally not !important */
     object-fit: contain;
 }
-
-/* If there's a backdrop from fullscreen mode, set that transparent. */
-:xr-overlay:fullscreen::backdrop {
-  background: rgba(0,0,0,0) !important;
-}

@@ -27,10 +27,10 @@ import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a single tab in a browser. More specifically, owns a NavigationController, and allows
@@ -93,8 +93,8 @@ public class Tab {
         return sTabMap.get(id);
     }
 
-    static List<Tab> getTabsInBrowser(Browser browser) {
-        List<Tab> tabs = new ArrayList<Tab>();
+    static Set<Tab> getTabsInBrowser(Browser browser) {
+        Set<Tab> tabs = new HashSet<Tab>();
         for (Tab tab : sTabMap.values()) {
             if (tab.getBrowser() == browser) tabs.add(tab);
         }

@@ -136,6 +136,11 @@ class WebFrameWidget : public WebWidget {
   // page autosize.
   virtual void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) = 0;
 
+  // Applies viewport related properties that are normally provided by the
+  // compositor. Useful for tests that don't use a compositor.
+  virtual void ApplyViewportChangesForTesting(
+      const cc::ApplyViewportChangesArgs& args) = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

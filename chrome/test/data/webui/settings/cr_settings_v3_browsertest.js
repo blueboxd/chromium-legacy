@@ -356,3 +356,57 @@ TEST_F('CrSettingsAboutPageV3Test', 'AboutPage_OfficialBuild', function() {
   mocha.grep('AboutPageTest_OfficialBuilds').run();
 });
 GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsLanguagesV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/languages_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsLanguagesV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#if !defined(OS_MACOSX)');
+
+// eslint-disable-next-line no-var
+var CrSettingsEditDictionaryPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/edit_dictionary_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsEditDictionaryPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  //!defined(OS_MACOSX)');
+
+// eslint-disable-next-line no-var
+var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsLanguagesPageV3Test', 'AddLanguagesDialog', function() {
+  mocha.grep(languages_page_tests.TestNames.AddLanguagesDialog).run();
+});
+
+TEST_F('CrSettingsLanguagesPageV3Test', 'LanguageMenu', function() {
+  mocha.grep(languages_page_tests.TestNames.LanguageMenu).run();
+});
+
+TEST_F('CrSettingsLanguagesPageV3Test', 'Spellcheck', function() {
+  mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
+});
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
+  mocha.grep(languages_page_tests.TestNames.SpellcheckOfficialBuild).run();
+});
+GEN('#endif');

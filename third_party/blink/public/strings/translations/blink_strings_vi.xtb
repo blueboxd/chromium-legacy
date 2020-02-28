@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">mục menu</translation>
 <translation id="10623998915015855">nút chuyển đổi</translation>
 <translation id="1088086359088493902">Giây</translation>
+<translation id="1142001580032786438">Hiển thị bộ chọn tuần</translation>
 <translation id="1171774979989969504">Vui lòng nhập địa chỉ email.</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1188858454923323853">bổ sung</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Vui lòng nhập một số.</translation>
 <translation id="4912536737030637138">mục nhập danh mục</translation>
+<translation id="4915360478455618802">Hiển thị bộ chọn giờ</translation>
 <translation id="492244087561876220">nhận xét</translation>
+<translation id="4950364064308314478">Hiển thị bộ chọn ngày và giờ địa phương</translation>
 <translation id="4971739861736909480">Đã chọn <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Đã chọn <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Bật âm thanh</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Phụ đề</translation>
 <translation id="8346634859695247203">phần mục</translation>
 <translation id="835897206747267392">Giá trị không hợp lệ.</translation>
+<translation id="839593075537728968">Giá trị phải nằm trong khoảng từ <ph name="MINIMUM_TIME" /> đến <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">thời gian trôi qua: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">phần</translation>
 <translation id="8433900881053900389">thanh công cụ</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">mục lục</translation>
 <translation id="8613126697340063924">điều khiển phát lại từ xa</translation>
 <translation id="862370744433916922">phụ đề</translation>
+<translation id="8634971699417195529">Hiển thị bộ chọn tháng</translation>
 <translation id="8711688047404765493">thiết bị ra</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="8808573423886751634">chương</translation>

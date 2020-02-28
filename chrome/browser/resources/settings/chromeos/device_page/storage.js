@@ -53,6 +53,15 @@ Polymer({
       }
     },
 
+    /** @private */
+    showOtherUsers_: {
+      type: Boolean,
+      // Initialize showOtherUsers_ to false if the user is in guest mode.
+      value() {
+        return !loadTimeData.getBoolean('isGuest');
+      }
+    },
+
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
@@ -227,12 +236,17 @@ Polymer({
 
   /**
    * @param {string} size Formatted string representing the size of Other users.
+   * @param {boolean} noOtherUsers True if there is no other registered users on
+   *     the device.
    * @private
    */
-  handleOtherUsersSizeChanged_(size) {
-    if (!this.isGuest_) {
-      this.$$('#otherUsersSize').subLabel = size;
+  handleOtherUsersSizeChanged_(size, noOtherUsers) {
+    if (this.isGuest_ || noOtherUsers) {
+      this.showOtherUsers_ = false;
+      return;
     }
+    this.showOtherUsers_ = true;
+    this.$$('#otherUsersSize').subLabel = size;
   },
 
   /**

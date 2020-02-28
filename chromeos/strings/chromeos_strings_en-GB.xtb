@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1195447618553298278">Unknown error.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> manages this device and may be able to monitor your activity.</translation>
+<translation id="150962533380566081">Invalid PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1734367976349034509">This device is enterprise managed</translation>
+<translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1930797645656624981">Chrome OS Input Method Service</translation>
 <translation id="1979103255016296513">Password change overdue</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">REFRESH</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Invalid PIN.</translation>
 <translation id="3838338534323494292">New password</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Please try again. Attempts left: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">I can't find anything on your screen that I can help with.
 Try tapping the mic to ask me anything.</translation>
 <translation id="5222676887888702881">Sign out</translation>
+<translation id="5275776633505022322">Attempts left: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Please try again.</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5332948983412042822">Choose a new one now</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>

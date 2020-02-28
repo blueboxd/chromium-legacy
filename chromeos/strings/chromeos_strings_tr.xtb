@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve etkinliklerinizi izleyebilir.</translation>
+<translation id="150962533380566081">Geçersiz PUK.</translation>
 <translation id="1510238584712386396">Başlatıcı</translation>
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
+<translation id="1905710495812624430">İzin verilen maksimum deneme sayısı aşıldı.</translation>
 <translation id="1930797645656624981">Chrome OS Giriş Yöntemi Hizmeti</translation>
 <translation id="1979103255016296513">Şifre değişikliği zamanı geçti</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="3008341117444806826">YENİLE</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Geçersiz PIN.</translation>
 <translation id="3838338534323494292">Yeni şifre</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Lütfen tekrar deneyin. Kalan deneme sayısı: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve ziyaret edilen web siteleri, şifreler ve e-postalar dahil olmak üzere tüm kullanıcı etkinliklerine erişimi var.</translation>
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
 <translation id="4429881212383817840">Kerberos biletinin süresi yakında doluyor</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Ekranınızda size yardımcı olabileceğim bir şey bulamıyorum.
 Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5222676887888702881">Çıkış</translation>
+<translation id="5275776633505022322">Kalan deneme sayısı: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Lütfen tekrar deneyin.</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5332948983412042822">Yeni bir tane seçin</translation>
 <translation id="5457599981699367932">Misafir olarak Göz At</translation>

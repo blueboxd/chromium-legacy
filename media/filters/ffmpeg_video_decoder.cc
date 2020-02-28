@@ -290,7 +290,7 @@ void FFmpegVideoDecoder::Reset(base::OnceClosure closure) {
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
-  // PostTask() to avoid calling |closure| inmediately.
+  // PostTask() to avoid calling |closure| immediately.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 

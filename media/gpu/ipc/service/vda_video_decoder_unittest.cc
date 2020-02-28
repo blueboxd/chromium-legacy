@@ -297,7 +297,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
   testing::StrictMock<base::MockCallback<VideoDecoder::OutputCB>> output_cb_;
   testing::StrictMock<base::MockCallback<WaitingCB>> waiting_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
-  testing::StrictMock<base::MockCallback<base::RepeatingClosure>> reset_cb_;
+  testing::StrictMock<base::MockCallback<base::OnceClosure>> reset_cb_;
 
   scoped_refptr<FakeCommandBufferHelper> cbh_;
   testing::StrictMock<MockVideoDecodeAccelerator>* vda_;

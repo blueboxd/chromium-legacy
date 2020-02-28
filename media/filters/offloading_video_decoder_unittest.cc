@@ -98,11 +98,11 @@ class OffloadingVideoDecoderTest : public testing::Test {
                       base::Unretained(this));
   }
 
-  base::Closure ExpectResetCB() {
+  base::OnceClosure ExpectResetCB() {
     EXPECT_CALL(*this, ResetDone())
         .WillOnce(VerifyOn(task_env_.GetMainThreadTaskRunner()));
-    return base::Bind(&OffloadingVideoDecoderTest::ResetDone,
-                      base::Unretained(this));
+    return base::BindOnce(&OffloadingVideoDecoderTest::ResetDone,
+                          base::Unretained(this));
   }
 
   void TestNoOffloading(const VideoDecoderConfig& config) {

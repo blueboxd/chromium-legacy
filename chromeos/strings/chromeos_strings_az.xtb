@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1195447618553298278">Naməlum xəta.</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı idarə edir və fəaliyyətinizə nəzarət edə bilər.</translation>
+<translation id="150962533380566081">Yanlış PUK.</translation>
 <translation id="1510238584712386396">Başladıcı</translation>
 <translation id="1734367976349034509">Bu cihaz korporativ idarə olunur</translation>
+<translation id="1905710495812624430">Maksimum icazə verilən cəhdlər bitdi</translation>
 <translation id="1930797645656624981">Chrome OS Daxiletmə Metodu Xidməti</translation>
 <translation id="1979103255016296513">Parol dəyişikliyinin gecikməsi</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tərəfindən idarə olunur.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Tətbiq</translation>
 <translation id="2872961005593481000">Qapadın</translation>
 <translation id="3008341117444806826">YENİLƏYİN</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">Yanlış PIN.</translation>
 <translation id="3838338534323494292">Yeni parol</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Yenidən cəhd edin. Qalan cəhd sayı: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı idarə edir və giriş edilən veb səhifə, parol və e-poçt daxil olmaqla bütün istifadəçi fəaliyyətinə girişi var.</translation>
 <translation id="4227825898293920515">Parolun vaxtı <ph name="TIME" /> ərzində başa çatır</translation>
 <translation id="4429881212383817840">Kerberos biletinin vaxtı tezliklə başa çatacaq</translation>
@@ -21,6 +27,8 @@
 <translation id="4890353053343094602">Dərhal yenisini seçin</translation>
 <translation id="5212543919916444558">Ekranınızda kömək edə biləcəyim heç nə tapmadım. Məndən hər hansı bir şey soruşmaq üçün mikrofona klikləyin.</translation>
 <translation id="5222676887888702881">Hesabdan çıxın</translation>
+<translation id="5275776633505022322">Qalan cəhd sayı: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Yenidən cəhd edin.</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5332948983412042822">İndi yenisini seçin</translation>
 <translation id="5457599981699367932">Qonaq kimi gözdən keçirin</translation>

@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1195447618553298278">Nepoznata pogreška.</translation>
 <translation id="1482734542997480527">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona možda može nadzirati vašu aktivnost.</translation>
+<translation id="150962533380566081">PUK nije važeći.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
+<translation id="1905710495812624430">Premašen je maksimalan dopušteni broj pokušaja.</translation>
 <translation id="1930797645656624981">Usluga načina unosa OS-a Chrome</translation>
 <translation id="1979103255016296513">Zakašnjela promjena zaporke</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN" />.</translation>
@@ -11,7 +14,10 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3820172043799983114">PIN nije važeći.</translation>
 <translation id="3838338534323494292">Nova zaporka</translation>
+<translation id="3915892878219591233"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo. Preostalo pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="4003259559679196451">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona ima pristup svim aktivnostima korisnika, uključujući posjećene web-stranice, zaporke i e-poštu.</translation>
 <translation id="4227825898293920515">Zaporka istječe za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberosov tiket uskoro istječe</translation>
@@ -22,6 +28,8 @@
 <translation id="5212543919916444558">Na zaslonu ne mogu pronaći ništa u vezi s čime mogu pružiti pomoć.
 Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="5275776633505022322">Preostalo pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
+<translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo.</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5332948983412042822">Odmah odaberite novu</translation>
 <translation id="5457599981699367932">Pregledavaj kao gost</translation>

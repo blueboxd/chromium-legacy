@@ -237,16 +237,15 @@ void ChromeBrowserCloudManagementController::Init(
         base::Bind(&ChromeBrowserCloudManagementController::
                        RegisterForCloudManagementWithEnrollmentTokenCallback,
                    base::Unretained(this)));
-#if defined(OS_WIN)
-    // This metric is only published on Windows to indicate how many user level
-    // installs try to enroll, as these can't store the DM token
-    // in the registry at the end of enrollment. Mac and Linux do not need
-    // this metric for now as they might use a different token storage mechanism
-    // in the future.
-    UMA_HISTOGRAM_BOOLEAN(
-        "Enterprise.MachineLevelUserCloudPolicyEnrollment.InstallLevel_Win",
-        install_static::IsSystemInstall());
-#endif
+    // On Windows, if Chrome is installed on the user level, we can't store the
+    // DM token in the registry at the end of enrollment. Hence Chrome needs to
+    // re-enroll every launch.
+    // Based on the UMA metrics
+    // Enterprise.MachineLevelUserCloudPolicyEnrollment.InstallLevel_Win,
+    // the number of user-level enrollment is very low
+    // compare to the total CBCM users. In additional to that, devices are now
+    // mostly enrolled with Google Update on Windows. Based on that, we won't do
+    // anything special for user-level install enrollment.
   }
 }
 

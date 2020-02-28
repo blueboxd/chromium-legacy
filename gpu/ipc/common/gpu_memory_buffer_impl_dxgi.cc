@@ -19,16 +19,15 @@ namespace gpu {
 GpuMemoryBufferImplDXGI::~GpuMemoryBufferImplDXGI() {}
 
 std::unique_ptr<GpuMemoryBufferImplDXGI>
-GpuMemoryBufferImplDXGI::CreateFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    DestructionCallback callback) {
+GpuMemoryBufferImplDXGI::CreateFromHandle(gfx::GpuMemoryBufferHandle handle,
+                                          const gfx::Size& size,
+                                          gfx::BufferFormat format,
+                                          gfx::BufferUsage usage,
+                                          DestructionCallback callback) {
   DCHECK(handle.dxgi_handle.IsValid());
-  return base::WrapUnique(new GpuMemoryBufferImplDXGI(
-      handle.id, size, format, std::move(callback),
-      base::win::ScopedHandle(handle.dxgi_handle.GetHandle())));
+  return base::WrapUnique(
+      new GpuMemoryBufferImplDXGI(handle.id, size, format, std::move(callback),
+                                  std::move(handle.dxgi_handle)));
 }
 
 base::OnceClosure GpuMemoryBufferImplDXGI::AllocateForTesting(
@@ -78,7 +77,7 @@ base::OnceClosure GpuMemoryBufferImplDXGI::AllocateForTesting(
   DCHECK(SUCCEEDED(hr));
 
   gfx::GpuMemoryBufferId kBufferId(1);
-  handle->dxgi_handle = IPC::PlatformFileForTransit(texture_handle);
+  handle->dxgi_handle.Set(texture_handle);
   handle->type = gfx::DXGI_SHARED_HANDLE;
   handle->id = kBufferId;
   return base::DoNothing();
@@ -115,7 +114,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplDXGI::CloneHandle() const {
                         &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
   if (!result)
     DPLOG(ERROR) << "Failed to duplicate DXGI resource handle.";
-  handle.dxgi_handle = IPC::PlatformFileForTransit(duplicated_handle);
+  handle.dxgi_handle.Set(duplicated_handle);
   return handle;
 }
 

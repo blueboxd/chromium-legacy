@@ -237,6 +237,12 @@ void UserScriptListener::OnExtensionUnloaded(
   if (ContentScriptsInfo::GetContentScripts(extension).empty())
     return;  // No patterns to delete for this extension.
 
+  // It's possible to unload extensions before loading extensions when the
+  // ExtensionService uninstalls an orphaned extension. In this case we don't
+  // need to update |profile_data_|. See crbug.com/1036028
+  if (profile_data_.count(browser_context) == 0)
+    return;
+
   // Clear all our patterns and reregister all the still-loaded extensions.
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context)->enabled_extensions();

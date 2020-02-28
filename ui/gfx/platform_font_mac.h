@@ -20,6 +20,10 @@ class PlatformFontMac : public PlatformFont {
   PlatformFontMac(const std::string& font_name,
                   int font_size);
 
+  PlatformFontMac(sk_sp<SkTypeface> typeface,
+                  int font_size_pixels,
+                  const base::Optional<FontRenderParams>& params);
+
   // Overridden from PlatformFont:
   Font DeriveFont(int size_delta,
                   int style,

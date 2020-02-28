@@ -93,8 +93,7 @@
       </ntp-voice-search-overlay>
     </template>
   </dom-if>
-  <iframe id="promo" src="chrome-untrusted://new-tab-page/promo"
-      hidden$="[[!promoLoaded_]]"></iframe>
+  <iframe id="promo" src$="[[promoUrl_]]" hidden$="[[!promoLoaded_]]"></iframe>
   <cr-button id="customizeButton" on-click="onCustomizeClick_">
     <div id="customizeIcon"></div>
     $i18n{customizeButton}

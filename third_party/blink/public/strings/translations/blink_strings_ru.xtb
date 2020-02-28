@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">элемент меню</translation>
 <translation id="10623998915015855">кнопка-переключатель</translation>
 <translation id="1088086359088493902">Секунды</translation>
+<translation id="1142001580032786438">Показать окно выбора недели</translation>
 <translation id="1171774979989969504">Введите адрес электронной почты.</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1188858454923323853">дополнительно</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">поиск</translation>
 <translation id="4812940957355064477">Введите число.</translation>
 <translation id="4912536737030637138">запись в библиографии</translation>
+<translation id="4915360478455618802">Показать окно выбора времени</translation>
 <translation id="492244087561876220">комментарий</translation>
+<translation id="4950364064308314478">Показать окно выбора даты и местного времени</translation>
 <translation id="4971739861736909480">Выбрано: <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Выбрано: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Включить звук</translation>
@@ -233,6 +236,7 @@
 <translation id="8284326494547611709">Титры</translation>
 <translation id="8346634859695247203">раздел</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>
+<translation id="839593075537728968">Укажите значение от <ph name="MINIMUM_TIME" /> до <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">прошло времени: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">часть</translation>
 <translation id="8433900881053900389">панель инструментов</translation>
@@ -249,6 +253,7 @@
 <translation id="860475260694818407">оглавление</translation>
 <translation id="8613126697340063924">управлять воспроизведением на удаленных устройствах</translation>
 <translation id="862370744433916922">подзаголовок</translation>
+<translation id="8634971699417195529">Показать окно выбора месяца</translation>
 <translation id="8711688047404765493">выход</translation>
 <translation id="8750798805984357768">Выберите один из вариантов.</translation>
 <translation id="8808573423886751634">глава</translation>

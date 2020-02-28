@@ -71,7 +71,6 @@ source_set("recent_tabs_ui") {
     "//components/sync",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",

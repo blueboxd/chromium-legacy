@@ -375,6 +375,11 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="381841723434055211">Símanúmer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> niðurhölum eytt</translation>
 <translation id="3822502789641063741">Hreinsa geymslu vefsvæða?</translation>
+<translation id="3849365399446680203">Þegar þú ert í AR gæti þetta vefsvæði:
+• Búið til þrívíddarkort af umhverfi þínu
+• Fylgst með hreyfingu myndavélar
+
+Aðeins þú getur séð að hverju myndavélin beinist. Vefsvæðið getur ekki séð myndir sem myndavélin tekur.</translation>
 <translation id="3859306556332390985">Leita áfram</translation>
 <translation id="388596076286380598">Fáðu greinar, myndskeið og annað efni frá vefsvæðum sem þú kannt að meta, jafnvel án nettengingar eða þegar tengingin er léleg.</translation>
 <translation id="3894427358181296146">Bæta möppu við</translation>
@@ -722,6 +727,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6395288395575013217">TENGILL</translation>
 <translation id="6404511346730675251">Breyta bókamerki</translation>
 <translation id="6406506848690869874">Samstilling</translation>
+<translation id="6410973561433500075">Fara í AR úr <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Prenta...</translation>
 <translation id="6416782512398055893">Sótti <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Þýða vefinn</translation>

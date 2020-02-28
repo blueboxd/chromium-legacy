@@ -21,7 +21,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 using base::trace_event::TraceConfig;
@@ -81,8 +83,9 @@ class PerfettoTracingSession
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
     // Perfetto-related deadlocks are resolved.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
-          /*privacy_filtering_enabled=*/true);
+      tracing::SetupStartupTracingForProcess(
+          /*privacy_filtering_enabled=*/true,
+          /*enable_sampler_profiler=*/false);
     }
 #endif
 
@@ -192,8 +195,9 @@ class LegacyTracingSession
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
     // Perfetto-related deadlocks are resolved.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
-      tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
-          /*privacy_filtering_enabled=*/false);
+      tracing::SetupStartupTracingForProcess(
+          /*privacy_filtering_enabled=*/false,
+          /*enable_sampler_profiler=*/false);
     }
 #endif
 

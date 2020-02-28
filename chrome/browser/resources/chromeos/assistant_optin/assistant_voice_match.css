@@ -50,6 +50,16 @@
   width: 360px;
 }
 
+@media screen and (max-height: 736px) {
+  #voice-match-animation {
+    height: 150px;
+  }
+
+  #already-setup-animation {
+    height: 240px;
+  }
+}
+
 #intro-container,
 #recording-container,
 #already-setup-container {

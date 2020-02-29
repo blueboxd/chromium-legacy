@@ -14,7 +14,6 @@
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 
 namespace safe_browsing {
@@ -65,21 +64,14 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   }
 
   SBThreatType sb_threat_type = SB_THREAT_TYPE_SAFE;
-  if (response && (response->threat_info_size() > 0)) {
-    base::PostTask(
-        FROM_HERE, CreateTaskTraits(ThreadID::UI),
-        base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
-                       cache_manager_on_ui_, url, *response, base::Time::Now(),
-                       /* store_old_cache */ false));
-
+  if (response && (response->threat_info_size() > 0) &&
+      response->threat_info(0).verdict_type() ==
+          RTLookupResponse::ThreatInfo::DANGEROUS) {
     // TODO(crbug.com/1033692): Only take the first threat info into account
     // because threat infos are returned in decreasing order of severity.
     // Consider extend it to support multiple threat types.
-    if (response->threat_info(0).verdict_type() ==
-        RTLookupResponse::ThreatInfo::DANGEROUS) {
       sb_threat_type = RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
           response->threat_info(0).threat_type());
-    }
   }
   OnUrlResult(url, sb_threat_type, ThreatMetadata());
 }

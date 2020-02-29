@@ -135,12 +135,6 @@ java_group("com_android_support_cardview_v7_java") {
   ]
 }
 
-java_group("com_android_support_collections_java") {
-  deps = [ ":androidx_collection_collection_java" ]
-  input_jars_paths =
-      [ "libs/com_android_support_collections/collections-28.0.0.jar" ]
-}
-
 java_group("com_android_support_coordinatorlayout_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",

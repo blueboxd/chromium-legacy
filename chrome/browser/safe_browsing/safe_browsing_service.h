@@ -180,8 +180,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Get the cache manager by profile.
   VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
-  base::WeakPtr<VerdictCacheManager> GetVerdictCacheManagerWeakPtr(
-      Profile* profile) const;
 
   // Get the binary upload service by profile.
   BinaryUploadService* GetBinaryUploadService(Profile* profile) const;

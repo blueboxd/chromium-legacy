@@ -18,7 +18,6 @@
 
 namespace ash {
 
-class AssistantResponse;
 class AssistantUiElementViewFactory;
 class AssistantViewDelegate;
 
@@ -44,7 +43,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   void InitLayout();
 
   // AnimatedContainerView:
-  void HandleResponse(const AssistantResponse& response) override;
+  std::unique_ptr<ElementAnimator> HandleUiElement(
+      const AssistantUiElement* ui_element) override;
   void OnAllViewsAnimatedIn() override;
   void OnScrollBarUpdated(views::ScrollBar* scroll_bar,
                           int viewport_size,

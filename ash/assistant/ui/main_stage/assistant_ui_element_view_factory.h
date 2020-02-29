@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantUiElementViewFactory {
 
   // Creates a view for the specified |ui_element|.
   std::unique_ptr<AssistantUiElementView> Create(
-      AssistantUiElement* ui_element) const;
+      const AssistantUiElement* ui_element) const;
 
  private:
   // Owned by AssistantController.

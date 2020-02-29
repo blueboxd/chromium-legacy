@@ -184,9 +184,18 @@ void SharedContextState::InitializeGrContext(
 
   if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
+
+    std::vector<const char*> blacklisted_extensions;
+    constexpr char kQualcommTiledRendering[] = "GL_QCOM_tiled_rendering";
+    // We rely on |enable_threaded_texture_mailboxes| to limit the
+    // workaround to webview only.
+    if (workarounds.disable_qcomm_tiled_rendering &&
+        gpu_preferences.enable_threaded_texture_mailboxes) {
+      blacklisted_extensions.push_back(kQualcommTiledRendering);
+    }
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
-        progress_reporter));
+        progress_reporter, blacklisted_extensions));
     if (!interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";

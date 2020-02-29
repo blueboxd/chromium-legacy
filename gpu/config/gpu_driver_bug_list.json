@@ -3543,6 +3543,18 @@
       "features": [
         "use_empty_video_hdr_metadata"
       ]
+    },
+    {
+      "id": 333,
+      "cr_bugs": [1042615],
+      "description": "Disable Qcomm_tiled_rendering extension for webview",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "features": [
+        "disable_qcomm_tiled_rendering"
+      ]
     }
   ]
 }

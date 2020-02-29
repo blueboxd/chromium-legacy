@@ -5,6 +5,8 @@
 #ifndef UI_GL_INIT_CREATE_GR_GL_INTERFACE_H_
 #define UI_GL_INIT_CREATE_GR_GL_INTERFACE_H_
 
+#include <vector>
+
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 #include "ui/gl/init/gl_init_export.h"
@@ -22,7 +24,8 @@ namespace init {
 GL_INIT_EXPORT sk_sp<GrGLInterface> CreateGrGLInterface(
     const gl::GLVersionInfo& version_info,
     bool use_version_es2,
-    gl::ProgressReporter* progress_reporter = nullptr);
+    gl::ProgressReporter* progress_reporter = nullptr,
+    std::vector<const char*> blacklisted_extensions = {});
 
 }  // namespace init
 }  // namespace gl

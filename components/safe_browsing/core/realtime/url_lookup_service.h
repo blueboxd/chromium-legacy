@@ -35,13 +35,16 @@ using RTLookupRequestCallback =
 using RTLookupResponseCallback =
     base::OnceCallback<void(bool, std::unique_ptr<RTLookupResponse>)>;
 
+class VerdictCacheManager;
+
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
 // TODO(crbug.com/1050859): Add RTLookupService check flow.
 class RealTimeUrlLookupService : public KeyedService {
  public:
-  explicit RealTimeUrlLookupService(
-      scoped_refptr<network::SharedURLLoaderFactory>);
+  RealTimeUrlLookupService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      VerdictCacheManager* cache_manager);
   ~RealTimeUrlLookupService() override;
 
   // Returns true if |url|'s scheme can be checked.
@@ -57,6 +60,8 @@ class RealTimeUrlLookupService : public KeyedService {
   // Start the full URL lookup for |url|, call |request_callback| on the same
   // thread when request is sent, call |response_callback| on the same thread
   // when response is received.
+  // Note that |request_callback| is not called if there's a valid entry in the
+  // cache for |url|.
   void StartLookup(const GURL& url,
                    RTLookupRequestCallback request_callback,
                    RTLookupResponseCallback response_callback,
@@ -78,6 +83,15 @@ class RealTimeUrlLookupService : public KeyedService {
   using PendingRTLookupRequests =
       base::flat_map<network::SimpleURLLoader*, RTLookupResponseCallback>;
 
+  // Called to get cache from |cache_manager|. Returns the cached response if
+  // there's a cache hit; nullptr otherwise.
+  std::unique_ptr<RTLookupResponse> GetCachedRealTimeUrlVerdict(
+      const GURL& url);
+
+  // Called to post a task to store the response keyed by the |url| in
+  // |cache_manager|.
+  void MayBeCacheRealTimeUrlVerdict(const GURL& url, RTLookupResponse response);
+
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until it
   // reaches |kMaxBackOffResetDurationInSeconds|.
@@ -98,8 +112,10 @@ class RealTimeUrlLookupService : public KeyedService {
   // Called when the response from the real-time lookup remote endpoint is
   // received. |url_loader| is the unowned loader that was used to send the
   // request. |request_start_time| is the time when the request was sent.
-  // |response_body| is the response received.
-  void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+  // |response_body| is the response received. |url| is used for calling
+  // |MayBeCacheRealTimeUrlVerdict|.
+  void OnURLLoaderComplete(const GURL& url,
+                           network::SimpleURLLoader* url_loader,
                            base::TimeTicks request_start_time,
                            std::unique_ptr<std::string> response_body);
 
@@ -128,6 +144,9 @@ class RealTimeUrlLookupService : public KeyedService {
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // Unowned object used for getting and storing real time url check cache.
+  VerdictCacheManager* cache_manager_;
 
   friend class RealTimeUrlLookupServiceTest;
 

@@ -101,6 +101,17 @@ void AnimatedContainerView::AnimateIn() {
   animation_observer->SetActive();
 }
 
+std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleUiElement(
+    const AssistantUiElement* ui_element) {
+  return nullptr;
+}
+
+std::unique_ptr<ElementAnimator> AnimatedContainerView::HandleSuggestion(
+    int id,
+    const AssistantSuggestion* suggestion) {
+  return nullptr;
+}
+
 void AnimatedContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
   if (propagate == propagate_preferred_size_changed_)
     return;
@@ -189,7 +200,25 @@ void AnimatedContainerView::AddResponse(
   // to the view hierarchy to reduce layout passes.
   SetPropagatePreferredSizeChanged(false);
 
-  HandleResponse(*response_);
+  std::vector<std::unique_ptr<ElementAnimator>> animators;
+
+  // Create views (and animators) for the suggestions belonging to the response.
+  for (const auto& pair : response_->GetSuggestions()) {
+    auto animator =
+        HandleSuggestion(/*id=*/pair.first, /*suggestion=*/pair.second);
+    if (animator)
+      animators.push_back(std::move(animator));
+  }
+
+  // Create views (and animators) for the UI elements belonging to the response.
+  for (const auto& ui_element : response_->GetUiElements()) {
+    auto animator = HandleUiElement(ui_element.get());
+    if (animator)
+      animators.push_back(std::move(animator));
+  }
+
+  // Cache the animators that were just created.
+  std::move(animators.begin(), animators.end(), std::back_inserter(animators_));
 
   // Now that the response for the current query has been added to the view
   // hierarchy, we can restart propagation of PreferredSizeChanged events since

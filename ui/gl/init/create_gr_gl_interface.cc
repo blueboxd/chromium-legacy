@@ -208,7 +208,6 @@ const char* kBlacklistExtensions[] = {
     "GL_NV_bindless_texture",
     "GL_NV_texture_barrier",
     "GL_OES_sample_shading",
-    "GL_QCOM_tiled_rendering",
 };
 
 }  // anonymous namespace
@@ -216,7 +215,8 @@ const char* kBlacklistExtensions[] = {
 sk_sp<GrGLInterface> CreateGrGLInterface(
     const gl::GLVersionInfo& version_info,
     bool use_version_es2,
-    gl::ProgressReporter* progress_reporter) {
+    gl::ProgressReporter* progress_reporter,
+    std::vector<const char*> blacklisted_extensions) {
   // Can't fake ES with desktop GL.
   use_version_es2 &= version_info.is_es;
 
@@ -267,6 +267,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
     return nullptr;
   }
   for (const char* extension : kBlacklistExtensions)
+    extensions.remove(extension);
+  for (const char* extension : blacklisted_extensions)
     extensions.remove(extension);
 
   GrGLInterface* interface = new GrGLInterface();

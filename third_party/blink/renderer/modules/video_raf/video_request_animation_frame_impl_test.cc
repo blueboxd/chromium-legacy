@@ -288,10 +288,12 @@ TEST_F(VideoRequestAnimationFrameImplTest, VerifyRequestAnimationFrame) {
   testing::Mock::VerifyAndClear(function);
 
   // Callbacks should be called during the rendering steps.
+  auto metadata = std::make_unique<VideoFramePresentationMetadata>();
+  metadata->presented_frames = 1;
+
   EXPECT_CALL(*function, Call(_)).Times(1);
   EXPECT_CALL(*media_player(), GetVideoFramePresentationMetadata())
-      .WillOnce(
-          Return(ByMove(std::make_unique<VideoFramePresentationMetadata>())));
+      .WillOnce(Return(ByMove(std::move(metadata))));
   SimulateAnimationFrame(base::TimeTicks::Now());
 
   testing::Mock::VerifyAndClear(function);
@@ -350,7 +352,7 @@ TEST_F(VideoRequestAnimationFrameImplTest, VerifyParameters) {
 
   // Run the callbacks directly, since they weren't scheduled to be run by the
   // ScriptedAnimationController.
-  video_raf().ExecuteFrameCallbacks(now_ms);
+  video_raf().OnRenderingSteps(now_ms);
 
   EXPECT_EQ(callback->last_now(), now_ms);
   EXPECT_TRUE(callback->was_invoked());

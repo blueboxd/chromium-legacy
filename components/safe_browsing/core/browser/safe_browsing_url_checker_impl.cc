@@ -15,7 +15,6 @@
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -103,7 +102,6 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
-    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
     signin::IdentityManager* identity_manager_on_ui,
     base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui)
     : headers_(headers),
@@ -114,7 +112,6 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
-      cache_manager_on_ui_(cache_manager_on_ui),
       identity_manager_on_ui_(identity_manager_on_ui),
       url_lookup_service_on_ui_(url_lookup_service_on_ui) {}
 
@@ -441,63 +438,6 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
     // If the URL matches the high-confidence allowlist, still do the hash based
     // checks.
     PerformHashBasedCheck(url);
-    return;
-  }
-
-  base::PostTask(
-      FROM_HERE, CreateTaskTraits(ThreadID::UI),
-      base::BindOnce(
-          &SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI,
-          weak_factory_.GetWeakPtr(), cache_manager_on_ui_, url,
-          base::TimeTicks::Now()));
-}
-
-// static
-void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
-    base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
-    base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
-    const GURL& url,
-    base::TimeTicks get_cache_start_time) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-
-  std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
-      std::make_unique<RTLookupResponse::ThreatInfo>();
-
-  base::UmaHistogramBoolean("SafeBrowsing.RT.HasValidCacheManager",
-                            !!cache_manager_on_ui);
-
-  RTLookupResponse::ThreatInfo::VerdictType verdict_type =
-      cache_manager_on_ui
-          ? cache_manager_on_ui->GetCachedRealTimeUrlVerdict(
-                url, cached_threat_info.get())
-          : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
-  base::PostTask(
-      FROM_HERE, CreateTaskTraits(ThreadID::IO),
-      base::BindOnce(
-          &SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO,
-          weak_checker_on_io, verdict_type, std::move(cached_threat_info), url,
-          get_cache_start_time));
-}
-
-void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
-    RTLookupResponse::ThreatInfo::VerdictType verdict_type,
-    std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
-    const GURL& url,
-    base::TimeTicks get_cache_start_time) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-
-  base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
-                      base::TimeTicks::Now() - get_cache_start_time);
-
-  if (verdict_type == RTLookupResponse::ThreatInfo::SAFE) {
-    OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
-    return;
-  } else if (verdict_type == RTLookupResponse::ThreatInfo::DANGEROUS) {
-    OnUrlResult(url,
-                RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
-                    cached_threat_info->threat_type()),
-                ThreatMetadata());
     return;
   }
 

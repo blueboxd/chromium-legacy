@@ -165,18 +165,22 @@ AssistantResponse::GetUiElements() const {
   return ui_elements_;
 }
 
+// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
 void AssistantResponse::AddSuggestions(
     std::vector<AssistantSuggestionPtr> suggestions) {
-  std::vector<AssistantSuggestion*> ptrs;
+  // A mapping of raw suggestion pointers to their respective ids. Note that we
+  // use the index of each suggestion within our backing vector to represent id.
+  std::map<int, const AssistantSuggestion*> ptrs;
 
   for (AssistantSuggestionPtr& suggestion : suggestions) {
     suggestions_.push_back(std::move(suggestion));
-    ptrs.push_back(suggestions_.back().get());
+    ptrs.insert({suggestions_.size() - 1, suggestions_.back().get()});
   }
 
   NotifySuggestionsAdded(ptrs);
 }
 
+// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
 const chromeos::assistant::mojom::AssistantSuggestion*
 AssistantResponse::GetSuggestionById(int id) const {
   // We consider the index of a suggestion within our backing vector to be its
@@ -186,12 +190,13 @@ AssistantResponse::GetSuggestionById(int id) const {
   return suggestions_.at(id).get();
 }
 
+// TODO(b/112034793): Migrate |id| into AssistantSuggestion.
 std::map<int, const chromeos::assistant::mojom::AssistantSuggestion*>
 AssistantResponse::GetSuggestions() const {
+  // A mapping of raw suggestion pointers to their respective ids. Note that we
+  // use the index of each suggestion within our backing vector to represent id.
   std::map<int, const AssistantSuggestion*> suggestions;
 
-  // We use index within our backing vector to represent the unique identifier
-  // for a suggestion.
   int id = 0;
   for (const AssistantSuggestionPtr& suggestion : suggestions_)
     suggestions[id++] = suggestion.get();
@@ -211,7 +216,7 @@ void AssistantResponse::NotifyUiElementAdded(
 }
 
 void AssistantResponse::NotifySuggestionsAdded(
-    const std::vector<AssistantSuggestion*>& suggestions) {
+    const std::map<int, const AssistantSuggestion*>& suggestions) {
   for (auto& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }

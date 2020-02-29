@@ -17,6 +17,20 @@ constexpr const char kUserActionExitPressed[] = "exit";
 
 }  // namespace
 
+// static
+bool GestureNavigationScreen::ShouldSkipGestureNavigationScreen() {
+  // TODO(mmourgos): If clamshell mode is enabled and device is detachable, then
+  // show the gesture navigation flow.
+
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  return (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
+          !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
+          !ash::TabletMode::Get()->InTabletMode() ||
+          accessibility_manager->IsSpokenFeedbackEnabled() ||
+          accessibility_manager->IsAutoclickEnabled() ||
+          accessibility_manager->IsSwitchAccessEnabled());
+}
+
 GestureNavigationScreen::GestureNavigationScreen(
     GestureNavigationScreenView* view,
     const base::RepeatingClosure& exit_callback)
@@ -33,16 +47,7 @@ GestureNavigationScreen::~GestureNavigationScreen() {
 }
 
 void GestureNavigationScreen::ShowImpl() {
-  // TODO(mmourgos): If clamshell mode is enabled and device is detachable, then
-  // show the gesture navigation flow.
-
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
-      !ash::TabletMode::Get()->InTabletMode() ||
-      accessibility_manager->IsSpokenFeedbackEnabled() ||
-      accessibility_manager->IsAutoclickEnabled() ||
-      accessibility_manager->IsSwitchAccessEnabled()) {
+  if (ShouldSkipGestureNavigationScreen()) {
     exit_callback_.Run();
     return;
   }

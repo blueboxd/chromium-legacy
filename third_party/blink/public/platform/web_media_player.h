@@ -137,6 +137,8 @@ class WebMediaPlayer {
     int height;
     base::TimeDelta presentation_timestamp;
     media::VideoFrameMetadata metadata;
+    base::TimeDelta rendering_interval;
+    base::TimeDelta average_frame_duration;
   };
 
   // Describes when we use SurfaceLayer for video instead of VideoLayer.

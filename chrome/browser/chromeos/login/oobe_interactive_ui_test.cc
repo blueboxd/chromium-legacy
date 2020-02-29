@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -42,10 +43,12 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -367,6 +370,27 @@ void HandleGestureNavigationScreen() {
   }
 
   OobeScreenExitWaiter(GestureNavigationScreenView::kScreenId).Wait();
+}
+
+// Waits for marketing opt in screen to get shown, then taps through the screen
+// and waits for the screen to exit.
+void HandleMarketingOptInScreen() {
+  OobeScreenWaiter(MarketingOptInScreenView::kScreenId).Wait();
+
+  // Enable the tablet mode shelf navigation buttons so that the next button
+  // is shown on the marketing opt in screen in tablet mode.
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, true);
+
+  test::OobeJS().CreateVisibilityWaiter(true, {"marketing-opt-in"})->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(
+          true, {"marketing-opt-in", "marketing-opt-in-next-button"})
+      ->Wait();
+  test::OobeJS().TapOnPath(
+      {"marketing-opt-in", "marketing-opt-in-next-button"});
+
+  OobeScreenExitWaiter(MarketingOptInScreenView::kScreenId).Wait();
 }
 
 class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
@@ -726,6 +750,7 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(
   if (test_setup()->is_tablet() &&
       test_setup()->hide_shelf_controls_in_tablet_mode()) {
     HandleGestureNavigationScreen();
+    HandleMarketingOptInScreen();
   }
 }
 
@@ -1060,6 +1085,7 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   if (test_setup()->is_tablet() &&
       test_setup()->hide_shelf_controls_in_tablet_mode()) {
     HandleGestureNavigationScreen();
+    HandleMarketingOptInScreen();
   }
 
   WaitForActiveSession();

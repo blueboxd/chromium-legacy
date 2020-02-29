@@ -121,25 +121,25 @@ void UiElementContainerView::OnCommittedQueryChanged(
   AnimatedContainerView::OnCommittedQueryChanged(query);
 }
 
-void UiElementContainerView::HandleResponse(const AssistantResponse& response) {
-  for (const auto& ui_element : response.GetUiElements()) {
-    // Create a new view for the |ui_element|.
-    auto view = view_factory_->Create(ui_element.get());
+std::unique_ptr<ElementAnimator> UiElementContainerView::HandleUiElement(
+    const AssistantUiElement* ui_element) {
+  // Create a new view for the |ui_element|.
+  auto view = view_factory_->Create(ui_element);
 
-    // If the first UI element is a card, it has a unique margin requirement.
-    const bool is_card = ui_element->type() == AssistantUiElementType::kCard;
-    const bool is_first_ui_element = content_view()->children().empty();
-    if (is_card && is_first_ui_element) {
-      constexpr int kMarginTopDip = 24;
-      view->SetBorder(views::CreateEmptyBorder(kMarginTopDip, 0, 0, 0));
-    }
-
-    // Add the view to the view hierarchy and bind an animator to handle all of
-    // its animations. Note that we prepare its animation layer for entry.
-    auto* view_ptr = content_view()->AddChildView(std::move(view));
-    AddElementAnimator(view_ptr->CreateAnimator());
-    view_ptr->GetLayerForAnimating()->SetOpacity(0.f);
+  // If the first UI element is a card, it has a unique margin requirement.
+  const bool is_card = ui_element->type() == AssistantUiElementType::kCard;
+  const bool is_first_ui_element = content_view()->children().empty();
+  if (is_card && is_first_ui_element) {
+    constexpr int kMarginTopDip = 24;
+    view->SetBorder(views::CreateEmptyBorder(kMarginTopDip, 0, 0, 0));
   }
+
+  // Add the view to the hierarchy and prepare its animation layer for entry.
+  auto* view_ptr = content_view()->AddChildView(std::move(view));
+  view_ptr->GetLayerForAnimating()->SetOpacity(0.f);
+
+  // Return the animator that will be used to animate the view.
+  return view_ptr->CreateAnimator();
 }
 
 void UiElementContainerView::OnAllViewsAnimatedIn() {

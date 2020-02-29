@@ -41,24 +41,47 @@ class MODULES_EXPORT VideoRequestAnimationFrameImpl final
   void OnWebMediaPlayerCreated() override;
   void OnRequestAnimationFrame() override;
 
-  void ExecuteFrameCallbacks(double high_res_now_ms);
+  // Called by ScriptedAnimationController as part of the rendering steps,
+  // right before the execution of window.rAF callbacks.
+  void OnRenderingSteps(double high_res_now_ms);
 
  private:
   friend class VideoRequestAnimationFrameImplTest;
-
-  // Register a non-V8 callback for testing. Also sets |pending_execution_| to
-  // true, to allow calling into ExecuteFrameCallbacks() directly.
-  void RegisterCallbackForTest(
-      VideoFrameRequestCallbackCollection::VideoFrameCallback*);
 
   // Utility functions to limit the clock resolution of fields, for security
   // reasons.
   static double GetClampedTimeInMillis(base::TimeDelta time);
   static double GetCoarseClampedTimeInSeconds(base::TimeDelta time);
 
+  void ExecuteFrameCallbacks(
+      double high_res_now_ms,
+      std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>);
+
+  // Register a non-V8 callback for testing. Also sets |pending_execution_| to
+  // true, to allow calling into ExecuteFrameCallbacks() directly.
+  void RegisterCallbackForTest(
+      VideoFrameRequestCallbackCollection::VideoFrameCallback*);
+
+  // Adds |this| to the ScriptedAnimationController's queue of video.rAF
+  // callbacks that should be executed during the next rendering steps.
+  // Also causes rendering steps to be scheduled if needed.
+  void ScheduleCallbackExecution();
+
   // Used to keep track of whether or not we have already scheduled a call to
   // ExecuteFrameCallbacks() in the next rendering steps.
   bool pending_execution_ = false;
+
+  // The value of the |metadata->presented_frames| field the last time called
+  // ExecuteFrameCallbacks. Used to determine whether or not a new frame was
+  // presented since we last executed the frame callbacks.
+  // The values coming from the compositor should start at 1, we can use 0
+  // as a "null" starting value.
+  uint32_t last_presented_frames_ = 0;
+
+  // Number of times OnRenderingSteps() was called in a row, without us having a
+  // new frame. Used to abort auto-rescheduling if we aren't consistently
+  // getting new frames.
+  int consecutive_stale_frames_ = 0;
 
   Member<VideoFrameRequestCallbackCollection> callback_collection_;
 

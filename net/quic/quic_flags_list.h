@@ -266,29 +266,11 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_drop_small_initial_packets,
           true)
 
-// If true, QUIC will call bandwidth sampler once per ack event, instead of once
-// per acked packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_one_bw_sample_per_ack_event2,
-          true)
-
-// If true, QUIC will call bandwidth sampler once per ack event, instead of once
-// per acked packet.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event2,
-    true)
-
 // In BBR, slow pacing rate if it is likely causing overshoot.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr_mitigate_overly_large_bandwidth_sample,
     true)
-
-// If true, support QUIC BBRv2-style loss based startup exit in BBRv1.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_loss_based_startup_exit,
-          true)
 
 // The default initial value of the max ack height filter's window length.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_initial_ack_height_filter_window, 10)
@@ -367,7 +349,9 @@ QUIC_FLAG(bool,
           false)
 
 // If true, enable QUIC version h3-25.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_25, false)
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v2,
+          false)
 
 // If true, fix QUIC bandwidth sampler to avoid over estimating bandwidth in
 // the presence of ack aggregation.
@@ -382,4 +366,16 @@ QUIC_FLAG(
 // Please update the flag value in spdy when this flag is flipped.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
+          true)
+
+// If true, only do minimum validation of coalesced packets (only validate
+// connection ID).
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_minimum_validation_of_coalesced_packets,
+    false)
+
+// If true, do not send WINDOW_UPDATE if connection has been disconnected.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_window_update_if_disconnected,
           true)

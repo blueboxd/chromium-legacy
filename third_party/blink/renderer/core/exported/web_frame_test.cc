@@ -10669,44 +10669,6 @@ TEST_F(WebFrameTest, CopyTextInImageDocument) {
   system_clipboard->CommitWrite();
 }
 
-class CallbackOrderingWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  CallbackOrderingWebFrameClient() : callback_count_(0) {}
-  ~CallbackOrderingWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidStartLoading() override {
-    EXPECT_EQ(0, callback_count_++);
-    frame_test_helpers::TestWebFrameClient::DidStartLoading();
-  }
-  void DidStartProvisionalLoad(WebDocumentLoader*) override {
-    EXPECT_EQ(1, callback_count_++);
-  }
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType,
-                                bool) override {
-    EXPECT_EQ(2, callback_count_++);
-  }
-  void DidFinishDocumentLoad() override { EXPECT_EQ(3, callback_count_++); }
-  void DidHandleOnloadEvents() override { EXPECT_EQ(4, callback_count_++); }
-  void DidFinishLoad() override { EXPECT_EQ(5, callback_count_++); }
-  void DidStopLoading() override {
-    EXPECT_EQ(6, callback_count_++);
-    frame_test_helpers::TestWebFrameClient::DidStopLoading();
-  }
-
- private:
-  int callback_count_;
-};
-
-TEST_F(WebFrameTest, CallbackOrdering) {
-  RegisterMockedHttpURLLoad("foo.html");
-  CallbackOrderingWebFrameClient client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html", &client);
-}
-
 class TestRemoteFrameHostForVisibility : public FakeRemoteFrameHost {
  public:
   TestRemoteFrameHostForVisibility() = default;

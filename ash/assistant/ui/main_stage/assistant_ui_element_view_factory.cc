@@ -21,14 +21,14 @@ AssistantUiElementViewFactory::AssistantUiElementViewFactory(
 AssistantUiElementViewFactory::~AssistantUiElementViewFactory() = default;
 
 std::unique_ptr<AssistantUiElementView> AssistantUiElementViewFactory::Create(
-    AssistantUiElement* ui_element) const {
+    const AssistantUiElement* ui_element) const {
   switch (ui_element->type()) {
     case AssistantUiElementType::kCard:
       return std::make_unique<AssistantCardElementView>(
-          delegate_, static_cast<AssistantCardElement*>(ui_element));
+          delegate_, static_cast<const AssistantCardElement*>(ui_element));
     case AssistantUiElementType::kText:
       return std::make_unique<AssistantTextElementView>(
-          static_cast<AssistantTextElement*>(ui_element));
+          static_cast<const AssistantTextElement*>(ui_element));
   }
 }
 

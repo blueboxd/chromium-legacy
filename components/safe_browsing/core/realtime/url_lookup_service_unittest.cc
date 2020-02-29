@@ -5,7 +5,10 @@
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 
 #include "base/test/task_environment.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
+#include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -16,6 +19,7 @@ namespace safe_browsing {
 class RealTimeUrlLookupServiceTest : public PlatformTest {
  public:
   void SetUp() override {
+    HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     task_environment_ = CreateTestTaskEnvironment(
         base::test::TaskEnvironment::TimeSource::MOCK_TIME);
     PlatformTest::SetUp();
@@ -24,8 +28,20 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
 
-    rt_service_ =
-        std::make_unique<RealTimeUrlLookupService>(test_shared_loader_factory_);
+    content_setting_map_ = new HostContentSettingsMap(
+        &test_pref_service_, false /* is_off_the_record */,
+        false /* store_last_modified */,
+        false /* migrate_requesting_and_top_level_origin_settings */);
+    cache_manager_ = std::make_unique<VerdictCacheManager>(
+        nullptr, content_setting_map_.get());
+
+    rt_service_ = std::make_unique<RealTimeUrlLookupService>(
+        test_shared_loader_factory_, cache_manager_.get());
+  }
+
+  void TearDown() override {
+    cache_manager_.reset();
+    content_setting_map_->ShutdownOnUIThread();
   }
 
   bool CanCheckUrl(const GURL& url) { return rt_service_->CanCheckUrl(url); }
@@ -35,11 +51,37 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) {
     return rt_service_->FillRequestProto(url);
   }
+  std::unique_ptr<RTLookupResponse> GetCachedRealTimeUrlVerdict(
+      const GURL& url) {
+    return rt_service_->GetCachedRealTimeUrlVerdict(url);
+  }
+
+  void MayBeCacheRealTimeUrlVerdict(
+      GURL url,
+      RTLookupResponse::ThreatInfo::VerdictType verdict_type,
+      RTLookupResponse::ThreatInfo::ThreatType threat_type,
+      int cache_duration_sec,
+      const std::string& cache_expression,
+      RTLookupResponse::ThreatInfo::CacheExpressionMatchType
+          cache_expression_match_type) {
+    RTLookupResponse response;
+    RTLookupResponse::ThreatInfo* new_threat_info = response.add_threat_info();
+    new_threat_info->set_verdict_type(verdict_type);
+    new_threat_info->set_threat_type(threat_type);
+    new_threat_info->set_cache_duration_sec(cache_duration_sec);
+    new_threat_info->set_cache_expression_using_match_type(cache_expression);
+    new_threat_info->set_cache_expression_match_type(
+        cache_expression_match_type);
+    rt_service_->MayBeCacheRealTimeUrlVerdict(url, response);
+  }
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<RealTimeUrlLookupService> rt_service_;
+  std::unique_ptr<VerdictCacheManager> cache_manager_;
+  scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  sync_preferences::TestingPrefServiceSyncable test_pref_service_;
 };
 
 TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
@@ -373,6 +415,28 @@ TEST_F(RealTimeUrlLookupServiceTest, TestCanCheckUrl) {
     bool expected_can_check = can_check_url_cases[i].can_check;
     EXPECT_EQ(expected_can_check, CanCheckUrl(url));
   }
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestCacheNotInCacheManager) {
+  GURL url("https://a.example.test/path1/path2");
+  ASSERT_EQ(nullptr, GetCachedRealTimeUrlVerdict(url));
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestCacheInCacheManager) {
+  GURL url("https://a.example.test/path1/path2");
+  MayBeCacheRealTimeUrlVerdict(url, RTLookupResponse::ThreatInfo::DANGEROUS,
+                               RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
+                               60, "a.example.test/path1/path2",
+                               RTLookupResponse::ThreatInfo::COVERING_MATCH);
+  task_environment_->RunUntilIdle();
+
+  std::unique_ptr<RTLookupResponse> cache_response =
+      GetCachedRealTimeUrlVerdict(url);
+  ASSERT_NE(nullptr, cache_response);
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::DANGEROUS,
+            cache_response->threat_info(0).verdict_type());
+  EXPECT_EQ(RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING,
+            cache_response->threat_info(0).threat_type());
 }
 
 }  // namespace safe_browsing

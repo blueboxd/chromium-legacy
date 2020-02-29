@@ -38,8 +38,6 @@ enum class ResourceType;
 
 class UrlCheckerDelegate;
 
-class VerdictCacheManager;
-
 class RealTimeUrlLookupService;
 
 // A SafeBrowsingUrlCheckerImpl instance is used to perform SafeBrowsing check
@@ -90,7 +88,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       bool real_time_lookup_enabled,
-      base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
       signin::IdentityManager* identity_manager_on_ui,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui);
 
@@ -138,22 +135,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override;
   void OnCheckUrlForHighConfidenceAllowlist(bool did_match_allowlist) override;
-
-  // This function has to be static because it is called in UI thread,
-  // |weak_checker_on_io| can only be accessed from IO thread.
-  // This function is called if the url doesn't match the allowlist.
-  static void StartGetCachedRealTimeUrlVerdictOnUI(
-      base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
-      base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
-      const GURL& url,
-      base::TimeTicks get_cache_start_time);
-
-  // This function will start real time url lookup if there is no cache match.
-  void OnGetCachedRealTimeUrlVerdictDoneOnIO(
-      RTLookupResponse::ThreatInfo::VerdictType verdict_type,
-      std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
-      const GURL& url,
-      base::TimeTicks get_cache_start_time);
 
   void OnTimeout();
 
@@ -263,11 +244,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // to |database_manager_|. As long as the redirection is still happening,
   // there is at least one check that needs to be cancelled.
   bool browse_url_check_sent_ = false;
-
-  // Unowned object used for getting and storing real time url check cache.
-  // Must be NOT nullptr when real time url check is enabled and profile is not
-  // delete. Can only be accessed in UI thread.
-  base::WeakPtr<VerdictCacheManager> cache_manager_on_ui_;
 
   // This object is used to obtain access token when real time url check with
   // token is enabled. Can only be accessed in UI thread.

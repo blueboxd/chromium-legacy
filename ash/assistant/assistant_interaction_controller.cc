@@ -386,6 +386,14 @@ void AssistantInteractionController::OnInteractionStarted(
 
 void AssistantInteractionController::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
+  // If we don't have an active interaction, that indicates that this
+  // interaction was explicitly stopped outside of LibAssistant. In this case,
+  // we ensure that the mic is closed but otherwise ignore this event.
+  if (IsResponseProcessingV2Enabled() && !HasActiveInteraction()) {
+    model_.SetMicState(MicState::kClosed);
+    return;
+  }
+
   model_.SetInteractionState(InteractionState::kInactive);
   model_.SetMicState(MicState::kClosed);
 

@@ -157,6 +157,8 @@ void VideoFrameCompositor::SetCurrentFrame(
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks expected_presentation_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "VideoFrameCompositor::SetCurrentFrame", "frame",
+               frame->AsHumanReadableString());
   base::AutoLock lock(current_frame_lock_);
   current_frame_ = std::move(frame);
   last_presentation_time_ = tick_clock_->NowTicks();
@@ -172,6 +174,8 @@ void VideoFrameCompositor::PutCurrentFrame() {
 bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
                                               base::TimeTicks deadline_max) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT2("media", "VideoFrameCompositor::UpdateCurrentFrame",
+               "deadline_min", deadline_min, "deadline_max", deadline_max);
   return CallRender(deadline_min, deadline_max, false);
 }
 
@@ -229,6 +233,7 @@ void VideoFrameCompositor::PaintSingleFrame(scoped_refptr<VideoFrame> frame,
 }
 
 void VideoFrameCompositor::UpdateCurrentFrameIfStale() {
+  TRACE_EVENT0("media", "VideoFrameCompositor::UpdateCurrentFrameIfStale");
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If we're not rendering, then the frame can't be stale.
@@ -252,9 +257,12 @@ void VideoFrameCompositor::UpdateCurrentFrameIfStale() {
   if (interval < base::TimeDelta::FromMilliseconds(4))
     return;
 
-  // Update the interval based on the time between calls and call background
-  // render which will give this information to the client.
-  last_interval_ = interval;
+  {
+    base::AutoLock lock(callback_lock_);
+    // Update the interval based on the time between calls and call background
+    // render which will give this information to the client.
+    last_interval_ = interval;
+  }
   BackgroundRender();
 }
 
@@ -293,6 +301,15 @@ VideoFrameCompositor::GetLastPresentedFrameMetadata() {
   frame_metadata->presentation_timestamp = last_frame->timestamp();
 
   frame_metadata->metadata.MergeMetadataFrom(last_frame->metadata());
+
+  {
+    base::AutoLock lock(callback_lock_);
+    if (callback_) {
+      frame_metadata->average_frame_duration =
+          callback_->GetPreferredRenderInterval();
+    }
+    frame_metadata->rendering_interval = last_interval_;
+  }
 
   return frame_metadata;
 }
@@ -347,11 +364,19 @@ void VideoFrameCompositor::SetForceSubmit(bool force_submit) {
   submitter_->SetForceSubmit(force_submit);
 }
 
+base::TimeDelta VideoFrameCompositor::GetLastIntervalWithoutLock()
+    NO_THREAD_SAFETY_ANALYSIS {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  // |last_interval_| is only updated on the compositor thread, so it's safe to
+  // return it without acquiring |callback_lock_|
+  return last_interval_;
+}
+
 void VideoFrameCompositor::BackgroundRender() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   const base::TimeTicks now = tick_clock_->NowTicks();
   last_background_render_ = now;
-  bool new_frame = CallRender(now, now + last_interval_, true);
+  bool new_frame = CallRender(now, now + GetLastIntervalWithoutLock(), true);
   if (new_frame && IsClientSinkAvailable())
     client_->DidReceiveFrame();
 }

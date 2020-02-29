@@ -83,8 +83,7 @@ class MODULES_EXPORT VideoFrameRequestCallbackCollection final
   // Invokes all callbacks with the provided information.
   void ExecuteFrameCallbacks(double high_res_now_ms, const VideoFrameMetadata*);
 
-  bool HasFrameCallback() const { return frame_callbacks_.size(); }
-  bool IsEmpty() const { return !HasFrameCallback(); }
+  bool IsEmpty() const { return !frame_callbacks_.size(); }
 
   virtual void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {

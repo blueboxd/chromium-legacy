@@ -7,6 +7,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,10 +68,13 @@ void MarketingOptInScreen::ShowImpl() {
   //   1) the feature is disabled, or
   //   2) the screen has been shown for this user, or
   //   3) it is public session or non-regular ephemeral user login.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableMarketingOptInScreen) ||
-      prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
-      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+  //    AND
+  //   4) the gesture navigation screen was skipped.
+  if ((!base::CommandLine::ForCurrentProcess()->HasSwitch(
+           chromeos::switches::kEnableMarketingOptInScreen) ||
+       prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
+       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) &&
+      GestureNavigationScreen::ShouldSkipGestureNavigationScreen()) {
     exit_callback_.Run();
     return;
   }

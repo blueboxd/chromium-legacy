@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
@@ -71,12 +72,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   void InitLayout();
 
   // AnimatedContainerView:
-  void HandleResponse(const AssistantResponse& response) override;
+  std::unique_ptr<ElementAnimator> HandleSuggestion(
+      int id,
+      const AssistantSuggestion* suggestion) override;
   void OnAllViewsRemoved() override;
 
-  void OnSuggestionsChanged(
-      const std::map<int, const AssistantSuggestion*>& suggestions);
-  void AddSuggestionChip(const AssistantSuggestion& suggestion, int id);
+  std::unique_ptr<ElementAnimator> AddSuggestionChip(
+      int id,
+      const AssistantSuggestion* suggestion);
 
   // Invoked on suggestion chip icon downloaded event.
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);

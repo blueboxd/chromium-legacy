@@ -245,7 +245,6 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
@@ -4227,15 +4226,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
-    // |cache_manager| is used when real time url check is enabled.
-    base::WeakPtr<safe_browsing::VerdictCacheManager> cache_manager =
-        // |safe_browsing_service_| may be unavailable in tests.
-        safe_browsing_service_ &&
-                safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-                    profile)
-            ? safe_browsing_service_->GetVerdictCacheManagerWeakPtr(profile)
-            : nullptr;
-
     // |identity_manager| is used when real time url check with token is
     // enabled.
     signin::IdentityManager* identity_manager =
@@ -4259,7 +4249,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
             profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
-        wc_getter, frame_tree_node_id, cache_manager, identity_manager,
+        wc_getter, frame_tree_node_id, identity_manager,
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
   }
 #endif

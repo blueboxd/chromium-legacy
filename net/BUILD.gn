@@ -887,7 +887,6 @@ component("net") {
       "quic/platform/impl/quic_mem_slice_storage_impl.h",
       "quic/platform/impl/quic_mutex_impl.cc",
       "quic/platform/impl/quic_mutex_impl.h",
-      "quic/platform/impl/quic_optional_impl.h",
       "quic/platform/impl/quic_pcc_sender_impl.h",
       "quic/platform/impl/quic_prefetch_impl.h",
       "quic/platform/impl/quic_ptr_util_impl.h",

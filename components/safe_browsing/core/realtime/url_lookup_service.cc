@@ -5,12 +5,14 @@
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 
 #include "base/base64url.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
@@ -48,8 +50,9 @@ GURL SanitizeURL(const GURL& url) {
 }  // namespace
 
 RealTimeUrlLookupService::RealTimeUrlLookupService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    VerdictCacheManager* cache_manager)
+    : url_loader_factory_(url_loader_factory), cache_manager_(cache_manager) {}
 
 void RealTimeUrlLookupService::StartLookup(
     const GURL& url,
@@ -58,6 +61,17 @@ void RealTimeUrlLookupService::StartLookup(
     signin::IdentityManager* identity_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   DCHECK(url.is_valid());
+
+  // Check cache.
+  std::unique_ptr<RTLookupResponse> cache_response =
+      GetCachedRealTimeUrlVerdict(url);
+  if (cache_response) {
+    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                   base::BindOnce(std::move(response_callback),
+                                  /* is_rt_lookup_successful */ true,
+                                  std::move(cache_response)));
+    return;
+  }
 
   std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
 
@@ -111,13 +125,44 @@ void RealTimeUrlLookupService::StartLookup(
   owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&RealTimeUrlLookupService::OnURLLoaderComplete,
-                     GetWeakPtr(), loader, base::TimeTicks::Now()));
+                     GetWeakPtr(), url, loader, base::TimeTicks::Now()));
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
   base::PostTask(
       FROM_HERE, CreateTaskTraits(ThreadID::IO),
       base::BindOnce(std::move(request_callback), std::move(request)));
+}
+
+std::unique_ptr<RTLookupResponse>
+RealTimeUrlLookupService::GetCachedRealTimeUrlVerdict(const GURL& url) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
+      std::make_unique<RTLookupResponse::ThreatInfo>();
+
+  base::UmaHistogramBoolean("SafeBrowsing.RT.HasValidCacheManager",
+                            !!cache_manager_);
+
+  base::TimeTicks get_cache_start_time = base::TimeTicks::Now();
+
+  RTLookupResponse::ThreatInfo::VerdictType verdict_type =
+      cache_manager_ ? cache_manager_->GetCachedRealTimeUrlVerdict(
+                           url, cached_threat_info.get())
+                     : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
+
+  base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
+  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
+                      base::TimeTicks::Now() - get_cache_start_time);
+
+  if (verdict_type == RTLookupResponse::ThreatInfo::SAFE ||
+      verdict_type == RTLookupResponse::ThreatInfo::DANGEROUS) {
+    auto cache_response = std::make_unique<RTLookupResponse>();
+    RTLookupResponse::ThreatInfo* new_threat_info =
+        cache_response->add_threat_info();
+    *new_threat_info = *cached_threat_info;
+    return cache_response;
+  }
+  return nullptr;
 }
 
 void RealTimeUrlLookupService::Shutdown() {
@@ -134,6 +179,7 @@ void RealTimeUrlLookupService::Shutdown() {
 RealTimeUrlLookupService::~RealTimeUrlLookupService() {}
 
 void RealTimeUrlLookupService::OnURLLoaderComplete(
+    const GURL& url,
     network::SimpleURLLoader* url_loader,
     base::TimeTicks request_start_time,
     std::unique_ptr<std::string> response_body) {
@@ -158,12 +204,26 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
                                  response->ParseFromString(*response_body);
   is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
 
+  MayBeCacheRealTimeUrlVerdict(url, *response);
+
   base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
                  base::BindOnce(std::move(it->second), is_rt_lookup_successful,
                                 std::move(response)));
 
   delete it->first;
   pending_requests_.erase(it);
+}
+
+void RealTimeUrlLookupService::MayBeCacheRealTimeUrlVerdict(
+    const GURL& url,
+    RTLookupResponse response) {
+  if (response.threat_info_size() > 0) {
+    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::UI),
+                   base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
+                                  base::Unretained(cache_manager_), url,
+                                  response, base::Time::Now(),
+                                  /* store_old_cache */ false));
+  }
 }
 
 bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {

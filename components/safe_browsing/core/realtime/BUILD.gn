@@ -11,6 +11,7 @@ static_library("url_lookup_service") {
   deps = [
     "//base:base",
     "//components/safe_browsing/core:realtimeapi_proto",
+    "//components/safe_browsing/core:verdict_cache_manager",
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/signin/public/identity_manager",
@@ -51,7 +52,9 @@ if (!is_ios) {
       ":policy_engine",
       ":url_lookup_service",
       "//base/test:test_support",
+      "//components/content_settings/core/browser",
       "//components/safe_browsing/core:features",
+      "//components/safe_browsing/core:verdict_cache_manager",
       "//components/safe_browsing/core/common",
       "//components/safe_browsing/core/common:safe_browsing_prefs",
       "//components/safe_browsing/core/common:test_support",

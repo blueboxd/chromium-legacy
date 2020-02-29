@@ -5,12 +5,13 @@
 #ifndef ASH_AMBIENT_UI_ASSISTANT_RESPONSE_CONTAINER_VIEW_H_
 #define ASH_AMBIENT_UI_ASSISTANT_RESPONSE_CONTAINER_VIEW_H_
 
+#include <memory>
+
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
 #include "base/macros.h"
 
 namespace ash {
 
-class AssistantResponse;
 class AssistantTextElement;
 class AssistantViewDelegate;
 
@@ -29,7 +30,8 @@ class AssistantResponseContainerView : public AnimatedContainerView {
   void AddTextElementView(const AssistantTextElement* text_element);
 
   // AnimatedContainerView:
-  void HandleResponse(const AssistantResponse& response) override;
+  std::unique_ptr<ElementAnimator> HandleUiElement(
+      const AssistantUiElement* ui_element) override;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantResponseContainerView);
 };

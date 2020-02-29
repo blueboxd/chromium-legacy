@@ -44,14 +44,12 @@ class VideoFrameRequestCallbackCollectionTest : public PageTestBase {
 };
 
 TEST_F(VideoFrameRequestCallbackCollectionTest, AddSingleCallback) {
-  EXPECT_FALSE(collection()->HasFrameCallback());
   EXPECT_TRUE(collection()->IsEmpty());
 
   auto callback = CreateCallback();
   CallbackId id = collection()->RegisterFrameCallback(callback.Get());
 
   EXPECT_EQ(id, callback->Id());
-  EXPECT_TRUE(collection()->HasFrameCallback());
   EXPECT_FALSE(collection()->IsEmpty());
 }
 
@@ -63,7 +61,7 @@ TEST_F(VideoFrameRequestCallbackCollectionTest, InvokeSingleCallback) {
   EXPECT_CALL(*callback, Invoke(kDefaultTimestamp, metadata));
   collection()->ExecuteFrameCallbacks(kDefaultTimestamp, metadata);
 
-  EXPECT_FALSE(collection()->HasFrameCallback());
+  EXPECT_TRUE(collection()->IsEmpty());
 }
 
 TEST_F(VideoFrameRequestCallbackCollectionTest, CancelSingleCallback) {
@@ -75,12 +73,12 @@ TEST_F(VideoFrameRequestCallbackCollectionTest, CancelSingleCallback) {
 
   // Cancelling an non existent ID should do nothing.
   collection()->CancelFrameCallback(id + 100);
-  EXPECT_TRUE(collection()->HasFrameCallback());
+  EXPECT_FALSE(collection()->IsEmpty());
   EXPECT_FALSE(callback->IsCancelled());
 
   // Cancel the callback this time.
   collection()->CancelFrameCallback(id);
-  EXPECT_FALSE(collection()->HasFrameCallback());
+  EXPECT_TRUE(collection()->IsEmpty());
 
   collection()->ExecuteFrameCallbacks(kDefaultTimestamp,
                                       VideoFrameMetadata::Create());
@@ -121,13 +119,13 @@ TEST_F(VideoFrameRequestCallbackCollectionTest, CreateCallbackDuringExecution) {
                                       VideoFrameMetadata::Create());
 
   EXPECT_NE(created_id, 0);
-  EXPECT_TRUE(collection()->HasFrameCallback());
+  EXPECT_FALSE(collection()->IsEmpty());
 
   // The created callback should be executed the second time around.
   EXPECT_CALL(*created_callback, Invoke(_, _)).Times(1);
   collection()->ExecuteFrameCallbacks(kDefaultTimestamp,
                                       VideoFrameMetadata::Create());
-  EXPECT_FALSE(collection()->HasFrameCallback());
+  EXPECT_TRUE(collection()->IsEmpty());
 }
 
 TEST_F(VideoFrameRequestCallbackCollectionTest,
@@ -158,7 +156,7 @@ TEST_F(VideoFrameRequestCallbackCollectionTest,
                                       VideoFrameMetadata::Create());
 
   // Everything should have been cleared
-  EXPECT_FALSE(collection()->HasFrameCallback());
+  EXPECT_TRUE(collection()->IsEmpty());
 }
 
 }  // namespace blink

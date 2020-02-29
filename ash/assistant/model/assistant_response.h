@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
  private:
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
-  void NotifySuggestionsAdded(const std::vector<AssistantSuggestion*>&);
+  void NotifySuggestionsAdded(const std::map<int, const AssistantSuggestion*>&);
 
   struct PendingUiElement;
   class Processor;

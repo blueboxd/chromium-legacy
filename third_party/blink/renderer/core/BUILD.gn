@@ -1134,6 +1134,7 @@ jumbo_source_set("unit_tests") {
     "exported/web_frame_serializer_test_helper.h",
     "exported/web_frame_test.cc",
     "exported/web_image_test.cc",
+    "exported/web_local_frame_client_test.cc",
     "exported/web_meaningful_layouts_test.cc",
     "exported/web_node_test.cc",
     "exported/web_plugin_container_test.cc",

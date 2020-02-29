@@ -183,19 +183,28 @@ void SuggestionContainerView::OnConversationStartersChanged(
     return;
 
   RemoveAllViews();
-  OnSuggestionsChanged(conversation_starters);
+
+  std::vector<std::unique_ptr<ElementAnimator>> animators;
+  for (const auto& pair : conversation_starters) {
+    auto animator =
+        AddSuggestionChip(/*id=*/pair.first, /*suggestion=*/pair.second);
+    if (animator)
+      AddElementAnimator(std::move(animator));
+  }
+
   AnimateIn();
 }
 
-void SuggestionContainerView::HandleResponse(
-    const AssistantResponse& response) {
+std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
+    int id,
+    const AssistantSuggestion* suggestion) {
   has_received_response_ = true;
 
   // When no longer showing conversation starters, we start align our content.
   layout_manager_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
-  OnSuggestionsChanged(response.GetSuggestions());
+  return AddSuggestionChip(id, suggestion);
 }
 
 void SuggestionContainerView::OnAllViewsRemoved() {
@@ -213,28 +222,17 @@ void SuggestionContainerView::OnAllViewsRemoved() {
   // not whether we are currently displaying a response.
 }
 
-void SuggestionContainerView::OnSuggestionsChanged(
-    const std::map<int, const AssistantSuggestion*>& suggestions) {
-  for (const auto& suggestion : suggestions) {
-    // We will use the same identifier by which the Assistant interaction model
-    // uniquely identifies a suggestion to uniquely identify its corresponding
-    // suggestion chip view.
-    AddSuggestionChip(/*suggestion=*/*suggestion.second,
-                      /*id=*/suggestion.first);
-  }
-}
-
-void SuggestionContainerView::AddSuggestionChip(
-    const AssistantSuggestion& suggestion,
-    int id) {
+std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
+    int id,
+    const AssistantSuggestion* suggestion) {
   SuggestionChipView::Params params;
-  params.text = base::UTF8ToUTF16(suggestion.text);
+  params.text = base::UTF8ToUTF16(suggestion->text);
 
-  if (!suggestion.icon_url.is_empty()) {
+  if (!suggestion->icon_url.is_empty()) {
     // Initiate a request to download the image for the suggestion chip icon.
     // Note that the request is identified by the suggestion id.
     delegate()->DownloadImage(
-        suggestion.icon_url,
+        suggestion->icon_url,
         base::BindOnce(&SuggestionContainerView::OnSuggestionChipIconDownloaded,
                        download_request_weak_factory_.GetWeakPtr(), id));
 
@@ -261,9 +259,9 @@ void SuggestionContainerView::AddSuggestionChip(
   suggestion_chip_views_[id] =
       content_view()->AddChildView(std::move(suggestion_chip_view));
 
-  // Set the animations for the suggestion chip.
-  AddElementAnimator(std::make_unique<SuggestionChipAnimator>(
-      suggestion_chip_views_[id], this));
+  // Return the animator for the suggestion chip.
+  return std::make_unique<SuggestionChipAnimator>(suggestion_chip_views_[id],
+                                                  this);
 }
 
 void SuggestionContainerView::OnSuggestionChipIconDownloaded(

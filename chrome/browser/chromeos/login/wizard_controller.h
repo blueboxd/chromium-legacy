@@ -233,7 +233,6 @@ class WizardController {
   void OnSyncConsentFinished();
   void OnFingerprintSetupScreenExit();
   void OnDiscoverScreenExit();
-  void OnMarketingOptInScreenExit();
   void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
@@ -242,6 +241,7 @@ class WizardController {
   void OnAssistantOptInFlowScreenExit();
   void OnMultiDeviceSetupScreenExit();
   void OnGestureNavigationScreenExit();
+  void OnMarketingOptInScreenExit();
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
   void OnSupervisionTransitionScreenExit();

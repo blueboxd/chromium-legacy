@@ -1111,11 +1111,6 @@ void WizardController::OnFingerprintSetupScreenExit() {
 
 void WizardController::OnDiscoverScreenExit() {
   OnScreenExit(DiscoverScreenView::kScreenId, 0 /* exit_code */);
-  ShowMarketingOptInScreen();
-}
-
-void WizardController::OnMarketingOptInScreenExit() {
-  OnScreenExit(MarketingOptInScreenView::kScreenId, 0 /* exit_code */);
   ShowArcTermsOfServiceScreen();
 }
 
@@ -1201,6 +1196,11 @@ void WizardController::OnMultiDeviceSetupScreenExit() {
 void WizardController::OnGestureNavigationScreenExit() {
   OnScreenExit(GestureNavigationScreenView::kScreenId, 0 /* exit_code */);
 
+  ShowMarketingOptInScreen();
+}
+
+void WizardController::OnMarketingOptInScreenExit() {
+  OnScreenExit(MarketingOptInScreenView::kScreenId, 0 /* exit_code */);
   OnOobeFlowFinished();
 }
 
@@ -1263,6 +1263,8 @@ void WizardController::OnOobeFlowFinished() {
                                base::TimeDelta::FromMinutes(30), 100);
     time_oobe_started_ = base::Time();
   }
+
+  SetCurrentScreen(nullptr);
 
   // Launch browser and delete login host controller.
   base::PostTask(
@@ -1397,21 +1399,22 @@ void WizardController::PerformOOBECompletedActions() {
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   VLOG(1) << "SetCurrentScreen: " << new_current->screen_id();
-  if (current_screen_ == new_current || new_current == nullptr ||
-      GetOobeUI() == nullptr) {
+  if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
-  }
 
   if (current_screen_) {
     current_screen_->Hide();
     current_screen_->SetConfiguration(nullptr);
   }
 
-  // Record show time for UMA.
-  screen_show_times_[new_current->screen_id()] = base::Time::Now();
-
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
+
+  if (!current_screen_)
+    return;
+
+  // Record show time for UMA.
+  screen_show_times_[new_current->screen_id()] = base::Time::Now();
 
   // First remember how far have we reached so that we can resume if needed.
   if (is_out_of_box_ && !demo_setup_controller_ &&

@@ -201,6 +201,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
                   base::TimeTicks deadline_max,
                   bool background_rendering);
 
+  // Returns |last_interval_| without acquiring a lock.
+  // Can only be called from the compositor thread.
+  base::TimeDelta GetLastIntervalWithoutLock();
+
   // This will run tasks on the compositor thread. If
   // kEnableSurfaceLayerForVideo is enabled, it will instead run tasks on the
   // media thread.
@@ -223,21 +227,20 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   bool is_background_rendering_ = false;
   bool new_background_frame_ = false;
 
-  // Assume 60Hz before the first UpdateCurrentFrame() call.
-  base::TimeDelta last_interval_ = base::TimeDelta::FromSecondsD(1.0 / 60);
-
   base::TimeTicks last_background_render_;
   OnNewProcessedFrameCB new_processed_frame_cb_;
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
 
   // Callback used to satisfy video.rAF requests.
   // Set on the main thread, fired on the compositor thread.
+  // TODO(https://crbug.com/1057304): consolidate locks.
   base::Lock new_presented_frame_cb_lock_;
   OnNewFramePresentedCB new_presented_frame_cb_
       GUARDED_BY(new_presented_frame_cb_lock_);
 
   // Set on the compositor thread, but also read on the media thread. Lock is
   // not used when reading |current_frame_| on the compositor thread.
+  // TODO(https://crbug.com/1057304): consolidate locks.
   base::Lock current_frame_lock_;
   scoped_refptr<VideoFrame> current_frame_;
 
@@ -249,9 +252,15 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   uint32_t presentation_counter_ GUARDED_BY(current_frame_lock_) = 0u;
 
   // These values are updated and read from the media and compositor threads.
+  // TODO(https://crbug.com/1057304): consolidate locks.
   base::Lock callback_lock_;
   VideoRendererSink::RenderCallback* callback_ GUARDED_BY(callback_lock_) =
       nullptr;
+
+  // Assume 60Hz before the first UpdateCurrentFrame() call.
+  // Updated/read by the compositor thread, but also read on the media thread.
+  base::TimeDelta last_interval_ GUARDED_BY(callback_lock_) =
+      base::TimeDelta::FromSecondsD(1.0 / 60);
 
   // AutoOpenCloseEvent for begin/end events.
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent<kTracingCategory>>

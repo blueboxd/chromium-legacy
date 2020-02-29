@@ -70,12 +70,6 @@ class {{v8_class}} {
   {% if method.is_custom %}
   static void {{method.camel_case_name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
-  {% if method.is_custom_call_prologue %}
-  static void {{method.camel_case_name}}MethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
-  {% endif %}
-  {% if method.is_custom_call_epilogue %}
-  static void {{method.camel_case_name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
-  {% endif %}
   {% endfor %}
   {% if has_custom_constructor %}
   static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);

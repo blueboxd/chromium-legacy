@@ -19,6 +19,8 @@
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -168,36 +170,31 @@ void LaunchReleaseNotesImpl(Profile* profile) {
 void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   base::RecordAction(UserMetricsAction("ShowHelpTab"));
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          extension_misc::kGeniusAppId,
-          extensions::ExtensionRegistry::EVERYTHING);
-  if (!extension) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableDefaultApps));
-    return;
-  }
-  extensions::AppLaunchSource app_launch_source(
-      extensions::AppLaunchSource::kSourceUntracked);
+  auto app_launch_source = apps::mojom::LaunchSource::kUnknown;
   switch (source) {
     case HELP_SOURCE_KEYBOARD:
-      app_launch_source = extensions::AppLaunchSource::kSourceKeyboard;
+      app_launch_source = apps::mojom::LaunchSource::kFromKeyboard;
       break;
     case HELP_SOURCE_MENU:
-      app_launch_source = extensions::AppLaunchSource::kSourceSystemTray;
+      app_launch_source = apps::mojom::LaunchSource::kFromMenu;
       break;
     case HELP_SOURCE_WEBUI:
     case HELP_SOURCE_WEBUI_CHROME_OS:
-      app_launch_source = extensions::AppLaunchSource::kSourceAboutPage;
+      app_launch_source = apps::mojom::LaunchSource::kFromOtherApp;
       break;
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
-      extension_misc::kGeniusAppId,
-      extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile),
-                                     extension),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, app_launch_source, true));
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+
+  const char* app_id =
+      base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)
+          ? chromeos::default_web_apps::kHelpAppId
+          : extension_misc::kGeniusAppId;
+  proxy->Launch(app_id, ui::EventFlags::EF_NONE, app_launch_source,
+                display::kDefaultDisplayId);
 #else
   GURL url;
   switch (source) {

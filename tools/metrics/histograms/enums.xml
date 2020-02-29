@@ -1,5 +1,5 @@
 <!--
-eopyright 2017 The Chromium Authors. All rights reserved.
+Copyright 2017 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -14439,6 +14439,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="15" label="Audio Player"/>
   <int value="16" label="Chrome Canvas"/>
   <int value="17" label="Camera"/>
+  <int value="18" label="Discover"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">

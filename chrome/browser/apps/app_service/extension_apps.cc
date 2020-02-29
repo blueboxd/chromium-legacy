@@ -127,6 +127,9 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
     case apps::mojom::LaunchSource::kFromChromeInternal:
+    case apps::mojom::LaunchSource::kFromKeyboard:
+    case apps::mojom::LaunchSource::kFromOtherApp:
+    case apps::mojom::LaunchSource::kFromMenu:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -436,6 +439,9 @@ void ExtensionApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
     case apps::mojom::LaunchSource::kFromChromeInternal:
+    case apps::mojom::LaunchSource::kFromKeyboard:
+    case apps::mojom::LaunchSource::kFromOtherApp:
+    case apps::mojom::LaunchSource::kFromMenu:
       break;
   }
 

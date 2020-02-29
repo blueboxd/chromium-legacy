@@ -85,6 +85,18 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromChromeInternal",
                                     default_app_name);
       break;
+    case apps::mojom::LaunchSource::kFromKeyboard:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromKeyboard",
+                                    default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromOtherApp:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromOtherApp",
+                                    default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromMenu:
+      base::UmaHistogramEnumeration("Apps.DefaultAppLaunch.FromMenu",
+                                    default_app_name);
+      break;
   }
 }
 
@@ -110,6 +122,9 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
     case apps::mojom::LaunchSource::kFromChromeInternal:
+    case apps::mojom::LaunchSource::kFromKeyboard:
+    case apps::mojom::LaunchSource::kFromOtherApp:
+    case apps::mojom::LaunchSource::kFromMenu:
       break;
   }
 }

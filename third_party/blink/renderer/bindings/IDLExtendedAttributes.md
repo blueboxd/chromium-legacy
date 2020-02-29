@@ -743,7 +743,7 @@ Summary: They allow you to write bindings code manually as you like: full bindin
 
 Custom bindings are _strongly discouraged_. They are likely to be buggy, a source of security holes, and represent a significant maintenance burden. Before using `[Custom]`, you should doubly consider if you really need custom bindings. You are recommended to modify code generators and add specialized extended attributes or special cases if necessary to avoid using `[Custom]`.
 
-Usage: `[Custom]` can be specified on methods or attributes. `[Custom=CallEpilogue]` can be specified on methods. `[Custom=Getter]` and `[Custom=Setter]` can be specified on attributes. `[Custom=A|B]` can be specified on interfaces, with various values (see below).
+Usage: `[Custom]` can be specified on methods or attributes. `[Custom=Getter]` and `[Custom=Setter]` can be specified on attributes. `[Custom=A|B]` can be specified on interfaces, with various values (see below).
 
 On read only attributes (that are not `[Replaceable]`), `[Custom]` is equivalent to `[Custom=Getter]` (since there is no setter) and `[Custom=Getter]` is preferred.
 
@@ -761,7 +761,6 @@ The bindings generator largely _ignores_ the specified type information of `[Cus
 Before explaining the details, let us clarify the relationship of these IDL attributes.
 
 * `[Custom]` on a method indicates that you can write V8 custom bindings for the method.
-* `[Custom=CallEpilogue]` on a method indicates that the normal code is generated for the method, but with an extra call to an auxiliary custom bindings callback at the end.
 * `[Custom=Getter]` or `[Custom=Setter]` on an attribute means custom bindings for the attribute getter or setter.
 * `[Custom]` on an attribute means custom bindings for both the getter and the setter
 
@@ -770,7 +769,6 @@ Methods:
 ```webidl
 interface XXX {
     [Custom] void func();
-    [Custom=CallEpilogue] void func2();
 };
 ```
 
@@ -778,10 +776,6 @@ You can write custom bindings in third_party/blink/renderer/bindings/{core,modul
 
 ```c++
 void V8XXX::FuncMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ...;
-}
-
-void V8XXX::Func2MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, V8XXX* impl) {
   ...;
 }
 ```

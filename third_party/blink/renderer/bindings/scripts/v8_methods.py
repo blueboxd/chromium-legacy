@@ -166,8 +166,6 @@ def method_context(interface, method, component_info, is_visible=True):
         includes.add('core/html/custom/v0_custom_element_processing_stack.h')
 
     is_raises_exception = 'RaisesException' in extended_attributes
-    is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')
-    is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
 
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
@@ -188,76 +186,110 @@ def method_context(interface, method, component_info, is_visible=True):
     runtime_features = component_info['runtime_enabled_features']
 
     return {
-        'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': argument_contexts,
-        'camel_case_name': NameStyleConverter(name).to_upper_camel_case(),
+        'activity_logging_world_list':
+        v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
+        'arguments':
+        argument_contexts,
+        'camel_case_name':
+        NameStyleConverter(name).to_upper_camel_case(),
         'cpp_type': (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
-                     if idl_type.is_explicit_nullable
-                     else v8_types.cpp_type(idl_type, extended_attributes=extended_attributes)),
-        'cpp_value': this_cpp_value,
-        'cpp_type_initializer': idl_type.cpp_type_initializer,
-        'high_entropy': v8_utilities.high_entropy(method),  # [HighEntropy]
-        'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
-        'do_not_test_new_object': 'DoNotTestNewObject' in extended_attributes,
-        'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
+                     if idl_type.is_explicit_nullable else v8_types.cpp_type(idl_type, extended_attributes=extended_attributes)),
+        'cpp_value':
+        this_cpp_value,
+        'cpp_type_initializer':
+        idl_type.cpp_type_initializer,
+        'high_entropy':
+        v8_utilities.high_entropy(method),  # [HighEntropy]
+        'deprecate_as':
+        v8_utilities.deprecate_as(method),  # [DeprecateAs]
+        'do_not_test_new_object':
+        'DoNotTestNewObject' in extended_attributes,
+        'exposed_test':
+        v8_utilities.exposed(method, interface),  # [Exposed]
         'has_exception_state':
-            is_raises_exception or
-            is_check_security_for_receiver or
-            any(argument for argument in arguments
-                if (argument.idl_type.name == 'SerializedScriptValue' or
-                    argument_conversion_needs_exception_state(method, argument))),
+        is_raises_exception or is_check_security_for_receiver or any(
+            argument for argument in arguments
+            if (argument.idl_type.name == 'SerializedScriptValue' or argument_conversion_needs_exception_state(method, argument))),
         'has_optional_argument_without_default_value':
-            any(True for argument_context in argument_contexts
-                if argument_context['is_optional_without_default_value']),
-        'idl_type': idl_type.base_type,
-        'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
-        'is_call_with_script_state': is_call_with_script_state,
-        'is_call_with_this_value': is_call_with_this_value,
-        'is_ce_reactions': is_ce_reactions,
-        'is_check_security_for_receiver': is_check_security_for_receiver,
-        'is_check_security_for_return_value': is_check_security_for_return_value,
-        'is_cross_origin': 'CrossOrigin' in extended_attributes,
-        'is_custom': 'Custom' in extended_attributes and
-            not (is_custom_call_prologue or is_custom_call_epilogue),
-        'is_custom_call_prologue': is_custom_call_prologue,
-        'is_custom_call_epilogue': is_custom_call_epilogue,
-        'is_custom_element_callbacks': is_custom_element_callbacks,
-        'is_explicit_nullable': idl_type.is_explicit_nullable,
-        'is_new_object': 'NewObject' in extended_attributes,
+        any(True for argument_context in argument_contexts if argument_context['is_optional_without_default_value']),
+        'idl_type':
+        idl_type.base_type,
+        'is_call_with_execution_context':
+        has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
+        'is_call_with_script_state':
+        is_call_with_script_state,
+        'is_call_with_this_value':
+        is_call_with_this_value,
+        'is_ce_reactions':
+        is_ce_reactions,
+        'is_check_security_for_receiver':
+        is_check_security_for_receiver,
+        'is_check_security_for_return_value':
+        is_check_security_for_return_value,
+        'is_cross_origin':
+        'CrossOrigin' in extended_attributes,
+        'is_custom':
+        'Custom' in extended_attributes,
+        'is_custom_element_callbacks':
+        is_custom_element_callbacks,
+        'is_explicit_nullable':
+        idl_type.is_explicit_nullable,
+        'is_new_object':
+        'NewObject' in extended_attributes,
         'is_partial_interface_member':
-            'PartialInterfaceImplementedAs' in extended_attributes,
-        'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
-        'is_raises_exception': is_raises_exception,
-        'is_static': is_static,
-        'is_unforgeable': is_unforgeable(method),
-        'is_variadic': arguments and arguments[-1].is_variadic,
-        'measure_as': v8_utilities.measure_as(method, interface),  # [MeasureAs]
-        'name': name,
-        'number_of_arguments': len(arguments),
-        'number_of_required_arguments': len([
-            argument for argument in arguments
-            if not (argument.is_optional or argument.is_variadic)]),
-        'number_of_required_or_variadic_arguments': len([
-            argument for argument in arguments
-            if not argument.is_optional]),
-        'on_instance': v8_utilities.on_instance(interface, method),
-        'on_interface': v8_utilities.on_interface(interface, method),
-        'on_prototype': v8_utilities.on_prototype(interface, method),
+        'PartialInterfaceImplementedAs' in extended_attributes,
+        'is_per_world_bindings':
+        'PerWorldBindings' in extended_attributes,
+        'is_raises_exception':
+        is_raises_exception,
+        'is_static':
+        is_static,
+        'is_unforgeable':
+        is_unforgeable(method),
+        'is_variadic':
+        arguments and arguments[-1].is_variadic,
+        'measure_as':
+        v8_utilities.measure_as(method, interface),  # [MeasureAs]
+        'name':
+        name,
+        'number_of_arguments':
+        len(arguments),
+        'number_of_required_arguments':
+        len([argument for argument in arguments if not (argument.is_optional or argument.is_variadic)]),
+        'number_of_required_or_variadic_arguments':
+        len([argument for argument in arguments if not argument.is_optional]),
+        'on_instance':
+        v8_utilities.on_instance(interface, method),
+        'on_interface':
+        v8_utilities.on_interface(interface, method),
+        'on_prototype':
+        v8_utilities.on_prototype(interface, method),
         'origin_trial_feature_name':
-            v8_utilities.origin_trial_feature_name(method, runtime_features),  # [RuntimeEnabled] for origin trial
-        'property_attributes': property_attributes(interface, method),
-        'returns_promise': method.returns_promise,
-        'runtime_call_stats': runtime_call_stats_context(interface, method),
+        v8_utilities.origin_trial_feature_name(method, runtime_features),  # [RuntimeEnabled] for origin trial
+        'property_attributes':
+        property_attributes(interface, method),
+        'returns_promise':
+        method.returns_promise,
+        'runtime_call_stats':
+        runtime_call_stats_context(interface, method),
         'runtime_enabled_feature_name':
-            v8_utilities.runtime_enabled_feature_name(method, runtime_features),  # [RuntimeEnabled] if not in origin trial
-        'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
-        'side_effect_type': side_effect_type,  # [Affects]
-        'snake_case_name': NameStyleConverter(name).to_snake_case(),
-        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
-        'use_local_result': use_local_result(method),
-        'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
-        'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'visible': is_visible,
+        v8_utilities.runtime_enabled_feature_name(method, runtime_features),  # [RuntimeEnabled] if not in origin trial
+        'secure_context_test':
+        v8_utilities.secure_context(method, interface),  # [SecureContext]
+        'side_effect_type':
+        side_effect_type,  # [Affects]
+        'snake_case_name':
+        NameStyleConverter(name).to_snake_case(),
+        'use_output_parameter_for_result':
+        idl_type.use_output_parameter_for_result,
+        'use_local_result':
+        use_local_result(method),
+        'v8_set_return_value':
+        v8_set_return_value(interface.name, method, this_cpp_value),
+        'v8_set_return_value_for_main_world':
+        v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
+        'visible':
+        is_visible,
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings],
     }
 

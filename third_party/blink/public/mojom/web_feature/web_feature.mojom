@@ -624,8 +624,6 @@ enum WebFeature {
   // The above items are available in M47 branch.
 
   kBlockableMixedContentInSubframeBlocked = 966,
-  kAddEventListenerThirdArgumentIsObject = 967,
-  kRemoveEventListenerThirdArgumentIsObject = 968,
   kCSSAtRuleCharset = 969,
   kCSSAtRuleFontFace = 970,
   kCSSAtRuleImport = 971,
@@ -851,8 +849,6 @@ enum WebFeature {
   kScriptPassesCSPDynamic = 1275,
   kCSPWithStrictDynamic = 1277,
   kScrollAnchored = 1278,
-  kAddEventListenerFourArguments = 1279,
-  kRemoveEventListenerFourArguments = 1280,
   kSVGCalcModeDiscrete = 1287,
   kSVGCalcModeLinear = 1288,
   kSVGCalcModePaced = 1289,

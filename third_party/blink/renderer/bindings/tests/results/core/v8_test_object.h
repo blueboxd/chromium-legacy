@@ -57,8 +57,6 @@ class V8TestObject {
   }
 
   static void CustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static void CustomCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
-  static void CustomCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
   static void CustomObjectAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomObjectAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomGetterLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -541,8 +539,6 @@ class V8TestObject {
   CORE_EXPORT static void CallWithThisValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CheckSecurityForNodeVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void CustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void CustomCallPrologueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void CustomCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void DeprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void ImplementedAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void MeasureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

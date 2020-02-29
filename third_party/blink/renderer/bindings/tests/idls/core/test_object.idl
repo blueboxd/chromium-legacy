@@ -457,8 +457,6 @@ interface TestObject {
     [CallWith=ThisValue] void callWithThisValue();
     [CheckSecurity=ReturnValue] void checkSecurityForNodeVoidMethod();
     [Custom] void customVoidMethod();
-    [Custom=CallPrologue] void customCallPrologueVoidMethod();
-    [Custom=CallEpilogue] void customCallEpilogueVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();

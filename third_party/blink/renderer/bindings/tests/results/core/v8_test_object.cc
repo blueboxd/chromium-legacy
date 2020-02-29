@@ -7815,20 +7815,6 @@ static void CheckSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<
   impl->checkSecurityForNodeVoidMethod();
 }
 
-static void CustomCallPrologueVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  V8TestObject::CustomCallPrologueVoidMethodMethodPrologueCustom(info, impl);
-  impl->customCallPrologueVoidMethod();
-}
-
-static void CustomCallEpilogueVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  impl->customCallEpilogueVoidMethod();
-  V8TestObject::CustomCallEpilogueVoidMethodMethodEpilogueCustom(info, impl);
-}
-
 static void DeprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -12682,20 +12668,6 @@ void V8TestObject::CustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo
   V8TestObject::CustomVoidMethodMethodCustom(info);
 }
 
-void V8TestObject::CustomCallPrologueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  BLINK_BINDINGS_TRACE_EVENT("TestObject.customCallPrologueVoidMethod");
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customCallPrologueVoidMethod");
-
-  test_object_v8_internal::CustomCallPrologueVoidMethodMethod(info);
-}
-
-void V8TestObject::CustomCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  BLINK_BINDINGS_TRACE_EVENT("TestObject.customCallEpilogueVoidMethod");
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_customCallEpilogueVoidMethod");
-
-  test_object_v8_internal::CustomCallEpilogueVoidMethodMethod(info);
-}
-
 void V8TestObject::DeprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   BLINK_BINDINGS_TRACE_EVENT("TestObject.deprecatedVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_deprecatedVoidMethod");
@@ -13393,8 +13365,6 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"callWithThisValue", V8TestObject::CallWithThisValueMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"checkSecurityForNodeVoidMethod", V8TestObject::CheckSecurityForNodeVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"customVoidMethod", V8TestObject::CustomVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"customCallPrologueVoidMethod", V8TestObject::CustomCallPrologueVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"customCallEpilogueVoidMethod", V8TestObject::CustomCallEpilogueVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"deprecatedVoidMethod", V8TestObject::DeprecatedVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"implementedAsVoidMethod", V8TestObject::ImplementedAsVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"measureAsVoidMethod", V8TestObject::MeasureAsVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

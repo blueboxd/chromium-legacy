@@ -182,6 +182,9 @@ enum LaunchSource {
   kFromLink = 9,                    // Left-licking on links in the browser.
   kFromOmnibox = 10,                // Enter URL in the Omnibox in the browser.
   kFromChromeInternal = 11,         // Chrome internal call.
+  kFromKeyboard = 12,               // Keyboard shortcut for opening app.
+  kFromOtherApp = 13,               // Clicking link in another app or webui.
+  kFromMenu = 14,                   // Menu.
 };
 
 enum TriState {

@@ -8,7 +8,7 @@ RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::{{count
 {% macro runtime_timer_scope_disabled_by_default(counter) %}
 RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "{{counter}}");
 {% endmacro %}
- 
+
 {% macro trace_event(name) %}
 BLINK_BINDINGS_TRACE_EVENT("{{name}}");
 {% endmacro %}
@@ -239,9 +239,6 @@ if (!{{argument.local_cpp_variable}}.IsUndefinedOrNull() && !{{argument.local_cp
 
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
-{% if method.is_custom_call_prologue %}
-{{v8_class}}::{{method.camel_case_name}}MethodPrologueCustom(info, impl);
-{% endif %}
 {# Local variables #}
 {% if method.is_call_with_execution_context %}
 {# [ConstructorCallWith=ExecutionContext] or [CallWith=ExecutionContext] #}
@@ -299,9 +296,6 @@ else
 {{v8_set_return_value}};
 {% endif %}
 {%- endif %}{# None for void #}
-{% if method.is_custom_call_epilogue %}
-{{v8_class}}::{{method.camel_case_name}}MethodEpilogueCustom(info, impl);
-{% endif %}
 {% endmacro %}
 
 

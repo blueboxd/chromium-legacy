@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,9 +23,10 @@
 #include "services/video_capture/video_capture_service_impl.h"
 
 #if defined(OS_WIN)
-#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateCOMSTATaskRunner
+#define CREATE_IN_PROCESS_TASK_RUNNER base::ThreadPool::CreateCOMSTATaskRunner
 #else
-#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateSingleThreadTaskRunner
+#define CREATE_IN_PROCESS_TASK_RUNNER \
+  base::ThreadPool::CreateSingleThreadTaskRunner
 #endif
 
 namespace content {
@@ -99,9 +101,8 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
     auto receiver = remote.BindNewPipeAndPassReceiver();
     if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
       auto dedicated_task_runner = CREATE_IN_PROCESS_TASK_RUNNER(
-          base::TaskTraits{base::ThreadPool(), base::MayBlock(),
-                           base::WithBaseSyncPrimitives(),
-                           base::TaskPriority::BEST_EFFORT},
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::BEST_EFFORT},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
       dedicated_task_runner->PostTask(
           FROM_HERE,

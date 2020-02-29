@@ -410,3 +410,15 @@ TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
   mocha.grep(languages_page_tests.TestNames.SpellcheckOfficialBuild).run();
 });
 GEN('#endif');
+
+// eslint-disable-next-line no-var
+var CrSettingsSearchV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/search_settings_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsSearchV3Test', 'All', function() {
+  mocha.run();
+});

@@ -108,14 +108,6 @@ TEST_F(AwMetricsServiceClientTest, TestBackfillEnabledDateIfMissing) {
       prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
-TEST_F(AwMetricsServiceClientTest, TestGetPackageNameInternal) {
-  auto prefs = CreateTestPrefs();
-  prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
-  auto client = CreateAndInitTestClient(prefs.get());
-  // Make sure GetPackageNameInternal returns a non-empty string.
-  EXPECT_FALSE(client->GetAppPackageNameInternal().empty());
-}
-
 // TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
 // been persisted for one or two milestones.
 TEST_F(AwMetricsServiceClientTest, TestPreferPersistedInstallDate) {

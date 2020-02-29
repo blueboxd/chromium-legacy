@@ -16,8 +16,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
-import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.infobar.InfoBarLayout;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 

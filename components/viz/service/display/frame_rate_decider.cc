@@ -139,11 +139,18 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
   }
   last_computed_preferred_frame_interval_ = new_preferred_interval;
 
+  if (current_preferred_frame_interval_ == new_preferred_interval)
+    return;
+
   // The min num of frames heuristic is to ensure we see a constant pattern
-  // before toggling the global setting to avoid unnecessary switches.
-  if (num_of_frames_since_preferred_interval_changed_ >=
-          min_num_of_frames_to_toggle_interval_ &&
-      current_preferred_frame_interval_ != new_preferred_interval) {
+  // before toggling the global setting to avoid unnecessary switches when
+  // lowering the refresh rate. For increasing the refresh rate we toggle
+  // immediately to prioritize smoothness.
+  bool should_toggle =
+      current_preferred_frame_interval_ > new_preferred_interval ||
+      num_of_frames_since_preferred_interval_changed_ >=
+          min_num_of_frames_to_toggle_interval_;
+  if (should_toggle) {
     current_preferred_frame_interval_ = new_preferred_interval;
     client_->SetPreferredFrameInterval(new_preferred_interval);
   }

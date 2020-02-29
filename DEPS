@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7122d8cec827a3888c85370ba230a273d747f8f4',
+  'skia_revision': 'b6ba6c0a2b36e32f67015026eacac337a46469a3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2d7b0de1b9095edd69e1198bc806fc0adcbd8481',
+  'v8_revision': '5260234d46ef0a981e417cef45efcab3d09a05c8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fb551728d77bd2fca79d2616edf3e8a064be2352',
+  'angle_revision': '54bc3dab2064ef775eeb3701b58cae02e187088f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '933525c2bdcf22d49b5688c04cad7bc30c476b3d',
+  'devtools_frontend_revision': 'ad5c586c30a6bc55962b7a96b0533911c86bd4fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -338,11 +338,9 @@ vars = {
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
-  # TODO(crbug.com/1054245): Rename these vars back to their original name
-  # once libassistant's copy of buildtools rolls up to the rename.
-  'libcxx_revision_v2':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
-  'libcxxabi_revision_v2':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
-  'libunwind_revision_v2':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
+  'libcxx_revision':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
+  'libcxxabi_revision':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
+  'libunwind_revision':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -389,15 +387,15 @@ deps = {
   'src/buildtools/third_party/libc++/trunk':
     Var('chromium_git') +
     '/external/github.com/llvm/llvm-project/libcxx.git' + '@' +
-    Var('libcxx_revision_v2'),
+    Var('libcxx_revision'),
   'src/buildtools/third_party/libc++abi/trunk':
     Var('chromium_git') +
     '/external/github.com/llvm/llvm-project/libcxxabi.git' + '@' +
-    Var('libcxxabi_revision_v2'),
+    Var('libcxxabi_revision'),
   'src/buildtools/third_party/libunwind/trunk':
     Var('chromium_git') +
     '/external/github.com/llvm/llvm-project/libunwind.git' + '@' +
-    Var('libunwind_revision_v2'),
+    Var('libunwind_revision'),
   'src/buildtools/win': {
     'packages': [
       {
@@ -755,7 +753,7 @@ deps = {
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
   'src/third_party/dav1d/libdav1d':
-    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '296d1dc006419546f342606ff7d47564bd9798a8',
+    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + 'd398da88c0b68e3dbb966256c7ed682b211579e3',
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
@@ -879,7 +877,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '953278adbf3e52f0ef84a9320ed61e2c3238cd6b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '55ab41d1856de3fbfaf3aea1aabbccb8efdf8547',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1084,7 +1082,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '390dfc08e3806a2125d08d4d8d034a24d587d77a',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '625cded0550bb79efd10d98a9809a7ccd72a8f60',
+    Var('aomedia_git') + '/aom.git' + '@' +  'f83d681765cd2aefa9a70ce771af48edd1dbf416',
 
   # Userspace interface to kernel DRM services.
   'src/third_party/libdrm/src': {
@@ -1213,7 +1211,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '211ec3001099f4a8e9a1f408691f5e67328eb5fc',
+    Var('chromium_git') + '/openscreen' + '@' + '8d4995011dd2072ef7e5a319ab7d29ff7a3652a3',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',

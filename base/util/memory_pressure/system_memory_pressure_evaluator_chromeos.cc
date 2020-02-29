@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -27,6 +26,9 @@
 
 namespace util {
 namespace chromeos {
+
+const base::Feature kCrOSUserSpaceLowMemoryNotification{
+    "kCrOSUserSpaceLowMemoryNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 // Pointer to the SystemMemoryPressureEvaluator used by TabManagerDelegate for
@@ -49,6 +51,13 @@ constexpr char kMarginMemFile[] = "/sys/kernel/mm/chromeos-low_mem/margin";
 constexpr char kAvailableMemFile[] =
     "/sys/kernel/mm/chromeos-low_mem/available";
 
+// The reserved file cache.
+constexpr char kMinFilelist[] = "/proc/sys/vm/min_filelist_kbytes";
+
+// The estimation of how well zram based swap is compressed.
+constexpr char kRamVsSwapWeight[] =
+    "/sys/kernel/mm/chromeos-low_mem/ram_vs_swap_weight";
+
 // Converts an available memory value in MB to a memory pressure level.
 base::MemoryPressureListener::MemoryPressureLevel
 GetMemoryPressureLevelFromAvailable(int available_mb,
@@ -62,7 +71,18 @@ GetMemoryPressureLevelFromAvailable(int available_mb,
   return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
-int64_t ReadAvailableMemoryMB(int available_fd) {
+uint64_t ReadFileToUint64(const base::FilePath& file) {
+  std::string file_contents;
+  if (!ReadFileToString(file, &file_contents))
+    return 0;
+  TrimWhitespaceASCII(file_contents, base::TRIM_ALL, &file_contents);
+  uint64_t file_contents_uint64 = 0;
+  if (!base::StringToUint64(file_contents, &file_contents_uint64))
+    return 0;
+  return file_contents_uint64;
+}
+
+uint64_t ReadAvailableMemoryMB(int available_fd) {
   // Read the available memory.
   char buf[32] = {};
 
@@ -73,8 +93,8 @@ int64_t ReadAvailableMemoryMB(int available_fd) {
   PCHECK(bytes_read != -1);
 
   std::string mem_str(buf, bytes_read);
-  int64_t available = -1;
-  CHECK(base::StringToInt64(
+  uint64_t available = std::numeric_limits<uint64_t>::max();
+  CHECK(base::StringToUint64(
       base::TrimWhitespaceASCII(mem_str, base::TrimPositions::TRIM_ALL),
       &available));
 
@@ -118,25 +138,24 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
           kMarginMemFile,
           kAvailableMemFile,
           base::BindRepeating(&WaitForMemoryPressureChanges),
-          /*enable_metrics=*/true,
+          /*disable_timer_for_testing*/ false,
+          base::FeatureList::IsEnabled(
+              chromeos::kCrOSUserSpaceLowMemoryNotification),
           std::move(voter)) {}
 
 SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
     const std::string& margin_file,
     const std::string& available_file,
     base::RepeatingCallback<bool(int)> kernel_waiting_callback,
-    bool enable_metrics,
+    bool disable_timer_for_testing,
+    bool is_user_space_notify,
     std::unique_ptr<MemoryPressureVoter> voter)
     : util::SystemMemoryPressureEvaluator(std::move(voter)),
-      available_mem_file_(HANDLE_EINTR(open(available_file.c_str(), O_RDONLY))),
-      kernel_waiting_callback_(
-          base::BindRepeating(std::move(kernel_waiting_callback),
-                              available_mem_file_.get())),
+      is_user_space_notify_(is_user_space_notify),
       weak_ptr_factory_(this) {
   DCHECK(g_system_evaluator == nullptr);
   g_system_evaluator = this;
 
-  CHECK(available_mem_file_.is_valid());
   std::vector<int> margin_parts =
       SystemMemoryPressureEvaluator::GetMarginFileParts(margin_file);
 
@@ -147,17 +166,27 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
   critical_pressure_threshold_mb_ = margin_parts[0];
   moderate_pressure_threshold_mb_ = margin_parts[1];
 
-  if (enable_metrics) {
-    // We will report the current memory pressure at some periodic interval,
-    // the metric ChromeOS.MemoryPRessureLevel is currently reported every 1s.
-    reporting_timer_.Start(
+  UpdateMemoryParameters();
+
+  if (!is_user_space_notify_) {
+    kernel_waiting_callback_ = base::BindRepeating(
+        std::move(kernel_waiting_callback), available_mem_file_.get());
+    available_mem_file_ =
+        base::ScopedFD(HANDLE_EINTR(open(available_file.c_str(), O_RDONLY)));
+    CHECK(available_mem_file_.is_valid());
+
+    ScheduleWaitForKernelNotification();
+  }
+
+  if (!disable_timer_for_testing) {
+    // We will check the memory pressure and report the metric
+    // (ChromeOS.MemoryPressureLevel) every 1 second.
+    checking_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(1),
         base::BindRepeating(&SystemMemoryPressureEvaluator::
                                 CheckMemoryPressureAndRecordStatistics,
                             weak_ptr_factory_.GetWeakPtr()));
   }
-
-  ScheduleWaitForKernelNotification();
 }
 SystemMemoryPressureEvaluator::~SystemMemoryPressureEvaluator() {
   DCHECK(g_system_evaluator);
@@ -199,6 +228,128 @@ std::vector<int> SystemMemoryPressureEvaluator::GetMarginFileParts(
   return margin_values;
 }
 
+// CalculateReservedFreeKB() calculates the reserved free memory in KiB from
+// /proc/zoneinfo.  Reserved pages are free pages reserved for emergent kernel
+// allocation and are not available to the user space.  It's the sum of high
+// watermarks and max protection pages of memory zones.  It implements the same
+// reserved pages calculation in linux kernel calculate_totalreserve_pages().
+//
+// /proc/zoneinfo example:
+// ...
+// Node 0, zone    DMA32
+//   pages free     422432
+//         min      16270
+//         low      20337
+//         high     24404
+//         ...
+//         protection: (0, 0, 1953, 1953)
+//
+// The high field is the high watermark for this zone.  The protection field is
+// the protected pages for lower zones.  See the lowmem_reserve_ratio section in
+// https://www.kernel.org/doc/Documentation/sysctl/vm.txt.
+uint64_t SystemMemoryPressureEvaluator::CalculateReservedFreeKB(
+    const std::string& zoneinfo) {
+  constexpr uint64_t kPageSizeKB = 4;
+
+  uint64_t num_reserved_pages = 0;
+  for (const base::StringPiece& line : base::SplitStringPiece(
+           zoneinfo, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+        line, base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+
+    // Skip the line if there are not enough tokens.
+    if (tokens.size() < 2) {
+      continue;
+    }
+
+    if (tokens[0] == "high") {
+      // Parse the high watermark.
+      uint64_t high = 0;
+      if (base::StringToUint64(tokens[1], &high)) {
+        num_reserved_pages += high;
+      } else {
+        LOG(ERROR) << "Couldn't parse the high field in /proc/zoneinfo: "
+                   << tokens[1];
+      }
+    } else if (tokens[0] == "protection:") {
+      // Parse the protection pages.
+      uint64_t max = 0;
+      for (size_t i = 1; i < tokens.size(); ++i) {
+        uint64_t num = 0;
+        base::StringPiece entry;
+        if (i == 1) {
+          // Exclude the leading '(' and the trailing ','.
+          entry = tokens[i].substr(1, tokens[i].size() - 2);
+        } else {
+          // Exclude the trailing ',' or ')'.
+          entry = tokens[i].substr(0, tokens[i].size() - 1);
+        }
+        if (base::StringToUint64(entry, &num)) {
+          max = std::max(max, num);
+        } else {
+          LOG(ERROR)
+              << "Couldn't parse the protection field in /proc/zoneinfo: "
+              << entry;
+        }
+      }
+      num_reserved_pages += max;
+    }
+  }
+
+  return num_reserved_pages * kPageSizeKB;
+}
+
+uint64_t SystemMemoryPressureEvaluator::GetReservedMemoryKB() {
+  std::string file_contents;
+  if (!ReadFileToString(base::FilePath("/proc/zoneinfo"), &file_contents)) {
+    LOG(ERROR) << "Couldn't get /proc/zoneinfo";
+    return 0;
+  }
+  return CalculateReservedFreeKB(file_contents);
+}
+
+// CalculateAvailableMemoryUserSpaceKB implements the same available memory
+// calculation as kernel function get_available_mem_adj().  The available memory
+// consists of 3 parts: the free memory, the file cache, and the swappable
+// memory.  The available free memory is free memory minus reserved free memory.
+// The available file cache is the total file cache minus reserved file cache
+// (min_filelist).  Because swapping is prohibited if there is no anonymous
+// memory or no swap free, the swappable memory is the minimal of anonymous
+// memory and swap free.  As swapping memory is more costly than dropping file
+// cache, only a fraction (1 / ram_swap_weight) of the swappable memory
+// contributes to the available memory.
+uint64_t SystemMemoryPressureEvaluator::CalculateAvailableMemoryUserSpaceKB(
+    const base::SystemMemoryInfoKB& info,
+    uint64_t reserved_free,
+    uint64_t min_filelist,
+    uint64_t ram_swap_weight) {
+  const uint64_t free = info.free;
+  const uint64_t anon = info.active_anon + info.inactive_anon;
+  const uint64_t file = info.active_file + info.inactive_file;
+  const uint64_t dirty = info.dirty;
+  const uint64_t swap_free = info.swap_free;
+
+  uint64_t available = (free > reserved_free) ? free - reserved_free : 0;
+  available += (file > dirty + min_filelist) ? file - dirty - min_filelist : 0;
+  available += std::min<uint64_t>(anon, swap_free) / ram_swap_weight;
+
+  return available;
+}
+
+uint64_t SystemMemoryPressureEvaluator::GetAvailableMemoryKB() {
+  if (is_user_space_notify_) {
+    base::SystemMemoryInfoKB info;
+    CHECK(base::GetSystemMemoryInfo(&info));
+    return CalculateAvailableMemoryUserSpaceKB(info, reserved_free_,
+                                               min_filelist_, ram_swap_weight_);
+  } else {
+    const uint64_t available_mem_mb =
+        ReadAvailableMemoryMB(available_mem_file_.get());
+    return available_mem_mb * 1024;
+  }
+}
+
 bool SystemMemoryPressureEvaluator::SupportsKernelNotifications() {
   // Unfortunately at the moment the only way to determine if the chromeos
   // kernel supports polling on the available file is to observe two values
@@ -213,9 +364,11 @@ void SystemMemoryPressureEvaluator::CheckMemoryPressure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto old_vote = current_vote();
-  int64_t mem_avail = ReadAvailableMemoryMB(available_mem_file_.get());
+
+  uint64_t mem_avail_mb = GetAvailableMemoryKB() / 1024;
+
   SetCurrentVote(GetMemoryPressureLevelFromAvailable(
-      mem_avail, moderate_pressure_threshold_mb_,
+      mem_avail_mb, moderate_pressure_threshold_mb_,
       critical_pressure_threshold_mb_));
   bool notify = true;
 
@@ -289,6 +442,14 @@ void SystemMemoryPressureEvaluator::ScheduleEarlyCheck() {
       FROM_HERE,
       base::BindOnce(&SystemMemoryPressureEvaluator::CheckMemoryPressure,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SystemMemoryPressureEvaluator::UpdateMemoryParameters() {
+  if (is_user_space_notify_) {
+    reserved_free_ = GetReservedMemoryKB();
+    min_filelist_ = ReadFileToUint64(base::FilePath(kMinFilelist));
+    ram_swap_weight_ = ReadFileToUint64(base::FilePath(kRamVsSwapWeight));
+  }
 }
 
 void SystemMemoryPressureEvaluator::ScheduleWaitForKernelNotification() {

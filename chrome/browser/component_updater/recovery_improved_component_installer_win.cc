@@ -20,7 +20,7 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/elevation_service/elevation_service_idl.h"
@@ -120,8 +120,9 @@ base::CommandLine RecoveryComponentActionHandlerWin::MakeCommandLine(
 }
 
 void RecoveryComponentActionHandlerWin::Elevate(Callback callback) {
-  base::CreateCOMSTATaskRunner(
-      kTaskTraitsRunCommand, base::SingleThreadTaskRunnerThreadMode::DEDICATED)
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      kThreadPoolTaskTraitsRunCommand,
+      base::SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&RecoveryComponentActionHandlerWin::RunElevatedInSTA,

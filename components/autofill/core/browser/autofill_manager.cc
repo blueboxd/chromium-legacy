@@ -35,6 +35,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -723,7 +724,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   // so that we can safely pass the address to the first callback regardless of
   // the (undefined) order in which the callback parameters are computed.
   FormStructure* raw_form = form_structure.get();
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       // If the priority is BEST_EFFORT, the task can be preempted, which is
       // thought to cause high memory usage (as memory is retained by the task
@@ -733,7 +734,7 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
       // USER_VISIBLE instead of BEST_EFFORT fixes memory usage. Consider
       // keeping BEST_EFFORT priority, but manually enforcing a limit on the
       // number of outstanding tasks. https://crbug.com/974249
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards,
                      last_unlocked_credit_card_cvc_, app_locale_, raw_form),

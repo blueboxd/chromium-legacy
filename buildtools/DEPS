@@ -18,11 +18,9 @@ vars = {
 
   # When changing these, also update the svn revisions in deps_revisions.gni
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
-  # TODO(crbug.com/1054245): Rename these vars back to their original name
-  # once libassistant's copy of buildtools rolls up to the rename.
-  'libcxx_revision_v2':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
-  'libcxxabi_revision_v2':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
-  'libunwind_revision_v2':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
+  'libcxx_revision':       'd9040c75cfea5928c804ab7c235fed06a63f743a',
+  'libcxxabi_revision':    '196ba1aaa8ac285d94f4ea8d9836390a45360533',
+  'libunwind_revision':    '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 deps = {
@@ -52,15 +50,15 @@ deps = {
   'third_party/libc++/trunk':
     Var('chromium_url') +
     '/external/github.com/llvm/llvm-project/libcxx.git' + '@' +
-    Var('libcxx_revision_v2'),
+    Var('libcxx_revision'),
   'third_party/libc++abi/trunk':
     Var('chromium_url') +
     '/external/github.com/llvm/llvm-project/libcxxabi.git' + '@' +
-    Var('libcxxabi_revision_v2'),
+    Var('libcxxabi_revision'),
   'third_party/libunwind/trunk':
     Var('chromium_url') +
     '/external/github.com/llvm/llvm-project/libunwind.git' + '@' +
-    Var('libunwind_revision_v2'),
+    Var('libunwind_revision'),
   'win': {
     'packages': [
       {

@@ -6,6 +6,7 @@
 
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/cast/cast_notification_controller.h"
+#include "ash/system/gesture_education/gesture_education_notification_controller.h"
 #include "ash/system/network/auto_connect_notifier.h"
 #include "ash/system/network/wifi_toggle_notification_controller.h"
 #include "ash/system/power/power_notification_controller.h"
@@ -22,6 +23,8 @@ SystemNotificationController::SystemNotificationController()
     : auto_connect_(std::make_unique<AutoConnectNotifier>()),
       caps_lock_(std::make_unique<CapsLockNotificationController>()),
       cast_(std::make_unique<CastNotificationController>()),
+      gesture_education_(
+          std::make_unique<GestureEducationNotificationController>()),
       power_(std::make_unique<PowerNotificationController>(
           message_center::MessageCenter::Get())),
       screen_security_(

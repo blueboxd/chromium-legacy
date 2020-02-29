@@ -12,9 +12,9 @@ import static org.mockito.Mockito.verify;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.v4.util.ArrayMap;
 
 import androidx.annotation.IntDef;
+import androidx.collection.ArrayMap;
 
 import org.junit.Assert;
 import org.junit.Before;

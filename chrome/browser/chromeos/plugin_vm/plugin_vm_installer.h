@@ -58,8 +58,13 @@ class PluginVmInstaller : public KeyedService,
     COULD_NOT_OPEN_IMAGE = 13,
     INVALID_IMPORT_RESPONSE = 14,
     IMAGE_IMPORT_FAILED = 15,
-    DLC_DOWNLOAD_FAILED = 16,
+    // DLC_DOWNLOAD_FAILED = 16,
     // DLC_DOWNLOAD_NOT_STARTED = 17,
+    DLC_INTERNAL = 18,
+    DLC_UNSUPPORTED = 19,
+    DLC_BUSY = 20,
+    DLC_NEED_REBOOT = 21,
+    DLC_NEED_SPACE = 22,
   };
 
   // Observer class for the PluginVm image related events.

@@ -41,7 +41,6 @@
 // <include src="screen_recommend_apps.js">
 // <include src="screen_app_downloading.js">
 // <include src="screen_discover.js">
-// <include src="screen_marketing_opt_in.js">
 // <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
@@ -86,7 +85,6 @@ cr.define('cr.ui.Oobe', function() {
       login.SupervisionTransitionScreen.register();
       login.UpdateRequiredScreen.register();
       login.DiscoverScreen.register();
-      login.MarketingOptInScreen.register();
       login.AssistantOptInFlowScreen.register();
       login.MultiDeviceSetupScreen.register();
       login.UpdateRequiredScreen.register();

@@ -230,6 +230,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/prefs_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_engines_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/search_page_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/search_settings_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_menu_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_slider_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/settings_subpage_test.m.js",

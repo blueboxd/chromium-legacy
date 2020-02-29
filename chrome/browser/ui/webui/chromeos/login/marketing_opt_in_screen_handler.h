@@ -28,6 +28,9 @@ class MarketingOptInScreenView {
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
+
+  // Shows or hides the screen's all set (next) button visibility.
+  virtual void UpdateAllSetButtonVisibility(bool visible) = 0;
 };
 
 // The sole implementation of the MarketingOptInScreenView, using WebUI.
@@ -47,6 +50,7 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void Bind(MarketingOptInScreen* screen) override;
   void Show() override;
   void Hide() override;
+  void UpdateAllSetButtonVisibility(bool visible) override;
 
  private:
   // BaseScreenHandler:

@@ -1,0 +1,71 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import(
+    "//chrome/browser/resources/chromeos/accessibility/chromevox/run_jsbundler.gni")
+import("//chrome/common/features.gni")
+import("//third_party/closure_compiler/compile_js.gni")
+
+assert(is_chromeos)
+
+accessibility_common_out_dir =
+    "$root_out_dir/resources/chromeos/accessibility/common"
+
+group("build") {
+  deps = [ ":accessibility_common_copied_files" ]
+}
+
+run_jsbundler("accessibility_common_copied_files") {
+  mode = "copy"
+  dest_dir = accessibility_common_out_dir
+  sources = [
+    "automation_predicate.js",
+    "automation_util.js",
+    "closure_shim.js",
+    "constants.js",
+    "tree_walker.js",
+  ]
+  rewrite_rules = [ rebase_path(".", root_build_dir) + ":" ]
+}
+
+js_library("tree_walker") {
+  sources = [ "tree_walker.js" ]
+  deps = [
+    ":automation_predicate",
+    ":constants",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("automation_predicate") {
+  sources = [ "automation_predicate.js" ]
+  deps = [ ":constants" ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("constants") {
+  sources = [ "constants.js" ]
+}
+
+js_library("closure_shim") {
+}
+
+js_library("automation_util") {
+  deps = [
+    ":automation_predicate",
+    ":constants",
+    ":tree_walker",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}

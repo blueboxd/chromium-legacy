@@ -59,6 +59,7 @@ export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
+export {getSearchManager} from './search_settings.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.support.v4.util.ArraySet;
+import androidx.collection.ArraySet;
 
 import com.google.common.collect.ImmutableSet;
 

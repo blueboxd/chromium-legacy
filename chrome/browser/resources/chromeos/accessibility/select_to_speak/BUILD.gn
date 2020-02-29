@@ -25,12 +25,7 @@ run_jsbundler("select_to_speak_copied_files") {
   mode = "copy"
   dest_dir = select_to_speak_out_dir
   sources = [
-    "../chromevox/background/automation_predicate.js",
-    "../chromevox/background/automation_util.js",
-    "../chromevox/background/constants.js",
-    "../chromevox/background/tree_walker.js",
     "checked.png",
-    "closure_shim.js",
     "earcons/null_selection.ogg",
     "input_handler.js",
     "metrics_utils.js",
@@ -51,45 +46,7 @@ run_jsbundler("select_to_speak_copied_files") {
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
-    rebase_path("../chromevox/background", root_build_dir) + ":",
   ]
-}
-
-# TODO(crbug/978200): refactor this into another file like generate_manifest.gni
-# to share with other extensions.
-template("manifest") {
-  version_file = "//chrome/VERSION"
-  version_script = "//build/util/version.py"
-  template_file = "manifest.json.jinja2"
-  output_file = invoker.output_file
-  key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAukZ6JJWr0jHmFTkn0pcigpjI+cP0FqTo8FRIcCwy2fPeM+Ymf+7C9MK642i+Nhdr2qSsRF26AMIKbBdSDUnh04bfg5J/rKa/VO88LvXENYQMGhTo1y9mVg2OsbQJtEL9aTLU2G0SoKcr3g/+lggBKR5ydW1Qa0WGGAM9XrLm8iu/wn2uF4mfcMii6KfyEsAwWalpr/Td5WbtIoNNDpNeKO4ZSZJis1n9PZXqaOKpW7PqFDpEHw2PnPATxkcqj/wIx+Shgada0fhrzMlhXLhhj7ThSSWbuTz5n5NebuQ49/Z2ATgpBCSzYBVXEXMDe6LBBtGiZ/QR9UkA8Lz8bP6xIQIDAQAB"
-  action(target_name) {
-    script = "//chrome/browser/resources/chromeos/accessibility/chromevox/tools/generate_manifest.py"
-    inputs = [
-      version_file,
-      version_script,
-    ]
-    sources = [ template_file ]
-    outputs = [ output_file ]
-    args = [
-      "--key=$key",
-      "--version_file=" + rebase_path(version_file, root_build_dir),
-      "--output_manifest=" + rebase_path(output_file, root_build_dir),
-    ]
-    if (defined(invoker.is_guest_manifest) && invoker.is_guest_manifest) {
-      args += [ "--is_guest_manifest=1" ]
-    }
-    args += rebase_path(sources, root_build_dir)
-  }
-}
-
-manifest("select_to_speak_manifest") {
-  output_file = "$select_to_speak_out_dir/manifest.json"
-}
-
-manifest("select_to_speak_guest_manifest") {
-  output_file = "$select_to_speak_out_dir/manifest_guest.json"
-  is_guest_manifest = true
 }
 
 source_set("browser_tests") {
@@ -147,11 +104,6 @@ js2gtest("select_to_speak_extjs_tests") {
 
 js_type_check("closure_compile") {
   deps = [
-    ":../chromevox/background/automation_predicate",
-    ":../chromevox/background/automation_util",
-    ":../chromevox/background/constants",
-    ":../chromevox/background/tree_walker",
-    ":closure_shim",
     ":input_handler",
     ":metrics_utils",
     ":node_utils",
@@ -161,13 +113,16 @@ js_type_check("closure_compile") {
     ":select_to_speak",
     ":select_to_speak_options",
     ":word_utils",
+    "../common:automation_predicate",
+    "../common:automation_util",
+    "../common:closure_shim",
+    "../common:constants",
+    "../common:tree_walker",
   ]
 }
 
 js_library("select_to_speak") {
   deps = [
-    ":../chromevox/background/automation_util",
-    ":../chromevox/background/constants",
     ":input_handler",
     ":metrics_utils",
     ":node_utils",
@@ -175,6 +130,8 @@ js_library("select_to_speak") {
     ":prefs_manager",
     ":rect_utils",
     ":word_utils",
+    "../common:automation_util",
+    "../common:constants",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -231,41 +188,4 @@ js_library("prefs_manager") {
 js_library("metrics_utils") {
   deps = [ ":prefs_manager" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
-}
-
-js_library("../chromevox/background/automation_util") {
-  deps = [
-    ":../chromevox/background/automation_predicate",
-    ":../chromevox/background/constants",
-    ":../chromevox/background/tree_walker",
-  ]
-  externs_list = [
-    "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-  ]
-}
-
-js_library("../chromevox/background/tree_walker") {
-  deps = [
-    ":../chromevox/background/automation_predicate",
-    ":../chromevox/background/constants",
-  ]
-  externs_list = [
-    "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-  ]
-}
-
-js_library("../chromevox/background/automation_predicate") {
-  deps = [ ":../chromevox/background/constants" ]
-  externs_list = [
-    "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-  ]
-}
-
-js_library("../chromevox/background/constants") {
-}
-
-js_library("closure_shim") {
 }

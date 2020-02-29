@@ -278,6 +278,10 @@ class AX_EXPORT AXNode final {
   // Returns false otherwise.
   bool SetRoleMatchesItemRole(const AXNode* ordered_set) const;
 
+  // Container objects that should be ignored for computing PosInSet and SetSize
+  // for ordered sets.
+  bool IsIgnoredContainerForOrderedSet() const;
+
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
   base::string16 GetInheritedString16Attribute(

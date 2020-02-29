@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.settings.about.AboutSettingsBridge;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
 

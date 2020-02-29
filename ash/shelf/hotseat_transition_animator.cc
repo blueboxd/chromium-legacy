@@ -5,6 +5,7 @@
 #include "ash/shelf/hotseat_transition_animator.h"
 
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/shelf/drag_handle.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"

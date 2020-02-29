@@ -123,6 +123,7 @@ def CheckChromeVox(changed_files=None):
   ret_output = ''
   roots = [
       CVoxPath(),
+      CVoxPath('../common'),
       os.path.relpath(
           os.path.join(
               _CHROME_SOURCE_DIR,

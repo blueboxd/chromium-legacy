@@ -162,8 +162,8 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
 
   // Determines if the embedder app is the type of app for which we may log the
   // package name. If this returns false, GetAppPackageName() must return empty
-  // string.
-  virtual bool CanRecordPackageNameForAppType() = 0;
+  // string. Virtual for testing.
+  virtual bool CanRecordPackageNameForAppType();
 
   // Determines if this client falls within the group for which it's acceptable
   // to include the embedding app's package name. If this returns false,
@@ -185,8 +185,9 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // MetricsProviders. Does nothing by default.
   virtual void RegisterAdditionalMetricsProviders(MetricsService* service);
 
-  // Returns the embedding application's package name.
-  virtual std::string GetAppPackageNameInternal() = 0;
+  // Returns the embedding application's package name (unconditionally). Virtual
+  // for testing.
+  virtual std::string GetAppPackageNameInternal();
 
   void EnsureOnValidSequence() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

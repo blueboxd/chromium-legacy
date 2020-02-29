@@ -39,6 +39,9 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     @Override
     public void onNativeInitialized() {}
 
+    @Override
+    public void onSuggestionsReceived() {}
+
     /**
      * @param host A handle to the object using the suggestions.
      */

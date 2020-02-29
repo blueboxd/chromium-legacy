@@ -6,6 +6,7 @@
 #define ASH_SHELF_LOGIN_SHELF_GESTURE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/shelf/drag_handle.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "ui/views/widget/widget_observer.h"
@@ -17,7 +18,6 @@ class GestureEvent;
 namespace ash {
 
 class ContextualNudge;
-class DragHandle;
 class Shelf;
 
 // Handles the swipe up gesture on login shelf. The gesture is enabled only when

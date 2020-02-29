@@ -95,6 +95,7 @@ void WallpaperView::SetLockShieldEnabled(bool enabled) {
     shield_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     shield_view_->layer()->SetColor(SK_ColorBLACK);
     shield_view_->layer()->SetName("WallpaperViewShield");
+    shield_view_->SetBoundsRect(parent()->GetLocalBounds());
   } else {
     DCHECK(shield_view_);
     parent()->RemoveChildView(shield_view_);
@@ -108,6 +109,11 @@ const char* WallpaperView::GetClassName() const {
 
 bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
+}
+
+void WallpaperView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (shield_view_)
+    shield_view_->SetBoundsRect(parent()->GetLocalBounds());
 }
 
 void WallpaperView::ShowContextMenuForViewImpl(views::View* source,

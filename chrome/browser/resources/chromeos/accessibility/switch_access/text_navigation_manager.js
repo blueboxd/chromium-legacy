@@ -32,6 +32,20 @@ class TextNavigationManager {
     TextNavigationManager.instance = new TextNavigationManager();
   }
 
+  // =============== Static Methods ==============
+
+  /**
+   * Returns if the selection start index is set in the current node.
+   * @return {boolean}
+   */
+  static currentlySelecting() {
+    const manager = TextNavigationManager.instance;
+    return (
+        manager.selectionStartIndex_ !==
+            TextNavigationManager.NO_SELECT_INDEX &&
+        manager.currentlySelecting_);
+  }
+
   /**
    * Jumps to the beginning of the text field (does nothing
    * if already at the beginning).
@@ -70,19 +84,6 @@ class TextNavigationManager {
   }
 
   /**
-   * Moves the text caret one character forward (does nothing
-   * if there are no more characters following the current
-   * location of the caret).
-   */
-  static moveForwardOneChar() {
-    const manager = TextNavigationManager.instance;
-    if (manager.currentlySelecting_) {
-      manager.setupDynamicSelection_(true /* resetCursor */);
-    }
-    EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW);
-  }
-
-  /**
    * Moves the text caret one word backwards (does nothing
    * if already at the beginning of the field). If the
    * text caret is in the middle of a word, moves the caret
@@ -94,6 +95,32 @@ class TextNavigationManager {
       manager.setupDynamicSelection_(false /* resetCursor */);
     }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.LEFT_ARROW, {ctrl: true});
+  }
+
+  /**
+   * Moves the text caret one line down (does nothing
+   * if there are no lines below the current location of
+   * the caret).
+   */
+  static moveDownOneLine() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
+    }
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
+  }
+
+  /**
+   * Moves the text caret one character forward (does nothing
+   * if there are no more characters following the current
+   * location of the caret).
+   */
+  static moveForwardOneChar() {
+    const manager = TextNavigationManager.instance;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
+    }
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW);
   }
 
   /**
@@ -124,45 +151,97 @@ class TextNavigationManager {
   }
 
   /**
-   * Moves the text caret one line down (does nothing
-   * if there are no lines below the current location of
-   * the caret).
+   * Reset the currentlySelecting variable to false, reset the selection
+   * indices, and remove the listener on navigation.
    */
-  static moveDownOneLine() {
+  static resetCurrentlySelecting() {
     const manager = TextNavigationManager.instance;
-    if (manager.currentlySelecting_) {
-      manager.setupDynamicSelection_(true /* resetCursor */);
-    }
-    EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
+    manager.currentlySelecting_ = false;
+    manager.manageNavigationListener_(false /** Removing listener */);
+    manager.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
+    manager.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
   }
 
   /**
-   * TODO(crbug.com/999400): Work on text selection dynamic highlight and
-   * text selection implementation below
+   * Sets the selectionStart variable based on the selection of the current
+   * node. Also sets the currently selecting boolean to true.
    */
+  static saveSelectStart() {
+    const manager = TextNavigationManager.instance;
+    chrome.automation.getFocus((focusedNode) => {
+      manager.selectionStartObject_ = focusedNode;
+      manager.selectionStartIndex_ = manager.getSelectionIndexFromNode_(
+          manager.selectionStartObject_,
+          true /* We are getting the start index.*/);
+      manager.currentlySelecting_ = true;
+    });
+  }
+
+  // =============== Instance Methods ==============
 
   /**
-   * Sets up the cursor position and selection listener for dynamic selection.
-   * If the needToResetCursor boolean is true, the function will move the cursor
-   * to the end point of the selection before adding the event listener. If not,
-   * it will simply add the listener.
-   * @param {boolean} needToResetCursor
+   * Returns either the selection start index or the selection end index of the
+   * node based on the getStart param.
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {boolean} getStart
+   * @return {number} selection start if getStart is true otherwise selection
+   * end
    * @private
    */
-  setupDynamicSelection_(needToResetCursor) {
-    if (needToResetCursor) {
-      if (TextNavigationManager.currentlySelecting() &&
-          this.selectionEndIndex_ != TextNavigationManager.NO_SELECT_INDEX) {
-        // Move the cursor to the end of the existing selection.
-        chrome.automation.setDocumentSelection({
-          anchorObject: this.selectionEndObject_,
-          anchorOffset: this.selectionEndIndex_,
-          focusObject: this.selectionEndObject_,
-          focusOffset: this.selectionEndIndex_
-        });
-      }
+  getSelectionIndexFromNode_(node, getStart) {
+    let indexFromNode = TextNavigationManager.NO_SELECT_INDEX;
+    if (getStart) {
+      indexFromNode = node.textSelStart;
+    } else {
+      indexFromNode = node.textSelEnd;
     }
-    this.manageNavigationListener_(true /** Add the listener */);
+    if (indexFromNode === undefined) {
+      return TextNavigationManager.NO_SELECT_INDEX;
+    }
+    return indexFromNode;
+  }
+
+  /**
+   * Adds or removes the selection listener based on a boolean parameter.
+   * @param {boolean} addListener
+   * @private
+   */
+  manageNavigationListener_(addListener) {
+    if (addListener) {
+      this.selectionStartObject_.addEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.selectionListener_, false /** Don't use capture.*/);
+    } else {
+      this.selectionStartObject_.removeEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.selectionListener_, false /** Don't use capture.*/);
+    }
+  }
+
+  /**
+   * Function to handle changes in the cursor position during selection.
+   * This function will remove the selection listener and set the end of the
+   * selection based on the new position.
+   * @private
+   */
+  onNavChange_() {
+    this.manageNavigationListener_(false);
+    if (this.currentlySelecting_) {
+      this.saveSelectEnd();
+    }
+  }
+
+  /**
+   * Sets the selectionEnd variable based on the selection of the current node.
+   */
+  saveSelectEnd() {
+    chrome.automation.getFocus((focusedNode) => {
+      this.selectionEndObject_ = focusedNode;
+      this.selectionEndIndex_ = this.getSelectionIndexFromNode_(
+          this.selectionEndObject_,
+          false /*We are not getting the start index.*/);
+      this.saveSelection_();
+    });
   }
 
   /**
@@ -188,140 +267,31 @@ class TextNavigationManager {
   }
 
   /**
-   * Returns the selection end index.
-   * @return {number}
-   */
-  getSelEndIndex() {
-    return this.selectionEndIndex_;
-  }
-
-  /**
-   * Reset the selectionStartIndex to NO_SELECT_INDEX.
-   */
-  resetSelStartIndex() {
-    this.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
-  }
-
-  /**
-   * Returns the selection start index.
-   * @return {number}
-   */
-  getSelStartIndex() {
-    return this.selectionStartIndex_;
-  }
-
-  /**
-   * Sets the selection start index.
-   * @param {number} startIndex
-   * @param {!chrome.automation.AutomationNode} textNode
-   */
-  setSelStartIndexAndNode(startIndex, textNode) {
-    this.selectionStartIndex_ = startIndex;
-    this.selectionStartObject_ = textNode;
-  }
-
-  /**
-   * Returns if the selection start index is set in the current node.
-   * @return {boolean}
-   */
-  static currentlySelecting() {
-    const manager = TextNavigationManager.instance;
-    return (
-        manager.selectionStartIndex_ !==
-            TextNavigationManager.NO_SELECT_INDEX &&
-        manager.currentlySelecting_);
-  }
-
-  /**
-   * Returns either the selection start index or the selection end index of the
-   * node based on the getStart param.
-   * @param {!chrome.automation.AutomationNode} node
-   * @param {boolean} getStart
-   * @return {number} selection start if getStart is true otherwise selection
-   * end
+   * Sets up the cursor position and selection listener for dynamic selection.
+   * If the needToResetCursor boolean is true, the function will move the cursor
+   * to the end point of the selection before adding the event listener. If not,
+   * it will simply add the listener.
+   * @param {boolean} needToResetCursor
    * @private
    */
-  getSelectionIndexFromNode_(node, getStart) {
-    let indexFromNode = TextNavigationManager.NO_SELECT_INDEX;
-    if (getStart) {
-      indexFromNode = node.textSelStart;
-    } else {
-      indexFromNode = node.textSelEnd;
+  setupDynamicSelection_(needToResetCursor) {
+    /**
+     * TODO(crbug.com/999400): Work on text selection dynamic highlight and
+     * text selection implementation.
+     */
+    if (needToResetCursor) {
+      if (TextNavigationManager.currentlySelecting() &&
+          this.selectionEndIndex_ != TextNavigationManager.NO_SELECT_INDEX) {
+        // Move the cursor to the end of the existing selection.
+        chrome.automation.setDocumentSelection({
+          anchorObject: this.selectionEndObject_,
+          anchorOffset: this.selectionEndIndex_,
+          focusObject: this.selectionEndObject_,
+          focusOffset: this.selectionEndIndex_
+        });
+      }
     }
-    if (indexFromNode === undefined) {
-      return TextNavigationManager.NO_SELECT_INDEX;
-    }
-    return indexFromNode;
-  }
-
-  /**
-   * Sets the selectionStart variable based on the selection of the current
-   * node. Also sets the currently selecting boolean to true.
-   */
-  static saveSelectStart() {
-    const manager = TextNavigationManager.instance;
-    chrome.automation.getFocus((focusedNode) => {
-      manager.selectionStartObject_ = focusedNode;
-      manager.selectionStartIndex_ = manager.getSelectionIndexFromNode_(
-          manager.selectionStartObject_,
-          true /* We are getting the start index.*/);
-      manager.currentlySelecting_ = true;
-    });
-  }
-
-  /**
-   * Function to handle changes in the cursor position during selection.
-   * This function will remove the selection listener and set the end of the
-   * selection based on the new position.
-   * @private
-   */
-  onNavChange_() {
-    this.manageNavigationListener_(false);
-    if (this.currentlySelecting_) {
-      this.saveSelectEnd();
-    }
-  }
-
-  /**
-   * Adds or removes the selection listener based on a boolean parameter.
-   * @param {boolean} addListener
-   * @private
-   */
-  manageNavigationListener_(addListener) {
-    if (addListener) {
-      this.selectionStartObject_.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.selectionListener_, false /** Don't use capture.*/);
-    } else {
-      this.selectionStartObject_.removeEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.selectionListener_, false /** Don't use capture.*/);
-    }
-  }
-
-  /**
-   * Reset the currentlySelecting variable to false, reset the selection
-   * indices, and remove the listener on navigation.
-   */
-  static resetCurrentlySelecting() {
-    const manager = TextNavigationManager.instance;
-    manager.currentlySelecting_ = false;
-    manager.manageNavigationListener_(false /** Removing listener */);
-    manager.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
-    manager.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
-  }
-
-  /**
-   * Sets the selectionEnd variable based on the selection of the current node.
-   */
-  saveSelectEnd() {
-    chrome.automation.getFocus((focusedNode) => {
-      this.selectionEndObject_ = focusedNode;
-      this.selectionEndIndex_ = this.getSelectionIndexFromNode_(
-          this.selectionEndObject_,
-          false /*We are not getting the start index.*/);
-      this.saveSelection_();
-    });
+    this.manageNavigationListener_(true /** Add the listener */);
   }
 }
 

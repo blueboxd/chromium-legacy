@@ -68,13 +68,13 @@ class RecoveryComponentActionHandler : public update_client::ActionHandler {
               Callback callback) override;
 
  protected:
-  static constexpr base::TaskTraits kTaskTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  static constexpr base::TaskTraits kThreadPoolTaskTraits = {
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
   // This task joins a process, hence .WithBaseSyncPrimitives().
-  static constexpr base::TaskTraits kTaskTraitsRunCommand = {
-      base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
+  static constexpr base::TaskTraits kThreadPoolTaskTraitsRunCommand = {
+      base::MayBlock(), base::WithBaseSyncPrimitives(),
       base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 

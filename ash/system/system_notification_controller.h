@@ -14,6 +14,7 @@ namespace ash {
 class AutoConnectNotifier;
 class AutoConnectNotifierTest;
 class CapsLockNotificationController;
+class GestureEducationNotificationController;
 class CastNotificationController;
 class PowerNotificationController;
 class ScreenSecurityNotificationController;
@@ -35,6 +36,8 @@ class SystemNotificationController {
   const std::unique_ptr<AutoConnectNotifier> auto_connect_;
   const std::unique_ptr<CapsLockNotificationController> caps_lock_;
   const std::unique_ptr<CastNotificationController> cast_;
+  const std::unique_ptr<GestureEducationNotificationController>
+      gesture_education_;
   const std::unique_ptr<PowerNotificationController> power_;
   const std::unique_ptr<ScreenSecurityNotificationController> screen_security_;
   const std::unique_ptr<SessionLimitNotificationController> session_limit_;

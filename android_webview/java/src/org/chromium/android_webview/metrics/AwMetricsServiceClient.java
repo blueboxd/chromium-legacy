@@ -29,8 +29,6 @@ public class AwMetricsServiceClient {
     // reporting. See https://developer.android.com/reference/android/webkit/WebView.html
     private static final String OPT_OUT_META_DATA_STR = "android.webkit.WebView.MetricsOptOut";
 
-    private static final String PLAY_STORE_PACKAGE_NAME = "com.android.vending";
-
     private static boolean isAppOptedOut(Context ctx) {
         try {
             ApplicationInfo info = ctx.getPackageManager().getApplicationInfo(
@@ -49,16 +47,6 @@ public class AwMetricsServiceClient {
         }
     }
 
-    @CalledByNative
-    private static boolean canRecordPackageNameForAppType() {
-        // Only record if it's a system app or it was installed from Play Store.
-        Context ctx = ContextUtils.getApplicationContext();
-        String packageName = ctx.getPackageName();
-        String installerPackageName = ctx.getPackageManager().getInstallerPackageName(packageName);
-        return (ctx.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0
-                || (PLAY_STORE_PACKAGE_NAME.equals(installerPackageName));
-    }
-
     public static void setConsentSetting(Context ctx, boolean userConsent) {
         ThreadUtils.assertOnUiThread();
         AwMetricsServiceClientJni.get().setHaveMetricsConsent(userConsent, !isAppOptedOut(ctx));
@@ -72,14 +60,6 @@ public class AwMetricsServiceClient {
     @VisibleForTesting
     public static void setUploadIntervalForTesting(long uploadIntervalMs) {
         AwMetricsServiceClientJni.get().setUploadIntervalForTesting(uploadIntervalMs);
-    }
-
-    @CalledByNative
-    private static String getAppPackageName() {
-        // Return this unconditionally; let native code enforce whether or not it's OK to include
-        // this in the logs.
-        Context ctx = ContextUtils.getApplicationContext();
-        return ctx.getPackageName();
     }
 
     /**

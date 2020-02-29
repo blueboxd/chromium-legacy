@@ -24,9 +24,6 @@ class NavigationManager {
     /** @private {!Array<!SARootNode>} */
     this.groupStack_ = [];
 
-    /** @private {!MenuManager} */
-    this.menuManager_ = new MenuManager(this, this.desktop_);
-
     /** @private {!FocusRingManager} */
     this.focusRingManager_ = new FocusRingManager();
 
@@ -40,6 +37,24 @@ class NavigationManager {
   }
 
   // =============== Static Methods ==============
+
+  /**
+   * Enters |this.node_|.
+   */
+  static enterGroup() {
+    const navigator = NavigationManager.instance;
+    if (!navigator.node_.isGroup()) {
+      return;
+    }
+
+    SwitchAccessMetrics.recordMenuAction('EnterGroup');
+
+    const newGroup = navigator.node_.asRootNode();
+    if (newGroup) {
+      navigator.groupStack_.push(navigator.group_);
+      navigator.setGroup_(newGroup);
+    }
+  }
 
   /**
    * Puts focus on the virtual keyboard, if the current node is a text input.
@@ -60,7 +75,7 @@ class NavigationManager {
    */
   static enterMenu() {
     const navigator = NavigationManager.instance;
-    const didEnter = navigator.menuManager_.enter(navigator.node_);
+    const didEnter = MenuManager.enter(navigator.node_);
 
     // If the menu does not or cannot open, select the current node.
     if (!didEnter) {
@@ -130,7 +145,7 @@ class NavigationManager {
   static moveBackward() {
     const navigator = NavigationManager.instance;
 
-    if (navigator.menuManager_.moveBackward()) {
+    if (MenuManager.moveBackward()) {
       // The menu navigation is handled separately. If we are in the menu, do
       // not change the primary focus node.
       return;
@@ -149,7 +164,7 @@ class NavigationManager {
       navigator.onMoveForwardForTesting_();
     }
 
-    if (navigator.menuManager_.moveForward()) {
+    if (MenuManager.moveForward()) {
       // The menu navigation is handled separately. If we are in the menu, do
       // not change the primary focus node.
       return;
@@ -222,34 +237,17 @@ class NavigationManager {
   }
 
   /**
-   * Enters |this.node_|.
-   */
-  enterGroup() {
-    if (!this.node_.isGroup()) {
-      return;
-    }
-
-    SwitchAccessMetrics.recordMenuAction('EnterGroup');
-
-    const newGroup = this.node_.asRootNode();
-    if (newGroup) {
-      this.groupStack_.push(this.group_);
-      this.setGroup_(newGroup);
-    }
-  }
-
-  /**
    * Selects the current node.
    */
   selectCurrentNode() {
-    if (this.menuManager_.selectCurrentNode()) {
+    if (MenuManager.selectCurrentNode()) {
       // The menu navigation is handled separately. If we are in the menu, do
       // not change the primary focus node.
       return;
     }
 
     if (this.node_.isGroup()) {
-      this.enterGroup();
+      NavigationManager.enterGroup();
       return;
     }
 
@@ -276,8 +274,6 @@ class NavigationManager {
     menuPanel.backButtonElement().addEventListener(
         'click', this.exitGroup_.bind(this));
     this.focusRingManager_.setMenuPanel(menuPanel);
-    this.menuManager_.connectMenuPanel(menuPanel);
-    menuPanel.menuManager = this.menuManager_;
   }
 
   /**
@@ -397,7 +393,7 @@ class NavigationManager {
    * @private
    */
   jumpTo_(group) {
-    this.menuManager_.exit();
+    MenuManager.exit();
 
     this.groupStack_.push(this.group_);
     this.setGroup_(group);
@@ -424,7 +420,7 @@ class NavigationManager {
       return;
     }
 
-    this.menuManager_.exit();
+    MenuManager.exit();
     this.setNode_(node);
   }
 

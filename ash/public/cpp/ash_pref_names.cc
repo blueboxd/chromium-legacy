@@ -196,6 +196,11 @@ const char kExternalDisplayMirrorInfo[] =
 // layout/offset information.
 const char kSecondaryDisplays[] = "settings.display.secondary_displays";
 
+// A boolean pref storing whether the gesture education notification has ever
+// been shown to the user, which we use to stop showing it again.
+const char kGestureEducationNotificationShown[] =
+    "ash.gesture_education.notification_shown";
+
 // A boolean pref which stores whether a stylus has been seen before.
 const char kHasSeenStylus[] = "ash.has_seen_stylus";
 // A boolean pref which stores whether a the palette warm welcome bubble

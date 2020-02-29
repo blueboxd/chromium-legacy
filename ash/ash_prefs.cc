@@ -19,6 +19,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
+#include "ash/system/gesture_education/gesture_education_notification_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/network/vpn_list_view.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
@@ -47,6 +48,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   contextual_tooltip::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
   DockedMagnifierControllerImpl::RegisterProfilePrefs(registry);
+  GestureEducationNotificationController::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MediaControllerImpl::RegisterProfilePrefs(registry);

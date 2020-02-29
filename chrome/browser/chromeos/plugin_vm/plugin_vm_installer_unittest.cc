@@ -49,6 +49,7 @@ namespace {
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Invoke;
+using ::testing::StrictMock;
 
 const char kProfileName[] = "p1";
 const char kUrl[] = "http://example.com";
@@ -165,7 +166,7 @@ class PluginVmInstallerTestBase : public testing::Test {
 
     fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
     installer_ = PluginVmInstallerFactory::GetForProfile(profile_.get());
-    observer_ = std::make_unique<MockObserver>();
+    observer_ = std::make_unique<StrictMock<MockObserver>>();
     installer_->SetObserver(observer_.get());
 
     // These actions are required to make the RunUntil* functions work, so tests
@@ -391,7 +392,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest, VmExists) {
       ->set_list_vms_response(list_vms_response);
 
   EXPECT_CALL(*observer_, OnVmExists());
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
   StartAndRunToCompletion();
 }
 
@@ -445,6 +445,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
        CanProceedWithANewImageWhenSucceededTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(2);
   EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(2);
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _)).Times(2);
   EXPECT_CALL(*observer_, OnImported()).Times(2);
@@ -487,8 +488,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CancelledDownloadTest) {
-  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
-  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(0);
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCancelled());
 
   StartAndRunUntilDownloading();
@@ -503,6 +503,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledDownloadTest) {
 TEST_F(PluginVmInstallerDownloadServiceTest, ImportNonExistingImageTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(
       *observer_,
@@ -520,9 +521,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledImportTest) {
   SetupConciergeForCancelDiskImageOperation(fake_concierge_client_,
                                             true /* success */);
 
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImported()).Times(0);
-  EXPECT_CALL(*observer_, OnImportFailed(_)).Times(0);
   EXPECT_CALL(*observer_, OnImportCancelled());
 
   StartAndRunUntilImporting();
@@ -535,7 +535,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest, EmptyPluginVmImageUrlTest) {
   EXPECT_CALL(
       *observer_,
       OnDownloadFailed(PluginVmInstaller::FailureReason::INVALID_IMAGE_URL));
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
   StartAndRunToCompletion();
 
   histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
@@ -553,7 +552,6 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CannotStartIfPluginVmIsDisabled) {
       chromeos::kPluginVmAllowed, false);
   EXPECT_CALL(*observer_,
               OnDownloadFailed(PluginVmInstaller::FailureReason::NOT_ALLOWED));
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
   installer_->Start();
   task_environment_.RunUntilIdle();
 }
@@ -583,6 +581,7 @@ TEST_F(PluginVmInstallerDriveTest, WrongHashDriveTest) {
   SetPluginVmImagePref(kDriveUrl, kHash2);
 
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadProgressUpdated(_, _, _)).Times(2);
   EXPECT_CALL(*observer_, OnDownloadFailed(
                               PluginVmInstaller::FailureReason::HASH_MISMATCH));
 
@@ -599,7 +598,6 @@ TEST_F(PluginVmInstallerDriveTest, DriveDownloadFailedAfterStartingTest) {
   EXPECT_CALL(*observer_,
               OnDownloadFailed(
                   PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_NETWORK));
-  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
 
   StartAndRunToCompletion();
 
@@ -619,7 +617,6 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
 
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100, _));
-  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
 
   StartAndRunToCompletion();
 
@@ -640,71 +637,70 @@ TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
   EXPECT_CALL(*observer_,
               OnDownloadProgressUpdated(_, std::strlen(kContent), _))
       .Times(AtLeast(1));
+  EXPECT_CALL(*observer_, OnImportFailed(_));
 
   StartAndRunToCompletion();
   histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
                                         PluginVmDlcUseResult::kDlcSuccess, 1);
 }
 
-// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
-// rootfs PluginVM is no longer resident.
-TEST_F(PluginVmInstallerDriveTest,
-       InstallingPluingVmDlcInternalFailureAllowsPassthrough) {
+TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcInternal) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInternal);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
-  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
 
   StartAndRunToCompletion();
-  histogram_tester_->ExpectUniqueSample(
-      kPluginVmDlcUseResultHistogram,
-      PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError, 1);
+  histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
+                                        PluginVmDlcUseResult::kInternalDlcError,
+                                        1);
 }
 
-// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
-// rootfs PluginVM is no longer resident.
-TEST_F(PluginVmInstallerDriveTest,
-       InstallingPluingVmDlcBusyFailureAllowsPassthrough) {
+TEST_F(PluginVmInstallerDriveTest, InstallingPluingVmDlcBusy) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorBusy);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
-  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
 
   StartAndRunToCompletion();
-  histogram_tester_->ExpectUniqueSample(
-      kPluginVmDlcUseResultHistogram,
-      PluginVmDlcUseResult::kFallbackToRootFsBusyDlcError, 1);
+  histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
+                                        PluginVmDlcUseResult::kBusyDlcError, 1);
 }
 
-// TODO(b/148470849): Modify test to block once PluginVM DLC is stable and
-// rootfs PluginVM is no longer resident.
-TEST_F(PluginVmInstallerDriveTest,
-       InstallingPluingVmDlcNeedRebootFailureAllowsPassthrough) {
+TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedReboot) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorNeedReboot);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
-  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
 
   StartAndRunToCompletion();
   histogram_tester_->ExpectUniqueSample(
-      kPluginVmDlcUseResultHistogram,
-      PluginVmDlcUseResult::kFallbackToRootFsNeedRebootDlcError, 1);
+      kPluginVmDlcUseResultHistogram, PluginVmDlcUseResult::kNeedRebootDlcError,
+      1);
+}
+
+TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcNeedSpace) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorAllocation);
+
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram, PluginVmDlcUseResult::kNeedSpaceDlcError,
+      1);
 }
 
 TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInvalidDlc);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
   EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
 
   StartAndRunToCompletion();
-  histogram_tester_->ExpectUniqueSample(
-      kPluginVmDlcUseResultHistogram,
-      PluginVmDlcUseResult::kFallbackToRootFsInvalidDlcError, 1);
+  histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
+                                        PluginVmDlcUseResult::kInvalidDlcError,
+                                        1);
 }
 
 }  // namespace plugin_vm

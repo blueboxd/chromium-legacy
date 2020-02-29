@@ -4,6 +4,13 @@
      found in the LICENSE file. -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Infobar dimensions -->
+    <!-- Margin between items in the same control group. -->
+    <dimen name="infobar_control_margin_between_rows">8dp</dimen>
+    <dimen name="infobar_control_margin_between_columns">32dp</dimen>
+    <!-- Text size of the infobar message and other controls. -->
+    <dimen name="infobar_text_size">16sp</dimen>
+
     <!-- Snackbars -->
     <dimen name="snackbar_min_height">48dp</dimen>
     <dimen name="snackbar_width_tablet">450dp</dimen>

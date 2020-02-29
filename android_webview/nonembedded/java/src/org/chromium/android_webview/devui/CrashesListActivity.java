@@ -10,11 +10,13 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,14 +69,12 @@ public class CrashesListActivity extends Activity {
             + "You only need to fill this out if you can share more information like steps to "
             + "reproduce the crash.\n"
             + "\n"
-            + "Device name:\n"
-            + "Android OS version:\n"
-            + "WebView package: %s\n"
-            + "Application: (Please link to its Play Store page if possible. You can get the link "
-            + "from inside the Play Store app by tapping the 3 dots in the upper right > Share > "
-            + "Copy to clipboard. Or you can find the app on the Play Store website: "
-            + "https://play.google.com/store/apps.)\n"
-            + "Application version:\n"
+            + "Build fingerprint: %s\n"
+            + "Android API level: %s\n"
+            + "WebView package: %s (%s/%s)\n"
+            + "Application: %s\n"
+            + "Application version: %s\n"
+            + "If this app is available on Google Play, please include a URL:\n"
             + "\n"
             + "\n"
             + "Steps to reproduce:\n"
@@ -85,6 +85,9 @@ public class CrashesListActivity extends Activity {
             + "\n"
             + "Expected result:\n"
             + "(What should have happened?)\n"
+            + "\n"
+            + "\n"
+            + "<Any additional comments, you want to share>"
             + "\n"
             + "\n"
             + "****DO NOT CHANGE BELOW THIS LINE****\n"
@@ -361,17 +364,33 @@ public class CrashesListActivity extends Activity {
     // It uses WebView Bugs Template and adds "User-Submitted" Label.
     // It adds the upload id at the end of the template and populates the Application package
     // name field.
-    // TODO(https://crbug.com/991594) populate more fields in the template.
     private Uri getReportUri(CrashInfo crashInfo) {
+        String appPackage = "";
+        String appVersion = "";
+        if (crashInfo.packageName != null) {
+            try {
+                PackageManager pm = getPackageManager();
+                PackageInfo packageInfo = pm.getPackageInfo(crashInfo.packageName, 0);
+                appPackage = crashInfo.packageName;
+                appVersion = String.format(
+                        Locale.US, "%s/%s", packageInfo.versionName, packageInfo.versionCode);
+            } catch (PackageManager.NameNotFoundException e) {
+            }
+        }
+
+        PackageInfo webViewPackage =
+                WebViewPackageHelper.getContextPackageInfo(CrashesListActivity.this);
+
         return new Uri.Builder()
                 .scheme("https")
                 .authority("bugs.chromium.org")
                 .path("/p/chromium/issues/entry")
                 .appendQueryParameter("template", "Webview+Bugs")
-                .appendQueryParameter("comment",
-                        String.format(Locale.US, CRASH_REPORT_TEMPLATE,
-                                WebViewPackageHelper.loadLabel(CrashesListActivity.this),
-                                crashInfo.uploadId))
+                .appendQueryParameter("description",
+                        String.format(Locale.US, CRASH_REPORT_TEMPLATE, Build.FINGERPRINT,
+                                Build.VERSION.SDK_INT, webViewPackage.packageName,
+                                webViewPackage.versionName, webViewPackage.versionCode, appPackage,
+                                appVersion, crashInfo.uploadId))
                 .appendQueryParameter("labels", "User-Submitted")
                 .build();
     }

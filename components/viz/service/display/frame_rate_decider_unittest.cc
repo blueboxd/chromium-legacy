@@ -298,6 +298,20 @@ TEST_F(FrameRateDeciderTest, TogglesAfterMinNumOfFrames) {
     frame_rate_decider_->OnSurfaceWillBeDrawn(surface);
   }
   EXPECT_EQ(display_interval_, preferred_interval);
+
+  // The frame rate is immediately toggled on drawing a surface with a lower
+  // interval.
+  frame_rate_decider_->set_min_num_of_frames_to_toggle_interval_for_testing(
+      50u);
+  FrameSinkId frame_sink_id2(1u, 1u);
+  preferred_intervals_[frame_sink_id2] = min_supported_interval;
+  auto* surface2 = CreateAndDrawSurface(frame_sink_id2);
+  {
+    FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface);
+    frame_rate_decider_->OnSurfaceWillBeDrawn(surface2);
+  }
+  EXPECT_EQ(display_interval_, min_supported_interval);
 }
 
 }  // namespace

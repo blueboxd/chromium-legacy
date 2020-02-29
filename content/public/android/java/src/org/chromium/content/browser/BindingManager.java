@@ -7,7 +7,8 @@ package org.chromium.content.browser;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.v4.util.ArraySet;
+
+import androidx.collection.ArraySet;
 
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;

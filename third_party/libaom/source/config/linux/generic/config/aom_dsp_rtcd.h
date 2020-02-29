@@ -42,8 +42,8 @@ void aom_blend_a64_mask_c(uint8_t* dst,
                           uint32_t mask_stride,
                           int w,
                           int h,
-                          int subx,
-                          int suby);
+                          int subw,
+                          int subh);
 #define aom_blend_a64_mask aom_blend_a64_mask_c
 
 void aom_blend_a64_vmask_c(uint8_t* dst,
@@ -86,9 +86,9 @@ void aom_convolve_copy_c(const uint8_t* src,
                          uint8_t* dst,
                          ptrdiff_t dst_stride,
                          const int16_t* filter_x,
-                         int x_step_q4,
+                         int filter_x_stride,
                          const int16_t* filter_y,
-                         int y_step_q4,
+                         int filter_y_stride,
                          int w,
                          int h);
 #define aom_convolve_copy aom_convolve_copy_c
@@ -703,8 +703,8 @@ void aom_highbd_blend_a64_d16_mask_c(uint8_t* dst,
                                      uint32_t mask_stride,
                                      int w,
                                      int h,
-                                     int subx,
-                                     int suby,
+                                     int subw,
+                                     int subh,
                                      ConvolveParams* conv_params,
                                      const int bd);
 #define aom_highbd_blend_a64_d16_mask aom_highbd_blend_a64_d16_mask_c
@@ -731,8 +731,8 @@ void aom_highbd_blend_a64_mask_c(uint8_t* dst,
                                  uint32_t mask_stride,
                                  int w,
                                  int h,
-                                 int subx,
-                                 int suby,
+                                 int subw,
+                                 int subh,
                                  int bd);
 #define aom_highbd_blend_a64_mask aom_highbd_blend_a64_mask_c
 
@@ -758,7 +758,7 @@ void aom_highbd_convolve8_horiz_c(const uint8_t* src,
                                   int y_step_q4,
                                   int w,
                                   int h,
-                                  int bps);
+                                  int bd);
 #define aom_highbd_convolve8_horiz aom_highbd_convolve8_horiz_c
 
 void aom_highbd_convolve8_vert_c(const uint8_t* src,
@@ -771,7 +771,7 @@ void aom_highbd_convolve8_vert_c(const uint8_t* src,
                                  int y_step_q4,
                                  int w,
                                  int h,
-                                 int bps);
+                                 int bd);
 #define aom_highbd_convolve8_vert aom_highbd_convolve8_vert_c
 
 void aom_highbd_convolve_copy_c(const uint8_t* src,
@@ -779,12 +779,12 @@ void aom_highbd_convolve_copy_c(const uint8_t* src,
                                 uint8_t* dst,
                                 ptrdiff_t dst_stride,
                                 const int16_t* filter_x,
-                                int x_step_q4,
+                                int filter_x_stride,
                                 const int16_t* filter_y,
-                                int y_step_q4,
+                                int filter_y_stride,
                                 int w,
                                 int h,
-                                int bps);
+                                int bd);
 #define aom_highbd_convolve_copy aom_highbd_convolve_copy_c
 
 void aom_highbd_dc_128_predictor_16x16_c(uint16_t* dst,
@@ -1501,7 +1501,7 @@ void aom_highbd_lpf_horizontal_14_dual_c(uint16_t* s,
                                          const uint8_t* limit0,
                                          const uint8_t* thresh0,
                                          const uint8_t* blimit1,
-                                         const uint8_t* limt1,
+                                         const uint8_t* limit1,
                                          const uint8_t* thresh1,
                                          int bd);
 #define aom_highbd_lpf_horizontal_14_dual aom_highbd_lpf_horizontal_14_dual_c
@@ -2367,8 +2367,8 @@ void aom_lowbd_blend_a64_d16_mask_c(uint8_t* dst,
                                     uint32_t mask_stride,
                                     int w,
                                     int h,
-                                    int subx,
-                                    int suby,
+                                    int subw,
+                                    int subh,
                                     ConvolveParams* conv_params);
 #define aom_lowbd_blend_a64_d16_mask aom_lowbd_blend_a64_d16_mask_c
 

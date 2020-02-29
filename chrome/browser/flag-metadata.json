@@ -3413,11 +3413,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "SupervisedUserCommittedInterstitials",
-    "owners": [ "carlosil" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "sync-error-infobar",
     "owners": [ "triploblastic", "bsazonov" ],
     "expiry_milestone": 85

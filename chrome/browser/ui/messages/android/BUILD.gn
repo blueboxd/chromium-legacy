@@ -9,12 +9,15 @@ android_resources("java_resources") {
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/browser_ui/widget/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
 }
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarControlLayout.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarMessageView.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/Snackbar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarManager.java",
@@ -26,7 +29,8 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_android_support_appcompat_v7_java",
     "//ui/android:ui_full_java",
   ]
 }
@@ -46,7 +50,10 @@ java_library("junit") {
 
 android_library("javatests") {
   testonly = true
-  sources = [ "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarTest.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarControlLayoutTest.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",

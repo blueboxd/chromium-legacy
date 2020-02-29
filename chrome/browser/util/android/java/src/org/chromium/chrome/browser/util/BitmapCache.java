@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.util;
 
 import android.graphics.Bitmap;
 import android.os.Looper;
-import android.support.v4.util.LruCache;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.LruCache;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;

@@ -623,6 +623,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
     return NetLogURLRequestStartParams(
         url(), method_, load_flags_, privacy_mode_, network_isolation_key_,
+        site_for_cookies_, initiator_,
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 

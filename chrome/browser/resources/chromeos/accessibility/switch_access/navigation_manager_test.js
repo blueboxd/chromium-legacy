@@ -20,6 +20,11 @@ function SwitchAccessNavigationManagerTest() {
 SwitchAccessNavigationManagerTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
 
+  /** @override */
+  setUp() {
+    MenuManager.initialize();
+  },
+
   runAndSaveDesktop(website, callback) {
     this.runWithLoadedTree(website, (desktop) => {
       this.desktop = desktop;
@@ -209,7 +214,7 @@ TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
         this.navigator.node_.automationNode.htmlAttributes['id'], 'group',
         'Did not move to group properly');
 
-    this.navigator.enterGroup();
+    NavigationManager.enterGroup();
     assertEquals(
         chrome.automation.RoleType.BUTTON, this.navigator.node_.role,
         'Current node is not a button');

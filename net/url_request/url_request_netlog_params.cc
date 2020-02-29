@@ -9,8 +9,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/network_isolation_key.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/log/net_log_capture_mode.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -31,6 +33,8 @@ base::Value NetLogURLRequestStartParams(
     int load_flags,
     PrivacyMode privacy_mode,
     const NetworkIsolationKey& network_isolation_key,
+    const SiteForCookies& site_for_cookies,
+    const base::Optional<url::Origin>& initiator,
     int64_t upload_id) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("url", url.possibly_invalid_spec());
@@ -39,6 +43,9 @@ base::Value NetLogURLRequestStartParams(
   dict.SetIntKey("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
   dict.SetStringKey("network_isolation_key",
                     network_isolation_key.ToDebugString());
+  dict.SetStringKey("site_for_cookies", site_for_cookies.ToDebugString());
+  dict.SetStringKey("initiator", initiator.has_value() ? initiator->Serialize()
+                                                       : "not an origin");
   if (upload_id > -1)
     dict.SetStringKey("upload_id", base::NumberToString(upload_id));
   return dict;

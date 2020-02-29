@@ -4,12 +4,16 @@
 
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 
+#include <jni.h>
 #include <cstdint>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/base_paths_android.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "components/embedder_support/android/metrics/android_metrics_log_uploader.h"
+#include "components/embedder_support/android/metrics/jni/AndroidMetricsServiceClient_jni.h"
 #include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
@@ -288,6 +292,13 @@ bool AndroidMetricsServiceClient::IsInSample() {
   return GetSampleBucketValue() < GetSampleRatePerMille();
 }
 
+bool AndroidMetricsServiceClient::CanRecordPackageNameForAppType() {
+  // Check with Java side, to see if it's OK to log the package name for this
+  // type of app (see Java side for the specific requirements).
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AndroidMetricsServiceClient_canRecordPackageNameForAppType(env);
+}
+
 bool AndroidMetricsServiceClient::IsInPackageNameSample() {
   // Check if this client falls within the group for which it's acceptable to
   // log package name. This guarantees we enforce the privacy requirement
@@ -304,6 +315,15 @@ void AndroidMetricsServiceClient::RegisterAdditionalMetricsProviders(
 std::string AndroidMetricsServiceClient::GetAppPackageName() {
   if (IsInPackageNameSample() && CanRecordPackageNameForAppType())
     return GetAppPackageNameInternal();
+  return std::string();
+}
+
+std::string AndroidMetricsServiceClient::GetAppPackageNameInternal() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_app_name =
+      Java_AndroidMetricsServiceClient_getAppPackageName(env);
+  if (j_app_name)
+    return ConvertJavaStringToUTF8(env, j_app_name);
   return std::string();
 }
 

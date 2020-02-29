@@ -190,38 +190,45 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   }
   DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
-  if (err == dlcservice::kErrorInvalidDlc) {
-    LOG(ERROR) << "PluginVM DLC is not supported, need to enable PluginVM DLC.";
-    state_ = State::DOWNLOAD_DLC_FAILED;
+  // If success, continue to the next state.
+  if (err == dlcservice::kErrorNone) {
+    RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
     if (observer_)
-      observer_->OnDownloadFailed(FailureReason::DLC_DOWNLOAD_FAILED);
-    RecordPluginVmDlcUseResultHistogram(
-        PluginVmDlcUseResult::kFallbackToRootFsInvalidDlcError);
+      observer_->OnDlcDownloadCompleted();
+    StartDownload();
     return;
   }
 
-  if (err != dlcservice::kErrorNone) {
-    // TODO(b/148470849): Remove this log once PluginVM is converted to DLC and
-    // invoke |OnDownloadFailed()|. The temporary passthrough is safe as
-    // PluginVM will be rootfs resident as a fallback.
-    LOG(ERROR) << "PluginVM DLC installation failed, falling back to rootfs "
-                  "resident PluginVM. Reason being dlcservice error: "
-               << err;
-    PluginVmDlcUseResult dlc_use_result =
-        PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError;
-    if (err == dlcservice::kErrorBusy)
-      dlc_use_result = PluginVmDlcUseResult::kFallbackToRootFsBusyDlcError;
-    else if (err == dlcservice::kErrorNeedReboot)
-      dlc_use_result =
-          PluginVmDlcUseResult::kFallbackToRootFsNeedRebootDlcError;
-    RecordPluginVmDlcUseResultHistogram(dlc_use_result);
+  // At this point, PluginVM DLC download failed.
+  state_ = State::DOWNLOAD_DLC_FAILED;
+  PluginVmDlcUseResult result = PluginVmDlcUseResult::kInternalDlcError;
+  FailureReason reason = FailureReason::DLC_INTERNAL;
+
+  if (err == dlcservice::kErrorInvalidDlc) {
+    LOG(ERROR) << "PluginVM DLC is not supported, need to enable PluginVM DLC.";
+    result = PluginVmDlcUseResult::kInvalidDlcError;
+    reason = FailureReason::DLC_UNSUPPORTED;
+  } else if (err == dlcservice::kErrorBusy) {
+    LOG(ERROR)
+        << "PluginVM DLC is not able to be downloaded as dlcservice is busy.";
+    result = PluginVmDlcUseResult::kBusyDlcError;
+    reason = FailureReason::DLC_BUSY;
+  } else if (err == dlcservice::kErrorNeedReboot) {
+    LOG(ERROR)
+        << "Device has pending update and needs a reboot to use PluginVM DLC.";
+    result = PluginVmDlcUseResult::kNeedRebootDlcError;
+    reason = FailureReason::DLC_NEED_REBOOT;
+  } else if (err == dlcservice::kErrorAllocation) {
+    LOG(ERROR) << "Device needs to free space to use PluginVM DLC.";
+    result = PluginVmDlcUseResult::kNeedSpaceDlcError;
+    reason = FailureReason::DLC_NEED_SPACE;
   } else {
-    RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
+    LOG(ERROR) << "Failed to download PluginVM DLC: " << err;
   }
 
+  RecordPluginVmDlcUseResultHistogram(result);
   if (observer_)
-    observer_->OnDlcDownloadCompleted();
-  StartDownload();
+    observer_->OnDownloadFailed(reason);
 }
 
 void PluginVmInstaller::OnDownloadStarted() {

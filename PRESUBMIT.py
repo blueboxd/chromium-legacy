@@ -4012,10 +4012,8 @@ def _CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
   # this presubmit check.
 
   # Update this regexp if new revisions are added to the files.
-  # TODO(crbug.com/1054245): Remove the optional '_v2' bit.
-  var_names = ['clang_format', 'libcxx', 'libcxxabi', 'libunwind']
   rev_regexp = input_api.re.compile(
-      "'((%s)_revision(?:_v2)?|gn_version)':" % '|'.join(var_names))
+      "'((clang_format|libcxx|libcxxabi|libunwind)_revision|gn_version)':")
 
   # If a user is changing one revision, they need to change the same
   # line in both files. This means that any given change should contain

@@ -55,6 +55,9 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--no-capture-stdio",
             "--no-manifest-download",
             "--no-pause-after-test",
+            # Exclude webdriver tests for now. They are run separately on the CI
+            "--exclude=webdriver",
+            "--exclude=infrastructure/webdriver",
             # Setting --no-fail-on-unexpected makes the return code of wpt 0
             # even if there were test failures. The CQ doesn't like this since
             # it uses the exit code to determine which shards to retry (ie:
@@ -89,19 +92,6 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
         parser.add_argument("--old-json-output-file-path")
         parser.add_argument("--new-json-output-dir")
         parser.add_argument("--new-json-output-filename")
-
-    def clean_up_after_test_run(self):
-        common.run_command([
-            sys.executable,
-            os.path.join(BLINK_TOOLS_DIR, 'update_wpt_output.py'),
-            '--verbose',
-            '--old-json-output-file-path',
-            self.options.old_json_output_file_path,
-            '--new-json-output-dir', self.options.new_json_output_dir,
-            '--new-json-output-filename', self.options.new_json_output_filename,
-            '--additional-expectations',
-            WPT_OVERRIDE_EXPECTATIONS_PATH
-        ])
 
 
 def main():

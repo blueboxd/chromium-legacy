@@ -89,11 +89,14 @@ bool DragHandle::DoesIntersectRect(const views::View* target,
   return drag_handle_bounds.Intersects(rect);
 }
 
-void DragHandle::ShowDragHandleNudge(base::TimeDelta nudge_duration) {
-  if (showing_nudge_)
+void DragHandle::ShowDragHandleNudge() {
+  if (ShowingNudge())
     return;
   showing_nudge_ = true;
-
+  PrefService* pref =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  base::TimeDelta nudge_duration = contextual_tooltip::GetNudgeTimeout(
+      pref, contextual_tooltip::TooltipType::kDragHandle);
   AnimateDragHandleShow();
   ShowDragHandleTooltip();
 
@@ -103,6 +106,8 @@ void DragHandle::ShowDragHandleNudge(base::TimeDelta nudge_duration) {
         base::BindOnce(&DragHandle::HideDragHandleNudge,
                        base::Unretained(this)));
   }
+  contextual_tooltip::HandleNudgeShown(
+      pref, contextual_tooltip::TooltipType::kDragHandle);
 }
 
 void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
@@ -111,7 +116,7 @@ void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {
 }
 
 void DragHandle::HideDragHandleNudge() {
-  if (!showing_nudge_)
+  if (!ShowingNudge())
     return;
   hide_drag_handle_nudge_timer_.Stop();
   HideDragHandleNudgeHelper();
@@ -123,7 +128,7 @@ void DragHandle::OnGestureEvent(ui::GestureEvent* event) {
       features::AreContextualNudgesEnabled()) {
     // Drag handle always shows nudge when tapped and does not affect the next
     // time a session based nudge will be shown.
-    ShowDragHandleNudge(contextual_tooltip::kNudgeShowDuration);
+    ShowDragHandleNudge();
   }
 }
 

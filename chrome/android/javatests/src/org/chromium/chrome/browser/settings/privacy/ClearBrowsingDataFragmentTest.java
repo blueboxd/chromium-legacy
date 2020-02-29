@@ -13,13 +13,14 @@ import static org.junit.Assert.assertTrue;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
-import android.support.v4.util.ArraySet;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceScreen;
 import android.widget.Button;
 import android.widget.ListView;
+
+import androidx.collection.ArraySet;
 
 import org.hamcrest.Matchers;
 import org.junit.After;

@@ -395,8 +395,11 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
         case Reason::NOT_ALLOWED:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE);
+        case Reason::DLC_UNSUPPORTED:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE,
+              base::NumberToString16(
+                  static_cast<std::underlying_type_t<Reason>>(*reason_)));
         case Reason::INVALID_IMAGE_URL:
         case Reason::HASH_MISMATCH:
           return l10n_util::GetStringFUTF16(
@@ -417,6 +420,19 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_INSTALLING_FAILED,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        // DLC Failure Reasons.
+        case Reason::DLC_INTERNAL:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE);
+        case Reason::DLC_BUSY:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_DLC_BUSY_FAILED_MESSAGE);
+        case Reason::DLC_NEED_REBOOT:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE);
+        case Reason::DLC_NEED_SPACE:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_DLC_NEED_SPACE_FAILED_MESSAGE);
       }
   }
 }

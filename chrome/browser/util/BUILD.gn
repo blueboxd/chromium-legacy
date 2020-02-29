@@ -24,7 +24,7 @@ android_library("java") {
     "//base:jni_java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:com_android_support_collections_java",
+    "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//url:gurl_java",

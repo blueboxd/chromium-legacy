@@ -11,7 +11,7 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
-from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder, HARNESS_ERROR, SUBTEST_FAIL, SKIP_TEST
+from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder, HARNESS_ERROR, SUBTEST_FAIL, SKIP_TEST, TEST_PASS, TEST_FAIL
 
 
 def _make_expectation(port, test_path, test_statuses, test_names=[]):
@@ -98,7 +98,13 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         expectations = _make_expectation(self.port, test_name, "TIMEOUT")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         test_names = metadata_builder.get_tests_needing_metadata()
-        self.assertFalse(test_names)
+        # The test will appear in the result but won't have a SKIP status
+        found = False
+        for name_item, status_item in test_names.items():
+            if name_item == test_name:
+                found = True
+                self.assertNotEqual(SKIP_TEST, status_item)
+        self.assertTrue(found)
 
     def test_parse_baseline_all_pass(self):
         """A WPT test with an all-pass baseline doesn't get metadata."""
@@ -194,6 +200,17 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         self.assertTrue(test_name in test_and_status_dict)
         self.assertEqual(SUBTEST_FAIL | HARNESS_ERROR, test_and_status_dict[test_name])
 
+    def test_metadata_for_flaky_test(self):
+        """A WPT test that is flaky has multiple statuses in metadata."""
+        test_name = "external/wpt/test.html"
+        expectations = _make_expectation(self.port, test_name, "PASS FAILURE")
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, TEST_PASS | TEST_FAIL)
+        self.assertEqual("test.html.ini", filename)
+        # The PASS and FAIL expectations fan out to also include OK and ERROR
+        # to support reftest/testharness test differences.
+        self.assertEqual("[test.html]\n  expected: [PASS, OK, FAIL, ERROR]\n", contents)
+
     def test_metadata_for_skipped_test(self):
         """A skipped WPT test should get a test-specific metadata file."""
         test_name = "external/wpt/test.html"
@@ -242,7 +259,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, HARNESS_ERROR)
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
-        self.assertEqual("[zzzz.html]\n  expected: ERROR\n", contents)
+        self.assertEqual("[zzzz.html]\n  expected: [ERROR]\n", contents)
 
     def test_metadata_for_wpt_test_with_harness_error_and_subtest_fail_baseline(self):
         """A WPT test with a baseline file containing a harness error and subtest failure gets metadata."""
@@ -251,9 +268,8 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SUBTEST_FAIL | HARNESS_ERROR)
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
-        self.assertEqual(
-            "[zzzz.html]\n  expected: ERROR\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
-            contents)
+        self.assertEqual("[zzzz.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n  expected: [ERROR]\n",
+                         contents)
 
     def test_metadata_for_wpt_multiglobal_test_with_baseline(self):
         """A WPT test with a baseline file containing failures gets metadata."""

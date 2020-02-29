@@ -35,6 +35,7 @@ static_library("metrics") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/components/metrics/AndroidMetricsLogUploader.java",
+    "java/src/org/chromium/components/metrics/AndroidMetricsServiceClient.java",
   ]
 
   deps = [
@@ -47,6 +48,7 @@ android_library("java") {
 generate_jni("jni") {
   sources = [
     "java/src/org/chromium/components/metrics/AndroidMetricsLogUploader.java",
+    "java/src/org/chromium/components/metrics/AndroidMetricsServiceClient.java",
   ]
 }
 
@@ -67,5 +69,8 @@ source_set("unit_tests") {
 # target.
 java_group("test_support_java") {
   testonly = true
-  deps = [ "//components/version_info/android:version_constants_java" ]
+  deps = [
+    ":java",
+    "//components/version_info/android:version_constants_java",
+  ]
 }

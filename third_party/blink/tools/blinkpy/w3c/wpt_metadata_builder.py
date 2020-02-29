@@ -28,8 +28,17 @@ HARNESS_ERROR = 1
 SUBTEST_FAIL = 1 << 1
 # The test should be skipped
 SKIP_TEST = 1 << 2
+# The test passes - this typically appears alongside another status indicating
+# a flaky test.
+TEST_PASS = 1 << 3
+# The test fails
+TEST_FAIL = 1 << 4
+# The test times out
+TEST_TIMEOUT = 1 << 5
+# The test crashes
+TEST_CRASH = 1 << 6
 
-# Next status: 1 << 3
+# Next status: 1 << 7
 
 
 class WPTMetadataBuilder(object):
@@ -59,6 +68,34 @@ class WPTMetadataBuilder(object):
         self._build_metadata_and_write()
 
         return 0
+
+    @staticmethod
+    def status_bitmap_to_string(test_status_bitmap):
+        statuses = []
+        result = ""
+        if test_status_bitmap & SUBTEST_FAIL:
+            result += "  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
+
+        if test_status_bitmap & HARNESS_ERROR:
+            statuses.append("ERROR")
+        if test_status_bitmap & TEST_PASS:
+            # We need both PASS and OK. Reftests will PASS while testharness
+            # tests are OK.
+            statuses.append("PASS")
+            statuses.append("OK")
+        if test_status_bitmap & TEST_FAIL:
+            # We need both FAIL and ERROR. Reftests will FAIL while testharness
+            # tests have ERRORs.
+            statuses.append("FAIL")
+            statuses.append("ERROR")
+        if test_status_bitmap & TEST_TIMEOUT:
+            statuses.append("TIMEOUT")
+        if test_status_bitmap & TEST_CRASH:
+            statuses.append("CRASH")
+
+        if statuses:
+            result += "  expected: [%s]\n" % ", ".join(statuses)
+        return result
 
     def _build_metadata_and_write(self):
         """Build the metadata files and write them to disk."""
@@ -108,8 +145,7 @@ class WPTMetadataBuilder(object):
             # First check for expectations. If a test is skipped then we do not
             # look for more statuses
             expectation_line = self.expectations.get_expectations(test_name)
-            test_statuses = expectation_line.results
-            self._handle_test_with_expectation(test_name, test_statuses, tests_needing_metadata)
+            self._handle_test_with_expectation(test_name, expectation_line, tests_needing_metadata)
             if self._test_was_skipped(test_name, tests_needing_metadata):
                 # Do not consider other statuses if a test is skipped
                 continue
@@ -121,11 +157,34 @@ class WPTMetadataBuilder(object):
             self._handle_test_with_baseline(test_name, test_baseline, tests_needing_metadata)
         return tests_needing_metadata
 
-    def _handle_test_with_expectation(self, test_name, test_statuses, status_dict):
+    def _handle_test_with_expectation(self, test_name, expectation_line, status_dict):
         """Handles a single test expectation and updates |status_dict|."""
-        # TODO(lpz): This will handle more statuses in the future, such as flakes.
+        test_statuses = expectation_line.results
+        annotations = expectation_line.trailing_comments
         if ResultType.Skip in test_statuses:
+            # Skips are handled alone, so don't look at any other statuses
             status_dict[test_name] |= SKIP_TEST
+            return
+
+        # Guard against the only test_status being Pass (without any
+        # annotations), we don't want to create metadata for such a test.
+        if (len(test_statuses) == 1 and ResultType.Pass in test_statuses and not annotations):
+            return
+
+        status_bitmap = 0
+        if ResultType.Pass in test_statuses:
+            status_bitmap |= TEST_PASS
+        if ResultType.Failure in test_statuses:
+            status_bitmap |= TEST_FAIL
+        if ResultType.Timeout in test_statuses:
+            status_bitmap |= TEST_TIMEOUT
+        if ResultType.Crash in test_statuses:
+            status_bitmap |= TEST_CRASH
+        if annotations:
+            if "wpt_subtest_failure" in annotations:
+                status_bitmap |= SUBTEST_FAIL
+        # Update status bitmap for this test
+        status_dict[test_name] |= status_bitmap
 
     def _test_was_skipped(self, test_name, status_dict):
         """Returns whether |test_name| is marked as skipped in |status_dict|."""
@@ -232,9 +291,8 @@ class WPTMetadataBuilder(object):
             result += "  disabled: wpt_metadata_builder.py\n"
             return result
 
-        # Other test statuses can exist together.
-        if test_status_bitmap & HARNESS_ERROR:
-            result += "  expected: ERROR\n"
-        if test_status_bitmap & SUBTEST_FAIL:
-            result += "  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
+        # Other test statuses can exist together. But ensure we have at least one.
+        expected_string = self.status_bitmap_to_string(test_status_bitmap)
+        if expected_string:
+            result += expected_string
         return result

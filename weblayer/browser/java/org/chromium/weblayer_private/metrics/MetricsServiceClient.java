@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.GmsBridge;
@@ -24,8 +23,6 @@ import org.chromium.weblayer_private.GmsBridge;
 @JNINamespace("weblayer")
 public class MetricsServiceClient {
     private static final String TAG = "MetricsServiceClie-";
-
-    private static final String PLAY_STORE_PACKAGE_NAME = "com.android.vending";
 
     // Individual apps can use this meta-data tag in their manifest to opt out of metrics.
     private static final String AUTO_UPLOAD_METADATA_STR = "android.WebLayer.MetricsAutoUpload";
@@ -53,24 +50,6 @@ public class MetricsServiceClient {
             MetricsServiceClientJni.get().setHaveMetricsConsent(
                     userConsent, !isAppOptedOut(ContextUtils.getApplicationContext()));
         });
-    }
-
-    @CalledByNative
-    private static String getAppPackageName() {
-        // Return this unconditionally; let native code enforce whether or not it's OK to include
-        // this in the logs.
-        Context ctx = ContextUtils.getApplicationContext();
-        return ctx.getPackageName();
-    }
-
-    @CalledByNative
-    private static boolean canRecordPackageNameForAppType() {
-        // Only record if it's a system app or it was installed from Play Store.
-        Context ctx = ContextUtils.getApplicationContext();
-        String packageName = ctx.getPackageName();
-        String installerPackageName = ctx.getPackageManager().getInstallerPackageName(packageName);
-        return (ctx.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0
-                || (PLAY_STORE_PACKAGE_NAME.equals(installerPackageName));
     }
 
     @NativeMethods

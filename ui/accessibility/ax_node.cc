@@ -858,6 +858,14 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
   }
 }
 
+bool AXNode::IsIgnoredContainerForOrderedSet() const {
+  if (IsIgnored() || data().role == ax::mojom::Role::kListItem ||
+      data().role == ax::mojom::Role::kGenericContainer ||
+      data().role == ax::mojom::Role::kUnknown)
+    return true;
+  return false;
+}
+
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
   int count = 0;
   for (AXNode* child : children_) {

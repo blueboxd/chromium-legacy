@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/patch/content/patch_service.h"
@@ -27,8 +28,8 @@
 
 namespace {
 
-constexpr base::TaskTraits kTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+constexpr base::TaskTraits kThreadPoolTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 }  // namespace
@@ -55,8 +56,8 @@ class PatchTest : public InProcessBrowserTest {
     base::FilePath path = installed_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, kTaskTraits,
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, kThreadPoolTaskTraits,
         base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
@@ -68,8 +69,8 @@ class PatchTest : public InProcessBrowserTest {
     base::FilePath path = input_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, kTaskTraits,
+    base::ThreadPool::PostTaskAndReply(
+        FROM_HERE, kThreadPoolTaskTraits,
         base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
@@ -94,7 +95,7 @@ class PatchTest : public InProcessBrowserTest {
     quit_closure_ = run_loop.QuitClosure();
     done_called_ = false;
 
-    base::CreateSequencedTaskRunner(kTaskTraits)
+    base::ThreadPool::CreateSequencedTaskRunner(kThreadPoolTaskTraits)
         ->PostTask(FROM_HERE,
                    base::BindOnce(&PatchTest::PatchAsyncSequencedTaskRunner,
                                   base::Unretained(this), operation, input,

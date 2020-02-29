@@ -66,6 +66,7 @@ class TestClient : public AndroidMetricsServiceClient {
   void SetSampleBucketValue(int per_mille) { sample_bucket_value_ = per_mille; }
 
   // Expose the super class implementation for testing.
+  using AndroidMetricsServiceClient::GetAppPackageNameInternal;
   using AndroidMetricsServiceClient::IsInPackageNameSample;
   using AndroidMetricsServiceClient::IsInSample;
 
@@ -97,8 +98,6 @@ class TestClient : public AndroidMetricsServiceClient {
   }
 
   void RegisterAdditionalMetricsProviders(MetricsService* service) override {}
-
-  std::string GetAppPackageNameInternal() override { return "TestPackage"; }
 
  private:
   int sample_bucket_value_;
@@ -247,6 +246,14 @@ TEST_F(AndroidMetricsServiceClientTest, TestCanUploadPackageName) {
   client->SetInPackageNameSample(true);
   std::string package_name = client->GetAppPackageName();
   EXPECT_FALSE(package_name.empty());
+}
+
+TEST_F(AndroidMetricsServiceClientTest, TestGetPackageNameInternal) {
+  auto prefs = CreateTestPrefs();
+  prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
+  auto client = CreateAndInitTestClient(prefs.get());
+  // Make sure GetPackageNameInternal returns a non-empty string.
+  EXPECT_FALSE(client->GetAppPackageNameInternal().empty());
 }
 
 TEST_F(AndroidMetricsServiceClientTest,

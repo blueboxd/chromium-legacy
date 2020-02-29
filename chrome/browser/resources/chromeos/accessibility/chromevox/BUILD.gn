@@ -24,8 +24,8 @@ chromevox_modules = [
   "background/annotation/node_identifier.js",
   "background/annotation/user_annotation_handler.js",
   "background/automation_object_constructor_installer.js",
-  "background/automation_predicate.js",
-  "background/automation_util.js",
+  "../common/automation_predicate.js",
+  "../common/automation_util.js",
   "background/background.js",
   "background/base_automation_handler.js",
   "background/braille_background.js",
@@ -36,7 +36,7 @@ chromevox_modules = [
   "background/classic_background.js",
   "background/color.js",
   "background/command_handler.js",
-  "background/constants.js",
+  "../common/constants.js",
   "background/cursors.js",
   "background/custom_automation_event.js",
   "background/desktop_automation_handler.js",
@@ -72,7 +72,7 @@ chromevox_modules = [
   "background/range_automation_handler.js",
   "background/recovery_strategy.js",
   "background/tabs_api_handler.js",
-  "background/tree_walker.js",
+  "../common/tree_walker.js",
   "braille/bluetooth_braille_display_manager.js",
   "braille/bluetooth_braille_display_ui.js",
   "braille/braille_display_manager.js",
@@ -322,8 +322,7 @@ if (is_chromeos) {
       "$root_out_dir/resources/chromeos/accessibility/chromevox/",
       "$root_out_dir/test_data/chrome/browser/resources/chromeos/accessibility/chromevox/",
 
-      # Surprisingly, the test uses data from the original location, not the
-      # copied one.
+      "//chrome/browser/resources/chromeos/accessibility/common",
       "//chrome/browser/resources/chromeos/accessibility/chromevox/",
       "//third_party/chromevox/",
     ]
@@ -427,29 +426,4 @@ if (is_chromeos) {
     ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
-}
-
-js_library("tree_walker") {
-  sources = [ "background/tree_walker.js" ]
-  deps = [
-    ":automation_predicate",
-    ":constants",
-  ]
-  externs_list = [
-    "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-  ]
-}
-
-js_library("automation_predicate") {
-  sources = [ "background/automation_predicate.js" ]
-  deps = [ ":constants" ]
-  externs_list = [
-    "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-  ]
-}
-
-js_library("constants") {
-  sources = [ "background/constants.js" ]
 }

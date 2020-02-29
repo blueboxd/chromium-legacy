@@ -262,8 +262,7 @@ js_type_check("closure_compile_local_module") {
     ":page_visibility.m",
     ":route.m",
     ":router.m",
-
-    #":search_settings.m",
+    ":search_settings.m",
     ":settings_routes.m",
     ":site_favicon.m",
   ]
@@ -353,7 +352,12 @@ js_library("search_settings.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/search_settings.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:promise_resolver.m",
+    "//ui/webui/resources/js:search_highlight_utils.m",
+    "//ui/webui/resources/js:util.m",
   ]
   extra_deps = [ ":modulize" ]
 }
@@ -471,5 +475,12 @@ js_modulizer("modulize") {
     "search_settings.js",
     "settings_routes.js",
   ]
-  namespace_rewrites = settings_namespace_rewrites
+  namespace_rewrites = settings_namespace_rewrites + [
+                         "cr.search_highlight_utils.createEmptySearchBubble|createEmptySearchBubble",
+                         "cr.search_highlight_utils.findAndRemoveHighlights|findAndRemoveHighlights",
+                         "cr.search_highlight_utils.highlight|highlight",
+                         "cr.search_highlight_utils.removeHighlights|removeHighlights",
+                         "cr.search_highlight_utils.stripDiacritics|stripDiacritics",
+                         "Polymer.DomIf|DomIf",
+                       ]
 }

@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.thumbnail.generator;
 
 import android.graphics.Bitmap;
-import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.LruCache;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;

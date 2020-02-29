@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
-import android.support.v4.util.SparseArrayCompat;
-
 import androidx.annotation.Nullable;
+import androidx.collection.SparseArrayCompat;
 
 import java.lang.ref.WeakReference;
 

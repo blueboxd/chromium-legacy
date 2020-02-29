@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.chrome.browser.ui.messages.infobar;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.InfoBarControlLayout.ControlLayoutParams;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout.ControlLayoutParams;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -60,8 +60,7 @@ public class InfoBarControlLayoutTest {
         View smallSwitch = layout.addSwitch(0, 0, "A", SWITCH_ID_1, false);
 
         // Trigger the measurement algorithm.
-        int parentWidthSpec =
-                MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
+        int parentWidthSpec = MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
 
@@ -107,8 +106,7 @@ public class InfoBarControlLayoutTest {
         switch2.setMinimumWidth(INFOBAR_WIDTH);
 
         // Trigger the measurement algorithm.
-        int parentWidthSpec =
-                MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
+        int parentWidthSpec = MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
 
@@ -167,8 +165,7 @@ public class InfoBarControlLayoutTest {
         View view2 = layout.addSwitch(0, 0, "B", SWITCH_ID_2, false);
 
         // Trigger the measurement algorithm.
-        int parentWidthSpec =
-                MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
+        int parentWidthSpec = MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
 

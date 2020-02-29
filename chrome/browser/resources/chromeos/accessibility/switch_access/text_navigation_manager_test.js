@@ -349,7 +349,7 @@ TEST_F(
         checkNodeIsFocused(inputNode);
 
         this.textNavigationManager.saveSelectStart();
-        const startIndex = this.textNavigationManager.getSelStartIndex();
+        const startIndex = this.textNavigationManager.selectionStartIndex_;
         assertEquals(startIndex, 3);
       });
     });
@@ -371,8 +371,8 @@ TEST_F(
 
 
         const startIndex = 3;
-        this.textNavigationManager.setSelStartIndexAndNode(
-            startIndex, inputNode);
+        this.textNavigationManager.selectionStartIndex_ = startIndex;
+        this.textNavigationManager.selectionStartObject_ = inputNode;
         this.textNavigationManager.saveSelectEnd();
         const endIndex = inputNode.textSelEnd;
         assertEquals(6, endIndex);

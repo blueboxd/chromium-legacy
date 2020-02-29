@@ -70,8 +70,8 @@ import java.util.List;
 /**
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
-class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionHost,
-                                      StartStopWithNativeObserver, SuggestionListObserver {
+class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWithNativeObserver,
+                                      SuggestionListObserver {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo extends MVCListAdapter.ListItem {
         /** Processor managing the suggestion. */
@@ -104,11 +104,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private final PropertyModel mListPropertyModel;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
-    private final BasicSuggestionProcessor mBasicSuggestionProcessor;
+    // TODO(crbug.com/982818): make EditUrlProcessor behave like all other processors and register
+    // it in the mSuggestionProcessors list. The processor currently cannot be combined with
+    // other processors because of its unique requirements.
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
-    private AnswerSuggestionProcessor mAnswerSuggestionProcessor;
-    private final EntitySuggestionProcessor mEntitySuggestionProcessor;
-    private final TailSuggestionProcessor mTailSuggestionProcessor;
+    private final List<SuggestionProcessor> mSuggestionProcessors;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -170,19 +170,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         mListPropertyModel = listPropertyModel;
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
-
-        final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
-        final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
-
-        mBasicSuggestionProcessor =
-                new BasicSuggestionProcessor(mContext, this, textProvider, iconBridgeSupplier);
-        mAnswerSuggestionProcessor =
-                new AnswerSuggestionProcessor(mContext, this, textProvider, imageFetcherSupplier);
-        mEditUrlProcessor = new EditUrlSuggestionProcessor(mContext, this, delegate,
-                (suggestion) -> onSelection(suggestion, 0), iconBridgeSupplier);
-        mEntitySuggestionProcessor =
-                new EntitySuggestionProcessor(mContext, this, imageFetcherSupplier);
-        mTailSuggestionProcessor = new TailSuggestionProcessor(mContext, this);
+        mSuggestionProcessors = new ArrayList<>();
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -192,6 +180,36 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
                 }
             }
         };
+    }
+
+    /**
+     * Initialize the Mediator with default set of suggestions processors.
+     */
+    void initDefaultProcessors() {
+        final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
+        final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
+
+        SuggestionHost host = this::createSuggestionViewDelegate;
+
+        mEditUrlProcessor =
+                new EditUrlSuggestionProcessor(mContext, host, mDelegate, iconBridgeSupplier);
+        registerSuggestionProcessor(new AnswerSuggestionProcessor(
+                mContext, host, mUrlBarEditingTextProvider, imageFetcherSupplier));
+        registerSuggestionProcessor(
+                new EntitySuggestionProcessor(mContext, host, imageFetcherSupplier));
+        registerSuggestionProcessor(new TailSuggestionProcessor(mContext, host));
+        registerSuggestionProcessor(new BasicSuggestionProcessor(
+                mContext, host, mUrlBarEditingTextProvider, iconBridgeSupplier));
+    }
+
+    /**
+     * Register new processor to process OmniboxSuggestions.
+     * Processors will be tried in the same order as they were added.
+     *
+     * @param processor SuggestionProcessor that handles OmniboxSuggestions.
+     */
+    void registerSuggestionProcessor(SuggestionProcessor processor) {
+        mSuggestionProcessors.add(processor);
     }
 
     public void destroy() {
@@ -425,10 +443,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
             mHandler.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
-        mAnswerSuggestionProcessor.onNativeInitialized();
-        mBasicSuggestionProcessor.onNativeInitialized();
-        mEntitySuggestionProcessor.onNativeInitialized();
-        mTailSuggestionProcessor.onNativeInitialized();
+
+        for (SuggestionProcessor processor : mSuggestionProcessors) {
+            processor.onNativeInitialized();
+        }
         if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
     }
 
@@ -496,11 +514,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
 
             if (mImageFetcher != null) mImageFetcher.clear();
         }
+
         if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
-        mAnswerSuggestionProcessor.onUrlFocusChange(hasFocus);
-        mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
-        mEntitySuggestionProcessor.onUrlFocusChange(hasFocus);
-        mTailSuggestionProcessor.onUrlFocusChange(hasFocus);
+        for (SuggestionProcessor processor : mSuggestionProcessors) {
+            processor.onUrlFocusChange(hasFocus);
+        }
     }
 
     /**
@@ -544,8 +562,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         return mAutocomplete.getCurrentNativeAutocompleteResult();
     }
 
-    // TODO(mdjones): This should only exist in the BasicSuggestionProcessor.
-    @Override
     public SuggestionViewDelegate createSuggestionViewDelegate(
             OmniboxSuggestion suggestion, int position) {
         return new SuggestionViewDelegate() {
@@ -833,17 +849,16 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      */
     private SuggestionProcessor getProcessorForSuggestion(
             OmniboxSuggestion suggestion, boolean isFirst) {
-        if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
-            return mAnswerSuggestionProcessor;
-        } else if (mEntitySuggestionProcessor.doesProcessSuggestion(suggestion)) {
-            return mEntitySuggestionProcessor;
-        } else if (mTailSuggestionProcessor.doesProcessSuggestion(suggestion)) {
-            return mTailSuggestionProcessor;
-        } else if (isFirst && mEditUrlProcessor != null
+        if (isFirst && mEditUrlProcessor != null
                 && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
             return mEditUrlProcessor;
         }
-        return mBasicSuggestionProcessor;
+
+        for (SuggestionProcessor processor : mSuggestionProcessors) {
+            if (processor.doesProcessSuggestion(suggestion)) return processor;
+        }
+        assert false : "No default handler for suggestions";
+        return null;
     }
 
     @Override
@@ -886,9 +901,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         }
 
         // Show the suggestion list.
-        mTailSuggestionProcessor.reset();
         List<MVCListAdapter.ListItem> newSuggestionViewInfos =
                 new ArrayList<>(newSuggestions.size());
+
+        for (SuggestionProcessor processor : mSuggestionProcessors) {
+            processor.onSuggestionsReceived();
+        }
+        // Ensure the list is fully replaced before broadcasting any change notifications.
         for (int i = 0; i < newSuggestions.size(); i++) {
             OmniboxSuggestion suggestion = newSuggestions.get(i);
             SuggestionProcessor processor = getProcessorForSuggestion(suggestion, i == 0);

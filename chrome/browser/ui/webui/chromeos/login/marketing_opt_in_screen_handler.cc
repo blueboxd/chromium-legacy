@@ -44,6 +44,10 @@ void MarketingOptInScreenHandler::Show() {
 
 void MarketingOptInScreenHandler::Hide() {}
 
+void MarketingOptInScreenHandler::UpdateAllSetButtonVisibility(bool visible) {
+  CallJS("login.MarketingOptInScreen.updateAllSetButtonVisibility", visible);
+}
+
 void MarketingOptInScreenHandler::Initialize() {}
 
 void MarketingOptInScreenHandler::RegisterMessages() {

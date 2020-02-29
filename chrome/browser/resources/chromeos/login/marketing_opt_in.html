@@ -43,7 +43,8 @@
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button on-tap="onAllSet_" class="focus-on-show" inverse
-            text-key="marketingOptInScreenAllSet">
+            text-key="marketingOptInScreenAllSet"
+            hidden="[[!allSetButtonVisible_]]">
         </oobe-text-button>
       </div>
     </oobe-dialog>

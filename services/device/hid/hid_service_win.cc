@@ -23,7 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_connection_win.h"
@@ -34,7 +34,7 @@ namespace device {
 HidServiceWin::HidServiceWin()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(
-          base::CreateSequencedTaskRunner(kBlockingTaskTraits)),
+          base::ThreadPool::CreateSequencedTaskRunner(kBlockingTaskTraits)),
       device_observer_(this) {
   DeviceMonitorWin* device_monitor =
       DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_HID);

@@ -25,10 +25,6 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
-    "../chromevox/background/constants.js",
-    "../chromevox/background/tree_walker.js",
-    "../select_to_speak/closure_shim.js",
-    "//third_party/chromevox/third_party/closure-library/closure/goog/base.js",
     "auto_scan_manager.js",
     "background.js",
     "commands.js",
@@ -86,8 +82,6 @@ run_jsbundler("switch_access_copied_files") {
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
-    rebase_path("../chromevox/background", root_build_dir) + ":",
-    rebase_path("../select_to_speak", root_build_dir) + ":",
   ]
 }
 
@@ -160,9 +154,9 @@ js_type_check("closure_compile") {
     ":system_menu_node",
     ":tab_node",
     ":text_navigation_manager",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
-    "../select_to_speak:closure_shim",
+    "../common:closure_shim",
+    "../common:constants",
+    "../common:tree_walker",
   ]
 }
 
@@ -249,8 +243,8 @@ js_library("keyboard_node") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
+    "../common:constants",
+    "../common:tree_walker",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -269,8 +263,8 @@ js_library("menu_manager") {
     ":switch_access_node",
     ":switch_access_predicate",
     ":text_navigation_manager",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
+    "../common:constants",
+    "../common:tree_walker",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -322,8 +316,8 @@ js_library("node_wrapper") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
+    "../common:constants",
+    "../common:tree_walker",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -349,8 +343,8 @@ js_library("switch_access") {
     ":navigation_manager",
     ":preferences",
     ":switch_access_constants",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
+    "../common:constants",
+    "../common:tree_walker",
   ]
   externs_list = [
     "$externs_path/automation.js",

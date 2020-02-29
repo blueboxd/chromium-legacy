@@ -32,7 +32,7 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Animates drag handle and tooltip for drag handle teaching users that
   // swiping up on will take the user back to the home screen.
-  void ShowDragHandleNudge(base::TimeDelta nudge_duration);
+  void ShowDragHandleNudge();
 
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
@@ -40,6 +40,12 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
+
+  bool ShowingNudge() { return showing_nudge_; }
+
+  bool HasHideTimerForTesting() {
+    return hide_drag_handle_nudge_timer_.IsRunning();
+  }
 
  private:
   // Animates tooltip for drag handle gesture.

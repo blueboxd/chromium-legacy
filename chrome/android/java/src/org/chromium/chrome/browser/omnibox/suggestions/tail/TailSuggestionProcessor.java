@@ -69,7 +69,8 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
                         .build());
     }
 
-    public void reset() {
+    @Override
+    public void onSuggestionsReceived() {
         mAlignmentManager = new AlignmentManager();
     }
 }

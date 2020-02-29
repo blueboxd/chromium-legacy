@@ -34,14 +34,42 @@ struct yv12_buffer_config;
 struct NN_CONFIG;
 typedef struct NN_CONFIG NN_CONFIG;
 
+enum { NONE, RELU, SOFTSIGN, SIGMOID } UENUM1BYTE(ACTIVATION);
+#if CONFIG_NN_V2
+enum { SOFTMAX_CROSS_ENTROPY } UENUM1BYTE(LOSS);
+struct NN_CONFIG_V2;
+typedef struct NN_CONFIG_V2 NN_CONFIG_V2;
+struct FC_LAYER;
+typedef struct FC_LAYER FC_LAYER;
+#endif  // CONFIG_NN_V2
+
+struct CNN_CONFIG;
+typedef struct CNN_CONFIG CNN_CONFIG;
+struct CNN_LAYER_CONFIG;
+typedef struct CNN_LAYER_CONFIG CNN_LAYER_CONFIG;
+struct CNN_THREAD_DATA;
+typedef struct CNN_THREAD_DATA CNN_THREAD_DATA;
+struct CNN_BRANCH_CONFIG;
+typedef struct CNN_BRANCH_CONFIG CNN_BRANCH_CONFIG;
+struct CNN_MULTI_OUT;
+typedef struct CNN_MULTI_OUT CNN_MULTI_OUT;
+
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t* input,
                                      int input_stride,
                                      uint16_t* output_q3);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 typedef void (*cfl_subsample_hbd_fn)(const uint16_t* input,
                                      int input_stride,
                                      uint16_t* output_q3);
+
+typedef void (*cfl_predict_hbd_fn)(const int16_t* src,
+                                   uint16_t* dst,
+                                   int dst_stride,
+                                   int alpha_q3,
+                                   int bd);
+#endif
 
 typedef void (*cfl_subtract_average_fn)(const uint16_t* src, int16_t* dst);
 
@@ -50,28 +78,22 @@ typedef void (*cfl_predict_lbd_fn)(const int16_t* src,
                                    int dst_stride,
                                    int alpha_q3);
 
-typedef void (*cfl_predict_hbd_fn)(const int16_t* src,
-                                   uint16_t* dst,
-                                   int dst_stride,
-                                   int alpha_q3,
-                                   int bd);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void apply_selfguided_restoration_c(const uint8_t* dat,
-                                    int width,
-                                    int height,
-                                    int stride,
-                                    int eps,
-                                    const int* xqd,
-                                    uint8_t* dst,
-                                    int dst_stride,
-                                    int32_t* tmpbuf,
-                                    int bit_depth,
-                                    int highbd);
-#define apply_selfguided_restoration apply_selfguided_restoration_c
+void av1_apply_selfguided_restoration_c(const uint8_t* dat,
+                                        int width,
+                                        int height,
+                                        int stride,
+                                        int eps,
+                                        const int* xqd,
+                                        uint8_t* dst,
+                                        int dst_stride,
+                                        int32_t* tmpbuf,
+                                        int bit_depth,
+                                        int highbd);
+#define av1_apply_selfguided_restoration av1_apply_selfguided_restoration_c
 
 void av1_build_compound_diffwtd_mask_c(uint8_t* mask,
                                        DIFFWTD_MASK_TYPE mask_type,
@@ -108,6 +130,70 @@ void av1_build_compound_diffwtd_mask_highbd_c(uint8_t* mask,
 #define av1_build_compound_diffwtd_mask_highbd \
   av1_build_compound_diffwtd_mask_highbd_c
 
+int64_t av1_calc_frame_error_c(const uint8_t* const ref,
+                               int stride,
+                               const uint8_t* const dst,
+                               int p_width,
+                               int p_height,
+                               int p_stride);
+#define av1_calc_frame_error av1_calc_frame_error_c
+
+void av1_cnn_activate_c(float** input,
+                        int channels,
+                        int width,
+                        int height,
+                        int stride,
+                        ACTIVATION layer_activation);
+#define av1_cnn_activate av1_cnn_activate_c
+
+void av1_cnn_add_c(float** input,
+                   int channels,
+                   int width,
+                   int height,
+                   int stride,
+                   const float** add);
+#define av1_cnn_add av1_cnn_add_c
+
+void av1_cnn_batchnorm_c(float** image,
+                         int channels,
+                         int width,
+                         int height,
+                         int stride,
+                         const float* gamma,
+                         const float* beta,
+                         const float* mean,
+                         const float* std);
+#define av1_cnn_batchnorm av1_cnn_batchnorm_c
+
+void av1_cnn_convolve_c(const float** input,
+                        int in_width,
+                        int in_height,
+                        int in_stride,
+                        const CNN_LAYER_CONFIG* layer_config,
+                        float** output,
+                        int out_stride,
+                        int start_idx,
+                        int step);
+#define av1_cnn_convolve av1_cnn_convolve_c
+
+void av1_cnn_deconvolve_c(const float** input,
+                          int in_width,
+                          int in_height,
+                          int in_stride,
+                          const CNN_LAYER_CONFIG* layer_config,
+                          float** output,
+                          int out_stride);
+#define av1_cnn_deconvolve av1_cnn_deconvolve_c
+
+void av1_cnn_predict_c(const float** input,
+                       int in_width,
+                       int in_height,
+                       int in_stride,
+                       const CNN_CONFIG* cnn_config,
+                       const CNN_THREAD_DATA* thread_data,
+                       CNN_MULTI_OUT* output_struct);
+#define av1_cnn_predict av1_cnn_predict_c
+
 void av1_convolve_2d_copy_sr_c(const uint8_t* src,
                                int src_stride,
                                uint8_t* dst,
@@ -116,8 +202,8 @@ void av1_convolve_2d_copy_sr_c(const uint8_t* src,
                                int h,
                                const InterpFilterParams* filter_params_x,
                                const InterpFilterParams* filter_params_y,
-                               const int subpel_x_q4,
-                               const int subpel_y_q4,
+                               const int subpel_x_qn,
+                               const int subpel_y_qn,
                                ConvolveParams* conv_params);
 #define av1_convolve_2d_copy_sr av1_convolve_2d_copy_sr_c
 
@@ -131,7 +217,7 @@ void av1_convolve_2d_scale_c(const uint8_t* src,
                              const InterpFilterParams* filter_params_y,
                              const int subpel_x_qn,
                              const int x_step_qn,
-                             const int subpel_y_q4,
+                             const int subpel_y_qn,
                              const int y_step_qn,
                              ConvolveParams* conv_params);
 #define av1_convolve_2d_scale av1_convolve_2d_scale_c
@@ -144,8 +230,8 @@ void av1_convolve_2d_sr_c(const uint8_t* src,
                           int h,
                           const InterpFilterParams* filter_params_x,
                           const InterpFilterParams* filter_params_y,
-                          const int subpel_x_q4,
-                          const int subpel_y_q4,
+                          const int subpel_x_qn,
+                          const int subpel_y_qn,
                           ConvolveParams* conv_params);
 #define av1_convolve_2d_sr av1_convolve_2d_sr_c
 
@@ -168,8 +254,8 @@ void av1_convolve_x_sr_c(const uint8_t* src,
                          int h,
                          const InterpFilterParams* filter_params_x,
                          const InterpFilterParams* filter_params_y,
-                         const int subpel_x_q4,
-                         const int subpel_y_q4,
+                         const int subpel_x_qn,
+                         const int subpel_y_qn,
                          ConvolveParams* conv_params);
 #define av1_convolve_x_sr av1_convolve_x_sr_c
 
@@ -181,8 +267,8 @@ void av1_convolve_y_sr_c(const uint8_t* src,
                          int h,
                          const InterpFilterParams* filter_params_x,
                          const InterpFilterParams* filter_params_y,
-                         const int subpel_x_q4,
-                         const int subpel_y_q4,
+                         const int subpel_x_qn,
+                         const int subpel_y_qn,
                          ConvolveParams* conv_params);
 #define av1_convolve_y_sr av1_convolve_y_sr_c
 
@@ -194,8 +280,8 @@ void av1_dist_wtd_convolve_2d_c(const uint8_t* src,
                                 int h,
                                 const InterpFilterParams* filter_params_x,
                                 const InterpFilterParams* filter_params_y,
-                                const int subpel_x_q4,
-                                const int subpel_y_q4,
+                                const int subpel_x_qn,
+                                const int subpel_y_qn,
                                 ConvolveParams* conv_params);
 #define av1_dist_wtd_convolve_2d av1_dist_wtd_convolve_2d_c
 
@@ -207,8 +293,8 @@ void av1_dist_wtd_convolve_2d_copy_c(const uint8_t* src,
                                      int h,
                                      const InterpFilterParams* filter_params_x,
                                      const InterpFilterParams* filter_params_y,
-                                     const int subpel_x_q4,
-                                     const int subpel_y_q4,
+                                     const int subpel_x_qn,
+                                     const int subpel_y_qn,
                                      ConvolveParams* conv_params);
 #define av1_dist_wtd_convolve_2d_copy av1_dist_wtd_convolve_2d_copy_c
 
@@ -220,8 +306,8 @@ void av1_dist_wtd_convolve_x_c(const uint8_t* src,
                                int h,
                                const InterpFilterParams* filter_params_x,
                                const InterpFilterParams* filter_params_y,
-                               const int subpel_x_q4,
-                               const int subpel_y_q4,
+                               const int subpel_x_qn,
+                               const int subpel_y_qn,
                                ConvolveParams* conv_params);
 #define av1_dist_wtd_convolve_x av1_dist_wtd_convolve_x_c
 
@@ -233,8 +319,8 @@ void av1_dist_wtd_convolve_y_c(const uint8_t* src,
                                int h,
                                const InterpFilterParams* filter_params_x,
                                const InterpFilterParams* filter_params_y,
-                               const int subpel_x_q4,
-                               const int subpel_y_q4,
+                               const int subpel_x_qn,
+                               const int subpel_y_qn,
                                ConvolveParams* conv_params);
 #define av1_dist_wtd_convolve_y av1_dist_wtd_convolve_y_c
 
@@ -333,8 +419,8 @@ void av1_highbd_convolve_2d_copy_sr_c(const uint16_t* src,
                                       int h,
                                       const InterpFilterParams* filter_params_x,
                                       const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_q4,
-                                      const int subpel_y_q4,
+                                      const int subpel_x_qn,
+                                      const int subpel_y_qn,
                                       ConvolveParams* conv_params,
                                       int bd);
 #define av1_highbd_convolve_2d_copy_sr av1_highbd_convolve_2d_copy_sr_c
@@ -347,9 +433,9 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t* src,
                                     int h,
                                     const InterpFilterParams* filter_params_x,
                                     const InterpFilterParams* filter_params_y,
-                                    const int subpel_x_q4,
+                                    const int subpel_x_qn,
                                     const int x_step_qn,
-                                    const int subpel_y_q4,
+                                    const int subpel_y_qn,
                                     const int y_step_qn,
                                     ConvolveParams* conv_params,
                                     int bd);
@@ -363,8 +449,8 @@ void av1_highbd_convolve_2d_sr_c(const uint16_t* src,
                                  int h,
                                  const InterpFilterParams* filter_params_x,
                                  const InterpFilterParams* filter_params_y,
-                                 const int subpel_x_q4,
-                                 const int subpel_y_q4,
+                                 const int subpel_x_qn,
+                                 const int subpel_y_qn,
                                  ConvolveParams* conv_params,
                                  int bd);
 #define av1_highbd_convolve_2d_sr av1_highbd_convolve_2d_sr_c
@@ -415,8 +501,8 @@ void av1_highbd_convolve_x_sr_c(const uint16_t* src,
                                 int h,
                                 const InterpFilterParams* filter_params_x,
                                 const InterpFilterParams* filter_params_y,
-                                const int subpel_x_q4,
-                                const int subpel_y_q4,
+                                const int subpel_x_qn,
+                                const int subpel_y_qn,
                                 ConvolveParams* conv_params,
                                 int bd);
 #define av1_highbd_convolve_x_sr av1_highbd_convolve_x_sr_c
@@ -429,8 +515,8 @@ void av1_highbd_convolve_y_sr_c(const uint16_t* src,
                                 int h,
                                 const InterpFilterParams* filter_params_x,
                                 const InterpFilterParams* filter_params_y,
-                                const int subpel_x_q4,
-                                const int subpel_y_q4,
+                                const int subpel_x_qn,
+                                const int subpel_y_qn,
                                 ConvolveParams* conv_params,
                                 int bd);
 #define av1_highbd_convolve_y_sr av1_highbd_convolve_y_sr_c
@@ -444,8 +530,8 @@ void av1_highbd_dist_wtd_convolve_2d_c(
     int h,
     const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_q4,
-    const int subpel_y_q4,
+    const int subpel_x_qn,
+    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 #define av1_highbd_dist_wtd_convolve_2d av1_highbd_dist_wtd_convolve_2d_c
@@ -459,8 +545,8 @@ void av1_highbd_dist_wtd_convolve_2d_copy_c(
     int h,
     const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_q4,
-    const int subpel_y_q4,
+    const int subpel_x_qn,
+    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 #define av1_highbd_dist_wtd_convolve_2d_copy \
@@ -474,8 +560,8 @@ void av1_highbd_dist_wtd_convolve_x_c(const uint16_t* src,
                                       int h,
                                       const InterpFilterParams* filter_params_x,
                                       const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_q4,
-                                      const int subpel_y_q4,
+                                      const int subpel_x_qn,
+                                      const int subpel_y_qn,
                                       ConvolveParams* conv_params,
                                       int bd);
 #define av1_highbd_dist_wtd_convolve_x av1_highbd_dist_wtd_convolve_x_c
@@ -488,8 +574,8 @@ void av1_highbd_dist_wtd_convolve_y_c(const uint16_t* src,
                                       int h,
                                       const InterpFilterParams* filter_params_x,
                                       const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_q4,
-                                      const int subpel_y_q4,
+                                      const int subpel_x_qn,
+                                      const int subpel_y_qn,
                                       ConvolveParams* conv_params,
                                       int bd);
 #define av1_highbd_dist_wtd_convolve_y av1_highbd_dist_wtd_convolve_y_c
@@ -531,44 +617,44 @@ void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
                                    int bd);
 #define av1_highbd_dr_prediction_z3 av1_highbd_dr_prediction_z3_c
 
-void av1_highbd_inv_txfm_add_c(const tran_low_t* dqcoeff,
-                               uint8_t* dst,
+void av1_highbd_inv_txfm_add_c(const tran_low_t* input,
+                               uint8_t* dest,
                                int stride,
                                const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add av1_highbd_inv_txfm_add_c
 
-void av1_highbd_inv_txfm_add_16x4_c(const tran_low_t* dqcoeff,
-                                    uint8_t* dst,
+void av1_highbd_inv_txfm_add_16x4_c(const tran_low_t* input,
+                                    uint8_t* dest,
                                     int stride,
                                     const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_16x4 av1_highbd_inv_txfm_add_16x4_c
 
-void av1_highbd_inv_txfm_add_4x16_c(const tran_low_t* dqcoeff,
-                                    uint8_t* dst,
+void av1_highbd_inv_txfm_add_4x16_c(const tran_low_t* input,
+                                    uint8_t* dest,
                                     int stride,
                                     const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_4x16 av1_highbd_inv_txfm_add_4x16_c
 
-void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* dqcoeff,
-                                   uint8_t* dst,
+void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* input,
+                                   uint8_t* dest,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_4x4 av1_highbd_inv_txfm_add_4x4_c
 
-void av1_highbd_inv_txfm_add_4x8_c(const tran_low_t* dqcoeff,
-                                   uint8_t* dst,
+void av1_highbd_inv_txfm_add_4x8_c(const tran_low_t* input,
+                                   uint8_t* dest,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_4x8 av1_highbd_inv_txfm_add_4x8_c
 
-void av1_highbd_inv_txfm_add_8x4_c(const tran_low_t* dqcoeff,
-                                   uint8_t* dst,
+void av1_highbd_inv_txfm_add_8x4_c(const tran_low_t* input,
+                                   uint8_t* dest,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_8x4 av1_highbd_inv_txfm_add_8x4_c
 
-void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* dqcoeff,
-                                   uint8_t* dst,
+void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* input,
+                                   uint8_t* dest,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_8x8 av1_highbd_inv_txfm_add_8x8_c
@@ -617,7 +703,7 @@ void av1_highbd_wiener_convolve_add_src_c(const uint8_t* src,
                                           int w,
                                           int h,
                                           const ConvolveParams* conv_params,
-                                          int bps);
+                                          int bd);
 #define av1_highbd_wiener_convolve_add_src av1_highbd_wiener_convolve_add_src_c
 
 void av1_inv_txfm2d_add_16x16_c(const int32_t* input,
@@ -813,6 +899,22 @@ void av1_wiener_convolve_add_src_c(const uint8_t* src,
                                    const ConvolveParams* conv_params);
 #define av1_wiener_convolve_add_src av1_wiener_convolve_add_src_c
 
+void cdef_copy_rect8_16bit_to_16bit_c(uint16_t* dst,
+                                      int dstride,
+                                      const uint16_t* src,
+                                      int sstride,
+                                      int v,
+                                      int h);
+#define cdef_copy_rect8_16bit_to_16bit cdef_copy_rect8_16bit_to_16bit_c
+
+void cdef_copy_rect8_8bit_to_16bit_c(uint16_t* dst,
+                                     int dstride,
+                                     const uint8_t* src,
+                                     int sstride,
+                                     int v,
+                                     int h);
+#define cdef_copy_rect8_8bit_to_16bit cdef_copy_rect8_8bit_to_16bit_c
+
 void cdef_filter_block_c(uint8_t* dst8,
                          uint16_t* dst16,
                          int dstride,
@@ -850,30 +952,14 @@ cfl_subsample_hbd_fn cfl_get_luma_subsampling_444_hbd_c(TX_SIZE tx_size);
 cfl_subsample_lbd_fn cfl_get_luma_subsampling_444_lbd_c(TX_SIZE tx_size);
 #define cfl_get_luma_subsampling_444_lbd cfl_get_luma_subsampling_444_lbd_c
 
-void copy_rect8_16bit_to_16bit_c(uint16_t* dst,
-                                 int dstride,
-                                 const uint16_t* src,
-                                 int sstride,
-                                 int v,
-                                 int h);
-#define copy_rect8_16bit_to_16bit copy_rect8_16bit_to_16bit_c
+cfl_predict_hbd_fn cfl_get_predict_hbd_fn_c(TX_SIZE tx_size);
+#define cfl_get_predict_hbd_fn cfl_get_predict_hbd_fn_c
 
-void copy_rect8_8bit_to_16bit_c(uint16_t* dst,
-                                int dstride,
-                                const uint8_t* src,
-                                int sstride,
-                                int v,
-                                int h);
-#define copy_rect8_8bit_to_16bit copy_rect8_8bit_to_16bit_c
+cfl_predict_lbd_fn cfl_get_predict_lbd_fn_c(TX_SIZE tx_size);
+#define cfl_get_predict_lbd_fn cfl_get_predict_lbd_fn_c
 
-cfl_predict_hbd_fn get_predict_hbd_fn_c(TX_SIZE tx_size);
-#define get_predict_hbd_fn get_predict_hbd_fn_c
-
-cfl_predict_lbd_fn get_predict_lbd_fn_c(TX_SIZE tx_size);
-#define get_predict_lbd_fn get_predict_lbd_fn_c
-
-cfl_subtract_average_fn get_subtract_average_fn_c(TX_SIZE tx_size);
-#define get_subtract_average_fn get_subtract_average_fn_c
+cfl_subtract_average_fn cfl_get_subtract_average_fn_c(TX_SIZE tx_size);
+#define cfl_get_subtract_average_fn cfl_get_subtract_average_fn_c
 
 void av1_rtcd(void);
 

@@ -18,6 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/aura/client/aura_constants.h"
@@ -53,10 +54,8 @@ void EncodeScreenshotAndRunCallback(
     mojom::AssistantScreenContextController::RequestScreenshotCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> layer_owner,
     gfx::Image image) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits{base::ThreadPool(), base::MayBlock(),
-                       base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&DownsampleAndEncodeImage, std::move(image)),
       std::move(callback));
 }

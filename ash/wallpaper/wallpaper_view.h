@@ -38,6 +38,7 @@ class WallpaperView : public WallpaperBaseView,
   // views::View:
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

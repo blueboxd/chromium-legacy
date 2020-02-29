@@ -70,6 +70,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         ModelList listItems = new ModelList();
         mMediator =
                 new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+        mMediator.initDefaultProcessors();
 
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);
         listModel.set(SuggestionListProperties.VISIBLE, false);

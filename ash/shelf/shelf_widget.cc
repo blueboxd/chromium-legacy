@@ -49,6 +49,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -569,15 +570,12 @@ ui::Layer* ShelfWidget::GetAnimatingDragHandle() {
   return delegate_view_->animating_drag_handle();
 }
 
-views::View* ShelfWidget::GetDragHandle() {
+DragHandle* ShelfWidget::GetDragHandle() {
   return delegate_view_->drag_handle();
 }
 
 void ShelfWidget::ShowDragHandleNudge() {
-  delegate_view_->drag_handle()->ShowDragHandleNudge(
-      contextual_tooltip::GetNudgeTimeout(
-          Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
-          contextual_tooltip::TooltipType::kDragHandle));
+  delegate_view_->drag_handle()->ShowDragHandleNudge();
 }
 
 void ShelfWidget::HideDragHandleNudge() {
@@ -946,11 +944,29 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     hotseat_widget()->GetShelfView()->SetVisible(show_hotseat);
     hotseat_transition_animator_->SetAnimationsEnabledInSessionState(
         show_hotseat);
+
+    // Shelf widget should only be active if login shelf view is visible.
+    aura::Window* const shelf_window = GetNativeWindow();
+    if (show_hotseat && IsActive())
+      wm::DeactivateWindow(shelf_window);
     login_shelf_view()->SetVisible(!show_hotseat);
 
     if (show_hotseat)
       login_shelf_gesture_controller_.reset();
     ShowIfHidden();
+
+    // The shelf widget can get activated when login shelf view is shown, which
+    // would stack it above other widgets in the shelf container, which is an
+    // undesirable state for active session shelf (as the shelf background would
+    // be painted over the hotseat/navigation buttons/status area). Make sure
+    // the shelf widget is restacked at the bottom of the shelf container when
+    // the session state changes.
+    // TODO(https://crbug.com/1057207): Ideally, the shelf widget position at
+    // the bottom of window stack would be maintained using a "stacked at
+    // bottom" window property - switch to that approach once it's ready for
+    // usage.
+    if (show_hotseat)
+      shelf_window->parent()->StackChildAtBottom(shelf_window);
   }
   shelf_layout_manager_->SetDimmed(false);
   // Depending on session state change, the drag handle visibiliy and color

@@ -8,28 +8,13 @@
  */
 
 class MenuManager {
-  /**
-   * @param {!NavigationManager} navigationManager
-   * @param {!chrome.automation.AutomationNode} desktop
-   */
-  constructor(navigationManager, desktop) {
+  /** @private */
+  constructor() {
     /**
      * A list of the Menu actions that are currently enabled.
      * @private {!Array<!SAConstants.MenuAction>}
      */
     this.actions_ = [];
-
-    /**
-     * The parent automation manager.
-     * @private {!NavigationManager}
-     */
-    this.navigationManager_ = navigationManager;
-
-    /**
-     * The root node of the screen.
-     * @private {!chrome.automation.AutomationNode}
-     */
-    this.desktop_ = desktop;
 
     /**
      * The root node of the menu panel.
@@ -117,6 +102,10 @@ class MenuManager {
     this.init_();
   }
 
+  static initialize() {
+    MenuManager.instance = new MenuManager();
+  }
+
   /**
    * Set up clipboardListener for showing/hiding paste button.
    * @private
@@ -125,6 +114,10 @@ class MenuManager {
     if (SwitchAccess.instance.improvedTextInputEnabled()) {
       chrome.clipboard.onClipboardDataChanged.addListener(
           this.updateClipboardHasData.bind(this));
+    }
+
+    if (window.menuPanel) {
+      this.connectMenuPanel(window.menuPanel);
     }
   }
 
@@ -136,27 +129,32 @@ class MenuManager {
    * @return {boolean} True if the menu opened or an action was selected, false
    *     otherwise.
    */
-  enter(navNode) {
-    if (!this.menuPanel_) {
+  static enter(navNode) {
+    const manager = MenuManager.instance;
+    if (!manager.menuPanel_) {
       console.log('Error: Menu panel has not loaded.');
       return false;
     }
 
     // If the menu is already open, select the highlighted element.
-    if (this.selectCurrentNode()) {
+    if (MenuManager.selectCurrentNode()) {
       return true;
     }
 
-    if (!this.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
+    if (!manager.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
       // openMenu_ will return false (indicating that the menu was not opened
       // successfully) when there is only one interesting action (selection)
-      // specific to this node. In this case, rather than forcing the user to
-      // repeatedly disambiguate, we will simply select by default.
+      // specific to manager node. In manager case, rather than forcing the user
+      // to repeatedly disambiguate, we will simply select by default.
       return false;
     }
 
-    this.inMenu_ = true;
+    manager.inMenu_ = true;
     return true;
+  }
+
+  static exit() {
+    MenuManager.instance.exit();
   }
 
   /**
@@ -352,14 +350,15 @@ class MenuManager {
    * focus the whole menu to loop again.
    * @return {boolean} Whether this function had any effect.
    */
-  moveForward() {
-    if (!this.inMenu_ || !this.node_) {
+  static moveForward() {
+    const manager = MenuManager.instance;
+    if (!manager.inMenu_ || !manager.node_) {
       return false;
     }
 
-    this.clearFocusRing_();
-    this.node_ = this.node_.next;
-    this.updateFocusRing_();
+    manager.clearFocusRing_();
+    manager.node_ = manager.node_.next;
+    manager.updateFocusRing_();
     return true;
   }
 
@@ -368,14 +367,15 @@ class MenuManager {
    * beginning of the list, start again at the end.
    * @return {boolean} Whether this function had any effect.
    */
-  moveBackward() {
-    if (!this.inMenu_ || !this.node_) {
+  static moveBackward() {
+    const manager = MenuManager.instance;
+    if (!manager.inMenu_ || !manager.node_) {
       return false;
     }
 
-    this.clearFocusRing_();
-    this.node_ = this.node_.previous;
-    this.updateFocusRing_();
+    manager.clearFocusRing_();
+    manager.node_ = manager.node_.previous;
+    manager.updateFocusRing_();
     return true;
   }
 
@@ -383,17 +383,18 @@ class MenuManager {
    * Perform the action indicated by the current button.
    * @return {boolean} Whether this function had any effect.
    */
-  selectCurrentNode() {
-    if (!this.inMenu_ || !this.node_) {
+  static selectCurrentNode() {
+    const manager = MenuManager.instance;
+    if (!manager.inMenu_ || !manager.node_) {
       return false;
     }
 
-    if (this.node_ instanceof BackButtonNode) {
+    if (manager.node_ instanceof BackButtonNode) {
       // The back button was selected.
-      this.selectBackButton();
+      manager.selectBackButton();
     } else {
       // A menu action was selected.
-      this.node_.performAction(SAConstants.MenuAction.SELECT);
+      manager.node_.performAction(SAConstants.MenuAction.SELECT);
     }
     return true;
   }
@@ -422,6 +423,7 @@ class MenuManager {
    * @param {!PanelInterface} menuPanel
    */
   connectMenuPanel(menuPanel) {
+    menuPanel.menuManager = this;
     this.menuPanel_ = menuPanel;
     this.findMenuPanelNode_();
   }
@@ -431,7 +433,7 @@ class MenuManager {
    */
   findMenuPanelNode_() {
     const treeWalker = new AutomationTreeWalker(
-        this.desktop_, constants.Dir.FORWARD,
+        NavigationManager.instance.desktopNode, constants.Dir.FORWARD,
         SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
     const node = treeWalker.next().node;
     if (!node) {
@@ -560,7 +562,7 @@ class MenuManager {
     // Some actions involve navigation events. Handle those explicitly.
     if (action === SAConstants.MenuAction.SELECT &&
         this.menuOriginNode_.isGroup()) {
-      this.navigationManager_.enterGroup();
+      NavigationManager.enterGroup();
       this.exit();
       return;
     }

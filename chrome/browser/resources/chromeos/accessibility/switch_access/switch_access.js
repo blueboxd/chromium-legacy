@@ -18,6 +18,7 @@ class SwitchAccess {
       BackButtonNode.findAutomationNode();
       Commands.initialize();
       KeyboardRootNode.startWatchingVisibility();
+      MenuManager.initialize();
       SwitchAccessPreferences.initialize();
       TextNavigationManager.initialize();
     });
@@ -60,6 +61,7 @@ class SwitchAccess {
 
     if (NavigationManager.instance) {
       NavigationManager.instance.connectMenuPanel(menuPanel);
+      MenuManager.instance.connectMenuPanel(menuPanel);
     } else {
       window.menuPanel = menuPanel;
     }

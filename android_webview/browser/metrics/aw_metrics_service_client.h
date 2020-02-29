@@ -113,8 +113,6 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient,
   bool ShouldWakeMetricsService() override;
   void RegisterAdditionalMetricsProviders(
       metrics::MetricsService* service) override;
-  bool CanRecordPackageNameForAppType() override;
-  std::string GetAppPackageNameInternal() override;
 
  private:
   bool app_in_foreground_ = false;

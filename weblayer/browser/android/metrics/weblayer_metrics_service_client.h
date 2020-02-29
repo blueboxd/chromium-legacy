@@ -40,8 +40,6 @@ class WebLayerMetricsServiceClient
   void OnMetricsStart() override;
   int GetPackageNameLimitRatePerMille() override;
   bool ShouldWakeMetricsService() override;
-  bool CanRecordPackageNameForAppType() override;
-  std::string GetAppPackageNameInternal() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebLayerMetricsServiceClient);

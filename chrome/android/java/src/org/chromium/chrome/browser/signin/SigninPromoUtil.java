@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.support.v4.util.ArraySet;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.ArraySet;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.supplier.Supplier;

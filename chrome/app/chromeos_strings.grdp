@@ -872,6 +872,9 @@
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_ALL_SET" desc="A label on the button that closes the initial setup dialog, which suggests to the user that initial device setup is complete.">
     Get started
   </message>
+  <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SWIPE_FROM_SHELF_LABEL" desc="The label shown in Chrome OS system shelf above a drag handle UI on the last dialog in the set of screens displayed to the user on the first login to the Chrome OS device. The label informs the user that swiping up from the shelf will start the session.">
+    Swipe up to get started
+  </message>
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
     The owner of this device has disabled new users from being added
   </message>
@@ -4271,7 +4274,7 @@
     Couldn't install the virtual machine. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disallowed.">
-    Plugin VM isn't allowed on this device. Contact your organization's device administrator.
+    Plugin VM isn't allowed on this device. Contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
@@ -4305,6 +4308,18 @@
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app failed.">
     Couldn't uninstall Plugin VM
+  </message>
+  <message name="IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because an internal error indicates the device needs to be updated.">
+    Your device needs to be updated before you can use Plugin VM.
+  </message>
+  <message name="IDS_PLUGIN_VM_DLC_BUSY_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because dlcservice and update_engine are busy.">
+    Something went wrong. Please wait a few minutes and run Plugin VM again.
+  </message>
+  <message name="IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because a pending update requires the device to be restarted.">
+    Please restart your device to use Plugin VM.
+  </message>
+  <message name="IDS_PLUGIN_VM_DLC_NEED_SPACE_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because there is not enough free space on the device.">
+    Your device is low on storage space. Please free up space to use Plugin VM.
   </message>
 
   <!-- Strings for Account Manager error screen -->

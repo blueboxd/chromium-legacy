@@ -109,6 +109,12 @@ class LoginShelfViewTest : public LoginTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SendKey(ui::KeyboardCode key_code, int flags) {
+    auto* generator = GetEventGenerator();
+    generator->PressKey(key_code, flags);
+    generator->ReleaseKey(key_code, flags);
+  }
+
   // Checks if the shelf is only showing the buttons in the list. The IDs in
   // the specified list must be unique.
   bool ShowsShelfButtons(std::vector<LoginShelfView::ButtonId> ids) {
@@ -520,19 +526,19 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
       login_shelf_view_->GetViewByID(LoginShelfView::kShutdown)->HasFocus());
 
   // Focus from the first button to the second button.
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
       login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
 
   // Focus from the second button to the status area.
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
   ExpectNotFocused(shelf);
   ExpectFocused(status_area);
 
   // A single shift+tab brings focus back to the second shelf button.
-  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  SendKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ExpectFocused(shelf);
   ExpectNotFocused(status_area);
   EXPECT_TRUE(
@@ -588,6 +594,43 @@ TEST_F(LoginShelfViewTest, ShouldNotShowNavigationAndHotseat) {
       << "The navigation widget should not appear in the login shelf.";
   EXPECT_FALSE(shelf_widget->hotseat_widget()->IsVisible())
       << "The hotseat widget should not appear in the login shelf.";
+}
+
+TEST_F(LoginShelfViewTest, ShelfWidgetStackedAtBottomInActiveSession) {
+  gfx::NativeWindow window = login_shelf_view_->GetWidget()->GetNativeWindow();
+  ShelfWidget* shelf_widget = Shelf::ForWindow(window)->shelf_widget();
+
+  // Focus shelf widget (which could happen if user tabs to login shelf
+  // buttons).
+  shelf_widget->set_default_last_focusable_child(/*reverse=*/false);
+  Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
+  ExpectFocused(shelf_widget->GetContentsView());
+
+  // Verify that shelf widget is no longer focused, and is stacked at the bottom
+  // of shelf container when the session is activated.
+  NotifySessionStateChanged(SessionState::ACTIVE);
+
+  ExpectNotFocused(shelf_widget->GetContentsView());
+  EXPECT_EQ(shelf_widget->GetNativeWindow(),
+            shelf_widget->GetNativeWindow()->parent()->children()[0]);
+
+  // Lock screen and focus the shelf again.
+  NotifySessionStateChanged(SessionState::LOCKED);
+  Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
+
+  // Move focus away from the shelf, to verify the shelf widget stacking is
+  // updated even if the widget is not active when the session state changes.
+  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
+  SendKey(ui::KeyboardCode::VKEY_TAB, 0);
+
+  ExpectNotFocused(shelf_widget->GetContentsView());
+
+  // Verify that shelf widget is no longer focused, and is stacked at the bottom
+  // of shelf container when the session is activated.
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  ExpectNotFocused(shelf_widget->GetContentsView());
+  EXPECT_EQ(shelf_widget->GetNativeWindow(),
+            shelf_widget->GetNativeWindow()->parent()->children()[0]);
 }
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {

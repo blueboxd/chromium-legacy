@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -66,8 +67,8 @@ const char kExtensionShortName[] = "short_name";
 const char kExtensionIcons[] = "icons";
 const char kExtensionLargeIcon[] = "128";
 
-constexpr base::TaskTraits kTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+constexpr base::TaskTraits kThreadPoolTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 base::string16 GetWhitelistTitle(const base::DictionaryValue& manifest) {
@@ -404,7 +405,7 @@ class SupervisedUserWhitelistInstallerImpl
       observer_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
-      base::CreateSequencedTaskRunner(kTaskTraits);
+      base::ThreadPool::CreateSequencedTaskRunner(kThreadPoolTaskTraits);
 
   base::WeakPtrFactory<SupervisedUserWhitelistInstallerImpl> weak_ptr_factory_{
       this};
@@ -477,8 +478,8 @@ void SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady(
     const base::FilePath& large_icon_path,
     const base::FilePath& whitelist_path) {
   // TODO(sorin): avoid using a single thread task runner crbug.com/744718.
-  auto task_runner = base::CreateSingleThreadTaskRunner(
-      kTaskTraits, base::SingleThreadTaskRunnerThreadMode::SHARED);
+  auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
+      kThreadPoolTaskTraits, base::SingleThreadTaskRunnerThreadMode::SHARED);
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(

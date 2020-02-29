@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
 #include "base/no_destructor.h"
 #include "components/metrics/metrics_service.h"
 #include "components/version_info/android/channel_getter.h"
@@ -54,15 +52,6 @@ int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
 }
 
-std::string WebLayerMetricsServiceClient::GetAppPackageNameInternal() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_app_name =
-      Java_MetricsServiceClient_getAppPackageName(env);
-  if (j_app_name)
-    return ConvertJavaStringToUTF8(env, j_app_name);
-  return std::string();
-}
-
 int WebLayerMetricsServiceClient::GetSampleRatePerMille() {
   version_info::Channel channel = version_info::android::GetChannel();
   if (channel == version_info::Channel::STABLE ||
@@ -82,13 +71,6 @@ int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {
 
 bool WebLayerMetricsServiceClient::ShouldWakeMetricsService() {
   return true;
-}
-
-bool WebLayerMetricsServiceClient::CanRecordPackageNameForAppType() {
-  // Check with Java side, to see if it's OK to log the package name for this
-  // type of app (see Java side for the specific requirements).
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MetricsServiceClient_canRecordPackageNameForAppType(env);
 }
 
 // static

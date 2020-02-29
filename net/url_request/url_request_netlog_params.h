@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
@@ -22,9 +23,14 @@ namespace base {
 class Value;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace net {
 
 class NetworkIsolationKey;
+class SiteForCookies;
 
 // Returns a Value containing NetLog parameters for constructing a URLRequest.
 NET_EXPORT base::Value NetLogURLRequestConstructorParams(
@@ -39,6 +45,8 @@ NET_EXPORT base::Value NetLogURLRequestStartParams(
     int load_flags,
     PrivacyMode privacy_mode,
     const NetworkIsolationKey& network_isolation_key,
+    const SiteForCookies& site_for_cookies,
+    const base::Optional<url::Origin>& initiator,
     int64_t upload_id);
 
 }  // namespace net

@@ -22,6 +22,7 @@ group("build") {
     ":switch_access_manifest",
     "autoclick:build",
     "chromevox:build",
+    "common:build",
     "select_to_speak:build",
     "switch_access:build",
   ]

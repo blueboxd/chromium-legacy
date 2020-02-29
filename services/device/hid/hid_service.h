@@ -47,8 +47,10 @@ class HidService {
   using ConnectCallback =
       base::OnceCallback<void(scoped_refptr<HidConnection> connection)>;
 
+  // These task traits are to be used for posting blocking tasks to the thread
+  // pool.
   static constexpr base::TaskTraits kBlockingTaskTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
   // This function should be called on a thread with a MessageLoopForUI.

@@ -2030,14 +2030,13 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
       items_map_to_be_populated.AddItemToBack(curr_level, child);
     }
 
-    // Recurse if there is a generic container, ignored, or unknown.
-    if (child->IsIgnored() ||
-        child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kUnknown) {
+    // If |child| is an ignored container for ordered set and should not be used
+    // to contribute to |items_map_to_be_populated|, we recurse into |child|'s
+    // descendants to populate |items_map_to_be_populated|.
+    if (child->IsIgnoredContainerForOrderedSet())
       RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
                                             ordered_set_min_level, curr_level,
                                             items_map_to_be_populated);
-    }
 
     // If |curr_level| goes up one level from |prev_level|, which indicates
     // the ordered set of |prev_level| is closed, we add a new OrderedSetContent

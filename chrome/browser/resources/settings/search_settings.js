@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {createEmptySearchBubble, findAndRemoveHighlights, highlight, removeHighlights, stripDiacritics} from 'chrome://resources/js/search_highlight_utils.m.js';
+// #import {findAncestor} from 'chrome://resources/js/util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {DomIf} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * A data structure used by callers to combine the results of multiple search
@@ -246,8 +255,15 @@ cr.define('settings', function() {
     exec() {
       const routePath = this.node.getAttribute('route-path');
 
-      const content = Polymer.DomIf._contentForTemplate(
-          /** @type {!HTMLTemplateElement} */ (this.node.firstElementChild));
+      const content =
+          /**
+            @type {!{_contentForTemplate:
+                function(!HTMLTemplateElement):!HTMLElement}}
+          */
+          (Polymer.DomIf)
+              ._contentForTemplate(
+                  /** @type {!HTMLTemplateElement} */ (
+                      this.node.firstElementChild));
       const subpageTemplate = content.querySelector('settings-subpage');
       subpageTemplate.setAttribute('route-path', routePath);
       assert(!this.node.if);

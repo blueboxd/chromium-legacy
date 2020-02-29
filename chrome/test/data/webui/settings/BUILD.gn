@@ -30,6 +30,7 @@ js_modulizer("modulize") {
     "pref_util_tests.js",
     "search_engines_page_test.js",
     "search_page_test.js",
+    "search_settings_test.js",
     "settings_animated_pages_test.js",
     "settings_menu_test.js",
     "settings_slider_tests.js",

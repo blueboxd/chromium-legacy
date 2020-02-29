@@ -59,8 +59,6 @@
     <dimen name="menu_badge_translation_y">6dp</dimen>
 
     <!-- Infobar dimensions -->
-    <!-- Text size of the infobar message and other controls. -->
-    <dimen name="infobar_text_size">16sp</dimen>
     <!-- Text size of the infobar message when a big icon is shown. -->
     <dimen name="infobar_big_icon_message_size">20sp</dimen>
     <!-- Text size of descriptive controls on an infobar. -->
@@ -83,10 +81,6 @@
     <!-- Vertical margin applied between groups of controls. -->
     <dimen name="infobar_margin_above_control_groups">24dp</dimen>
     <dimen name="infobar_margin_above_button_row">32dp</dimen>
-
-    <!-- Margin between items in the same control group. -->
-    <dimen name="infobar_control_margin_between_rows">8dp</dimen>
-    <dimen name="infobar_control_margin_between_columns">32dp</dimen>
 
     <!-- Dimensions applied to InfoBars with differently sized icons. -->
     <dimen name="infobar_small_icon_size">24dp</dimen>

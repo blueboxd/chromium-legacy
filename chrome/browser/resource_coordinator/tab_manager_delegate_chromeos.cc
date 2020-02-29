@@ -217,23 +217,6 @@ class TabManagerDelegate::FocusedProcess {
 // TabManagerDelegate::MemoryStat implementation.
 
 // static
-int TabManagerDelegate::MemoryStat::ReadIntFromFile(const char* file_name,
-                                                    const int default_val) {
-  std::string file_string;
-  if (!base::ReadFileToString(base::FilePath(file_name), &file_string)) {
-    LOG(ERROR) << "Unable to read file" << file_name;
-    return default_val;
-  }
-  int val = default_val;
-  if (!base::StringToInt(
-          base::TrimWhitespaceASCII(file_string, base::TRIM_TRAILING), &val)) {
-    LOG(ERROR) << "Unable to parse string" << file_string;
-    return default_val;
-  }
-  return val;
-}
-
-// static
 int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
   constexpr int kDefaultLowMemoryMarginMb = 50;
 
@@ -251,13 +234,20 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
 // Target memory to free is the amount which brings available
 // memory back to the margin.
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
-  static constexpr char kLowMemAvailableEntry[] =
-      "/sys/kernel/mm/chromeos-low_mem/available";
-  const int available_mem_mb = ReadIntFromFile(kLowMemAvailableEntry, 0);
-  // available_mem_mb is rounded down in the kernel computation, so even if
-  // it's just below the margin, the difference will be at least 1 MB.  This
-  // matters because we shouldn't return 0 when we're below the margin.
-  return LowMemoryMarginKB() - available_mem_mb * 1024;
+  uint64_t available_mem_mb;
+  auto* monitor = util::chromeos::SystemMemoryPressureEvaluator::Get();
+  if (monitor) {
+    available_mem_mb = monitor->GetAvailableMemoryKB();
+  } else {
+    // When TabManager::DiscardTab(LifecycleUnitDiscardReason::EXTERNAL) is
+    // called by a test or an extension, TabManagerDelegate might be used
+    // without chromeos SystemMemoryPressureEvaluator, e.g. the browser test
+    // DiscardTabsWithMinimizedWindow.
+    LOG(WARNING) << "SystemMemoryPressureEvaluator is not available";
+    available_mem_mb = 0;
+  }
+
+  return LowMemoryMarginKB() - available_mem_mb;
 }
 
 int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(

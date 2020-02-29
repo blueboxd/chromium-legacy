@@ -24,6 +24,7 @@
 namespace ash {
 enum class AnimationChangeType;
 class ApplicationDragAndDropHost;
+class DragHandle;
 class FocusCycler;
 class HotseatWidget;
 class LoginShelfView;
@@ -167,7 +168,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   ui::Layer* GetAnimatingDragHandle();
 
   // Gets the view used to display the drag handle on the in-app shelf.
-  views::View* GetDragHandle();
+  DragHandle* GetDragHandle();
 
   // Starts the animation to show the drag handle nudge.
   void ShowDragHandleNudge();

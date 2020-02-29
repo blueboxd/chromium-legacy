@@ -978,6 +978,7 @@
         'swarming': {
           'dimension_sets': [
             {
+              'cpu': 'x86-64',
               'device_os': None,
               'device_playstore_version': None,
               'device_type': None,
@@ -990,6 +991,7 @@
         'swarming': {
           'dimension_sets': [
             {
+              'cpu': 'x86-64',
               'device_os': None,
               'device_playstore_version': None,
               'device_type': None,
@@ -1002,6 +1004,7 @@
         'swarming': {
           'dimension_sets': [
             {
+              'cpu': 'x86-64',
               'device_os': None,
               'device_os_flavor': None,
               'device_playstore_version': None,

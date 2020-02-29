@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.chrome.browser.ui.messages.infobar;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
+import org.chromium.chrome.ui.messages.R;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
 import org.chromium.components.browser_ui.widget.RadioButtonLayout;
 
@@ -74,7 +74,7 @@ public final class InfoBarControlLayout extends ViewGroup {
                 view = (TextView) convertView;
             } else {
                 view = (TextView) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_control_spinner_drop_down, parent, false);
+                               .inflate(R.layout.infobar_control_spinner_drop_down, parent, false);
             }
 
             view.setText(getItem(position).toString());
@@ -88,7 +88,7 @@ public final class InfoBarControlLayout extends ViewGroup {
                 view = (DualControlLayout) convertView;
             } else {
                 view = (DualControlLayout) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_control_spinner_view, parent, false);
+                               .inflate(R.layout.infobar_control_spinner_view, parent, false);
             }
 
             // Set up the spinner label.  The text it displays won't change.
@@ -176,7 +176,8 @@ public final class InfoBarControlLayout extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int fullWidth = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED
-                ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec);
+                ? Integer.MAX_VALUE
+                : MeasureSpec.getSize(widthMeasureSpec);
         int columnWidth = Math.max(0, (fullWidth - mMarginBetweenColumns) / 2);
 
         int atMostFullWidthSpec = MeasureSpec.makeMeasureSpec(fullWidth, MeasureSpec.AT_MOST);
@@ -355,8 +356,9 @@ public final class InfoBarControlLayout extends ViewGroup {
      */
     public View addIcon(int iconResourceId, int iconColorId, CharSequence primaryMessage,
             CharSequence secondaryMessage, int resourceId) {
-        LinearLayout layout = (LinearLayout) LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_icon_with_description, this, false);
+        LinearLayout layout =
+                (LinearLayout) LayoutInflater.from(getContext())
+                        .inflate(R.layout.infobar_control_icon_with_description, this, false);
         addView(layout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) layout.findViewById(R.id.control_icon);
@@ -372,8 +374,7 @@ public final class InfoBarControlLayout extends ViewGroup {
                 TypedValue.COMPLEX_UNIT_PX, getContext().getResources().getDimension(resourceId));
 
         // The secondary message text is optional.
-        TextView secondaryView =
-                (TextView) layout.findViewById(R.id.control_secondary_message);
+        TextView secondaryView = (TextView) layout.findViewById(R.id.control_secondary_message);
         if (secondaryMessage == null) {
             layout.removeView(secondaryView);
         } else {
@@ -401,8 +402,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      */
     public View addSwitch(int iconResourceId, int iconColorId, CharSequence toggleMessage,
             int toggleId, boolean isChecked) {
-        LinearLayout switchLayout = (LinearLayout) LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_toggle, this, false);
+        LinearLayout switchLayout = (LinearLayout) LayoutInflater.from(getContext())
+                                            .inflate(R.layout.infobar_control_toggle, this, false);
         addView(switchLayout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) switchLayout.findViewById(R.id.control_icon);
@@ -448,8 +449,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Creates a standard spinner and adds it to the layout.
      */
     public <T> Spinner addSpinner(int spinnerId, ArrayAdapter<T> arrayAdapter) {
-        Spinner spinner = (Spinner) LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_spinner, this, false);
+        Spinner spinner = (Spinner) LayoutInflater.from(getContext())
+                                  .inflate(R.layout.infobar_control_spinner, this, false);
         spinner.setAdapter(arrayAdapter);
         addView(spinner, new ControlLayoutParams());
         spinner.setId(spinnerId);
@@ -479,12 +480,14 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Adds a full-width control showing the main InfoBar message.  For other text, you should call
      * {@link InfoBarControlLayout#addDescription(CharSequence)} instead.
      */
-    TextView addMainMessage(CharSequence mainMessage) {
+    // TODO(crbug/1056346): addMainMessage is made public to allow access from InfoBarLayout. Once
+    // InfoBarLayout is modularized, restore access to package private.
+    public TextView addMainMessage(CharSequence mainMessage) {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 
-        TextView messageView = (TextView) LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_message, this, false);
+        TextView messageView = (TextView) LayoutInflater.from(getContext())
+                                       .inflate(R.layout.infobar_control_message, this, false);
         addView(messageView, params);
 
         messageView.setText(mainMessage);
@@ -499,5 +502,4 @@ public final class InfoBarControlLayout extends ViewGroup {
     static ControlLayoutParams getControlLayoutParams(View child) {
         return (ControlLayoutParams) child.getLayoutParams();
     }
-
 }

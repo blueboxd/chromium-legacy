@@ -14,6 +14,11 @@ function SwitchAccessTabNodeTest() {
 
 SwitchAccessTabNodeTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
+
+  /** @override */
+  setUp() {
+    MenuManager.initialize();
+  },
 };
 
 TEST_F('SwitchAccessTabNodeTest', 'FindCloseButton', function() {

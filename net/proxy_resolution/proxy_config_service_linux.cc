@@ -614,9 +614,9 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter {
       return false;
     }
 
-    constexpr base::TaskTraits kTraits = {
-        base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()};
-    file_task_runner_ = base::CreateSequencedTaskRunner(kTraits);
+    constexpr base::TaskTraits kTraits = {base::TaskPriority::USER_VISIBLE,
+                                          base::MayBlock()};
+    file_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(kTraits);
 
     // The initial read is done on the current thread, not
     // |file_task_runner_|, since we will need to have it for

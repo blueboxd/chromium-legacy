@@ -63,4 +63,9 @@ public interface SuggestionProcessor {
      * Only the processor responsible for managing specific suggestion receives this call.
      */
     void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model);
+
+    /**
+     * Signals that the new suggestion list has been received.
+     */
+    void onSuggestionsReceived();
 }

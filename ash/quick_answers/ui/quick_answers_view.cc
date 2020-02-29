@@ -63,7 +63,7 @@ class QuickAnswersViewHandler : public ui::EventHandler {
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED: {
         if (bounds.Contains(cursor_point)) {
-          quick_answers_view_->SetBackgroundColor(SK_ColorGRAY);
+          quick_answers_view_->SetBackgroundColor(SK_ColorLTGRAY);
         } else {
           quick_answers_view_->SetBackgroundColor(SK_ColorWHITE);
         }
@@ -184,11 +184,21 @@ void QuickAnswersView::InitWidget() {
 }
 
 void QuickAnswersView::UpdateBounds() {
-  // TODO(yanxiao): This part needs to be updated to handle corner cases.
-  GetWidget()->SetBounds(gfx::Rect(
-      anchor_view_bounds_.x(),
-      anchor_view_bounds_.y() - kDefaultPaddingBelowDip - GetPreferredHeight(),
-      anchor_view_bounds_.width(), GetPreferredHeight()));
+  int y =
+      anchor_view_bounds_.y() - kDefaultPaddingBelowDip - GetPreferredHeight();
+  if (y < display::Screen::GetScreen()
+              ->GetDisplayMatching(anchor_view_bounds_)
+              .bounds()
+              .y()) {
+    // The Quick Answers view will be off screen if showing above the anchor.
+    // Show below the anchor instead.
+    y = anchor_view_bounds_.y() + anchor_view_bounds_.height() +
+        kDefaultPaddingBelowDip;
+  }
+
+  GetWidget()->SetBounds(gfx::Rect(anchor_view_bounds_.x(), y,
+                                   anchor_view_bounds_.width(),
+                                   GetPreferredHeight()));
 }
 
 void QuickAnswersView::UpdateChildViews(const QuickAnswer& quick_answer) {

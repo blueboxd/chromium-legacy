@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.infobar;
+package org.chromium.chrome.browser.ui.messages.infobar;
 
 import android.content.Context;
 import android.text.style.ClickableSpan;

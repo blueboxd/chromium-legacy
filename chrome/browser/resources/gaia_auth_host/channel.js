@@ -4,8 +4,9 @@
 
 /**
  * Channel to the background script.
+ * @constructor
  */
-function Channel() {
+/* #export */ function Channel() {
   this.messageCallbacks_ = {};
   this.internalRequestCallbacks_ = {};
 }

@@ -70,6 +70,7 @@ void RegisterContentSchemes() {
     url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
   schemes.secure_schemes.push_back(kChromeUIScheme);
+  schemes.secure_schemes.push_back(kChromeUIUntrustedScheme);
   schemes.secure_schemes.push_back(kChromeErrorScheme);
   for (auto& scheme : schemes.secure_schemes)
     url::AddSecureScheme(scheme.c_str());

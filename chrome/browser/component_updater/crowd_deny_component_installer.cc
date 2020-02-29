@@ -55,7 +55,7 @@ bool CrowdDenyComponentInstallerPolicy::VerifyInstallation(
 }
 
 bool CrowdDenyComponentInstallerPolicy::RequiresNetworkEncryption() const {
-  return true;
+  return false;
 }
 
 update_client::CrxInstaller::Result

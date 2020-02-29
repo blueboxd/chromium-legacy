@@ -226,6 +226,53 @@ WebView.prototype.contentWindow;
 WebView.prototype.request;
 
 /**
+ * @constructor
+ * @see https://developer.chrome.com/apps/tags/webview#type-ContextMenus
+ */
+function ContextMenus() {}
+ContextMenus.prototype.onShow;
+ContextMenus.prototype.onShow.addListener = function() {};
+
+/**
+ * @type {ContextMenus}
+ * @see https://developer.chrome.com/apps/tags/webview#property-contextMenus
+ */
+WebView.prototype.contextMenus;
+
+/**
+ * @typedef{{
+ *   code: ?string,
+ *   files: ?Array<string>
+ * }}
+ * @see https://developer.chrome.com/apps/tags/webview#type-InjectionItems
+ */
+var InjectionItems;
+
+/**
+ * Details of the content script to inject.
+ * @typedef{{
+ *   name: string,
+ *   matches: Array<string>,
+ *   exclude_matches: ?Array<string>,
+ *   match_about_blank: ?boolean,
+ *   css: ?InjectionItems,
+ *   js: ?InjectionItems,
+ *   run_at: ?string,
+ *   all_frames: ?boolean,
+ *   include_globs: ?Array<string>,
+ *   exclude_globs: ?Array<string>,
+ * }}
+ * @see https://developer.chrome.com/apps/tags/webview#type-ContentScriptDetails
+ */
+var ContentScriptDetails;
+
+/**
+ * @param {Array<ContentScriptDetails>} contentScriptList
+ * @see https://developer.chrome.com/apps/tags/webview#method-addContentScripts
+ */
+WebView.prototype.addContentScripts = function(contentScriptList) {};
+
+/**
  * @see https://developer.chrome.com/apps/tags/webview#method-back
  */
 WebView.prototype.back = function() {};
@@ -319,6 +366,12 @@ WebView.prototype.print = function() {};
 WebView.prototype.reload = function() {};
 
 /**
+ * @param {Array<string>} contentScriptList
+ * @see https://developer.chrome.com/apps/tags/webview#method-removeContentScripts
+ */
+WebView.prototype.removeContentScripts = function(contentScriptList) {};
+
+/**
  * @param {string} userAgent
  * @see https://developer.chrome.com/apps/tags/webview#method-setUserAgentOverride
  */
@@ -330,6 +383,14 @@ WebView.prototype.setUserAgentOverride = function(userAgent) {};
  * @see https://developer.chrome.com/apps/tags/webview#method-setZoom
  */
 WebView.prototype.setZoom = function(zoomFactor, opt_callback) {};
+
+/**
+ * @param {string} zoomMode Allowed values: "per-origin", "per-view", "disabled"
+ * @see https://developer.chrome.com/apps/tags/webview#type-ZoomMode
+ * @param {Function=} opt_callback
+ * @see https://developer.chrome.com/apps/tags/webview#method-setZoomMode
+ */
+WebView.prototype.setZoomMode = function(zoomMode, opt_callback) {};
 
 /**
  * @see https://developer.chrome.com/apps/tags/webview#method-stop

@@ -44,14 +44,14 @@ cr.define('samlTimestamps', function() {
    * @param {string} str A timestamp formatted as a string.
    * @return {?Date} A valid decoded timestamp, or null.
    */
-  function decodeTimestamp(str) {
+  /* #export */ function decodeTimestamp(str) {
     str = str.trim();
     if (str.length == 0 || str.length > MAX_SANE_LENGTH) {
       return null;
     }
 
     if (INTEGER_PATTERN.test(str)) {
-      return decodeIntegerTimestamp(parseInt(str));
+      return decodeIntegerTimestamp(parseInt(str, 10));
     } else if (ISO_8601_PATTERN.test(str)) {
       return decodeIso8601(str);
     }
@@ -134,6 +134,7 @@ cr.define('samlTimestamps', function() {
     return isNaN(date) ? null : date;
   }
 
+  // #cr_define_end
   // Public functions:
   return {decodeTimestamp: decodeTimestamp};
 });

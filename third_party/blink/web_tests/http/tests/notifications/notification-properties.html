@@ -48,7 +48,7 @@
             assert_array_equals(notification.actions, options.actions);
 
             // The `actions` field should be immutable.
-            assert_throws(new TypeError, () => notification.actions.push(null));
+            assert_throws_js(TypeError, () => notification.actions.push(null));
 
             notification.actions.foo = 'bar';
             assert_false(notification.actions.hasOwnProperty('foo'));
@@ -106,7 +106,7 @@
             assert_array_equals(vibrateNotification.vibrate, [1000]);
 
             // The `vibrate` property should be immutable.
-            assert_throws(new TypeError, () => vibrateNotification.vibrate.push(1000));
+            assert_throws_js(TypeError, () => vibrateNotification.vibrate.push(1000));
 
             vibrateNotification.vibrate[0] = 2000;
             assert_equals(vibrateNotification.vibrate[0], 1000);

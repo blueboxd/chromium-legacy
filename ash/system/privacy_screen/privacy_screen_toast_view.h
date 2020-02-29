@@ -22,13 +22,10 @@ class ASH_EXPORT PrivacyScreenToastView : public views::View {
   PrivacyScreenToastView(PrivacyScreenToastView&) = delete;
   PrivacyScreenToastView operator=(PrivacyScreenToastView&) = delete;
 
-  // Updates the toast with whether the privacy screen is enabled.
-  void SetPrivacyScreenEnabled(bool enabled);
+  // Updates the toast with whether the privacy screen is enabled and managed.
+  void SetPrivacyScreenEnabled(bool enabled, bool managed);
 
  private:
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-
   FeaturePodIconButton* button_ = nullptr;
   PrivacyScreenToastLabelView* label_ = nullptr;
 };

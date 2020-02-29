@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,10 +47,8 @@ void IwlwifiDumpChecker::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits({base::ThreadPool(), base::MayBlock(),
-                        base::TaskPriority::BEST_EFFORT}),
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CheckExistenceOnBlockingTaskRunner),
       base::BindOnce(std::move(callback)));
 }
@@ -63,10 +62,8 @@ void IwlwifiDumpLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits({base::ThreadPool(), base::MayBlock(),
-                        base::TaskPriority::BEST_EFFORT}),
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadDumpOnBlockingTaskRunner),
       base::BindOnce(std::move(callback)));
 }

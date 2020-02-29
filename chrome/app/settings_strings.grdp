@@ -1712,6 +1712,12 @@
   <message name="IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_PARENTAL_CONTROL" desc="Substring of the secure DNS setting when secure DNS is disabled due to detection of OS-level parental controls">
     This setting is disabled because parental controls are on.
   </message>
+  <message name="IDS_SETTINGS_SECURE_DNS_CUSTOM_PLACEHOLDER" desc="Placeholder text for a textbox where users can enter a custom secure DNS provider">
+    Enter custom provider
+  </message>
+  <message name="IDS_SETTINGS_SECURE_DNS_CUSTOM_FORMAT_ERROR" desc="Error text for an incorrectly formatted entry for the custom secure DNS provider">
+    Enter a correctly formatted URL
+  </message>
   <message name="IDS_SETTINGS_CONTENT_SETTINGS" desc="Text of the button that takes a user to settings page thats allows users to modify site settings. Also the title of that settings page.">
     Content settings
   </message>

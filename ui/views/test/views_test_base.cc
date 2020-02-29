@@ -137,6 +137,14 @@ Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
   return params;
 }
 
+std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(
+    Widget::InitParams::Type type) {
+  Widget::InitParams params = CreateParamsForTestWidget(type);
+  auto widget = std::make_unique<Widget>();
+  widget->Init(std::move(params));
+  return widget;
+}
+
 bool ViewsTestBase::HasCompositingManager() const {
   return has_compositing_manager_;
 }
@@ -158,9 +166,8 @@ NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
 #elif defined(USE_AURA)
   // For widgets that have a modal parent, don't force a native widget type.
   // This logic matches DesktopTestViewsDelegate as well as ChromeViewsDelegate.
-  if (init_params.parent &&
-      init_params.type != views::Widget::InitParams::TYPE_MENU &&
-      init_params.type != views::Widget::InitParams::TYPE_TOOLTIP) {
+  if (init_params.parent && init_params.type != Widget::InitParams::TYPE_MENU &&
+      init_params.type != Widget::InitParams::TYPE_TOOLTIP) {
     // Returning null results in using the platform default, which is
     // NativeWidgetAura.
     return nullptr;
@@ -182,6 +189,14 @@ NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
   NOTREACHED();
   return nullptr;
 #endif
+}
+
+Widget::InitParams ViewsTestBase::CreateParamsForTestWidget(
+    Widget::InitParams::Type type) {
+  Widget::InitParams params = CreateParams(type);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 400, 400);
+  return params;
 }
 
 void ViewsTestBaseWithNativeWidgetType::SetUp() {

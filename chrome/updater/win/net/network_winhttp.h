@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/threading/thread_checker.h"
@@ -42,6 +41,8 @@ class NetworkFetcherWinHTTP
   using FetchProgressCallback = update_client::NetworkFetcher::ProgressCallback;
 
   explicit NetworkFetcherWinHTTP(const HINTERNET& session_handle_);
+  NetworkFetcherWinHTTP(const NetworkFetcherWinHTTP&) = delete;
+  NetworkFetcherWinHTTP& operator=(const NetworkFetcherWinHTTP&) = delete;
 
   void Close();
 
@@ -139,8 +140,6 @@ class NetworkFetcherWinHTTP
   FetchCompleteCallback fetch_complete_callback_;
 
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherWinHTTP);
 };
 
 }  // namespace updater

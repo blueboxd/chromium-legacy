@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/network.h"
@@ -40,6 +39,8 @@ class NetworkFetcher : public update_client::NetworkFetcher {
 
   explicit NetworkFetcher(const HINTERNET& session_handle_);
   ~NetworkFetcher() override;
+  NetworkFetcher(const NetworkFetcher&) = delete;
+  NetworkFetcher& operator=(const NetworkFetcher&) = delete;
 
   // NetworkFetcher overrides.
   void PostRequest(
@@ -67,8 +68,6 @@ class NetworkFetcher : public update_client::NetworkFetcher {
 
   DownloadToFileCompleteCallback download_to_file_complete_callback_;
   PostRequestCompleteCallback post_request_complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcher);
 };
 
 }  // namespace updater

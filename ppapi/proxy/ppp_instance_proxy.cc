@@ -121,7 +121,7 @@ PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher)
     // convert it here. This magic conversion code is hardcoded into
     // PluginDispatcher::OnMsgSupportsInterface.
     combined_interface_.reset(PPP_Instance_Combined::Create(
-        base::Bind(dispatcher->local_get_interface())));
+        base::BindRepeating(dispatcher->local_get_interface())));
   }
 }
 

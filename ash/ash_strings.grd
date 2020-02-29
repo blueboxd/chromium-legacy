@@ -1466,14 +1466,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_SUBLABEL" desc="The sublabel text under the privacy screen menu button when the feature is toggled on.">
         On
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_MANAGED_SUBLABEL" desc="The sublabel text under the privacy screen menu button when the feature is managed by enterprise policy.">
+        Managed
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP" desc="The tooltip text for the privacy screen menu button.">
-        Toggle privacy screen. <ph name="STATE_TEXT">$1<ex>Privacy screen is on.</ex></ph>
+        Toggle privacy screen. <ph name="STATE_TEXT">$1<ex>Privacy screen is on</ex></ph>.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_ON_STATE" desc="The tooltip text for the privacy screen menu button indicating the feature is on.">
-        Privacy screen is on.
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_STATE" desc="The text for the button indicating the feature is on.">
+        Privacy screen is on
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_OFF_STATE" desc="The tooltip text for the privacy screen menu button indicating the feature is off.">
-        Privacy screen is off.
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_STATE" desc="The text for the privacy screen indicating the feature is off.">
+        Privacy screen is off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ENTERPRISE_MANAGED" desc="The text for the privacy screen indicating the feature is enforced by enterprise policy.">
+        Enforced by your administrator
       </message>
 
       <!-- Status tray networking strings. -->

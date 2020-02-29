@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 
 namespace base {
@@ -25,6 +24,9 @@ namespace updater {
 // This class manages interaction with the crash reporter.
 class CrashClient {
  public:
+  CrashClient(const CrashClient&) = delete;
+  CrashClient& operator=(const CrashClient&) = delete;
+
   static CrashClient* GetInstance();
 
   // Retrieves the current guid associated with crashes. The value may be empty
@@ -51,8 +53,6 @@ class CrashClient {
 
   SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<crashpad::CrashReportDatabase> database_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashClient);
 };
 
 }  // namespace updater

@@ -51,11 +51,11 @@ test(() => {
 }, "Tests that a PresentationRequest can be constructed with non-https schemes");
 
 test(() => {
-  assert_throws(new SyntaxError, () => new PresentationRequest([unknownUrl, invalidUrl]));
+  assert_throws_dom("SyntaxError", () => new PresentationRequest([unknownUrl, invalidUrl]));
 }, "Test that a PresentationRequest cannot be constructed with an unknown scheme and an invalid URL");
 
 test(() => {
-  assert_throws(new SyntaxError, () => new PresentationRequest([castUrl, invalidUrl]));
+  assert_throws_dom("SyntaxError", () => new PresentationRequest([castUrl, invalidUrl]));
 }, "Test that a PresentationRequest cannot be constructed with a custom scheme and an invalid URL");
 
 test(() => {

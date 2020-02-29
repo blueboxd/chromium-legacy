@@ -32,6 +32,7 @@ namespace settings {
 namespace {
 
 constexpr char kGetSecureDnsResolverList[] = "getSecureDnsResolverList";
+constexpr char kValidateCustomDnsEntry[] = "validateCustomDnsEntry";
 constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
 const std::vector<DohProviderEntry>& GetDohProviderListForTesting() {
@@ -439,6 +440,65 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
   EXPECT_EQ(1u, secure_dns_templates.size());
   EXPECT_EQ("https://global2.provider/dns-query{?dns}",
             secure_dns_templates[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
+  base::ListValue args;
+  args.AppendString(kWebUiFunctionName);
+  args.AppendString("https://example.template/dns-query");
+
+  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
+  const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data.arg2()->GetBool());
+  // The template should be valid.
+  ASSERT_TRUE(call_data.arg3()->GetBool());
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
+  base::ListValue args;
+  args.AppendString(kWebUiFunctionName);
+  args.AppendString("invalid_template");
+
+  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
+  const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data.arg2()->GetBool());
+  // The template should be invalid.
+  ASSERT_FALSE(call_data.arg3()->GetBool());
+}
+
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
+  base::ListValue args_valid;
+  args_valid.AppendString(kWebUiFunctionName);
+  args_valid.AppendString(
+      "invalid_template    https://example.template/dns-query");
+  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_valid);
+  const content::TestWebUI::CallData& call_data_valid =
+      *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data_valid.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data_valid.arg2()->GetBool());
+  // The entry should be valid.
+  ASSERT_TRUE(call_data_valid.arg3()->GetBool());
+
+  base::ListValue args_invalid;
+  args_invalid.AppendString(kWebUiFunctionName);
+  args_invalid.AppendString("invalid_template another_invalid_template");
+  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_invalid);
+  const content::TestWebUI::CallData& call_data_invalid =
+      *web_ui_.call_data().back();
+  EXPECT_EQ("cr.webUIResponse", call_data_invalid.function_name());
+  EXPECT_EQ(kWebUiFunctionName, call_data_invalid.arg1()->GetString());
+  // The request should be successful.
+  ASSERT_TRUE(call_data_invalid.arg2()->GetBool());
+  // The entry should be invalid.
+  ASSERT_FALSE(call_data_invalid.arg3()->GetBool());
 }
 
 }  // namespace settings

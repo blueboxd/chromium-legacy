@@ -58,8 +58,8 @@ assertIterationJoinEqual({}, 'Non-iterable object.');
 
 test(() => {
   var iterable = {[Symbol.iterator]() { return {}; }};
-  assert_throws(new TypeError, () => Array.from(iterable));
-  assert_throws(new TypeError, () => internals.dictionaryTest().stringFromIterable(iterable));
+  assert_throws_js(TypeError, () => Array.from(iterable));
+  assert_throws_js(TypeError, () => internals.dictionaryTest().stringFromIterable(iterable));
 }, 'Iterator object without next() function should throw.');
 
 test(() => {
@@ -69,7 +69,7 @@ test(() => {
     {done: false, value: 3},
     1234,
   ]);
-  assert_throws(new TypeError, () => Array.from(iterable));
-  assert_throws(new TypeError, () => internals.dictionaryTest().stringFromIterable(iterable));
+  assert_throws_js(TypeError, () => Array.from(iterable));
+  assert_throws_js(TypeError, () => internals.dictionaryTest().stringFromIterable(iterable));
 }, 'Non-object iterator.next() result should throw.');
 </script>

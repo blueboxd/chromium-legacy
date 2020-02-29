@@ -190,6 +190,17 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
     return has_values || NumberOfRenderingConnections();
   }
 
+  // TODO(crbug.com/1015760) This is like HasSAmpleAccurateValues, but
+  // we don't check for the rate.  When the bug is fixed,
+  // HasSampleAccurateValues can be removed and this methed renamed.
+  bool HasSampleAccurateValuesTimeline() {
+    bool has_values =
+        timeline_.HasValues(destination_handler_->CurrentSampleFrame(),
+                            destination_handler_->SampleRate());
+
+    return has_values || NumberOfRenderingConnections();
+  }
+
   bool IsAudioRate() const { return automation_rate_ == kAudio; }
 
   // Calculates numberOfValues parameter values starting at the context's

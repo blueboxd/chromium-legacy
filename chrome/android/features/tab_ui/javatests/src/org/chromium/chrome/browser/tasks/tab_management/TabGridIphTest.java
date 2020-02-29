@@ -21,7 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickScrimToExitDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 
+import android.content.res.Configuration;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.filters.MediumTest;
 import android.widget.TextView;
@@ -34,6 +36,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -45,9 +48,12 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.io.IOException;
 
 /** End-to-end tests for TabGridIph component. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -63,6 +69,9 @@ public class TabGridIphTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @Before
     public void setUp() {
@@ -141,6 +150,38 @@ public class TabGridIphTest {
         cta = mActivityTestRule.getActivity();
         enterTabSwitcher(cta);
         onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderIph_Portrait() throws IOException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        enterTabSwitcher(cta);
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        mRenderTestRule.render(cta.findViewById(R.id.tab_grid_message_item), "iph_portrait");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testRenderIph_Landscape() throws IOException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+
+        enterTabSwitcher(cta);
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+
+        mRenderTestRule.render(cta.findViewById(R.id.tab_grid_message_item), "iph_landscape");
+
+        // Reset orientation.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
     }
 
     private void verifyIphDialogShowing(ChromeTabbedActivity cta) {

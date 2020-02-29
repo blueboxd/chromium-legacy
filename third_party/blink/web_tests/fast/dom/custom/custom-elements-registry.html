@@ -8,9 +8,9 @@ test(function () {
 }, 'window.customElements.define is defined');
 
 test(function () {
-  assert_throws(new TypeError, function () { window.customElements.define(); },
+  assert_throws_js(TypeError, function () { window.customElements.define(); },
       '"define" without arguments should throw TypeError');
-  assert_throws(new TypeError, function () { window.customElements.define("x-x"); },
+  assert_throws_js(TypeError, function () { window.customElements.define("x-x"); },
       '"define" with one argument should throw TypeError');
 
   window.customElements.define('x-empty-function', function () { });

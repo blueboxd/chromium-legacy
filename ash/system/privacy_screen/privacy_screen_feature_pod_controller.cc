@@ -58,7 +58,9 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
   if (!is_supported)
     return;
 
+  // TODO(tengs): Hook up managed state once it is implemented.
   bool is_enabled = privacy_screen_controller->GetEnabled();
+  bool is_managed = false;
 
   button_->SetVectorIcon(kPrivacyScreenIcon);
   button_->SetToggled(is_enabled);
@@ -69,13 +71,18 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
   if (is_enabled) {
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_SUBLABEL));
-    tooltip_state = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_ON_STATE);
+    tooltip_state =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_STATE);
   } else {
     button_->SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_SUBLABEL));
-    tooltip_state = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_TOOLTIP_OFF_STATE);
+    tooltip_state =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_STATE);
+  }
+
+  if (is_managed) {
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_MANAGED_SUBLABEL));
   }
 
   button_->SetIconAndLabelTooltips(l10n_util::GetStringFUTF16(

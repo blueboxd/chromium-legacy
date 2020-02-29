@@ -58,30 +58,20 @@ const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 // invitation.
 constexpr base::StringPiece kIsolatedInvitationPipeName = {"\0\0\0\0", 4};
 
-void InvokeProcessErrorCallbackOnTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    MojoProcessErrorHandler handler,
-    uintptr_t context,
-    const std::string& error,
-    MojoProcessErrorFlags flags) {
-  // We always run the handler asynchronously to ensure no Mojo core reentrancy.
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](MojoProcessErrorHandler handler, uintptr_t context,
-             const std::string& error, MojoProcessErrorFlags flags) {
-            MojoProcessErrorDetails details;
-            details.struct_size = sizeof(details);
-            DCHECK(base::IsValueInRangeForNumericType<uint32_t>(error.size()));
-            details.error_message_length = static_cast<uint32_t>(error.size());
-            if (!error.empty())
-              details.error_message = error.data();
-            else
-              details.error_message = nullptr;
-            details.flags = flags;
-            handler(context, &details);
-          },
-          handler, context, error, flags));
+void InvokeProcessErrorCallback(MojoProcessErrorHandler handler,
+                                uintptr_t context,
+                                const std::string& error,
+                                MojoProcessErrorFlags flags) {
+  MojoProcessErrorDetails details;
+  details.struct_size = sizeof(details);
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(error.size()));
+  details.error_message_length = static_cast<uint32_t>(error.size());
+  if (!error.empty())
+    details.error_message = error.data();
+  else
+    details.error_message = nullptr;
+  details.flags = flags;
+  handler(context, &details);
 }
 
 // Helper class which is bound to the lifetime of a
@@ -93,21 +83,15 @@ void InvokeProcessErrorCallbackOnTaskRunner(
 // -- see Core::SendInvitation) will be destroyed.
 class ProcessDisconnectHandler {
  public:
-  ProcessDisconnectHandler(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                           MojoProcessErrorHandler handler,
-                           uintptr_t context)
-      : task_runner_(std::move(task_runner)),
-        handler_(handler),
-        context_(context) {}
+  ProcessDisconnectHandler(MojoProcessErrorHandler handler, uintptr_t context)
+      : handler_(handler), context_(context) {}
 
   ~ProcessDisconnectHandler() {
-    InvokeProcessErrorCallbackOnTaskRunner(
-        task_runner_, handler_, context_, std::string(),
-        MOJO_PROCESS_ERROR_FLAG_DISCONNECTED);
+    InvokeProcessErrorCallback(handler_, context_, std::string(),
+                               MOJO_PROCESS_ERROR_FLAG_DISCONNECTED);
   }
 
  private:
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const MojoProcessErrorHandler handler_;
   const uintptr_t context_;
 
@@ -116,12 +100,11 @@ class ProcessDisconnectHandler {
 
 void RunMojoProcessErrorHandler(
     ProcessDisconnectHandler* disconnect_handler,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
     MojoProcessErrorHandler handler,
     uintptr_t context,
     const std::string& error) {
-  InvokeProcessErrorCallbackOnTaskRunner(task_runner, handler, context, error,
-                                         MOJO_PROCESS_ERROR_FLAG_NONE);
+  InvokeProcessErrorCallback(handler, context, error,
+                             MOJO_PROCESS_ERROR_FLAG_NONE);
 }
 
 }  // namespace
@@ -1283,12 +1266,11 @@ MojoResult Core::SendInvitation(
 
   ProcessErrorCallback process_error_callback;
   if (error_handler) {
-    auto error_handler_task_runner = GetNodeController()->io_task_runner();
-    process_error_callback = base::BindRepeating(
-        &RunMojoProcessErrorHandler,
-        base::Owned(new ProcessDisconnectHandler(
-            error_handler_task_runner, error_handler, error_handler_context)),
-        error_handler_task_runner, error_handler, error_handler_context);
+    process_error_callback =
+        base::BindRepeating(&RunMojoProcessErrorHandler,
+                            base::Owned(new ProcessDisconnectHandler(
+                                error_handler, error_handler_context)),
+                            error_handler, error_handler_context);
   } else if (default_process_error_callback_) {
     process_error_callback = default_process_error_callback_;
   }

@@ -70,7 +70,9 @@ void ConstantSourceHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  if (offset_->HasSampleAccurateValues()) {
+  bool is_sample_accurate = offset_->HasSampleAccurateValuesTimeline();
+
+  if (is_sample_accurate && offset_->IsAudioRate()) {
     DCHECK_LE(frames_to_process, sample_accurate_values_.size());
     float* offsets = sample_accurate_values_.Data();
     offset_->CalculateSampleAccurateValues(offsets, frames_to_process);
@@ -82,19 +84,20 @@ void ConstantSourceHandler::Process(uint32_t frames_to_process) {
     } else {
       output_bus->Zero();
     }
-  } else {
-    float value = offset_->Value();
 
-    if (value == 0) {
-      output_bus->Zero();
-    } else {
-      float* dest = output_bus->Channel(0)->MutableData();
-      dest += quantum_frame_offset;
-      for (unsigned k = 0; k < non_silent_frames_to_process; ++k) {
-        dest[k] = value;
-      }
-      output_bus->ClearSilentFlag();
+    return;
+  }
+
+  float value = is_sample_accurate ? offset_->FinalValue() : offset_->Value();
+  if (value == 0) {
+    output_bus->Zero();
+  } else {
+    float* dest = output_bus->Channel(0)->MutableData();
+    dest += quantum_frame_offset;
+    for (unsigned k = 0; k < non_silent_frames_to_process; ++k) {
+      dest[k] = value;
     }
+    output_bus->ClearSilentFlag();
   }
 }
 

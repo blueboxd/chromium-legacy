@@ -7,7 +7,6 @@
 
 #include <windows.h>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_gdi_object.h"
@@ -27,6 +26,8 @@ class YesNoDialog : public CAxDialogImpl<YesNoDialog>,
   static constexpr int IDD = IDD_YES_NO;
 
   YesNoDialog(WTL::CMessageLoop* message_loop, HWND parent);
+  YesNoDialog(const YesNoDialog&) = delete;
+  YesNoDialog& operator=(const YesNoDialog&) = delete;
   ~YesNoDialog() override;
 
   HRESULT Initialize(const base::string16& yes_no_title,
@@ -71,8 +72,6 @@ class YesNoDialog : public CAxDialogImpl<YesNoDialog>,
   base::win::ScopedGDIObject<HICON> hicon_;
 
   WTL::CFont default_font_;
-
-  DISALLOW_COPY_AND_ASSIGN(YesNoDialog);
 };
 
 }  // namespace ui

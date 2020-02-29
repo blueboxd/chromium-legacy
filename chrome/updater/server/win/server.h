@@ -11,7 +11,6 @@
 #include <wrl/module.h>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/updater/server/win/updater_idl.h"
@@ -27,6 +26,8 @@ class UpdaterImpl
           IUpdater> {
  public:
   UpdaterImpl() = default;
+  UpdaterImpl(const UpdaterImpl&) = delete;
+  UpdaterImpl& operator=(const UpdaterImpl&) = delete;
 
   IFACEMETHODIMP CheckForUpdate(const base::char16* app_id) override;
   IFACEMETHODIMP Register(const base::char16* app_id,
@@ -38,8 +39,6 @@ class UpdaterImpl
 
  private:
   ~UpdaterImpl() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdaterImpl);
 };
 
 // This class is responsible for the lifetime of the COM server, as well as
@@ -47,6 +46,8 @@ class UpdaterImpl
 class ComServer {
  public:
   ComServer();
+  ComServer(const ComServer&) = delete;
+  ComServer& operator=(const ComServer&) = delete;
   ~ComServer() = default;
 
   // Main entry point for the COM server.
@@ -75,8 +76,6 @@ class ComServer {
 
   // This event is signaled when the last COM instance is released.
   base::WaitableEvent exit_signal_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComServer);
 };
 
 // Sets up and runs the server.

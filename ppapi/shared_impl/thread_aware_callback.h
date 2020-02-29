@@ -66,21 +66,21 @@ class ThreadAwareCallback : public internal::ThreadAwareCallbackBase {
 
   ~ThreadAwareCallback() {}
 
-  void RunOnTargetThread() { InternalRunOnTargetThread(base::Bind(func_)); }
+  void RunOnTargetThread() { InternalRunOnTargetThread(base::BindOnce(func_)); }
 
   template <class P1>
   void RunOnTargetThread(const P1& p1) {
-    InternalRunOnTargetThread(base::Bind(func_, p1));
+    InternalRunOnTargetThread(base::BindOnce(func_, p1));
   }
 
   template <class P1, class P2>
   void RunOnTargetThread(const P1& p1, const P2& p2) {
-    InternalRunOnTargetThread(base::Bind(func_, p1, p2));
+    InternalRunOnTargetThread(base::BindOnce(func_, p1, p2));
   }
 
   template <class P1, class P2, class P3>
   void RunOnTargetThread(const P1& p1, const P2& p2, const P3& p3) {
-    InternalRunOnTargetThread(base::Bind(func_, p1, p2, p3));
+    InternalRunOnTargetThread(base::BindOnce(func_, p1, p2, p3));
   }
 
   template <class P1, class P2, class P3, class P4>
@@ -88,7 +88,7 @@ class ThreadAwareCallback : public internal::ThreadAwareCallbackBase {
                          const P2& p2,
                          const P3& p3,
                          const P4& p4) {
-    InternalRunOnTargetThread(base::Bind(func_, p1, p2, p3, p4));
+    InternalRunOnTargetThread(base::BindOnce(func_, p1, p2, p3, p4));
   }
 
   template <class P1, class P2, class P3, class P4, class P5>
@@ -97,7 +97,7 @@ class ThreadAwareCallback : public internal::ThreadAwareCallbackBase {
                          const P3& p3,
                          const P4& p4,
                          const P5& p5) {
-    InternalRunOnTargetThread(base::Bind(func_, p1, p2, p3, p4, p5));
+    InternalRunOnTargetThread(base::BindOnce(func_, p1, p2, p3, p4, p5));
   }
 
  private:

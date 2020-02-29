@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/atl.h"
@@ -52,6 +51,8 @@ class InstallStoppedWnd : public CAxDialogImpl<InstallStoppedWnd>,
   static constexpr int IDD = IDD_INSTALL_STOPPED;
 
   InstallStoppedWnd(WTL::CMessageLoop* message_loop, HWND parent);
+  InstallStoppedWnd(const InstallStoppedWnd&) = delete;
+  InstallStoppedWnd& operator=(const InstallStoppedWnd&) = delete;
   ~InstallStoppedWnd() override;
 
   // Closes the window, handling transition back to the parent window.
@@ -90,14 +91,14 @@ class InstallStoppedWnd : public CAxDialogImpl<InstallStoppedWnd>,
   HWND parent_ = nullptr;
 
   WTL::CFont default_font_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstallStoppedWnd);
 };
 
 // Implements the UI progress window.
 class ProgressWnd : public CompleteWnd, public InstallProgressObserver {
  public:
   ProgressWnd(WTL::CMessageLoop* message_loop, HWND parent);
+  ProgressWnd(const ProgressWnd&) = delete;
+  ProgressWnd& operator=(const ProgressWnd&) = delete;
   ~ProgressWnd() override;
 
   void SetEventSink(ProgressWndEvents* ev);
@@ -204,8 +205,6 @@ class ProgressWnd : public CompleteWnd, public InstallProgressObserver {
 
   // The speed by which the progress bar moves in marquee mode.
   static constexpr int kMarqueeModeUpdatesMs = 75;
-
-  DISALLOW_COPY_AND_ASSIGN(ProgressWnd);
 };
 
 }  // namespace ui

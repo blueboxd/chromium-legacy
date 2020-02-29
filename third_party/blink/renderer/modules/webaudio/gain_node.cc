@@ -67,7 +67,9 @@ void GainHandler::Process(uint32_t frames_to_process) {
   } else {
     scoped_refptr<AudioBus> input_bus = Input(0).Bus();
 
-    if (gain_->HasSampleAccurateValues()) {
+    bool is_sample_accurate = gain_->HasSampleAccurateValuesTimeline();
+
+    if (is_sample_accurate && gain_->IsAudioRate()) {
       // Apply sample-accurate gain scaling for precise envelopes, grain
       // windows, etc.
       DCHECK_LE(frames_to_process, sample_accurate_gain_values_.size());
@@ -75,14 +77,19 @@ void GainHandler::Process(uint32_t frames_to_process) {
       gain_->CalculateSampleAccurateValues(gain_values, frames_to_process);
       output_bus->CopyWithSampleAccurateGainValuesFrom(*input_bus, gain_values,
                                                        frames_to_process);
+
+      return;
+    }
+
+    // The gain is not sample-accurate or not a-rate.  In this case, we have a
+    // fixed gain for the render and just need to incorporate any inputs to the
+    // gain, if any.
+    float gain = is_sample_accurate ? gain_->FinalValue() : gain_->Value();
+
+    if (gain == 0) {
+      output_bus->Zero();
     } else {
-      // Apply the gain.
-      if (gain_->Value() == 0) {
-        // If the gain is 0, just zero the bus and set the silence hint.
-        output_bus->Zero();
-      } else {
-        output_bus->CopyWithGainFrom(*input_bus, gain_->Value());
-      }
+      output_bus->CopyWithGainFrom(*input_bus, gain);
     }
   }
 }

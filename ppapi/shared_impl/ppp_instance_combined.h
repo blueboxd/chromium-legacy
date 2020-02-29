@@ -23,7 +23,7 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
   // interface. If the plugin doesn't support any PPP_Instance interface,
   // returns NULL.
   static PPP_Instance_Combined* Create(
-      base::Callback<const void*(const char*)> get_plugin_if);
+      base::RepeatingCallback<const void*(const char*)> get_plugin_if);
 
   PP_Bool DidCreate(PP_Instance instance,
                     uint32_t argc,

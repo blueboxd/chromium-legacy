@@ -79,6 +79,10 @@ class ViewsTestBase : public PlatformTest {
   // cross-platform tests.
   virtual Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
+  virtual std::unique_ptr<Widget> CreateTestWidget(
+      Widget::InitParams::Type type =
+          Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+
   bool HasCompositingManager() const;
 
   // Simulate an OS-level destruction of the native window held by |widget|.
@@ -124,6 +128,10 @@ class ViewsTestBase : public PlatformTest {
       internal::NativeWidgetDelegate* delegate);
 
  protected:
+  Widget::InitParams CreateParamsForTestWidget(
+      Widget::InitParams::Type type =
+          Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+
   // Initialized first, destroyed last. Use this protected member directly from
   // the test body to drive tasks posted within a ViewsTestBase-based test.
   base::Optional<base::test::TaskEnvironment> task_environment_;

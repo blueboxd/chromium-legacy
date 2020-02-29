@@ -12,7 +12,7 @@ test(() => {
   for (const value of [null, undefined, {}, "", window]) {
     const sr = new webkitSpeechRecognition();
     const grammars = sr.grammars;
-    assert_throws(new TypeError, () => { sr.grammars = value; } );
+    assert_throws_js(TypeError, () => { sr.grammars = value; } );
     assert_equals(sr.grammars, grammars);
   }
 }, 'setting to non-SpeechGrammarList values');

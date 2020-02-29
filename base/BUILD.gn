@@ -3061,6 +3061,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
+      "fuchsia/test_component_context_for_process_unittest.cc",
       "fuchsia/time_zone_data_unittest.cc",
       "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",

@@ -39,6 +39,9 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   // Intended to be called once upon creation of the secure DNS setting.
   void HandleGetSecureDnsSetting(const base::ListValue* args);
 
+  // Returns whether or not a custom entry is valid.
+  void HandleValidateCustomDnsEntry(const base::ListValue* args);
+
   // Retrieves the current host resolver configuration, computes the
   // corresponding UI representation, and sends it to javascript.
   void SendSecureDnsSettingUpdatesToJavascript();

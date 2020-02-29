@@ -101,6 +101,6 @@
             set: descriptor.set
         });
 
-        assert_throws(new TypeError, () => element.style = "color: green");
+        assert_throws_js(TypeError, () => element.style = "color: green");
     }, "TypeError when getter of [PutForwards] attribute returns non-object");
 </script>

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/unzipper.h"
 
@@ -16,14 +15,13 @@ namespace updater {
 class UnzipperFactory : public update_client::UnzipperFactory {
  public:
   UnzipperFactory();
+  UnzipperFactory(const UnzipperFactory&) = delete;
+  UnzipperFactory& operator=(const UnzipperFactory&) = delete;
 
   std::unique_ptr<update_client::Unzipper> Create() const override;
 
  protected:
   ~UnzipperFactory() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UnzipperFactory);
 };
 
 }  // namespace updater

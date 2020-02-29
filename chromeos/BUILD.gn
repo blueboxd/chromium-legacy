@@ -320,3 +320,11 @@ fuzzer_test("ppd_line_reader_fuzzer") {
   sources = [ "printing/ppd_line_reader_fuzzer.cc" ]
   deps = [ ":chromeos" ]
 }
+
+fuzzer_test("printer_configuration_fuzzer") {
+  sources = [ "printing/printer_configuration_fuzzer.cc" ]
+  deps = [
+    ":chromeos",
+    "//base",
+  ]
+}

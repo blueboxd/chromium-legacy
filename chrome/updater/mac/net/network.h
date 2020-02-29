@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/network.h"
 
@@ -16,6 +15,8 @@ namespace updater {
 class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
  public:
   NetworkFetcherFactory();
+  NetworkFetcherFactory(const NetworkFetcherFactory&) = delete;
+  NetworkFetcherFactory& operator=(const NetworkFetcherFactory&) = delete;
 
   std::unique_ptr<update_client::NetworkFetcher> Create() const override;
 
@@ -24,8 +25,6 @@ class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
 
  private:
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 
 }  // namespace updater

@@ -92,12 +92,8 @@ class DialogTest : public ViewsTestBase {
     // These tests all expect to use a custom frame on the dialog so they can
     // control hit-testing and other behavior. Custom frames are only supported
     // with a parent widget, so create the parent widget here.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.bounds = gfx::Rect(10, 11, 200, 200);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    parent_widget_.Init(std::move(params));
-    parent_widget_.Show();
+    parent_widget_ = CreateTestWidget();
+    parent_widget_->Show();
 
     InitializeDialog();
     ShowDialog();
@@ -105,7 +101,7 @@ class DialogTest : public ViewsTestBase {
 
   void TearDown() override {
     dialog_->TearDown();
-    parent_widget_.Close();
+    parent_widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -126,7 +122,7 @@ class DialogTest : public ViewsTestBase {
 
   views::Widget* CreateDialogWidget(DialogDelegate* dialog) {
     views::Widget* widget = DialogDelegate::CreateDialogWidget(
-        dialog, GetContext(), parent_widget_.GetNativeView());
+        dialog, GetContext(), parent_widget_->GetNativeView());
     return widget;
   }
 
@@ -139,7 +135,7 @@ class DialogTest : public ViewsTestBase {
   }
 
   TestDialog* dialog() const { return dialog_; }
-  views::Widget* parent_widget() { return &parent_widget_; }
+  views::Widget* parent_widget() { return parent_widget_.get(); }
 
  protected:
   bool accepted_ = false;
@@ -147,7 +143,7 @@ class DialogTest : public ViewsTestBase {
   bool closed_ = false;
 
  private:
-  views::Widget parent_widget_;
+  std::unique_ptr<views::Widget> parent_widget_;
   TestDialog* dialog_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DialogTest);

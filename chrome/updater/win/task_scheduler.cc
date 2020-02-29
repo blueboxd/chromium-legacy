@@ -159,6 +159,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
     task_folder_ = GetUpdaterTaskFolder();
     DCHECK(task_folder_);
   }
+  TaskSchedulerV2(const TaskSchedulerV2&) = delete;
+  TaskSchedulerV2& operator=(const TaskSchedulerV2&) = delete;
 
   // TaskScheduler overrides.
   bool IsTaskRegistered(const wchar_t* task_name) override {
@@ -1030,8 +1032,6 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
   // Folder in which all updater scheduled tasks are grouped in.
   Microsoft::WRL::ComPtr<ITaskFolder> task_folder_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerV2);
 };
 
 }  // namespace

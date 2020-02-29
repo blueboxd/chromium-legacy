@@ -11,11 +11,65 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
+
+namespace {
+
+void ConfigureLabel(views::Label* label, SkColor color, int font_size) {
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetSubpixelRenderingEnabled(false);
+  label->SetEnabledColor(color);
+
+  gfx::Font default_font;
+  gfx::Font label_font =
+      default_font.Derive(font_size - default_font.GetFontSize(),
+                          gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+  gfx::FontList font_list(label_font);
+  label->SetFontList(font_list);
+}
+
+}  // namespace
+
+// View shown if the privacy screen setting is enterprise managed.
+class PrivacyScreenToastManagedView : public views::View {
+ public:
+  PrivacyScreenToastManagedView() {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+        kUnifiedManagedDeviceSpacing));
+
+    views::Label* label = new views::Label();
+    views::ImageView* icon = new views::ImageView();
+
+    const AshColorProvider* color_provider = AshColorProvider::Get();
+    const SkColor label_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextSecondary,
+        AshColorProvider::AshColorMode::kDark);
+    ConfigureLabel(label, label_color, kPrivacyScreenToastSubLabelFontSize);
+
+    label->SetText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ENTERPRISE_MANAGED));
+
+    icon->SetPreferredSize(
+        gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
+
+    const SkColor icon_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextSecondary,
+        AshColorProvider::AshColorMode::kDark);
+    icon->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon, icon_color));
+
+    AddChildView(label);
+    AddChildView(icon);
+  }
+
+  ~PrivacyScreenToastManagedView() override = default;
+};
 
 // View containing the various labels in the toast.
 class PrivacyScreenToastLabelView : public views::View {
@@ -26,54 +80,37 @@ class PrivacyScreenToastLabelView : public views::View {
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
 
-    main_label_ = new views::Label();
-    sub_label_ = new views::Label();
-    AddChildView(main_label_);
-    AddChildView(sub_label_);
+    label_ = new views::Label();
+    managed_view_ = new PrivacyScreenToastManagedView();
+    AddChildView(label_);
+    AddChildView(managed_view_);
 
     const AshColorProvider* color_provider = AshColorProvider::Get();
     const SkColor primary_text_color = color_provider->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextPrimary,
         AshColorProvider::AshColorMode::kDark);
-    const SkColor secondary_text_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextSecondary,
-        AshColorProvider::AshColorMode::kDark);
 
-    ConfigureLabel(main_label_, primary_text_color,
+    ConfigureLabel(label_, primary_text_color,
                    kPrivacyScreenToastMainLabelFontSize);
-    ConfigureLabel(sub_label_, secondary_text_color,
-                   kPrivacyScreenToastSubLabelFontSize);
-
-    main_label_->SetText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_LABEL));
   }
 
-  void SetPrivacyScreenEnabled(bool enabled) {
+  ~PrivacyScreenToastLabelView() override = default;
+
+  void SetPrivacyScreenEnabled(bool enabled, bool managed) {
     if (enabled) {
-      sub_label_->SetText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_SUBLABEL));
+      label_->SetText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_ON_STATE));
     } else {
-      sub_label_->SetText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_SUBLABEL));
+      label_->SetText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_PRIVACY_SCREEN_OFF_STATE));
     }
+
+    managed_view_->SetVisible(managed);
   }
 
  private:
-  void ConfigureLabel(views::Label* label, SkColor color, int font_size) {
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetSubpixelRenderingEnabled(false);
-    label->SetEnabledColor(color);
-
-    gfx::Font default_font;
-    gfx::Font label_font =
-        default_font.Derive(font_size - default_font.GetFontSize(),
-                            gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
-    gfx::FontList font_list(label_font);
-    label->SetFontList(font_list);
-  }
-
-  views::Label* main_label_;
-  views::Label* sub_label_;
+  views::Label* label_;
+  PrivacyScreenToastManagedView* managed_view_;
 };
 
 PrivacyScreenToastView::PrivacyScreenToastView(
@@ -98,14 +135,11 @@ PrivacyScreenToastView::PrivacyScreenToastView(
 
 PrivacyScreenToastView::~PrivacyScreenToastView() = default;
 
-void PrivacyScreenToastView::SetPrivacyScreenEnabled(bool enabled) {
+void PrivacyScreenToastView::SetPrivacyScreenEnabled(bool enabled,
+                                                     bool managed) {
   button_->SetToggled(enabled);
-  label_->SetPrivacyScreenEnabled(enabled);
+  label_->SetPrivacyScreenEnabled(enabled, managed);
   Layout();
-}
-
-gfx::Size PrivacyScreenToastView::CalculatePreferredSize() const {
-  return gfx::Size(kPrivacyScreenToastWidth, kPrivacyScreenToastHeight);
 }
 
 }  // namespace ash

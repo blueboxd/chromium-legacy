@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 namespace updater {

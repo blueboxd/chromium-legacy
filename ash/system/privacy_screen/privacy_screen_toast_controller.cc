@@ -39,8 +39,8 @@ void PrivacyScreenToastController::ShowToast() {
 
   TrayBubbleView::InitParams init_params;
   init_params.shelf_alignment = tray_->shelf()->alignment();
-  init_params.min_width = kPrivacyScreenToastWidth;
-  init_params.max_width = kPrivacyScreenToastWidth;
+  init_params.min_width = kPrivacyScreenToastMinWidth;
+  init_params.max_width = kPrivacyScreenToastMaxWidth;
   init_params.delegate = this;
   init_params.parent_window = tray_->GetBubbleWindowContainer();
   init_params.anchor_view = nullptr;
@@ -107,8 +107,12 @@ void PrivacyScreenToastController::StartAutoCloseTimer() {
 
 void PrivacyScreenToastController::UpdateToastView() {
   if (toast_view_) {
+    // TODO(tengs): Hook up managed state after it is implemented.
+    auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
     toast_view_->SetPrivacyScreenEnabled(
-        Shell::Get()->privacy_screen_controller()->GetEnabled());
+        /*enabled=*/privacy_screen_controller->GetEnabled(),
+        /*managed=*/true);
+    bubble_view_->SetWidth(toast_view_->GetPreferredSize().width());
   }
 }
 

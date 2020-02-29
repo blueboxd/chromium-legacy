@@ -93,6 +93,12 @@ Polymer({
      * @private
      */
     privacyPolicyString_: String,
+
+    /**
+     * String to display in the custom text field.
+     * @private
+     */
+    secureDnsInputValue_: String,
   },
 
   /** @private {?settings.PrivacyPageBrowserProxy} */
@@ -161,6 +167,10 @@ Polymer({
   onToggleChanged_: function() {
     this.showRadioGroup_ =
         /** @type {boolean} */ (this.secureDnsToggle_.value);
+    if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE &&
+        this.$.secureResolverSelect.value === 'custom') {
+      this.$.secureDnsInput.focus();
+    }
     this.updateDnsPrefs_(
         this.secureDnsToggle_.value ? this.secureDnsRadio_ :
                                       settings.SecureDnsMode.OFF);
@@ -168,27 +178,47 @@ Polymer({
 
   /**
    * Updates the underlying secure DNS prefs based on the newly selected radio
-   * button. This should only be called from the HTML.
+   * button. This should only be called from the HTML. Focuses the custom text
+   * field if the custom option has been selected.
    * @param {!CustomEvent<{value: !settings.SecureDnsMode}>} event
    * @private
    */
   onRadioSelectionChanged_: function(event) {
+    if (event.detail.value === settings.SecureDnsMode.SECURE &&
+        this.$.secureResolverSelect.value === 'custom') {
+      this.$.secureDnsInput.focus();
+    }
     this.updateDnsPrefs_(event.detail.value);
   },
 
   /**
    * Helper method for updating the underlying secure DNS prefs based on the
-   * provided mode.
+   * provided mode and templates (if the latter is specified). The templates
+   * param should only be specified when the underlying prefs are being updated
+   * after a custom entry has been validated.
    * @param {!settings.SecureDnsMode} mode
+   * @param {string=} templates
    * @private
    */
-  updateDnsPrefs_: function(mode) {
+  updateDnsPrefs_: function(mode, templates = '') {
     switch (mode) {
       case settings.SecureDnsMode.SECURE:
         // If going to secure mode, set the templates pref first to prevent the
-        // stub resolver config from being momentarily invalid.
-        this.setPrefValue(
-            'dns_over_https.templates', this.$.secureResolverSelect.value);
+        // stub resolver config from being momentarily invalid. If the user has
+        // selected the custom dropdown option, only update the underlying
+        // prefs if the templates param was specified. If the templates param
+        // was not specified, the custom entry may be invalid or may not
+        // have passed validation yet, and we should not update either the
+        // underlying mode or templates prefs.
+        if (this.$.secureResolverSelect.value === 'custom') {
+          if (!templates) {
+            return;
+          }
+          this.setPrefValue('dns_over_https.templates', templates);
+        } else {
+          this.setPrefValue(
+              'dns_over_https.templates', this.$.secureResolverSelect.value);
+        }
         this.setPrefValue('dns_over_https.mode', mode);
         break;
       case settings.SecureDnsMode.AUTOMATIC:
@@ -204,26 +234,31 @@ Polymer({
   },
 
   /**
-   * Prevent interactions with the dropdown menu from causing the corresponding
-   * radio button to be selected.
+   * Prevent interactions with the dropdown menu or custom text field from
+   * causing the corresponding radio button to be selected.
    * @param {!Event} event
    * @private
    */
-  stopDropdownEventPropagation_: function(event) {
+  stopEventPropagation_: function(event) {
     event.stopPropagation();
   },
 
   /**
    * Updates the underlying secure DNS templates pref based on the selected
-   * resolver and displays the corresponding privacy policy.
+   * resolver and displays the corresponding privacy policy. Focuses the custom
+   * text field if the custom option has been selected.
    * @private
    */
   onDropdownSelectionChanged_: function() {
-    // If we're already in secure mode, update the templates pref.
+    // If we're already in secure mode, update the prefs.
     if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE) {
       this.updateDnsPrefs_(settings.SecureDnsMode.SECURE);
     }
     this.updatePrivacyPolicyLine_();
+
+    if (this.$.secureResolverSelect.value === 'custom') {
+      this.$.secureDnsInput.focus();
+    }
   },
 
   /**
@@ -287,11 +322,11 @@ Polymer({
    * @private
    */
   updateTemplatesRepresentation_: function(secureDnsTemplates) {
-    // If there is exactly one template and it is one of the dropdown options,
-    // select that option.
+    // If there is exactly one template and it is one of the non-custom dropdown
+    // options, select that option.
     if (secureDnsTemplates.length === 1) {
-      const resolver =
-          this.resolverOptions_.find(r => r.value === secureDnsTemplates[0]);
+      const resolver = this.resolverOptions_.slice(1).find(
+          r => r.value === secureDnsTemplates[0]);
       if (resolver) {
         this.$.secureResolverSelect.value = resolver.value;
         return;
@@ -300,6 +335,13 @@ Polymer({
 
     // Otherwise, select the custom option.
     this.$.secureResolverSelect.value = 'custom';
+
+    // Only update the custom input field if the templates are non-empty.
+    // Otherwise, we may be clearing a previous value that the user wishes to
+    // reuse.
+    if (secureDnsTemplates.length > 0) {
+      this.secureDnsInputValue_ = secureDnsTemplates.join(' ');
+    }
   },
 
   /**
@@ -326,5 +368,20 @@ Polymer({
     this.privacyPolicyString_ = loadTimeData.substituteString(
         loadTimeData.getString('secureDnsSecureDropdownModePrivacyPolicy'),
         resolver.policy);
+  },
+
+  /**
+   * Updates the underlying prefs if a custom entry was determined to be valid.
+   * If the custom entry was determined to be invalid, moves the selected radio
+   * button away from 'secure' if necessary.
+   * @param {!CustomEvent<!{text: string, isValid: boolean}>} event
+   * @private
+   */
+  onSecureDnsInputEvaluated_: function(event) {
+    if (event.detail.isValid) {
+      this.updateDnsPrefs_(this.secureDnsRadio_, event.detail.text);
+    } else if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE) {
+      this.secureDnsRadio_ = settings.SecureDnsMode.AUTOMATIC;
+    }
   },
 });

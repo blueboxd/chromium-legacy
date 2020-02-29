@@ -497,7 +497,8 @@ cr.define('policy', function() {
     onPoliciesReceived_(policyNames, policyValues) {
       /** @type {Array<!PolicyTableModel>} */
       const policyGroups = policyValues.map(value => {
-        const knownPolicyNames = policyNames[value.id].policyNames;
+        const knownPolicyNames =
+            policyNames[value.id] ? policyNames[value.id].policyNames : [];
         const knownPolicyNamesSet = new Set(knownPolicyNames);
         const receivedPolicyNames = Object.keys(value.policies);
         const allPolicyNames =

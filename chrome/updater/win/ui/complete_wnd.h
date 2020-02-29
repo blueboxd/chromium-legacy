@@ -7,7 +7,6 @@
 
 #include <windows.h>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/atl.h"
 #include "chrome/updater/win/ui/resources/resources.grh"
@@ -25,6 +24,9 @@ class CompleteWndEvents : public OmahaWndEvents {
 
 class CompleteWnd : public OmahaWnd {
  public:
+  CompleteWnd(const CompleteWnd&) = delete;
+  CompleteWnd& operator=(const CompleteWnd&) = delete;
+
   HRESULT Initialize() override;
 
   void SetEventSink(CompleteWndEvents* ev);
@@ -70,8 +72,6 @@ class CompleteWnd : public OmahaWnd {
   base::string16 help_url_;
   CompleteWndEvents* events_sink_ = nullptr;
   const DWORD control_classes_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompleteWnd);
 };
 
 }  // namespace ui

@@ -305,7 +305,7 @@ test(() => {
 
     var encoder = new mojo.internal.MessageV0Builder(42, 24).createEncoder(8);
     invalidExamples.forEach(function(invalid) {
-      assert_throws(new Error, function() {
+      assert_throws_js(Error, function() {
         method.apply(encoder, baseArgs.concat(invalid));
       });
     });

@@ -207,7 +207,8 @@ constexpr int kTrayBubbleInsetTabletModeCompensation = 8;
 constexpr int kTrayBubbleInsetHotseatCompensation = 16;
 
 // Constants used for the privacy screen toast.
-constexpr int kPrivacyScreenToastWidth = 256;
+constexpr int kPrivacyScreenToastMinWidth = 256;
+constexpr int kPrivacyScreenToastMaxWidth = 512;
 constexpr int kPrivacyScreenToastHeight = 64;
 constexpr int kPrivacyScreenToastMainLabelFontSize = 14;
 constexpr int kPrivacyScreenToastSubLabelFontSize = 13;

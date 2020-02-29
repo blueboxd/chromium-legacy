@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,15 +31,10 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/permission_message.h"
-#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -79,8 +73,6 @@ ExtensionInstallPrompt::g_last_prompt_type_for_tests =
 ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
       is_requesting_host_permissions_(false),
-      is_showing_details_for_retained_files_(false),
-      is_showing_details_for_retained_devices_(false),
       extension_(nullptr),
       average_rating_(0.0),
       rating_count_(0),
@@ -106,23 +98,6 @@ void ExtensionInstallPrompt::Prompt::AddPermissionSet(
 void ExtensionInstallPrompt::Prompt::AddPermissionMessages(
     const PermissionMessages& permissions) {
   prompt_permissions_.AddPermissionMessages(permissions);
-}
-
-void ExtensionInstallPrompt::Prompt::SetIsShowingDetails(
-    DetailsType type,
-    size_t index,
-    bool is_showing_details) {
-  switch (type) {
-    case PERMISSIONS_DETAILS:
-      prompt_permissions_.is_showing_details[index] = is_showing_details;
-      break;
-    case RETAINED_FILES_DETAILS:
-      is_showing_details_for_retained_files_ = is_showing_details;
-      break;
-    case RETAINED_DEVICES_DETAILS:
-      is_showing_details_for_retained_devices_ = is_showing_details;
-      break;
-  }
 }
 
 void ExtensionInstallPrompt::Prompt::SetWebstoreData(
@@ -395,10 +370,6 @@ size_t ExtensionInstallPrompt::Prompt::GetPermissionCount() const {
   return prompt_permissions_.permissions.size();
 }
 
-size_t ExtensionInstallPrompt::Prompt::GetPermissionsDetailsCount() const {
-  return prompt_permissions_.details.size();
-}
-
 base::string16 ExtensionInstallPrompt::Prompt::GetPermission(
     size_t index) const {
   CHECK_LT(index, prompt_permissions_.permissions.size());
@@ -409,20 +380,6 @@ base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsDetails(
     size_t index) const {
   CHECK_LT(index, prompt_permissions_.details.size());
   return prompt_permissions_.details[index];
-}
-
-bool ExtensionInstallPrompt::Prompt::GetIsShowingDetails(
-    DetailsType type, size_t index) const {
-  switch (type) {
-    case PERMISSIONS_DETAILS:
-      CHECK_LT(index, prompt_permissions_.is_showing_details.size());
-      return prompt_permissions_.is_showing_details[index];
-    case RETAINED_FILES_DETAILS:
-      return is_showing_details_for_retained_files_;
-    case RETAINED_DEVICES_DETAILS:
-      return is_showing_details_for_retained_devices_;
-  }
-  return false;
 }
 
 size_t ExtensionInstallPrompt::Prompt::GetRetainedFileCount() const {
@@ -447,10 +404,6 @@ base::string16 ExtensionInstallPrompt::Prompt::GetRetainedDeviceMessageString(
 
 bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeButton() const {
   return !retained_files_.empty() || !retained_device_messages_.empty();
-}
-
-bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {
-  return !retained_files_.empty();
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldDisplayWithholdingUI() const {

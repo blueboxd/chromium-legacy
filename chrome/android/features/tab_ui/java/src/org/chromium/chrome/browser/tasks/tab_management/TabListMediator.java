@@ -1095,7 +1095,7 @@ class TabListMediator {
             public int getSpanSize(int position) {
                 int itemType = mModel.get(position).type;
 
-                if (itemType == TabProperties.UiType.MESSAGE) return spanCount;
+                if (itemType == TabProperties.UiType.MESSAGE) return manager.getSpanCount();
                 return 1;
             }
         });

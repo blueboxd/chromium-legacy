@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/patcher.h"
 
@@ -16,14 +15,13 @@ namespace updater {
 class PatcherFactory : public update_client::PatcherFactory {
  public:
   PatcherFactory();
+  PatcherFactory(const PatcherFactory&) = delete;
+  PatcherFactory& operator=(const PatcherFactory&) = delete;
 
   scoped_refptr<update_client::Patcher> Create() const override;
 
  protected:
   ~PatcherFactory() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PatcherFactory);
 };
 
 }  // namespace updater

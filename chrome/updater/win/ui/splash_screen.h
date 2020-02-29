@@ -8,7 +8,6 @@
 #include <windows.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/atl.h"
@@ -26,7 +25,10 @@ class SplashScreen : public CAxDialogImpl<SplashScreen>,
   static constexpr int IDD = IDD_PROGRESS;
 
   explicit SplashScreen(const base::string16& bundle_name);
+  SplashScreen(const SplashScreen&) = delete;
+  SplashScreen& operator=(const SplashScreen&) = delete;
   ~SplashScreen() override;
+
   void Show();
 
   // Does alpha blending and closese the window.
@@ -92,8 +94,6 @@ class SplashScreen : public CAxDialogImpl<SplashScreen>,
 
   // Called when the window is destroyed.
   base::OnceClosure on_close_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(SplashScreen);
 };
 
 }  // namespace ui

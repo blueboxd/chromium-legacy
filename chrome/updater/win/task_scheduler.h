@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 
 namespace base {
 class CommandLine;
@@ -86,6 +85,9 @@ class TaskScheduler {
   };
 
   static std::unique_ptr<TaskScheduler> CreateInstance();
+
+  TaskScheduler(const TaskScheduler&) = delete;
+  TaskScheduler& operator=(const TaskScheduler&) = delete;
   virtual ~TaskScheduler() {}
 
   // Identify whether the task is registered or not.
@@ -127,8 +129,6 @@ class TaskScheduler {
 
  protected:
   TaskScheduler();
-
-  DISALLOW_COPY_AND_ASSIGN(TaskScheduler);
 };
 
 }  // namespace updater

@@ -12,6 +12,7 @@
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
+<link rel="import" href="secure_dns_input.html">
 
 <dom-module id="settings-secure-dns">
   <template>
@@ -44,7 +45,7 @@
         <div class="list-item">
           <div>$i18n{secureDnsSecureDropdownModeDescription}</div>
           <select id="secureResolverSelect" class="md-select"
-              on-click="stopDropdownEventPropagation_"
+              on-click="stopEventPropagation_"
               on-change="onDropdownSelectionChanged_">
             <template is="dom-repeat" items="[[resolverOptions_]]">
               <option value="[[item.value]]">[[item.name]]</option>
@@ -54,6 +55,11 @@
         <div id="privacyPolicy" class="secondary"
             inner-h-t-m-l="[[privacyPolicyString_]]"
             hidden="[[!showPrivacyPolicyLine_]]"></div>
+        <secure-dns-input id="secureDnsInput" value="[[secureDnsInputValue_]]"
+            hidden="[[showPrivacyPolicyLine_]]"
+            on-value-update="onSecureDnsInputEvaluated_"
+            on-click="stopEventPropagation_">
+        </secure-dns-input>
       </cr-radio-button>
     </cr-radio-group>
   </template>

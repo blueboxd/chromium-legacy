@@ -844,6 +844,12 @@
       <structure name="IDR_SETTINGS_SECURE_DNS_JS"
                  file="privacy_page/secure_dns.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SECURE_DNS_INPUT_HTML"
+                 file="privacy_page/secure_dns_input.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SECURE_DNS_INPUT_JS"
+                 file="privacy_page/secure_dns_input.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SECURITY_PAGE_HTML"
                  file="privacy_page/security_page.html"
                  type="chrome_html"

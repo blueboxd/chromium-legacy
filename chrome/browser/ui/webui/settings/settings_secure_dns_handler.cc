@@ -18,6 +18,7 @@
 #include "components/country_codes/country_codes.h"
 #include "content/public/browser/web_ui.h"
 #include "net/dns/public/doh_provider_list.h"
+#include "net/dns/public/util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chrome_browser_net::SecureDnsUiManagementMode;
@@ -84,6 +85,11 @@ void SecureDnsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getSecureDnsSetting",
       base::BindRepeating(&SecureDnsHandler::HandleGetSecureDnsSetting,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "validateCustomDnsEntry",
+      base::BindRepeating(&SecureDnsHandler::HandleValidateCustomDnsEntry,
                           base::Unretained(this)));
 }
 
@@ -166,6 +172,28 @@ void SecureDnsHandler::HandleGetSecureDnsSetting(const base::ListValue* args) {
   CHECK_EQ(1u, args->GetList().size());
   const base::Value& callback_id = args->GetList()[0];
   ResolveJavascriptCallback(callback_id, *CreateSecureDnsSettingDict());
+}
+
+void SecureDnsHandler::HandleValidateCustomDnsEntry(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  std::string server_templates;
+  CHECK(args->Get(0, &callback_id));
+  CHECK(args->GetString(1, &server_templates));
+
+  // At least one template must be valid for the entry to be considered valid.
+  std::string server_method;
+  for (const std::string& server_template :
+       SplitString(server_templates, " ", base::TRIM_WHITESPACE,
+                   base::SPLIT_WANT_NONEMPTY)) {
+    if (net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
+      ResolveJavascriptCallback(*callback_id, base::Value(true));
+      return;
+    }
+  }
+  ResolveJavascriptCallback(*callback_id, base::Value(false));
+  return;
 }
 
 void SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript() {

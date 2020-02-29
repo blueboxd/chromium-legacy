@@ -71,7 +71,7 @@ promise_test(function(t) {
       }).then(() => {
         reader.releaseLock();
         assert_true(response.bodyUsed);
-        assert_throws(new TypeError, () => { response.clone(); });
+        assert_throws_js(TypeError, () => { response.clone(); });
       });
   }, 'Clone after reading');
 

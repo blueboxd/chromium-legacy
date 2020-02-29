@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/atl.h"
@@ -39,6 +38,8 @@ class OmahaWnd : public CAxDialogImpl<OmahaWnd>,
  public:
   const int IDD;
 
+  OmahaWnd(const OmahaWnd&) = delete;
+  OmahaWnd& operator=(const OmahaWnd&) = delete;
   ~OmahaWnd() override;
 
   virtual HRESULT Initialize();
@@ -148,8 +149,6 @@ class OmahaWnd : public CAxDialogImpl<OmahaWnd>,
   WTL::CFont error_font_;
 
   CustomProgressBarCtrl progress_bar_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmahaWnd);
 };
 
 // Registers the specified common control classes from the common control DLL.

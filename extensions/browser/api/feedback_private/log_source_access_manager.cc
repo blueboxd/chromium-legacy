@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -74,10 +75,10 @@ void AnonymizeResults(
 LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
     : context_(context),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      task_runner_for_anonymizer_(base::CreateSequencedTaskRunner(
+      task_runner_for_anonymizer_(base::ThreadPool::CreateSequencedTaskRunner(
           // User visible as the feedback_api is used by the Chrome (OS)
           // feedback extension while the user may be looking at a spinner.
-          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+          {base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       anonymizer_container_(
           base::MakeRefCounted<feedback::AnonymizerToolContainer>(

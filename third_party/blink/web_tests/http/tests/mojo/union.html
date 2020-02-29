@@ -20,20 +20,20 @@ test(() => {
   var u = new mojo.test.PodUnion({fUint64: 64});
   assert_equals(u.fUint64, 64);
   assert_equals(u.$tag, mojo.test.PodUnion.Tags.fUint64);
-  assert_throws(new ReferenceError, function() {var v = u.fUint32;});
+  assert_throws_js(ReferenceError, function() {var v = u.fUint32;});
 
-  assert_throws(new TypeError, function() {
+  assert_throws_js(TypeError, function() {
     var u = new mojo.test.PodUnion({
       fUint64: 64,
       fUint32: 32,
     });
   });
 
-  assert_throws(new ReferenceError, function() {
+  assert_throws_js(ReferenceError, function() {
     var u = new mojo.test.PodUnion({ foo: 64 });
   });
 
-  assert_throws(new TypeError, function() {
+  assert_throws_js(TypeError, function() {
     var u = new mojo.test.PodUnion([1,2,3,4]);
   });
 }, 'constructors');
@@ -104,7 +104,7 @@ test(() => {
   // Encoding a union with no member set is an error.
   var s = new mojo.test.WrapperStruct({
     objectUnion: new mojo.test.ObjectUnion()});
-  assert_throws(new TypeError, function() {
+  assert_throws_js(TypeError, function() {
     structEncodeDecode(s);
   });
 }, 'basic encoding');

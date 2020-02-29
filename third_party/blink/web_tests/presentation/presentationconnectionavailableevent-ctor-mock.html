@@ -10,13 +10,13 @@
 <script>
 
 test(function() {
-  assert_throws(new TypeError, () => {
+  assert_throws_js(TypeError, () => {
     new PresentationConnectionAvailableEvent('connectionavailable')
   });
-  assert_throws(new TypeError, () => {
+  assert_throws_js(TypeError, () => {
     new PresentationConnectionAvailableEvent('connectionavailable', {})
   });
-  assert_throws(new TypeError, () => {
+  assert_throws_js(TypeError, () => {
     new PresentationConnectionAvailableEvent('connectionavailable', { connection: null })
   });
 }, "Test that the PresentationConnectionAvailableEvent ctor requires connection parameter.")

@@ -19,7 +19,7 @@ const int kFocusRingBuffer = 5;
 const std::string& UrlForContent() {
   static const base::NoDestructor<std::string> url(
       std::string(EXTENSION_PREFIX) + extension_misc::kSwitchAccessExtensionId +
-      "/menu_panel.html");
+      "/switch_access/menu_panel.html");
   return *url;
 }
 

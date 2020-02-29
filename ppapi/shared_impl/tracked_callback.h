@@ -95,7 +95,7 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // far, e.g. whether the callback has been aborted. If the callback hasn't
   // been aborted the return value of the task will become the callback result.
   // The task is always called on the same thread as the callback to the plugin.
-  typedef base::Callback<int32_t(int32_t /* result */)> CompletionTask;
+  typedef base::RepeatingCallback<int32_t(int32_t /* result */)> CompletionTask;
 
   // Sets a task that is run just before calling back into the plugin. This
   // should only be called once. Note that the CompletionTask always runs while

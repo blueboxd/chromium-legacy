@@ -14817,6 +14817,33 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="Periodic Background Sync"/>
 </enum>
 
+<enum name="DevToolsKeyboardShortcutAction">
+  <int value="0" label="Other shortcut"/>
+  <int value="1" label="commandMenu.show"/>
+  <int value="2" label="console.clear"/>
+  <int value="3" label="console.show"/>
+  <int value="4" label="debugger.step"/>
+  <int value="5" label="debugger.step-into"/>
+  <int value="6" label="debugger.step-out"/>
+  <int value="7" label="debugger.step-over"/>
+  <int value="8" label="debugger.toggle-breakpoint"/>
+  <int value="9" label="debugger.toggle-breakpoint-enabled"/>
+  <int value="10" label="debugger.toggle-pause"/>
+  <int value="11" label="elements.edit-as-html"/>
+  <int value="12" label="elements.hide-element"/>
+  <int value="13" label="elements.redo"/>
+  <int value="14" label="elements.toggle-element-search"/>
+  <int value="15" label="elements.undo"/>
+  <int value="16" label="main.search-in-panel.find"/>
+  <int value="17" label="main.toggle-drawer"/>
+  <int value="18" label="network.hide-request-details"/>
+  <int value="19" label="network.search"/>
+  <int value="20" label="network.toggle-recording"/>
+  <int value="21" label="quickOpen.show"/>
+  <int value="22" label="settings.show"/>
+  <int value="23" label="sources.search"/>
+</enum>
+
 <enum name="DevToolsPanel">
   <int value="1" label="Elements"/>
   <int value="2" label="Resources"/>

@@ -271,9 +271,6 @@ void InotifyReaderThreadDelegate::ThreadMain() {
     FD_ZERO(&rfds);
     FD_SET(inotify_fd_, &rfds);
 
-    ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                            BlockingType::WILL_BLOCK);
-
     // Wait until some inotify events are available.
     int select_result =
         HANDLE_EINTR(select(inotify_fd_ + 1, &rfds, nullptr, nullptr, nullptr));

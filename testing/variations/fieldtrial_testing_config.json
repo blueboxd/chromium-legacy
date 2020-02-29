@@ -2950,6 +2950,25 @@
             ]
         }
     ],
+    "LoadingPredictorDisregardAlwaysAccessesNetwork": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LoadingPredictorDisregardAlwaysAccessesNetwork"
+                    ]
+                }
+            ]
+        }
+    ],
     "LoadingPredictorTableConfig": [
         {
             "platforms": [
@@ -6479,6 +6498,23 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebUITabStrip": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebUITabStrip"
                     ]
                 }
             ]

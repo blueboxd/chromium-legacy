@@ -13,6 +13,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'setBlockAutoplayEnabled',
       'getSecureDnsResolverList',
       'getSecureDnsSetting',
+      'validateCustomDnsEntry',
     ]);
 
     /** @type {!MetricsReporting} */
@@ -36,6 +37,12 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
      * @private
      */
     this.resolverList_;
+
+    /**
+     * @type {boolean}
+     * @private
+     */
+    this.isEntryValid_;
   }
 
   /** @override */
@@ -83,5 +90,19 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   getSecureDnsSetting() {
     this.methodCalled('getSecureDnsSetting');
     return Promise.resolve(this.secureDnsSetting);
+  }
+
+  /**
+   * Sets the return value for the next validateCustomDnsEntry call.
+   * @param {boolean} isEntryValid
+   */
+  setIsEntryValid(isEntryValid) {
+    this.isEntryValid_ = isEntryValid;
+  }
+
+  /** @override */
+  validateCustomDnsEntry() {
+    this.methodCalled('validateCustomDnsEntry');
+    return Promise.resolve(this.isEntryValid_);
   }
 }

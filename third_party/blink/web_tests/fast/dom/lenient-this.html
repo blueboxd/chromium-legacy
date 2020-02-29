@@ -12,10 +12,10 @@ test(function() {
 
   // GlobalEventHandlers.onmousedown is NOT [LenientThis].
   assert_equals(document.onmousedown, null, "|this| is an appropriate object.");
-  assert_throws(new TypeError, function() {
+  assert_throws_js(TypeError, function() {
     Document.prototype.onmousedown;
   }, "Document.prototype is invalid as |this|.");
-  assert_throws(new TypeError, function() {
+  assert_throws_js(TypeError, function() {
     Document.prototype.onmousedown = 'foo';
   }, "Document.prototype is invalid as |this|.");
 }, "Test [LenientThis] and non-[LenientThis].");

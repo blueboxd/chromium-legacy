@@ -530,6 +530,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Performs the specified plugin action on the node at the given location.
   void PluginActionAt(const gfx::Point& location,
                       mojom::blink::PluginActionType action) override;
+  void SetInitialFocus(bool reverse) override;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

@@ -606,6 +606,10 @@ interface LocalMainFrame {
   // the given point.
   PluginActionAt(gfx.mojom.Point location,
                  blink.mojom.PluginActionType action);
+
+  // Tells the renderer to focus the first (last if reverse is true) focusable
+  // node.
+  SetInitialFocus(bool reverse);
 };
 
 // Implemented in Browser, this interface defines main-frame-specific methods

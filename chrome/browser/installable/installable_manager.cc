@@ -268,6 +268,11 @@ bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
   if (url.scheme() == content::kChromeUIScheme)
     return true;
 
+  // chrome-untrusted:// URLs are shipped with Chrome, so they are considered
+  // secure in this context.
+  if (url.scheme() == content::kChromeUIUntrustedScheme)
+    return true;
+
   if (IsOriginConsideredSecure(url))
     return true;
 

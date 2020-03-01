@@ -4,10 +4,6 @@
 
 // <include src="saml_timestamps.js">
 
-// clang-format off;
-// #import {decodeTimestamp} from './saml_timestamps.m.js';
-// clang-format on
-
 /**
  * @fileoverview A utility for extracting password information from SAML
  * authorization response. This requires that the SAML IDP administrator
@@ -15,7 +11,7 @@
  */
 
 cr.define('samlPasswordAttributes', function() {
-  /* #ignore */ 'use strict';
+  'use strict';
 
   /** @const @private {number} The shortest XML string that could be useful. */
   const MIN_SANE_XML_LENGTH = 100;
@@ -67,7 +63,7 @@ cr.define('samlPasswordAttributes', function() {
    * could be extracted, formatted as strings. Some or all of the strings can
    * be empty if some or all of the attributes could not be extracted.
    */
-  /* #export */ function readPasswordAttributes(xmlStr) {
+  function readPasswordAttributes(xmlStr) {
     // Don't throw any exception that could cause login to fail - extracting
     // these attributes can fail, but login should not be interrupted.
     try {
@@ -139,7 +135,7 @@ cr.define('samlPasswordAttributes', function() {
    * saml_password_attributes.cc must also be changed.
    * @export @final
    */
-  /* #export */ class PasswordAttributes {
+  class PasswordAttributes {
     constructor(modifiedTime, expirationTime, passwordChangeUrl) {
       /** @type {string} Password last-modified timestamp. */
       this.modifiedTime = modifiedTime;
@@ -157,7 +153,7 @@ cr.define('samlPasswordAttributes', function() {
   /** An immutable and empty PasswordAttributes struct. */
   PasswordAttributes.EMPTY = new PasswordAttributes('', '', '');
 
-  // #cr_define_end
+  // Public functions:
   return {
     readPasswordAttributes: readPasswordAttributes,
     PasswordAttributes: PasswordAttributes,

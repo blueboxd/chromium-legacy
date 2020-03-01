@@ -494,6 +494,35 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerAdditionalSearchTermsTest,
       });
 }
 
+class SystemWebAppManagerChromeUntrustedTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerChromeUntrustedTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpChromeUntrustedApp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerChromeUntrustedTest, Install) {
+  Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
+  AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
+  EXPECT_EQ(app_id, app_browser->app_controller()->GetAppId());
+  EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
+
+  Profile* profile = app_browser->profile();
+  AppRegistrar& registrar =
+      WebAppProviderBase::GetProviderBase(profile)->registrar();
+
+  EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
+  EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));
+  EXPECT_TRUE(registrar.HasExternalAppWithInstallSource(
+      app_id, web_app::ExternalInstallSource::kSystemInstalled));
+  EXPECT_EQ(registrar.FindAppWithUrlInScope(
+                GURL("chrome-untrusted://test-system-app/")),
+            app_id);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     PermissionContext,
     SystemWebAppManagerLaunchFilesBrowserTest,

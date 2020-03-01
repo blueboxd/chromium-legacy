@@ -26,7 +26,6 @@ if (closure_compile) {
         "discards:closure_compile",
         "download_internals:closure_compile",
         "downloads:closure_compile",
-        "gaia_auth_host:closure_compile",
         "history:closure_compile",
         "local_ntp:closure_compile",
         "local_state:closure_compile",
@@ -135,27 +134,6 @@ if (!is_android) {
       "grit/component_extension_resources_map.cc",
       "grit/component_extension_resources_map.h",
       "component_extension_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
-  grit("gaia_auth_host_resources") {
-    # The .grd contains references to generated files.
-    source_is_generated = true
-    grit_flags = [
-      "-E",
-      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-    ]
-
-    source = "gaia_auth_host/gaia_auth_host_resources.grd"
-    deps = [ "//chrome/browser/resources/gaia_auth_host:closure_compile" ]
-
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/gaia_auth_host_resources.h",
-      "grit/gaia_auth_host_resources_map.cc",
-      "grit/gaia_auth_host_resources_map.h",
-      "gaia_auth_host_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

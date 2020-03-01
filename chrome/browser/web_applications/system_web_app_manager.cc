@@ -109,7 +109,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
 ExternalInstallOptions CreateInstallOptionsForSystemApp(
     const SystemAppInfo& info,
     bool force_update) {
-  DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
+  DCHECK(info.install_url.scheme() == content::kChromeUIScheme ||
+         info.install_url.scheme() == content::kChromeUIUntrustedScheme);
 
   ExternalInstallOptions install_options(
       info.install_url, DisplayMode::kStandalone,

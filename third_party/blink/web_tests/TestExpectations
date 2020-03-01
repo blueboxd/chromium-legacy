@@ -6711,6 +6711,9 @@ crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Pass Timeout ]
 crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Pass Timeout ]
 crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Pass Timeout ]
 
+# Temporarily disable promise realm tests while a V8 bug is being fixed.
+crbug.com/v8/10200 external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-job-queue/promise-job-entry-different-function-realm.html [ Skip ]
+
 # Sheriff 2020-02-28
 crbug.com/1057036 [ Mac ] virtual/controls-refresh/calendar-picker/date-picker-ax.html [ Pass Timeout ]
 crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.html [ Pass Timeout ]

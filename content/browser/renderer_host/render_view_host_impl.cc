@@ -784,7 +784,9 @@ void RenderViewHostImpl::RenderWidgetLostFocus() {
 }
 
 void RenderViewHostImpl::SetInitialFocus(bool reverse) {
-  Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())
+      ->GetAssociatedLocalMainFrame()
+      ->SetInitialFocus(reverse);
 }
 
 void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {

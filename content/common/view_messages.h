@@ -104,11 +104,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     content::WebPreferences)
 
-// Tells the renderer to focus the first (last if reverse is true) focusable
-// node.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
-                    bool /* reverse */)
-
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)

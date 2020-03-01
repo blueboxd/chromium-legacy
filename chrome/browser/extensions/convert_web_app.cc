@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -207,7 +208,25 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                               web_app.theme_color.value()));
   }
 
-  if (!web_app.scope.is_empty()) {
+  // Currently Bookmark Apps don't support chrome-untrusted:// URLHandlers.
+  // Adding support for chrome-untrusted:// to URLHandlers would involve adding
+  // chrome-untrusted:// as a valid scheme for Extensions which has unfortunate
+  // side effects, like making chrome-untrusted:// URLs scriptable. Since
+  // Bookmark Apps are being deprecated, just don't add URLHandlers instead of
+  // adding support for chrome-untrusted:// and dealing with the side-effects.
+#if DCHECK_IS_ON()
+  // Not setting URLHandlers for chrome-untrusted:// apps means that the app's
+  // scope will fallback to the parent directory of the start URL, which in the
+  // case of all SWAs today is equal to the scope they set. This DCHECK ensure
+  // we notice if this changes.
+  if (!web_app.scope.is_empty() &&
+      web_app.app_url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    DCHECK_EQ(web_app.app_url.GetWithoutFilename(), web_app.scope);
+  }
+#endif  // DCHECK_IS_ON()
+
+  if (!web_app.scope.is_empty() &&
+      !web_app.app_url.SchemeIs(content::kChromeUIUntrustedScheme)) {
     root->SetDictionary(keys::kUrlHandlers, CreateURLHandlersForBookmarkApp(
                                                 web_app.scope, web_app.title));
   }

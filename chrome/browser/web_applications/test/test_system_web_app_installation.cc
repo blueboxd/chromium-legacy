@@ -8,7 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_url_data_source.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
@@ -16,6 +18,24 @@
 namespace web_app {
 
 namespace {
+
+enum class WebUIType {
+  // kChrome WebUIs registration works by creating a WebUIControllerFactory
+  // which then register a URLDataSource to serve resources.
+  kChrome,
+  // kChromeUntrusted WebUIs don't have WebUIControllers and their
+  // URLDataSources need to be registered directly.
+  kChromeUntrusted,
+};
+
+WebUIType GetWebUIType(const GURL& url) {
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return WebUIType::kChrome;
+  if (url.SchemeIs(content::kChromeUIUntrustedScheme))
+    return WebUIType::kChromeUntrusted;
+  NOTREACHED();
+  return WebUIType::kChrome;
+}
 
 // Assumes url is like "chrome://web-app/index.html". Returns "web-app";
 // This function is needed because at the time TestSystemWebInstallation is
@@ -35,13 +55,39 @@ std::string GetDataSourceNameFromSystemAppInstallUrl(const GURL& url) {
 
   return spec.substr(p, pos_after_host - p);
 }
+
+// Returns the scheme and host from an install URL e.g. for
+// chrome-untrusted://web-app/index.html this returns
+// chrome-untrusted://web-app/.
+std::string GetChromeUntrustedDataSourceNameFromInstallUrl(const GURL& url) {
+  DCHECK(url.SchemeIs(content::kChromeUIUntrustedScheme));
+
+  const std::string& spec = url.spec();
+  size_t p = strlen(content::kChromeUIUntrustedScheme);
+  DCHECK_EQ("://", spec.substr(p, 3));
+  p += 3;
+
+  size_t pos_after_host = spec.find("/", p);
+  DCHECK(pos_after_host != std::string::npos);
+
+  // The Data Source name must include "/" after the host.
+  ++pos_after_host;
+  return spec.substr(0, pos_after_host);
+}
+
 }  // namespace
 
 TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
                                                            SystemAppInfo info)
-    : type_(type),
-      web_ui_controller_factory_(
-          GetDataSourceNameFromSystemAppInstallUrl(info.install_url)) {
+    : type_(type) {
+  if (GetWebUIType(info.install_url) == WebUIType::kChrome) {
+    web_ui_controller_factory_ =
+        std::make_unique<TestSystemWebAppWebUIControllerFactory>(
+            GetDataSourceNameFromSystemAppInstallUrl(info.install_url));
+    content::WebUIControllerFactory::RegisterFactory(
+        web_ui_controller_factory_.get());
+  }
+
   test_web_app_provider_creator_ = std::make_unique<TestWebAppProviderCreator>(
       base::BindOnce(&TestSystemWebAppInstallation::CreateWebAppProvider,
                      // base::Unretained is safe here. This callback is called
@@ -50,12 +96,13 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
                      // same lifecycle as the test, it won't be destroyed before
                      // the test finishes.
                      base::Unretained(this), info));
-  content::WebUIControllerFactory::RegisterFactory(&web_ui_controller_factory_);
 }
 
 TestSystemWebAppInstallation::~TestSystemWebAppInstallation() {
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(
-      &web_ui_controller_factory_);
+  if (web_ui_controller_factory_.get()) {
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(
+        web_ui_controller_factory_.get());
+  }
 }
 
 // static
@@ -104,10 +151,25 @@ TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms() {
       SystemAppType::SETTINGS, std::move(app_info)));
 }
 
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpChromeUntrustedApp() {
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS,
+      SystemAppInfo("Test",
+                    GURL("chrome-untrusted://test-system-app/pwa.html"))));
+}
+
 std::unique_ptr<KeyedService>
 TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
                                                    Profile* profile) {
   profile_ = profile;
+  if (GetWebUIType(info.install_url) == WebUIType::kChromeUntrusted) {
+    web_app::AddTestURLDataSource(
+        GetChromeUntrustedDataSourceNameFromInstallUrl(info.install_url),
+        profile);
+  }
+
   auto provider = std::make_unique<TestWebAppProvider>(profile);
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
   system_web_app_manager->SetSystemAppsForTesting({{type_, info}});
@@ -146,7 +208,7 @@ SystemAppType TestSystemWebAppInstallation::GetType() {
 }
 
 void TestSystemWebAppInstallation::SetManifest(std::string manifest) {
-  web_ui_controller_factory_.set_manifest(std::move(manifest));
+  web_ui_controller_factory_->set_manifest(std::move(manifest));
 }
 
 }  // namespace web_app

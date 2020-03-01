@@ -411,7 +411,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnMoveOrResizeStarted();
   void OnExitFullscreen();
   void OnSetHistoryOffsetAndLength(int history_offset, int history_length);
-  void OnSetInitialFocus(bool reverse);
   void OnSetRendererPrefs(
       const blink::mojom::RendererPreferences& renderer_prefs);
   void OnSuppressDialogsUntilSwapOut();

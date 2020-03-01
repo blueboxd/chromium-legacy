@@ -883,7 +883,7 @@ TEST_P(VisualViewportTest, TestTextSelectionHandles) {
   NavigateTo(base_url_ + "pinch-viewport-input-field.html");
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  WebView()->SetInitialFocus(false);
+  To<LocalFrame>(WebView()->GetPage()->MainFrame())->SetInitialFocus(false);
 
   WebRect original_anchor;
   WebRect original_focus;
@@ -1700,7 +1700,7 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
   RegisterMockedHttpURLLoad("pinch-viewport-input-field.html");
   NavigateTo(base_url_ + "pinch-viewport-input-field.html");
 
-  WebView()->SetInitialFocus(false);
+  To<LocalFrame>(WebView()->GetPage()->MainFrame())->SetInitialFocus(false);
   Element* input_element = WebView()->FocusedElement();
 
   IntRect bounds = input_element->GetLayoutObject()->AbsoluteBoundingBoxRect();
@@ -1729,7 +1729,7 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
   NavigateTo(base_url_ + "viewport-select.html");
 
   ASSERT_EQ(2.0f, WebView()->PageScaleFactor());
-  WebView()->SetInitialFocus(false);
+  To<LocalFrame>(WebView()->GetPage()->MainFrame())->SetInitialFocus(false);
   Element* element = WebView()->FocusedElement();
   EXPECT_FALSE(element->VisibleBoundsInVisualViewport().IsEmpty());
 

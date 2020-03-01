@@ -11,9 +11,8 @@
 
 /**
  * Creates a new WebviewEventManager.
- * @constructor
  */
-/* #export */ function WebviewEventManager() {
+function WebviewEventManager() {
   this.unbindWebviewCleanupFunctions_ = [];
 }
 
@@ -21,9 +20,10 @@ WebviewEventManager.prototype = {
   /**
    * Adds a EventListener to |eventTarget| and adds a clean-up function so we
    * can remove the listener in unbindFromWebview.
-   * @param {Object} eventTarget the object to add the listener to
+   * @param {Object} webview the object to add the listener to
    * @param {string} type the event type
    * @param {Function} listener the event listener
+   * @private
    */
   addEventListener(eventTarget, type, listener) {
     eventTarget.addEventListener(type, listener);
@@ -34,12 +34,10 @@ WebviewEventManager.prototype = {
   /**
    * Adds a listener to |webRequestEvent| and adds a clean-up function so we can
    * remove the listener in unbindFromWebview.
-   * @param {Object} webRequestEvent the object to add the listener to.
+   * @param {Object} webRequestEvent the object to add the listener to
+   * @param {string} type the event type
    * @param {Function} listener the event listener
-   * @param {RequestFilter} filter the object describing filters to apply to
-   *     webRequest events.
-   * @param {?Object} extraInfoSpec the object to pass additional event-specific
-   *     instructions.
+   * @private
    */
   addWebRequestEventListener(webRequestEvent, listener, filter, extraInfoSpec) {
     webRequestEvent.addListener(listener, filter, extraInfoSpec);
@@ -49,6 +47,7 @@ WebviewEventManager.prototype = {
 
   /**
    * Unbinds this Authenticator from the currently bound webview.
+   * @private
    */
   removeAllListeners() {
     for (let i = 0; i < this.unbindWebviewCleanupFunctions_.length; i++) {

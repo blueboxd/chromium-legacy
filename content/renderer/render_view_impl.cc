@@ -1117,12 +1117,6 @@ void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
   history_list_length_ = history_length;
 }
 
-void RenderViewImpl::OnSetInitialFocus(bool reverse) {
-  if (!GetWebView())
-    return;
-  GetWebView()->SetInitialFocus(reverse);
-}
-
 void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
   GetWebView()->AudioStateChanged(is_audio_playing);
 }
@@ -1174,7 +1168,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)

@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/test/test_system_web_app_web_ui_controller_factory.h"
 
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_url_data_source.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -12,68 +13,15 @@
 
 namespace {
 
-constexpr char kSystemAppManifestText[] =
-    R"({
-      "name": "Test System App",
-      "display": "standalone",
-      "icons": [
-        {
-          "src": "icon-256.png",
-          "sizes": "256x256",
-          "type": "image/png"
-        }
-      ],
-      "start_url": "/pwa.html",
-      "theme_color": "#00FF00"
-    })";
-
-constexpr char kPwaHtml[] =
-    R"(
-<html>
-<head>
-  <link rel="manifest" href="manifest.json">
-  <script>
-    navigator.serviceWorker.register('sw.js');
-  </script>
-</head>
-</html>
-)";
-
-constexpr char kSwJs[] = "globalThis.addEventListener('fetch', event => {});";
-
 // WebUIController that serves a System PWA.
 class TestSystemWebAppWebUIController : public content::WebUIController {
  public:
   explicit TestSystemWebAppWebUIController(std::string source_name,
-                                           const std::string& manifest,
+                                           const std::string* manifest,
                                            content::WebUI* web_ui)
       : WebUIController(web_ui) {
-    content::WebUIDataSource* data_source =
-        content::WebUIDataSource::Create(source_name);
-    data_source->AddResourcePath("icon-256.png", IDR_PRODUCT_LOGO_256);
-    data_source->SetRequestFilter(
-        base::BindRepeating([](const std::string& path) {
-          return path == "manifest.json" || path == "pwa.html";
-        }),
-        base::BindRepeating(
-            [](const std::string& manifest, const std::string& id,
-               content::WebUIDataSource::GotDataCallback callback) {
-              scoped_refptr<base::RefCountedString> ref_contents(
-                  new base::RefCountedString);
-              if (id == "manifest.json")
-                ref_contents->data() = manifest;
-              else if (id == "pwa.html")
-                ref_contents->data() = kPwaHtml;
-              else if (id == "sw.js")
-                ref_contents->data() = kSwJs;
-              else
-                NOTREACHED();
-
-              std::move(callback).Run(ref_contents);
-            },
-            manifest));
-    content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                  data_source);
+    web_app::AddTestURLDataSource(
+        source_name, manifest, web_ui->GetWebContents()->GetBrowserContext());
   }
   TestSystemWebAppWebUIController(const TestSystemWebAppWebUIController&) =
       delete;
@@ -85,14 +33,15 @@ class TestSystemWebAppWebUIController : public content::WebUIController {
 
 TestSystemWebAppWebUIControllerFactory::TestSystemWebAppWebUIControllerFactory(
     std::string source_name)
-    : source_name_(std::move(source_name)), manifest_(kSystemAppManifestText) {}
+    : source_name_(std::move(source_name)),
+      manifest_(web_app::kSystemAppManifestText) {}
 
 std::unique_ptr<content::WebUIController>
 TestSystemWebAppWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
     const GURL& url) {
   return std::make_unique<TestSystemWebAppWebUIController>(source_name_,
-                                                           manifest_, web_ui);
+                                                           &manifest_, web_ui);
 }
 
 content::WebUI::TypeID TestSystemWebAppWebUIControllerFactory::GetWebUIType(

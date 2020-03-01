@@ -2017,6 +2017,13 @@ void LocalFrame::PluginActionAt(const gfx::Point& location,
   NOTREACHED();
 }
 
+void LocalFrame::SetInitialFocus(bool reverse) {
+  GetDocument()->ClearFocusedElement();
+  GetPage()->GetFocusController().SetInitialFocus(
+      reverse ? mojom::blink::FocusType::kBackward
+              : mojom::blink::FocusType::kForward);
+}
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(

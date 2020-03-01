@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e96b7efd28d7284eb090dab1408e0083dc06353e',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '594e477685268094783deab7522e479b463a8760',
       'condition': 'checkout_ios',
   },
 
@@ -933,7 +933,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '8e8c13b9e821f4590761487c4e0b96f432eaf051',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '9606a5cb9995721719a912230fb06c2e29041282',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '56364b6b602696c021349794a8d39744a1052afc',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1504,7 +1504,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6570c64bcabd56f7243887932c99013a9c8776e5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e556c65141509dd937f83ac69f20b1a9cd5e5edb',
     'condition': 'checkout_src_internal',
   },
 

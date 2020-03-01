@@ -34,8 +34,8 @@ namespace extensions {
 namespace {
 
 const char* const kTestFeatures[] = {
-    "test1", "test2", "test3",   "test4",   "test5",
-    "test6", "test7", "parent1", "parent2", "parent3",
+    "test1", "test2", "test3",  "test4",  "test5",   "test6",   "test7",
+    "test8", "test9", "test10", "test11", "parent1", "parent2", "parent3",
 };
 
 const char* const kAliasTestApis[] = {"alias_api_source"};
@@ -157,6 +157,26 @@ TEST(ExtensionAPITest, APIFeatures) {
     { "test7.foo", true, Feature::WEB_PAGE_CONTEXT, GURL("http://foo.com") },
     { "test7.bar", false, Feature::WEB_PAGE_CONTEXT, GURL("http://bar.com") },
     { "test7.bar", false, Feature::WEB_PAGE_CONTEXT, GURL("http://foo.com") },
+    { "test8", true, Feature::WEBUI_CONTEXT, GURL("chrome://test/") },
+    { "test8", true, Feature::WEBUI_CONTEXT, GURL("chrome://other-test/") },
+    { "test8", false, Feature::WEBUI_CONTEXT, GURL("chrome://dangerous/") },
+    { "test8", false, Feature::WEBUI_CONTEXT,
+        GURL("chrome-untrusted://test/") },
+    { "test8", false, Feature::WEBUI_UNTRUSTED_CONTEXT,
+        GURL("chrome-untrusted://test/") },
+    { "test8", false, Feature::WEBUI_UNTRUSTED_CONTEXT,
+      GURL("chrome://test/*") },
+    { "test9", true, Feature::WEBUI_UNTRUSTED_CONTEXT,
+        GURL("chrome-untrusted://test/") },
+    { "test9", true, Feature::WEBUI_UNTRUSTED_CONTEXT,
+        GURL("chrome-untrusted://other-test/") },
+    { "test9", false, Feature::WEBUI_UNTRUSTED_CONTEXT,
+        GURL("chrome-untrusted://dangerous/") },
+    { "test9", false, Feature::WEBUI_UNTRUSTED_CONTEXT,
+        GURL("chrome://test/") },
+    { "test9", false, Feature::WEBUI_CONTEXT, GURL("chrome://test/") },
+    { "test9", false, Feature::WEBUI_CONTEXT,
+      GURL("chrome-untrusted://test/*") },
 
     // Test parent/child.
     { "parent1", true, Feature::CONTENT_SCRIPT_CONTEXT, GURL() },
@@ -315,7 +335,19 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       {"test7", true, Feature::WEB_PAGE_CONTEXT, nullptr,
        GURL("http://foo.com")},
       {"test7", false, Feature::WEB_PAGE_CONTEXT, nullptr,
-       GURL("http://bar.com")}};
+       GURL("http://bar.com")},
+      {"test10", true, Feature::WEBUI_CONTEXT, nullptr, GURL("chrome://test/")},
+      {"test10", true, Feature::WEBUI_CONTEXT, nullptr,
+       GURL("chrome://other-test/")},
+      {"test10", false, Feature::WEBUI_UNTRUSTED_CONTEXT, nullptr,
+       GURL("chrome-untrusted://test/")},
+      {"test11", true, Feature::WEBUI_UNTRUSTED_CONTEXT, nullptr,
+       GURL("chrome-untrusted://test/")},
+      {"test11", true, Feature::WEBUI_UNTRUSTED_CONTEXT, nullptr,
+       GURL("chrome-untrusted://other-test/")},
+      {"test11", false, Feature::WEBUI_CONTEXT, nullptr,
+       GURL("chrome://test/")},
+  };
 
   FeatureProvider api_feature_provider;
   AddUnittestAPIFeatures(&api_feature_provider);

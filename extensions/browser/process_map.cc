@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map_factory.h"
 #include "extensions/common/extension.h"
@@ -107,16 +108,27 @@ std::set<std::string> ProcessMap::GetExtensionsInProcess(int process_id) const {
 
 Feature::Context ProcessMap::GetMostLikelyContextType(
     const Extension* extension,
-    int process_id) const {
+    int process_id,
+    const GURL* url) const {
   // WARNING: This logic must match ScriptContextSet::ClassifyJavaScriptContext,
   // as much as possible.
 
+  // TODO(crbug.com/1055168): Move this into the !extension if statement below
+  // or document why we want to return WEBUI_CONTEXT for content scripts in
+  // WebUIs.
+  // TODO(crbug.com/1055656): HasWebUIBindings does not always return true for
+  // WebUIs. This should be changed to use something else.
   if (content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
           process_id)) {
     return Feature::WEBUI_CONTEXT;
   }
 
   if (!extension) {
+    // Note that blob/filesystem schemes associated with an inner URL of
+    // chrome-untrusted will be considered regular pages.
+    if (url && url->SchemeIs(content::kChromeUIUntrustedScheme))
+      return Feature::WEBUI_UNTRUSTED_CONTEXT;
+
     return Feature::WEB_PAGE_CONTEXT;
   }
 

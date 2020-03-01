@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
@@ -203,6 +204,10 @@ bool IsEsIterableObject(v8::Isolate* isolate,
   }
 
   return true;
+}
+
+Document* ToDocumentFromExecutionContext(ExecutionContext* execution_context) {
+  return execution_context->ExecutingWindow()->document();
 }
 
 }  // namespace bindings

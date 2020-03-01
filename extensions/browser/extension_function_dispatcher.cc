@@ -308,11 +308,14 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
         registry->enabled_extensions().GetHostedAppByURL(params.source_url);
   }
 
-  if (render_frame_host)
+  const GURL* rfh_url =
+      render_frame_host ? &render_frame_host->GetLastCommittedURL() : nullptr;
+  if (render_frame_host) {
     DCHECK_EQ(render_process_id, render_frame_host->GetProcess()->GetID());
+  }
 
   scoped_refptr<ExtensionFunction> function = CreateExtensionFunction(
-      params, extension, render_process_id, *process_map,
+      params, extension, render_process_id, rfh_url, *process_map,
       ExtensionAPI::GetSharedInstance(), browser_context_, callback);
   if (!function.get())
     return;
@@ -463,6 +466,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
     const Extension* extension,
     int requesting_process_id,
+    const GURL* rfh_url,
     const ProcessMap& process_map,
     ExtensionAPI* api,
     void* profile_id,
@@ -483,8 +487,8 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_extension(extension);
   function->set_profile_id(profile_id);
   function->set_response_callback(callback);
-  function->set_source_context_type(
-      process_map.GetMostLikelyContextType(extension, requesting_process_id));
+  function->set_source_context_type(process_map.GetMostLikelyContextType(
+      extension, requesting_process_id, rfh_url));
   function->set_source_process_id(requesting_process_id);
 
   return function;

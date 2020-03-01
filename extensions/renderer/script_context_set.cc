@@ -231,6 +231,9 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
   if (url.SchemeIs(content::kChromeUIScheme))
     return Feature::WEBUI_CONTEXT;
 
+  if (url.SchemeIs(content::kChromeUIUntrustedScheme))
+    return Feature::WEBUI_UNTRUSTED_CONTEXT;
+
   return Feature::WEB_PAGE_CONTEXT;
 }
 

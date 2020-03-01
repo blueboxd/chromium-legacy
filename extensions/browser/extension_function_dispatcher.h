@@ -129,6 +129,7 @@ class ExtensionFunctionDispatcher
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
       int requesting_process_id,
+      const GURL* rfh_url,
       const ProcessMap& process_map,
       ExtensionAPI* api,
       void* profile_id,

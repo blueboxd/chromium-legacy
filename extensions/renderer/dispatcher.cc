@@ -359,6 +359,10 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::WEBUI_CONTEXT:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
       break;
+    case Feature::WEBUI_UNTRUSTED_CONTEXT:
+      // Extension APIs in untrusted WebUIs are temporary so don't bother
+      // recording metrics for them.
+      break;
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       UMA_HISTOGRAM_TIMES(
           "Extensions.DidCreateScriptContext_LockScreenExtension", elapsed);

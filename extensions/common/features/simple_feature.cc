@@ -115,6 +115,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "hosted app";
     case Feature::WEBUI_CONTEXT:
       return "webui";
+    case Feature::WEBUI_UNTRUSTED_CONTEXT:
+      return "webui untrusted";
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       return "lock screen app";
   }
@@ -642,8 +644,10 @@ Feature::Availability SimpleFeature::GetContextAvailability(
   // TODO(kalman): Consider checking |matches_| regardless of context type.
   // Fewer surprises, and if the feature configuration wants to isolate
   // "matches" from say "blessed_extension" then they can use complex features.
-  if ((context == WEB_PAGE_CONTEXT || context == WEBUI_CONTEXT) &&
-      !matches_.MatchesURL(url)) {
+  const bool supports_url_matching = context == WEB_PAGE_CONTEXT ||
+                                     context == WEBUI_CONTEXT ||
+                                     context == WEBUI_UNTRUSTED_CONTEXT;
+  if (supports_url_matching && !matches_.MatchesURL(url)) {
     return CreateAvailability(INVALID_URL, url);
   }
 

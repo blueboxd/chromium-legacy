@@ -98,9 +98,19 @@ class ProcessMap : public KeyedService {
   std::set<std::string> GetExtensionsInProcess(int process_id) const;
 
   // Gets the most likely context type for the process with ID |process_id|
-  // which hosts Extension |extension|, if any (may be NULL). Context types are
-  // renderer (JavaScript) concepts but the browser can do a decent job in
+  // which hosts Extension |extension|, if any (may be nullptr). Context types
+  // are renderer (JavaScript) concepts but the browser can do a decent job in
   // guessing what the process hosts.
+  //
+  // For Context types with no |extension| e.g. untrusted WebUIs, we use |url|
+  // which should correspond to the URL where the API is running.|url| could be
+  // the frame's URL, the Content Script's URL, or the URL where a Content
+  // Script is running. So |url| should only be used when there is no
+  // |extension|. |url| may be also be nullptr when running in Service Workers.
+  // Currently, the |url| provided by event_router.cc is passed from the
+  // renderer process and therefore can't be fully trusted.
+  // TODO(ortuno): Change call sites to only pass in a URL when |extension| is
+  // nullptr and only use a URL retrieved from the browser process.
   //
   // |extension| is the funky part - unfortunately we need to trust the
   // caller of this method to be correct that indeed the context does feature
@@ -120,6 +130,7 @@ class ProcessMap : public KeyedService {
   //     lock_screen_extension.
   //   - For other extension processes, this will be blessed_extension.
   //   - For WebUI processes, this will be a webui.
+  //   - For chrome-untrusted:// URLs, this will be a webui_untrusted_context.
   //   - For any other extension we have the choice of unblessed_extension or
   //     content_script. Since content scripts are more common, guess that.
   //     We *could* in theory track which web processes have extension frames
@@ -128,7 +139,8 @@ class ProcessMap : public KeyedService {
   //     thing as an unblessed_extension context.
   //   - For anything else, web_page.
   Feature::Context GetMostLikelyContextType(const Extension* extension,
-                                            int process_id) const;
+                                            int process_id,
+                                            const GURL* url) const;
 
   void set_is_lock_screen_context(bool is_lock_screen_context) {
     is_lock_screen_context_ = is_lock_screen_context;

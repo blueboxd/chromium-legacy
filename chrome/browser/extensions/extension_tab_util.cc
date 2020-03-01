@@ -128,6 +128,10 @@ ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehaviorImpl(
     return ExtensionTabUtil::kDontScrubTab;
   }
 
+  if (context == Feature::Context::WEBUI_UNTRUSTED_CONTEXT) {
+    return ExtensionTabUtil::kScrubTabFully;
+  }
+
   bool has_permission = false;
 
   if (extension) {

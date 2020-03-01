@@ -108,4 +108,14 @@ TEST(ExtensionTabUtilTest, ScrubTabBehaviorForWebUI) {
   EXPECT_EQ(ExtensionTabUtil::kDontScrubTab, scrub_tab_behavior.pending_info);
 }
 
+TEST(ExtensionTabUtilTest, ScrubTabBehaviorForWebUIUntrusted) {
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(
+          nullptr, Feature::Context::WEBUI_UNTRUSTED_CONTEXT,
+          GURL("http://www.google.com"));
+  EXPECT_EQ(ExtensionTabUtil::kScrubTabFully,
+            scrub_tab_behavior.committed_info);
+  EXPECT_EQ(ExtensionTabUtil::kScrubTabFully, scrub_tab_behavior.pending_info);
+}
+
 }  // namespace extensions

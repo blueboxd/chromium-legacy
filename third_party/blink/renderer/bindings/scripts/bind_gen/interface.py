@@ -463,11 +463,8 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
     if "ExecutionContext" in values:
         arguments.append("${execution_context}")
     if "Document" in values:
-        # TODO(yukishiino): Implement this part after the refactoring of
-        # ExecutionContext.
         arguments.append(
-            "*reinterpret_cast<Document*>(((void)${execution_context}, 0xDEADBEEF))"
-        )
+            "*bindings::ToDocumentFromExecutionContext(${execution_context})")
 
     code_generator_info = cg_context.member_like.code_generator_info
     is_partial = code_generator_info.defined_in_partial
@@ -2861,30 +2858,33 @@ def _collect_include_headers(interface):
     headers = set(interface.code_generator_info.blink_headers)
 
     def collect_from_idl_type(idl_type):
+        idl_type.apply_to_all_composing_elements(add_include_headers)
+
+    def add_include_headers(idl_type):
+        # ScriptPromise doesn't require any header for the result type.
+        if idl_type.is_promise:
+            raise StopIteration(idl_type.syntactic_form)
+
         type_def_obj = idl_type.type_definition_object
         if type_def_obj is not None:
             headers.add(PathManager(type_def_obj).api_path(ext="h"))
             if isinstance(type_def_obj, web_idl.Interface):
                 headers.add(PathManager(type_def_obj).blink_path(ext="h"))
-            return
+            raise StopIteration(idl_type.syntactic_form)
+
         union_def_obj = idl_type.union_definition_object
         if union_def_obj is not None:
             headers.add(PathManager(union_def_obj).api_path(ext="h"))
-            return
 
     for attribute in interface.attributes:
-        attribute.idl_type.apply_to_all_composing_elements(
-            collect_from_idl_type)
+        collect_from_idl_type(attribute.idl_type)
     for constructor in interface.constructors:
         for argument in constructor.arguments:
-            argument.idl_type.apply_to_all_composing_elements(
-                collect_from_idl_type)
+            collect_from_idl_type(argument.idl_type)
     for operation in interface.operations:
-        operation.return_type.apply_to_all_composing_elements(
-            collect_from_idl_type)
+        collect_from_idl_type(operation.return_type)
         for argument in operation.arguments:
-            argument.idl_type.apply_to_all_composing_elements(
-                collect_from_idl_type)
+            collect_from_idl_type(argument.idl_type)
 
     for exposed_construct in interface.exposed_constructs:
         headers.add(PathManager(exposed_construct).api_path(ext="h"))
@@ -2892,6 +2892,13 @@ def _collect_include_headers(interface):
     path_manager = PathManager(interface)
     headers.discard(path_manager.api_path(ext="h"))
     headers.discard(path_manager.impl_path(ext="h"))
+
+    # TODO(yukishiino): Window interface should be
+    # [ImplementedAs=LocalDOMWindow] instead of [ImplementedAs=DOMWindow], and
+    # [CrossOrigin] properties should be implemented specifically with
+    # DOMWindow class.  Then, we'll have less hacks.
+    if interface.identifier == "Window":
+        headers.add("third_party/blink/renderer/core/frame/local_dom_window.h")
 
     return headers
 
@@ -3202,12 +3209,11 @@ def generate_interface(interface):
             EmptyNode(),
         ])
     api_header_node.accumulator.add_include_headers([
+        interface.code_generator_info.blink_headers[0],
         component_export_header(api_component),
         "third_party/blink/renderer/platform/bindings/v8_interface_bridge.h",
     ])
-    api_header_node.accumulator.add_class_decl(blink_class_name(interface))
     api_source_node.accumulator.add_include_headers([
-        interface.code_generator_info.blink_headers[0],
         "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
     ])
     if interface.inherited:
@@ -3309,6 +3315,15 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    # multiprocessing.cpu_count()
-    pool = multiprocessing.Pool(8)
-    pool.map_async(generate_interface, web_idl_database.interfaces).get(3600)
+    # More processes do not mean better performance.  The default size was
+    # chosen heuristically.
+    process_pool_size = 8
+    cpu_count = multiprocessing.cpu_count()
+    process_pool_size = max(1, min(cpu_count / 2, process_pool_size))
+
+    pool = multiprocessing.Pool(process_pool_size)
+    # Prior to Python3, Pool.map doesn't support user interrupts (e.g. Ctrl-C),
+    # although Pool.map_async(...).get(...) does.
+    timeout_in_sec = 3600  # Just enough long time
+    pool.map_async(generate_interface,
+                   web_idl_database.interfaces).get(timeout_in_sec)

@@ -221,8 +221,16 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         In case of x.apply_to_all_composing_elements(callback), |callback| will
         be recursively called back on x, x.inner_type, x.element_type,
         x.result_type.original_type, etc. if any.
+
+        If |callback| raises a StopIteration, then this function stops
+        traversing deeper than this type (inner type, etc.), however, siblings
+        are still traversed.  E.g. For record<K, V>, raising a StopIteration at
+        K doesn't prevent from traversing V.
         """
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
 
     def unwrap(self, nullable=None, typedef=None, variadic=None):
         """
@@ -826,7 +834,10 @@ class TypedefType(IdlType, WithIdentifier):
         return self.original_type.type_name
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         self.original_type.apply_to_all_composing_elements(callback)
 
     @property
@@ -875,7 +886,10 @@ class _ArrayLikeType(IdlType):
         return hash((self.__class__, self.element_type))
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         self.element_type.apply_to_all_composing_elements(callback)
 
     @property
@@ -1022,7 +1036,10 @@ class RecordType(IdlType):
             self.key_type.type_name, self.value_type.type_name))
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         self.key_type.apply_to_all_composing_elements(callback)
         self.value_type.apply_to_all_composing_elements(callback)
 
@@ -1075,7 +1092,10 @@ class PromiseType(IdlType):
             self.result_type.type_name))
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         self.result_type.apply_to_all_composing_elements(callback)
 
     @property
@@ -1139,7 +1159,10 @@ class UnionType(IdlType):
             [member.type_name for member in self.member_types]))
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         for member_type in self.member_types:
             member_type.apply_to_all_composing_elements(callback)
 
@@ -1234,7 +1257,10 @@ class NullableType(IdlType):
         return '{}OrNull{}'.format(name[0:sep_index], name[sep_index:])
 
     def apply_to_all_composing_elements(self, callback):
-        callback(self)
+        try:
+            callback(self)
+        except StopIteration:
+            return
         self.inner_type.apply_to_all_composing_elements(callback)
 
     @property

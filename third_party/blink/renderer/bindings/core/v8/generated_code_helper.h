@@ -18,6 +18,8 @@
 
 namespace blink {
 
+class Document;
+class ExecutionContext;
 class QualifiedName;
 class ScriptState;
 
@@ -126,6 +128,9 @@ CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
 CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
                                     v8::Local<v8::Value> value,
                                     ExceptionState& exception_state);
+
+CORE_EXPORT Document* ToDocumentFromExecutionContext(
+    ExecutionContext* execution_context);
 
 }  // namespace bindings
 

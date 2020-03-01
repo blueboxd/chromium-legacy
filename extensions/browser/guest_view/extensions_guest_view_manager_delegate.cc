@@ -92,13 +92,15 @@ bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(
   const Extension* owner_extension = ProcessManager::Get(context_)->
       GetExtensionForWebContents(guest->owner_web_contents());
 
+  const GURL& owner_site_url = guest->GetOwnerSiteURL();
   // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
   Feature::Availability availability = feature->IsAvailableToContext(
       owner_extension,
       process_map->GetMostLikelyContextType(
           owner_extension,
-          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID()),
-      guest->GetOwnerSiteURL());
+          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
+          &owner_site_url),
+      owner_site_url);
 
   return availability.is_available();
 }

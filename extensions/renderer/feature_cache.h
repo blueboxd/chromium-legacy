@@ -72,7 +72,7 @@ class FeatureCache {
 
   // The cache of WebUI-related features. These shouldn't need to be
   // invalidated (since WebUI permissions don't change), and are cached by
-  // origin.
+  // origin. These covers chrome:// and chrome-untrusted:// URLs.
   WebUICacheMap webui_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureCache);

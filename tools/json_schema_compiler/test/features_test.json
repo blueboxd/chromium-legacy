@@ -57,6 +57,11 @@
     "matches": ["*://example.com/*"],
     "min_manifest_version": 2
   },
+  "pi": {
+    "channel": "stable",
+    "contexts": ["webui_untrusted"],
+    "matches": ["chrome-untrusted://foo/*"]
+  },
   "complex": [{
     "channel": "beta",
     "contexts": ["blessed_extension"],

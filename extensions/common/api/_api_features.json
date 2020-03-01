@@ -576,6 +576,10 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": ["chrome://extensions/*"]
+  }, {
+    "channel": "stable",
+    "contexts": [ "webui_untrusted" ],
+    "matches": [ "chrome-untrusted://api-test/*" ]
   }],
   "types": {
     "internal": true,

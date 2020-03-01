@@ -644,8 +644,14 @@ void EventRouter::DispatchEventToProcess(
     }
   }
 
+  // TODO(ortuno): |listener_url| is passed in from the renderer so it can't
+  // fully be trusted. We should retrieve the URL from the browser process.
+  const GURL* url =
+      service_worker_version_id == blink::mojom::kInvalidServiceWorkerVersionId
+          ? &listener_url
+          : nullptr;
   Feature::Context target_context =
-      process_map->GetMostLikelyContextType(extension, process->GetID());
+      process_map->GetMostLikelyContextType(extension, process->GetID(), url);
 
   // We shouldn't be dispatching an event to a webpage, since all such events
   // (e.g.  messaging) don't go through EventRouter.

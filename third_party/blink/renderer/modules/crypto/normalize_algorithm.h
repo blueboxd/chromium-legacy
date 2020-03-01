@@ -39,18 +39,11 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
-struct AlgorithmError {
-  STACK_ALLOCATED();
-
- public:
-  WebCryptoErrorType error_type;
-  WebString error_details;
-};
-
-typedef DictionaryOrString AlgorithmIdentifier;
+using AlgorithmIdentifier = DictionaryOrString;
 
 // Converts a javascript AlgorithmIdentifier to a WebCryptoAlgorithm object.
 //
@@ -59,15 +52,17 @@ typedef DictionaryOrString AlgorithmIdentifier;
 //
 // On success returns true and sets the WebCryptoAlgorithm.
 //
-// On failure normalizeAlgorithm returns false and sets the AlgorithmError with
-// a error type and a (non-localized) debug string.
+// On failure NormalizeAlgorithm returns false and throws an exception in the
+// ExceptionState.
 //
-// [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
+// [1]
+// https://w3c.github.io/webcrypto/#algorithm-normalization-normalize-an-algorithm
 MODULES_EXPORT WARN_UNUSED_RESULT bool NormalizeAlgorithm(
+    v8::Isolate*,
     const AlgorithmIdentifier&,
     WebCryptoOperation,
     WebCryptoAlgorithm&,
-    AlgorithmError*);
+    ExceptionState&);
 
 }  // namespace blink
 

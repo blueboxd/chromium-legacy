@@ -1692,15 +1692,10 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // Normalize |keygenAlgorithm| with WebCrypto, making sure it is a recognized
   // AlgorithmIdentifier.
   WebCryptoAlgorithm crypto_algorithm;
-  AlgorithmError error;
-  if (!NormalizeAlgorithm(keygen_algorithm, kWebCryptoOperationGenerateKey,
-                          crypto_algorithm, &error)) {
-    // Reject generateCertificate with the same error as was produced by
-    // WebCrypto. |result| is garbage collected, no need to delete.
-    auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-    ScriptPromise promise = result->Promise();
-    result->CompleteWithError(error.error_type, error.error_details);
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), keygen_algorithm,
+                          kWebCryptoOperationGenerateKey, crypto_algorithm,
+                          exception_state)) {
+    return ScriptPromise();
   }
 
   // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires|

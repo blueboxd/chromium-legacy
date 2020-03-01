@@ -54,17 +54,6 @@
 
 namespace blink {
 
-static bool ParseAlgorithm(const AlgorithmIdentifier& raw,
-                           WebCryptoOperation op,
-                           WebCryptoAlgorithm& algorithm,
-                           CryptoResult* result) {
-  AlgorithmError error;
-  bool success = NormalizeAlgorithm(raw, op, algorithm, &error);
-  if (!success)
-    result->CompleteWithError(error.error_type, error.error_details);
-  return success;
-}
-
 // Parses a JsonWebKey dictionary. On success writes the result to
 // |jsonUtf8| as a UTF8-encoded JSON octet string and returns true.
 // On failure sets an error on |result| and returns false.
@@ -128,12 +117,10 @@ SubtleCrypto::SubtleCrypto() = default;
 ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
                                     const AlgorithmIdentifier& raw_algorithm,
                                     CryptoKey* key,
-                                    const BufferSource& raw_data) {
+                                    const BufferSource& raw_data,
+                                    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-encrypt
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.1.2: Let data be the result of getting a copy of the bytes held by
   //           the data parameter passed to the encrypt method.
@@ -142,9 +129,13 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
   // 14.3.1.3: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to "encrypt".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationEncrypt,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationEncrypt, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
+
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  ScriptPromise promise = result->Promise();
 
   // 14.3.1.8: If the name member of normalizedAlgorithm is not equal to the
   //           name attribute of the [[algorithm]] internal slot of key then
@@ -170,12 +161,10 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
 ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
                                     const AlgorithmIdentifier& raw_algorithm,
                                     CryptoKey* key,
-                                    const BufferSource& raw_data) {
+                                    const BufferSource& raw_data,
+                                    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-decrypt
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.2.2: Let data be the result of getting a copy of the bytes held by
   //           the data parameter passed to the decrypt method.
@@ -184,9 +173,13 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
   // 14.3.2.3: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to "decrypt".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationDecrypt,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationDecrypt, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
+
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  ScriptPromise promise = result->Promise();
 
   // 14.3.2.8: If the name member of normalizedAlgorithm is not equal to the
   //           name attribute of the [[algorithm]] internal slot of key then
@@ -212,12 +205,10 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
 ScriptPromise SubtleCrypto::sign(ScriptState* script_state,
                                  const AlgorithmIdentifier& raw_algorithm,
                                  CryptoKey* key,
-                                 const BufferSource& raw_data) {
+                                 const BufferSource& raw_data,
+                                 ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-sign
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.3.2: Let data be the result of getting a copy of the bytes held by
   //           the data parameter passed to the sign method.
@@ -226,9 +217,13 @@ ScriptPromise SubtleCrypto::sign(ScriptState* script_state,
   // 14.3.3.3: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to "sign".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationSign,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationSign, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
+
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  ScriptPromise promise = result->Promise();
 
   // 14.3.3.8: If the name member of normalizedAlgorithm is not equal to the
   //           name attribute of the [[algorithm]] internal slot of key then
@@ -256,12 +251,10 @@ ScriptPromise SubtleCrypto::verifySignature(
     const AlgorithmIdentifier& raw_algorithm,
     CryptoKey* key,
     const BufferSource& raw_signature,
-    const BufferSource& raw_data) {
+    const BufferSource& raw_data,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-verify
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.4.2: Let signature be the result of getting a copy of the bytes
   //           held by the signature parameter passed to the verify method.
@@ -274,9 +267,13 @@ ScriptPromise SubtleCrypto::verifySignature(
   // 14.3.4.4: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to "verify".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationVerify,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationVerify, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
+
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  ScriptPromise promise = result->Promise();
 
   // 14.3.4.9: If the name member of normalizedAlgorithm is not equal to the
   //           name attribute of the [[algorithm]] internal slot of key then
@@ -301,12 +298,10 @@ ScriptPromise SubtleCrypto::verifySignature(
 
 ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
                                    const AlgorithmIdentifier& raw_algorithm,
-                                   const BufferSource& raw_data) {
+                                   const BufferSource& raw_data,
+                                   ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-digest
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.5.2: Let data be the result of getting a copy of the bytes held
   //              by the data parameter passed to the digest method.
@@ -315,10 +310,12 @@ ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
   // 14.3.5.3: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to "digest".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationDigest,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationDigest, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_algorithm);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -327,14 +324,15 @@ ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
   Platform::Current()->Crypto()->Digest(normalized_algorithm, std::move(data),
                                         result->Result(),
                                         std::move(task_runner));
-  return promise;
+  return result->Promise();
 }
 
 ScriptPromise SubtleCrypto::generateKey(
     ScriptState* script_state,
     const AlgorithmIdentifier& raw_algorithm,
     bool extractable,
-    const Vector<String>& raw_key_usages) {
+    const Vector<String>& raw_key_usages,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-generateKey
 
@@ -349,9 +347,10 @@ ScriptPromise SubtleCrypto::generateKey(
   //           algorithm, with alg set to algorithm and op set to
   //           "generateKey".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationGenerateKey,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationGenerateKey, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // NOTE: Steps (8) and (9) disallow empty usages on secret and private
   // keys. This normative requirement is enforced by the platform
@@ -374,7 +373,8 @@ ScriptPromise SubtleCrypto::importKey(
     const ArrayBufferOrArrayBufferViewOrJsonWebKey& raw_key_data,
     const AlgorithmIdentifier& raw_algorithm,
     bool extractable,
-    const Vector<String>& raw_key_usages) {
+    const Vector<String>& raw_key_usages,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-importKey
 
@@ -438,9 +438,10 @@ ScriptPromise SubtleCrypto::importKey(
   //           algorithm, with alg set to algorithm and op set to
   //           "importKey".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationImportKey,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationImportKey, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   HistogramAlgorithm(ExecutionContext::From(script_state),
                      normalized_algorithm);
@@ -488,7 +489,8 @@ ScriptPromise SubtleCrypto::wrapKey(
     const String& raw_format,
     CryptoKey* key,
     CryptoKey* wrapping_key,
-    const AlgorithmIdentifier& raw_wrap_algorithm) {
+    const AlgorithmIdentifier& raw_wrap_algorithm,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-wrapKey
 
@@ -506,9 +508,10 @@ ScriptPromise SubtleCrypto::wrapKey(
   //            of normalizing an algorithm, with alg set to algorithm and op
   //            set to "encrypt".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_wrap_algorithm, kWebCryptoOperationWrapKey,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_wrap_algorithm,
+                          kWebCryptoOperationWrapKey, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // 14.3.11.9: If the name member of normalizedAlgorithm is not equal to the
   //            name attribute of the [[algorithm]] internal slot of
@@ -553,7 +556,8 @@ ScriptPromise SubtleCrypto::unwrapKey(
     const AlgorithmIdentifier& raw_unwrap_algorithm,
     const AlgorithmIdentifier& raw_unwrapped_key_algorithm,
     bool extractable,
-    const Vector<String>& raw_key_usages) {
+    const Vector<String>& raw_key_usages,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-unwrapKey
 
@@ -581,17 +585,20 @@ ScriptPromise SubtleCrypto::unwrapKey(
   //            of normalizing an algorithm, with alg set to algorithm and op
   //            set to "decrypt".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_unwrap_algorithm, kWebCryptoOperationUnwrapKey,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_unwrap_algorithm,
+                          kWebCryptoOperationUnwrapKey, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // 14.3.12.6: Let normalizedKeyAlgorithm be the result of normalizing an
   //            algorithm, with alg set to unwrappedKeyAlgorithm and op set
   //            to "importKey".
   WebCryptoAlgorithm normalized_key_algorithm;
-  if (!ParseAlgorithm(raw_unwrapped_key_algorithm, kWebCryptoOperationImportKey,
-                      normalized_key_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(),
+                          raw_unwrapped_key_algorithm,
+                          kWebCryptoOperationImportKey,
+                          normalized_key_algorithm, exception_state))
+    return ScriptPromise();
 
   // 14.3.12.11: If the name member of normalizedAlgorithm is not equal to
   //             the name attribute of the [[algorithm]] internal slot of
@@ -625,20 +632,19 @@ ScriptPromise SubtleCrypto::unwrapKey(
 ScriptPromise SubtleCrypto::deriveBits(ScriptState* script_state,
                                        const AlgorithmIdentifier& raw_algorithm,
                                        CryptoKey* base_key,
-                                       unsigned length_bits) {
+                                       unsigned length_bits,
+                                       ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-deriveBits
-
-  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
-  ScriptPromise promise = result->Promise();
 
   // 14.3.8.2: Let normalizedAlgorithm be the result of normalizing an
   //           algorithm, with alg set to algorithm and op set to
   //           "deriveBits".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationDeriveBits,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationDeriveBits, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // 14.3.8.7: If the name member of normalizedAlgorithm is not equal to the
   //           name attribute of the [[algorithm]] internal slot of baseKey
@@ -646,6 +652,9 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* script_state,
   //
   // 14.3.8.8: If the [[usages]] internal slot of baseKey does not contain an
   //           entry that is "deriveBits", then throw an InvalidAccessError.
+  auto* result = MakeGarbageCollected<CryptoResultImpl>(script_state);
+  ScriptPromise promise = result->Promise();
+
   if (!base_key->CanBeUsedForAlgorithm(normalized_algorithm,
                                        kWebCryptoKeyUsageDeriveBits, result))
     return promise;
@@ -667,7 +676,8 @@ ScriptPromise SubtleCrypto::deriveKey(
     CryptoKey* base_key,
     const AlgorithmIdentifier& raw_derived_key_type,
     bool extractable,
-    const Vector<String>& raw_key_usages) {
+    const Vector<String>& raw_key_usages,
+    ExceptionState& exception_state) {
   // Method described by:
   // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-deriveKey
 
@@ -682,17 +692,19 @@ ScriptPromise SubtleCrypto::deriveKey(
   //           algorithm, with alg set to algorithm and op set to
   //           "deriveBits".
   WebCryptoAlgorithm normalized_algorithm;
-  if (!ParseAlgorithm(raw_algorithm, kWebCryptoOperationDeriveBits,
-                      normalized_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_algorithm,
+                          kWebCryptoOperationDeriveBits, normalized_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // 14.3.7.4: Let normalizedDerivedKeyAlgorithm be the result of normalizing
   //           an algorithm, with alg set to derivedKeyType and op set to
   //           "importKey".
   WebCryptoAlgorithm normalized_derived_key_algorithm;
-  if (!ParseAlgorithm(raw_derived_key_type, kWebCryptoOperationImportKey,
-                      normalized_derived_key_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_derived_key_type,
+                          kWebCryptoOperationImportKey,
+                          normalized_derived_key_algorithm, exception_state))
+    return ScriptPromise();
 
   // TODO(eroman): The description in the spec needs to be updated as
   // it doesn't describe algorithm normalization for the Get Key
@@ -703,9 +715,10 @@ ScriptPromise SubtleCrypto::deriveKey(
   //            identify a registered algorithm that supports the get key length
   //            operation, then throw a NotSupportedError.
   WebCryptoAlgorithm key_length_algorithm;
-  if (!ParseAlgorithm(raw_derived_key_type, kWebCryptoOperationGetKeyLength,
-                      key_length_algorithm, result))
-    return promise;
+  if (!NormalizeAlgorithm(script_state->GetIsolate(), raw_derived_key_type,
+                          kWebCryptoOperationGetKeyLength, key_length_algorithm,
+                          exception_state))
+    return ScriptPromise();
 
   // 14.3.7.11: If the name member of normalizedAlgorithm is not equal to the
   //            name attribute of the [[algorithm]] internal slot of baseKey

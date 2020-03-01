@@ -46,19 +46,21 @@ WebCryptoAlgorithm NormalizeCryptoAlgorithm(
     int* exception_code,
     WebString* error_details,
     v8::Isolate* isolate) {
-  // FIXME: Avoid using NonThrowableExceptionState.
-  NonThrowableExceptionState exception_state;
+  ExceptionState exception_state(isolate, ExceptionState::kQueryContext,
+                                 "WebCryptoAlgorithm", "NormalizeAlgorithm");
+
   Dictionary algorithm_dictionary(isolate, algorithm_object, exception_state);
-  if (!algorithm_dictionary.IsUndefinedOrNull() &&
-      !algorithm_dictionary.IsObject())
+  if (exception_state.HadException())
     return WebCryptoAlgorithm();
-  WebCryptoAlgorithm algorithm;
-  AlgorithmError error;
   AlgorithmIdentifier algorithm_identifier;
   algorithm_identifier.SetDictionary(algorithm_dictionary);
-  if (!NormalizeAlgorithm(algorithm_identifier, operation, algorithm, &error)) {
-    *exception_code = WebCryptoErrorToExceptionCode(error.error_type);
-    *error_details = error.error_details;
+
+  WebCryptoAlgorithm algorithm;
+  if (!NormalizeAlgorithm(isolate, algorithm_identifier, operation, algorithm,
+                          exception_state)) {
+    *exception_code = exception_state.Code();
+    *error_details = exception_state.Message();
+    exception_state.ClearException();
     return WebCryptoAlgorithm();
   }
 

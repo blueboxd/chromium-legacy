@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_all_collection.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/html_collection_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 namespace blink {

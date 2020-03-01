@@ -24,6 +24,7 @@
  */
 
 #include "third_party/blink/renderer/bindings/core/v8/array_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"

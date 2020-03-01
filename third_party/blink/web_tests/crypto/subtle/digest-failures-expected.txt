@@ -13,13 +13,13 @@ digest() with data argument that is an integer...
 error is: TypeError: Failed to execute 'digest' on 'SubtleCrypto': The provided value is not of type '(ArrayBuffer or ArrayBufferView)'
 
 digest() with algorithm as null...
-error is: TypeError: Algorithm: Not an object
+error is: TypeError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: Not an object
 
 digest() with invalid agorithm that is sha...
-error is: NotSupportedError: Algorithm: Unrecognized name
+error is: NotSupportedError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: Unrecognized name
 
 digest() without algorithm name...
-error is: TypeError: Algorithm: name: Missing or not a string
+error is: TypeError: Failed to execute 'digest' on 'SubtleCrypto': Algorithm: name: Missing or not a string
 PASS successfullyParsed is true
 
 TEST COMPLETE

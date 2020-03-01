@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_all_collection.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_collection.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"

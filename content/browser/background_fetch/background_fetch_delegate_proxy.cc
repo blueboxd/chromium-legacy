@@ -62,7 +62,9 @@ class BackgroundFetchDelegateProxy::Core
               &Core::ForwardGetPermissionForOriginCallbackToParentThread,
               weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     } else {
-      std::move(callback).Run(BackgroundFetchPermission::BLOCKED);
+      RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                            base::BindOnce(std::move(callback),
+                                           BackgroundFetchPermission::BLOCKED));
     }
   }
 

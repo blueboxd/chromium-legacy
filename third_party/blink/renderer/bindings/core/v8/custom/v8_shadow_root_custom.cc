@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"

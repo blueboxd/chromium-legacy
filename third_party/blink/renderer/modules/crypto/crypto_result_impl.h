@@ -51,8 +51,8 @@ MODULES_EXPORT ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType);
 //  * All methods of the CryptoResult implementation must be called from
 //    the origin thread. The exception is that destruction may happen on
 //    another thread.
-//  * One of the completeWith***() functions must be called, or the
-//    m_resolver will be leaked until the ExecutionContext is destroyed.
+//  * One of the CompleteWith***() functions must be called, or the
+//    |resolver_| will be leaked until the ExecutionContext is destroyed.
 class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
  public:
   explicit CryptoResultImpl(ScriptState*);
@@ -65,6 +65,8 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   void CompleteWithKey(const WebCryptoKey&) override;
   void CompleteWithKeyPair(const WebCryptoKey& public_key,
                            const WebCryptoKey& private_key) override;
+
+  void CompleteWithError(ExceptionState&);
 
   // If called after completion (including cancellation) will return an empty
   // ScriptPromise.

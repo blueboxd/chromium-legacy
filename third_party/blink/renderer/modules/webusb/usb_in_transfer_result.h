@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_IN_TRANSFER_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_IN_TRANSFER_RESULT_H_
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"

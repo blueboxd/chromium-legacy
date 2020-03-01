@@ -94,8 +94,8 @@ TEST(MemoryPressureVoterTest, OnVote) {
 TEST(MemoryPressureVoterTest, SetVote) {
   TestDelegate delegate;
   MemoryPressureVoteAggregator aggregator(&delegate);
-  auto voter_critical = std::make_unique<MemoryPressureVoter>(&aggregator);
-  auto voter_moderate = std::make_unique<MemoryPressureVoter>(&aggregator);
+  auto voter_critical = aggregator.CreateVoter();
+  auto voter_moderate = aggregator.CreateVoter();
 
   voter_critical->SetVote(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, false);

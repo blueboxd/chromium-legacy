@@ -15,6 +15,20 @@
 
 namespace util {
 
+// Interface used by code which actually monitors memory pressure, to inform
+// a MemoryPressureAggregator when the pressure they observe changes, or they
+// want to trigger a (re-)notification of clients of the current level.
+// Voters must be used only from the same sequence as the Aggregator to which
+// they are attached.
+class MemoryPressureVoter {
+ public:
+  virtual ~MemoryPressureVoter() {}
+
+  // Called to set a vote / change a vote.
+  virtual void SetVote(base::MemoryPressureListener::MemoryPressureLevel level,
+                       bool notify_listeners) = 0;
+};
+
 // Collects votes from MemoryPressureVoters and evaluates them to determine the
 // pressure level for the MultiSourceMemoryPressureMonitor, which will own
 // and outlive the aggregator. The pressure level is calculated as the most
@@ -29,6 +43,10 @@ class MemoryPressureVoteAggregator {
   explicit MemoryPressureVoteAggregator(Delegate* delegate);
   ~MemoryPressureVoteAggregator();
 
+  // Creates a MemoryPressureVoter attached to this Aggregator. The returned
+  // Voter must not out-live the Aggregator.
+  std::unique_ptr<MemoryPressureVoter> CreateVoter();
+
   void OnVoteForTesting(base::Optional<MemoryPressureLevel> old_vote,
                         base::Optional<MemoryPressureLevel> new_vote);
 
@@ -40,7 +58,7 @@ class MemoryPressureVoteAggregator {
                           size_t critical_votes);
 
  private:
-  friend class MemoryPressureVoter;
+  friend class MemoryPressureVoterImpl;
 
   // Invoked by MemoryPressureVoter as it calculates its vote. Optional is
   // used so a voter can pass null as |old_vote| if this is their first vote, or
@@ -94,36 +112,6 @@ class MemoryPressureVoteAggregator::Delegate {
   // Invoked when a voter has determined that a notification of the current
   // pressure level is necessary.
   virtual void OnNotifyListenersRequested() = 0;
-};
-
-// Handles the forwarding of votes to the MemoryPressureVoteAggregator. Any
-// source which should have input on the overall MemoryPressureLevel will
-// calculate their vote on their own period, and use their Voter to inform the
-// Aggregator whenever their vote has changed or they want to trigger a
-// notification to the MemoryPressureListeners. This class is not thread safe
-// and should be used from a single sequence.
-class MemoryPressureVoter {
- public:
-  // The aggregator should outlive this voter, and both should live on the same
-  // sequence.
-  explicit MemoryPressureVoter(MemoryPressureVoteAggregator* aggregator);
-  ~MemoryPressureVoter();
-
-  // Called to set a vote / change a vote.
-  void SetVote(base::MemoryPressureListener::MemoryPressureLevel level,
-               bool notify_listeners);
-
- private:
-  // This is the aggregator to which this voter's votes will be cast.
-  MemoryPressureVoteAggregator* const aggregator_;
-
-  // Optional<> is used here as the vote will be null until the voter's
-  // first vote calculation.
-  base::Optional<base::MemoryPressureListener::MemoryPressureLevel> vote_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureVoter);
 };
 
 }  // namespace util

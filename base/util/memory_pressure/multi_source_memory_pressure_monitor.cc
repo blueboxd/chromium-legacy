@@ -66,7 +66,7 @@ MultiSourceMemoryPressureMonitor::GetCurrentPressureLevel() const {
 std::unique_ptr<MemoryPressureVoter>
 MultiSourceMemoryPressureMonitor::CreateVoter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::make_unique<MemoryPressureVoter>(&aggregator_);
+  return aggregator_.CreateVoter();
 }
 
 void MultiSourceMemoryPressureMonitor::SetDispatchCallback(

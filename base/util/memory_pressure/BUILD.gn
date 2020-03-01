@@ -36,8 +36,8 @@ source_set("memory_pressure") {
 
   if (is_fuchsia) {
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-memorypressure",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.memorypressure",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
     sources += [
       "system_memory_pressure_evaluator_fuchsia.cc",
@@ -55,9 +55,18 @@ source_set("memory_pressure") {
 
 source_set("unittests") {
   testonly = true
+
   sources = [
     "memory_pressure_voter_unittest.cc",
     "multi_source_memory_pressure_monitor_unittest.cc",
+  ]
+
+  deps = [
+    ":memory_pressure",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 
   if (is_win) {
@@ -68,17 +77,14 @@ source_set("unittests") {
     sources += [ "system_memory_pressure_evaluator_mac_unittest.cc" ]
   }
 
+  if (is_fuchsia) {
+    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.memorypressure" ]
+    sources += [ "system_memory_pressure_evaluator_fuchsia_unittest.cc" ]
+  }
+
   if (is_chromeos) {
     sources += [ "system_memory_pressure_evaluator_chromeos_unittest.cc" ]
   }
-
-  deps = [
-    ":memory_pressure",
-    "//base",
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
 }
 
 static_library("test_support") {

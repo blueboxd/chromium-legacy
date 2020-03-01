@@ -40,11 +40,13 @@ namespace apps {
 class AppServiceImpl;
 class UninstallDialog;
 
+#if defined(OS_CHROMEOS)
 struct PauseData {
   int hours;
   int minutes;
   bool should_show_pause_dialog;
 };
+#endif
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
 //
@@ -58,7 +60,9 @@ class AppServiceProxy : public KeyedService,
                         public apps::mojom::Subscriber,
                         public apps::AppRegistryCache::Observer {
  public:
+#if defined(OS_CHROMEOS)
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
+#endif
 
   explicit AppServiceProxy(Profile* profile);
   ~AppServiceProxy() override;
@@ -123,6 +127,7 @@ class AppServiceProxy : public KeyedService,
   // |parent_window|. Otherwise, the browser window will be used as the anchor.
   void Uninstall(const std::string& app_id, gfx::NativeWindow parent_window);
 
+#if defined(OS_CHROMEOS)
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
   // dialog. AppService sets the paused status directly. If the app is running,
@@ -133,6 +138,7 @@ class AppServiceProxy : public KeyedService,
   // Unpauses the apps from the paused status. AppService sets the paused status
   // as false directly and removes the paused app icon effect.
   void UnpauseApps(const std::set<std::string>& app_ids);
+#endif
 
   // Returns the menu items for the given |app_id|. |display_id| is the id of
   // the display from which the app is launched.
@@ -230,10 +236,12 @@ class AppServiceProxy : public KeyedService,
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
 
+#if defined(OS_CHROMEOS)
   static void CreatePauseDialog(const std::string& app_name,
                                 const gfx::ImageSkia& image,
                                 const PauseData& pause_data,
                                 OnPauseDialogClosedCallback pause_callback);
+#endif
 
   void Initialize();
 
@@ -266,6 +274,7 @@ class AppServiceProxy : public KeyedService,
                                bool report_abuse,
                                UninstallDialog* uninstall_dialog);
 
+#if defined(OS_CHROMEOS)
   void LoadIconForPauseDialog(const apps::AppUpdate& update,
                               const PauseData& pause_data);
 
@@ -284,6 +293,7 @@ class AppServiceProxy : public KeyedService,
   // AppService stops the running app and applies the paused app icon effect.
   void OnPauseDialogClosed(apps::mojom::AppType app_type,
                            const std::string& app_id);
+#endif
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;

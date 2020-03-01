@@ -734,21 +734,6 @@ class Generator(generator.Generator):
     if (kind is not None and mojom.IsFloatKind(kind)):
       return token if token.isdigit() else token + "f";
 
-    # Per C++11, 2.14.2, the type of an integer literal is the first of the
-    # corresponding list in Table 6 in which its value can be represented. In
-    # this case, the list for decimal constants with no suffix is:
-    #   int, long int, long long int
-    # The standard considers a program ill-formed if it contains an integer
-    # literal that cannot be represented by any of the allowed types.
-    #
-    # As it turns out, MSVC doesn't bother trying to fall back to long long int,
-    # so the integral constant -2147483648 causes it grief: it decides to
-    # represent 2147483648 as an unsigned integer, and then warns that the unary
-    # minus operator doesn't make sense on unsigned types. Doh!
-    if kind == mojom.INT32 and token == "-2147483648":
-      return "(-%d - 1) /* %s */" % (
-          2**31 - 1, "Workaround for MSVC bug; see https://crbug.com/445618")
-
     return "%s%s" % (token, _kind_to_cpp_literal_suffix.get(kind, ""))
 
   def _ExpressionToText(self, value, kind=None):

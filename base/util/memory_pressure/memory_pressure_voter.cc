@@ -10,11 +10,50 @@
 
 namespace util {
 
+class MemoryPressureVoterImpl : public MemoryPressureVoter {
+ public:
+  explicit MemoryPressureVoterImpl(MemoryPressureVoteAggregator* aggregator)
+      : aggregator_(aggregator) {}
+  ~MemoryPressureVoterImpl() override {
+    // Remove this voter's vote.
+    if (vote_)
+      aggregator_->OnVote(vote_, base::nullopt);
+  }
+
+  MemoryPressureVoterImpl(MemoryPressureVoterImpl&&) = delete;
+  MemoryPressureVoterImpl& operator=(MemoryPressureVoterImpl&&) = delete;
+
+  void SetVote(base::MemoryPressureListener::MemoryPressureLevel level,
+               bool notify_listeners) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    auto old_vote = vote_;
+    vote_ = level;
+    aggregator_->OnVote(old_vote, vote_);
+    if (notify_listeners)
+      aggregator_->NotifyListeners();
+  }
+
+ private:
+  // This is the aggregator to which this voter's votes will be cast.
+  MemoryPressureVoteAggregator* const aggregator_;
+
+  // Optional<> is used here as the vote will be null until the voter's
+  // first vote calculation.
+  base::Optional<base::MemoryPressureListener::MemoryPressureLevel> vote_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
 MemoryPressureVoteAggregator::MemoryPressureVoteAggregator(Delegate* delegate)
     : delegate_(delegate) {}
 
 MemoryPressureVoteAggregator::~MemoryPressureVoteAggregator() {
   DCHECK_EQ(std::accumulate(votes_.begin(), votes_.end(), 0), 0);
+}
+
+std::unique_ptr<MemoryPressureVoter>
+MemoryPressureVoteAggregator::CreateVoter() {
+  return std::make_unique<MemoryPressureVoterImpl>(this);
 }
 
 void MemoryPressureVoteAggregator::OnVoteForTesting(
@@ -73,27 +112,6 @@ void MemoryPressureVoteAggregator::SetVotesForTesting(size_t none_votes,
   votes_[0] = none_votes;
   votes_[1] = moderate_votes;
   votes_[2] = critical_votes;
-}
-
-MemoryPressureVoter::MemoryPressureVoter(
-    MemoryPressureVoteAggregator* aggregator)
-    : aggregator_(aggregator) {}
-
-MemoryPressureVoter::~MemoryPressureVoter() {
-  // Remove this voter's vote.
-  if (vote_)
-    aggregator_->OnVote(vote_, base::nullopt);
-}
-
-void MemoryPressureVoter::SetVote(
-    base::MemoryPressureListener::MemoryPressureLevel level,
-    bool notify_listeners) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto old_vote = vote_;
-  vote_ = level;
-  aggregator_->OnVote(old_vote, vote_);
-  if (notify_listeners)
-    aggregator_->NotifyListeners();
 }
 
 }  // namespace util

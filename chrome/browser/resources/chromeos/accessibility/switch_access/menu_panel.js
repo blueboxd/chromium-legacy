@@ -9,12 +9,6 @@
 class Panel {
   constructor() {
     /**
-     * The menu manager.
-     * @private {MenuManager}
-     */
-    this.menuManager_;
-
-    /**
      * Reference to the menu panel element.
      * @private {Element}
      */
@@ -64,7 +58,7 @@ class Panel {
 
   /** Sets the menu manager to the given object. */
   set menuManager(menuManager) {
-    this.menuManager_ = menuManager;
+    MenuManager.instance = menuManager;
   }
 
   /**
@@ -76,7 +70,7 @@ class Panel {
   setupButton_(button) {
     const action = button.id;
     button.addEventListener('click', function(action) {
-      this.menuManager_.performAction(action);
+      MenuManager.instance.performAction(action);
     }.bind(this, action));
   }
 
@@ -161,7 +155,7 @@ class Panel {
    * @private
    */
   updatePositionAttributes_(buttonOrder, menuId) {
-    this.menuManager_.exit();
+    MenuManager.exit();
     for (let pos = 0; pos < buttonOrder.length; pos++) {
       const buttonPosition = pos;
       const button = document.getElementById(buttonOrder[pos]);

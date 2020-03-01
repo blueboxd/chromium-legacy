@@ -190,10 +190,6 @@ class GcpReauthCredentialEnforceAuthReasonGetStringValueTest
 TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
        DISABLED_FidDescription) {
   USES_CONVERSION;
-  // Enable standard escrow service features in non-Chrome builds so that
-  // the escrow service code can be tested by the build machines.
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
-
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
   const bool enrolled_mdm = std::get<0>(GetParam());
@@ -201,8 +197,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
   const bool is_stale_login = std::get<2>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
 
   GoogleMdmEnrolledStatusForTesting forced_enrolled_status(enrolled_mdm);
 

@@ -349,6 +349,13 @@ DocumentInit& DocumentInit::WithFeaturePolicyHeader(const String& header) {
   return *this;
 }
 
+DocumentInit& DocumentInit::WithReportOnlyFeaturePolicyHeader(
+    const String& header) {
+  DCHECK(report_only_feature_policy_header_.IsEmpty());
+  report_only_feature_policy_header_ = header;
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
   DCHECK(origin_trials_header_.IsEmpty());
   origin_trials_header_ = header;

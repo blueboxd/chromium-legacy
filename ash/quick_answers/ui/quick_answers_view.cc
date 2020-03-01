@@ -23,16 +23,20 @@ namespace ash {
 namespace {
 constexpr int kAssistantIconSizeDip = 16;
 constexpr int kDefaultPaddingBelowDip = 10;
+constexpr int kDefaultPaddingRightDip = 20;
 constexpr int kDefaultIconLeftPaddingDip = 8;
 constexpr int kDefaultIconRightPaddingDip = 8;
 constexpr int kDefaultIconUpperPaddingDip = 22;
-constexpr int kDefaultLabelRightPaddingDip = 8;
+constexpr int kDefaultLabelRightPaddingDip = 2;
 constexpr int kDefaultTextUpperPaddingDip = 10;
 constexpr int kLineHeightDip = 20;
 constexpr int kHeightForOneRowAnswerDip = 60;
 constexpr int kHeightForTwoRowAnswerDip = 75;
 
 constexpr char kDefaultLoadingStr[] = "Loading...";
+constexpr char kDefaultRetryStr[] = "Retry";
+constexpr char kNetworkErrorStr[] = "Cannot connect to internet.";
+
 }  // namespace
 
 // This class handles mouse events, and update background color or
@@ -62,6 +66,8 @@ class QuickAnswersViewHandler : public ui::EventHandler {
         quick_answers_view_->GetWidget()->GetWindowBoundsInScreen();
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED: {
+        if (quick_answers_view_->HasRetryLabel())
+          return;
         if (bounds.Contains(cursor_point)) {
           quick_answers_view_->SetBackgroundColor(SK_ColorLTGRAY);
         } else {
@@ -71,7 +77,14 @@ class QuickAnswersViewHandler : public ui::EventHandler {
       }
       case ui::ET_MOUSE_PRESSED: {
         if (event->IsOnlyLeftMouseButton() && bounds.Contains(cursor_point)) {
-          quick_answers_view_->SendQuickAnswersQuery();
+          if (quick_answers_view_->HasRetryLabel()) {
+            if (quick_answers_view_->WithinRetryLabelBounds(cursor_point)) {
+              quick_answers_view_->OnRetryLabelPressed();
+            }
+            event->StopPropagation();
+          } else {
+            quick_answers_view_->SendQuickAnswersQuery();
+          }
         }
         break;
       }
@@ -104,19 +117,12 @@ const char* QuickAnswersView::GetClassName() const {
   return "QuickAnswersView";
 }
 
-void QuickAnswersView::UpdateAnchorViewBounds(
-    const gfx::Rect& anchor_view_bounds) {
-  anchor_view_bounds_ = anchor_view_bounds;
-  UpdateBounds();
+bool QuickAnswersView::HasRetryLabel() const {
+  return retry_label_;
 }
 
-void QuickAnswersView::UpdateView(const gfx::Rect& anchor_view_bounds,
-                                  const QuickAnswer& quick_answer) {
-  has_second_row_answer_ = !quick_answer.second_answer_row.empty();
-  anchor_view_bounds_ = anchor_view_bounds;
-  RemoveAllChildViews(true);
-  UpdateChildViews(quick_answer);
-  UpdateBounds();
+void QuickAnswersView::OnRetryLabelPressed() {
+  controller_->OnRetryLabelPressed();
 }
 
 void QuickAnswersView::SendQuickAnswersQuery() {
@@ -129,13 +135,59 @@ void QuickAnswersView::SetBackgroundColor(SkColor color) {
   background_color_ = color;
   SetBackground(views::CreateSolidBackground(background_color_));
 }
-int QuickAnswersView::GetPreferredHeight() {
-  return has_second_row_answer_ ? kHeightForTwoRowAnswerDip
-                                : kHeightForOneRowAnswerDip;
+
+bool QuickAnswersView::WithinRetryLabelBounds(
+    const gfx::Point& point_in_screen) const {
+  return retry_label_ &&
+         retry_label_->GetBoundsInScreen().Contains(point_in_screen);
 }
 
-void QuickAnswersView::InitLayout() {
-  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+void QuickAnswersView::UpdateAnchorViewBounds(
+    const gfx::Rect& anchor_view_bounds) {
+  anchor_view_bounds_ = anchor_view_bounds;
+  UpdateBounds();
+}
+
+void QuickAnswersView::UpdateView(const gfx::Rect& anchor_view_bounds,
+                                  const QuickAnswer& quick_answer) {
+  has_second_row_answer_ = !quick_answer.second_answer_row.empty();
+  anchor_view_bounds_ = anchor_view_bounds;
+  retry_label_ = nullptr;
+  RemoveAllChildViews(true);
+  UpdateChildViews(quick_answer);
+  UpdateBounds();
+}
+
+void QuickAnswersView::ShowRetryView() {
+  if (retry_label_)
+    return;
+
+  RemoveAllChildViews(true);
+
+  AddAssistantIcon();
+
+  // Add title.
+  int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
+                    kDefaultIconRightPaddingDip;
+  AddLabel(label_start, kDefaultTextUpperPaddingDip, title_);
+
+  // Add error label.
+  label_start =
+      AddLabel(label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
+               kNetworkErrorStr);
+
+  // Add retry label.
+  retry_label_ = AddChildView(
+      std::make_unique<views::Label>(base::UTF8ToUTF16(kDefaultRetryStr)));
+  retry_label_->SetFontList(gfx::FontList());
+  retry_label_->SetEnabledColor(SK_ColorBLUE);
+  retry_label_->SetBoundsRect(
+      {label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
+       retry_label_->CalculatePreferredSize().width(), kLineHeightDip});
+  retry_label_->SetLineHeight(kLineHeightDip);
+}
+
+void QuickAnswersView::AddAssistantIcon() {
   // Add Assistant icon.
   auto* assistant_icon = AddChildView(std::make_unique<views::ImageView>());
   assistant_icon->SetImage(gfx::CreateVectorIcon(
@@ -143,31 +195,47 @@ void QuickAnswersView::InitLayout() {
   assistant_icon->SetBoundsRect({kDefaultIconLeftPaddingDip,
                                  kDefaultIconUpperPaddingDip,
                                  kAssistantIconSizeDip, kAssistantIconSizeDip});
+}
+
+int QuickAnswersView::AddLabel(int label_start,
+                               int upper_padding,
+                               const std::string& title) {
+  // TODO(yanxiao):Add more padding if there is image on the right side.
+  int label_max_width =
+      anchor_view_bounds_.width() - label_start - kDefaultPaddingRightDip;
+  auto* label =
+      AddChildView(std::make_unique<views::Label>(base::UTF8ToUTF16(title)));
+  int label_width =
+      std::min(label_max_width, label->CalculatePreferredSize().width());
+
+  // TODO(yanxiao):Consider use LayoutManager such as BoxLayout.
+  label->SetBoundsRect(
+      {label_start, upper_padding, label_width, kLineHeightDip});
+  label->SetLineHeight(kLineHeightDip);
+  return label_start + label->CalculatePreferredSize().width() +
+         kDefaultLabelRightPaddingDip;
+}
+
+int QuickAnswersView::GetPreferredHeight() {
+  return has_second_row_answer_ ? kHeightForTwoRowAnswerDip
+                                : kHeightForOneRowAnswerDip;
+}
+
+void QuickAnswersView::InitLayout() {
+  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+
+  AddAssistantIcon();
+
   // Add title
   int label_start = kDefaultIconLeftPaddingDip + kAssistantIconSizeDip +
                     kDefaultIconRightPaddingDip;
 
-  // TODO(yanxiao):Add more padding if there is image on the right side.
-  int label_max_width =
-      anchor_view_bounds_.width() - label_start - kDefaultLabelRightPaddingDip;
-  auto* label =
-      AddChildView(std::make_unique<views::Label>(base::UTF8ToUTF16(title_)));
-  label->SetMaximumWidth(label_max_width);
-  label->SetBoundsRect({label_start, kDefaultTextUpperPaddingDip,
-                        label->CalculatePreferredSize().width(),
-                        kLineHeightDip});
-  label->SetLineHeight(kLineHeightDip);
+  AddLabel(label_start, kDefaultTextUpperPaddingDip, title_);
 
   // Add loading label
   // TODO(yanxiao): change the string to loading animation.
-  auto* loading_label = AddChildView(
-      std::make_unique<views::Label>(base::UTF8ToUTF16(kDefaultLoadingStr)));
-  loading_label->SetMaximumWidth(label_max_width);
-  loading_label->SetFontList(gfx::FontList());
-  loading_label->SetBoundsRect(
-      {label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
-       loading_label->CalculatePreferredSize().width(), kLineHeightDip});
-  loading_label->SetLineHeight(kLineHeightDip);
+  AddLabel(label_start, kDefaultTextUpperPaddingDip + kLineHeightDip,
+           kDefaultLoadingStr);
 }
 
 void QuickAnswersView::InitWidget() {
@@ -202,13 +270,8 @@ void QuickAnswersView::UpdateBounds() {
 }
 
 void QuickAnswersView::UpdateChildViews(const QuickAnswer& quick_answer) {
-  // Add Assistant icon.
-  auto* assistant_icon = AddChildView(std::make_unique<views::ImageView>());
-  assistant_icon->SetImage(gfx::CreateVectorIcon(
-      kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
-  assistant_icon->SetBoundsRect({kDefaultIconLeftPaddingDip,
-                                 kDefaultIconUpperPaddingDip,
-                                 kAssistantIconSizeDip, kAssistantIconSizeDip});
+  AddAssistantIcon();
+
   int start_y = kDefaultTextUpperPaddingDip;
   // Add title
   UpdateOneRowAnswer(quick_answer.title, start_y);
@@ -240,13 +303,12 @@ void QuickAnswersView::UpdateOneRowAnswer(
         // TODO(yanxiao):Add more padding if there is image on the right side.
         int label_max_width = anchor_view_bounds_.width() - label_start -
                               kDefaultLabelRightPaddingDip;
-        label->SetMaximumWidth(label_max_width);
+        int label_width =
+            std::min(label_max_width, label->CalculatePreferredSize().width());
         label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
         label->SetEnabledColor(text_element->color_);
         label->SetFontList(gfx::FontList());
-        label->SetBoundsRect({label_start, y,
-                              label->CalculatePreferredSize().width(),
-                              kLineHeightDip});
+        label->SetBoundsRect({label_start, y, label_width, kLineHeightDip});
         label->SetLineHeight(kLineHeightDip);
         label_start += label->CalculatePreferredSize().width() +
                        kDefaultLabelRightPaddingDip;

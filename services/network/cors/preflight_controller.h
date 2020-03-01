@@ -27,6 +27,8 @@
 
 namespace network {
 
+class NetworkService;
+
 namespace cors {
 
 // A class to manage CORS-preflight, making a CORS-preflight request, checking
@@ -50,8 +52,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);
 
-  explicit PreflightController(
-      const std::vector<std::string>& extra_safelisted_header_names);
+  PreflightController(
+      const std::vector<std::string>& extra_safelisted_header_names,
+      NetworkService* network_service);
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
@@ -63,7 +66,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       WithTrustedHeaderClient with_trusted_header_client,
       bool tainted,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::URLLoaderFactory* loader_factory);
+      mojom::URLLoaderFactory* loader_factory,
+      int32_t process_id);
 
   const base::flat_set<std::string>& extra_safelisted_header_names() const {
     return extra_safelisted_header_names_;
@@ -82,11 +86,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
                      const GURL& url,
                      std::unique_ptr<PreflightResult> result);
 
+  NetworkService* network_service() { return network_service_; }
+
   PreflightCache cache_;
   std::set<std::unique_ptr<PreflightLoader>, base::UniquePtrComparator>
       loaders_;
 
   base::flat_set<std::string> extra_safelisted_header_names_;
+
+  NetworkService* const network_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightController);
 };

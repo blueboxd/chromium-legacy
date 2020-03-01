@@ -68,7 +68,8 @@ namespace credential_provider {
 
 namespace {
 
-constexpr wchar_t kEmailDomainsKey[] = L"ed";
+constexpr wchar_t kEmailDomainsKey[] = L"ed";  // deprecated.
+constexpr wchar_t kEmailDomainsKeyNew[] = L"domains_allowed_to_login";
 constexpr char kGetAccessTokenBodyWithScopeFormat[] =
     "client_id=%s&"
     "client_secret=%s&"
@@ -94,7 +95,7 @@ constexpr UINT kPasswordErrors[] = {IDS_PASSWORD_COMPLEXITY_ERROR_BASE,
                                     IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE,
                                     IDS_AD_PASSWORD_CHANGE_DENIED_BASE};
 
-base::string16 GetEmailDomains() {
+base::string16 GetEmailDomains(const base::string16 kEmailDomainsKey) {
   std::vector<wchar_t> email_domains(16);
   ULONG length = email_domains.size();
   HRESULT hr = GetGlobalFlag(kEmailDomainsKey, &email_domains[0], &length);
@@ -108,6 +109,12 @@ base::string16 GetEmailDomains() {
     }
   }
   return base::string16(&email_domains[0]);
+}
+
+base::string16 GetEmailDomains() {
+  base::string16 email_domains_reg = GetEmailDomains(kEmailDomainsKey);
+  base::string16 email_domains_reg_new = GetEmailDomains(kEmailDomainsKeyNew);
+  return email_domains_reg.empty() ? email_domains_reg_new : email_domains_reg;
 }
 
 // Get a pretty-printed string of the list of email domains that we can display
@@ -781,8 +788,7 @@ CGaiaCredentialBase::UIProcessInfo::~UIProcessInfo() {}
 
 // static
 bool CGaiaCredentialBase::IsCloudAssociationEnabled() {
-  DWORD enable_cloud_association = 0;
-  return GetGlobalFlagOrDefault(kRegCloudAssociation, enable_cloud_association);
+  return GetGlobalFlagOrDefault(kRegCloudAssociation, 1);
 }
 
 // static
@@ -2222,10 +2228,10 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
   // Disallow consumer accounts when mdm enrollment is enabled and the global
   // flag to allow consumer accounts is not set.
   if (MdmEnrollmentEnabled() && is_consumer_account) {
-    DWORD allow_consumer_accounts = 0;
-    if (FAILED(GetGlobalFlag(kRegMdmAllowConsumerAccounts,
-                             &allow_consumer_accounts)) ||
-        allow_consumer_accounts == 0) {
+    DWORD allow_consumer_accounts =
+        GetGlobalFlagOrDefault(kRegMdmAllowConsumerAccounts, 0);
+
+    if (allow_consumer_accounts == 0) {
       LOGFN(ERROR) << "Consumer accounts are not allowed mdm_aca="
                    << allow_consumer_accounts;
       *error_text = AllocErrorString(IDS_DISALLOWED_CONSUMER_EMAIL_BASE);

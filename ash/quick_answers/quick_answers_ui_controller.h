@@ -18,12 +18,13 @@ struct QuickAnswer;
 
 namespace ash {
 class QuickAnswersView;
+class QuickAnswersControllerImpl;
 
 // A controller to show/hide and handle interactions for quick
 // answers view.
 class ASH_EXPORT QuickAnswersUiController {
  public:
-  QuickAnswersUiController() = default;
+  explicit QuickAnswersUiController(QuickAnswersControllerImpl* controller);
   ~QuickAnswersUiController();
 
   QuickAnswersUiController(const QuickAnswersUiController&) = delete;
@@ -31,10 +32,12 @@ class ASH_EXPORT QuickAnswersUiController {
 
   void Close();
   // Constructs/resets |quick_answers_view_|.
-  void CreateQuickAnswersView(const gfx::Rect& bounds,
+  void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
                               const std::string& title);
 
   void OnQuickAnswersViewPressed();
+
+  void OnRetryLabelPressed();
 
   // |bounds| is the bound of context menu.
   void RenderQuickAnswersViewWithResult(
@@ -43,9 +46,14 @@ class ASH_EXPORT QuickAnswersUiController {
 
   void SetActiveQuery(const std::string& query);
 
-  void UpdateQuickAnswersBounds(const gfx::Rect& bounds);
+  // Show retry option in the quick answers view.
+  void ShowRetry();
+
+  void UpdateQuickAnswersBounds(const gfx::Rect& anchor_bounds);
 
  private:
+  QuickAnswersControllerImpl* controller_ = nullptr;
+
   // Owned by view hierarchy.
   QuickAnswersView* quick_answers_view_ = nullptr;
   std::string query_;

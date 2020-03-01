@@ -1529,11 +1529,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Apply pending feature policy headers and document policy headers.
   void ApplyPendingFramePolicyHeaders();
 
-  // Set the report-only feature policy on this document in response to an HTTP
-  // Feature-Policy-Report-Only header.
-  void ApplyReportOnlyFeaturePolicyFromHeader(
-      const String& feature_policy_report_only_header);
-
   const AtomicString& bgColor() const;
   void setBgColor(const AtomicString&);
   const AtomicString& fgColor() const;

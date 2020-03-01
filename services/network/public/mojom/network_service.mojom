@@ -24,6 +24,7 @@ import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/network_service_test.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -74,6 +75,32 @@ interface NetworkServiceClient {
     array<CookieAndLineWithStatus> cookies_with_status,
     array<HttpRawHeaderPair> headers,
     string? raw_response_headers);
+
+  // Called to send the CORS preflight request information. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightRequest(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    URLRequest request,
+    url.mojom.Url initiator_url);
+
+  // Called to send the CORS preflight response information. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightResponse(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    url.mojom.Url url,
+    URLResponseHead head);
+
+  // Called to send the CORS preflight completion status. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightRequestCompleted(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    URLLoaderCompletionStatus status);
 };
 
 // Values for configuring HTTP authentication that can only be set once.

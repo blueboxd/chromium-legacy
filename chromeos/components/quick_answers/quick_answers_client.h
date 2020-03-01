@@ -25,36 +25,36 @@ struct QuickAnswer;
 struct QuickAnswersRequest;
 enum class IntentType;
 
+// A delegate interface for the QuickAnswersClient.
+class QuickAnswersDelegate {
+ public:
+  QuickAnswersDelegate(const QuickAnswersDelegate&) = delete;
+  QuickAnswersDelegate& operator=(const QuickAnswersDelegate&) = delete;
+
+  // Invoked when the |quick_answer| is received. Note that |quick_answer| may
+  // be |nullptr| if no answer found for the selected content.
+  virtual void OnQuickAnswerReceived(
+      std::unique_ptr<QuickAnswer> quick_answer) {}
+
+  // Invoked when the query is rewritten.
+  virtual void OnRequestPreprocessFinish(
+      const QuickAnswersRequest& processed_request) {}
+
+  // Invoked when feature eligibility changed.
+  virtual void OnEligibilityChanged(bool eligible) {}
+
+  // Invoked when there is a network error.
+  virtual void OnNetworkError() {}
+
+ protected:
+  QuickAnswersDelegate() = default;
+  virtual ~QuickAnswersDelegate() = default;
+};
+
 // Quick answers client to load and parse quick answer results.
 class QuickAnswersClient : public ash::AssistantStateObserver,
                            public ResultLoader::ResultLoaderDelegate {
  public:
-  // A delegate interface for the QuickAnswersClient.
-  class QuickAnswersDelegate {
-   public:
-    QuickAnswersDelegate(const QuickAnswersDelegate&) = delete;
-    QuickAnswersDelegate& operator=(const QuickAnswersDelegate&) = delete;
-
-    // Invoked when the |quick_answer| is received. Note that |quick_answer| may
-    // be |nullptr| if no answer found for the selected content.
-    virtual void OnQuickAnswerReceived(
-        std::unique_ptr<QuickAnswer> quick_answer) {}
-
-    // Invoked when the query is rewritten.
-    virtual void OnRequestPreprocessFinish(
-        const QuickAnswersRequest& processed_request) {}
-
-    // Invoked when feature eligibility changed.
-    virtual void OnEligibilityChanged(bool eligible) {}
-
-    // Invoked when there is a network error.
-    virtual void OnNetworkError() {}
-
-   protected:
-    QuickAnswersDelegate() = default;
-    virtual ~QuickAnswersDelegate() = default;
-  };
-
   // Method that can be used in tests to change the result loader returned by
   // |CreateResultLoader| in tests.
   using ResultLoaderFactoryCallback =

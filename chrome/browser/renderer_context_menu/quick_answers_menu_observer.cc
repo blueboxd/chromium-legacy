@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/quick_answers_controller.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/storage_partition.h"
@@ -71,6 +73,13 @@ QuickAnswersMenuObserver::QuickAnswersMenuObserver(
             ->GetURLLoaderFactoryForBrowserProcess()
             .get(),
         assistant_state, this);
+    quick_answers_controller_ = ash::QuickAnswersController::Get();
+    DCHECK(quick_answers_controller_);
+    quick_answers_controller_->SetClient(std::make_unique<QuickAnswersClient>(
+        content::BrowserContext::GetDefaultStoragePartition(browser_context)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get(),
+        assistant_state, quick_answers_controller_->GetQuickAnswersDelegate()));
   }
 }
 
@@ -78,6 +87,9 @@ QuickAnswersMenuObserver::~QuickAnswersMenuObserver() = default;
 
 void QuickAnswersMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
+  if (IsRichUiEnabled())
+    return;
+
   if (!is_eligible_ || !proxy_ || !quick_answers_client_)
     return;
 
@@ -110,6 +122,36 @@ void QuickAnswersMenuObserver::InitMenu(
   quick_answers_client_->SendRequest(request);
 }
 
+void QuickAnswersMenuObserver::OnContextMenuShown(
+    const content::ContextMenuParams& params,
+    gfx::Rect bounds) {
+  if (!IsRichUiEnabled())
+    return;
+
+  if (!is_eligible_ || !quick_answers_controller_)
+    return;
+
+  if (params.input_field_type ==
+      blink::ContextMenuDataInputFieldType::kPassword)
+    return;
+
+  auto selected_text = base::UTF16ToUTF8(params.selection_text);
+  if (selected_text.empty())
+    return;
+
+  quick_answers_controller_->CreateQuickAnswersView(bounds, selected_text);
+}
+
+void QuickAnswersMenuObserver::OnMenuClosed() {
+  if (!IsRichUiEnabled())
+    return;
+
+  if (!is_eligible_ || !quick_answers_controller_)
+    return;
+
+  quick_answers_controller_->DismissQuickAnswersView();
+}
+
 bool QuickAnswersMenuObserver::IsCommandIdSupported(int command_id) {
   return (command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY ||
           command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER);
@@ -121,6 +163,10 @@ bool QuickAnswersMenuObserver::IsCommandIdChecked(int command_id) {
 
 bool QuickAnswersMenuObserver::IsCommandIdEnabled(int command_id) {
   return command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY;
+}
+
+bool QuickAnswersMenuObserver::IsRichUiEnabled() {
+  return chromeos::features::IsQuickAnswersRichUiEnabled();
 }
 
 void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
@@ -170,7 +216,6 @@ void QuickAnswersMenuObserver::OnQuickAnswerReceived(
                            /*hidden=*/false,
                            /*title=*/TruncateString(kNoResult));
   }
-
   quick_answer_received_time_ = base::TimeTicks::Now();
   quick_answer_ = std::move(quick_answer);
 }

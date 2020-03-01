@@ -45,6 +45,22 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const net::CookieAndLineStatusList& cookies_with_status,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override;
+  void OnCorsPreflightRequest(int32_t process_id,
+                              int32_t routing_id,
+                              const base::UnguessableToken& devtool_request_id,
+                              const network::ResourceRequest& request,
+                              const GURL& initiator_url) override;
+  void OnCorsPreflightResponse(
+      int32_t process_id,
+      int32_t routing_id,
+      const base::UnguessableToken& devtool_request_id,
+      const GURL& url,
+      network::mojom::URLResponseHeadPtr head) override;
+  void OnCorsPreflightRequestCompleted(
+      int32_t process_id,
+      int32_t routing_id,
+      const base::UnguessableToken& devtool_request_id,
+      const network::URLLoaderCompletionStatus& status) override;
 
  private:
   mojo::Receiver<mojom::NetworkServiceClient> receiver_;

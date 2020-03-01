@@ -6885,40 +6885,6 @@ void Document::ApplyPendingFramePolicyHeaders() {
   pending_dp_headers_.clear();
 }
 
-void Document::ApplyReportOnlyFeaturePolicyFromHeader(
-    const String& feature_policy_report_only_header) {
-  if (feature_policy_report_only_header.IsEmpty())
-    return;
-  // TODO(iclelland): Remove this message when reporting is no longer part of an
-  // origin trial.
-  // Note that we do not return here. Instead, the header is parsed and the
-  // report-only policy is stored, in case a valid Origin Trial token is added
-  // later. In that case, any subsequent violations will be correctly reported.
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this)) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kWarning,
-        "Feature-Policy-Report-Only header will have no effect unless Feature "
-        "Policy reporting is enabled with an Origin Trial. Sign up at "
-        "https://developers.chrome.com/origintrials/"));
-  }
-
-  UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
-  Vector<String> messages;
-  const ParsedFeaturePolicy& report_only_policy =
-      FeaturePolicyParser::ParseHeader(feature_policy_report_only_header,
-                                       GetSecurityOrigin(), &messages, this);
-  for (auto& message : messages) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Error with Feature-Policy-Report-Only header: " + message));
-  }
-
-  GetSecurityContext().AddReportOnlyFeaturePolicy(
-      report_only_policy, GetOwnerContainerPolicy(), GetParentFeaturePolicy());
-}
-
 bool Document::AllowedToUseDynamicMarkUpInsertion(
     const char* api_name,
     ExceptionState& exception_state) {

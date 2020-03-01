@@ -508,6 +508,55 @@ void OnResponseReceivedExtraInfo(
                          response_headers, response_headers_text);
 }
 
+void OnCorsPreflightRequest(int32_t process_id,
+                            int32_t render_frame_id,
+                            const base::UnguessableToken& devtools_request_id,
+                            const network::ResourceRequest& request,
+                            const GURL& initiator_url) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, render_frame_id);
+  if (!ftn)
+    return;
+  auto timestamp = base::TimeTicks::Now();
+  auto id = devtools_request_id.ToString();
+  // TODO(crbug.com/941297): Currently we are using an empty string for
+  // |loader_id|. But when we will introduce a better UI for preflight requests,
+  // consider using the navigation token which is same as the |loader_id| of the
+  // original request or the |devtools_request_id| of the original request, so
+  // that we can associate the requests in the DevTools front end.
+  DispatchToAgents(ftn, &protocol::NetworkHandler::RequestSent, id,
+                   /* loader_id=*/"", request,
+                   protocol::Network::Initiator::TypeEnum::Other, initiator_url,
+                   timestamp);
+}
+
+void OnCorsPreflightResponse(int32_t process_id,
+                             int32_t render_frame_id,
+                             const base::UnguessableToken& devtools_request_id,
+                             const GURL& url,
+                             network::mojom::URLResponseHeadPtr head) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, render_frame_id);
+  if (!ftn)
+    return;
+  auto id = devtools_request_id.ToString();
+  DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id,
+                   /* loader_id=*/"", url,
+                   protocol::Network::ResourceTypeEnum::Other, *head,
+                   protocol::Maybe<std::string>());
+}
+
+void OnCorsPreflightRequestCompleted(
+    int32_t process_id,
+    int32_t render_frame_id,
+    const base::UnguessableToken& devtools_request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, render_frame_id);
+  if (!ftn)
+    return;
+  auto id = devtools_request_id.ToString();
+  DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
+                   protocol::Network::ResourceTypeEnum::Other, status);
+}
+
 }  // namespace devtools_instrumentation
 
 }  // namespace content

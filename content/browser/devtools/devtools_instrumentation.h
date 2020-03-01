@@ -119,6 +119,21 @@ void OnResponseReceivedExtraInfo(
     const net::CookieAndLineStatusList& response_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text);
+void OnCorsPreflightRequest(int32_t process_id,
+                            int32_t render_frame_id,
+                            const base::UnguessableToken& devtools_request_id,
+                            const network::ResourceRequest& request,
+                            const GURL& signed_exchange_url);
+void OnCorsPreflightResponse(int32_t process_id,
+                             int32_t render_frame_id,
+                             const base::UnguessableToken& devtools_request_id,
+                             const GURL& url,
+                             network::mojom::URLResponseHeadPtr head);
+void OnCorsPreflightRequestCompleted(
+    int32_t process_id,
+    int32_t render_frame_id,
+    const base::UnguessableToken& devtools_request_id,
+    const network::URLLoaderCompletionStatus& status);
 
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandle* navigation_handle);

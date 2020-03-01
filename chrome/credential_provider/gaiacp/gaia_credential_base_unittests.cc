@@ -665,10 +665,16 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation_PasswordTooShort) {
                                      IDS_CREATE_USER_PASSWORD_TOO_SHORT_BASE));
 }
 
-TEST_F(GcpGaiaCredentialBaseTest, FailOnInvalidDomain) {
+class GcpGaiaCredentialBaseInvalidDomainTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<const wchar_t*> {};
+
+TEST_P(GcpGaiaCredentialBaseInvalidDomainTest, Fail) {
+  const wchar_t* allow_domains_key = GetParam();
   const base::string16 allowed_email_domains =
       L"acme.com,acme2.com,acme3.com";
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"ed", allowed_email_domains));
+  ASSERT_EQ(S_OK,
+            SetGlobalFlagForTesting(allow_domains_key, allowed_email_domains));
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -691,6 +697,10 @@ TEST_F(GcpGaiaCredentialBaseTest, FailOnInvalidDomain) {
   // Logon process should fail with the specified error message.
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, expected_error_msg));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseInvalidDomainTest,
+                         ::testing::Values(L"ed", L"domains_allowed_to_login"));
 
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   USES_CONVERSION;
@@ -734,7 +744,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
 TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
   USES_CONVERSION;
   // Enforce single user mode for MDM.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
   GoogleMdmEnrolledStatusForTesting force_success(true);
@@ -769,7 +779,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
 TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   // Enforce token handle verification with user locking when the token handle
   // is not valid.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrollmentStatusForTesting force_success(true);
 
@@ -821,7 +831,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
 TEST_F(GcpGaiaCredentialBaseTest, SigninNotBlockedWhenValidChromeNotFound) {
   // Enforce token handle verification with user locking when the token handle
   // is not valid.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrollmentStatusForTesting force_success(true);
 
@@ -850,7 +860,7 @@ TEST_F(GcpGaiaCredentialBaseTest, SigninNotBlockedWhenValidChromeNotFound) {
 TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   USES_CONVERSION;
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrolledStatusForTesting force_success(true);
@@ -935,7 +945,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
        DenySigninBlockedDuringSignin_StaleOnlineLogin) {
   USES_CONVERSION;
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
@@ -2039,7 +2049,7 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   GoogleMdmEnrollmentStatusForTesting force_success(true);
 
   if (mdm_enabled)
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
 
   const bool mdm_consumer_accounts_reg_key_set =
       mdm_consumer_accounts_reg_key_setting >= 0 &&
@@ -2127,18 +2137,14 @@ class GcpGaiaCredentialBasePasswordRecoveryTest
       public ::testing::WithParamInterface<std::tuple<int, int, int>> {};
 
 TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
-  // Enable standard escrow service features in non-Chrome builds so that
-  // the escrow service code can be tested by the build machines.
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
 
   int generate_public_key_result = std::get<0>(GetParam());
   int get_private_key_result = std::get<1>(GetParam());
   int generate_public_key_again_result = std::get<2>(GetParam());
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
 
@@ -2364,16 +2370,12 @@ class GcpGaiaCredentialBasePasswordChangeFailureTest
       public ::testing::WithParamInterface<int> {};
 
 TEST_P(GcpGaiaCredentialBasePasswordChangeFailureTest, Fail) {
-  // Enable standard escrow service features in non-Chrome builds so that
-  // the escrow service code can be tested by the build machines.
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
 
   int failure_reason = GetParam();
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
 
@@ -2516,31 +2518,21 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Parameter is a pointer to an escrow service url. Can be empty or nullptr.
 class GcpGaiaCredentialBasePasswordRecoveryDisablingTest
     : public GcpGaiaCredentialBaseTest,
-      public ::testing::WithParamInterface<const wchar_t*> {};
+      public ::testing::WithParamInterface<int> {};
 
 TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
        PasswordRecovery_Disabled) {
-  // Enable standard escrow service features in non-Chrome builds so that
-  // the escrow service code can be tested by the build machines.
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
-  const wchar_t* escrow_service_url = GetParam();
+  int disable_escrow_service = GetParam();
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
   // SetGlobalFlagForTesting effectively deletes the registry when the provided
   // registry value is empty. That implicitly enables escrow service without a
   // registry override.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl, L""));
-
-  if (escrow_service_url) {
-    base::win::RegKey key;
-    ASSERT_EQ(ERROR_SUCCESS,
-              key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
-    ASSERT_EQ(ERROR_SUCCESS,
-              key.WriteValue(kRegEscrowServiceServerUrl, escrow_service_url));
-  }
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync,
+                                          disable_escrow_service));
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
@@ -2615,9 +2607,8 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
     Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
     ASSERT_EQ(S_OK, created_provider().As(&test_provider));
 
-    // Empty escrow service url will disable password
-    // recovery and force the user to enter their password.
-    if (escrow_service_url && escrow_service_url[0] == '\0') {
+    // Disable password recovery and force the user to enter their password.
+    if (disable_escrow_service) {
       // Logon should not complete but there is no error message.
       EXPECT_EQ(test_provider->credentials_changed_fired(), false);
 
@@ -2646,9 +2637,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
-                         ::testing::Values(nullptr,
-                                           L"",
-                                           L"https://escrowservice.com"));
+                         ::testing::Values(0, 1));
 
 // Test Upload device details to GEM service with different failure scenarios.
 // Parameters are:

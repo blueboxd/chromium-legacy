@@ -13,8 +13,7 @@
 namespace chromeos {
 namespace quick_answers {
 
-class MockQuickAnswersDelegate
-    : public QuickAnswersClient::QuickAnswersDelegate {
+class MockQuickAnswersDelegate : public QuickAnswersDelegate {
  public:
   MockQuickAnswersDelegate();
   ~MockQuickAnswersDelegate() override;

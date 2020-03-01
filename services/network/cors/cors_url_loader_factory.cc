@@ -179,7 +179,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
   DCHECK(inner_url_loader_factory);
   if (context_->IsCorsEnabled() && !disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
-        std::move(receiver), routing_id, request_id, options,
+        std::move(receiver), process_id_, routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, ignore_isolated_world_origin_, std::move(client),

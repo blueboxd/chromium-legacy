@@ -45,6 +45,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   ContentSecurityPolicy* GetCSP() const { return csp_; }
 
   std::unique_ptr<FeaturePolicy> CreateFeaturePolicy() const;
+  std::unique_ptr<FeaturePolicy> CreateReportOnlyFeaturePolicy() const;
 
   std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;
 
@@ -87,7 +88,9 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   DocumentPolicy::FeatureState document_policy_;
   bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;
+  Vector<String> report_only_feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;
+  ParsedFeaturePolicy report_only_feature_policy_header_;
   LocalFrame* frame_for_opener_feature_state_ = nullptr;
   Frame* parent_frame_ = nullptr;
   ParsedFeaturePolicy container_policy_;

@@ -470,8 +470,6 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool uploaded_device_details = std::get<9>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
-
   FakeAssociatedUserValidator validator;
   fake_internet_checker()->SetHasInternetConnection(
       internet_available ? FakeInternetAvailabilityChecker::kHicForceYes
@@ -482,8 +480,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   }
 
   if (password_recovery_enabled) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                            L"https://escrow.com"));
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
   }
 
   bool should_user_locking_be_enabled =
@@ -643,8 +640,6 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
 }
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
-
   FakeAssociatedUserValidator validator;
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
@@ -652,8 +647,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
                       L"gaia-id", base::string16(), &sid));
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
   GoogleMdmEnrolledStatusForTesting force_success(true);
   GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
@@ -674,8 +668,6 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
 }
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
-
   FakeAssociatedUserValidator validator;
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
@@ -683,8 +675,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
                       L"gaia-id", base::string16(), &sid));
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
-                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
   GoogleMdmEnrolledStatusForTesting force_success(true);
   GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 

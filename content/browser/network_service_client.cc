@@ -228,4 +228,33 @@ void NetworkServiceClient::OnRawResponse(
       process_id, routing_id, devtools_request_id, cookies_with_status, headers,
       raw_response_headers);
 }
+
+void NetworkServiceClient::OnCorsPreflightRequest(
+    int32_t process_id,
+    int32_t render_frame_id,
+    const base::UnguessableToken& devtools_request_id,
+    const network::ResourceRequest& request,
+    const GURL& initiator_url) {
+  devtools_instrumentation::OnCorsPreflightRequest(
+      process_id, render_frame_id, devtools_request_id, request, initiator_url);
+}
+
+void NetworkServiceClient::OnCorsPreflightResponse(
+    int32_t process_id,
+    int32_t render_frame_id,
+    const base::UnguessableToken& devtools_request_id,
+    const GURL& url,
+    network::mojom::URLResponseHeadPtr head) {
+  devtools_instrumentation::OnCorsPreflightResponse(
+      process_id, render_frame_id, devtools_request_id, url, std::move(head));
+}
+
+void NetworkServiceClient::OnCorsPreflightRequestCompleted(
+    int32_t process_id,
+    int32_t render_frame_id,
+    const base::UnguessableToken& devtools_request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  devtools_instrumentation::OnCorsPreflightRequestCompleted(
+      process_id, render_frame_id, devtools_request_id, status);
+}
 }  // namespace content

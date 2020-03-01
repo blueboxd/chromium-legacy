@@ -154,6 +154,11 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithFeaturePolicyHeader(const String& header);
   const String& FeaturePolicyHeader() const { return feature_policy_header_; }
 
+  DocumentInit& WithReportOnlyFeaturePolicyHeader(const String& header);
+  const String& ReportOnlyFeaturePolicyHeader() const {
+    return report_only_feature_policy_header_;
+  }
+
   DocumentInit& WithOriginTrialsHeader(const String& header);
   const String& OriginTrialsHeader() const { return origin_trials_header_; }
 
@@ -235,6 +240,7 @@ class CORE_EXPORT DocumentInit final {
 
   // The feature policy set via response header.
   String feature_policy_header_;
+  String report_only_feature_policy_header_;
 
   // The origin trial set via response header.
   String origin_trials_header_;

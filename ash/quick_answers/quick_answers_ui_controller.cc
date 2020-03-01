@@ -5,6 +5,7 @@
 #include "ash/quick_answers/quick_answers_ui_controller.h"
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/quick_answers/quick_answers_controller_impl.h"
 #include "ash/quick_answers/ui/quick_answers_view.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -20,6 +21,10 @@
 
 using chromeos::quick_answers::QuickAnswer;
 namespace ash {
+
+QuickAnswersUiController::QuickAnswersUiController(
+    QuickAnswersControllerImpl* controller)
+    : controller_(controller) {}
 
 QuickAnswersUiController::~QuickAnswersUiController() {
   Close();
@@ -53,26 +58,37 @@ void QuickAnswersUiController::Close() {
   quick_answers_view_ = nullptr;
 }
 
+void QuickAnswersUiController::OnRetryLabelPressed() {
+  controller_->OnRetryQuickAnswersRequest();
+}
+
 void QuickAnswersUiController::RenderQuickAnswersViewWithResult(
-    const gfx::Rect& bounds,
+    const gfx::Rect& anchor_bounds,
     const QuickAnswer& quick_answer) {
   if (!quick_answers_view_)
     return;
 
   // QuickAnswersView was initiated with a loading page and will be updated
   // when quick answers result from server side is ready.
-  quick_answers_view_->UpdateView(bounds, quick_answer);
+  quick_answers_view_->UpdateView(anchor_bounds, quick_answer);
 }
 
 void QuickAnswersUiController::SetActiveQuery(const std::string& query) {
   query_ = query;
 }
 
-void QuickAnswersUiController::UpdateQuickAnswersBounds(
-    const gfx::Rect& bounds) {
+void QuickAnswersUiController::ShowRetry() {
   if (!quick_answers_view_)
     return;
 
-  quick_answers_view_->UpdateAnchorViewBounds(bounds);
+  quick_answers_view_->ShowRetryView();
+}
+
+void QuickAnswersUiController::UpdateQuickAnswersBounds(
+    const gfx::Rect& anchor_bounds) {
+  if (!quick_answers_view_)
+    return;
+
+  quick_answers_view_->UpdateAnchorViewBounds(anchor_bounds);
 }
 }  // namespace ash

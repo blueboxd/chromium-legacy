@@ -97,6 +97,14 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
         mojom::ConsoleMessageLevel::kError,
         "Error with Feature-Policy header: " + message));
   }
+  for (const auto& message : report_only_feature_policy_parse_messages_) {
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Error with Feature-Policy-Report-Only header: " + message));
+  }
+  if (!report_only_feature_policy_header_.empty())
+    UseCounter::Count(document, WebFeature::kFeaturePolicyReportOnlyHeader);
 }
 
 void SecurityContextInit::InitializeContentSecurityPolicy(
@@ -293,6 +301,10 @@ void SecurityContextInit::InitializeFeaturePolicy(
       initializer.FeaturePolicyHeader(), security_origin_,
       &feature_policy_parse_messages_, this);
 
+  report_only_feature_policy_header_ = FeaturePolicyParser::ParseHeader(
+      initializer.ReportOnlyFeaturePolicyHeader(), security_origin_,
+      &report_only_feature_policy_parse_messages_, this);
+
   if (sandbox_flags_ != mojom::blink::WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // The sandbox flags might have come from CSP header or the browser; in
@@ -325,8 +337,31 @@ void SecurityContextInit::InitializeFeaturePolicy(
     parent_frame_ = frame->Tree().Parent();
 }
 
+std::unique_ptr<FeaturePolicy>
+SecurityContextInit::CreateReportOnlyFeaturePolicy() const {
+  // For non-Document initialization, returns nullptr directly.
+  if (!initialized_feature_policy_state_)
+    return nullptr;
+  // Report-only feature policy only takes effect when it is stricter than
+  // enforced feature policy, i.e. when enforced feature policy allows a feature
+  // while report-only feature policy do not. In such scenario, a report-only
+  // policy violation report will be generated, but the feature is still allowed
+  // to be used. Since child frames cannot loosen enforced feature policy, there
+  // is no need to inherit parent policy and container policy for report-only
+  // feature policy. For inherited policies, the behavior is dominated by
+  // enforced feature policy.
+  DCHECK(security_origin_);
+  std::unique_ptr<FeaturePolicy> report_only_policy =
+      FeaturePolicy::CreateFromParentPolicy(nullptr /* parent_policy */,
+                                            {} /* container_policy */,
+                                            security_origin_->ToUrlOrigin());
+  report_only_policy->SetHeaderPolicy(report_only_feature_policy_header_);
+  return report_only_policy;
+}
+
 std::unique_ptr<FeaturePolicy> SecurityContextInit::CreateFeaturePolicy()
     const {
+  // For non-Document initialization, returns nullptr directly.
   if (!initialized_feature_policy_state_)
     return nullptr;
 

@@ -5,6 +5,7 @@
 #include "base/threading/hang_watcher.h"
 
 #include <algorithm>
+#include <atomic>
 #include <utility>
 
 #include "base/bind.h"
@@ -71,6 +72,7 @@ HangWatchScope::HangWatchScope(TimeDelta timeout) {
 
 HangWatchScope::~HangWatchScope() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   internal::HangWatchState* current_hang_watch_state =
       internal::HangWatchState::GetHangWatchStateForCurrentThread()->Get();
 
@@ -79,6 +81,10 @@ HangWatchScope::~HangWatchScope() {
   if (!current_hang_watch_state) {
     return;
   }
+
+  // If a hang is currently being captured we should block here so execution
+  // stops and the relevant stack frames are recorded.
+  base::HangWatcher::GetInstance()->BlockIfCaptureInProgress();
 
 #if DCHECK_IS_ON()
   // Verify that no Scope was destructed out of order.
@@ -194,9 +200,14 @@ void HangWatcher::Monitor() {
   }
 
   if (must_invoke_hang_closure) {
+    capture_in_progress.store(true, std::memory_order_relaxed);
+    base::AutoLock scope_lock(capture_lock_);
+
     // Invoke the closure outside the scope of |watch_state_lock_|
     // to prevent lock reentrancy.
     on_hang_closure_.Run();
+
+    capture_in_progress.store(false, std::memory_order_relaxed);
   }
 
   if (after_monitor_closure_for_testing_) {
@@ -215,6 +226,16 @@ void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
 
 void HangWatcher::SignalMonitorEventForTesting() {
   monitor_event_.Signal();
+}
+
+void HangWatcher::BlockIfCaptureInProgress() {
+  // Makes a best-effort attempt to block execution if a hang is currently being
+  // captured.Only block on |capture_lock| if |capture_in_progress| hints that
+  // it's already held to avoid serializing all threads on this function when no
+  // hang capture is in-progress.
+  if (capture_in_progress.load(std::memory_order_relaxed)) {
+    base::AutoLock hang_lock(capture_lock_);
+  }
 }
 
 void HangWatcher::UnregisterThread() {

@@ -28,8 +28,12 @@ extern const wchar_t kRegInitializeCrashReporting[];
 // to GCPW that have invalid token handles.
 extern const wchar_t kRegMdmUrl[];
 
-// Base server url for the password recovery escrow service.
-extern const wchar_t kRegEscrowServiceServerUrl[];
+// The registry entry is used to control whether to enable enrollment
+// Google device management solution.
+extern const wchar_t kRegEnableDmEnrollment[];
+
+// Disables password escrowing feature in GCPW.
+extern const wchar_t kRegDisablePasswordSync[];
 
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
@@ -65,14 +69,6 @@ class GoogleMdmEnrolledStatusForTesting {
  public:
   explicit GoogleMdmEnrolledStatusForTesting(bool success);
   ~GoogleMdmEnrolledStatusForTesting();
-};
-
-// Class used in tests to force password escrow service availability when not
-// in a Google Chrome build (where the service is disabled).
-class GoogleMdmEscrowServiceEnablerForTesting {
- public:
-  GoogleMdmEscrowServiceEnablerForTesting();
-  ~GoogleMdmEscrowServiceEnablerForTesting();
 };
 
 // Class used in tests to force upload device details needed.

@@ -1498,6 +1498,9 @@ void DocumentLoader::InstallNewDocument(
           .WithFramePolicy(frame_policy_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())
+          // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
+          .WithReportOnlyFeaturePolicyHeader(
+              response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly))
           .WithDocumentPolicy(document_policy_)
           .WithOriginTrialsHeader(
               response_.HttpHeaderField(http_names::kOriginTrial))
@@ -1711,11 +1714,6 @@ void DocumentLoader::CreateParserPostCommit() {
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
   document->ApplyPendingFramePolicyHeaders();
-
-  WTF::String report_only_feature_policy(
-      response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly));
-  // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
-  document->ApplyReportOnlyFeaturePolicyFromHeader(report_only_feature_policy);
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 

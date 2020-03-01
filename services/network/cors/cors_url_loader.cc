@@ -86,6 +86,7 @@ constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
 
 CorsURLLoader::CorsURLLoader(
     mojo::PendingReceiver<mojom::URLLoader> loader_receiver,
+    int32_t process_id,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -99,6 +100,7 @@ CorsURLLoader::CorsURLLoader(
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
     : receiver_(this, std::move(loader_receiver)),
+      process_id_(process_id),
       routing_id_(routing_id),
       request_id_(request_id),
       options_(options),
@@ -489,7 +491,7 @@ void CorsURLLoader::StartRequest() {
       PreflightController::WithTrustedHeaderClient(
           options_ & mojom::kURLLoadOptionUseHeaderClient),
       tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
-      network_loader_factory_);
+      network_loader_factory_, process_id_);
 }
 
 void CorsURLLoader::StartNetworkRequest(

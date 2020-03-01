@@ -21,6 +21,14 @@ PRINTING_EXPORT extern const base::Feature kAdvancedPpdAttributes;
 #if defined(OS_WIN)
 PRINTING_EXPORT extern const base::Feature kUseXpsForPrinting;
 PRINTING_EXPORT extern const base::Feature kUseXpsForPrintingFromPdf;
+
+// Helper function to determine if there is any print path which could require
+// the use of XPS print capabilities.
+PRINTING_EXPORT bool IsXpsPrintCapabilityRequired();
+
+// Helper function to determine if printing of a document from a particular
+// source should be done using XPS printing API instead of with GDI.
+PRINTING_EXPORT bool ShouldPrintUsingXps(bool source_is_pdf);
 #endif
 
 }  // namespace features

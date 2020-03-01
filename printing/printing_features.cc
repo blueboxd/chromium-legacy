@@ -23,6 +23,17 @@ const base::Feature kUseXpsForPrinting{"UseXpsForPrinting",
 // GDI for modifiable content.
 const base::Feature kUseXpsForPrintingFromPdf{
     "UseXpsForPrintingFromPdf", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsXpsPrintCapabilityRequired() {
+  return base::FeatureList::IsEnabled(features::kUseXpsForPrinting) ||
+         base::FeatureList::IsEnabled(features::kUseXpsForPrintingFromPdf);
+}
+
+bool ShouldPrintUsingXps(bool source_is_pdf) {
+  return base::FeatureList::IsEnabled(source_is_pdf
+                                          ? features::kUseXpsForPrintingFromPdf
+                                          : features::kUseXpsForPrinting);
+}
 #endif  // defined(OS_WIN)
 
 }  // namespace features

@@ -58,6 +58,7 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
     : sandbox_flags_(init.GetSandboxFlags()),
       security_origin_(init.GetSecurityOrigin()),
       feature_policy_(init.CreateFeaturePolicy()),
+      report_only_feature_policy_(init.CreateReportOnlyFeaturePolicy()),
       document_policy_(init.CreateDocumentPolicy()),
       content_security_policy_(init.GetCSP()),
       address_space_(network::mojom::IPAddressSpace::kUnknown),
@@ -125,16 +126,6 @@ void SecurityContext::SetFeaturePolicy(
   // This method should be called before a FeaturePolicy has been created.
   DCHECK(!feature_policy_);
   feature_policy_ = std::move(feature_policy);
-}
-
-// Uses the parent enforcing policy as the basis for the report-only policy.
-void SecurityContext::AddReportOnlyFeaturePolicy(
-    const ParsedFeaturePolicy& parsed_report_only_header,
-    const ParsedFeaturePolicy& container_policy,
-    const FeaturePolicy* parent_feature_policy) {
-  report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-      parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
-  report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
 }
 
 void SecurityContext::SetDocumentPolicyForTesting(

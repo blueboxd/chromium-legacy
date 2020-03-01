@@ -22,7 +22,7 @@ NullExecutionContext::NullExecutionContext(
     : ExecutionContext(
           v8::Isolate::GetCurrent(),
           SecurityContextInit(
-              nullptr,
+              nullptr /* origin */,
               origin_trial_context,
               MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
                                           base::UnguessableToken::Null()))),

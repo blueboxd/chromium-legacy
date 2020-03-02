@@ -3531,6 +3531,11 @@ const char kTerminalSystemAppDescription[] =
     "Enables the Terminal System App at chrome://terminal which is used for "
     "the Chrome OS Linux terminal.";
 
+const char kTerminalSystemAppLegacySettingsName[] =
+    "Terminal System App Legacy Settings";
+const char kTerminalSystemAppLegacySettingsDescription[] =
+    "Use the legacy settings page for Terminal System App.";
+
 const char kTerminalSystemAppSplitsName[] = "Terminal System App Splits";
 const char kTerminalSystemAppSplitsDescription[] =
     "Enables splits for the Terminal System App.";

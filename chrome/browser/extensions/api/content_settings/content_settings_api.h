@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 #include "ppapi/buildflags/buildflags.h"
 
 namespace content {
@@ -51,7 +51,7 @@ class ContentSettingsContentSettingSetFunction : public ExtensionFunction {
 };
 
 class ContentSettingsContentSettingGetResourceIdentifiersFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.getResourceIdentifiers",
                              CONTENTSETTINGS_GETRESOURCEIDENTIFIERS)
@@ -60,7 +60,7 @@ class ContentSettingsContentSettingGetResourceIdentifiersFunction
   ~ContentSettingsContentSettingGetResourceIdentifiersFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,

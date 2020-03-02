@@ -546,7 +546,7 @@ class BrowserView : public BrowserWindow,
   void OnTouchUiChanged() override;
 
   // banners::AppBannerManager::Observer:
-  void OnAppBannerManagerChanged(
+  void OnAppBannerManagerChangedForTesting(
       banners::AppBannerManager* new_manager) override;
   void OnInstallableWebAppStatusUpdated() override;
 
@@ -678,6 +678,9 @@ class BrowserView : public BrowserWindow,
   // set to the chrome command id defined in //chrome/app/chrome_command_ids.h.
   bool FindCommandIdForAccelerator(const ui::Accelerator& accelerator,
                                    int* command_id) const;
+
+  // Updates AppBannerManager::Observer to observe |new_manager| exclusively.
+  void ObserveAppBannerManager(banners::AppBannerManager* new_manager);
 
   // Called by GetAccessibleWindowTitle, split out to make it testable.
   base::string16 GetAccessibleWindowTitleForChannelAndProfile(

@@ -98,10 +98,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
                                            SkBitmap());
     } else {
       ClickExtensionsMenuButton();
-      ExtensionsMenuView* menu =
-          ExtensionsMenuView::GetExtensionsMenuViewForTesting();
-      DCHECK(menu);
-      menu->set_crash_on_close_for_testing(true);
+      ASSERT_TRUE(ExtensionsMenuView::GetExtensionsMenuViewForTesting());
     }
 
     // Wait for any pending animations to finish so that correct pinned
@@ -129,9 +126,6 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
       EXPECT_TRUE(container->IsActionVisibleOnToolbar(
           container->GetActionForId(extensions()[0]->id())));
       EXPECT_TRUE(container->GetViewForId(extensions()[0]->id())->GetVisible());
-    } else {
-      ExtensionsMenuView::GetExtensionsMenuViewForTesting()
-          ->set_crash_on_close_for_testing(false);
     }
 
     return true;

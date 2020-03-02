@@ -3468,6 +3468,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "terminal-system-app-legacy-settings",
+    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "terminal-system-app-splits",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
     "expiry_milestone": 85

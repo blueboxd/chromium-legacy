@@ -31,6 +31,13 @@ class SystemWebAppManager;
 
 // Checks for updates to a web app's manifest and triggers a reinstall if the
 // current installation is out of date.
+//
+// Update checks are throttled per app (see MaybeConsumeUpdateCheck()) to avoid
+// excessive updating on pathological sites.
+//
+// Each update check is performed by a |ManifestUpdateTask|, see that class for
+// details about what happens during a check.
+//
 // TODO(crbug.com/926083): Replace MaybeUpdate() with a background check instead
 // of being triggered by page loads.
 class ManifestUpdateManager final : public AppRegistrarObserver {

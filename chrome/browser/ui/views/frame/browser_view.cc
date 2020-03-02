@@ -1045,7 +1045,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   infobar_container_->ChangeInfoBarManager(
       InfoBarService::FromWebContents(new_contents));
 
-  OnAppBannerManagerChanged(
+  ObserveAppBannerManager(
       banners::AppBannerManager::FromWebContents(new_contents));
 
   UpdateUIForContents(new_contents);
@@ -3310,6 +3310,12 @@ bool BrowserView::FindCommandIdForAccelerator(
   return true;
 }
 
+void BrowserView::ObserveAppBannerManager(
+    banners::AppBannerManager* new_manager) {
+  app_banner_manager_observer_.RemoveAll();
+  app_banner_manager_observer_.Add(new_manager);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ExclusiveAccessContext implementation:
 Profile* BrowserView::GetProfile() {
@@ -3436,10 +3442,9 @@ void BrowserView::OnTouchUiChanged() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
-void BrowserView::OnAppBannerManagerChanged(
+void BrowserView::OnAppBannerManagerChangedForTesting(
     banners::AppBannerManager* new_manager) {
-  app_banner_manager_observer_.RemoveAll();
-  app_banner_manager_observer_.Add(new_manager);
+  ObserveAppBannerManager(new_manager);
 }
 
 void BrowserView::OnInstallableWebAppStatusUpdated() {

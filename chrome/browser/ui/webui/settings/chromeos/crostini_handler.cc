@@ -120,14 +120,20 @@ void CrostiniHandler::RegisterMessages() {
           &CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest,
           weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
+      "requestCrostiniContainerUpgradeAvailable",
+      base::BindRepeating(
+          &CrostiniHandler::HandleCrostiniContainerUpgradeAvailableRequest,
+          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
       "addCrostiniPortForward",
       base::BindRepeating(&CrostiniHandler::HandleAddCrostiniPortForward,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
-  crostini::CrostiniManager::GetForProfile(profile_)
-      ->AddCrostiniDialogStatusObserver(this);
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->AddCrostiniDialogStatusObserver(this);
+  crostini_manager->AddCrostiniContainerPropertiesObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->AddUsbDeviceObserver(this);
   }
@@ -135,8 +141,9 @@ void CrostiniHandler::OnJavascriptAllowed() {
 }
 
 void CrostiniHandler::OnJavascriptDisallowed() {
-  crostini::CrostiniManager::GetForProfile(profile_)
-      ->RemoveCrostiniDialogStatusObserver(this);
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->RemoveCrostiniDialogStatusObserver(this);
+  crostini_manager->RemoveCrostiniContainerPropertiesObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->RemoveUsbDeviceObserver(this);
   }
@@ -324,6 +331,14 @@ void CrostiniHandler::OnCrostiniDialogStatusChanged(
   }
 }
 
+void CrostiniHandler::OnContainerOsReleaseChanged(
+    const crostini::ContainerId& container_id,
+    bool can_upgrade) {
+  // Right now, |can_upgrade| is true only for the default |container_id|.
+  FireWebUIListener("crostini-container-upgrade-available-changed",
+                    base::Value(can_upgrade));
+}
+
 void CrostiniHandler::OnQueryAdbSideload(
     SessionManagerClient::AdbSideloadResponseCode response_code,
     bool enabled) {
@@ -430,6 +445,16 @@ void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
   bool is_open = crostini::CrostiniManager::GetForProfile(profile_)
                      ->GetCrostiniDialogStatus(crostini::DialogType::UPGRADER);
   OnCrostiniDialogStatusChanged(crostini::DialogType::UPGRADER, is_open);
+}
+
+void CrostiniHandler::HandleCrostiniContainerUpgradeAvailableRequest(
+    const base::ListValue* args) {
+  AllowJavascript();
+  crostini::ContainerId container_id(crostini::kCrostiniDefaultVmName,
+                                     crostini::kCrostiniDefaultContainerName);
+  bool can_upgrade = crostini::CrostiniManager::GetForProfile(profile_)
+                         ->IsContainerUpgradeable(container_id);
+  OnContainerOsReleaseChanged(container_id, can_upgrade);
 }
 
 void CrostiniHandler::HandleAddCrostiniPortForward(

@@ -101,6 +101,12 @@ cr.define('settings', function() {
     requestCrostiniUpgraderDialogStatus() {}
 
     /**
+     * Request chrome send a crostini-container-upgrade-available-changed event
+     * with the availability of an upgrade for the container.
+     */
+    requestCrostiniContainerUpgradeAvailable() {}
+
+    /**
      * @param {string} vmName Name of vm to add port forwarding for.
      * @param {string} containerName Name of container to add port forwarding
      *     for.
@@ -188,6 +194,11 @@ cr.define('settings', function() {
     /** @override */
     requestCrostiniUpgraderDialogStatus() {
       chrome.send('requestCrostiniUpgraderDialogStatus');
+    }
+
+    /** @override */
+    requestCrostiniContainerUpgradeAvailable() {
+      chrome.send('requestCrostiniContainerUpgradeAvailable');
     }
 
     /** @override */

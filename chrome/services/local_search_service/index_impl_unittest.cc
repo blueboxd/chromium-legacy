@@ -44,20 +44,6 @@ class IndexImplTest : public testing::Test {
     index_impl_.BindReceiver(index_remote_.BindNewPipeAndPassReceiver());
   }
 
-  // Creates test data to be registered to the index. |input| is a map from
-  // id to search-tags.
-  std::vector<mojom::DataPtr> CreateTestData(
-      const std::map<std::string, std::vector<std::string>>& input) {
-    std::vector<mojom::DataPtr> output;
-    for (const auto& item : input) {
-      const std::string& id = item.first;
-      const std::vector<std::string>& tags = item.second;
-      mojom::DataPtr data = mojom::Data::New(id, tags);
-      output.push_back(std::move(data));
-    }
-    return output;
-  }
-
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   IndexImpl index_impl_;

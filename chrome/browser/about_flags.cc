@@ -1528,6 +1528,12 @@ const FeatureEntry::Choice kEnableCrOSActionRecorderChoices[] = {
     {ash::switches::kCrOSActionRecorderWithoutHash,
      ash::switches::kEnableCrOSActionRecorder,
      ash::switches::kCrOSActionRecorderWithoutHash},
+    {ash::switches::kCrOSActionRecorderCopyToDownloadDir,
+     ash::switches::kEnableCrOSActionRecorder,
+     ash::switches::kCrOSActionRecorderCopyToDownloadDir},
+    {ash::switches::kCrOSActionRecorderDisabled,
+     ash::switches::kEnableCrOSActionRecorder,
+     ash::switches::kCrOSActionRecorderDisabled},
 };
 #endif  // defined(OS_CHROMEOS)
 
@@ -2183,6 +2189,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
      flag_descriptions::kTerminalSystemAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
+    {"terminal-system-app-legacy-settings",
+     flag_descriptions::kTerminalSystemAppLegacySettingsName,
+     flag_descriptions::kTerminalSystemAppLegacySettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kTerminalSystemAppLegacySettings)},
     {"terminal-system-app-splits",
      flag_descriptions::kTerminalSystemAppSplitsName,
      flag_descriptions::kTerminalSystemAppSplitsDescription, kOsCrOS,

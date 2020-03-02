@@ -55,10 +55,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // Returns the currently-showing ExtensionsMenuView, if any exists.
   static ExtensionsMenuView* GetExtensionsMenuViewForTesting();
 
-  void set_crash_on_close_for_testing(bool value) {
-    crash_on_close_for_testing_ = value;
-  }
-
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
@@ -66,7 +62,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // contrain the width. It would be nice to have a unified way of getting the
   // preferred size to not duplicate the code.
   gfx::Size CalculatePreferredSize() const override;
-  void WindowClosing() override;
 
   // TabStripModelObserver:
   void TabChangedAt(content::WebContents* contents,
@@ -184,11 +179,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   std::vector<ExtensionsMenuItemView*> extensions_menu_items_;
 
   views::Button* manage_extensions_button_for_testing_ = nullptr;
-
-  // When true, crashes if the Widget closes.
-  // TODO(crbug.com/1050012): Remove this debug logging when we figure out why
-  // no new Widget is found in TestBrowserDialog::VerifyUi.
-  bool crash_on_close_for_testing_ = false;
 
   // The different sections in the menu.
   Section cant_access_;

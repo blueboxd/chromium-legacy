@@ -203,7 +203,7 @@ void AppBannerManager::MigrateObserverListForTesting(
     content::WebContents* web_contents) {
   AppBannerManager* existing_manager = FromWebContents(web_contents);
   for (Observer& observer : existing_manager->observer_list_)
-    observer.OnAppBannerManagerChanged(this);
+    observer.OnAppBannerManagerChangedForTesting(this);
   DCHECK(existing_manager->observer_list_.begin() ==
          existing_manager->observer_list_.end())
       << "Old observer list must be empty after transfer to test instance.";

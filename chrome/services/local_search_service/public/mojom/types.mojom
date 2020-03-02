@@ -5,6 +5,7 @@
 module local_search_service.mojom;
 
 import "mojo/public/mojom/base/values.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 
 // A numeric range used to represent the start and end position.
 struct Range {
@@ -20,17 +21,17 @@ struct Data {
   // identifiers.
   // Ideally IDs should persist across sessions, but this is not strictly
   // required now because data is not persisted across sessions.
-  string id;
+  mojo_base.mojom.String16 id;
 
   // Data item will be matched between its search tags and query term.
-  array<string> search_tags;
+  array<mojo_base.mojom.String16> search_tags;
 };
 
 // Result is one item that matches a given query. It contains the id of the item
 // and its matching score.
 struct Result {
   // Id of the data.
-  string id;
+  mojo_base.mojom.String16 id;
   // Relevance score, in the range of [0,1].
   double score;
   // Matching ranges.

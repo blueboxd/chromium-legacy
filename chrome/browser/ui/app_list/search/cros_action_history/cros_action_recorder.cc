@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
 
@@ -34,11 +35,11 @@ constexpr int kActionLimitInMemory = 3600;
 // that day.
 constexpr int kActionLimitPerFile = 100000;
 
-enum CrOSActionRecorderType {
-  kDefault = 0,
-  kLogWithHash = 1,
-  kLogWithoutHash = 2,
-};
+// The sub-directory in profile path where the action history is stored.
+constexpr char kActionHistoryDir[] = "cros_action_history";
+
+// The basename of the file for the copied action history.
+constexpr char kActionHistoryBasename[] = "cros_action_history.pb";
 
 // Represents the events of the CrOSActionRecorder.
 // This enum is used for a histogram and should not be renumbered and the old
@@ -83,11 +84,11 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
   const std::string proto_str_to_write = actions_to_write.SerializeAsString();
 
   // Create directory if it's not there yet.
-  const bool create_directory_sucess =
+  const bool create_directory_success =
       base::CreateDirectory(action_filepath.DirName());
-  if (!create_directory_sucess) {
+  if (!create_directory_success) {
     RecordCrOSActionEvent(CrOSActionRecorderEvent::kCreateDirectoryFail);
-    DCHECK(create_directory_sucess)
+    DCHECK(create_directory_success)
         << "Error create directory for " << action_filepath;
   }
 
@@ -99,75 +100,76 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
   }
 }
 
-// Redact all URLs in saved protos within |proto_dir| if the urls_redacted file
-// doesn't exist.
-void RedactURLsInExistingLogs(const base::FilePath proto_dir) {
-  // If |proto_dir| doesn't exist, no redaction is needed.
-  if (!base::DirectoryExists(proto_dir))
+void DeleteExistingLog(const base::FilePath model_dir) {
+  // We don't want anyone accidentally deletes everything in the home directory.
+  if (model_dir.BaseName().MaybeAsASCII() != kActionHistoryDir)
     return;
 
-  // Use {proto_dir}/urls_deleted as a flag to indicate whether we've already
-  // done the redaction.
-  if (base::PathExists(proto_dir.Append("urls_deleted")))
+  base::DeleteFileRecursively(model_dir);
+}
+
+void CopyToDownloadDir(const base::FilePath model_dir,
+                       const base::FilePath proto_file_in_download_dir) {
+  // If |model_dir| doesn't exist, no action should be taken.
+  if (!base::DirectoryExists(model_dir))
     return;
 
-  base::FileEnumerator protos(proto_dir, false, base::FileEnumerator::FILES);
-  for (base::FilePath proto_path = protos.Next(); !proto_path.empty();
-       proto_path = protos.Next()) {
+  // Get all filenames in sorted order.
+  std::vector<base::FilePath> filenames;
+  base::FileEnumerator model_files(model_dir, false,
+                                   base::FileEnumerator::FILES);
+  for (base::FilePath filename = model_files.Next(); !filename.empty();
+       filename = model_files.Next()) {
+    filenames.push_back(filename);
+  }
+
+  // The basename of the file is the day (in integer form) of the time the file
+  // is written. We sort the basenames by length and then dictionary order which
+  // is equivalent to integer order.
+  auto sort_by_day = [](const base::FilePath& a, const base::FilePath& b) {
+    const std::string basename_a = a.BaseName().MaybeAsASCII();
+    const std::string basename_b = b.BaseName().MaybeAsASCII();
+    return basename_a.size() < basename_b.size() ||
+           (basename_a.size() == basename_b.size() && basename_a < basename_b);
+  };
+
+  std::sort(filenames.begin(), filenames.end(), sort_by_day);
+
+  // Read all files and merge them into one proto.
+  CrOSActionHistoryProto merged_proto;
+  for (const auto& filename : filenames) {
     std::string proto_str;
-    if (!base::ReadFileToString(proto_path, &proto_str))
+    if (!base::ReadFileToString(filename, &proto_str))
       continue;
 
     CrOSActionHistoryProto proto;
     if (!proto.ParseFromString(proto_str))
       continue;
 
-    for (auto& action : *proto.mutable_actions()) {
-      if (base::StartsWith(action.action_name(), "URLVisited-",
-                           base::CompareCase::SENSITIVE)) {
-        action.set_action_name("URLVisited-deleted");
-      }
-    }
-
-    const std::string proto_str_to_write = proto.SerializeAsString();
-    base::ImportantFileWriter::WriteFileAtomically(
-        proto_path, proto.SerializeAsString(), "CrOSActionHistory");
+    merged_proto.MergeFrom(proto);
   }
 
-  base::ImportantFileWriter::WriteFileAtomically(
-      proto_dir.Append("urls_deleted"), "done", "CrOSActionHistory");
+  // Write to download directory.
+  const bool write_success = base::ImportantFileWriter::WriteFileAtomically(
+      proto_file_in_download_dir, merged_proto.SerializeAsString(),
+      "CrOSActionHistory");
+  if (!write_success) {
+    RecordCrOSActionEvent(CrOSActionRecorderEvent::kWriteFileAtomicallyFail);
+    DCHECK(write_success) << "Copying data to download directory failed.";
+  }
 }
 
 }  // namespace
 
-constexpr char CrOSActionRecorder::kActionHistoryDir[];
 constexpr base::TimeDelta CrOSActionRecorder::kSaveInternal;
 
 CrOSActionRecorder::CrOSActionRecorder()
-    : should_log_(false),
-      should_hash_(true),
-      last_save_timestamp_(base::Time::Now()) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  SetCrOSActionRecorderType();
-
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (profile) {
-    profile_path_ = profile->GetPath();
-  } else {
-    // If profile_path_ is not set, then there is no point to record anything.
-    should_log_ = false;
-  }
-
-  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RedactURLsInExistingLogs,
-                                profile_path_.Append(
-                                    CrOSActionRecorder::kActionHistoryDir)));
-}
+    : CrOSActionRecorder(
+          ProfileManager::GetActiveUserProfile()->GetPath().Append(
+              kActionHistoryDir),
+          DownloadPrefs(ProfileManager::GetActiveUserProfile())
+              .GetDefaultDownloadDirectoryForProfile()
+              .Append(kActionHistoryBasename)) {}
 
 CrOSActionRecorder::~CrOSActionRecorder() = default;
 
@@ -180,26 +182,64 @@ void CrOSActionRecorder::RecordAction(
     const CrOSAction& action,
     const std::vector<std::pair<std::string, int>>& conditions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!should_log_)
+
+  // Skip if the type is not kLogWithHash or kLogWithoutHash.
+  if (type_ != CrOSActionRecorderType::kLogWithHash &&
+      type_ != CrOSActionRecorderType::kLogWithoutHash)
     return;
 
   RecordCrOSActionEvent(CrOSActionRecorderEvent::kRecordAction);
   CrOSActionProto& cros_action_proto = *actions_.add_actions();
 
+  const bool should_hash = type_ == CrOSActionRecorderType::kLogWithHash;
+
   // Record action.
   cros_action_proto.set_action_name(
-      MaybeHashed(std::get<0>(action), should_hash_));
+      MaybeHashed(std::get<0>(action), should_hash));
   cros_action_proto.set_secs_since_epoch(base::Time::Now().ToDoubleT());
 
   // Record conditions.
   for (const auto& pair : conditions) {
     auto& condition = *cros_action_proto.add_conditions();
-    condition.set_name(MaybeHashed(pair.first, should_hash_));
+    condition.set_name(MaybeHashed(pair.first, should_hash));
     condition.set_value(pair.second);
   }
 
   // May flush to disk.
   MaybeFlushToDisk();
+}
+
+CrOSActionRecorder::CrOSActionRecorder(
+    const base::FilePath& model_dir,
+    const base::FilePath& filename_in_download_dir)
+    : last_save_timestamp_(base::Time::Now()),
+      model_dir_(model_dir),
+      filename_in_download_dir_(filename_in_download_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  SetCrOSActionRecorderType();
+
+  // Skip if if the feature is not enabled.
+  if (type_ == CrOSActionRecorderType::kDefault)
+    return;
+
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+  // Delete all cros action log if it's disabled.
+  if (type_ == CrOSActionRecorderType::kLogDisabled) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&DeleteExistingLog, model_dir_));
+    return;
+  }
+
+  // Copy to download directory if required.
+  if (type_ == CrOSActionRecorderType::kCopyToDownloadDir) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&CopyToDownloadDir, model_dir_,
+                                          filename_in_download_dir));
+  }
 }
 
 void CrOSActionRecorder::MaybeFlushToDisk() {
@@ -216,8 +256,7 @@ void CrOSActionRecorder::MaybeFlushToDisk() {
     // Writes the predictor proto to disk asynchronously.
     const std::string day = base::NumberToString(
         static_cast<int>(now.ToDoubleT() / kSecondsPerDay));
-    const base::FilePath action_filepath =
-        profile_path_.Append(CrOSActionRecorder::kActionHistoryDir).Append(day);
+    const base::FilePath action_filepath = model_dir_.Append(day);
 
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SaveToDiskOnWorkerThread,
@@ -234,12 +273,15 @@ void CrOSActionRecorder::SetCrOSActionRecorderType() {
         ash::switches::kEnableCrOSActionRecorder);
 
     if (cros_action_flag == ash::switches::kCrOSActionRecorderWithHash) {
-      should_log_ = true;
-      should_hash_ = true;
+      type_ = CrOSActionRecorderType::kLogWithHash;
     } else if (cros_action_flag ==
                ash::switches::kCrOSActionRecorderWithoutHash) {
-      should_log_ = true;
-      should_hash_ = false;
+      type_ = CrOSActionRecorderType::kLogWithoutHash;
+    } else if (cros_action_flag ==
+               ash::switches::kCrOSActionRecorderCopyToDownloadDir) {
+      type_ = CrOSActionRecorderType::kCopyToDownloadDir;
+    } else if (cros_action_flag == ash::switches::kCrOSActionRecorderDisabled) {
+      type_ = CrOSActionRecorderType::kLogDisabled;
     }
   }
 }

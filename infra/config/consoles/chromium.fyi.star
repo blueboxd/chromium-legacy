@@ -231,6 +231,11 @@ luci.console_view(
             short_name = 'lnx',
         ),
         luci.console_view_entry(
+            builder = 'ci/linux-rel-swarming',
+            category = 'swarming|staging',
+            short_name = 'lnx',
+        ),
+        luci.console_view_entry(
             builder = 'ci/win-annotator-rel',
             category = 'network|traffic|annotations',
             short_name = 'win',

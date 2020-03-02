@@ -7,10 +7,10 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom.h"
 #include "chrome/services/local_search_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -40,10 +40,10 @@ class IndexImpl : public mojom::Index {
   void AddOrUpdate(std::vector<mojom::DataPtr> data,
                    AddOrUpdateCallback callback) override;
 
-  void Delete(const std::vector<std::string>& ids,
+  void Delete(const std::vector<base::string16>& ids,
               DeleteCallback callback) override;
 
-  void Find(const std::string& query,
+  void Find(const base::string16& query,
             int32_t max_latency_in_ms,
             int32_t max_results,
             FindCallback callback) override;
@@ -60,10 +60,10 @@ class IndexImpl : public mojom::Index {
  private:
   // Returns all search results for a given query.
   std::vector<mojom::ResultPtr> GetSearchResults(
-      const std::string& query) const;
+      const base::string16& query) const;
 
   // A map from key to tokenized search-tags.
-  std::map<std::string, std::vector<std::unique_ptr<TokenizedString>>> data_;
+  std::map<base::string16, std::vector<std::unique_ptr<TokenizedString>>> data_;
 
   mojo::ReceiverSet<mojom::Index> receivers_;
 

@@ -228,9 +228,9 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!manifest_availability.is_available())
     return manifest_availability;
 
-  return CheckDependencies(base::Bind(&IsAvailableToManifestForBind, hashed_id,
-                                      type, location, manifest_version,
-                                      platform));
+  return CheckDependencies(base::BindRepeating(&IsAvailableToManifestForBind,
+                                               hashed_id, type, location,
+                                               manifest_version, platform));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToContext(
@@ -268,9 +268,9 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
   // then at some point a "matches" restriction was checked.
-  return CheckDependencies(base::Bind(&IsAvailableToContextForBind,
-                                      base::RetainedRef(extension), context,
-                                      url, platform));
+  return CheckDependencies(base::BindRepeating(&IsAvailableToContextForBind,
+                                               base::RetainedRef(extension),
+                                               context, url, platform));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
@@ -279,7 +279,8 @@ Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
                                  GetCurrentFeatureSessionType());
   if (!environment_availability.is_available())
     return environment_availability;
-  return CheckDependencies(base::Bind(&IsAvailableToEnvironmentForBind));
+  return CheckDependencies(
+      base::BindRepeating(&IsAvailableToEnvironmentForBind));
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(
@@ -480,7 +481,8 @@ bool SimpleFeature::MatchesSessionTypes(FeatureSessionType session_type) const {
 }
 
 Feature::Availability SimpleFeature::CheckDependencies(
-    const base::Callback<Availability(const Feature*)>& checker) const {
+    const base::RepeatingCallback<Availability(const Feature*)>& checker)
+    const {
   for (const auto& dep_name : dependencies_) {
     const Feature* dependency =
         ExtensionAPI::GetSharedInstance()->GetFeatureDependency(dep_name);

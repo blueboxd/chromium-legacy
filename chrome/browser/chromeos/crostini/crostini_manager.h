@@ -112,6 +112,13 @@ class CrostiniDialogStatusObserver : public base::CheckedObserver {
                                              bool open) = 0;
 };
 
+class CrostiniContainerPropertiesObserver : public base::CheckedObserver {
+ public:
+  // Called when a container's OS release version changes.
+  virtual void OnContainerOsReleaseChanged(const ContainerId& container_id,
+                                           bool can_upgrade) = 0;
+};
+
 class VmShutdownObserver : public base::CheckedObserver {
  public:
   // Called when the given VM has shutdown.
@@ -585,6 +592,11 @@ class CrostiniManager : public KeyedService,
   void RemoveCrostiniDialogStatusObserver(
       CrostiniDialogStatusObserver* observer);
 
+  void AddCrostiniContainerPropertiesObserver(
+      CrostiniContainerPropertiesObserver* observer);
+  void RemoveCrostiniContainerPropertiesObserver(
+      CrostiniContainerPropertiesObserver* observer);
+
   void OnDBusShuttingDownForTesting();
 
   bool IsContainerUpgradeable(const ContainerId& container_id);
@@ -865,6 +877,9 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<CrostiniDialogStatusObserver>
       crostini_dialog_status_observers_;
+  base::ObserverList<CrostiniContainerPropertiesObserver>
+      crostini_container_properties_observers_;
+
   // Contains the types of crostini dialogs currently open. It is generally
   // invalid to show more than one. e.g. uninstalling and installing are
   // mutually exclusive.

@@ -685,6 +685,10 @@ ContainerOsVersion VersionFromOsRelease(
   return ContainerOsVersion::kOtherOs;
 }
 
+bool IsUpgradableContainerVersion(ContainerOsVersion version) {
+  return version == ContainerOsVersion::kDebianStretch;
+}
+
 }  // namespace
 
 void CrostiniManager::SetContainerOsRelease(
@@ -698,6 +702,12 @@ void CrostiniManager::SetContainerOsRelease(
   UpdateContainerPref(profile_, container_id, prefs::kContainerOsVersionKey,
                       base::Value(static_cast<int>(version)));
 
+  base::Optional<ContainerOsVersion> old_version;
+  auto it = container_os_releases_.find(container_id);
+  if (it != container_os_releases_.end()) {
+    old_version = VersionFromOsRelease(it->second);
+  }
+
   VLOG(1) << container_id;
   VLOG(1) << "os_release.pretty_name " << os_release.pretty_name();
   VLOG(1) << "os_release.name " << os_release.name();
@@ -705,7 +715,12 @@ void CrostiniManager::SetContainerOsRelease(
   VLOG(1) << "os_release.version_id " << os_release.version_id();
   VLOG(1) << "os_release.id " << os_release.id();
   container_os_releases_[container_id] = os_release;
-
+  if (!old_version || *old_version != version) {
+    for (auto& observer : crostini_container_properties_observers_) {
+      observer.OnContainerOsReleaseChanged(
+          container_id, IsUpgradableContainerVersion(version));
+    }
+  }
   base::UmaHistogramEnumeration("Crostini.ContainerOsVersion", version);
 }
 
@@ -776,7 +791,7 @@ bool CrostiniManager::IsContainerUpgradeable(const ContainerId& container_id) {
       version = static_cast<ContainerOsVersion>(value->GetInt());
     }
   }
-  return version == ContainerOsVersion::kDebianStretch;
+  return IsUpgradableContainerVersion(version);
 }
 
 bool CrostiniManager::ShouldPromptContainerUpgrade(
@@ -1879,6 +1894,16 @@ void CrostiniManager::AddCrostiniDialogStatusObserver(
 void CrostiniManager::RemoveCrostiniDialogStatusObserver(
     CrostiniDialogStatusObserver* observer) {
   crostini_dialog_status_observers_.RemoveObserver(observer);
+}
+
+void CrostiniManager::AddCrostiniContainerPropertiesObserver(
+    CrostiniContainerPropertiesObserver* observer) {
+  crostini_container_properties_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveCrostiniContainerPropertiesObserver(
+    CrostiniContainerPropertiesObserver* observer) {
+  crostini_container_properties_observers_.RemoveObserver(observer);
 }
 
 void CrostiniManager::OnDBusShuttingDownForTesting() {

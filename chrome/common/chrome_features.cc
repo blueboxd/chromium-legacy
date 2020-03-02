@@ -198,6 +198,10 @@ const base::Feature kPrintServerUi{"PrintServerUi",
 const base::Feature kTerminalSystemApp{"TerminalSystemApp",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use the Terminal System App legacy settings page.
+const base::Feature kTerminalSystemAppLegacySettings{
+    "TerminalSystemAppLegacySettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable splits in the Terminal System App.
 const base::Feature kTerminalSystemAppSplits{"TerminalSystemAppSplits",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

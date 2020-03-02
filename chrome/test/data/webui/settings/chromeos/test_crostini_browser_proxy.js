@@ -15,6 +15,8 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'exportCrostiniContainer',
       'importCrostiniContainer',
       'requestCrostiniContainerUpgradeView',
+      'requestCrostiniUpgraderDialogStatus',
+      'requestCrostiniContainerUpgradeAvailable',
       'addCrostiniPortForward',
     ]);
     this.sharedUsbDevices = [];
@@ -83,6 +85,12 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** @override */
   requestCrostiniUpgraderDialogStatus() {
     cr.webUIListenerCallback('crostini-upgrader-status-changed', false);
+  }
+
+  /** @override */
+  requestCrostiniContainerUpgradeAvailable() {
+    cr.webUIListenerCallback(
+        'crostini-container-upgrade-available-changed', false);
   }
 
   /** @override */

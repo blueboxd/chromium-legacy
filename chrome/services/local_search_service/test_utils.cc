@@ -4,18 +4,32 @@
 
 #include "chrome/services/local_search_service/test_utils.h"
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/services/local_search_service/public/mojom/local_search_service.mojom-test-utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
 
+namespace {
+
+std::vector<base::string16> MultiUTF8ToUTF16(
+    const std::vector<std::string>& input) {
+  std::vector<base::string16> output;
+  for (const auto& str : input) {
+    output.push_back(base::UTF8ToUTF16(str));
+  }
+  return output;
+}
+
+}  // namespace
+
 std::vector<mojom::DataPtr> CreateTestData(
     const std::map<std::string, std::vector<std::string>>& input) {
   std::vector<mojom::DataPtr> output;
   for (const auto& item : input) {
-    const std::string& id = item.first;
-    const std::vector<std::string>& tags = item.second;
-    mojom::DataPtr data = mojom::Data::New(id, tags);
+    const std::vector<base::string16> tags = MultiUTF8ToUTF16(item.second);
+    mojom::DataPtr data = mojom::Data::New(base::UTF8ToUTF16(item.first), tags);
     output.push_back(std::move(data));
   }
   return output;
@@ -39,7 +53,7 @@ void DeleteAndCheck(mojom::Index* index,
                     uint32_t expected_num_deleted) {
   DCHECK(index);
   uint32_t num_deleted = 0u;
-  mojom::IndexAsyncWaiter(index).Delete(ids, &num_deleted);
+  mojom::IndexAsyncWaiter(index).Delete(MultiUTF8ToUTF16(ids), &num_deleted);
   EXPECT_EQ(num_deleted, expected_num_deleted);
 }
 
@@ -54,7 +68,8 @@ void FindAndCheck(mojom::Index* index,
   mojom::IndexAsyncWaiter async_waiter(index);
   mojom::ResponseStatus status = mojom::ResponseStatus::UNKNOWN_ERROR;
   base::Optional<std::vector<::local_search_service::mojom::ResultPtr>> results;
-  async_waiter.Find(query, max_latency_in_ms, max_results, &status, &results);
+  async_waiter.Find(base::UTF8ToUTF16(query), max_latency_in_ms, max_results,
+                    &status, &results);
 
   EXPECT_EQ(status, expected_status);
 
@@ -62,7 +77,7 @@ void FindAndCheck(mojom::Index* index,
     // If results are returned, check size and values match the expected.
     EXPECT_EQ(results->size(), expected_result_ids.size());
     for (size_t i = 0; i < results->size(); ++i) {
-      EXPECT_EQ((*results)[i]->id, expected_result_ids[i]);
+      EXPECT_EQ((*results)[i]->id, base::UTF8ToUTF16(expected_result_ids[i]));
       // Scores should be non-increasing.
       if (i < results->size() - 1) {
         EXPECT_GE((*results)[i]->score, (*results)[i + 1]->score);

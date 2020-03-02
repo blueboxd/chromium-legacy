@@ -106,6 +106,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = 'recipe:swarming/staging',
+)
+
+build_recipe(
     name = 'recipe:tricium_clang_tidy_wrapper',
 )
 

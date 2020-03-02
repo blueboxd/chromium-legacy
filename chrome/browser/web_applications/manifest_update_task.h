@@ -36,8 +36,21 @@ enum ManifestUpdateResult {
   kMaxValue = kAppIsSystemWebApp,
 };
 
-// Used by UpdateManager on a per web app basis for checking and performing
-// manifest updates.
+// Checks whether the installed web app associated with a given WebContents has
+// out of date manifest data and triggers an update if so.
+// Owned and managed by |ManifestUpdateManager|.
+//
+// High level check procedure:
+//  - Wait for page to load.
+//  - Load the page's manifest. Bail if none found.
+//  - Check a hard coded set of manifest fields for differences to what's stored
+//    locally. Bail if no differences.
+//  - Ignore changes to the app name (needs user approval to prevent phishing).
+//  - Ignore changes to the start_url (this would change the app's ID which
+//    would play havoc with device sync, we need to decouple the app ID from
+//    start_url to enable start_url updating).
+//  - Wait for all app windows to be closed.
+//  - Reinstall the web app using the fetched data.
 class ManifestUpdateTask final
     : public base::SupportsWeakPtr<ManifestUpdateTask>,
       public content::WebContentsObserver {

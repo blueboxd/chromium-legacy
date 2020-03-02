@@ -1916,6 +1916,9 @@ extern const char kEnableVideoPlayerNativeControlsDescription[];
 extern const char kTerminalSystemAppName[];
 extern const char kTerminalSystemAppDescription[];
 
+extern const char kTerminalSystemAppLegacySettingsName[];
+extern const char kTerminalSystemAppLegacySettingsDescription[];
+
 extern const char kTerminalSystemAppSplitsName[];
 extern const char kTerminalSystemAppSplitsDescription[];
 

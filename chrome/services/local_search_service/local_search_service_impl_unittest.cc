@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/local_search_service/local_search_service_impl.h"
 #include "chrome/services/local_search_service/public/mojom/types.mojom.h"
@@ -110,8 +112,9 @@ TEST_F(LocalSearchServiceImplTest, UpdateData) {
   GetSizeAndCheck(index_remote.get(), 1u);
 
   // Add "id3" to the index.
-  mojom::DataPtr data_id3 =
-      mojom::Data::New("id3", std::vector<std::string>({"tag3a"}));
+  mojom::DataPtr data_id3 = mojom::Data::New(
+      base::UTF8ToUTF16("id3"),
+      std::vector<base::string16>({base::UTF8ToUTF16("tag3a")}));
   std::vector<mojom::DataPtr> data_to_update;
   data_to_update.push_back(std::move(data_id3));
   AddOrUpdateAndCheck(index_remote.get(), std::move(data_to_update));

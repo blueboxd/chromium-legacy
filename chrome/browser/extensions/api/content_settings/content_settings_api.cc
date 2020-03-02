@@ -314,13 +314,13 @@ ContentSettingsContentSettingSetFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+ContentSettingsContentSettingGetResourceIdentifiersFunction::Run() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
   if (content_type != ContentSettingsType::PLUGINS) {
-    SendResponse(true);
-    return true;
+    return RespondNow(NoArguments());
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -330,12 +330,13 @@ bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunAsync() {
       this));
 #endif
 
-  return true;
+  return RespondLater();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<content::WebPluginInfo>& plugins) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
   std::unique_ptr<base::ListValue> list(new base::ListValue());
@@ -353,13 +354,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
                     plugin_metadata->name());
     list->Append(std::move(dict));
   }
-  SetResult(std::move(list));
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &ContentSettingsContentSettingGetResourceIdentifiersFunction::
-              SendResponse,
-          this, true));
+  Respond(OneArgument(std::move(list)));
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

@@ -38407,6 +38407,7 @@ from previous Chrome versions.
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
+  <int value="-508346329" label="TerminalSystemAppLegacySettings:disabled"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
@@ -38660,6 +38661,7 @@ from previous Chrome versions.
   <int value="-181279574" label="NativeFilesystemAPI:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-180481252" label="CompositorThreadedScrollbarScrolling:enabled"/>
+  <int value="-178364053" label="TerminalSystemAppLegacySettings:enabled"/>
   <int value="-177974995" label="CrostiniShowMicSetting:disabled"/>
   <int value="-175666252" label="Portals:disabled"/>
   <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>

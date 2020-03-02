@@ -132,10 +132,16 @@ Polymer({
     this.addWebUIListener('crostini-upgrader-status-changed', (status) => {
       this.upgraderDialogShowing_ = status;
     });
+    this.addWebUIListener(
+        'crostini-container-upgrade-available-changed', (canUpgrade) => {
+          this.showCrostiniContainerUpgrade_ = canUpgrade;
+        });
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniInstallerStatus();
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniUpgraderDialogStatus();
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniContainerUpgradeAvailable();
   },
 
   ready() {

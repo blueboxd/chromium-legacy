@@ -352,7 +352,7 @@ bool AllowedToHaveInsecureObjectSrc(int options,
                      PluginTypeAllowed);
 }
 
-using SecureDirectiveValueFunction = base::Callback<std::string(
+using SecureDirectiveValueFunction = base::RepeatingCallback<std::string(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
     const std::string& manifest_key,

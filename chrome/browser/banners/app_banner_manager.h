@@ -54,7 +54,8 @@ class AppBannerManager : public content::WebContentsObserver,
  public:
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnAppBannerManagerChanged(AppBannerManager* new_manager) = 0;
+    virtual void OnAppBannerManagerChangedForTesting(
+        AppBannerManager* new_manager) = 0;
     virtual void OnInstallableWebAppStatusUpdated() = 0;
   };
 

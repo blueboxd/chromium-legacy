@@ -125,10 +125,6 @@ gfx::Size ExtensionsMenuView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-void ExtensionsMenuView::WindowClosing() {
-  DCHECK(!crash_on_close_for_testing_);
-}
-
 void ExtensionsMenuView::Populate() {
   // The actions for the profile haven't been initialized yet. We'll call in
   // again once they have.

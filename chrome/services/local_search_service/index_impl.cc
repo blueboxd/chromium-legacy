@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/string_matching/fuzzy_tokenized_string_match.h"
 #include "chrome/common/string_matching/tokenized_string.h"
 
@@ -20,12 +19,11 @@ namespace {
 using Hits = std::vector<mojom::RangePtr>;
 
 void TokenizeSearchTags(
-    const std::vector<std::string>& search_tags,
+    const std::vector<base::string16>& search_tags,
     std::vector<std::unique_ptr<TokenizedString>>* tokenized) {
   DCHECK(tokenized);
   for (const auto& tag : search_tags) {
-    tokenized->push_back(
-        std::make_unique<TokenizedString>(base::UTF8ToUTF16(tag)));
+    tokenized->push_back(std::make_unique<TokenizedString>(tag));
   }
 }
 
@@ -99,7 +97,7 @@ void IndexImpl::AddOrUpdate(std::vector<mojom::DataPtr> data,
   std::move(callback).Run();
 }
 
-void IndexImpl::Delete(const std::vector<std::string>& ids,
+void IndexImpl::Delete(const std::vector<base::string16>& ids,
                        DeleteCallback callback) {
   uint32_t num_deleted = 0u;
   for (const auto& id : ids) {
@@ -117,7 +115,7 @@ void IndexImpl::Delete(const std::vector<std::string>& ids,
   std::move(callback).Run(num_deleted);
 }
 
-void IndexImpl::Find(const std::string& query,
+void IndexImpl::Find(const base::string16& query,
                      int32_t max_latency_in_ms,
                      int32_t max_results,
                      FindCallback callback) {
@@ -159,9 +157,9 @@ void IndexImpl::GetSearchParamsForTesting(double* relevance_threshold,
 }
 
 std::vector<mojom::ResultPtr> IndexImpl::GetSearchResults(
-    const std::string& query) const {
+    const base::string16& query) const {
   std::vector<mojom::ResultPtr> results;
-  const TokenizedString tokenized_query(base::UTF8ToUTF16(query));
+  const TokenizedString tokenized_query(query);
 
   for (const auto& item : data_) {
     double relevance_score = 0.0;

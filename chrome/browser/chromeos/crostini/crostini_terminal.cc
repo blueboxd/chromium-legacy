@@ -114,14 +114,19 @@ void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin) {
   DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL);
+  std::string path = "html/terminal_settings.html";
+  if (base::FeatureList::IsEnabled(
+          features::kTerminalSystemAppLegacySettings)) {
+    path = "html/nassh_preferences_editor.html";
+  }
   // Use an app pop window to host the settings page.
   params->disposition = WindowOpenDisposition::NEW_POPUP;
   params->override_bounds.set_origin(window_origin);
   params->override_bounds.set_size(TERMINAL_SETTINGS_SIZE);
-  web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
-                              GURL(std::string(chrome::kChromeUITerminalURL) +
-                                   "html/terminal_settings.html"),
-                              *params);
+
+  web_app::LaunchSystemWebApp(
+      profile, web_app::SystemAppType::TERMINAL,
+      GURL(std::string(chrome::kChromeUITerminalURL) + path), *params);
 }
 
 }  // namespace crostini

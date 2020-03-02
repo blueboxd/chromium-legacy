@@ -43,13 +43,24 @@ class CrOSActionRecorder {
       const std::vector<std::pair<std::string, int>>& conditions = {});
 
  private:
+  // Enum for recorder settings from flags.
+  enum CrOSActionRecorderType {
+    kDefault = 0,
+    kLogWithHash = 1,
+    kLogWithoutHash = 2,
+    kCopyToDownloadDir = 3,
+    kLogDisabled = 4,
+  };
+
   friend class CrOSActionRecorderTest;
 
   // kSaveInternal controls how often we save the action history to disk.
   static constexpr base::TimeDelta kSaveInternal =
       base::TimeDelta::FromHours(1);
-  // The sub-directory in profile path where the action history is stored.
-  static constexpr char kActionHistoryDir[] = "cros_action_history/";
+
+  // Private constructor used for testing purpose.
+  CrOSActionRecorder(const base::FilePath& model_dir,
+                     const base::FilePath& filename_in_download_dir);
 
   // Saves the current |actions_| to disk and clear it when certain
   // criteria is met.
@@ -63,16 +74,17 @@ class CrOSActionRecorder {
   // Hashes the |input| if |should_hash| is true; otherwise return |input|.
   static std::string MaybeHashed(const std::string& input, bool should_hash);
 
-  // Controls whether the logging is enabled.
-  bool should_log_ = false;
-  // Controls whether to hash the action and condition names before log.
-  bool should_hash_ = true;
+  // Recorder type set from the flag.
+  CrOSActionRecorderType type_ = CrOSActionRecorderType::kDefault;
+
   // The timestamp of last save to disk.
   base::Time last_save_timestamp_;
   // A list of actions since last save.
   CrOSActionHistoryProto actions_;
-  // Profile path to save the actions.
-  base::FilePath profile_path_;
+  // Path to save the actions history.
+  base::FilePath model_dir_;
+  // Filename in download directory to save the action history if enabled.
+  base::FilePath filename_in_download_dir_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

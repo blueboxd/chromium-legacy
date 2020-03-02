@@ -105,7 +105,8 @@ void BulkLeakCheckImpl::CheckCredentials(
 }
 
 size_t BulkLeakCheckImpl::GetPendingChecksCount() const {
-  return 0;
+  return waiting_encryption_.size() + waiting_token_.size() +
+         waiting_response_.size() + waiting_decryption_.size();
 }
 
 void BulkLeakCheckImpl::OnPayloadReady(CredentialHolder* weak_holder,
@@ -160,7 +161,32 @@ void BulkLeakCheckImpl::OnLookupLeakResponse(
       RemoveFromQueue(weak_holder, &waiting_response_);
 
   holder->network_request_.reset();
-  // TODO(crbug.com/1049185): decrypt the stuff.
+  if (!response) {
+    delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
+    return;
+  }
+
+  AnalyzeResponse(std::move(response), encryption_key_,
+                  base::BindOnce(&BulkLeakCheckImpl::OnAnalyzedResponse,
+                                 weak_ptr_factory_.GetWeakPtr(), holder.get()));
+  waiting_decryption_.push_back(std::move(holder));
+}
+
+void BulkLeakCheckImpl::OnAnalyzedResponse(CredentialHolder* weak_holder,
+                                           AnalyzeResponseResult result) {
+  std::unique_ptr<CredentialHolder> holder =
+      RemoveFromQueue(weak_holder, &waiting_decryption_);
+  switch (result) {
+    case AnalyzeResponseResult::kDecryptionError:
+      delegate_->OnError(LeakDetectionError::kHashingFailure);
+      return;
+    case AnalyzeResponseResult::kNotLeaked:
+    case AnalyzeResponseResult::kLeaked:
+      delegate_->OnFinishedCredential(
+          std::move(holder->credential),
+          IsLeaked(result == AnalyzeResponseResult::kLeaked));
+      return;
+  }
 }
 
 }  // namespace password_manager

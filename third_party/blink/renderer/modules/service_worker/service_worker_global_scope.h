@@ -245,11 +245,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |event_id| is the id that was passed to DispatchAbortPaymentEvent.
   void RespondToAbortPaymentEvent(int event_id, bool abort_payment);
   // RespondToCanMakePaymentEvent will be called after the service worker
-  // returns a response to a CanMakePaymentEvent, and
+  // returns the |response| to a CanMakePaymentEvent, and
   // DidHandleCanMakePaymentEvent will be called after the end of
-  // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed
-  // to DispatchCanMakePaymentEvent.
-  void RespondToCanMakePaymentEvent(int event_id, bool can_make_payment);
+  // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed to
+  // DispatchCanMakePaymentEvent.
+  void RespondToCanMakePaymentEvent(
+      int event_id,
+      payments::mojom::blink::CanMakePaymentResponsePtr response);
   // RespondToPaymentRequestEvent will be called after the service worker
   // returns a response to a PaymentRequestEvent, and
   // DidHandlePaymentRequestEvent will be called after the end of

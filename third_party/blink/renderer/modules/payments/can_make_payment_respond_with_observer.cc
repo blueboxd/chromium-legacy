@@ -17,6 +17,11 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+namespace {
+
+using ResponseType = payments::mojom::blink::CanMakePaymentEventResponseType;
+
+}  // namespace
 
 CanMakePaymentRespondWithObserver::CanMakePaymentRespondWithObserver(
     ExecutionContext* context,
@@ -25,10 +30,14 @@ CanMakePaymentRespondWithObserver::CanMakePaymentRespondWithObserver(
     : RespondWithObserver(context, event_id, observer) {}
 
 void CanMakePaymentRespondWithObserver::OnResponseRejected(
-    blink::mojom::ServiceWorkerResponseError error) {
+    mojom::blink::ServiceWorkerResponseError error) {
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "CanMakePaymentEvent", error);
-  RespondCanMakePayment(false);
+  RespondWithoutMinimalUI(
+      error == mojom::blink::ServiceWorkerResponseError::kPromiseRejected
+          ? ResponseType::REJECT
+          : ResponseType::INTERNAL_ERROR,
+      false);
 }
 
 void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
@@ -48,11 +57,11 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
   bool can_make_payment =
       ToBoolean(script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
-    RespondCanMakePayment(false);
+    RespondWithoutMinimalUI(ResponseType::BOOLEAN_CONVERSION_ERROR, false);
     return;
   }
 
-  RespondCanMakePayment(can_make_payment);
+  RespondWithoutMinimalUI(ResponseType::SUCCESS, can_make_payment);
 }
 
 void CanMakePaymentRespondWithObserver::OnNoResponse() {
@@ -60,14 +69,14 @@ void CanMakePaymentRespondWithObserver::OnNoResponse() {
       "To control whether your payment handler can be used, handle the "
       "'canmakepayment' event explicitly. Otherwise, it is assumed implicitly "
       "that your payment handler can always be used.");
-  RespondCanMakePayment(true);
+  RespondWithoutMinimalUI(ResponseType::NO_RESPONSE, true);
 }
 
 void CanMakePaymentRespondWithObserver::Trace(Visitor* visitor) {
   RespondWithObserver::Trace(visitor);
 }
 
-void CanMakePaymentRespondWithObserver::RespondToCanMakePaymentEvent(
+void CanMakePaymentRespondWithObserver::ObservePromiseResponse(
     ScriptState* script_state,
     ScriptPromise promise,
     ExceptionState& exception_state,
@@ -84,7 +93,8 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilledForMinimalUI(
       NativeValueTraits<CanMakePaymentResponse>::NativeValue(
           script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
-    RespondCanMakePayment(false);
+    RespondWithoutMinimalUI(ResponseType::MINIMAL_UI_RESPONSE_CONVERSION_ERROR,
+                            false);
     return;
   }
 
@@ -92,7 +102,7 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilledForMinimalUI(
     ConsoleWarning(
         "To use minimal UI, specify the value of 'canMakePayment' explicitly. "
         "Otherwise, the value of 'false' is assumed implicitly.");
-    RespondCanMakePayment(false);
+    RespondWithoutMinimalUI(ResponseType::NO_CAN_MAKE_PAYMENT_VALUE, false);
     return;
   }
 
@@ -100,14 +110,16 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilledForMinimalUI(
     ConsoleWarning(
         "To use minimal UI, specify the value of 'readyForMinimalUI' "
         "explicitly. Otherwise, the value of 'false' is assumed implicitly.");
-    RespondCanMakePayment(response->canMakePayment());
+    RespondWithoutMinimalUI(ResponseType::NO_READY_FOR_MINIMAL_UI_VALUE,
+                            response->canMakePayment());
     return;
   }
 
   if (!response->hasAccountBalance() || response->accountBalance().IsEmpty()) {
     ConsoleWarning(
         "To use minimal UI, specify 'accountBalance' value, e.g., '1.00'.");
-    RespondCanMakePayment(response->canMakePayment());
+    RespondWithoutMinimalUI(ResponseType::NO_ACCOUNT_BALANCE_VALUE,
+                            response->canMakePayment());
     return;
   }
 
@@ -117,11 +129,13 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilledForMinimalUI(
     ConsoleWarning(error_message +
                    ". To use minimal UI, format 'accountBalance' as, for "
                    "example, '1.00'.");
-    RespondCanMakePayment(response->canMakePayment());
+    RespondWithoutMinimalUI(ResponseType::INVALID_ACCOUNT_BALANCE_VALUE,
+                            response->canMakePayment());
     return;
   }
 
-  RespondCanMakePayment(response->canMakePayment());
+  RespondInternal(ResponseType::SUCCESS, response->canMakePayment(),
+                  response->readyForMinimalUI(), response->accountBalance());
 }
 
 void CanMakePaymentRespondWithObserver::ConsoleWarning(const String& message) {
@@ -130,11 +144,25 @@ void CanMakePaymentRespondWithObserver::ConsoleWarning(const String& message) {
       mojom::blink::ConsoleMessageLevel::kWarning, message));
 }
 
-void CanMakePaymentRespondWithObserver::RespondCanMakePayment(
+void CanMakePaymentRespondWithObserver::RespondWithoutMinimalUI(
+    ResponseType response_type,
     bool can_make_payment) {
+  RespondInternal(response_type, can_make_payment,
+                  /*ready_for_minimal_ui=*/false,
+                  /*account_balance=*/String());
+}
+
+void CanMakePaymentRespondWithObserver::RespondInternal(
+    ResponseType response_type,
+    bool can_make_payment,
+    bool ready_for_minimal_ui,
+    const String& account_balance) {
   DCHECK(GetExecutionContext());
   To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToCanMakePaymentEvent(event_id_, can_make_payment);
+      ->RespondToCanMakePaymentEvent(
+          event_id_, payments::mojom::blink::CanMakePaymentResponse::New(
+                         response_type, can_make_payment, ready_for_minimal_ui,
+                         account_balance));
 }
 
 }  // namespace blink

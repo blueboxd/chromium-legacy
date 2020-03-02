@@ -190,7 +190,8 @@ void FakeServiceWorker::DispatchCanMakePaymentEvent(
     DispatchCanMakePaymentEventCallback callback) {
   mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
       response_callback(std::move(pending_response_callback));
-  response_callback->OnResponseForCanMakePayment(true);
+  response_callback->OnResponseForCanMakePayment(
+      payments::mojom::CanMakePaymentResponse::New());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 

@@ -19,8 +19,7 @@ class BackGestureContextualNudgeController;
 }
 
 // BackGestureContextualNudgeDelegate observes |window_|'s active webcontent and
-// notify when |window_|'s navigation status changes (either the active
-// webcontent changed or a navigation happens in the active webcontent.).
+// notify when |window_|'s navigation entry changes.
 class BackGestureContextualNudgeDelegate
     : public ash::BackGestureContextualNudgeDelegate,
       public content::WebContentsObserver,
@@ -40,8 +39,8 @@ class BackGestureContextualNudgeDelegate
   void MaybeStartTrackingNavigation(aura::Window* window) override;
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(

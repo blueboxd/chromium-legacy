@@ -66,8 +66,7 @@ class ASH_EXPORT BackGestureContextualNudgeControllerImpl
   // Returns true if we can show back gesture contextual nudge ui in current
   // configuration.
   bool CanShowNudge() const;
-  // Maybe show nudge ui on top of |window|.
-  void MaybeShowNudgeUi(aura::Window* window);
+  void ShowNudgeUi();
 
   // Starts or stops monitoring windows activation changes to decide if and when
   // to show up the contextual nudge ui.

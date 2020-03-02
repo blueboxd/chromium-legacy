@@ -21,11 +21,13 @@ int RunHelper(base::TestSuite* test_suite) {
 // Located in third_party/angle/src/tests/test_utils/ANGLETest.cpp.
 // Defined here so we can avoid depending on the ANGLE headers.
 void ANGLEProcessTestArgs(int *argc, char *argv[]);
+void RegisterContextCompatibilityTests();
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   ANGLEProcessTestArgs(&argc, argv);
   testing::InitGoogleMock(&argc, argv);
+  RegisterContextCompatibilityTests();
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsWithOptions(
       argc, argv,

@@ -212,8 +212,6 @@ class CORE_EXPORT HTMLSelectElement final
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;
 
-  void ChildrenChanged(const ChildrenChange& change) override;
-  bool ChildrenChangedAllChildrenRemovedNeedsList() const override;
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
 

@@ -33,6 +33,7 @@ include_rules = [
     "+net/cert",
     "+net/dns/public",
     "+net/http",
+    "+services/network/public/cpp/blocked_by_response_reason.h",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/cors/preflight_result.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",

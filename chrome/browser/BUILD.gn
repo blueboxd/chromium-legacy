@@ -2706,7 +2706,6 @@ jumbo_static_library("browser") {
       "android/usage_stats/usage_stats_database.h",
       "android/usb/web_usb_chooser_android.cc",
       "android/usb/web_usb_chooser_android.h",
-      "android/util/url_utilities.cc",
       "android/warmup_manager.cc",
       "android/web_contents_factory.cc",
       "android/webapk/webapk_handler_delegate.cc",

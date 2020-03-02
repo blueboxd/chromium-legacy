@@ -17,6 +17,11 @@ enum class ResourceRequestBlockedReason {
   kSubresourceFilter,
   kContentType,
   kCollapsedByClient,
+  kCoepFrameResourceNeedsCoepHeader,
+  kCoopSandboxedIFrameCannotNavigateToCoopPage,
+  kCorpNotSameOrigin,
+  kCorpNotSameOriginAfterDefaultedToSameOriginByCoep,
+  kCorpNotSameSite,
 };
 }  // namespace blink
 

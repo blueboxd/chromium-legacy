@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -153,13 +155,14 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForCanMakePayment(bool can_make_payment) override {
+  void OnResponseForCanMakePayment(
+      payments::mojom::CanMakePaymentResponsePtr response) override {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     service_worker_version_->FinishRequest(request_id_, false);
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
         base::BindOnce(std::move(payment_event_result_callback_),
-                       can_make_payment));
+                       response->can_make_payment));
     delete this;
   }
 
@@ -708,8 +711,11 @@ void PaymentAppProviderImpl::CanMakePayment(
     std::map<std::string, std::string> data = {
         {"Merchant Top Origin", event_data->top_origin.spec()},
         {"Merchant Payment Request Origin",
-         event_data->payment_request_origin.spec()},
-    };
+         event_data->payment_request_origin.spec()}};
+    if (event_data->currency &&
+        base::FeatureList::IsEnabled(features::kWebPaymentsMinimalUI)) {
+      data["Currency"] = *event_data->currency;
+    }
     AddMethodDataToMap(event_data->method_data, &data);
     AddModifiersToMap(event_data->modifiers, &data);
     dev_tools->LogBackgroundServiceEvent(

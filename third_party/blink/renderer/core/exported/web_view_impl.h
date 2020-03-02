@@ -214,7 +214,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ClearBaseBackgroundColorOverride() override;
   void SetInsidePortal(bool inside_portal) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
-  void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo&) override;
+  void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;

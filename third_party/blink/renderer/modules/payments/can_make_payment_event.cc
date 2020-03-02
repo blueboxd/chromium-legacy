@@ -111,8 +111,8 @@ void CanMakePaymentEvent::RespondToCanMakePaymentEvent(
 
   stopImmediatePropagation();
   if (observer_) {
-    observer_->RespondToCanMakePaymentEvent(script_state, script_promise,
-                                            exception_state, is_minimal_ui);
+    observer_->ObservePromiseResponse(script_state, script_promise,
+                                      exception_state, is_minimal_ui);
   }
 }
 

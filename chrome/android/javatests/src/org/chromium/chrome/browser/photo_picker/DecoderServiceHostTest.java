@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.N)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCallback,
+public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusCallback,
                                                DecoderServiceHost.ImagesDecodedCallback {
     // The timeout (in seconds) to wait for the decoding.
     private static final long WAIT_TIMEOUT_SECONDS = 5L;
@@ -66,10 +66,10 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
         mActivityTestRule.startMainActivityOnBlankPage();
         mContext = mActivityTestRule.getActivity();
 
-        DecoderServiceHost.setReadyCallback(this);
+        DecoderServiceHost.setStatusCallback(this);
     }
 
-    // DecoderServiceHost.ServiceReadyCallback:
+    // DecoderServiceHost.DecoderStatusCallback:
 
     @Override
     public void serviceReady() {

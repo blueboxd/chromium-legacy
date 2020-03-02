@@ -270,8 +270,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const base::Optional<std::string>& headers,
       const base::Optional<GURL>& preserve_fragment_on_redirect_url);
 
-  void CompleteBlockedResponse(int error_code,
-                               bool should_report_corb_blocking);
+  void CompleteBlockedResponse(
+      int error_code,
+      bool should_report_corb_blocking,
+      base::Optional<BlockedByResponseReason> reason = base::nullopt);
 
   enum BlockResponseForCorbResult {
     // Returned when caller of BlockResponseForCorb doesn't need to continue,

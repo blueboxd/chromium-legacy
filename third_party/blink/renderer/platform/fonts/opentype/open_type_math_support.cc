@@ -9,6 +9,8 @@
 #include <hb-ot.h>
 // clang-format on
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 
 namespace {
@@ -17,6 +19,11 @@ float HarfBuzzUnitsToFloat(hb_position_t value) {
   static const float kFloatToHbRatio = 1.0f / (1 << 16);
   return kFloatToHbRatio * value;
 }
+
+// Latin Modern, STIX Two, XITS, Asana, Deja Vu, Libertinus and TeX Gyre fonts
+// provide at most 13 size variant and 5 assembly parts.
+// See https://chromium-review.googlesource.com/c/chromium/src/+/2074678
+unsigned kMaxHarfBuzzRecords = 20;
 
 }  // namespace
 
@@ -111,6 +118,109 @@ base::Optional<float> OpenTypeMathSupport::MathConstant(
       NOTREACHED();
   }
   return base::nullopt;
+}
+
+template <typename HarfBuzzRecordType>
+using GetHarfBuzzMathRecordGetter =
+    base::OnceCallback<unsigned int(hb_font_t* font,
+                                    hb_codepoint_t glyph,
+                                    hb_direction_t direction,
+                                    unsigned int start_offset,
+                                    unsigned int* record_count,
+                                    HarfBuzzRecordType* record_array)>;
+
+template <typename HarfBuzzRecordType, typename RecordType>
+using HarfBuzzMathRecordConverter =
+    base::RepeatingCallback<RecordType(HarfBuzzRecordType)>;
+
+template <typename HarfBuzzRecordType, typename RecordType>
+Vector<RecordType> GetHarfBuzzMathRecord(
+    const HarfBuzzFace* harfbuzz_face,
+    Glyph base_glyph,
+    OpenTypeMathStretchData::StretchAxis stretch_axis,
+    GetHarfBuzzMathRecordGetter<HarfBuzzRecordType> getter,
+    HarfBuzzMathRecordConverter<HarfBuzzRecordType, RecordType> converter,
+    base::Optional<RecordType> prepended_record) {
+  hb_font_t* hb_font =
+      harfbuzz_face->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout);
+  DCHECK(hb_font);
+
+  hb_direction_t hb_stretch_axis =
+      stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal
+          ? HB_DIRECTION_LTR
+          : HB_DIRECTION_BTT;
+
+  // In practice, math fonts have, for a given base glyph and stretch axis only
+  // provide a few GlyphVariantRecords (size variants of increasing sizes) and
+  // GlyphPartRecords (parts of a glyph assembly) so it is safe to truncate
+  // the result vector to a small size.
+  HarfBuzzRecordType chunk[kMaxHarfBuzzRecords];
+  unsigned int count = kMaxHarfBuzzRecords;
+  std::move(getter).Run(hb_font, base_glyph, hb_stretch_axis,
+                        0 /* start_offset */, &count, chunk);
+
+  // Create the vector to the determined size and initialize it with the results
+  // converted from HarfBuzz's ones, prepending any optional record.
+  Vector<RecordType> result;
+  result.ReserveInitialCapacity(prepended_record ? count + 1 : count);
+  if (prepended_record)
+    result.push_back(*prepended_record);
+  for (unsigned i = 0; i < count; i++) {
+    result.push_back(converter.Run(chunk[i]));
+  }
+  return result;
+}
+
+Vector<OpenTypeMathStretchData::GlyphVariantRecord>
+OpenTypeMathSupport::GetGlyphVariantRecords(
+    const HarfBuzzFace* harfbuzz_face,
+    Glyph base_glyph,
+    OpenTypeMathStretchData::StretchAxis stretch_axis) {
+  DCHECK(harfbuzz_face);
+  DCHECK(base_glyph);
+
+  auto getter = base::BindOnce(&hb_ot_math_get_glyph_variants);
+  auto converter =
+      base::BindRepeating([](hb_ot_math_glyph_variant_t record)
+                              -> OpenTypeMathStretchData::GlyphVariantRecord {
+        return record.glyph;
+      });
+  return GetHarfBuzzMathRecord(
+      harfbuzz_face, base_glyph, stretch_axis, std::move(getter),
+      std::move(converter),
+      base::Optional<OpenTypeMathStretchData::GlyphVariantRecord>(base_glyph));
+}
+
+Vector<OpenTypeMathStretchData::GlyphPartRecord>
+OpenTypeMathSupport::GetGlyphPartRecords(
+    const HarfBuzzFace* harfbuzz_face,
+    Glyph base_glyph,
+    OpenTypeMathStretchData::StretchAxis stretch_axis) {
+  DCHECK(harfbuzz_face);
+  DCHECK(base_glyph);
+
+  auto getter = base::BindOnce(
+      [](hb_font_t* font, hb_codepoint_t glyph, hb_direction_t direction,
+         unsigned int start_offset, unsigned int* parts_count,
+         hb_ot_math_glyph_part_t* parts) {
+        hb_position_t italic_correction;
+        return hb_ot_math_get_glyph_assembly(font, glyph, direction,
+                                             start_offset, parts_count, parts,
+                                             &italic_correction);
+      });
+  auto converter =
+      base::BindRepeating([](hb_ot_math_glyph_part_t record)
+                              -> OpenTypeMathStretchData::GlyphPartRecord {
+        return {record.glyph,
+                HarfBuzzUnitsToFloat(record.start_connector_length),
+                HarfBuzzUnitsToFloat(record.end_connector_length),
+                HarfBuzzUnitsToFloat(record.full_advance),
+                record.flags & HB_MATH_GLYPH_PART_FLAG_EXTENDER};
+      });
+  return GetHarfBuzzMathRecord(
+      harfbuzz_face, base_glyph, stretch_axis, std::move(getter),
+      std::move(converter),
+      base::Optional<OpenTypeMathStretchData::GlyphPartRecord>());
 }
 
 }  // namespace blink

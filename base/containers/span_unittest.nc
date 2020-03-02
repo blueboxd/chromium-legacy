@@ -214,43 +214,6 @@ void WontCompile() {
   auto span = make_span(set);
 }
 
-#elif defined(NCTEST_TUPLE_SIZE_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"implicit instantiation of undefined template"]
-
-// Invoking std::tuple_size on a dynamically sized span is not allowed.
-size_t WontCompile() {
-  return std::tuple_size<span<int>>::value;
-}
-
-#elif defined(NCTEST_TUPLE_ELEMENT_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"std::tuple_element<> not supported for base::span<T, dynamic_extent>"]
-
-// Invoking std::tuple_element on a dynamically elementd span is not allowed.
-void WontCompile() {
-  std::tuple_element<0, span<int>>::type value;
-}
-
-#elif defined(NCTEST_TUPLE_ELEMENT_WITH_INDEX_OUT_OF_BOUNDS_DISALLOWED)  // [r"Index out of bounds in std::tuple_element<> \(base::span\)"]
-
-// Invoking std::tuple_element with an out of bound index is not allowed.
-void WontCompile() {
-  std::tuple_element<0, span<int, 0>>::type value;
-}
-
-#elif defined(NCTEST_GET_WITH_DYNAMIC_SPAN_DISALLOWED)  // [r"std::get<> not supported for base::span<T, dynamic_extent>"]
-
-// Invoking std::get on a dynamically elementd span is not allowed.
-int WontCompile() {
-  span<int> s;
-  return std::get<0>(s);
-}
-
-#elif defined(NCTEST_GET_WITH_INDEX_OUT_OF_BOUNDS_DISALLOWED)  // [r"Index out of bounds in std::get<> \(base::span\)"]
-
-// Invoking std::get with an out of bound index is not allowed.
-int WontCompile() {
-  span<int, 0> s;
-  return std::get<0>(s);
-}
-
 #elif defined(NCTEST_CONST_VECTOR_DEDUCES_AS_CONST_SPAN)  // [r"fatal error: no viable conversion from 'span<const int, \[...\]>' to 'span<int, \[...\]>'"]
 
 int WontCompile() {

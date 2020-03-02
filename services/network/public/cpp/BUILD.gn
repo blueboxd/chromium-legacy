@@ -141,6 +141,7 @@ jumbo_component("cpp_base") {
   output_name = "network_cpp_base"
 
   sources = [
+    "blocked_by_response_reason.h",
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
     "cross_origin_embedder_policy.cc",

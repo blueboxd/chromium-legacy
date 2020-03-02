@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.util.test;
+package org.chromium.components.embedder_support.util;
 
 import android.text.TextUtils;
 
@@ -10,12 +10,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
-import org.chromium.components.embedder_support.util.UrlUtilities;
-
 /** Implementation of UrlUtilities which does not rely on native. */
 @Implements(UrlUtilities.class)
 public class ShadowUrlUtilities {
-
     private static TestImpl sTestImpl = new TestImpl();
 
     /** Set implementation for tests. Don't forget to call {@link #reset} later. */

@@ -1843,7 +1843,7 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
   // these values for itself, we shouldn't override them with values from
   // another renderer.
   if (!GetWebView()->MainFrame()->IsWebLocalFrame())
-    GetWebView()->SetTextAutosizePageInfo(page_info);
+    GetWebView()->SetTextAutosizerPageInfo(page_info);
 }
 
 void RenderViewImpl::OnSetInsidePortal(bool inside_portal) {

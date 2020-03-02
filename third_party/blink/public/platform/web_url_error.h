@@ -34,6 +34,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -61,6 +62,11 @@ struct WebURLError {
                                     HasCopyInCache,
                                     IsWebSecurityViolation,
                                     const WebURL&);
+  BLINK_PLATFORM_EXPORT WebURLError(
+      network::BlockedByResponseReason blocked_reason,
+      net::ResolveErrorInfo resolve_error_info,
+      HasCopyInCache,
+      const WebURL&);
   BLINK_PLATFORM_EXPORT WebURLError(const network::CorsErrorStatus&,
                                     HasCopyInCache,
                                     const WebURL&);
@@ -75,6 +81,10 @@ struct WebURLError {
   const WebURL& url() const { return url_; }
   const base::Optional<network::CorsErrorStatus> cors_error_status() const {
     return cors_error_status_;
+  }
+  const base::Optional<network::BlockedByResponseReason>
+  blocked_by_response_reason() const {
+    return blocked_by_response_reason_;
   }
 
  private:
@@ -100,6 +110,10 @@ struct WebURLError {
 
   // Optional CORS error details.
   base::Optional<network::CorsErrorStatus> cors_error_status_;
+
+  // More detailed reason for failing the response with
+  // ERR_net::ERR_BLOCKED_BY_RESPONSE |error_code|.
+  base::Optional<network::BlockedByResponseReason> blocked_by_response_reason_;
 };
 
 }  // namespace blink

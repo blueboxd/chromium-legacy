@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_CAN_MAKE_PAYMENT_RESPOND_WITH_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_CAN_MAKE_PAYMENT_RESPOND_WITH_OBSERVER_H_
 
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
@@ -38,10 +39,10 @@ class MODULES_EXPORT CanMakePaymentRespondWithObserver final
 
   // Observes the given promise and calls OnResponseRejected() or
   // OnResponseFulfilled().
-  void RespondToCanMakePaymentEvent(ScriptState*,
-                                    ScriptPromise,
-                                    ExceptionState&,
-                                    bool is_minimal_ui);
+  void ObservePromiseResponse(ScriptState*,
+                              ScriptPromise,
+                              ExceptionState&,
+                              bool is_minimal_ui);
 
  private:
   void OnResponseFulfilledForMinimalUI(ScriptState*,
@@ -49,7 +50,14 @@ class MODULES_EXPORT CanMakePaymentRespondWithObserver final
                                        ExceptionState&);
 
   void ConsoleWarning(const String& message);
-  void RespondCanMakePayment(bool can_make_payment);
+  void RespondWithoutMinimalUI(
+      payments::mojom::blink::CanMakePaymentEventResponseType response_type,
+      bool can_make_payment);
+  void RespondInternal(
+      payments::mojom::blink::CanMakePaymentEventResponseType response_type,
+      bool can_make_payment,
+      bool ready_for_minimal_ui,
+      const String& account_balance);
 
   bool is_minimal_ui_ = false;
 };

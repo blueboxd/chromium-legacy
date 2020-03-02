@@ -149,14 +149,6 @@ void LockScreen::ShowParentAccessDialog() {
   contents_view_->ShowParentAccessDialog();
 }
 
-void LockScreen::RequestSecurityTokenPin(SecurityTokenPinRequest request) {
-  contents_view_->RequestSecurityTokenPin(std::move(request));
-}
-
-void LockScreen::ClearSecurityTokenPinRequest() {
-  contents_view_->ClearSecurityTokenPinRequest();
-}
-
 void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {
   Shell::Get()
       ->login_screen_controller()

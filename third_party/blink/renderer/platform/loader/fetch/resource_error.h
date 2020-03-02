@@ -30,6 +30,7 @@
 #include <iosfwd>
 #include "base/optional.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "services/network/public/cpp/blocked_by_response_reason.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -107,6 +108,8 @@ class PLATFORM_EXPORT ResourceError final {
   bool has_copy_in_cache_ = false;
   bool blocked_by_subresource_filter_ = false;
   base::Optional<network::CorsErrorStatus> cors_error_status_;
+
+  base::Optional<network::BlockedByResponseReason> blocked_by_response_reason_;
 };
 
 inline bool operator==(const ResourceError& a, const ResourceError& b) {

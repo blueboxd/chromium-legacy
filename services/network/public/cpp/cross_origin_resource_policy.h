@@ -33,35 +33,31 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
 
   static const char kHeaderName[];
 
-  // For "no-cors" fetches, the Verify method checks whether the response has a
-  // Cross-Origin-Resource-Policy header which says the response should not be
-  // delivered to a cross-origin or cross-site context.
-  enum VerificationResult {
-    kBlock,
-    kAllow,
-  };
   // The CORP check. This returns kAllowed when |request_mode| is not kNoCors.
-  static VerificationResult Verify(
+  // For kNoCors fetches, the IsBlocked method checks whether the response has
+  // a Cross-Origin-Resource-Policy header which says the response should not be
+  // delivered to a cross-origin or cross-site context.
+  static base::Optional<BlockedByResponseReason> IsBlocked(
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      const CrossOriginEmbedderPolicy& embedder_policy);
+      const CrossOriginEmbedderPolicy& embedder_policy) WARN_UNUSED_RESULT;
 
-  // Same with Verify() but this method can take a raw value of
-  // Cross-Origin-Resource-Policy header instead of using URLResponseHead.
-  static VerificationResult VerifyByHeaderValue(
+  // Same as IsBlocked(), but this method can take a raw value of
+  // Cross-Origin-Resource-Policy header instead of using a URLResponseHead.
+  static base::Optional<BlockedByResponseReason> IsBlockedByHeaderValue(
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
       base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      const CrossOriginEmbedderPolicy& embedder_policy);
+      const CrossOriginEmbedderPolicy& embedder_policy) WARN_UNUSED_RESULT;
 
   // The CORP check for navigation requests. This is expected to be called
   // from the navigation algorithm.
-  static VerificationResult VerifyNavigation(
+  static base::Optional<BlockedByResponseReason> IsNavigationBlocked(
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,

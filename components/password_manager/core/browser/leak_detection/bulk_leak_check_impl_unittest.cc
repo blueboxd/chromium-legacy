@@ -6,10 +6,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_request_factory.h"
+#include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "crypto/sha2.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,10 +29,48 @@ using ::testing::Return;
 
 constexpr char kAccessToken[] = "access_token";
 constexpr char kTestEmail[] = "user@gmail.com";
+constexpr char kTestPassword[] = "password123";
+constexpr char kUniqueString[] = "unique";
+
+MATCHER_P(CredentialIs, credential, "") {
+  return arg.username() == credential.get().username() &&
+         arg.password() == credential.get().password();
+}
+
+struct CustomData : LeakCheckCredential::Data {
+  explicit CustomData(std::string s) : data(std::move(s)) {}
+
+  std::string data;
+};
+
+MATCHER_P(CustomDataIs, string, "") {
+  return static_cast<CustomData*>(arg.GetUserData(kUniqueString))->data ==
+         string;
+}
+
+struct TestLeakDetectionRequest : LeakDetectionRequestInterface {
+  // LeakDetectionRequestInterface:
+  void LookupSingleLeak(network::mojom::URLLoaderFactory* url_loader_factory,
+                        const std::string& access_token,
+                        LookupSingleLeakPayload payload,
+                        LookupSingleLeakCallback callback) override {
+    this->encrypted_payload = std::move(payload.encrypted_payload);
+    this->callback = std::move(callback);
+  }
+
+  std::string encrypted_payload;
+  LookupSingleLeakCallback callback;
+};
+
+// Helper struct for making a fake network request.
+struct PayloadAndCallback {
+  std::string payload;
+  LeakDetectionRequestInterface::LookupSingleLeakCallback callback;
+};
 
 LeakCheckCredential TestCredential(base::StringPiece username) {
   return LeakCheckCredential(base::ASCIIToUTF16(username),
-                             base::ASCIIToUTF16("password123"));
+                             base::ASCIIToUTF16(kTestPassword));
 }
 
 class BulkLeakCheckTest : public testing::Test {
@@ -47,6 +88,8 @@ class BulkLeakCheckTest : public testing::Test {
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
 
+  PayloadAndCallback ImitateNetworkRequest(LeakCheckCredential credential);
+
   signin::IdentityTestEnvironment& identity_test_env() {
     return identity_test_env_;
   }
@@ -63,6 +106,25 @@ class BulkLeakCheckTest : public testing::Test {
   MockLeakDetectionRequestFactory* request_factory_;
   BulkLeakCheckImpl bulk_check_;
 };
+
+PayloadAndCallback BulkLeakCheckTest::ImitateNetworkRequest(
+    LeakCheckCredential credential) {
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(std::move(credential));
+  bulk_check().CheckCredentials(std::move(credentials));
+
+  auto network_request = std::make_unique<TestLeakDetectionRequest>();
+  TestLeakDetectionRequest* raw_request = network_request.get();
+  EXPECT_CALL(*request_factory(), CreateNetworkRequest)
+      .WillOnce(Return(ByMove(std::move(network_request))));
+
+  // Return the access token.
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      kAccessToken, base::Time::Max());
+
+  return {std::move(raw_request->encrypted_payload),
+          std::move(raw_request->callback)};
+}
 
 TEST_F(BulkLeakCheckTest, Create) {
   EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
@@ -153,10 +215,14 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsMultipleNetworkRequests) {
   identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_test_env().SetRefreshTokenForAccount(info.account_id);
 
+  EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
   std::vector<LeakCheckCredential> credentials;
   credentials.push_back(TestCredential("user1"));
   credentials.push_back(TestCredential("user2"));
   bulk_check().CheckCredentials(std::move(credentials));
+  EXPECT_EQ(2u, bulk_check().GetPendingChecksCount());
+  RunUntilIdle();
+  EXPECT_EQ(2u, bulk_check().GetPendingChecksCount());
 
   auto network_request1 = std::make_unique<MockLeakDetectionRequest>();
   auto network_request2 = std::make_unique<MockLeakDetectionRequest>();
@@ -167,8 +233,96 @@ TEST_F(BulkLeakCheckTest, CheckCredentialsMultipleNetworkRequests) {
       .WillOnce(Return(ByMove(std::move(network_request2))));
   identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       kAccessToken, base::Time::Max());
-  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      kAccessToken, base::Time::Max());
+  EXPECT_EQ(2u, bulk_check().GetPendingChecksCount());
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsDecryptionError) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  PayloadAndCallback payload_and_callback =
+      ImitateNetworkRequest(TestCredential(kTestEmail));
+  ASSERT_TRUE(!payload_and_callback.payload.empty());
+
+  auto response = std::make_unique<SingleLookupResponse>();
+  std::string key_server;
+  // Append trash bytes to force a decryption error.
+  response->reencrypted_lookup_hash =
+      CipherReEncrypt(payload_and_callback.payload, &key_server) +
+      "trash_bytes";
+  response->encrypted_leak_match_prefixes.push_back(
+      crypto::SHA256HashString(CipherEncryptWithKey(
+          ScryptHashUsernameAndPassword("another_username", kTestPassword),
+          key_server)));
+
+  EXPECT_CALL(delegate(), OnError(LeakDetectionError::kHashingFailure));
+  std::move(payload_and_callback.callback).Run(std::move(response));
+  RunUntilIdle();
+  EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsNotLeaked) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  LeakCheckCredential leaked_credential = TestCredential(kTestEmail);
+  leaked_credential.SetUserData(kUniqueString,
+                                std::make_unique<CustomData>("custom"));
+  PayloadAndCallback payload_and_callback =
+      ImitateNetworkRequest(std::move(leaked_credential));
+  ASSERT_TRUE(!payload_and_callback.payload.empty());
+
+  auto response = std::make_unique<SingleLookupResponse>();
+  std::string key_server;
+  response->reencrypted_lookup_hash =
+      CipherReEncrypt(payload_and_callback.payload, &key_server);
+  response->encrypted_leak_match_prefixes.push_back(
+      crypto::SHA256HashString(CipherEncryptWithKey(
+          ScryptHashUsernameAndPassword("another_username", kTestPassword),
+          key_server)));
+
+  EXPECT_EQ(1u, bulk_check().GetPendingChecksCount());
+  leaked_credential = TestCredential(kTestEmail);
+  EXPECT_CALL(delegate(), OnFinishedCredential(
+                              AllOf(CredentialIs(std::cref(leaked_credential)),
+                                    CustomDataIs("custom")),
+                              IsLeaked(false)));
+  std::move(payload_and_callback.callback).Run(std::move(response));
+  RunUntilIdle();
+  EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentialsLeaked) {
+  AccountInfo info = identity_test_env().MakeAccountAvailable(kTestEmail);
+  identity_test_env().SetCookieAccounts({{info.email, info.gaia}});
+  identity_test_env().SetRefreshTokenForAccount(info.account_id);
+
+  LeakCheckCredential leaked_credential = TestCredential("abc");
+  leaked_credential.SetUserData(kUniqueString,
+                                std::make_unique<CustomData>("custom"));
+  PayloadAndCallback payload_and_callback =
+      ImitateNetworkRequest(std::move(leaked_credential));
+  ASSERT_TRUE(!payload_and_callback.payload.empty());
+
+  auto response = std::make_unique<SingleLookupResponse>();
+  std::string key_server;
+  response->reencrypted_lookup_hash =
+      CipherReEncrypt(payload_and_callback.payload, &key_server);
+  response->encrypted_leak_match_prefixes.push_back(
+      crypto::SHA256HashString(CipherEncryptWithKey(
+          ScryptHashUsernameAndPassword("abc", kTestPassword), key_server)));
+
+  EXPECT_EQ(1u, bulk_check().GetPendingChecksCount());
+  leaked_credential = TestCredential("abc");
+  EXPECT_CALL(delegate(), OnFinishedCredential(
+                              AllOf(CredentialIs(std::cref(leaked_credential)),
+                                    CustomDataIs("custom")),
+                              IsLeaked(true)));
+  std::move(payload_and_callback.callback).Run(std::move(response));
+  RunUntilIdle();
+  EXPECT_EQ(0u, bulk_check().GetPendingChecksCount());
 }
 
 }  // namespace

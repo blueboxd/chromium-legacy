@@ -137,8 +137,6 @@ class ASH_EXPORT LockContentsView
   void ShowAdbEnabled();
   void ShowSystemInfo();
   void ShowParentAccessDialog();
-  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
-  void ClearSecurityTokenPinRequest();
 
   // views::View:
   void Layout() override;

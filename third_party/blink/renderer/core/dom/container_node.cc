@@ -810,11 +810,6 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     GetDocument().NodeChildrenWillBeRemoved(*this);
   }
 
-  HeapVector<Member<Node>>* removed_nodes = nullptr;
-  if (ChildrenChangedAllChildrenRemovedNeedsList()) {
-    removed_nodes =
-        MakeGarbageCollected<HeapVector<Member<Node>>>(CountChildren());
-  }
   {
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     TreeOrderedMap::RemoveScope tree_remove_scope;
@@ -827,14 +822,11 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       while (Node* child = first_child_) {
         RemoveBetween(nullptr, child->nextSibling(), *child);
         NotifyNodeRemoved(*child);
-        if (removed_nodes)
-          removed_nodes->push_back(child);
       }
     }
 
-    ChildrenChange change = {
-        kAllChildrenRemoved,     nullptr, nullptr, nullptr, removed_nodes,
-        kChildrenChangeSourceAPI};
+    ChildrenChange change = {kAllChildrenRemoved, nullptr, nullptr, nullptr,
+                             kChildrenChangeSourceAPI};
     ChildrenChanged(change);
   }
 
@@ -1037,10 +1029,6 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   }
   if (inserted_node->IsContainerNode() || inserted_node->IsTextNode())
     inserted_node->SetStyleChangeOnInsertion();
-}
-
-bool ContainerNode::ChildrenChangedAllChildrenRemovedNeedsList() const {
-  return false;
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {

@@ -1196,46 +1196,6 @@ TEST(SpanTest, MakeSpanFromStaticSpan) {
       "the type of made_span differs from expected_span!");
 }
 
-TEST(SpanTest, StdTupleSize) {
-  static_assert(std::tuple_size<span<int, 0>>::value == 0, "");
-  static_assert(std::tuple_size<span<int, 1>>::value == 1, "");
-  static_assert(std::tuple_size<span<int, 2>>::value == 2, "");
-}
-
-TEST(SpanTest, StdTupleElement) {
-  static_assert(std::is_same<int, std::tuple_element_t<0, span<int, 1>>>::value,
-                "");
-  static_assert(
-      std::is_same<const int,
-                   std::tuple_element_t<0, span<const int, 2>>>::value,
-      "");
-  static_assert(
-      std::is_same<const int*,
-                   std::tuple_element_t<1, span<const int*, 2>>>::value,
-      "");
-}
-
-TEST(SpanTest, StdGet) {
-  static constexpr int kArray[] = {1, 6, 1, 8, 0};
-  constexpr span<const int, 5> span(kArray);
-
-  static_assert(
-      &kArray[0] == &std::get<0>(span),
-      "std::get<0>(span) does not refer to the same element as kArray[0]");
-  static_assert(
-      &kArray[1] == &std::get<1>(span),
-      "std::get<1>(span) does not refer to the same element as kArray[1]");
-  static_assert(
-      &kArray[2] == &std::get<2>(span),
-      "std::get<2>(span) does not refer to the same element as kArray[2]");
-  static_assert(
-      &kArray[3] == &std::get<3>(span),
-      "std::get<3>(span) does not refer to the same element as kArray[3]");
-  static_assert(
-      &kArray[4] == &std::get<4>(span),
-      "std::get<4>(span) does not refer to the same element as kArray[4]");
-}
-
 TEST(SpanTest, EnsureConstexprGoodness) {
   static constexpr int kArray[] = {5, 4, 3, 2, 1};
   constexpr span<const int> constexpr_span(kArray);

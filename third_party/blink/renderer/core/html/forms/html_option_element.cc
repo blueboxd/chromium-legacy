@@ -339,6 +339,30 @@ String HTMLOptionElement::DefaultToolTip() const {
   return String();
 }
 
+Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
+    ContainerNode& insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  if (HTMLSelectElement* select = OwnerSelectElement()) {
+    if (&insertion_point == select ||
+        (IsA<HTMLOptGroupElement>(insertion_point) &&
+         insertion_point.parentNode() == select))
+      select->OptionInserted(*this, is_selected_);
+  }
+  return kInsertionDone;
+}
+
+void HTMLOptionElement::RemovedFrom(ContainerNode& insertion_point) {
+  if (auto* select = DynamicTo<HTMLSelectElement>(insertion_point)) {
+    if (!parentNode() || IsA<HTMLOptGroupElement>(*parentNode()))
+      select->OptionRemoved(*this);
+  } else if (IsA<HTMLOptGroupElement>(insertion_point)) {
+    select = DynamicTo<HTMLSelectElement>(insertion_point.parentNode());
+    if (select)
+      select->OptionRemoved(*this);
+  }
+  HTMLElement::RemovedFrom(insertion_point);
+}
+
 String HTMLOptionElement::CollectOptionInnerText() const {
   StringBuilder text;
   for (Node* node = firstChild(); node;) {

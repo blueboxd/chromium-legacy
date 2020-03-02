@@ -499,7 +499,7 @@ class WebView {
 
   // Use to transfer TextAutosizer state from the local main frame renderer to
   // remote main frame renderers.
-  virtual void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo&) {}
+  virtual void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {}
 
  protected:
   ~WebView() = default;

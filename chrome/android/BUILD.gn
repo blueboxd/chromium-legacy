@@ -674,6 +674,7 @@ junit_binary("chrome_junit_tests") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/util/android:junit",
     "//components/browser_ui/widget/android:junit",
+    "//components/embedder_support/android:junit_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
     "//components/offline_items_collection/core:core_java",

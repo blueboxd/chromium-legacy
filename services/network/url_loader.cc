@@ -958,12 +958,14 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
       factory_params_->client_security_state
           ? factory_params_->client_security_state->cross_origin_embedder_policy
           : kEmpty;
-  if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(
-          url_request_->url(), url_request_->initiator(), *response,
-          request_mode_, factory_params_->request_initiator_site_lock,
-          cross_origin_embedder_policy)) {
-    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
+
+  if (base::Optional<BlockedByResponseReason> blocked_reason =
+          CrossOriginResourcePolicy::IsBlocked(
+              url_request_->url(), url_request_->initiator(), *response,
+              request_mode_, factory_params_->request_initiator_site_lock,
+              cross_origin_embedder_policy)) {
+    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
+                            blocked_reason);
     DeleteSelf();
     return;
   }
@@ -1119,12 +1121,13 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       factory_params_->client_security_state
           ? factory_params_->client_security_state->cross_origin_embedder_policy
           : kEmpty;
-  if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(
-          url_request_->url(), url_request_->initiator(), *response_,
-          request_mode_, factory_params_->request_initiator_site_lock,
-          cross_origin_embedder_policy)) {
-    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
+  if (base::Optional<BlockedByResponseReason> blocked_reason =
+          CrossOriginResourcePolicy::IsBlocked(
+              url_request_->url(), url_request_->initiator(), *response_,
+              request_mode_, factory_params_->request_initiator_site_lock,
+              cross_origin_embedder_policy)) {
+    CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
+                            blocked_reason);
     DeleteSelf();
     return;
   }
@@ -1772,8 +1775,10 @@ void URLLoader::OnHeadersReceivedComplete(
   std::move(callback).Run(result);
 }
 
-void URLLoader::CompleteBlockedResponse(int error_code,
-                                        bool should_report_corb_blocking) {
+void URLLoader::CompleteBlockedResponse(
+    int error_code,
+    bool should_report_corb_blocking,
+    base::Optional<BlockedByResponseReason> reason) {
   // The response headers and body shouldn't yet be sent to the URLLoaderClient.
   DCHECK(response_);
   DCHECK(consumer_handle_.is_valid());
@@ -1786,6 +1791,7 @@ void URLLoader::CompleteBlockedResponse(int error_code,
   status.encoded_body_length = 0;
   status.decoded_body_length = 0;
   status.should_report_corb_blocking = should_report_corb_blocking;
+  status.blocked_by_response_reason = reason;
   url_loader_client_->OnComplete(status);
 
   // Reset the connection to the URLLoaderClient.  This helps ensure that we

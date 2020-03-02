@@ -139,9 +139,10 @@ bool ResponseBlockedByCrossOriginResourcePolicy(
   if (corp_header != response->headers.end())
     corp_header_value = corp_header->second;
 
-  return !CrossOriginResourcePolicy::VerifyByHeaderValue(
-      response->url_list.back(), document_origin, corp_header_value,
-      RequestMode::kNoCors, document_origin, document_coep);
+  return CrossOriginResourcePolicy::IsBlockedByHeaderValue(
+             response->url_list.back(), document_origin, corp_header_value,
+             RequestMode::kNoCors, document_origin, document_coep)
+      .has_value();
 }
 
 }  // namespace

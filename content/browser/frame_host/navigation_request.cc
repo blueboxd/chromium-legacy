@@ -1791,13 +1791,14 @@ void NavigationRequest::OnResponseStarted(
         !common_params_->url.SchemeIsBlob() &&
         !common_params_->url.SchemeIs(url::kDataScheme)) {
       // The CORP check for nested navigation.
-      if (network::CrossOriginResourcePolicy::VerifyNavigation(
-              common_params_->url, GetParentFrame()->GetLastCommittedOrigin(),
-              *response_head_, GetParentFrame()->GetLastCommittedOrigin(),
-              cross_origin_embedder_policy) ==
-          network::CrossOriginResourcePolicy::kBlock) {
+      if (base::Optional<network::BlockedByResponseReason> blocked_reason =
+              network::CrossOriginResourcePolicy::IsNavigationBlocked(
+                  common_params_->url,
+                  GetParentFrame()->GetLastCommittedOrigin(), *response_head_,
+                  GetParentFrame()->GetLastCommittedOrigin(),
+                  cross_origin_embedder_policy)) {
         OnRequestFailedInternal(
-            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
+            network::URLLoaderCompletionStatus(*blocked_reason),
             false /* skip_throttles */, base::nullopt /* error_page_content */,
             false /* collapse_frame */);
         // DO NOT ADD CODE after this. The previous call to
@@ -1817,10 +1818,12 @@ void NavigationRequest::OnResponseStarted(
       }
       if (cross_origin_embedder_policy.value ==
           network::mojom::CrossOriginEmbedderPolicyValue::kNone) {
-        OnRequestFailedInternal(
-            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
-            false /* skip_throttles */, base::nullopt /* error_page_content */,
-            false /* collapse_frame */);
+        OnRequestFailedInternal(network::URLLoaderCompletionStatus(
+                                    network::BlockedByResponseReason::
+                                        kCoepFrameResourceNeedsCoepHeader),
+                                false /* skip_throttles */,
+                                base::nullopt /* error_page_content */,
+                                false /* collapse_frame */);
         // DO NOT ADD CODE after this. The previous call to
         // OnRequestFailedInternal has destroyed the NavigationRequest.
         return;
@@ -1837,7 +1840,9 @@ void NavigationRequest::OnResponseStarted(
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
          blink::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(
-          network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
+          network::URLLoaderCompletionStatus(
+              network::BlockedByResponseReason::
+                  kCoopSandboxedIFrameCannotNavigateToCoopPage),
           false /* skip_throttles */, base::nullopt /* error_page_content */,
           false /* collapse_frame */);
       // DO NOT ADD CODE after this. The previous call to

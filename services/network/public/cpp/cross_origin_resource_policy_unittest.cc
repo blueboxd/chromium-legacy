@@ -147,26 +147,27 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   url::Origin another_origin =
       url::Origin::Create(GURL("https://www2.example.com"));
 
-  constexpr auto kAllow = CrossOriginResourcePolicy::kAllow;
-  constexpr auto kBlock = CrossOriginResourcePolicy::kBlock;
+  constexpr auto kAllow = base::nullopt;
   using mojom::RequestMode;
 
   struct TestCase {
     const RequestMode request_mode;
     const url::Origin origin;
     mojom::URLResponseHeadPtr response_info;
-    const CrossOriginResourcePolicy::VerificationResult
-        expectation_with_coep_none;
-    const CrossOriginResourcePolicy::VerificationResult
+    const base::Optional<BlockedByResponseReason> expectation_with_coep_none;
+    const base::Optional<BlockedByResponseReason>
         expectation_with_coep_require_corp;
   } test_cases[] = {
       // We don't have a cross-origin-resource-policy header on a response. That
-      // leads to kBlock when COEP: kRequireCorp is used.
-      {RequestMode::kNoCors, another_origin, corp_none.Clone(), kAllow, kBlock},
+      // leads to blocking when COEP: kRequireCorp is used.
+      {RequestMode::kNoCors, another_origin, corp_none.Clone(), kAllow,
+       BlockedByResponseReason::
+           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep},
       // We have "cross-origin-resource-policy: same-origin", so regardless of
       // COEP the response is blocked.
-      {RequestMode::kNoCors, another_origin, corp_same_origin.Clone(), kBlock,
-       kBlock},
+      {RequestMode::kNoCors, another_origin, corp_same_origin.Clone(),
+       BlockedByResponseReason::kCorpNotSameOrigin,
+       BlockedByResponseReason::kCorpNotSameOrigin},
       // We have "cross-origin-resource-policy: cross-origin", so regardless of
       // COEP the response is allowed.
       {RequestMode::kNoCors, another_origin, corp_cross_origin.Clone(), kAllow,
@@ -184,13 +185,12 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   for (const auto& test_case : test_cases) {
     CrossOriginEmbedderPolicy embedder_policy;
     EXPECT_EQ(test_case.expectation_with_coep_none,
-              CrossOriginResourcePolicy::Verify(
+              CrossOriginResourcePolicy::IsBlocked(
                   destination, test_case.origin, *test_case.response_info,
                   test_case.request_mode, test_case.origin, embedder_policy));
-
     embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
     EXPECT_EQ(test_case.expectation_with_coep_require_corp,
-              CrossOriginResourcePolicy::Verify(
+              CrossOriginResourcePolicy::IsBlocked(
                   destination, test_case.origin, *test_case.response_info,
                   test_case.request_mode, test_case.origin, embedder_policy));
   }

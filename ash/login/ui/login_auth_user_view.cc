@@ -801,9 +801,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       base::BindRepeating(&LoginPasswordView::Backspace,
                           base::Unretained(password_view.get())),
       base::BindRepeating(&LoginPasswordView::SubmitPassword,
-                          base::Unretained(password_view.get())),
-      base::BindRepeating(&LoginAuthUserView::OnPinBack,
-                          base::Unretained(this)));
+                          base::Unretained(password_view.get())));
   pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 
@@ -948,11 +946,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   user_view_->UpdateForUser(user, false /*animate*/);
 }
 
-LoginAuthUserView::~LoginAuthUserView() {
-  // Abort the unfinished security token PIN request, if there's one, so that
-  // the callers can do all necessary cleanup.
-  AbortSecurityTokenPinRequest();
-}
+LoginAuthUserView::~LoginAuthUserView() = default;
 
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
                                        bool can_use_pin) {
@@ -969,24 +963,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   bool has_challenge_response = HasAuthMethod(AUTH_CHALLENGE_RESPONSE);
   bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
 
-  if (auth_disabled) {
-    // The PIN UI cannot be displayed, so abort the security token PIN request,
-    // if there's one.
-    AbortSecurityTokenPinRequest();
-  }
-
-  if (security_token_pin_request_) {
-    // The security token PIN request is a special mode that uses the password
-    // and the PIN views, regardless of the user's auth methods.
-    has_password = true;
-    has_pin_pad = true;
-    has_tap = false;
-    force_online_sign_in = false;
-    has_fingerprint = false;
-    has_external_binary = false;
-    has_challenge_response = false;
-  }
-
   bool hide_auth = auth_disabled || force_online_sign_in;
 
   online_sign_in_message_->SetVisible(force_online_sign_in);
@@ -998,8 +974,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
   pin_view_->SetVisible(has_pin_pad);
-
-  pin_view_->SetBackButtonVisible(security_token_pin_request_.has_value());
 
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
@@ -1031,12 +1005,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   padding_below_password_view_->SetPreferredSize(
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
 
-  // Note: both |security_token_pin_request_| and |has_tap| must have higher
-  // priority than |has_pin_pad| when determining the placeholder.
-  if (security_token_pin_request_) {
-    password_view_->SetPlaceholderText(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER));
-  } else if (has_tap) {
+  // Note: |has_tap| must have higher priority than |has_pin_pad| when
+  // determining the placeholder.
+  if (has_tap) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));
   } else if (can_use_pin) {
@@ -1048,15 +1019,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   }
   const std::string& user_display_email =
       current_user().basic_user_info.display_email;
-  if (security_token_pin_request_) {
-    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_POD_SMART_CARD_PIN_FIELD_ACCESSIBLE_NAME,
-        base::UTF8ToUTF16(user_display_email)));
-  } else {
-    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
-        base::UTF8ToUTF16(user_display_email)));
-  }
+  password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+      base::UTF8ToUTF16(user_display_email)));
 
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
@@ -1232,9 +1197,6 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 }
 
 void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
-  // Abort the security token PIN request associated with the previous user, if
-  // there was any.
-  AbortSecurityTokenPinRequest();
   const bool user_changed = current_user().basic_user_info.account_id !=
                             user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
@@ -1256,31 +1218,6 @@ void LoginAuthUserView::SetAuthDisabledMessage(
     const AuthDisabledData& auth_disabled_data) {
   disabled_auth_message_->SetAuthDisabledMessage(auth_disabled_data);
   Layout();
-}
-
-void LoginAuthUserView::RequestSecurityTokenPin(
-    SecurityTokenPinRequest request) {
-  // The caller must prevent an overlapping PIN request before the previous one
-  // completed.
-  DCHECK(!security_token_pin_request_ ||
-         !security_token_pin_request_->pin_entered_callback);
-
-  security_token_pin_request_ = std::move(request);
-  password_view_->Clear();
-  password_view_->SetReadOnly(false);
-  // Trigger SetAuthMethods() with the same parameters but after
-  // |on_security_token_pin_requested_| has been set, so that it updates the UI
-  // elements in order to show the security token PIN request.
-  SetAuthMethods(auth_methods_, can_use_pin_);
-}
-
-void LoginAuthUserView::ClearSecurityTokenPinRequest() {
-  AbortSecurityTokenPinRequest();
-
-  // Revert the UI back to the normal user authentication controls.
-  password_view_->Clear();
-  password_view_->SetReadOnly(false);
-  SetAuthMethods(auth_methods_, can_use_pin_);
 }
 
 const LoginUserInfo& LoginAuthUserView::current_user() const {
@@ -1335,16 +1272,11 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   }
 
   password_view_->SetReadOnly(true);
-  if (security_token_pin_request_) {
-    std::move(security_token_pin_request_->pin_entered_callback)
-        .Run(base::UTF16ToUTF8(password));
-  } else {
-    Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
-        current_user().basic_user_info.account_id, base::UTF16ToUTF8(password),
-        can_use_pin_,
-        base::BindOnce(&LoginAuthUserView::OnAuthComplete,
-                       weak_factory_.GetWeakPtr()));
-  }
+  Shell::Get()->login_screen_controller()->AuthenticateUserWithPasswordOrPin(
+      current_user().basic_user_info.account_id, base::UTF16ToUTF8(password),
+      can_use_pin_,
+      base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
@@ -1420,14 +1352,6 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
       current_user().basic_user_info.account_id);
 }
 
-void LoginAuthUserView::OnPinBack() {
-  // Exiting from the PIN keyboard during a security token PIN request should
-  // abort it. Note that the back button isn't shown when the PIN view is used
-  // in other contexts.
-  DCHECK(security_token_pin_request_);
-  ClearSecurityTokenPinRequest();
-}
-
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
 }
@@ -1451,13 +1375,6 @@ void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {
           current_user().basic_user_info.account_id,
           base::BindOnce(&LoginAuthUserView::OnChallengeResponseAuthComplete,
                          weak_factory_.GetWeakPtr()));
-}
-
-void LoginAuthUserView::AbortSecurityTokenPinRequest() {
-  if (!security_token_pin_request_)
-    return;
-  std::move(security_token_pin_request_->pin_ui_closed_callback).Run();
-  security_token_pin_request_.reset();
 }
 
 }  // namespace ash

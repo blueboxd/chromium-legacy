@@ -845,13 +845,13 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   add_spacer(kAccessCodeToPinKeyboardDistanceDp);
 
   // Pin keyboard.
-  pin_keyboard_view_ = new LoginPinView(
-      LoginPinView::Style::kNumeric,
-      base::BindRepeating(&AccessCodeInput::InsertDigit,
-                          base::Unretained(access_code_view_)),
-      base::BindRepeating(&AccessCodeInput::Backspace,
-                          base::Unretained(access_code_view_)),
-      base::DoNothing::Repeatedly(), LoginPinView::OnPinBack());
+  pin_keyboard_view_ =
+      new LoginPinView(LoginPinView::Style::kNumeric,
+                       base::BindRepeating(&AccessCodeInput::InsertDigit,
+                                           base::Unretained(access_code_view_)),
+                       base::BindRepeating(&AccessCodeInput::Backspace,
+                                           base::Unretained(access_code_view_)),
+                       base::DoNothing::Repeatedly());
   // Backspace key is always enabled and |access_code_| field handles it.
   pin_keyboard_view_->OnPasswordTextChanged(false);
   AddChildView(pin_keyboard_view_);

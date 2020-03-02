@@ -109,7 +109,11 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 
       mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
           response_callback(std::move(pending_response_callback));
-      response_callback->OnResponseForCanMakePayment(can_make_payment);
+      response_callback->OnResponseForCanMakePayment(
+          payments::mojom::CanMakePaymentResponse::New(
+              payments::mojom::CanMakePaymentEventResponseType::SUCCESS,
+              can_make_payment, /*ready_for_minimal_ui=*/false,
+              /*account_balance=*/""));
       std::move(callback).Run(
           blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     }

@@ -64,8 +64,6 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   void FocusNextUser();
   void FocusPreviousUser();
   void ShowParentAccessDialog();
-  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
-  void ClearSecurityTokenPinRequest();
 
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;

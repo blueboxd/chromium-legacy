@@ -358,31 +358,6 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
   DISALLOW_COPY_AND_ASSIGN(BackspacePinButton);
 };
 
-// A PIN button with the label "back".
-class LoginPinView::BackButton : public BasePinButton {
- public:
-  BackButton(const gfx::Size& size, const base::RepeatingClosure& on_press)
-      : BasePinButton(size,
-                      l10n_util::GetStringUTF16(
-                          IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME),
-                      on_press) {
-    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
-    views::Label* label = AddChildView(std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(IDS_ASH_PIN_KEYBOARD_BACK_BUTTON),
-        views::style::CONTEXT_BUTTON, views::style::STYLE_PRIMARY));
-    label->SetEnabledColor(login_constants::kButtonEnabledColor);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetSubpixelRenderingEnabled(false);
-    label->SetFontList(base_font_list.Derive(-3, gfx::Font::FontStyle::NORMAL,
-                                             gfx::Font::Weight::MEDIUM));
-  }
-
-  ~BackButton() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BackButton);
-};
-
 // A PIN button to press to submit the PIN / password.
 class LoginPinView::SubmitPinButton : public BasePinButton {
  public:
@@ -439,10 +414,6 @@ views::View* LoginPinView::TestApi::GetSubmitButton() const {
   return view_->submit_button_;
 }
 
-views::View* LoginPinView::TestApi::GetBackButton() const {
-  return view_->back_button_;
-}
-
 void LoginPinView::TestApi::SetBackspaceTimers(
     std::unique_ptr<base::OneShotTimer> delay_timer,
     std::unique_ptr<base::RepeatingTimer> repeat_timer) {
@@ -453,16 +424,13 @@ void LoginPinView::TestApi::SetBackspaceTimers(
 LoginPinView::LoginPinView(Style keyboard_style,
                            const OnPinKey& on_key,
                            const OnPinBackspace& on_backspace,
-                           const OnPinSubmit& on_submit,
-                           const OnPinBack& on_back)
+                           const OnPinSubmit& on_submit)
     : NonAccessibleView(kLoginPinViewClassName),
-      back_button_(new BackButton(kButtonSize, on_back)),
       backspace_(new BackspacePinButton(kButtonSize, on_backspace)),
       submit_button_(new SubmitPinButton(kButtonSize, on_submit)),
       on_key_(on_key),
       on_backspace_(on_backspace),
-      on_submit_(on_submit),
-      on_back_(on_back) {
+      on_submit_(on_submit) {
   DCHECK(on_key_);
   DCHECK(on_backspace_);
 
@@ -514,20 +482,6 @@ void LoginPinView::NotifyAccessibilityLocationChanged() {
     row->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                   false /*send_native_event*/);
   }
-}
-
-void LoginPinView::SetBackButtonVisible(bool visible) {
-  // We don't want the back button to consume any space in the view when it is
-  // not visible. Therefore, we add / remove a row especially for it when we
-  // need to make it visible.
-  if (is_back_button_visible_ == visible)
-    return;
-  is_back_button_visible_ = visible;
-  if (visible)
-    BuildAndAddRow()->AddChildView(back_button_);
-  else
-    rows.pop_back();
-  Layout();
 }
 
 void LoginPinView::OnPasswordTextChanged(bool is_empty) {

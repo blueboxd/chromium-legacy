@@ -1522,6 +1522,21 @@ String blockedReason(blink::ResourceRequestBlockedReason reason) {
       return protocol::Network::BlockedReasonEnum::Other;
     case blink::ResourceRequestBlockedReason::kCollapsedByClient:
       return protocol::Network::BlockedReasonEnum::CollapsedByClient;
+    case blink::ResourceRequestBlockedReason::kCoepFrameResourceNeedsCoepHeader:
+      return protocol::Network::BlockedReasonEnum::
+          CoepFrameResourceNeedsCoepHeader;
+    case blink::ResourceRequestBlockedReason::
+        kCoopSandboxedIFrameCannotNavigateToCoopPage:
+      return protocol::Network::BlockedReasonEnum::
+          CoopSandboxedIframeCannotNavigateToCoopPage;
+    case blink::ResourceRequestBlockedReason::kCorpNotSameOrigin:
+      return protocol::Network::BlockedReasonEnum::CorpNotSameOrigin;
+    case blink::ResourceRequestBlockedReason::
+        kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+      return protocol::Network::BlockedReasonEnum::
+          CorpNotSameOriginAfterDefaultedToSameOriginByCoep;
+    case blink::ResourceRequestBlockedReason::kCorpNotSameSite:
+      return protocol::Network::BlockedReasonEnum::CorpNotSameSite;
   }
   NOTREACHED();
   return protocol::Network::BlockedReasonEnum::Other;
@@ -1529,6 +1544,28 @@ String blockedReason(blink::ResourceRequestBlockedReason reason) {
 
 Maybe<String> GetBlockedReasonFor(
     const network::URLLoaderCompletionStatus& status) {
+  if (status.blocked_by_response_reason) {
+    switch (*status.blocked_by_response_reason) {
+      case network::BlockedByResponseReason::kCoepFrameResourceNeedsCoepHeader:
+        return {protocol::Network::BlockedReasonEnum::
+                    CoepFrameResourceNeedsCoepHeader};
+      case network::BlockedByResponseReason::
+          kCoopSandboxedIFrameCannotNavigateToCoopPage:
+        return {protocol::Network::BlockedReasonEnum::
+                    CoopSandboxedIframeCannotNavigateToCoopPage};
+      case network::BlockedByResponseReason::
+          kCorpNotSameOriginAfterDefaultedToSameOriginByCoep:
+        return {protocol::Network::BlockedReasonEnum::
+                    CorpNotSameOriginAfterDefaultedToSameOriginByCoep};
+      case network::BlockedByResponseReason::kCorpNotSameOrigin:
+        return {protocol::Network::BlockedReasonEnum::CorpNotSameOrigin};
+        break;
+      case network::BlockedByResponseReason::kCorpNotSameSite:
+        return {protocol::Network::BlockedReasonEnum::CorpNotSameSite};
+        break;
+    }
+    NOTREACHED();
+  }
   if (status.error_code != net::ERR_BLOCKED_BY_CLIENT &&
       status.error_code != net::ERR_BLOCKED_BY_RESPONSE)
     return Maybe<String>();

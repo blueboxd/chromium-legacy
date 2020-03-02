@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_MATH_SUPPORT_H_
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_stretch_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class HarfBuzzFace;
 
-// TODO(https://crbug.com/1050596): Add unit test.
 class PLATFORM_EXPORT OpenTypeMathSupport {
  public:
   static bool HasMathData(const HarfBuzzFace*);
@@ -80,6 +81,22 @@ class PLATFORM_EXPORT OpenTypeMathSupport {
   };
 
   static base::Optional<float> MathConstant(const HarfBuzzFace*, MathConstants);
+
+  // Returns a vector of GlyphVariantRecords corresponding to the specified
+  // glyph and stretch axis. The base glyph is always added as the first item.
+  // https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathvariants-table
+  static Vector<OpenTypeMathStretchData::GlyphVariantRecord>
+  GetGlyphVariantRecords(const HarfBuzzFace*,
+                         Glyph base_glyph,
+                         OpenTypeMathStretchData::StretchAxis);
+
+  // Returns a vector of GlyphPartRecords corresponding to the specified
+  // glyph and stretch axis. It is empty if there is no such construction.
+  // https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathvariants-table
+  static Vector<OpenTypeMathStretchData::GlyphPartRecord> GetGlyphPartRecords(
+      const HarfBuzzFace*,
+      Glyph base_glyph,
+      OpenTypeMathStretchData::StretchAxis);
 };
 
 }  // namespace blink

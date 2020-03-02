@@ -459,14 +459,4 @@ TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList) {
   ASSERT_TRUE(select->GetLayoutObject());
 }
 
-TEST_F(HTMLSelectElementTest, SlotAssignmentRecalcDuringOptionRemoval) {
-  // crbug.com/1056094
-  // This test passes if no CHECK failure about IsSlotAssignmentRecalcForbidden.
-  SetHtmlInnerHTML("<div dir=auto><select><option>option0");
-  auto* select = GetDocument().body()->firstChild()->firstChild();
-  auto* option = select->firstChild();
-  select->appendChild(option);
-  option->remove();
-}
-
 }  // namespace blink

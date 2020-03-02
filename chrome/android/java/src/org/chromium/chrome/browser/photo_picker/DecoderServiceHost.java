@@ -79,7 +79,7 @@ public class DecoderServiceHost
     private DecodeVideoTask mWorkerTask;
 
     // A callback to use for testing to see if decoder is ready.
-    static ServiceReadyCallback sReadyCallbackForTesting;
+    static DecoderStatusCallback sStatusCallbackForTesting;
 
     IDecoderService mIRemoteService;
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -87,7 +87,7 @@ public class DecoderServiceHost
         public void onServiceConnected(ComponentName className, IBinder service) {
             mIRemoteService = IDecoderService.Stub.asInterface(service);
             mBound = true;
-            for (ServiceReadyCallback callback : mCallbacks) {
+            for (DecoderStatusCallback callback : mCallbacks) {
                 callback.serviceReady();
             }
         }
@@ -101,9 +101,9 @@ public class DecoderServiceHost
     };
 
     /**
-     * Interface for notifying clients of the service being ready.
+     * Interface for notifying clients of status of the decoder service.
      */
-    public interface ServiceReadyCallback {
+    public interface DecoderStatusCallback {
         /**
          * A function to define to receive a notification once the service is up and running.
          */
@@ -197,7 +197,7 @@ public class DecoderServiceHost
     private DecoderServiceParams mProcessingRequest;
 
     // The callbacks used to notify the clients when the service is ready.
-    List<ServiceReadyCallback> mCallbacks = new ArrayList<ServiceReadyCallback>();
+    private final List<DecoderStatusCallback> mCallbacks = new ArrayList<DecoderStatusCallback>();
 
     // Flag indicating whether we are bound to the service.
     private boolean mBound;
@@ -208,10 +208,10 @@ public class DecoderServiceHost
      * The DecoderServiceHost constructor.
      * @param callback The callback to use when communicating back to the client.
      */
-    public DecoderServiceHost(ServiceReadyCallback callback, Context context) {
+    public DecoderServiceHost(DecoderStatusCallback callback, Context context) {
         mCallbacks.add(callback);
-        if (sReadyCallbackForTesting != null) {
-            mCallbacks.add(sReadyCallbackForTesting);
+        if (sStatusCallbackForTesting != null) {
+            mCallbacks.add(sStatusCallbackForTesting);
         }
         mContext = context;
         mContentResolver = mContext.getContentResolver();
@@ -557,7 +557,7 @@ public class DecoderServiceHost
 
     /** Sets a callback to use when the service is ready. For testing use only. */
     @VisibleForTesting
-    public static void setReadyCallback(ServiceReadyCallback callback) {
-        sReadyCallbackForTesting = callback;
+    public static void setStatusCallback(DecoderStatusCallback callback) {
+        sStatusCallbackForTesting = callback;
     }
 }

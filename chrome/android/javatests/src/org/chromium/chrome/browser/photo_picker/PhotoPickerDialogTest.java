@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // See crbug.com/888931 for details.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
-                                              DecoderServiceHost.ServiceReadyCallback,
+                                              DecoderServiceHost.DecoderStatusCallback,
                                               PickerVideoPlayer.VideoPlaybackStatusCallback,
                                               AnimationListener {
     // The timeout (in seconds) to wait for the decoder service to be ready.
@@ -113,7 +113,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         PickerVideoPlayer.setProgressCallback(this);
         PickerBitmapView.setAnimationListenerForTest(this);
 
-        DecoderServiceHost.setReadyCallback(this);
+        DecoderServiceHost.setStatusCallback(this);
     }
 
     // PhotoPickerDialog.PhotoPickerListener:
@@ -126,7 +126,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         onActionCallback.notifyCalled();
     }
 
-    // DecoderServiceHost.ServiceReadyCallback:
+    // DecoderServiceHost.DecoderStatusCallback:
 
     @Override
     public void serviceReady() {

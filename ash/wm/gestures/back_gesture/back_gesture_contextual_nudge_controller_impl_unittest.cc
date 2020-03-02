@@ -180,15 +180,4 @@ TEST_F(BackGestureContextualNudgeControllerTest, CanNotGoBackWindowTest) {
       user1_perf_service(), contextual_tooltip::TooltipType::kBackGesture));
 }
 
-TEST_F(BackGestureContextualNudgeControllerTest, ShowNudgeOnExistingWindow) {
-  TabletModeControllerTestApi tablet_mode_api;
-  tablet_mode_api.LeaveTabletMode();
-  EXPECT_FALSE(nudge());
-  std::unique_ptr<aura::Window> window = CreateTestWindow();
-  EXPECT_FALSE(nudge());
-
-  tablet_mode_api.EnterTabletMode();
-  EXPECT_TRUE(nudge());
-}
-
 }  // namespace ash

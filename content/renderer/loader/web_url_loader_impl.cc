@@ -71,6 +71,7 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -1015,6 +1016,11 @@ WebURLError WebURLLoaderImpl::PopulateURLError(
                              : WebURLError::HasCopyInCache::kFalse;
   if (status.cors_error_status)
     return WebURLError(*status.cors_error_status, has_copy_in_cache, url);
+  if (status.blocked_by_response_reason) {
+    DCHECK_EQ(net::ERR_BLOCKED_BY_RESPONSE, status.error_code);
+    return WebURLError(*status.blocked_by_response_reason,
+                       status.resolve_error_info, has_copy_in_cache, url);
+  }
   return WebURLError(status.error_code, status.extended_error_code,
                      status.resolve_error_info, has_copy_in_cache,
                      WebURLError::IsWebSecurityViolation::kFalse, url);

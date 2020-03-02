@@ -1227,8 +1227,10 @@ class GoogleDocsDesktopScrollingStory(system_health_story.SystemHealthStory):
   # the reported_by_page:* metric.
   EVENTS_REPORTED_BY_PAGE = '''
     window.__telemetry_reported_page_events = {
+      'ccv':
+          'telemetry:reported_by_page:viewable',
       'fcoe':
-          'telemetry:reported_by_page:editable'
+          'telemetry:reported_by_page:editable',
     };
   '''
 

@@ -2621,14 +2621,14 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   UpdateMainFrameLayoutSize();
 }
 
-void WebViewImpl::SetTextAutosizePageInfo(
+void WebViewImpl::SetTextAutosizerPageInfo(
     const WebTextAutosizerPageInfo& page_info) {
   Frame* root_frame = GetPage()->MainFrame();
   DCHECK(root_frame->IsRemoteFrame());
   if (page_info == GetPage()->TextAutosizerPageInfo())
     return;
 
-  GetPage()->SetTextAutosizePageInfo(page_info);
+  GetPage()->SetTextAutosizerPageInfo(page_info);
   TextAutosizer::UpdatePageInfoInAllFrames(root_frame);
 }
 

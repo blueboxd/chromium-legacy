@@ -1162,7 +1162,7 @@ void ServiceWorkerGlobalScope::DidHandleAbortPaymentEvent(
 
 void ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent(
     int event_id,
-    bool can_make_payment) {
+    payments::mojom::blink::CanMakePaymentResponsePtr response) {
   DCHECK(IsContextThread());
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent",
@@ -1172,7 +1172,7 @@ void ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent(
   DCHECK(can_make_payment_result_callbacks_.Contains(event_id));
   mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>
       result_callback = can_make_payment_result_callbacks_.Take(event_id);
-  result_callback->OnResponseForCanMakePayment(can_make_payment);
+  result_callback->OnResponseForCanMakePayment(std::move(response));
 }
 
 void ServiceWorkerGlobalScope::DidHandleCanMakePaymentEvent(

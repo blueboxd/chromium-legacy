@@ -10,6 +10,12 @@
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
+namespace {
+const UChar32 kLeftBraceCodePoint = '{';
+const UChar32 kOverBraceCodePoint = 0x23DE;
+const UChar32 kArabicMathOperatorHahWithDalCodePoint = 0x1EEF1;
+}  // namespace
+
 namespace blink {
 
 class OpenTypeMathSupportTest : public testing::Test {
@@ -232,6 +238,173 @@ TEST_F(OpenTypeMathSupportTest, MathConstantRadicals) {
         OpenTypeMathSupport::MathConstants::kRadicalKernAfterDegree);
     EXPECT_TRUE(result);
     EXPECT_FLOAT_EQ(*result, -5000);
+  }
+}
+
+TEST_F(OpenTypeMathSupportTest, MathVariantsWithoutTable) {
+  Font math = CreateMathFont("math-text.woff");
+  auto glyph = math.PrimaryFont()->GlyphForCharacter('A');
+
+  // Horizontal variants.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), glyph,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+    EXPECT_EQ(variants.size(), 1u);
+    EXPECT_EQ(variants[0], glyph);
+  }
+
+  // Vertical variants.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), glyph,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_EQ(variants.size(), 1u);
+    EXPECT_EQ(variants[0], glyph);
+  }
+
+  // Horizontal parts.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), glyph,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+    EXPECT_TRUE(parts.IsEmpty());
+  }
+
+  // // Vertical parts.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), glyph,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_TRUE(parts.IsEmpty());
+  }
+}
+
+TEST_F(OpenTypeMathSupportTest, MathVariantsWithTable) {
+  // operators.woff contains stretchy operators from the MathML operator
+  // dictionary (including left and over braces) represented by squares.
+  // It also contains glyphs h0, h1, h2, h3 and v0, v1, v2, v3 that are
+  // respectively horizontal and vertical rectangles of increasing size.
+  // The MathVariants table contains the following data for horizontal
+  // (respectively vertical) operators:
+  // - Glyph variants: h0, h1, h2, h3 (respectively v0, v1, v2, v3).
+  // - Glyph parts: non-extender h2 and extender h1 (respectively v2 and v1).
+  // For details, see createSizeVariants() and createStretchy() from
+  // third_party/blink/web_tests/external/wpt/mathml/tools/operator-dictionary.py
+
+  Font math = CreateMathFont("operators.woff");
+  auto left_brace = math.PrimaryFont()->GlyphForCharacter(kLeftBraceCodePoint);
+  auto over_brace = math.PrimaryFont()->GlyphForCharacter(kOverBraceCodePoint);
+
+  // Calculate glyph indices from the last unicode character in the font.
+  // TODO(fwang): Find a better way to access these glyph indices.
+  auto v0 = math.PrimaryFont()->GlyphForCharacter(
+                kArabicMathOperatorHahWithDalCodePoint) +
+            1;
+  auto h0 = v0 + 1;
+  auto v1 = h0 + 1;
+  auto h1 = v1 + 1;
+  auto v2 = h1 + 1;
+  auto h2 = v2 + 1;
+  auto v3 = h2 + 1;
+  auto h3 = v3 + 1;
+
+  // Vertical variants for vertical operator.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), left_brace,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_EQ(variants.size(), 5u);
+    EXPECT_EQ(variants[0], left_brace);
+    EXPECT_EQ(variants[1], v0);
+    EXPECT_EQ(variants[2], v1);
+    EXPECT_EQ(variants[3], v2);
+    EXPECT_EQ(variants[4], v3);
+  }
+
+  // Horizontal variants for vertical operator.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), left_brace,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+    EXPECT_EQ(variants.size(), 1u);
+    EXPECT_EQ(variants[0], left_brace);
+  }
+
+  // Horizontal variants for horizontal operator.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), over_brace,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+    EXPECT_EQ(variants.size(), 5u);
+    EXPECT_EQ(variants[0], over_brace);
+    EXPECT_EQ(variants[1], h0);
+    EXPECT_EQ(variants[2], h1);
+    EXPECT_EQ(variants[3], h2);
+    EXPECT_EQ(variants[4], h3);
+  }
+
+  // Vertical variants for horizontal operator.
+  {
+    auto variants = OpenTypeMathSupport::GetGlyphVariantRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), over_brace,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_EQ(variants.size(), 1u);
+    EXPECT_EQ(variants[0], over_brace);
+  }
+
+  // Vertical parts for vertical operator.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), left_brace,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_EQ(parts.size(), 2u);
+    EXPECT_EQ(parts[0].glyph, v2);
+    EXPECT_FLOAT_EQ(parts[0].start_connector_length, 0);
+    EXPECT_FLOAT_EQ(parts[0].end_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[0].full_advance, 3000);
+    EXPECT_EQ(parts[0].is_extender, false);
+    EXPECT_EQ(parts[1].glyph, v1);
+    EXPECT_FLOAT_EQ(parts[1].start_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[1].end_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[1].full_advance, 2000);
+    EXPECT_EQ(parts[1].is_extender, true);
+  }
+
+  // Horizontal parts for vertical operator.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), left_brace,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+    EXPECT_TRUE(parts.IsEmpty());
+  }
+
+  // Horizontal parts for horizontal operator.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), over_brace,
+        OpenTypeMathStretchData::StretchAxis::Horizontal);
+
+    EXPECT_EQ(parts.size(), 2u);
+    EXPECT_EQ(parts[0].glyph, h2);
+    EXPECT_FLOAT_EQ(parts[0].start_connector_length, 0);
+    EXPECT_FLOAT_EQ(parts[0].end_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[0].full_advance, 3000);
+    EXPECT_EQ(parts[0].is_extender, false);
+
+    EXPECT_EQ(parts[1].glyph, h1);
+    EXPECT_FLOAT_EQ(parts[1].start_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[1].end_connector_length, 1000);
+    EXPECT_FLOAT_EQ(parts[1].full_advance, 2000);
+    EXPECT_EQ(parts[1].is_extender, true);
+  }
+
+  // Vertical parts for horizontal operator.
+  {
+    auto parts = OpenTypeMathSupport::GetGlyphPartRecords(
+        math.PrimaryFont()->PlatformData().GetHarfBuzzFace(), over_brace,
+        OpenTypeMathStretchData::StretchAxis::Vertical);
+    EXPECT_TRUE(parts.IsEmpty());
   }
 }
 

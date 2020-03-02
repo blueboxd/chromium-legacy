@@ -297,8 +297,6 @@ bool ProfileSyncServiceFactory::IsSyncAllowed(Profile* profile) {
   if (HasSyncService(profile)) {
     syncer::SyncService* sync_service = GetForProfile(profile);
     return !sync_service->HasDisableReason(
-               syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) &&
-           !sync_service->HasDisableReason(
                syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
   }
 

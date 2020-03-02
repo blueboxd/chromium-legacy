@@ -108,19 +108,19 @@ size_t NamedLineCollection::FirstPosition() {
 
   size_t first_line = 0;
 
-  if (!auto_repeat_named_lines_indexes_) {
-    if (insertion_point_ < named_lines_indexes_->at(first_line))
-      return named_lines_indexes_->at(first_line) +
-             (auto_repeat_total_tracks_ ? auto_repeat_total_tracks_ - 1 : 0);
+  // If there is no auto repeat(), there must be some named line outside, return
+  // the 1st one. Also return it if it precedes the auto-repeat().
+  if (auto_repeat_total_tracks_ == 0 ||
+      (named_lines_indexes_ &&
+       named_lines_indexes_->at(first_line) <= insertion_point_))
     return named_lines_indexes_->at(first_line);
-  }
 
-  if (!named_lines_indexes_)
+  // Return the 1st named line inside the auto repeat(), if any.
+  if (auto_repeat_named_lines_indexes_)
     return auto_repeat_named_lines_indexes_->at(first_line) + insertion_point_;
 
-  return std::min(
-      named_lines_indexes_->at(first_line),
-      auto_repeat_named_lines_indexes_->at(first_line) + insertion_point_);
+  // The 1st named line must be after the auto repeat().
+  return named_lines_indexes_->at(first_line) + auto_repeat_total_tracks_ - 1;
 }
 
 GridPositionSide GridPositionsResolver::InitialPositionSide(

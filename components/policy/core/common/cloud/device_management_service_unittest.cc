@@ -212,16 +212,6 @@ class DeviceManagementServiceTestBase : public testing::Test {
         /*critical=*/false, DMAuth::NoAuth(), std::string(), payload, method);
   }
 
-  std::unique_ptr<DeviceManagementService::Job> StartAppInstallReportJob(
-      const std::string& payload = std::string(),
-      DeviceManagementService::Job::RetryMethod method =
-          DeviceManagementService::Job::NO_RETRY) {
-    return StartJob(DeviceManagementService::JobConfiguration::
-                        TYPE_UPLOAD_APP_INSTALL_REPORT,
-                    /*critical=*/false, DMAuth::FromDMToken(kDMToken),
-                    std::string(), payload, method);
-  }
-
   void SendResponse(net::Error error,
                     int http_status,
                     const std::string& response,
@@ -403,20 +393,6 @@ TEST_P(DeviceManagementServiceFailedRequestTest, AutoEnrollmentRequest) {
               OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartAutoEnrollmentJob());
-  auto* request = GetPendingRequest();
-  ASSERT_TRUE(request);
-
-  SendResponse(GetParam().error_, GetParam().http_status_,
-               GetParam().response_);
-}
-
-TEST_P(DeviceManagementServiceFailedRequestTest, AppInstallReportRequest) {
-  EXPECT_CALL(*this, OnJobDone(_, GetParam().expected_status_, _, _));
-  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
-  EXPECT_CALL(*this,
-              OnShouldJobRetry(GetParam().http_status_, GetParam().response_));
-  std::unique_ptr<DeviceManagementService::Job> request_job(
-      StartAppInstallReportJob());
   auto* request = GetPendingRequest();
   ASSERT_TRUE(request);
 
@@ -692,29 +668,6 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   SendResponse(net::OK, 200, expected_data);
 }
 
-TEST_F(DeviceManagementServiceTest, AppInstallReportRequest) {
-  em::DeviceManagementResponse expected_response;
-  expected_response.mutable_app_install_report_response();
-  std::string expected_data;
-  ASSERT_TRUE(expected_response.SerializeToString(&expected_data));
-
-  EXPECT_CALL(*this, OnJobDone(_, DM_STATUS_SUCCESS, _, expected_data));
-  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
-  EXPECT_CALL(*this, OnShouldJobRetry(200, expected_data));
-  std::unique_ptr<DeviceManagementService::Job> request_job(
-      StartAppInstallReportJob(expected_data));
-  auto* request = GetPendingRequest();
-  ASSERT_TRUE(request);
-
-  CheckURLAndQueryParams(request, dm_protocol::kValueRequestAppInstallReport,
-                         kClientID, "");
-
-  EXPECT_EQ(expected_data, network::GetUploadData(request->request));
-
-  // Generate the response.
-  SendResponse(net::OK, 200, expected_data);
-}
-
 TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
   EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
@@ -786,19 +739,6 @@ TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
   EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
   std::unique_ptr<DeviceManagementService::Job> request_job(
       StartPolicyFetchJob());
-  auto* request = GetPendingRequest();
-  ASSERT_TRUE(request);
-
-  // There shouldn't be any callbacks.
-  request_job.reset();
-}
-
-TEST_F(DeviceManagementServiceTest, CancelAppInstallReportRequest) {
-  EXPECT_CALL(*this, OnJobDone(_, _, _, _)).Times(0);
-  EXPECT_CALL(*this, OnJobRetry(_, _)).Times(0);
-  EXPECT_CALL(*this, OnShouldJobRetry(_, _)).Times(0);
-  std::unique_ptr<DeviceManagementService::Job> request_job(
-      StartAppInstallReportJob());
   auto* request = GetPendingRequest();
   ASSERT_TRUE(request);
 

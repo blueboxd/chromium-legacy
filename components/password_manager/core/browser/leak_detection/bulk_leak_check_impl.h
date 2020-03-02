@@ -71,6 +71,10 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   void OnLookupLeakResponse(CredentialHolder* weak_holder,
                             std::unique_ptr<SingleLookupResponse> response);
 
+  // Called when the response was analyzed on the background thread.
+  void OnAnalyzedResponse(CredentialHolder* weak_holder,
+                          AnalyzeResponseResult result);
+
   // Delegate for the instance. Should outlive |this|.
   BulkLeakCheckDelegateInterface* const delegate_;
 
@@ -89,6 +93,12 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   // Creating it once saves CPU time.
   const std::string encryption_key_;
 
+  // Every LeakCheckCredential is moved from one state to the next one in the
+  // following order.
+  // Hash/encrypt the payload -> request an access token -> make a network
+  // request -> process the payload.
+  // Below are the queues for each state.
+
   // The queue of the requests waiting for the payload compilation happening on
   // the background thread. When the payload is ready, the element is moved to
   // |waiting_token_| queue.
@@ -100,6 +110,9 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
 
   // The queue of the requests waiting for the server reply.
   base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_response_;
+
+  // The queue of the requests waiting for server response decoding.
+  base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_decryption_;
 
   // Task runner for preparing the payload. It takes a lot of memory. Therefore,
   // those tasks aren't parallelized.

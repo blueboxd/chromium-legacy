@@ -106,7 +106,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                     getArguments().getInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
 
-        mProfile = Profile.getLastUsedProfile();
+        mProfile = Profile.getLastUsedRegularProfile();
 
         SigninUtils.logEvent(ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 

@@ -44,13 +44,8 @@ namespace ash {
 //   |  <-   |  |   0   |  |  ->   |
 //   |       |  |   +   |  |       |
 //    -------    -------    -------
-//    _______
-//   |  BACK |
-//   |       |
-//    -------
 //
 // The <- represents the delete button while -> represents the submit button.
-// The "BACK" button is hidden by default.
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
@@ -75,7 +70,6 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
     views::View* GetButton(int number) const;
     views::View* GetBackspaceButton() const;
     views::View* GetSubmitButton() const;
-    views::View* GetBackButton() const;
 
     // Sets the timers that are used for backspace auto-submit. |delay_timer| is
     // the initial delay before an auto-submit, and |repeat_timer| fires
@@ -90,7 +84,6 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   using OnPinKey = base::RepeatingCallback<void(int value)>;
   using OnPinBackspace = base::RepeatingClosure;
   using OnPinSubmit = base::RepeatingClosure;
-  using OnPinBack = base::RepeatingClosure;
 
   // Creates PIN view with the specified |keyboard_style|.
   // |on_key| is called whenever the user taps one of the pin buttons; must be
@@ -99,13 +92,10 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // tapped key; must be non-null.
   // |on_submit| is called when the user wants to submit the PIN / password;
   // must be non-null.
-  // |on_back| is called when the user taps the back button; must be non-null
-  // if the back button is shown.
   LoginPinView(Style keyboard_style,
                const OnPinKey& on_key,
                const OnPinBackspace& on_backspace,
-               const OnPinSubmit& on_submit,
-               const OnPinBack& on_back);
+               const OnPinSubmit& on_submit);
   ~LoginPinView() override;
 
   // Notify accessibility that location of rows and LoginPinView changed.
@@ -117,7 +107,6 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   void OnPasswordTextChanged(bool is_empty);
 
  private:
-  class BackButton;
   class BackspacePinButton;
   class SubmitPinButton;
 
@@ -126,13 +115,11 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
 
   bool is_back_button_visible_ = false;
 
-  BackButton* back_button_;
   BackspacePinButton* backspace_;
   SubmitPinButton* submit_button_;
   OnPinKey on_key_;
   OnPinBackspace on_backspace_;
   OnPinSubmit on_submit_;
-  OnPinBack on_back_;
 
   std::vector<NonAccessibleView*> rows;
 

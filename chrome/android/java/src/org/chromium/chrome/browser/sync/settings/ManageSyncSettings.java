@@ -140,7 +140,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             type.setOnPreferenceChangeListener(this);
         }
 
-        if (Profile.getLastUsedProfile().isChild()) {
+        if (Profile.getLastUsedRegularProfile().isChild()) {
             mGoogleActivityControls.setSummary(
                     R.string.sign_in_google_activity_controls_summary_child_account);
         }
@@ -168,7 +168,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
                     getString(R.string.help_context_sync_and_services),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return false;

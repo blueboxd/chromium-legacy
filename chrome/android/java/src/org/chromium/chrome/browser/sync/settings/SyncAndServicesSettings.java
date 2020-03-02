@@ -282,7 +282,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         } else if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
                     getString(R.string.help_context_sync_and_services),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return false;
@@ -393,7 +393,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
 
     /** Returns whether Sync can be disabled. */
     private boolean canDisableSync() {
-        return !Profile.getLastUsedProfile().isChild();
+        return !Profile.getLastUsedRegularProfile().isChild();
     }
 
     /** Returns whether user did not complete the sign in flow. */

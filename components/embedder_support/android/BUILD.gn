@@ -200,3 +200,14 @@ generate_jni("native_j_unittests_jni_headers") {
   testonly = true
   sources = [ "native_java_unittests/src/org/chromium/components/embedder_support/util/UrlUtilitiesUnitTest.java" ]
 }
+
+android_library("junit_test_support") {
+  # Platform checks are broken for Robolectric.
+  bypass_platform_checks = true
+  testonly = true
+  sources = [ "junit/src/org/chromium/components/embedder_support/util/ShadowUrlUtilities.java" ]
+  deps = [
+    ":util_java",
+    "//third_party/robolectric:robolectric_all_java",
+  ]
+}

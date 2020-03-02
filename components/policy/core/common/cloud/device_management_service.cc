@@ -167,9 +167,6 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
     case DeviceManagementService::JobConfiguration::
         TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY:
       return "ActiveDirectoryPlayActivity";
-    case DeviceManagementService::JobConfiguration::
-        TYPE_UPLOAD_APP_INSTALL_REPORT:
-      return "UploadAppInstallReport";
     case DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT:
       return "TokenEnrollment";
     case DeviceManagementService::JobConfiguration::TYPE_CHROME_DESKTOP_REPORT:

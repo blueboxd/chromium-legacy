@@ -604,7 +604,7 @@ void TextAutosizer::UpdatePageInfoInAllFrames(Frame* main_frame) {
               page_info.shared_info_);
           // Remember the RemotePageSettings in the mainframe's renderer so we
           // know when they change.
-          document->GetPage()->SetTextAutosizePageInfo(page_info.shared_info_);
+          document->GetPage()->SetTextAutosizerPageInfo(page_info.shared_info_);
         }
       }
     }

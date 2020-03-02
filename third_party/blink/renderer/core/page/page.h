@@ -328,7 +328,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   void SetInsidePortal(bool inside_portal);
   bool InsidePortal() const;
 
-  void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo& page_info) {
+  void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo& page_info) {
     web_text_autosizer_page_info_ = page_info;
   }
   const WebTextAutosizerPageInfo& TextAutosizerPageInfo() const {

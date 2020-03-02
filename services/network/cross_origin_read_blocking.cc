@@ -832,9 +832,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // fail in the renderer), then we can let CORB filter the response without
   // caring about MIME type or sniffing.
   //
-  // To make CrossOriginResourcePolicy::Verify apply to all fetch modes in this
-  // case and not just "no-cors", we pass kNoCors as a hard-coded value.  This
-  // does not affect the usual enforcement of CORP headers.
+  // To make CrossOriginResourcePolicy::IsBlocked apply to all fetch modes in
+  // this case and not just "no-cors", we pass kNoCors as a hard-coded value.
+  // This does not affect the usual enforcement of CORP headers.
   //
   // TODO(lukasza): Once OOR-CORS launches (https://crbug.com/736308), this code
   // block will no longer be necessary since all failed CORS requests will be
@@ -844,8 +844,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   constexpr mojom::RequestMode kOverreachingRequestMode =
       mojom::RequestMode::kNoCors;
   // COEP is not supported when OOR-CORS is disabled.
-  if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(
+  if (CrossOriginResourcePolicy::IsBlocked(
           request_url, request_initiator, response, kOverreachingRequestMode,
           request_initiator_site_lock, CrossOriginEmbedderPolicy())) {
     // Ignore mime types and/or sniffing and have CORB block all responses with

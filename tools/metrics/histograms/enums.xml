@@ -51143,6 +51143,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Performance class unknown"/>
   <int value="1" label="Performance class slow"/>
   <int value="2" label="Performance class fast"/>
+  <int value="3" label="Performance class normal"/>
 </enum>
 
 <enum name="PerformanceMeasureParameterType">

@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
@@ -119,11 +118,6 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // HangWatcher thread is sleeping. Use only for testing.
   void SignalMonitorEventForTesting();
 
-  // Use to block until the hang is recorded. Allows the caller to halt
-  // execution so it does not overshoot the hang watch target and result in a
-  // non-actionable stack trace in the crash recorded.
-  void BlockIfCaptureInProgress();
-
  private:
   THREAD_CHECKER(thread_checker_);
 
@@ -165,9 +159,6 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   base::DelegateSimpleThread thread_;
 
   base::RepeatingClosure after_monitor_closure_for_testing_;
-
-  base::Lock capture_lock_;
-  std::atomic<bool> capture_in_progress;
 
   FRIEND_TEST_ALL_PREFIXES(HangWatcherTest, NestedScopes);
 };

@@ -212,7 +212,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
       prefs_observer_{this};
@@ -224,7 +224,7 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
-  apps::mojom::AppType app_type_;
+  const apps::mojom::AppType app_type_;
 
   apps::InstanceRegistry* instance_registry_;
   ScopedObserver<extensions::AppWindowRegistry,

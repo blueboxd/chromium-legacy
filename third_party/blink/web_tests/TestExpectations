@@ -1891,6 +1891,8 @@ crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharne
 
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
 
+crbug.com/1057518 virtual/controls-refresh/month-picker/month-picker-appearance-step.html [ Skip ]
+
 # ======
 # From this point until the end of the Form Controls Refresh section, these are
 # in-progress rebaselines, tracked at crbug.com/1053725.
@@ -2948,6 +2950,12 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/test-synthetic-italic-2.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/test-synthetic-italic-2.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/test-synthetic-italic-2.html [ Failure ]
@@ -6719,3 +6727,4 @@ crbug.com/1057036 [ Mac ] virtual/controls-refresh/calendar-picker/date-picker-a
 crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.html [ Pass Timeout ]
 crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtools/oopif/oopif-storage.js [ Pass Timeout ]
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
+crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]

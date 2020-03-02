@@ -97,8 +97,8 @@ class UninstallDialog {
   // Callback invoked when the icon is loaded.
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
-  Profile* profile_;
-  apps::mojom::AppType app_type_;
+  Profile* const profile_;
+  const apps::mojom::AppType app_type_;
   const std::string app_id_;
   const std::string app_name_;
   gfx::NativeWindow parent_window_;

@@ -49,7 +49,8 @@ enum class UmaPerformanceClass {
   kUnknown = 0,
   kSlow = 1,
   kFast = 2,
-  kMaxValue = kFast,
+  kNormal = 3,
+  kMaxValue = kNormal,
 };
 
 UmaPerformanceClass ToUmaPerformanceClass(PerformanceClass performance_class) {

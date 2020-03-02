@@ -2344,6 +2344,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (!IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
                              child_writing_mode))
     builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
+  if (child_style.LogicalWidth().IsAuto() &&
+      child.GetLayoutBox()->AutoWidthShouldFitContent())
+    builder.SetIsShrinkToFit(true);
 
   builder.SetAvailableSize(child_available_size);
   builder.SetPercentageResolutionSize(child_percentage_size_);

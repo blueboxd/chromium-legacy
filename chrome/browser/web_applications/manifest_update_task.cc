@@ -114,6 +114,11 @@ bool ManifestUpdateTask::IsUpdateNeeded(
   if (web_application_info.scope != registrar_.GetAppScopeInternal(app_id_))
     return true;
 
+  if (web_application_info.display_mode !=
+      registrar_.GetAppDisplayMode(app_id_)) {
+    return true;
+  }
+
   if (web_application_info.icon_infos != registrar_.GetAppIconInfos(app_id_))
     return true;
 

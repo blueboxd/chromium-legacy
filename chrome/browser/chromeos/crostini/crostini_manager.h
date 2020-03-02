@@ -193,6 +193,8 @@ class CrostiniManager : public KeyedService,
   explicit CrostiniManager(Profile* profile);
   ~CrostiniManager() override;
 
+  base::WeakPtr<CrostiniManager> GetWeakPtr();
+
   // Returns true if the cros-termina component is installed.
   static bool IsCrosTerminaInstalled();
 

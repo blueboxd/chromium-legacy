@@ -144,7 +144,7 @@ class WebApps : public apps::mojom::Publisher,
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
       registrar_observer_{this};

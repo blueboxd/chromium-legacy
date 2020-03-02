@@ -156,6 +156,38 @@
   };
 
   /**
+   * Tests that clicking a directory tree recent subtype {audio,image,video}
+   * tab does not vertically scroll the tree.
+   */
+  testcase.directoryTreeRecentsSubtypeScroll = async () => {
+    // Open FilesApp on Downloads.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    // Set window height to 400px so the tree has a vertical scroll bar.
+    await remoteCall.callRemoteTestUtil('resizeWindow', appId, [680, 400]);
+    await remoteCall.waitForWindowGeometry(appId, 680, 400);
+
+    // Wait for the recent image tab and save its element properties.
+    const recentQuery =
+        '#directory-tree [root-type-icon="recent"][recent-file-type="image"]';
+    const savedElement =
+        await remoteCall.waitForElementStyles(appId, recentQuery, ['display']);
+    chrome.test.assertTrue(savedElement.renderedTop > 0);
+
+    // Click recent image tab and wait for its file-list content to appear.
+    await remoteCall.waitAndClickElement(appId, recentQuery);
+    const file = TestEntryInfo.getExpectedRows([ENTRIES.desktop]);
+    await remoteCall.waitForFiles(appId, file, {ignoreLastModifiedTime: true});
+
+    // Check: the recent image tab element.renderedTop should not change.
+    const resultElement =
+        await remoteCall.waitForElementStyles(appId, recentQuery, ['display']);
+    const notScrolled = savedElement.renderedTop === resultElement.renderedTop;
+    chrome.test.assertTrue(notScrolled, 'Tree should not vertically scroll');
+  };
+
+  /**
    * Tests that the directory tree does not horizontally scroll when expanding
    * nested folder items.
    */

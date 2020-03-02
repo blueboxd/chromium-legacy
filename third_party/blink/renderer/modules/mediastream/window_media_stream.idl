@@ -5,7 +5,7 @@
 [
     ImplementedAs=DOMWindowMediaStream
 ] partial interface Window {
-    [Measure] attribute MediaStreamConstructor webkitMediaStream;
+    [DisableInNewIDLCompiler, Measure] attribute MediaStreamConstructor webkitMediaStream;
 
-    [Measure] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
+    [DisableInNewIDLCompiler, Measure] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
 };

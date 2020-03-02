@@ -637,6 +637,52 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             http_server_.GetURL("/"));
 }
 
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
+                       CheckFindsDisplayChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "$1",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"minimal-ui", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate, {"standalone", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_EQ(GetProvider().registrar().GetAppDisplayMode(app_id),
+            DisplayMode::kStandalone);
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
+                       CheckIgnoresDisplayBrowserChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "$1",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"standalone", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate, {"browser", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppNotEligible);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppNotEligible, 1);
+  EXPECT_EQ(GetProvider().registrar().GetAppDisplayMode(app_id),
+            DisplayMode::kStandalone);
+}
+
 class ManifestUpdateManagerSystemAppBrowserTest
     : public ManifestUpdateManagerBrowserTest {
  public:

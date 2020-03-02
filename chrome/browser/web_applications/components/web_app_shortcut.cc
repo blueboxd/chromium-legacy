@@ -10,7 +10,8 @@
 #include "base/callback.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
@@ -65,8 +66,8 @@ void CreatePlatformShortcutsAndPostCallback(
     const ShortcutInfo& shortcut_info) {
   bool shortcut_created = internals::CreatePlatformShortcuts(
       shortcut_data_path, creation_locations, creation_reason, shortcut_info);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), shortcut_created));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), shortcut_created));
 }
 
 }  // namespace
@@ -181,14 +182,14 @@ void PostShortcutIOTaskAndReply(
 
 scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner() {
   constexpr base::TaskTraits traits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
 #if defined(OS_WIN)
-  return base::CreateCOMSTATaskRunner(
+  return base::ThreadPool::CreateCOMSTATaskRunner(
       traits, base::SingleThreadTaskRunnerThreadMode::SHARED);
 #else
-  return base::CreateTaskRunner(traits);
+  return base::ThreadPool::CreateTaskRunner(traits);
 #endif
 }
 

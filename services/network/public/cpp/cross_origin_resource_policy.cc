@@ -216,6 +216,22 @@ CrossOriginResourcePolicy::VerifyByHeaderValue(
 }
 
 // static
+CrossOriginResourcePolicy::VerificationResult
+CrossOriginResourcePolicy::VerifyNavigation(
+    const GURL& request_url,
+    const base::Optional<url::Origin>& request_initiator,
+    const network::mojom::URLResponseHead& response,
+    base::Optional<url::Origin> request_initiator_site_lock,
+    const CrossOriginEmbedderPolicy& embedder_policy) {
+  ParsedHeader policy =
+      ParseHeaderByHttpResponseHeaders(response.headers.get());
+
+  return VerifyInternal(policy, request_url, request_initiator,
+                        mojom::RequestMode::kNavigate,
+                        request_initiator_site_lock, embedder_policy.value);
+}
+
+// static
 CrossOriginResourcePolicy::ParsedHeader
 CrossOriginResourcePolicy::ParseHeaderForTesting(
     const net::HttpResponseHeaders* headers) {

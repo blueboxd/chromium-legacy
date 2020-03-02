@@ -160,7 +160,7 @@ class ArcApps : public KeyedService,
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* profile_;
+  Profile* const profile_;
   ArcIconOnceLoader arc_icon_once_loader_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;

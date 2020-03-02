@@ -640,14 +640,7 @@ XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
 }
 
 DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  if (value.IsEmpty() || !value->IsObject())
-    return nullptr;
-
-  v8::Local<v8::Object> window_wrapper = V8Window::FindInstanceInPrototypeChain(
-      v8::Local<v8::Object>::Cast(value), isolate);
-  if (!window_wrapper.IsEmpty())
-    return V8Window::ToImpl(window_wrapper);
-  return nullptr;
+  return V8Window::ToImplWithTypeCheck(isolate, value);
 }
 
 LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context> context) {

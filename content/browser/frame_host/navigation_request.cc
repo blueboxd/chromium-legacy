@@ -93,6 +93,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -1784,6 +1785,26 @@ void NavigationRequest::OnResponseStarted(
       response_head_->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
     // https://mikewest.github.io/corpp/#process-navigation-response.
+    if (GetParentFrame() &&
+        cross_origin_embedder_policy.value ==
+            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp &&
+        !common_params_->url.SchemeIsBlob() &&
+        !common_params_->url.SchemeIs(url::kDataScheme)) {
+      // The CORP check for nested navigation.
+      if (network::CrossOriginResourcePolicy::VerifyNavigation(
+              common_params_->url, GetParentFrame()->GetLastCommittedOrigin(),
+              *response_head_, GetParentFrame()->GetLastCommittedOrigin(),
+              cross_origin_embedder_policy) ==
+          network::CrossOriginResourcePolicy::kBlock) {
+        OnRequestFailedInternal(
+            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_RESPONSE),
+            false /* skip_throttles */, base::nullopt /* error_page_content */,
+            false /* collapse_frame */);
+        // DO NOT ADD CODE after this. The previous call to
+        // OnRequestFailedInternal has destroyed the NavigationRequest.
+        return;
+      }
+    }
     if (GetParentFrame() &&
         GetParentFrame()->cross_origin_embedder_policy().value ==
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {

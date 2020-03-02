@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/services/app_service/public/cpp/icon_loader.h"
@@ -16,8 +17,7 @@
 
 namespace {
 
-constexpr int32_t kUninstallIconSize = 32;
-constexpr int32_t kArcUninstallIconSize = 48;
+constexpr int32_t kUninstallIconSize = 48;
 
 }  // namespace
 
@@ -40,29 +40,28 @@ UninstallDialog::UninstallDialog(Profile* profile,
   if (parent_window)
     parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
 
-  int32_t size_hint_in_dip;
   switch (app_type) {
-    case apps::mojom::AppType::kCrostini:
-      // Crostini uninstall dialog doesn't show the icon.
-      UiBase::Create(profile_, app_type_, app_id_, app_name, gfx::ImageSkia(),
-                     parent_window, this);
-      return;
     case apps::mojom::AppType::kArc:
-      // Currently ARC apps only support 48*48 native icon.
-      size_hint_in_dip = kArcUninstallIconSize;
+      break;
+    case apps::mojom::AppType::kCrostini:
+      // Crostini icons might be a big image, and not fit the size, so add the
+      // resize icon effect, to resize the image.
+      icon_key->icon_effects = static_cast<apps::IconEffects>(
+          icon_key->icon_effects | apps::IconEffects::kResizeAndPad);
       break;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
       UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallSource",
                                 extensions::UNINSTALL_SOURCE_APP_LIST,
                                 extensions::NUM_UNINSTALL_SOURCES);
-      size_hint_in_dip = kUninstallIconSize;
       break;
     default:
       NOTREACHED();
       return;
   }
   constexpr bool kAllowPlaceholderIcon = false;
+  // Currently ARC apps only support 48*48 native icon.
+  int32_t size_hint_in_dip = kUninstallIconSize;
   icon_loader->LoadIconFromIconKey(
       app_type, app_id, std::move(icon_key),
       apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,

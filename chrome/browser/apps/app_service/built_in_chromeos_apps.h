@@ -70,7 +70,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 
-  Profile* profile_;
+  Profile* const profile_;
 
   // Hack to hide the settings app from the app list search box. This is only
   // intended to be used in tests.

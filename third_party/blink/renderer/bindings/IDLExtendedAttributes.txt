@@ -51,6 +51,7 @@ CustomConstructor
 CustomElementCallbacks
 DefaultValue=Undefined
 DeprecateAs=*
+DisableInNewIDLCompiler
 DoNotCheckConstants
 DoNotTestNewObject
 EnforceRange

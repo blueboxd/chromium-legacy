@@ -645,11 +645,6 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Returns the preferred V4L2 input formats for |type| or empty if none.
   virtual std::vector<uint32_t> PreferredInputFormat(Type type) const = 0;
 
-  // NOTE: The below methods to query capabilities have a side effect of
-  // closing the previously-open device, if any, and should not be called after
-  // Open().
-  // TODO(posciak): fix this.
-
   // Get minimum and maximum resolution for fourcc |pixelformat| and store to
   // |min_resolution| and |max_resolution|.
   void GetSupportedResolution(uint32_t pixelformat,
@@ -657,6 +652,11 @@ class MEDIA_GPU_EXPORT V4L2Device
                               gfx::Size* max_resolution);
 
   std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
+
+  // NOTE: The below methods to query capabilities have a side effect of
+  // closing the previously-open device, if any, and should not be called after
+  // Open().
+  // TODO(b/150431552): fix this.
 
   // Return V4L2 pixelformats supported by the available image processor
   // devices for |buf_type|.

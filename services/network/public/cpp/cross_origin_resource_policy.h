@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
     kBlock,
     kAllow,
   };
+  // The CORP check. This returns kAllowed when |request_mode| is not kNoCors.
   static VerificationResult Verify(
       const GURL& request_url,
       const base::Optional<url::Origin>& request_initiator,
@@ -55,6 +56,15 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       const base::Optional<url::Origin>& request_initiator,
       base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
+      base::Optional<url::Origin> request_initiator_site_lock,
+      const CrossOriginEmbedderPolicy& embedder_policy);
+
+  // The CORP check for navigation requests. This is expected to be called
+  // from the navigation algorithm.
+  static VerificationResult VerifyNavigation(
+      const GURL& request_url,
+      const base::Optional<url::Origin>& request_initiator,
+      const network::mojom::URLResponseHead& response,
       base::Optional<url::Origin> request_initiator_site_lock,
       const CrossOriginEmbedderPolicy& embedder_policy);
 

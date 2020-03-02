@@ -89,7 +89,7 @@ function processElement(parentElement, node)
         processEmptyElement(parentElement, node);
     else {
         var child = node.firstChild;
-        if (child.nodeType == Node.TEXT_NODE && isShort(child.nodeValue) && !child.nextSibling)
+        if (child.nodeType == Node.TEXT_NODE && !child.nextSibling)
             processShortTextOnlyElement(parentElement, node);
         else
             processComplexElement(parentElement, node);
@@ -128,64 +128,29 @@ function processComplexElement(parentElement, node)
 
 function processComment(parentElement, node)
 {
-    if (isShort(node.nodeValue)) {
-        var line = createLine();
-        line.appendChild(createComment('<!-- ' + node.nodeValue + ' -->'));
-        parentElement.appendChild(line);
-    } else {
-        var folder = createFolder();
-
-        folder.start.appendChild(createComment('<!--'));
-        folder.openedContent.appendChild(createComment(node.nodeValue));
-        folder.end.appendChild(createComment('-->'));
-
-        parentElement.appendChild(folder);
-    }
+    var line = createLine();
+    line.appendChild(createComment('<!-- ' + node.nodeValue + ' -->'));
+    parentElement.appendChild(line);
 }
 
 function processCDATA(parentElement, node)
 {
-    if (isShort(node.nodeValue)) {
-        var line = createLine();
-        line.appendChild(createText('<![CDATA[ ' + node.nodeValue + ' ]]>'));
-        parentElement.appendChild(line);
-    } else {
-        var folder = createFolder();
-
-        folder.start.appendChild(createText('<![CDATA['));
-        folder.openedContent.appendChild(createText(node.nodeValue));
-        folder.end.appendChild(createText(']]>'));
-        parentElement.appendChild(folder);
-    }
+    var line = createLine();
+    line.appendChild(createText('<![CDATA[ ' + node.nodeValue + ' ]]>'));
+    parentElement.appendChild(line);
 }
 
 function processProcessingInstruction(parentElement, node)
 {
-    if (isShort(node.nodeValue)) {
-        var line = createLine();
-        line.appendChild(createComment('<?' + node.nodeName + ' ' + node.nodeValue + '?>'));
-        parentElement.appendChild(line);
-    } else {
-        var folder = createFolder();
-
-        folder.start.appendChild(createComment('<?' + node.nodeName));
-        folder.openedContent.appendChild(createComment(node.nodeValue));
-        folder.end.appendChild(createComment('?>'));
-
-        parentElement.appendChild(folder);
-    }
+    var line = createLine();
+    line.appendChild(
+        createComment('<?' + node.nodeName + ' ' + node.nodeValue + '?>'));
+    parentElement.appendChild(line);
 }
 
 function processText(parentElement, node)
 {
     parentElement.appendChild(createText(node.nodeValue));
-}
-
-// Processing utils.
-
-function isShort(value)
-{
-    return value.trim().length <= 50;
 }
 
 // Tree rendering.

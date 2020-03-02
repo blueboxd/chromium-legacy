@@ -18,6 +18,10 @@ namespace chromeos {
 
 namespace {
 
+bool IsAssistPersonalInfoEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
+}
+
 // Returns the current input context. This may change during the session, even
 // if the IME engine does not change.
 ui::IMEInputContextHandlerInterface* GetInputContext() {
@@ -64,11 +68,13 @@ void NativeInputMethodEngine::Initialize(
     std::unique_ptr<InputMethodEngineBase::Observer> observer,
     const char* extension_id,
     Profile* profile) {
+  std::unique_ptr<AssistiveSuggester> assistive_suggester =
+      std::make_unique<AssistiveSuggester>(this, profile);
   // Wrap the given observer in our observer that will decide whether to call
   // Mojo directly or forward to the extension.
   auto native_observer =
       std::make_unique<chromeos::NativeInputMethodEngine::ImeObserver>(
-          std::move(observer));
+          std::move(observer), std::move(assistive_suggester));
   InputMethodEngine::Initialize(std::move(native_observer), extension_id,
                                 profile);
 }
@@ -87,8 +93,11 @@ NativeInputMethodEngine::GetNativeObserver() const {
 }
 
 NativeInputMethodEngine::ImeObserver::ImeObserver(
-    std::unique_ptr<InputMethodEngineBase::Observer> base_observer)
-    : base_observer_(std::move(base_observer)), receiver_from_engine_(this) {
+    std::unique_ptr<InputMethodEngineBase::Observer> base_observer,
+    std::unique_ptr<AssistiveSuggester> assistive_suggester)
+    : base_observer_(std::move(base_observer)),
+      receiver_from_engine_(this),
+      assistive_suggester_(std::move(assistive_suggester)) {
   auto* ime_manager = input_method::InputMethodManager::Get();
 
   const auto start = base::Time::Now();
@@ -128,10 +137,16 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
 
 void NativeInputMethodEngine::ImeObserver::OnFocus(
     const IMEEngineHandlerInterface::InputContext& context) {
+  if (IsAssistPersonalInfoEnabled())
+    assistive_suggester_->OnFocus(context.id);
+
   base_observer_->OnFocus(context);
 }
 
 void NativeInputMethodEngine::ImeObserver::OnBlur(int context_id) {
+  if (IsAssistPersonalInfoEnabled())
+    assistive_suggester_->OnBlur();
+
   base_observer_->OnBlur(context_id);
 }
 
@@ -139,6 +154,12 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
     const std::string& engine_id,
     const InputMethodEngineBase::KeyboardEvent& event,
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
+  if (IsAssistPersonalInfoEnabled()) {
+    if (assistive_suggester_->OnKeyEvent(event)) {
+      std::move(callback).Run(true);
+      return;
+    }
+  }
   if (ShouldEngineUseMojo(engine_id) && remote_to_engine_.is_bound()) {
     remote_to_engine_->ProcessKeypressForRulebased(
         ime::mojom::KeypressInfoForRulebased::New(
@@ -178,6 +199,13 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     int cursor_pos,
     int anchor_pos,
     int offset_pos) {
+  if (IsAssistPersonalInfoEnabled()) {
+    // If |assistive_suggester_| changes the surrounding text, no longer need
+    // to call the following function, as the information is out-dated.
+    if (assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos,
+                                                       anchor_pos))
+      return;
+  }
   base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
                                            anchor_pos, offset_pos);
 }

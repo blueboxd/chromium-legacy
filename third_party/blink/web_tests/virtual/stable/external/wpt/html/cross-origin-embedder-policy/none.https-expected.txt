@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS "none" top-level: navigating a frame to "none" should succeed
+PASS "none" top-level: navigating a frame from "require-corp" to "none" should succeed
+PASS "none" top-level: navigating a frame back from "require-corp" should succeed
+PASS "require-corp" top-level noopener popup: navigating to "none" should succeed
+PASS CORP: same-site is checked and allowed.
+FAIL CORP: same-site is checked and blocked. assert_false: expected false got true
+Harness: the test ran to completion.
+

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -18,11 +19,13 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -57,7 +60,6 @@ AppUninstallDialogView::AppUninstallDialogView(
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(image, uninstall_dialog),
-      BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
       app_type_(app_type),
       app_name_(app_name) {
   DialogDelegate::set_close_callback(base::BindOnce(
@@ -67,7 +69,7 @@ AppUninstallDialogView::AppUninstallDialogView(
   DialogDelegate::set_accept_callback(base::BindOnce(
       &AppUninstallDialogView::OnDialogAccepted, base::Unretained(this)));
 
-  InitializeView(profile, app_id);
+  InitializeView(profile, app_type, app_id);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 }
@@ -87,13 +89,6 @@ void AppUninstallDialogView::OnDialogAccepted() {
                                      report_abuse_checkbox);
 }
 
-gfx::Size AppUninstallDialogView::CalculatePreferredSize() const {
-  const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
-                                DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                            margins().width();
-  return gfx::Size(default_width, GetHeightForWidth(default_width));
-}
-
 ui::ModalType AppUninstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -110,192 +105,46 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
       NOTREACHED();
       return base::string16();
     case apps::mojom::AppType::kArc:
-      return l10n_util::GetStringUTF16(
-          shortcut_ ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
-                    : IDS_APP_UNINSTALL_PROMPT_TITLE);
+#if defined(OS_CHROMEOS)
+      if (shortcut_)
+        return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+
+      // Otherwise fallback to Uninstall + app name.
+      FALLTHROUGH;
+#else
+      NOTREACHED();
+      return base::string16();
+#endif
     case apps::mojom::AppType::kCrostini:
 #if defined(OS_CHROMEOS)
-      return l10n_util::GetStringUTF16(
-          IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_TITLE);
+      FALLTHROUGH;
 #else
       NOTREACHED();
       return base::string16();
 #endif
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
-      return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
                                         base::UTF8ToUTF16(app_name_));
   }
 }
 
-bool AppUninstallDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
 bool AppUninstallDialogView::ShouldShowWindowIcon() const {
-  return app_type_ == apps::mojom::AppType::kExtension ||
-         app_type_ == apps::mojom::AppType::kWeb;
+  return true;
 }
 
-void AppUninstallDialogView::AddMultiLineLabel(
-    views::View* parent,
-    const base::string16& label_text) {
-  auto* label =
-      parent->AddChildView(std::make_unique<views::Label>(label_text));
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetAllowCharacterBreak(true);
-}
-
-void AppUninstallDialogView::InitializeCommonView(
-    bool show_report_abuse_checkbox,
-    bool show_clear_site_data_checkbox,
-    const GURL& app_launch_url) {
+void AppUninstallDialogView::InitializeView(Profile* profile,
+                                            apps::mojom::AppType app_type,
+                                            const std::string& app_id) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  // Add margins for the icon plus the icon-title padding so that the dialog
-  // contents align with the title text.
-  set_margins(margins() +
-              gfx::Insets(0, margins().left() + image().size().height(), 0, 0));
-
-  if (show_report_abuse_checkbox) {
-    auto report_abuse_checkbox = std::make_unique<views::Checkbox>(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
-    report_abuse_checkbox->SetMultiLine(true);
-    report_abuse_checkbox_ = AddChildView(std::move(report_abuse_checkbox));
-  } else if (show_clear_site_data_checkbox) {
-    auto clear_site_data_checkbox =
-        std::make_unique<views::Checkbox>(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX,
-            url_formatter::FormatUrlForSecurityDisplay(
-                app_launch_url,
-                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC)));
-    clear_site_data_checkbox->SetMultiLine(true);
-    clear_site_data_checkbox_ =
-        AddChildView(std::move(clear_site_data_checkbox));
-  }
-}
-
-void AppUninstallDialogView::InitializeViewForExtension(
-    Profile* profile,
-    const std::string& app_id) {
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          app_id);
-  DCHECK(extension);
-
-  InitializeCommonView(
-      /*show_report_abuse_checkbox=*/
-      extensions::ManifestURL::UpdatesFromGallery(extension),
-      /*show_clear_site_data_checkbox=*/extension->from_bookmark(),
-      /*app_launch_url=*/
-      extensions::AppLaunchInfo::GetFullLaunchURL(extension));
-}
-
-void AppUninstallDialogView::InitializeViewForWebApp(
-    Profile* profile,
-    const std::string& app_id) {
-  auto* provider = web_app::WebAppProvider::Get(profile);
-  DCHECK(provider);
-
-  GURL app_launch_url = provider->registrar().GetAppLaunchURL(app_id);
-  DCHECK(app_launch_url.is_valid());
-
-  InitializeCommonView(
-      /*show_report_abuse_checkbox=*/false,
-      /*show_clear_site_data_checkbox=*/true, app_launch_url);
-}
-
-#if defined(OS_CHROMEOS)
-void AppUninstallDialogView::InitializeViewForArcApp(
-    Profile* profile,
-    const std::string& app_id) {
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  DCHECK(arc_prefs);
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id);
-  DCHECK(arc_prefs);
-
-  shortcut_ = app_info->shortcut;
-
-  base::string16 heading_text = l10n_util::GetStringFUTF16(
-      shortcut_ ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
-                : IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING,
-      base::UTF8ToUTF16(app_name_));
-  base::string16 subheading_text;
-  if (!shortcut_) {
-    subheading_text = l10n_util::GetStringUTF16(
-        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
-  }
-
-  if (!app_info->shortcut) {
-    DialogDelegate::set_button_label(
-        ui::DIALOG_BUTTON_OK,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
-  } else {
-    DialogDelegate::set_button_label(
-        ui::DIALOG_BUTTON_OK,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
-  }
-
-  auto* icon_view = AddChildView(std::make_unique<views::ImageView>());
-  constexpr int kArcImageViewSize = 64;
-  icon_view->SetPreferredSize(gfx::Size(kArcImageViewSize, kArcImageViewSize));
-  icon_view->SetImageSize(image().size());
-  icon_view->SetImage(image());
-
-  auto* text_container = AddChildView(std::make_unique<views::View>());
-  auto* text_container_layout =
-      text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  text_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kCenter);
-  text_container_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
-
-  AddMultiLineLabel(text_container, heading_text);
-  if (!subheading_text.empty())
-    AddMultiLineLabel(text_container, subheading_text);
-}
-
-void AppUninstallDialogView::InitializeViewForCrostiniApp(
-    Profile* profile,
-    const std::string& app_id) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
-
-  views::LayoutProvider* provider = views::LayoutProvider::Get();
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-
-  base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY,
-      base::UTF8ToUTF16(app_name_));
-  auto* message_label = AddChildView(std::make_unique<views::Label>(message));
-  message_label->SetMultiLine(true);
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-}
-#endif
-
-void AppUninstallDialogView::InitializeView(Profile* profile,
-                                            const std::string& app_id) {
   switch (app_type_) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
@@ -330,3 +179,102 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       break;
   }
 }
+
+void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
+  std::unique_ptr<views::Checkbox> clear_site_data_checkbox;
+  if (google_util::IsGoogleHostname(app_launch_url.host_piece(),
+                                    google_util::ALLOW_SUBDOMAIN)) {
+    clear_site_data_checkbox =
+        std::make_unique<views::Checkbox>(l10n_util::GetStringFUTF16(
+            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE,
+            url_formatter::FormatUrlForSecurityDisplay(
+                app_launch_url,
+                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC)));
+  } else {
+    auto domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        app_launch_url.host_piece(),
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    DCHECK(!domain.empty());
+    domain[0] = base::ToUpperASCII(domain[0]);
+    clear_site_data_checkbox =
+        std::make_unique<views::Checkbox>(l10n_util::GetStringFUTF16(
+            IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE,
+            url_formatter::FormatUrlForSecurityDisplay(
+                app_launch_url,
+                url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+            base::ASCIIToUTF16(domain)));
+  }
+
+  clear_site_data_checkbox->SetMultiLine(true);
+  clear_site_data_checkbox_ = AddChildView(std::move(clear_site_data_checkbox));
+}
+
+void AppUninstallDialogView::InitializeViewForExtension(
+    Profile* profile,
+    const std::string& app_id) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          app_id);
+  DCHECK(extension);
+
+  if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
+    auto report_abuse_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
+    report_abuse_checkbox->SetMultiLine(true);
+    report_abuse_checkbox_ = AddChildView(std::move(report_abuse_checkbox));
+  } else if (extension->from_bookmark()) {
+    InitializeCheckbox(extensions::AppLaunchInfo::GetFullLaunchURL(extension));
+  }
+}
+
+void AppUninstallDialogView::InitializeViewForWebApp(
+    Profile* profile,
+    const std::string& app_id) {
+  auto* provider = web_app::WebAppProvider::Get(profile);
+  DCHECK(provider);
+
+  GURL app_launch_url = provider->registrar().GetAppLaunchURL(app_id);
+  DCHECK(app_launch_url.is_valid());
+
+  InitializeCheckbox(app_launch_url);
+}
+
+#if defined(OS_CHROMEOS)
+void AppUninstallDialogView::InitializeViewForArcApp(
+    Profile* profile,
+    const std::string& app_id) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(arc_prefs);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+  DCHECK(app_info);
+
+  shortcut_ = app_info->shortcut;
+
+  if (shortcut_) {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+  } else {
+    base::string16 subheading_text = l10n_util::GetStringUTF16(
+        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
+    auto* label = AddChildView(std::make_unique<views::Label>(subheading_text));
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetAllowCharacterBreak(true);
+  }
+}
+
+void AppUninstallDialogView::InitializeViewForCrostiniApp(
+    Profile* profile,
+    const std::string& app_id) {
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY,
+      base::UTF8ToUTF16(app_name_));
+  auto* label = AddChildView(std::make_unique<views::Label>(message));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetAllowCharacterBreak(true);
+}
+#endif

@@ -56,6 +56,7 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -162,8 +163,14 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
  public:
   RenderFrameHostImplBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~RenderFrameHostImplBrowserTest() override {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    // This makes the tests that check NetworkIsolationKeys make sure both the
+    // frame and top frame origins are correct, without significantly affecting
+    // other tests.
+    feature_list_.InitAndEnableFeature(
+        net::features::kAppendFrameOriginToNetworkIsolationKey);
+  }
+  ~RenderFrameHostImplBrowserTest() override = default;
 
   // Return an URL for loading a local test file.
   GURL GetFileURL(const base::FilePath::CharType* file_path) {
@@ -183,6 +190,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
 };
 
@@ -2001,7 +2009,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Create popup.
   WebContentsAddedObserver popup_observer;
-  ASSERT_TRUE(ExecuteScript(shell(), "var w = window.open();"));
+  ASSERT_TRUE(ExecuteScript(shell(), "var w = window.open('');"));
   WebContents* popup = popup_observer.GetWebContents();
 
   FrameTreeNode* popup_frame =
@@ -2035,6 +2043,213 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     EXPECT_NE(root->current_frame_host()->GetProcess(),
               popup_frame->current_frame_host()->GetProcess());
   }
+}
+
+// Navigating an iframe to about:blank sets the NetworkIsolationKey differently
+// than creating a new frame at about:blank, so needs to be tested.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyNavigateIframeToAboutBlank) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  url::Origin origin = url::Origin::Create(main_frame_url);
+  net::NetworkIsolationKey expected_network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(root, main_frame_url, origin,
+                                       expected_network_isolation_key);
+  ASSERT_EQ(1u, root->child_count());
+
+  CheckURLOriginAndNetworkIsolationKey(
+      root->child_at(0), embedded_test_server()->GetURL("/title1.html"), origin,
+      expected_network_isolation_key);
+  RenderFrameHost* iframe = root->child_at(0)->current_frame_host();
+
+  TestFrameNavigationObserver commit_observer(iframe);
+  ASSERT_TRUE(ExecuteScript(iframe, "window.location = 'about:blank'"));
+  commit_observer.WaitForCommit();
+
+  ASSERT_EQ(1u, root->child_count());
+  CheckURLOriginAndNetworkIsolationKey(root->child_at(0), GURL("about:blank"),
+                                       origin, expected_network_isolation_key);
+  // Site-for-cookies should be consistent with the NetworkIsolationKey.
+  EXPECT_TRUE(
+      root->child_at(0)
+          ->current_frame_host()
+          ->ComputeSiteForCookies()
+          .IsFirstParty(
+              expected_network_isolation_key.GetTopFrameOrigin()->GetURL()));
+}
+
+// An iframe that starts at about:blank and is itself nested in a cross-site
+// iframe should have the same NetworkIsolationKey as its parent.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyNestedCrossSiteAboutBlankIframe) {
+  const char kSiteA[] = "a.test";
+  const char kSiteB[] = "b.test";
+
+  // Navigation and creation paths for determining about:blank's
+  // NetworkIsolationKey are different. This test is for the NIK-on-creation
+  // path, so need a URL that will start with a nested about:blank iframe.
+  GURL nested_iframe_url = GURL("about:blank");
+  GURL cross_site_iframe_url(embedded_test_server()->GetURL(
+      kSiteB, net::test_server::GetFilePathWithReplacements(
+                  "/page_with_iframe.html",
+                  base::StringPairs{
+                      {"title1.html", nested_iframe_url.spec().c_str()}})));
+  GURL main_frame_url(embedded_test_server()->GetURL(
+      kSiteA, net::test_server::GetFilePathWithReplacements(
+                  "/page_with_iframe.html",
+                  base::StringPairs{
+                      {"title1.html", cross_site_iframe_url.spec().c_str()}})));
+
+  // This should be the origin for both the iframes.
+  url::Origin iframe_origin = url::Origin::Create(cross_site_iframe_url);
+
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+
+  net::NetworkIsolationKey expected_iframe_network_isolation_key(
+      main_frame_origin, iframe_origin);
+  net::NetworkIsolationKey expected_main_frame_network_isolation_key(
+      main_frame_origin, main_frame_origin);
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(
+      root, main_frame_url, main_frame_origin,
+      expected_main_frame_network_isolation_key);
+
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* cross_site_iframe = root->child_at(0);
+  CheckURLOriginAndNetworkIsolationKey(cross_site_iframe, cross_site_iframe_url,
+                                       iframe_origin,
+                                       expected_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(cross_site_iframe->current_frame_host()
+                  ->ComputeSiteForCookies()
+                  .IsNull());
+
+  ASSERT_EQ(1u, cross_site_iframe->child_count());
+  FrameTreeNode* nested_iframe = cross_site_iframe->child_at(0);
+  CheckURLOriginAndNetworkIsolationKey(nested_iframe, nested_iframe_url,
+                                       iframe_origin,
+                                       expected_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      nested_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
+}
+
+// An iframe that's navigated to about:blank and is itself nested in a
+// cross-site iframe should have the same NetworkIsolationKey as its parent. The
+// navigation path is a bit different from the creation path in the above path,
+// so needs to be tested as well.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    NetworkIsolationKeyNavigateNestedCrossSiteAboutBlankIframe) {
+  const char kSiteA[] = "a.test";
+  const char kSiteB[] = "b.test";
+  const char kSiteC[] = "c.test";
+
+  // Start with a.test iframing b.test iframing c.test.  Innermost iframe should
+  // not be on the same site as the middle iframe, so that navigations to/from
+  // about:blank initiated by b.test change its origin.
+  GURL innermost_iframe_url(
+      embedded_test_server()->GetURL(kSiteC, "/title1.html"));
+  GURL middle_iframe_url(embedded_test_server()->GetURL(
+      kSiteB, net::test_server::GetFilePathWithReplacements(
+                  "/page_with_iframe.html",
+                  base::StringPairs{
+                      {"title1.html", innermost_iframe_url.spec().c_str()}})));
+  GURL main_frame_url(embedded_test_server()->GetURL(
+      kSiteA, net::test_server::GetFilePathWithReplacements(
+                  "/page_with_iframe.html",
+                  base::StringPairs{
+                      {"title1.html", middle_iframe_url.spec().c_str()}})));
+
+  url::Origin innermost_iframe_origin =
+      url::Origin::Create(innermost_iframe_url);
+  url::Origin middle_iframe_origin = url::Origin::Create(middle_iframe_url);
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+
+  net::NetworkIsolationKey expected_innermost_iframe_network_isolation_key(
+      main_frame_origin, innermost_iframe_origin);
+  net::NetworkIsolationKey expected_middle_iframe_network_isolation_key(
+      main_frame_origin, middle_iframe_origin);
+  net::NetworkIsolationKey expected_main_frame_network_isolation_key(
+      main_frame_origin, main_frame_origin);
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(
+      root, main_frame_url, main_frame_origin,
+      expected_main_frame_network_isolation_key);
+
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* middle_iframe = root->child_at(0);
+  CheckURLOriginAndNetworkIsolationKey(
+      middle_iframe, middle_iframe_url, middle_iframe_origin,
+      expected_middle_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      middle_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
+
+  ASSERT_EQ(1u, middle_iframe->child_count());
+  FrameTreeNode* innermost_iframe = middle_iframe->child_at(0);
+  CheckURLOriginAndNetworkIsolationKey(
+      innermost_iframe, innermost_iframe_url, innermost_iframe_origin,
+      expected_innermost_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      innermost_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
+
+  // The middle iframe navigates the innermost iframe to about:blank. It should
+  // then have the same NetworkIsolationKey as the middle iframe.
+  TestNavigationObserver nav_observer1(shell()->web_contents());
+  ASSERT_TRUE(ExecJs(
+      middle_iframe->current_frame_host(),
+      "var iframe = "
+      "document.getElementById('test_iframe');iframe.src='about:blank';"));
+  nav_observer1.WaitForNavigationFinished();
+  CheckURLOriginAndNetworkIsolationKey(
+      innermost_iframe, GURL("about:blank"), middle_iframe_origin,
+      expected_middle_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      middle_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
+
+  // The innermost iframe, now at about:blank, navigates itself back its
+  // original location, which should make it use c.test's NIK again.
+  TestNavigationObserver nav_observer2(shell()->web_contents());
+  ASSERT_TRUE(
+      ExecJs(innermost_iframe->current_frame_host(), "window.history.back();"));
+  nav_observer2.WaitForNavigationFinished();
+  CheckURLOriginAndNetworkIsolationKey(
+      innermost_iframe, innermost_iframe_url, innermost_iframe_origin,
+      expected_innermost_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      innermost_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
+
+  // The innermost iframe, now at c.test, navigates itself back to about:blank.
+  // Despite c.test initiating the navigation, the iframe should be using
+  // b.test's NIK, since the navigation entry was created by a navigation
+  // initiated by b.test.
+  TestNavigationObserver nav_observer3(shell()->web_contents());
+  ASSERT_TRUE(ExecJs(innermost_iframe->current_frame_host(),
+                     "window.history.forward();"));
+  nav_observer3.WaitForNavigationFinished();
+  CheckURLOriginAndNetworkIsolationKey(
+      innermost_iframe, GURL("about:blank"), middle_iframe_origin,
+      expected_middle_iframe_network_isolation_key);
+  // Cross site iframes should have an empty site-for-cookies.
+  EXPECT_TRUE(
+      innermost_iframe->current_frame_host()->ComputeSiteForCookies().IsNull());
 }
 
 // Verify that if the UMA histograms are correctly recording if interface

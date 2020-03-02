@@ -63,5 +63,5 @@
 
     // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.
-    [NotEnumerable, CallWith=ThisValue, Unforgeable] any valueOf();
+    [DisableInNewIDLCompiler, NotEnumerable, CallWith=ThisValue, Unforgeable] any valueOf();
 };

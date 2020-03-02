@@ -132,7 +132,8 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
 
   bool is_internal_launch_scheme =
       launch_scheme == extensions::kExtensionScheme ||
-      launch_scheme == content::kChromeUIScheme;
+      launch_scheme == content::kChromeUIScheme ||
+      launch_scheme == content::kChromeUIUntrustedScheme;
 
   // The current page must be secure for us to hide the toolbar. However,
   // chrome:// launch URL apps can hide the toolbar,
@@ -163,7 +164,8 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
     }
 
     if (is_for_system_web_app()) {
-      DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
+      DCHECK(url.scheme_piece() == content::kChromeUIScheme ||
+             url.scheme_piece() == content::kChromeUIUntrustedScheme);
       return false;
     }
 

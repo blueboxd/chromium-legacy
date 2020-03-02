@@ -153,12 +153,8 @@ void V8DevToolsHost::ShowContextMenuAtPointMethodCustom(
   if (info.Length() >= 4 && info[3]->IsObject()) {
     document = V8HTMLDocument::ToImplWithTypeCheck(isolate, info[3]);
   } else {
-    v8::Local<v8::Object> window_wrapper =
-        V8Window::FindInstanceInPrototypeChain(
-            isolate->GetEnteredOrMicrotaskContext()->Global(), isolate);
-    if (window_wrapper.IsEmpty())
-      return;
-    DOMWindow* window = V8Window::ToImpl(window_wrapper);
+    DOMWindow* window = V8Window::ToImplWithTypeCheck(
+        isolate, isolate->GetEnteredOrMicrotaskContext()->Global());
     document = window ? To<LocalDOMWindow>(window)->document() : nullptr;
   }
   if (!document || !document->GetFrame())

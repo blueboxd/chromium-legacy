@@ -3674,9 +3674,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_APP_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the non-platform app and ARC(App Runtime for Chrome) app uninstallation prompt window">
         Uninstall app?
       </message>
-      <message name="IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the non-platform app uninstallation prompt. Tells the user the app will be uninstalled if confirmed.">
-        "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" will be uninstalled.
-      </message>
       <message name="IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING" desc="Line in the content area of the ARC(App Runtime for Chrome) app uninstallation prompt. Tells the user that local data associated with the app will be removed from this device.">
         Data associated with this app will be removed from this device.
       </message>
@@ -10530,6 +10527,21 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <message name="IDS_SMS_INFOBAR_BUTTON_OK" desc="Text for the button shown when Chrome has received an SMS on the user's behalf">
       Verify
+    </message>
+
+    <!-- App uninstall prompt title -->
+    <message name="IDS_PROMPT_APP_UNINSTALL_TITLE" desc="Title text for uninstalling an app.">
+      Uninstall "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>"?
+    </message>
+
+    <!-- App uninstall prompt for non-Google -->
+    <message name="IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_NON_GOOGLE" desc="Checkbox text to ask the user whether they want to remove associated data at uninstall time. Only used when uninstalling an app associated with a particular website.">
+      Also clear browsing data (<ph name="URL">$1<ex>pinterest.com</ex></ph>) which will sign you out of <ph name="DOMAIN">$2<ex>Pinterest.com</ex></ph>.
+    </message>
+
+    <!-- App uninstall prompt for Google -->
+    <message name="IDS_APP_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX_FOR_GOOGLE" desc="Checkbox text to ask the user whether they want to remove associated data at uninstall time for Google hostnames. Only used when uninstalling an app associated with a Google hostname.">
+        Also clear browsing data (<ph name="URL">$1<ex>www.google.com</ex></ph>) which may sign you out of Google.com.
     </message>
 
     <!-- App pause prompt -->

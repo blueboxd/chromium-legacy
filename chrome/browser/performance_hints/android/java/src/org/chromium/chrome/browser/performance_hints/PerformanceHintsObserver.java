@@ -18,12 +18,13 @@ import java.lang.annotation.RetentionPolicy;
 public class PerformanceHintsObserver {
     // From components/optimization_guide/proto/performance_hints_metadata.proto:PerformanceClass.
     @IntDef({PerformanceClass.PERFORMANCE_UNKNOWN, PerformanceClass.PERFORMANCE_SLOW,
-            PerformanceClass.PERFORMANCE_FAST})
+            PerformanceClass.PERFORMANCE_FAST, PerformanceClass.PERFORMANCE_NORMAL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PerformanceClass {
         int PERFORMANCE_UNKNOWN = 0;
         int PERFORMANCE_SLOW = 1;
         int PERFORMANCE_FAST = 2;
+        int PERFORMANCE_NORMAL = 3;
     }
 
     public static @PerformanceClass int getPerformanceClassForURL(

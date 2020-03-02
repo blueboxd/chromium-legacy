@@ -1094,6 +1094,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit ShrinkLogicalWidthToAvoidFloats(LayoutUnit child_margin_start,
                                              LayoutUnit child_margin_end,
                                              const LayoutBlockFlow* cb) const;
+  bool AutoWidthShouldFitContent() const;
 
   LayoutUnit ComputeLogicalWidthUsing(
       SizeType,
@@ -1742,7 +1743,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ClearScrollSnapMapping();
   void AddScrollSnapMapping();
 
-  bool AutoWidthShouldFitContent() const;
   LayoutUnit ShrinkToFitLogicalWidth(LayoutUnit available_logical_width,
                                      LayoutUnit borders_plus_padding) const;
 

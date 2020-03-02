@@ -15,6 +15,8 @@ enum PerformanceClass {
   PERFORMANCE_SLOW = 1;
   // Historic performance for the associated key is relatively fast.
   PERFORMANCE_FAST = 2;
+  // Historic performance for the associated key is neither slow nor fast.
+  PERFORMANCE_NORMAL = 3;
 }
 
 message PerformanceHint {

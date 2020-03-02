@@ -209,4 +209,33 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest,
   EXPECT_FALSE(app_browser_->app_controller()->GetThemeColor().has_value());
 }
 
+class AppBrowserControllerChromeUntrustedBrowserTest
+    : public InProcessBrowserTest {
+ public:
+  AppBrowserControllerChromeUntrustedBrowserTest()
+      : test_system_web_app_installation_(
+            TestSystemWebAppInstallation::SetUpChromeUntrustedApp()) {}
+
+ protected:
+  Browser* InstallAndLaunchMockApp() {
+    test_system_web_app_installation_->WaitForAppInstall();
+    Browser* app_browser = web_app::LaunchWebAppBrowser(
+        browser()->profile(), test_system_web_app_installation_->GetAppId());
+    CHECK(content::NavigateToURL(
+        app_browser->tab_strip_model()->GetActiveWebContents(),
+        test_system_web_app_installation_->GetAppUrl()));
+    return app_browser;
+  }
+
+ private:
+  std::unique_ptr<TestSystemWebAppInstallation>
+      test_system_web_app_installation_;
+};
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerChromeUntrustedBrowserTest,
+                       DoesNotShowToolbar) {
+  Browser* app_browser = InstallAndLaunchMockApp();
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
+}
+
 }  // namespace web_app

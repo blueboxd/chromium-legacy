@@ -5466,25 +5466,22 @@ void RenderFrameHostImpl::CommitNavigation(
   const bool is_same_document =
       NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
 
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
+  url::Origin main_world_origin_for_url_loader_factory =
+      GetOriginForURLLoaderFactory(navigation_request);
+
   // Network isolation key should be filled before the URLLoaderFactory for
   // sub-resources is created. Only update for cross document navigations since
   // for opaque origin same document navigations, a new origin should not be
   // created as that would be different from the original.
-  // TODO(crbug.com/971796): For about:blank and other such urls,
-  // common_params->url currently leads to an opaque origin to be created. Once
-  // this is fixed, the origin which these navigations eventually get committed
-  // to will be available here as well.
-  // TODO(crbug.com/979296): Consider changing this code to copy an origin
-  // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
-    const url::Origin frame_origin = url::Origin::Create(common_params->url);
     network_isolation_key_ = net::NetworkIsolationKey(
-        ComputeTopFrameOrigin(frame_origin), frame_origin);
+        ComputeTopFrameOrigin(main_world_origin_for_url_loader_factory),
+        main_world_origin_for_url_loader_factory);
   }
   DCHECK(network_isolation_key_.IsFullyPopulated());
 
-  url::Origin main_world_origin_for_url_loader_factory =
-      GetOriginForURLLoaderFactory(navigation_request);
   if (navigation_request && navigation_request->appcache_handle()) {
     // AppCache may create a subresource URLLoaderFactory later, so make sure it
     // has the correct origin to use when calling

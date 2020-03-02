@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_UNINSTALL_DIALOG_VIEW_H_
 
 #include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
+#include "chrome/browser/ui/views/apps/app_dialog_view.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -37,12 +39,8 @@ class ImageSkia;
 // correct UI based on the app type. Once the user has confirmed the uninstall,
 // this class calls the parent class apps::UninstallDialog::UiBase to notify
 // AppService, which transfers control to the publisher to uninstall the app.
-//
-// TODO(crbug.com/1009248):
-// 1. Add an interface to the uninstall, like what is done by
-// extension_uninstall_dialog_->ConfirmUninstallByExtension.
 class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
-                               public views::BubbleDialogDelegateView {
+                               public AppDialogView {
  public:
   AppUninstallDialogView(Profile* profile,
                          apps::mojom::AppType app_type,
@@ -53,18 +51,17 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   ~AppUninstallDialogView() override = default;
 
   // views::BubbleDialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   gfx::ImageSkia GetWindowIcon() override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowIcon() const override;
 
  private:
-  void AddMultiLineLabel(views::View* parent, const base::string16& label_text);
-  void InitializeCommonView(bool show_report_abuse_checkbox,
-                            bool show_clear_site_data_checkbox,
-                            const GURL& app_launch_url);
+  void InitializeView(Profile* profile,
+                      apps::mojom::AppType app_type,
+                      const std::string& app_id);
+
+  void InitializeCheckbox(const GURL& app_launch_url);
 
   void InitializeViewForExtension(Profile* profile, const std::string& app_id);
   void InitializeViewForWebApp(Profile* profile, const std::string& app_id);
@@ -73,8 +70,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   void InitializeViewForCrostiniApp(Profile* profile,
                                     const std::string& app_id);
 #endif
-  void InitializeView(Profile* profile,
-                      const std::string& app_id);
 
   void OnDialogCancelled();
   void OnDialogAccepted();
@@ -87,7 +82,9 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
 
   // Whether app represents a shortcut. |shortcut_| is available for the ARC
   // apps only.
+#if defined(OS_CHROMEOS)
   bool shortcut_ = false;
+#endif
 
   views::Checkbox* report_abuse_checkbox_ = nullptr;
   views::Checkbox* clear_site_data_checkbox_ = nullptr;

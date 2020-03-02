@@ -356,7 +356,7 @@ bool HTMLSelectElement::CanSelectAll() const {
 }
 
 bool HTMLSelectElement::TypeShouldForceLegacyLayout() const {
-  return true;
+  return UsesMenuList();
 }
 
 LayoutObject* HTMLSelectElement::CreateLayoutObject(

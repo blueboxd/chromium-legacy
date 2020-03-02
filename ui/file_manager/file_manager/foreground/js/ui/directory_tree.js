@@ -1811,10 +1811,13 @@ class FakeItem extends TreeItem {
     icon.setAttribute('root-type-icon', rootType);
 
     if (rootType === VolumeManagerCommon.RootType.RECENT) {
-      icon.setAttribute('recent-file-type', this.dirEntry_.recentFileType);
-      this.labelElement.scrollIntoViewIfNeeded = () => {
-        this.scrollIntoView(true);
-      };
+      if (this.dirEntry_.recentFileType) {
+        icon.setAttribute('recent-file-type', this.dirEntry_.recentFileType);
+      } else {  // Recent tab scroll fix: crbug.com/1027973.
+        this.labelElement.scrollIntoViewIfNeeded = () => {
+          this.scrollIntoView(true);
+        };
+      }
     }
 
     if (tree.disabledContextMenu) {

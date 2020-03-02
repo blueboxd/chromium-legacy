@@ -865,6 +865,10 @@ CrostiniManager::~CrostiniManager() {
   RemoveDBusObservers();
 }
 
+base::WeakPtr<CrostiniManager> CrostiniManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void CrostiniManager::RemoveDBusObservers() {
   if (dbus_observers_removed_) {
     return;

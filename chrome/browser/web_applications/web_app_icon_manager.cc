@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -260,7 +260,7 @@ std::vector<uint8_t> ReadCompressedIconBlocking(
 }
 
 constexpr base::TaskTraits kTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
 }  // namespace
@@ -279,7 +279,7 @@ void WebAppIconManager::WriteData(AppId app_id,
                                   WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
                      std::move(app_id), std::move(icons)),
@@ -289,7 +289,7 @@ void WebAppIconManager::WriteData(AppId app_id,
 void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(DeleteDataBlocking, utils_->Clone(), web_apps_directory_,
                      std::move(app_id)),
@@ -318,7 +318,7 @@ void WebAppIconManager::ReadIcons(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(HasIcons(app_id, icon_sizes_in_px));
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadIconsBlocking, utils_->Clone(), web_apps_directory_,
                      app_id, icon_sizes_in_px),
@@ -334,7 +334,7 @@ void WebAppIconManager::ReadAllIcons(const AppId& app_id,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadIconsBlocking, utils_->Clone(), web_apps_directory_,
                      app_id, web_app->downloaded_icon_sizes()),
@@ -350,7 +350,7 @@ void WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
       FindDownloadedSizeInPxMatchBigger(app_id, icon_size_in_px);
   DCHECK(best_size_in_px.has_value());
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
                      app_id, best_size_in_px.value()),
@@ -367,7 +367,7 @@ void WebAppIconManager::ReadSmallestCompressedIcon(
       FindDownloadedSizeInPxMatchBigger(app_id, icon_size_in_px);
   DCHECK(best_size_in_px.has_value());
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadCompressedIconBlocking, utils_->Clone(),
                      web_apps_directory_, app_id, best_size_in_px.value()),
@@ -396,7 +396,7 @@ void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
 
   DCHECK(best_downloaded_size.has_value());
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadIconAndResizeBlocking, utils_->Clone(),
                      web_apps_directory_, app_id, best_downloaded_size.value(),

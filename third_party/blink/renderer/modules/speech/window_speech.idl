@@ -6,10 +6,10 @@
     ImplementedAs=DOMWindowSpeech,
     RuntimeEnabled=ScriptedSpeechRecognition
 ] partial interface Window {
-    [Measure] attribute SpeechGrammarConstructor webkitSpeechGrammar;
-    [Measure] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
-    [Measure] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
+    [DisableInNewIDLCompiler, Measure] attribute SpeechGrammarConstructor webkitSpeechGrammar;
+    [DisableInNewIDLCompiler, Measure] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
+    [DisableInNewIDLCompiler, Measure] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
     // Note that the prefixed variant does not end with "Event".
-    [Measure] attribute SpeechRecognitionErrorEventConstructor webkitSpeechRecognitionError;
-    [Measure] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
+    [DisableInNewIDLCompiler, Measure] attribute SpeechRecognitionErrorEventConstructor webkitSpeechRecognitionError;
+    [DisableInNewIDLCompiler, Measure] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
 };

@@ -3853,7 +3853,7 @@
     Uninstall app?
   </message>
   <message name="IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY" desc="Description for the Crostini application uninstaller, a confirmation dialog for uninstalling a Linux application.">
-    <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph> and the data associated with it will be removed from this device.
+    Data associated with this app may be removed from this device.
   </message>
   <message name="IDS_CROSTINI_APPLICATION_UNINSTALL_UNINSTALL_BUTTON" desc="Label for the button in the Linux application uninstaller dialog to uninstall the application">
     Uninstall

@@ -210,6 +210,21 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  gfx::Size min_resolution;
+  gfx::Size max_resolution;
+  device_->GetSupportedResolution(output_format_fourcc_, &min_resolution,
+                                  &max_resolution);
+  if (config.input_visible_size.width() < min_resolution.width() ||
+      config.input_visible_size.height() < min_resolution.height() ||
+      config.input_visible_size.width() > max_resolution.width() ||
+      config.input_visible_size.height() > max_resolution.height()) {
+    VLOGF(1) << "Unsupported resolution: "
+             << config.input_visible_size.ToString()
+             << ", min=" << min_resolution.ToString()
+             << ", max=" << max_resolution.ToString();
+    return false;
+  }
+
   // Ask if V4L2_ENC_CMD_STOP (Flush) is supported.
   struct v4l2_encoder_cmd cmd = {};
   cmd.cmd = V4L2_ENC_CMD_STOP;

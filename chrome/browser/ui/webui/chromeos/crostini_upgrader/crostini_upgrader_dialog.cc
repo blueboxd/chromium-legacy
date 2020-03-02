@@ -64,10 +64,31 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
   return upgrader_ui_ == nullptr || upgrader_ui_->can_close();
 }
 
-void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
-  upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
-  upgrader_ui_->set_launch_closure(std::move(launch_closure_));
+namespace {
+void RestartAndRunLaunchClosure(
+    base::WeakPtr<crostini::CrostiniManager> crostini_manager,
+    base::OnceClosure launch_closure) {
+  if (!crostini_manager) {
+    return;
+  }
+  crostini_manager->RestartCrostini(
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      base::BindOnce(
+          [](base::OnceClosure launch_closure,
+             crostini::CrostiniResult result) {
+            if (result != crostini::CrostiniResult::SUCCESS) {
+              LOG(ERROR)
+                  << "Failed to restart crostini after upgrade. Error code: "
+                  << static_cast<int>(result);
+              return;
+            }
+            std::move(launch_closure).Run();
+          },
+          std::move(launch_closure)));
+}
+}  // namespace
 
+void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
   auto* crostini_manager =
       crostini::CrostiniManager::GetForProfile(Profile::FromWebUI(webui));
   crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
@@ -75,6 +96,11 @@ void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
   crostini_manager->UpgradePromptShown(
       crostini::ContainerId(crostini::kCrostiniDefaultVmName,
                             crostini::kCrostiniDefaultContainerName));
+
+  upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
+  upgrader_ui_->set_launch_closure(base::BindOnce(
+      &RestartAndRunLaunchClosure, crostini_manager->GetWeakPtr(),
+      std::move(launch_closure_)));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 

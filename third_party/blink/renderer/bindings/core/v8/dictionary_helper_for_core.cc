@@ -199,18 +199,9 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!dictionary.Get(key, v8_value))
     return false;
 
-  TrackBase* source = nullptr;
-  if (v8_value->IsObject()) {
-    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8_value);
-
-    // FIXME: this will need to be changed so it can also return an AudioTrack
-    // or a VideoTrack once we add them.
-    v8::Local<v8::Object> track = V8TextTrack::FindInstanceInPrototypeChain(
-        wrapper, dictionary.GetIsolate());
-    if (!track.IsEmpty())
-      source = V8TextTrack::ToImpl(track);
-  }
-  value = source;
+  // FIXME: this will need to be changed so it can also return an AudioTrack
+  // or a VideoTrack once we add them.
+  value = V8TextTrack::ToImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
   return true;
 }
 

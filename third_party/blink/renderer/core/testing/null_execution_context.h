@@ -55,8 +55,17 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
+  SecurityContext& GetSecurityContext() override { return security_context_; }
+  const SecurityContext& GetSecurityContext() const override {
+    return security_context_;
+  }
+
+  void Trace(blink::Visitor*) override;
+
  private:
   KURL url_;
+
+  SecurityContext security_context_;
 
   // A dummy scheduler to ensure that the callers of
   // ExecutionContext::GetScheduler don't have to check for whether it's null or

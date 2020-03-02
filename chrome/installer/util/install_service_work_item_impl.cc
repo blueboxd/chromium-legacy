@@ -145,20 +145,20 @@ bool InstallServiceWorkItemImpl::DoImpl() {
     const bool succeeded = InstallNewService();
     if (succeeded) {
       RecordServiceInstallResult(ServiceInstallResult::kSucceededFreshInstall);
-    } else {
-      PLOG(ERROR) << "Failed to install service";
-      RecordServiceInstallResult(ServiceInstallResult::kFailedFreshInstall);
-      RecordWin32ApiErrorCode(kCreateService);
+      return succeeded;
     }
 
-    return succeeded;
-  }
-
-  // It is preferable to do a lightweight upgrade of the existing service,
-  // instead of deleting and recreating a new service, since it is less
-  // likely to fail. Less intrusive to the SCM and to AV/Anti-malware programs.
-  if (UpgradeService())
+    PLOG(ERROR) << "Failed to install service";
+    RecordServiceInstallResult(ServiceInstallResult::kFailedFreshInstall);
+    RecordWin32ApiErrorCode(kCreateService);
+    // Fall through to try installing the service by generating a new name.
+  } else if (UpgradeService()) {
+    // It is preferable to do a lightweight upgrade of the existing service,
+    // instead of deleting and recreating a new service, since it is less
+    // likely to fail. Less intrusive to the SCM and to AV/Anti-malware
+    // programs.
     return true;
+  }
 
   // Save the original service name. Then create a new service name so as to not
   // conflict with the previous one to be safe, then install the new service.
@@ -335,15 +335,12 @@ bool InstallServiceWorkItemImpl::SetServiceName(
     const base::string16& service_name) const {
   base::win::RegKey key;
 
-  // This assumes that a WorkItem to create the key has already executed before
-  // this WorkItem. this is generally true since one is added in
-  // AddUninstallShortcutWorkItems.
-  auto result = key.Open(HKEY_LOCAL_MACHINE,
-                         install_static::GetClientStateKeyPath().c_str(),
-                         KEY_SET_VALUE | KEY_WOW64_32KEY);
+  auto result = key.Create(HKEY_LOCAL_MACHINE,
+                           install_static::GetClientStateKeyPath().c_str(),
+                           KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result != ERROR_SUCCESS) {
     ::SetLastError(result);
-    DPLOG(ERROR) << "key.Open failed";
+    DPLOG(ERROR) << "key.Create failed";
     return false;
   }
 

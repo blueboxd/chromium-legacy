@@ -370,6 +370,9 @@ void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
     case WilcoDtcSupportdEvent::kDockThunderbolt:
       notification_controller_->ShowDockThunderboltNotification();
       return;
+    case WilcoDtcSupportdEvent::kLowPowerCharger:
+      notification_controller_->ShowLowPowerChargerNotification();
+      return;
   }
   LOG(ERROR) << "Unrecognized event " << event << " event";
 }

@@ -277,19 +277,18 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
   const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto scrolling_properties =
       GetLayoutView().FirstFragment().ContentsProperties();
-  HitTestData view_hit_test_data;
-  view_hit_test_data.touch_action_rects.emplace_back(
-      LayoutRect(0, 0, 800, 3000));
-
-  auto* html =
-      To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
-  HitTestData html_hit_test_data;
-  html_hit_test_data.touch_action_rects.emplace_back(
-      LayoutRect(0, 0, 800, 3000));
-  html_hit_test_data.touch_action_rects.emplace_back(
-      LayoutRect(0, 0, 800, 3000));
-
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    HitTestData view_hit_test_data;
+    view_hit_test_data.touch_action_rects.push_back(
+        LayoutRect(0, 0, 800, 3000));
+    auto* html =
+        To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
+    HitTestData html_hit_test_data;
+    html_hit_test_data.touch_action_rects.emplace_back(
+        LayoutRect(0, 0, 800, 3000));
+    html_hit_test_data.touch_action_rects.emplace_back(
+        LayoutRect(0, 0, 800, 3000));
+
     HitTestData non_scrolling_hit_test_data;
     non_scrolling_hit_test_data.touch_action_rects.emplace_back(
         LayoutRect(0, 0, 800, 600));
@@ -318,16 +317,19 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
                 PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunkWhole),
                 scrolling_properties, html_hit_test_data)));
   } else {
+    HitTestData view_hit_test_data;
+    view_hit_test_data.touch_action_rects.push_back(
+        LayoutRect(0, 0, 800, 3000));
+    view_hit_test_data.touch_action_rects.push_back(
+        LayoutRect(0, 0, 800, 3000));
+    view_hit_test_data.touch_action_rects.push_back(
+        LayoutRect(0, 0, 800, 3000));
+
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
-        ElementsAre(
-            IsPaintChunk(
-                0, 2, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
-                scrolling_properties, view_hit_test_data),
-            IsPaintChunk(2, 4,
-                         PaintChunk::Id(*html->Layer(),
-                                        kNonScrollingBackgroundChunkType),
-                         scrolling_properties, html_hit_test_data)));
+        ElementsAre(IsPaintChunk(
+            0, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+            scrolling_properties, view_hit_test_data)));
   }
 }
 

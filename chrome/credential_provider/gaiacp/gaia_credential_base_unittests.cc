@@ -187,13 +187,9 @@ TEST_P(GcpGaiaCredentialGetSerializationBaseTest, Finish) {
   if (is_gem_features_enabled) {
     ASSERT_EQ(S_OK, hr);
     ASSERT_EQ(1u, accept_tos);
-    // Verify command line switch for show_tos.
-    ASSERT_EQ("1", test->GetShowTosFromCmdLine());
   } else {
     ASSERT_TRUE(FAILED(hr));
     ASSERT_EQ(0u, accept_tos);
-    // Verify command line switch for show_tos.
-    ASSERT_EQ("0", test->GetShowTosFromCmdLine());
   }
 }
 

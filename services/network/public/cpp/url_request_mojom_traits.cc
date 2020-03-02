@@ -14,6 +14,7 @@
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -190,7 +191,8 @@ bool StructTraits<
           &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
       !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
-      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token)) {
+      !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token) ||
+      !data.ReadTrustTokenParams(&out->trust_token_params.as_ptr())) {
     return false;
   }
 

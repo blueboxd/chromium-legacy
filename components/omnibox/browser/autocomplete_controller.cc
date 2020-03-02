@@ -653,6 +653,7 @@ void AutocompleteController::UpdateResult(
                                                      result_);
   }
 
+  UpdateHeaders(&result_);
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
@@ -737,6 +738,37 @@ void AutocompleteController::UpdateAssociatedKeywords(
                                                  keyword, input_)));
     } else {
       match->associated_keyword.reset();
+    }
+  }
+}
+
+void AutocompleteController::UpdateHeaders(AutocompleteResult* result) {
+  auto clear_header = [](AutocompleteMatch& match) {
+    return match.header.clear();
+  };
+  base::string16 last_seen_header;
+  std::set<base::string16> all_seen_headers;
+
+  for (auto it(result->begin()); it != result->end(); ++it) {
+    const base::string16& current_match_header = it->header;
+    if (!current_match_header.empty()) {
+      if (current_match_header == last_seen_header) {
+        // This header is identical to the previous one. Clear it and move on.
+        clear_header(*it);
+        continue;
+      }
+      if (all_seen_headers.count(current_match_header)) {
+        // A header cannot be interleaved by other headers. Clear all headers.
+        std::for_each(result->begin(), result->end(), clear_header);
+        return;
+      }
+      // This header is seen for the first time. Record it and move on.
+      last_seen_header = current_match_header;
+      all_seen_headers.insert(current_match_header);
+    } else if (!all_seen_headers.empty()) {
+      // An empty header cannot follow a non-empty one. Clear all headers.
+      std::for_each(result->begin(), result->end(), clear_header);
+      return;
     }
   }
 }

@@ -28,17 +28,22 @@ class FileMonitorTest : public testing::Test {
   FileMonitorTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         handle_(task_runner_),
-        completion_callback_called_(false) {
+        completion_callback_called_(false) {}
+
+  ~FileMonitorTest() override = default;
+
+  void HardRecoveryResponse(bool result);
+  void CompletionCallback() { completion_callback_called_ = true; }
+
+  void SetUp() override {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     download_dir_ = scoped_temp_dir_.GetPath();
     base::TimeDelta keep_alive_time = base::TimeDelta::FromHours(12);
     monitor_ = std::make_unique<FileMonitorImpl>(download_dir_, task_runner_,
                                                  keep_alive_time);
   }
-  ~FileMonitorTest() override = default;
 
-  void HardRecoveryResponse(bool result);
-  void CompletionCallback() { completion_callback_called_ = true; }
+  void TearDown() override { ASSERT_TRUE(scoped_temp_dir_.Delete()); }
 
  protected:
   base::FilePath CreateTemporaryFile(std::string file_name);

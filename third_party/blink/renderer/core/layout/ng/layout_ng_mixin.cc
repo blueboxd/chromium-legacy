@@ -80,8 +80,8 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
   const ComputedStyle& style = node.Style();
   WritingMode writing_mode = style.GetWritingMode();
 
-  MinMaxSize sizes = node.ComputeMinMaxSize(
-      writing_mode, MinMaxSizeInput(available_logical_height));
+  MinMaxSizes sizes = node.ComputeMinMaxSizes(
+      writing_mode, MinMaxSizesInput(available_logical_height));
 
   NGConstraintSpace space = NGConstraintSpaceBuilder(writing_mode, writing_mode,
                                                      /* is_new_fc */ true)

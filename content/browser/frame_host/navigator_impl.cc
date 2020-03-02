@@ -481,9 +481,9 @@ void NavigatorImpl::NavigateFromFrameProxy(
       extra_headers, std::move(blob_url_loader_factory));
 }
 
-void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
-                                      bool proceed,
-                                      const base::TimeTicks& proceed_time) {
+void NavigatorImpl::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
+                                          bool proceed,
+                                          const base::TimeTicks& proceed_time) {
   DCHECK(frame_tree_node);
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
@@ -597,7 +597,8 @@ void NavigatorImpl::OnBeginNavigation(
 
   // This frame has already run beforeunload before it sent this IPC.  See if
   // any of its cross-process subframes also need to run beforeunload.  If so,
-  // delay the navigation until receiving beforeunload ACKs from those frames.
+  // delay the navigation until beforeunload completion callbacks are invoked on
+  // those frames.
   DCHECK(!NavigationTypeUtils::IsSameDocument(
       navigation_request->common_params().navigation_type));
   bool should_dispatch_beforeunload =

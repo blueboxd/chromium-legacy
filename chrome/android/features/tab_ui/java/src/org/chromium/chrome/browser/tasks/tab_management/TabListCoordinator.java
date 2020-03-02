@@ -88,8 +88,6 @@ public class TabListCoordinator implements Destroyable {
      * @param titleProvider Provider for a given tab's title.
      * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
      *                            tabs.
-     * @param createGroupButtonProvider {@link TabListMediator.CreateGroupButtonProvider}
-     *         to provide "Create group" button.
      * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
      *                                        click on a grid card.
      * @param dialogHandler A handler to handle requests about updating TabGridDialog.
@@ -107,7 +105,6 @@ public class TabListCoordinator implements Destroyable {
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             @Nullable TabListMediator.ThumbnailProvider thumbnailProvider,
             @Nullable TabListMediator.TitleProvider titleProvider, boolean actionOnRelatedTabs,
-            @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler, @UiType int itemType,
@@ -231,9 +228,8 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(context, modelList, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
-                createGroupButtonProvider, selectionDelegateProvider,
-                gridCardOnClickListenerProvider, dialogHandler, this::endItemAnimationForPosition,
-                componentName, itemType);
+                selectionDelegateProvider, gridCardOnClickListenerProvider, dialogHandler,
+                this::endItemAnimationForPosition, componentName, itemType);
 
         if (mMode == TabListMode.GRID) {
             GridLayoutManager gridLayoutManager =

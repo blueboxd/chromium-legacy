@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -48,8 +48,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
@@ -861,50 +859,22 @@ public abstract class ToolbarLayout
     }
 
     /**
-     * Enable the experimental toolbar button.
-     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param image The drawable to display for the button.
-     * @param contentDescriptionResId The resource id of the content description for the button.
-     * @param useTint Whether tint should be automatically applied to the button.
+     * Update the optional toolbar button, showing it if currently hidden.
+     * @param buttonData Display data for the button, e.g. the Drawable and content description.
      */
-    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId, boolean useTint) {}
+    void updateOptionalButton(ButtonData buttonData) {}
 
     /**
-     * Updates image displayed on experimental button.
+     * Hide the optional toolbar button.
      */
-    void updateExperimentalButtonImage(Drawable image) {}
+    void hideOptionalButton() {}
 
     /**
-     * Disable the experimental toolbar button.
-     */
-    void disableExperimentalButton() {}
-
-    /**
-     * @return Experimental button view.
+     * @return Optional button view.
      */
     @VisibleForTesting
-    public View getExperimentalButtonView() {
+    public View getOptionalButtonView() {
         return null;
-    }
-
-    /**
-     * Displays in-product help for experimental button.
-     * @param stringId The id of the string resource for the text that should be shown.
-     * @param accessibilityStringId The id of the string resource of the accessibility text.
-     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
-     */
-    void showIPHOnExperimentalButton(@StringRes int stringId, @StringRes int accessibilityStringId,
-            Runnable dismissedCallback) {
-        View experimentalButton = getExperimentalButtonView();
-        TextBubble textBubble =
-                new TextBubble(getContext(), experimentalButton, stringId, accessibilityStringId,
-                        experimentalButton, AccessibilityUtil.isAccessibilityEnabled());
-        textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> {
-            dismissedCallback.run();
-        });
-        textBubble.show();
     }
 
     /**

@@ -32,8 +32,10 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -64,10 +66,15 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       address_space_(network::mojom::IPAddressSpace::kUnknown),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false),
-      context_type_(context_type) {}
+      context_type_(context_type),
+      agent_(init.GetAgent()),
+      secure_context_mode_(init.GetSecureContextMode()),
+      origin_trial_context_(init.GetOriginTrialContext()) {}
 
 void SecurityContext::Trace(Visitor* visitor) {
   visitor->Trace(content_security_policy_);
+  visitor->Trace(agent_);
+  visitor->Trace(origin_trial_context_);
 }
 
 void SecurityContext::SetSecurityOrigin(

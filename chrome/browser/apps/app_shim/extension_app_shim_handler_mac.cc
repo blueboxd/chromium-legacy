@@ -1179,9 +1179,7 @@ ExtensionAppShimHandler::GetOrCreateProfileState(
   if (web_app::AppShimLaunchDisabled())
     return nullptr;
 
-  const bool is_multi_profile =
-      base::FeatureList::IsEnabled(features::kAppShimMultiProfile) &&
-      extension->from_bookmark();
+  const bool is_multi_profile = extension->from_bookmark();
   const base::FilePath profile_path =
       is_multi_profile ? base::FilePath() : profile->GetPath();
   const std::string app_id = extension->id();

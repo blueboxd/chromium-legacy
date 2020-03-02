@@ -2960,6 +2960,12 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (GetLayoutObject().IsSVGRoot())
     return true;
 
+  // Don't create subsequence for the document element because the subsequence
+  // for LayoutView serves the same purpose. This can avoid unnecessary paint
+  // chunks that would otherwise be forced by the subsequence.
+  if (GetLayoutObject().IsDocumentElement())
+    return false;
+
   // Create subsequence for only stacking contexts whose painting are atomic.
   return GetLayoutObject().StyleRef().IsStackingContext();
 }

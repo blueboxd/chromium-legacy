@@ -7,19 +7,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 660, 19],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 660, 19],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [8, 108, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'This div should'",
+          "rect": [8, 108, 98, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'disappear.'",
+          "rect": [8, 108, 98, 39],
+          "reason": "disappeared"
         }
       ]
     }

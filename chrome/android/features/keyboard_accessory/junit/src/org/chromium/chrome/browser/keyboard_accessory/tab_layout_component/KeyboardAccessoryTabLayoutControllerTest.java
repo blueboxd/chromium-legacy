@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutProperties.TABS;
 
-import android.support.design.widget.TabLayout;
+import com.google.android.material.tabs.TabLayout;
 
 import org.junit.Before;
 import org.junit.Test;

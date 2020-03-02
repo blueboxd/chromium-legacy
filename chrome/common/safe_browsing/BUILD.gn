@@ -10,21 +10,6 @@ proto_library("proto") {
   sources = [
     "client_model.proto",
     "crx_info.proto",
-    "download_file_types.proto",
-  ]
-}
-
-source_set("file_type_policies") {
-  sources = [
-    "file_type_policies.cc",
-    "file_type_policies.h",
-  ]
-
-  deps = [
-    ":proto",
-    "//base",
-    "//chrome/browser:resources",
-    "//ui/base",
   ]
 }
 
@@ -48,9 +33,9 @@ if (safe_browsing_mode == 1) {
     deps = [
       ":binary_feature_extractor",
       ":download_type_util",
-      ":file_type_policies",
       "//base",
       "//base:i18n",
+      "//components/safe_browsing/core:file_type_policies",
       "//crypto",
     ]
     if (is_mac) {
@@ -65,9 +50,9 @@ if (safe_browsing_mode == 1) {
       "download_type_util.h",
     ]
     deps = [
-      ":file_type_policies",
       "//base",
       "//components/safe_browsing/core:features",
+      "//components/safe_browsing/core:file_type_policies",
     ]
     public_deps = [ "//components/safe_browsing/core:csd_proto" ]
   }
@@ -81,10 +66,10 @@ if (safe_browsing_mode == 1) {
     deps = [
       ":archive_analyzer_results",
       ":download_type_util",
-      ":file_type_policies",
       "//base",
       "//base:i18n",
       "//components/safe_browsing/core:features",
+      "//components/safe_browsing/core:file_type_policies",
       "//third_party/unrar:unrar",
     ]
 
@@ -154,7 +139,7 @@ if (safe_browsing_mode == 1) {
 }
 
 source_set("safe_browsing") {
-  deps = [ ":file_type_policies" ]
+  deps = [ "//components/safe_browsing/core:file_type_policies" ]
 
   if (safe_browsing_mode == 1) {
     sources = [

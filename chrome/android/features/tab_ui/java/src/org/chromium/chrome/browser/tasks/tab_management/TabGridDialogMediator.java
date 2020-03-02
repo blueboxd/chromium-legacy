@@ -312,12 +312,13 @@ public class TabGridDialogMediator {
             hideDialog(true);
             return;
         }
-        assert mTabGroupTitleEditor != null;
-        Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
-        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(getRootId(currentTab));
-        if (storedTitle != null && relatedTabs.size() > 1) {
-            mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
-            return;
+        if (mTabGroupTitleEditor != null) {
+            Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+            String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(getRootId(currentTab));
+            if (storedTitle != null && relatedTabs.size() > 1) {
+                mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
+                return;
+            }
         }
         mModel.set(TabGridPanelProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(

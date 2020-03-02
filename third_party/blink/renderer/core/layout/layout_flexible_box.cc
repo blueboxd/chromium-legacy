@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -1048,11 +1048,11 @@ void LayoutFlexibleBox::PrepareOrderIteratorAndMargins() {
 }
 
 DISABLE_CFI_PERF
-MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
+MinMaxSizes LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     const FlexLayoutAlgorithm& algorithm,
     const LayoutBox& child,
     LayoutUnit border_and_padding) const {
-  MinMaxSize sizes{LayoutUnit(), LayoutUnit::Max()};
+  MinMaxSizes sizes{LayoutUnit(), LayoutUnit::Max()};
 
   const Length& max = IsHorizontalFlow() ? child.StyleRef().MaxWidth()
                                          : child.StyleRef().MaxHeight();
@@ -1226,8 +1226,8 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
   LayoutUnit child_inner_flex_base_size = ComputeInnerFlexBaseSizeForChild(
       child, main_axis_border_padding, layout_type);
 
-  MinMaxSize sizes = ComputeMinAndMaxSizesForChild(*algorithm, child,
-                                                   main_axis_border_padding);
+  MinMaxSizes sizes = ComputeMinAndMaxSizesForChild(*algorithm, child,
+                                                    main_axis_border_padding);
 
   NGPhysicalBoxStrut physical_margins(child.MarginTop(), child.MarginRight(),
                                       child.MarginBottom(), child.MarginLeft());

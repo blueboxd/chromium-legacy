@@ -18,6 +18,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace blink {
 class WebHistoryItem;
 }
@@ -82,6 +86,10 @@ class TestRenderFrame : public RenderFrameImpl {
   TakeLastBrowserInterfaceBrokerReceiver();
 
   void SimulateBeforeUnload(bool is_reload);
+
+  void SetOverlayRoutingToken(const base::UnguessableToken& token);
+
+  size_t RequestOverlayRoutingTokenCalled();
 
  protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);

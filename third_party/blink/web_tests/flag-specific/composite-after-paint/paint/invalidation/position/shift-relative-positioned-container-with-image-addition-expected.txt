@@ -12,9 +12,9 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 92, 732, 94],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
           "object": "LayoutImage IMG",

@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutTextControl (floating) TEXTAREA id='target'",
           "rect": [8, 8, 306, 306],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",

@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -30,13 +31,17 @@ import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
@@ -53,6 +58,8 @@ import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.vr.VrModeObserver;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -100,6 +107,8 @@ public class RootUiCoordinator
 
     private ScrimView mScrimView;
     private DirectActionInitializer mDirectActionInitializer;
+    private List<ButtonDataProvider> mButtonDataProviders;
+    private IdentityDiscController mIdentityDiscController;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -178,6 +187,14 @@ public class RootUiCoordinator
         }
 
         if (mBottomSheetController != null) mBottomSheetController.destroy();
+
+        if (mButtonDataProviders != null) {
+            for (ButtonDataProvider provider : mButtonDataProviders) {
+                provider.destroy();
+            }
+
+            mButtonDataProviders = null;
+        }
 
         mActivity = null;
     }
@@ -361,10 +378,22 @@ public class RootUiCoordinator
                     mOnOmniboxFocusChangedListener.onResult(hasFocus);
                 }
             };
+
+            ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier =
+                    new ObservableSupplierImpl<>();
+            bottomToolbarVisibilitySupplier.set(false);
+
+            mIdentityDiscController = new IdentityDiscController(
+                    mActivity, mActivity.getLifecycleDispatcher(), bottomToolbarVisibilitySupplier);
+            ShareButtonController shareButtonController = new ShareButtonController(mActivity,
+                    mActivity.getActivityTabProvider(), mShareDelegateSupplier, new ShareUtils(),
+                    bottomToolbarVisibilitySupplier);
+            mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
                     toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
                     urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
-                    mShareDelegateSupplier);
+                    mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
+                    mIdentityDiscController, mButtonDataProviders);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

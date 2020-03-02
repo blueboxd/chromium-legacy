@@ -23,13 +23,15 @@ namespace proxy {
 
 FileSystemResource::QuotaRequest::QuotaRequest(
     int64_t amount_arg,
-    const RequestQuotaCallback& callback_arg)
-    : amount(amount_arg),
-      callback(callback_arg) {
-}
+    RequestQuotaCallback callback_arg)
+    : amount(amount_arg), callback(std::move(callback_arg)) {}
 
-FileSystemResource::QuotaRequest::~QuotaRequest() {
-}
+FileSystemResource::QuotaRequest::QuotaRequest(QuotaRequest&& other) = default;
+
+FileSystemResource::QuotaRequest& FileSystemResource::QuotaRequest::operator=(
+    QuotaRequest&& other) = default;
+
+FileSystemResource::QuotaRequest::~QuotaRequest() = default;
 
 FileSystemResource::FileSystemResource(Connection connection,
                                        PP_Instance instance,
@@ -104,9 +106,8 @@ void FileSystemResource::CloseQuotaFile(PP_Resource file_io) {
   files_.erase(file_io);
 }
 
-int64_t FileSystemResource::RequestQuota(
-    int64_t amount,
-    const RequestQuotaCallback& callback) {
+int64_t FileSystemResource::RequestQuota(int64_t amount,
+                                         RequestQuotaCallback callback) {
   DCHECK(amount >= 0);
   if (!reserving_quota_ && reserved_quota_ >= amount) {
     reserved_quota_ -= amount;
@@ -114,7 +115,7 @@ int64_t FileSystemResource::RequestQuota(
   }
 
   // Queue up a pending quota request.
-  pending_quota_requests_.push(QuotaRequest(amount, callback));
+  pending_quota_requests_.push(QuotaRequest(amount, std::move(callback)));
 
   // Reserve more quota if we haven't already.
   if (!reserving_quota_)
@@ -222,11 +223,11 @@ void FileSystemResource::ReserveQuotaComplete(
   while (!pending_quota_requests_.empty()) {
     QuotaRequest& request = pending_quota_requests_.front();
     if (fail_all) {
-      request.callback.Run(0);
+      std::move(request.callback).Run(0);
       pending_quota_requests_.pop();
     } else if (reserved_quota_ >= request.amount) {
       reserved_quota_ -= request.amount;
-      request.callback.Run(request.amount);
+      std::move(request.callback).Run(request.amount);
       pending_quota_requests_.pop();
     } else {
       // Refresh the quota reservation for the first pending request that we

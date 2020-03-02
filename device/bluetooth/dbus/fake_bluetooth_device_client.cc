@@ -813,6 +813,11 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->type.ReplaceValue(BluetoothDeviceClient::kTypeLe);
     properties->uuids.ReplaceValue(std::vector<std::string>(
         {FakeBluetoothGattServiceClient::kHeartRateServiceUUID}));
+    std::vector<uint8_t> eir = {0x0a, 0x0b, 0x0c};
+    properties->eir.ReplaceValue(eir);
+    properties->eir.set_valid(true);
+    properties->rssi.ReplaceValue(-45);
+    properties->rssi.set_valid(true);
   } else if (device_path == dbus::ObjectPath(kDualPath)) {
     properties->address.ReplaceValue(kDualAddress);
     properties->name.ReplaceValue(kDualName);

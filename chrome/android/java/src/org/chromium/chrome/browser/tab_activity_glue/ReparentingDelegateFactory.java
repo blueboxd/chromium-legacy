@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab_activity_glue;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.night_mode.NightModeReparentingController;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.base.WindowAndroid;
@@ -54,6 +55,11 @@ public class ReparentingDelegateFactory {
             @Override
             public TabModelSelector getTabModelSelector() {
                 return tabModelSelector;
+            }
+
+            @Override
+            public boolean isNTPUrl(String url) {
+                return NewTabPage.isNTPUrl(url);
             }
         };
     }

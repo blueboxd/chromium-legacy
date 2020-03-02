@@ -77,7 +77,6 @@ class LocalDOMWindow;
 class OriginTrialContext;
 class PublicURLManager;
 class ResourceFetcher;
-class SecurityContextInit;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
@@ -88,8 +87,6 @@ enum ReasonForCallingCanExecuteScripts {
   kAboutToExecuteScript,
   kNotAboutToExecuteScript
 };
-
-enum class SecureContextMode { kInsecureContext, kSecureContext };
 
 // An environment in which script can execute. This class exposes the common
 // properties of script execution environments on the web (i.e, common between
@@ -194,10 +191,8 @@ class CORE_EXPORT ExecutionContext
 
   virtual ResourceFetcher* Fetcher() const = 0;
 
-  SecurityContext& GetSecurityContext() { return security_context_; }
-  const SecurityContext& GetSecurityContext() const {
-    return security_context_;
-  }
+  virtual SecurityContext& GetSecurityContext() = 0;
+  virtual const SecurityContext& GetSecurityContext() const = 0;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   // TODO(dtapuska): Remove this virtual once all execution_contexts
@@ -251,15 +246,12 @@ class CORE_EXPORT ExecutionContext
   // Decides whether this context is privileged, as described in
   // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure.
   SecureContextMode GetSecureContextMode() const {
-    return secure_context_mode_;
+    return GetSecurityContext().GetSecureContextMode();
   }
   bool IsSecureContext() const {
-    return secure_context_mode_ == SecureContextMode::kSecureContext;
+    return GetSecureContextMode() == SecureContextMode::kSecureContext;
   }
   bool IsSecureContext(String& error_message) const;
-  void SetSecureContextModeForTesting(SecureContextMode mode) {
-    secure_context_mode_ = mode;
-  }
 
   // Returns a referrer to be used in the "Determine request's Referrer"
   // algorithm defined in the Referrer Policy spec.
@@ -290,12 +282,12 @@ class CORE_EXPORT ExecutionContext
       TaskType) = 0;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
-  Agent* GetAgent() const { return agent_; }
+  Agent* GetAgent() const { return GetSecurityContext().GetAgent(); }
 
   v8::MicrotaskQueue* GetMicrotaskQueue() const;
 
   OriginTrialContext* GetOriginTrialContext() const {
-    return origin_trial_context_;
+    return GetSecurityContext().GetOriginTrialContext();
   }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
@@ -345,7 +337,7 @@ class CORE_EXPORT ExecutionContext
   unsigned ContextLifecycleStateObserverCountForTesting() const;
 
  protected:
-  ExecutionContext(v8::Isolate* isolate, const SecurityContextInit&);
+  explicit ExecutionContext(v8::Isolate* isolate);
   ~ExecutionContext() override;
 
  private:
@@ -364,8 +356,6 @@ class CORE_EXPORT ExecutionContext
 
   v8::Isolate* const isolate_;
 
-  SecurityContext security_context_;
-
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 
   unsigned circular_sequential_id_;
@@ -379,10 +369,6 @@ class CORE_EXPORT ExecutionContext
   Member<PublicURLManager> public_url_manager_;
 
   const Member<ContentSecurityPolicyDelegate> csp_delegate_;
-
-  Member<Agent> agent_;
-
-  Member<OriginTrialContext> origin_trial_context_;
 
   DOMTimerCoordinator timers_;
 
@@ -400,8 +386,6 @@ class CORE_EXPORT ExecutionContext
   // them multiple times.
   // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
   Vector<bool> parsed_feature_policies_;
-
-  SecureContextMode secure_context_mode_;
 
   // Tracks which feature policy features have been logged in this execution
   // context as to the FeaturePolicyProposalWouldChangeBehaviour

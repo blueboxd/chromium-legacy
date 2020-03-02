@@ -53,7 +53,7 @@ public class IdentityDiscControllerTest {
         // Identity Disc should be visible on NTP.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         View experimentalButton =
-                mActivityTestRule.getActivity().findViewById(R.id.experimental_toolbar_button);
+                mActivityTestRule.getActivity().findViewById(R.id.optional_toolbar_button);
         Assert.assertNotNull("IdentityDisc is not inflated", experimentalButton);
         Assert.assertEquals(
                 "IdentityDisc is not visible", View.VISIBLE, experimentalButton.getVisibility());
@@ -70,7 +70,7 @@ public class IdentityDiscControllerTest {
         // When user is signed out, Identity Disc should not be visible.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         View experimentalButton =
-                mActivityTestRule.getActivity().findViewById(R.id.experimental_toolbar_button);
+                mActivityTestRule.getActivity().findViewById(R.id.optional_toolbar_button);
         Assert.assertNull("IdentityDisc is visible for signed out user", experimentalButton);
 
         // Identity Disc should be shown on sign-in state change without NTP refresh.
@@ -80,7 +80,7 @@ public class IdentityDiscControllerTest {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
 
         experimentalButton =
-                mActivityTestRule.getActivity().findViewById(R.id.experimental_toolbar_button);
+                mActivityTestRule.getActivity().findViewById(R.id.optional_toolbar_button);
         Assert.assertNotNull("IdentityDisc is not inflated", experimentalButton);
         Assert.assertEquals(
                 "IdentityDisc is not visible", View.VISIBLE, experimentalButton.getVisibility());

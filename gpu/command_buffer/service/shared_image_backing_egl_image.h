@@ -17,6 +17,7 @@ class SharedGLFenceEGL;
 }  // namespace gl
 
 namespace gpu {
+class GpuDriverBugWorkarounds;
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationSkia;
 class SharedImageBatchAccessManager;
@@ -43,12 +44,14 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
       size_t estimated_size,
       GLuint gl_format,
       GLuint gl_type,
-      SharedImageBatchAccessManager* batch_access_manager);
+      SharedImageBatchAccessManager* batch_access_manager,
+      const GpuDriverBugWorkarounds& workarounds);
 
   ~SharedImageBackingEglImage() override;
 
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
+  void MarkForDestruction() override;
 
   bool BeginWrite();
   void EndWrite();
@@ -76,6 +79,11 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
 
   const GLuint gl_format_;
   const GLuint gl_type_;
+  gles2::Texture* source_texture_ = nullptr;
+
+#if DCHECK_IS_ON()
+  gl::GLApi* created_on_context_;
+#endif
 
   // This class encapsulates the EGLImage object for android.
   scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_ GUARDED_BY(lock_);

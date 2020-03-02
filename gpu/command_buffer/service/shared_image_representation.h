@@ -117,6 +117,8 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
                                       MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
+  ~SharedImageRepresentationFactoryRef() override;
+
   const Mailbox& mailbox() const { return backing()->mailbox(); }
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) {
     backing()->Update(std::move(in_fence));

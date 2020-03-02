@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/file_type_policies.h"
 
 namespace safe_browsing {
 namespace download_type_util {

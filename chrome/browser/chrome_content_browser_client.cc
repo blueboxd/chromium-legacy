@@ -4226,20 +4226,12 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
-    // |identity_manager| is used when real time url check with token is
-    // enabled.
-    signin::IdentityManager* identity_manager =
-        safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-            profile)
-            ? IdentityManagerFactory::GetForProfile(profile)
-            : nullptr;
-
     // |url_lookup_service| is used when real time url check is enabled.
     safe_browsing::RealTimeUrlLookupService* url_lookup_service =
         // |safe_browsing_service_| may be unavailable in tests.
         safe_browsing_service_ &&
                 safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-                    profile)
+                    profile->GetPrefs(), profile->IsOffTheRecord())
             ? safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
                   profile)
             : nullptr;
@@ -4249,7 +4241,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
             profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)),
-        wc_getter, frame_tree_node_id, identity_manager,
+        wc_getter, frame_tree_node_id,
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
   }
 #endif

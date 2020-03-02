@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -29,10 +30,6 @@ namespace credential_provider {
 const base::TimeDelta
     GemDeviceDetailsManager::kDefaultUploadDeviceDetailsRequestTimeout =
         base::TimeDelta::FromMilliseconds(12000);
-
-// TODO(rakeshsoma): Change this to prod URL instead.
-constexpr wchar_t kDefaultGemServiceUrl[] =
-    L"https://autopush-gcpw-pa.sandbox.googleapis.com";
 
 namespace {
 
@@ -71,7 +68,7 @@ GemDeviceDetailsManager::GemDeviceDetailsManager(
 GemDeviceDetailsManager::~GemDeviceDetailsManager() = default;
 
 GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
-  GURL gem_service_url = GURL(base::UTF16ToUTF8(kDefaultGemServiceUrl));
+  GURL gem_service_url = GURL(base::UTF16ToUTF8(kDefaultGcpwServiceUrl));
 
   return gem_service_url.Resolve(kGemServiceUploadDeviceDetailsPath);
 }

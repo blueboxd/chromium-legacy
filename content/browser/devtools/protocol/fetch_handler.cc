@@ -88,11 +88,10 @@ bool FetchHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        target_factory_receiver) {
+    network::mojom::URLLoaderFactoryOverride* intercepting_factory) {
   return interceptor_ && interceptor_->CreateProxyForInterception(
                              rph, frame_token, is_navigation, is_download,
-                             target_factory_receiver);
+                             intercepting_factory);
 }
 
 void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,

@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 784, 59],
-          "reason": "chunk appeared"
+          "rect": [8, 8, 784, 176],
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 784, 59],
-          "reason": "chunk disappeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow (floating) DIV class='green'",
@@ -25,11 +25,6 @@
           "object": "LayoutNGBlockFlow (floating) DIV class='red'",
           "rect": [8, 84, 100, 100],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 84, 100, 100],
-          "reason": "chunk disappeared"
         }
       ]
     }

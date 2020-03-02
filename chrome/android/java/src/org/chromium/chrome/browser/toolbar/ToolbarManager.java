@@ -19,7 +19,6 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -53,6 +52,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -68,9 +68,7 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -110,6 +108,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
@@ -182,11 +181,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private @Nullable AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
-    private IdentityDiscController mIdentityDiscController;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
     private ObservableSupplierImpl<View> mTabGroupPopUiParentSupplier;
     private @Nullable TabGroupPopupUi mTabGroupPopupUi;
-    private ShareButtonController mShareButtonController;
 
     private TabObserver mTabObserver;
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -233,35 +230,36 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private int mCurrentOrientation;
 
-    @OverviewModeState
-    private int mOverviewModeState = OverviewModeState.NOT_SHOWN;
-
     /**
      * Runnable for the home and search accelerator button when Start Surface home page is enabled.
      */
     private Supplier<Boolean> mShowStartSurfaceSupplier;
+    // TODO(https://crbug.com/865801): Consolidate isBottomToolbarVisible(),
+    // onBottomToolbarVisibilityChanged, etc. to all use mBottomToolbarVisibilitySupplier.
+    private final ObservableSupplierImpl<Boolean> mBottomToolbarVisibilitySupplier;
 
     /**
      * Creates a ToolbarManager object.
-     *
-     * @param activity {@link ChromeActivity} object.
-     * @param fullscreenManager {@link ChromeFullscreenManager} object.
      * @param controlContainer The container of the toolbar.
      * @param invalidator Handler for synchronizing invalidations across UI elements.
      * @param urlFocusChangedCallback The callback to be notified when the URL focus changes.
-     * @param themeColorProvider The ThemeColorProvider object.
-     * @param tabObscuringHandler Delegate object handling obscuring views.
-     * @param shareDelegateSupplier Supplier for ShareDelegate.
+     * @param identityDiscController The controller that coordinates the state of the identity disc
+     * @param buttonDataProviders The list of button data providers for the optional toolbar button
+     *         in the browsing mode toolbar, given in precedence order.
      */
     public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
             ToolbarControlContainer controlContainer, Invalidator invalidator,
             Callback<Boolean> urlFocusChangedCallback, ThemeColorProvider themeColorProvider,
             TabObscuringHandler tabObscuringHandler,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier,
+            IdentityDiscController identityDiscController,
+            List<ButtonDataProvider> buttonDataProviders) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
+        mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -344,16 +342,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mTabObscuringHandler = tabObscuringHandler;
 
-        mToolbar =
-                new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar));
+        mToolbar = new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar),
+                identityDiscController, mLocationBarModel, this, new UserEducationHelper(mActivity),
+                buttonDataProviders);
+
         mActionModeController = new ActionModeController(mActivity, mActionBarDelegate);
         mActionModeController.setCustomSelectionActionModeCallback(mToolbarActionModeCallback);
-
-        mIdentityDiscController =
-                new IdentityDiscController(activity, this, activity.getLifecycleDispatcher());
-
-        mShareButtonController = new ShareButtonController(activity,
-                mActivity.getActivityTabProvider(), this, mShareDelegateSupplier, new ShareUtils());
 
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
@@ -368,7 +362,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mProgressBarCoordinator = new LoadProgressCoordinator(
                 mActivity.getActivityTabProvider(), mToolbar.getProgressBar());
 
-        mToolbar.initialize(mLocationBarModel, this);
         mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
 
         mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
@@ -665,11 +658,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
                 assert CachedFeatureFlags.isStartSurfaceEnabled();
                 mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
-                mOverviewModeState = overviewModeState;
-                // TODO(https://crbug.com/1041475). After the upcoming refactor this shuold be
-                // mIdentityDiscController.updateButtonState(mOverviewModeState ==
-                // OverviewModeState.SHOWN_HOMEPAGE);
-                updateButtonStatus();
             }
 
             @Override
@@ -680,11 +668,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                         && !BottomToolbarVariationManager
                                     .shouldBottomToolbarBeVisibleInOverviewMode()) {
                     // User may enter overview mode in landscape mode but exit in portrait mode.
-                    mIsBottomToolbarVisible = !BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
+
+                    boolean isBottomToolbarVisible =
+                            !BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
                             || mActivity.getResources().getConfiguration().orientation
                                     != Configuration.ORIENTATION_LANDSCAPE;
-                    mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
-                    mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
+                    setBottomToolbarVisible(isBottomToolbarVisible);
                 }
             }
 
@@ -782,12 +771,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
                 this::openHomepage, (reason) -> setUrlBarFocus(true, reason));
 
-        mIsBottomToolbarVisible = BottomToolbarConfiguration.isBottomToolbarEnabled()
+        boolean isBottomToolbarVisible = BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && (!BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
                         || mActivity.getResources().getConfiguration().orientation
                                 != Configuration.ORIENTATION_LANDSCAPE);
-        mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
-        mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
+        setBottomToolbarVisible(isBottomToolbarVisible);
     }
 
     /** Record that homepage button was used for IPH reasons */
@@ -951,80 +939,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * Enable the experimental toolbar button.
-     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param image The drawable to display for the button.
-     * @param contentDescriptionResId The resource id of the content description for the button.
-     * @param useTint Whether tint should be automatically applied to the button.
-     */
-    public void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId, boolean useTint) {
-        mToolbar.enableExperimentalButton(onClickListener, image, contentDescriptionResId, useTint);
-    }
-
-    /**
-     * Disable the experimental toolbar button.
-     */
-    public void disableExperimentalButton() {
-        mToolbar.disableExperimentalButton();
-    }
-
-    /**
-     * Updates image displayed on experimental button.
-     */
-    public void updateExperimentalButtonImage(Drawable image) {
-        mToolbar.updateExperimentalButtonImage(image);
-    }
-
-    /**
-     * Displays in-product help for experimental button.
-     * @param stringId The id of the string resource for the text that should be shown.
-     * @param accessibilityStringId The id of the string resource of the accessibility text.
-     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
-     */
-    public void showIPHOnExperimentalButton(@StringRes int stringId,
-            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
-        mToolbar.showIPHOnExperimentalButton(stringId, accessibilityStringId, dismissedCallback);
-    }
-
-    /**
-     * Show the identity disc toolbar button.
-     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param image The drawable to display for the button.
-     * @param contentDescriptionResId The resource id of the content description for the button.
-     */
-    public void showIdentityDiscButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
-        mToolbar.showIdentityDiscButton(onClickListener, image, contentDescriptionResId);
-    }
-
-    /**
-     * Hide the identity disc toolbar button.
-     */
-    public void hideIdentityDiscButton() {
-        mToolbar.hideIdentityDiscButton();
-    }
-
-    /**
-     * Updates image displayed on identity disc button.
-     * @param image The drawable to display for the button.
-     */
-    public void updateIdentityDiscButtonImage(Drawable image) {
-        mToolbar.updateIdentityDiscButtonImage(image);
-    }
-
-    /**
-     * Displays in-product help for the identity disc button.
-     * @param stringId The id of the string resource for the text that should be shown.
-     * @param accessibilityStringId The id of the string resource of the accessibility text.
-     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
-     */
-    public void showIPHOnIdentityDiscButton(@StringRes int stringId,
-            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
-        mToolbar.showIPHOnIdentityDiscButton(stringId, accessibilityStringId, dismissedCallback);
-    }
-
-    /**
      * @return The bookmarks bridge.
      */
     public BookmarkBridge getBookmarkBridge() {
@@ -1167,8 +1081,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mIncognitoStateProvider.destroy();
         mTabCountProvider.destroy();
 
-        mIdentityDiscController.destroy();
-        mShareButtonController.destroy();
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
         mFullscreenManager.removeListener(mFullscreenListener);
@@ -1193,18 +1105,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mBottomControlsCoordinator != null
                 && BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && BottomToolbarConfiguration.isAdaptiveToolbarEnabled()) {
-            mIsBottomToolbarVisible = newOrientation != Configuration.ORIENTATION_LANDSCAPE;
+            boolean isBottomToolbarVisible = newOrientation != Configuration.ORIENTATION_LANDSCAPE;
             if (!BottomToolbarVariationManager.shouldBottomToolbarBeVisibleInOverviewMode()
-                    && mIsBottomToolbarVisible) {
-                mIsBottomToolbarVisible = !mActivity.isInOverviewMode();
+                    && isBottomToolbarVisible) {
+                isBottomToolbarVisible = !mActivity.isInOverviewMode();
             }
-            mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
-            mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
+            setBottomToolbarVisible(isBottomToolbarVisible);
             if (mAppMenuButtonHelper != null) {
                 mAppMenuButtonHelper.setMenuShowsFromBottom(isMenuFromBottom());
             }
-            mIdentityDiscController.updateButtonState();
-            mShareButtonController.updateButtonState();
 
             if (mTabGroupPopupUi != null) {
                 mTabGroupPopUiParentSupplier.set(mIsBottomToolbarVisible
@@ -1707,13 +1616,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mToolbar.getMenuButtonWrapper() != null && !isBottomToolbarVisible()) {
             mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
-
-        // TODO(crbug.com/1041475): Separate enabling the IdentityDiscController from enabling the
-        // ExperimentalButton.
-        mIdentityDiscController.updateButtonState(
-                mLocationBarModel.getNewTabPageForCurrentTab() != null
-                || mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
-        mShareButtonController.updateButtonState(currentTab, mOverviewModeState);
     }
 
     private void updateBookmarkButtonStatus() {
@@ -1823,6 +1725,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (updateUrl) updateButtonStatus();
     }
 
+    private void setBottomToolbarVisible(boolean visible) {
+        mIsBottomToolbarVisible = visible;
+        mToolbar.onBottomToolbarVisibilityChanged(visible);
+        mBottomToolbarVisibilitySupplier.set(visible);
+        mBottomControlsCoordinator.setBottomControlsVisible(visible);
+    }
 
     /**
      * @param enabled Whether the progress bar is enabled.

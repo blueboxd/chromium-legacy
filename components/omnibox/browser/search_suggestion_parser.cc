@@ -420,6 +420,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   const base::ListValue* relevances = nullptr;
   const base::ListValue* experiment_stats = nullptr;
   const base::ListValue* suggestion_details = nullptr;
+  const base::DictionaryValue* headers = nullptr;
   const base::ListValue* subtype_identifiers = nullptr;
   const base::DictionaryValue* extras = nullptr;
   int prefetch_index = -1;
@@ -448,6 +449,12 @@ bool SearchSuggestionParser::ParseSuggestResults(
           results->experiment_stats.push_back(experiment_stat->Clone());
         }
       }
+    }
+
+    const base::DictionaryValue* wrapper_dict = nullptr;
+    if (extras->GetDictionary("google:headertexts", &wrapper_dict) &&
+        wrapper_dict) {
+      wrapper_dict->GetDictionary("a", &headers);
     }
 
     const base::DictionaryValue* client_data = nullptr;
@@ -545,6 +552,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       std::string image_dominant_color;
       std::string image_url;
       std::string additional_query_params;
+      base::string16 header;
 
       if (suggestion_details) {
         suggestion_details->GetDictionary(index, &suggestion_detail);
@@ -558,6 +566,16 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("dc", &image_dominant_color);
           suggestion_detail->GetString("i", &image_url);
           suggestion_detail->GetString("q", &additional_query_params);
+
+          // Header text.
+          if (headers) {
+            base::Optional<int> zero_suggest_group =
+                suggestion_detail->FindIntPath("zl");
+            if (zero_suggest_group) {
+              headers->GetString(base::NumberToString(*zero_suggest_group),
+                                 &header);
+            }
+          }
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
@@ -593,6 +611,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
+      results->suggest_results.back().set_header(header);
       if (answer_parsed_successfully)
         results->suggest_results.back().SetAnswer(answer);
     }

@@ -28,7 +28,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
 
  public:
-  SecurityContextInit() = default;
+  SecurityContextInit();
   SecurityContextInit(scoped_refptr<SecurityOrigin>,
                       OriginTrialContext*,
                       Agent*);
@@ -57,6 +57,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   Agent* GetAgent() const { return agent_; }
   SecureContextMode GetSecureContextMode() const {
+    DCHECK(secure_context_mode_.has_value());
     return secure_context_mode_.value();
   }
 

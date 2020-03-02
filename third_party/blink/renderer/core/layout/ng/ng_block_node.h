@@ -21,7 +21,7 @@ class NGEarlyBreak;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
-struct MinMaxSize;
+struct MinMaxSizes;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
 
@@ -64,7 +64,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Computes the value of min-content and max-content for this node's border
   // box.
-  // If the underlying layout algorithm's ComputeMinMaxSize returns
+  // If the underlying layout algorithm's ComputeMinMaxSizes returns
   // no value, this function will synthesize these sizes using Layout with
   // special constraint spaces -- infinite available size for max content, zero
   // available size for min content, and percentage resolution size zero for
@@ -80,11 +80,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // The constraint space is also used to perform layout when this block's
   // writing mode is orthogonal to its parent's, in which case the constraint
   // space is not optional.
-  MinMaxSize ComputeMinMaxSize(WritingMode container_writing_mode,
-                               const MinMaxSizeInput&,
-                               const NGConstraintSpace* = nullptr);
+  MinMaxSizes ComputeMinMaxSizes(WritingMode container_writing_mode,
+                                 const MinMaxSizesInput&,
+                                 const NGConstraintSpace* = nullptr);
 
-  MinMaxSize ComputeMinMaxSizeFromLegacy(const MinMaxSizeInput&) const;
+  MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesInput&) const;
 
   NGLayoutInputNode FirstChild() const;
 

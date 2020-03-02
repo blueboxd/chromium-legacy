@@ -26,6 +26,12 @@ class AuthChallengeInfo;
 class HttpResponseHeaders;
 }  // namespace net
 
+namespace network {
+namespace mojom {
+class URLLoaderFactoryOverride;
+}
+}  // namespace network
+
 namespace content {
 
 class InterceptionJob;
@@ -191,8 +197,7 @@ class DevToolsURLLoaderInterceptor {
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-          target_factory_receiver);
+      network::mojom::URLLoaderFactoryOverride* intercepting_factory);
 
  private:
   friend class InterceptionJob;

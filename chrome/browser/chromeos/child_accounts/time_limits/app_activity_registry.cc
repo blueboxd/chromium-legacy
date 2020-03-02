@@ -428,8 +428,6 @@ void AppActivityRegistry::SetAppLimit(
     return;
   }
 
-  // TODO(agawronska): Handle web limit changes here.
-
   // Limit for the active app changed - adjust the timers.
   // Handling of active app is different, because ongoing activity needs to be
   // taken into account.
@@ -607,6 +605,11 @@ void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
   AppDetails& app_details = activity_registry_.at(app_id);
   AppActivity& app_activity = app_details.activity;
   AppState previous_state = app_activity.app_state();
+
+  // There was no change in state, return.
+  if (previous_state == app_state)
+    return;
+
   app_activity.SetAppState(app_state);
 
   if (app_activity.app_state() == AppState::kLimitReached) {
@@ -700,6 +703,11 @@ void AppActivityRegistry::ScheduleTimeLimitCheckForApp(const AppId& app_id) {
     time_limit = time_limit.value() - kFiveMinutes;
   } else if (time_limit > kOneMinute) {
     time_limit = time_limit.value() - kOneMinute;
+  } else if (time_limit == kZeroMinutes) {
+    // Zero minutes case could be handled by using the timer below, but we call
+    // it explicitly to simplify tests.
+    CheckTimeLimitForApp(app_id);
+    return;
   }
 
   VLOG(1) << "Schedule app time limit check for " << app_id << " for "
@@ -850,13 +858,8 @@ base::TimeDelta AppActivityRegistry::GetWebActiveRunningTime() const {
 void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
   for (auto& app_info : activity_registry_) {
     const AppId& app_id = app_info.first;
-    AppDetails& details = app_info.second;
-    if (!ContributesToWebTimeLimit(app_id, GetAppState(app_id))) {
+    if (!ContributesToWebTimeLimit(app_id, GetAppState(app_id)))
       continue;
-    }
-
-    if (details.activity.app_state() == AppState::kLimitReached)
-      return;
 
     SetAppState(app_id, AppState::kLimitReached);
   }

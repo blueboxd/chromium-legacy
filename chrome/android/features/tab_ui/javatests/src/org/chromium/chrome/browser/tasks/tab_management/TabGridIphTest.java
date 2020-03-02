@@ -60,7 +60,6 @@ import java.io.IOException;
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
 @Features.DisableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
 public class TabGridIphTest {
     // clang-format on

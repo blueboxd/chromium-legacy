@@ -35,6 +35,7 @@ const char kWilcoDtcSupportdNotificationIdIncompatibleDock[] =
 const char kWilcoDtcSupportdNotificationIdDockHardwareError[] = "DockError";
 const char kWilcoDtcSupportdNotificationIdDockDisplay[] = "DockDisplay";
 const char kWilcoDtcSupportdNotificationIdDockThunderbolt[] = "DockThunderbolt";
+const char kWilcoDtcSupportdNotificationIdLowPower[] = "LowPower";
 
 class WilcoDtcSupportdNotificationDelegate
     : public message_center::NotificationDelegate {
@@ -149,6 +150,18 @@ WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification()
                       message_center::SystemNotificationWarningLevel::NORMAL,
                       HelpAppLauncher::HelpTopic::HELP_WILCO_DOCK);
   return kWilcoDtcSupportdNotificationIdDockThunderbolt;
+}
+
+std::string
+WilcoDtcSupportdNotificationController::ShowLowPowerChargerNotification()
+    const {
+  DisplayNotification(kWilcoDtcSupportdNotificationIdLowPower,
+                      IDS_WILCO_LOW_POWER_CHARGER_TITLE,
+                      IDS_WILCO_LOW_POWER_CHARGER_MESSAGE,
+                      message_center::SYSTEM_PRIORITY, kNotificationBatteryIcon,
+                      message_center::SystemNotificationWarningLevel::WARNING,
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_BATTERY_CHARGER);
+  return kWilcoDtcSupportdNotificationIdLowPower;
 }
 
 void WilcoDtcSupportdNotificationController::DisplayNotification(

@@ -154,11 +154,13 @@ class NavigationSimulatorImpl : public NavigationSimulator,
     drop_unload_ack_ = drop_unload_ack;
   }
 
-  // Whether to drop the BeforeUnloadACK of the current RenderFrameHost at the
-  // beginning of a browser-initiated navigation. By default this is false, set
-  // to true if you want to simulate the BeforeUnloadACK manually.
-  void set_block_on_before_unload_ack(bool block_on_before_unload_ack) {
-    block_on_before_unload_ack_ = block_on_before_unload_ack;
+  // Whether to drop the BeforeUnloadCompleted of the current RenderFrameHost at
+  // the beginning of a browser-initiated navigation. By default this is false,
+  // set to true if you want to simulate the BeforeUnloadCompleted manually.
+  void set_block_invoking_before_unload_completed_callback(
+      bool block_invoking_before_unload_completed_callback) {
+    block_invoking_before_unload_completed_callback_ =
+        block_invoking_before_unload_completed_callback;
   }
 
   void set_page_state(const PageState& page_state) { page_state_ = page_state; }
@@ -241,7 +243,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was unloaded at the
   // commit time.
-  void SimulateUnloadACKForPreviousFrameIfNeeded(
+  void SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(
       RenderFrameHostImpl* previous_frame);
 
   enum State {
@@ -306,7 +308,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   bool auto_advance_ = true;
   bool drop_unload_ack_ = false;
-  bool block_on_before_unload_ack_ = false;
+  bool block_invoking_before_unload_completed_callback_ = false;
   bool keep_loading_ = false;
 
   // Generic params structure used for fully customized browser initiated

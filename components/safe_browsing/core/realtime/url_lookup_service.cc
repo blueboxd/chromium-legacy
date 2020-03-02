@@ -10,8 +10,10 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/ip_address.h"
@@ -51,14 +53,24 @@ GURL SanitizeURL(const GURL& url) {
 
 RealTimeUrlLookupService::RealTimeUrlLookupService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    VerdictCacheManager* cache_manager)
-    : url_loader_factory_(url_loader_factory), cache_manager_(cache_manager) {}
+    VerdictCacheManager* cache_manager,
+    signin::IdentityManager* identity_manager,
+    PrefService* pref_service,
+    bool is_off_the_record)
+    : url_loader_factory_(url_loader_factory),
+      cache_manager_(cache_manager),
+      identity_manager_(identity_manager),
+      pref_service_(pref_service),
+      is_off_the_record_(is_off_the_record) {
+  DCHECK(cache_manager_);
+  DCHECK(identity_manager_);
+  DCHECK(pref_service_);
+}
 
 void RealTimeUrlLookupService::StartLookup(
     const GURL& url,
     RTLookupRequestCallback request_callback,
-    RTLookupResponseCallback response_callback,
-    signin::IdentityManager* identity_manager) {
+    RTLookupResponseCallback response_callback) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   DCHECK(url.is_valid());
 
@@ -317,6 +329,11 @@ void RealTimeUrlLookupService::ResetFailures() {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   consecutive_failures_ = 0;
   backoff_timer_.Stop();
+}
+
+bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
+  return RealTimePolicyEngine::CanPerformFullURLLookup(pref_service_,
+                                                       is_off_the_record_);
 }
 
 // static

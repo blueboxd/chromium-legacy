@@ -22,7 +22,7 @@ android_library("java") {
 
     # TODO(crbug.com/1017190): Remove the following 2 deps once we stop linting individual targets.
     "//components/browser_ui/modaldialog/android:java",
-    "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_google_android_material_material_java",
   ]
 }
 

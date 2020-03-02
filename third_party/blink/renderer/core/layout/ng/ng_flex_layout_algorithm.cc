@@ -420,8 +420,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       return *intrinsic_block_size;
     };
 
-    base::Optional<MinMaxSize> min_max_size;
-    auto MinMaxSizeFunc = [&]() -> MinMaxSize {
+    base::Optional<MinMaxSizes> min_max_size;
+    auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
       if (!min_max_size) {
         // We want the child's min/max size in its writing mode, not ours.
         // We'll only ever use it if the child's inline axis is our main axis.
@@ -431,17 +431,17 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           // included in its intrinsic sizes.
           IntrinsicBlockSizeFunc();
         }
-        min_max_size = child.ComputeMinMaxSize(
+        min_max_size = child.ComputeMinMaxSizes(
             child_style.GetWritingMode(),
-            MinMaxSizeInput(content_box_size_.block_size), &child_space);
+            MinMaxSizesInput(content_box_size_.block_size), &child_space);
       }
       return *min_max_size;
     };
 
-    MinMaxSize min_max_sizes_in_main_axis_direction{main_axis_border_padding,
-                                                    LayoutUnit::Max()};
-    MinMaxSize min_max_sizes_in_cross_axis_direction{LayoutUnit(),
+    MinMaxSizes min_max_sizes_in_main_axis_direction{main_axis_border_padding,
                                                      LayoutUnit::Max()};
+    MinMaxSizes min_max_sizes_in_cross_axis_direction{LayoutUnit(),
+                                                      LayoutUnit::Max()};
     const Length& max_property_in_main_axis = is_horizontal_flow_
                                                   ? child.Style().MaxWidth()
                                                   : child.Style().MaxHeight();
@@ -454,7 +454,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveMaxInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          MinMaxSizeFunc, max_property_in_main_axis,
+          MinMaxSizesFunc, max_property_in_main_axis,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
@@ -468,11 +468,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           max_property_in_main_axis, LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.max_size = ResolveMaxInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          MinMaxSizeFunc, max_property_in_cross_axis,
+          MinMaxSizesFunc, max_property_in_cross_axis,
           LengthResolvePhase::kLayout);
       min_max_sizes_in_cross_axis_direction.min_size = ResolveMinInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          MinMaxSizeFunc, min_property_in_cross_axis,
+          MinMaxSizesFunc, min_property_in_cross_axis,
           LengthResolvePhase::kLayout);
     }
 
@@ -525,7 +525,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           cross_size =
               ResolveMainInlineLength(flex_basis_space, child_style,
                                       border_padding_in_child_writing_mode,
-                                      MinMaxSizeFunc, cross_axis_length);
+                                      MinMaxSizesFunc, cross_axis_length);
         }
         cross_size = min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
             cross_size);
@@ -544,7 +544,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           flex_base_border_box =
               child.GetLayoutBox()->MaxPreferredLogicalWidth();
         } else {
-          flex_base_border_box = MinMaxSizeFunc().max_size;
+          flex_base_border_box = MinMaxSizesFunc().max_size;
         }
       } else {
         // Parts C, D, and E for what are usually column flex containers.
@@ -560,7 +560,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       if (MainAxisIsInlineAxis(child)) {
         flex_base_border_box = ResolveMainInlineLength(
             flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            MinMaxSizeFunc, length_to_resolve);
+            MinMaxSizesFunc, length_to_resolve);
       } else {
         // Flex container's main axis is in child's block direction. Child's
         // flex basis is in child's block direction.
@@ -591,10 +591,10 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // TODO(dgrogan): This should probably apply to column flexboxes also,
         // but that's not what legacy does.
         if (child.IsTable() && !is_column_) {
-          MinMaxSize table_preferred_widths =
+          MinMaxSizes table_preferred_widths =
               ComputeMinAndMaxContentContribution(
                   Style(), child,
-                  MinMaxSizeInput(child_percentage_size_.block_size));
+                  MinMaxSizesInput(child_percentage_size_.block_size));
           min_max_sizes_in_main_axis_direction.min_size =
               table_preferred_widths.min_size;
         } else {
@@ -603,7 +603,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
           LayoutUnit content_size_suggestion;
           if (MainAxisIsInlineAxis(child)) {
-            content_size_suggestion = MinMaxSizeFunc().min_size;
+            content_size_suggestion = MinMaxSizesFunc().min_size;
           } else {
             LayoutUnit intrinsic_block_size;
             if (child.HasAspectRatio()) {
@@ -653,7 +653,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
               // calculation. Reuse that if possible.
               specified_size_suggestion = ResolveMainInlineLength(
                   flex_basis_space, child_style,
-                  border_padding_in_child_writing_mode, MinMaxSizeFunc,
+                  border_padding_in_child_writing_mode, MinMaxSizesFunc,
                   specified_length_in_main_axis);
             }
           } else if (!BlockLengthUnresolvable(flex_basis_space,
@@ -678,7 +678,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     } else if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinInlineLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
-          MinMaxSizeFunc, min, LengthResolvePhase::kLayout);
+          MinMaxSizesFunc, min, LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinBlockLength(
           flex_basis_space, child_style, border_padding_in_child_writing_mode,
@@ -1013,9 +1013,9 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
   *fallback_baseline = fallback_baseline->value_or(baseline_offset);
 }
 
-base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
-  base::Optional<MinMaxSize> sizes =
+base::Optional<MinMaxSizes> NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  base::Optional<MinMaxSizes> sizes =
       CalculateMinMaxSizesIgnoringChildren(Node(), border_scrollbar_padding_);
   if (sizes)
     return sizes;
@@ -1026,7 +1026,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
           ConstraintSpace(), Node(), border_padding_,
           input.percentage_resolution_block_size);
 
-  MinMaxSizeInput child_input(child_percentage_resolution_block_size);
+  MinMaxSizesInput child_input(child_percentage_resolution_block_size);
 
   NGFlexChildIterator iterator(Node());
   for (NGBlockNode child = iterator.NextChild(); child;
@@ -1034,7 +1034,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     if (child.IsOutOfFlowPositioned())
       continue;
 
-    MinMaxSize child_min_max_sizes =
+    MinMaxSizes child_min_max_sizes =
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_min_max_sizes += child_margins.InlineSum();

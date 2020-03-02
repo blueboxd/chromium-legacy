@@ -94,6 +94,11 @@ VulkanImplementationWin32::GetRequiredDeviceExtensions() {
   return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 }
 
+std::vector<const char*>
+VulkanImplementationWin32::GetOptionalDeviceExtensions() {
+  return {};
+}
+
 VkFence VulkanImplementationWin32::CreateVkFenceForGpuFence(
     VkDevice vk_device) {
   NOTREACHED();

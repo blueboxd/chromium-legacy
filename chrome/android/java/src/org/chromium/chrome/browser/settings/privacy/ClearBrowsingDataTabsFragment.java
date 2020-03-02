@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.settings.privacy;
 
 import android.content.Context;
 import android.os.Bundle;
+// TODO(bjoyce): Need to convert tablayout to androidx after viewpager
+// and fragmentpageradatper are converted.
 import android.support.design.widget.TabLayout;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.app.Fragment;

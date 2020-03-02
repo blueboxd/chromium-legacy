@@ -247,9 +247,7 @@ public class TabGroupUiMediator {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab == null) return;
             mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
-                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
-            }
+            RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
         });
         mModel.set(
                 TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, view -> {

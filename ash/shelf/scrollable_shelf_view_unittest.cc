@@ -10,6 +10,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -147,6 +148,26 @@ class ScrollableShelfViewTest : public AshTestBase {
     EXPECT_TRUE(visible_space_in_screen.Contains(first_tappable_icon_bounds));
   }
 
+  void VeirifyRippleRingWithinShelfContainer(
+      const ShelfAppButton& button) const {
+    const gfx::Rect shelf_container_bounds_in_screen =
+        scrollable_shelf_view_->shelf_container_view()->GetBoundsInScreen();
+
+    const gfx::Rect small_ripple_area = button.CalculateSmallRippleArea();
+    const gfx::Point ripple_center = small_ripple_area.CenterPoint();
+    const int ripple_radius = small_ripple_area.width() / 2;
+
+    // Calculate the ripple's left end and right end in screen.
+    const int ripple_center_x_in_screen =
+        ripple_center.x() + button.GetBoundsInScreen().x();
+    const int ripple_x = ripple_center_x_in_screen - ripple_radius;
+    const int ripple_right = ripple_center_x_in_screen + ripple_radius;
+
+    // Verify that both ends are within bounds of shelf container view.
+    EXPECT_GE(ripple_x, shelf_container_bounds_in_screen.x());
+    EXPECT_LE(ripple_right, shelf_container_bounds_in_screen.right());
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
@@ -205,7 +226,8 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
   gfx::Rect visible_space = scrollable_shelf_view_->visible_space();
   views::View::ConvertRectToScreen(scrollable_shelf_view_, &visible_space);
   EXPECT_EQ(icon_bounds.right() +
-                ShelfConfig::Get()->scrollable_shelf_ripple_padding(),
+                ShelfConfig::Get()->scrollable_shelf_ripple_padding() +
+                ShelfConfig::Get()->GetAppIconEndPadding(),
             visible_space.right());
   EXPECT_FALSE(scrollable_shelf_view_->ShouldAdjustForTest());
 }
@@ -776,6 +798,30 @@ TEST_F(ScrollableShelfViewTest, VerifyScrollEvent) {
                                       scroll_steps, num_fingers);
   EXPECT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
+}
+
+// Verify that the ripple ring of the first/last app icon is fully shown
+// (https://crbug.com/1057710).
+TEST_F(ScrollableShelfViewTest, CheckInkDropRippleOfEdgeIcons) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  ShelfViewTestAPI shelf_view_test_api(shelf_view_);
+  ShelfAppButton* first_app_button = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->first_tappable_app_index());
+  VeirifyRippleRingWithinShelfContainer(*first_app_button);
+
+  // Tap at the right arrow. Hotseat layout should show the left arrow.
+  gfx::Rect right_arrow =
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen();
+  GetEventGenerator()->GestureTapAt(right_arrow.CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  ShelfAppButton* last_app_button = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->last_tappable_app_index());
+  VeirifyRippleRingWithinShelfContainer(*last_app_button);
 }
 
 // Verifies that right-click on the last shelf icon should open the icon's

@@ -12,9 +12,14 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
           "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "appeared"
         },
         {
           "object": "LayoutNGBlockFlow DIV",
@@ -22,14 +27,9 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment '\u00A0'",
           "rect": [8, 8, 4, 19],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

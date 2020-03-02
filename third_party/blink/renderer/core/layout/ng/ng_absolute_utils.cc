@@ -111,11 +111,11 @@ inline LayoutUnit StaticPositionEndInset(StaticPositionEdge edge,
 }
 
 LayoutUnit ComputeShrinkToFitSize(
-    const base::Optional<MinMaxSize>& child_minmax,
+    const base::Optional<MinMaxSizes>& min_max_sizes,
     LayoutUnit computed_available_size,
     LayoutUnit margin_start,
     LayoutUnit margin_end) {
-  return child_minmax->ShrinkToFit(
+  return min_max_sizes->ShrinkToFit(
       (computed_available_size - margin_start - margin_end)
           .ClampNegativeToZero());
 }
@@ -123,10 +123,10 @@ LayoutUnit ComputeShrinkToFitSize(
 // Implement the absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-height
-// |child_minmax| can have no value if an element is replaced, and has no
+// |min_max_sizes| can have no value if an element is replaced, and has no
 // intrinsic width or height, but has an aspect ratio.
 void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
-                         const base::Optional<MinMaxSize>& child_minmax,
+                         const base::Optional<MinMaxSizes>& min_max_sizes,
                          const LayoutUnit margin_percentage_resolution_size,
                          const LayoutUnit available_size,
                          const Length& margin_start_length,
@@ -199,7 +199,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
         computed_available_size = static_position_offset;
         break;
     }
-    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+    size = ComputeShrinkToFitSize(min_max_sizes, computed_available_size,
                                   *margin_start, *margin_end);
     LayoutUnit margin_size = *size + *margin_start + *margin_end;
     if (is_start_dominant) {
@@ -259,7 +259,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
     // Rule 1: left/width are unknown.
     DCHECK(inset_end.has_value());
     LayoutUnit computed_available_size = available_size - *inset_end;
-    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+    size = ComputeShrinkToFitSize(min_max_sizes, computed_available_size,
                                   *margin_start, *margin_end);
   } else if (!inset_start && !inset_end) {
     // Rule 2.
@@ -276,7 +276,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
   } else if (!size && !inset_end) {
     // Rule 3.
     LayoutUnit computed_available_size = available_size - *inset_start;
-    size = ComputeShrinkToFitSize(child_minmax, computed_available_size,
+    size = ComputeShrinkToFitSize(min_max_sizes, computed_available_size,
                                   *margin_start, *margin_end);
   }
 
@@ -300,7 +300,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
     // is safe to recursively call ourselves here because on the second call it
     // is guaranteed to be within |min_size| and |max_size|.
     ComputeAbsoluteSize(
-        border_padding_size, child_minmax, margin_percentage_resolution_size,
+        border_padding_size, min_max_sizes, margin_percentage_resolution_size,
         available_size, margin_start_length, margin_end_length,
         inset_start_length, inset_end_length, min_size, max_size,
         static_position_offset, static_position_edge, is_start_dominant,
@@ -387,7 +387,7 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition& static_position,
-    const base::Optional<MinMaxSize>& child_minmax,
+    const base::Optional<MinMaxSizes>& min_max_sizes,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction) {
@@ -396,16 +396,16 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
   base::Optional<LayoutUnit> inline_size;
   if (!IsLogicalWidthTreatedAsAuto(style)) {
     inline_size = ResolveMainInlineLength(space, style, border_padding,
-                                          child_minmax, style.LogicalWidth());
+                                          min_max_sizes, style.LogicalWidth());
   } else if (replaced_size.has_value()) {
     inline_size = replaced_size->inline_size;
   }
 
   LayoutUnit min_inline_size = ResolveMinInlineLength(
-      space, style, border_padding, child_minmax, style.LogicalMinWidth(),
+      space, style, border_padding, min_max_sizes, style.LogicalMinWidth(),
       LengthResolvePhase::kLayout);
   LayoutUnit max_inline_size = ResolveMaxInlineLength(
-      space, style, border_padding, child_minmax, style.LogicalMaxWidth(),
+      space, style, border_padding, min_max_sizes, style.LogicalMaxWidth(),
       LengthResolvePhase::kLayout);
 
   // Tables use the inline-size as a minimum.
@@ -413,7 +413,7 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
     min_inline_size =
         std::max(min_inline_size,
                  ResolveMainInlineLength(space, style, border_padding,
-                                         child_minmax, style.LogicalWidth()));
+                                         min_max_sizes, style.LogicalWidth()));
   }
 
   bool is_start_dominant;
@@ -428,7 +428,7 @@ NGLogicalOutOfFlowPosition ComputePartialAbsoluteWithChildInlineSize(
   }
 
   ComputeAbsoluteSize(
-      border_padding.InlineSum(), child_minmax,
+      border_padding.InlineSum(), min_max_sizes,
       space.PercentageResolutionInlineSizeForParentWritingMode(),
       space.AvailableSize().inline_size, style.MarginStart(), style.MarginEnd(),
       style.LogicalInlineStart(), style.LogicalInlineEnd(), min_inline_size,
@@ -454,9 +454,9 @@ void ComputeFullAbsoluteWithChildBlockSize(
   // After partial size has been computed, child block size is either unknown,
   // or fully computed, there is no minmax. To express this, a 'fixed' minmax
   // is created where min and max are the same.
-  base::Optional<MinMaxSize> child_minmax;
+  base::Optional<MinMaxSizes> min_max_sizes;
   if (child_block_size.has_value()) {
-    child_minmax = MinMaxSize{*child_block_size, *child_block_size};
+    min_max_sizes = MinMaxSizes{*child_block_size, *child_block_size};
   }
 
   LayoutUnit child_block_size_or_indefinite =
@@ -490,7 +490,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
   }
 
   ComputeAbsoluteSize(
-      border_padding.BlockSum(), child_minmax,
+      border_padding.BlockSum(), min_max_sizes,
       space.PercentageResolutionInlineSizeForParentWritingMode(),
       space.AvailableSize().block_size, style.MarginBefore(),
       style.MarginAfter(), style.LogicalTop(), style.LogicalBottom(),

@@ -24,10 +24,6 @@ namespace net {
 class HttpRequestHeaders;
 }
 
-namespace signin {
-class IdentityManager;
-}
-
 namespace safe_browsing {
 
 class UrlCheckerDelegate;
@@ -53,7 +49,6 @@ class BrowserURLLoaderThrottle : public blink::URLLoaderThrottle {
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       int frame_tree_node_id,
-      signin::IdentityManager* identity_manager,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service);
 
   ~BrowserURLLoaderThrottle() override;
@@ -89,7 +84,6 @@ class BrowserURLLoaderThrottle : public blink::URLLoaderThrottle {
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       int frame_tree_node_id,
-      signin::IdentityManager* identity_manager,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service);
 
   // |slow_check| indicates whether it reports the result of a slow check.

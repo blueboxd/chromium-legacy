@@ -527,7 +527,7 @@ VAStatus VADisplayState::Deinitialize() {
   return va_res;
 }
 
-static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
+VAEntrypoint GetDefaultVaEntryPoint(VaapiWrapper::CodecMode mode,
                                     VAProfile profile) {
   switch (mode) {
     case VaapiWrapper::kDecode:
@@ -545,10 +545,42 @@ static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
   }
 }
 
+std::vector<VAEntrypoint>
+GetSupportedEntryPointsForProfile (const base::Lock* va_lock,
+                               VADisplay va_display,
+                               VaapiWrapper::CodecMode mode,
+                               VAProfile va_profile) {
+  va_lock->AssertAcquired();
+
+  // Query the driver for supported entrypoints.
+  const int max_entrypoints = vaMaxNumEntrypoints(va_display);
+  std::vector<VAEntrypoint> supported_entrypoints(
+      base::checked_cast<size_t>(max_entrypoints));
+
+  int num_supported_entrypoints;
+  VAStatus va_res = vaQueryConfigEntrypoints(va_display, va_profile,
+                                             &supported_entrypoints[0],
+                                             &num_supported_entrypoints);
+  if (va_res != VA_STATUS_SUCCESS) {
+    if (num_supported_entrypoints < 0) {
+      LOG(ERROR) << "vaQueryConfigEntrypoints returned: "
+                 << num_supported_entrypoints;
+      return {};
+    }
+  }
+
+  // resize the supported_entrypoints so that the returned
+  // list will only have valid entries
+  supported_entrypoints.resize(num_supported_entrypoints);
+
+  return supported_entrypoints;
+}
+
 static bool GetRequiredAttribs(const base::Lock* va_lock,
                                VADisplay va_display,
                                VaapiWrapper::CodecMode mode,
                                VAProfile profile,
+                               VAEntrypoint entrypoint,
                                std::vector<VAConfigAttrib>* required_attribs) {
   va_lock->AssertAcquired();
 
@@ -573,8 +605,6 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
   if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
       (profile == VAProfileH264ConstrainedBaseline)) {
     // Encode with Packed header if a driver supports.
-    VAEntrypoint entrypoint =
-        GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, profile);
     VAConfigAttrib attrib;
     attrib.type = VAConfigAttribEncPackedHeaders;
     VAStatus va_res =
@@ -600,6 +630,7 @@ class VASupportedProfiles {
  public:
   struct ProfileInfo {
     VAProfile va_profile;
+    VAEntrypoint va_entrypoint;
     gfx::Size min_resolution;
     gfx::Size max_resolution;
     std::vector<uint32_t> pixel_formats;
@@ -733,34 +764,44 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) const {
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
+
   if (!GetSupportedVAProfiles(&va_profiles))
     return supported_profile_infos;
 
   base::AutoLock auto_lock(*va_lock_);
   const std::string& va_vendor_string =
       VADisplayState::Get()->va_vendor_string();
+
   for (const auto& va_profile : va_profiles) {
-    VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
-    std::vector<VAConfigAttrib> required_attribs;
-    if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
-                            &required_attribs))
-      continue;
-    if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
-      continue;
-    if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
-      continue;
-    if (IsBlackListedDriver(va_vendor_string, mode, va_profile))
+    const std::vector<VAEntrypoint> supported_entrypoints =
+        GetSupportedEntryPointsForProfile (va_lock_, va_display_, mode,
+                                           va_profile);
+    if (supported_entrypoints.empty())
       continue;
 
-    ProfileInfo profile_info{};
-    if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
-                                &profile_info)) {
-      LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
-                 << VAProfileToString(va_profile) << " and entrypoint "
-                 << entrypoint;
-      continue;
+    for (const auto& entrypoint : supported_entrypoints) {
+      std::vector<VAConfigAttrib> required_attribs;
+      if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+                              entrypoint, &required_attribs)) {
+        continue;
+      }
+      if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
+        continue;
+      if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
+        continue;
+      if (IsBlackListedDriver(va_vendor_string, mode, va_profile))
+        continue;
+
+      ProfileInfo profile_info{};
+      if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
+                                  &profile_info)) {
+        LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
+                   << VAProfileToString(va_profile) << " and entrypoint "
+                   << entrypoint;
+        continue;
+      }
+      supported_profile_infos.push_back(profile_info);
     }
-    supported_profile_infos.push_back(profile_info);
   }
   return supported_profile_infos;
 }
@@ -877,6 +918,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes", false);
 
   profile_info->va_profile = va_profile;
+  profile_info->va_entrypoint  = entrypoint;
   profile_info->min_resolution = gfx::Size();
   profile_info->max_resolution = gfx::Size();
   for (const auto& attrib : attrib_list) {
@@ -1985,14 +2027,13 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
                                              size_t* max_ref_frames) {
   VAProfile va_profile =
       ProfileToVAProfile(profile, VaapiWrapper::CodecMode::kEncode);
-  VAEntrypoint entrypoint =
-      GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, va_profile);
   VAConfigAttrib attrib;
   attrib.type = VAConfigAttribEncMaxRefFrames;
 
   base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res =
-      vaGetConfigAttributes(va_display_, va_profile, entrypoint, &attrib, 1);
+      vaGetConfigAttributes(va_display_, va_profile,
+                            va_entrypoint_, &attrib, 1);
   VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes", false);
 
   *max_ref_frames = attrib.value;
@@ -2142,7 +2183,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   if (mode != kVideoProcess)
     TryToSetVADisplayAttributeToLocalGPU();
 
-  VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
+  VAEntrypoint entrypoint = GetDefaultVaEntryPoint(mode, va_profile);
 
   if (mode == CodecMode::kEncode && IsLowPowerEncSupported(va_profile) &&
       base::FeatureList::IsEnabled(kVaapiLowPowerEncoder)) {
@@ -2152,7 +2193,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
 
   base::AutoLock auto_lock(*va_lock_);
   std::vector<VAConfigAttrib> required_attribs;
-  if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+  if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile, entrypoint,
                           &required_attribs))
     return false;
 
@@ -2160,6 +2201,9 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
       vaCreateConfig(va_display_, va_profile, entrypoint,
                      required_attribs.empty() ? nullptr : &required_attribs[0],
                      required_attribs.size(), &va_config_id_);
+
+  va_entrypoint_ = entrypoint;
+
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig", false);
   return true;
 }
@@ -2366,9 +2410,10 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
 
 // Check the support for low-power encode
 bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile) const {
-  // Only enabled for H264/AVC
+  // Enabled only for H264/AVC & VP9 Encoders
   if (va_profile != VAProfileH264ConstrainedBaseline &&
-      va_profile != VAProfileH264Main && va_profile != VAProfileH264High)
+      va_profile != VAProfileH264Main && va_profile != VAProfileH264High &&
+      va_profile != VAProfileVP9Profile0 && va_profile != VAProfileVP9Profile1)
     return false;
 
   constexpr VAEntrypoint kLowPowerEncEntryPoint = VAEntrypointEncSliceLP;
@@ -2376,7 +2421,7 @@ bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile) const {
 
   base::AutoLock auto_lock(*va_lock_);
   GetRequiredAttribs(va_lock_, va_display_, VaapiWrapper::CodecMode::kEncode,
-                     va_profile, &required_attribs);
+                     va_profile, kLowPowerEncEntryPoint, &required_attribs);
   // Query the driver for required attributes.
   std::vector<VAConfigAttrib> attribs = required_attribs;
   for (size_t i = 0; i < required_attribs.size(); ++i)

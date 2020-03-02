@@ -32,6 +32,9 @@ class X509Certificate;
 namespace network {
 struct ResourceRequest;
 struct URLLoaderCompletionStatus;
+namespace mojom {
+class URLLoaderFactoryOverride;
+}
 }  // namespace network
 
 namespace content {
@@ -160,8 +163,7 @@ class NetworkHandler : public DevToolsDomainHandler,
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-          target_factory_receiver);
+      network::mojom::URLLoaderFactoryOverride* intercepting_factory);
 
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,

@@ -304,8 +304,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
-        boolean isMenuGroupTabsVisible =
-                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+        boolean isMenuGroupTabsVisible = TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout();
         boolean isMenuGroupTabsEnabled = mTabModelSelector.getTabModelFilterProvider()
                                                  .getCurrentTabModelFilter()

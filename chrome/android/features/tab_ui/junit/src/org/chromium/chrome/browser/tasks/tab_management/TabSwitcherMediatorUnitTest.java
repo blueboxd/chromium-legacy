@@ -196,6 +196,7 @@ public class TabSwitcherMediatorUnitTest {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test
@@ -534,20 +535,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
-    public void openDialogButton_FlagDisabled() {
-        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
-        // Set up a tab group.
-        TabImpl newTab = prepareTab(TAB4_ID, TAB4_TITLE);
-        doReturn(new ArrayList<>(Arrays.asList(mTab1, newTab)))
-                .when(mTabModelFilter)
-                .getRelatedTabList(TAB1_ID);
-
-        assertThat(mMediator.openTabGridDialog(mTab1), equalTo(null));
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_SingleTab() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
@@ -559,7 +546,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_TabGroup_NotEmpty() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);
@@ -576,7 +562,6 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_TabGroup_Empty() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
         mMediator.setTabGridDialogController(mTabGridDialogController);

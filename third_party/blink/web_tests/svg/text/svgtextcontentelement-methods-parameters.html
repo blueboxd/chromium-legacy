@@ -33,17 +33,17 @@ test(function() {
   }
 
   // Arguments should be mandatory.
-  assert_throws(new TypeError(), function() { svgText.getSubStringLength(); });
-  assert_throws(new TypeError(), function() { svgText.getSubStringLength(2); });
-  assert_throws(new TypeError(), function() { svgText.getStartPositionOfChar(); });
-  assert_throws(new TypeError(), function() { svgText.getEndPositionOfChar(); });
-  assert_throws(new TypeError(), function() { svgText.getExtentOfChar(); });
-  assert_throws(new TypeError(), function() { svgText.getRotationOfChar(); });
-  assert_throws(new TypeError(), function() { svgText.getCharNumAtPosition(); });
-  assert_throws(new TypeError(), function() { svgText.getCharNumAtPosition('aString'); });
-  assert_throws(new TypeError(), function() { svgText.getCharNumAtPosition(svgText); });
-  assert_throws(new TypeError(), function() { svgText.selectSubString(); });
-  assert_throws(new TypeError(), function() { svgText.selectSubString(2); });
+  assert_throws_js(TypeError, function() { svgText.getSubStringLength(); });
+  assert_throws_js(TypeError, function() { svgText.getSubStringLength(2); });
+  assert_throws_js(TypeError, function() { svgText.getStartPositionOfChar(); });
+  assert_throws_js(TypeError, function() { svgText.getEndPositionOfChar(); });
+  assert_throws_js(TypeError, function() { svgText.getExtentOfChar(); });
+  assert_throws_js(TypeError, function() { svgText.getRotationOfChar(); });
+  assert_throws_js(TypeError, function() { svgText.getCharNumAtPosition(); });
+  assert_throws_js(TypeError, function() { svgText.getCharNumAtPosition('aString'); });
+  assert_throws_js(TypeError, function() { svgText.getCharNumAtPosition(svgText); });
+  assert_throws_js(TypeError, function() { svgText.selectSubString(); });
+  assert_throws_js(TypeError, function() { svgText.selectSubString(2); });
 
   // Should throw an IndexSizeError if charnum is greater than or equal to the number of characters at this node.
   assert_throws_dom("IndexSizeError", function() { svgText.getSubStringLength(999, 2); });

@@ -157,8 +157,8 @@ test(function() {
 
 test(function() {
     var shippingOptions = [buildItem({'id': 'express', 'selected': false}), buildItem({'id': 'express', 'selected': true})];
-    assert_throws(
-    new TypeError(),
+    assert_throws_js(
+    TypeError,
     () => {
       new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
     },

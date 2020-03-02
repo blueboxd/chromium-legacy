@@ -17,10 +17,12 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -112,6 +114,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool obey_origin_policy = false;
   base::Optional<base::UnguessableToken> recursive_prefetch_token;
   base::Optional<TrustedParams> trusted_params;
+  // |trust_token_params| uses a custom base::Optional-like type to make the
+  // field trivially copyable; see OptionalTrustTokenParams's definition for
+  // more context.
+  OptionalTrustTokenParams trust_token_params;
 };
 
 // This does not accept |kDefault| referrer policy.

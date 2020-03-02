@@ -23,6 +23,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -284,17 +285,16 @@ bool MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        target_factory_receiver) {
+    network::mojom::URLLoaderFactoryOverride* agent_override) {
   if (!agent_host)
     return false;
   bool had_interceptors = false;
   const auto& handlers = HandlerType::ForAgentHost(agent_host);
   for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
-    had_interceptors = (*it)->MaybeCreateProxyForInterception(
-                           rph, frame_token, is_navigation, is_download,
-                           target_factory_receiver) ||
-                       had_interceptors;
+    had_interceptors =
+        (*it)->MaybeCreateProxyForInterception(rph, frame_token, is_navigation,
+                                               is_download, agent_override) ||
+        had_interceptors;
   }
   return had_interceptors;
 }
@@ -306,14 +306,22 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        target_factory_receiver) {
+        target_factory_receiver,
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
   DCHECK(!is_download || is_navigation);
+
+  network::mojom::URLLoaderFactoryOverride devtools_override;
+  // If caller passed some existing overrides, use those.
+  // Otherwise, use our local var, then if handlers actually
+  // decide to intercept, move it to |factory_override|.
+  network::mojom::URLLoaderFactoryOverride* handler_override =
+      factory_override && *factory_override ? factory_override->get()
+                                            : &devtools_override;
 
   // Order of targets and sessions matters -- the latter proxy is created,
   // the closer it is to the network. So start with frame's NetworkHandler,
   // then process frame's FetchHandler and then browser's FetchHandler.
   // Within the target, the agents added earlier are closer to network.
-
   DevToolsAgentHostImpl* frame_agent_host =
       RenderFrameDevToolsAgentHost::GetFor(rfh);
   RenderProcessHost* rph = rfh->GetProcess();
@@ -322,28 +330,50 @@ bool WillCreateURLLoaderFactory(
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::NetworkHandler>(
           frame_agent_host, rph, frame_token, is_navigation, is_download,
-          target_factory_receiver);
+          handler_override);
 
   had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                          frame_agent_host, rph, frame_token, is_navigation,
-                         is_download, target_factory_receiver) ||
+                         is_download, handler_override) ||
                      had_interceptors;
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, frame_token, is_navigation,
-                           is_download, target_factory_receiver) ||
+                           is_download, handler_override) ||
                        had_interceptors;
   }
-  return had_interceptors;
+  if (!had_interceptors)
+    return false;
+  DCHECK(handler_override->overriding_factory);
+  DCHECK(handler_override->overridden_factory_receiver);
+  if (!factory_override) {
+    // Not a subresource navigation, so just override the target receiver.
+    mojo::FusePipes(std::move(*target_factory_receiver),
+                    std::move(devtools_override.overriding_factory));
+    *target_factory_receiver =
+        std::move(devtools_override.overridden_factory_receiver);
+  } else if (!*factory_override) {
+    // No other overrides, so just returns ours as is.
+    *factory_override = network::mojom::URLLoaderFactoryOverride::New(
+        std::move(devtools_override.overriding_factory),
+        std::move(devtools_override.overridden_factory_receiver));
+  }
+  // ... else things are already taken care of, as handler_override was pointing
+  // to factory override and we've done all magic in-place.
+  DCHECK(!devtools_override.overriding_factory);
+  DCHECK(!devtools_override.overridden_factory_receiver);
+
+  return true;
 }
 
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,
     int routing_id,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        loader_factory_receiver) {
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
+  DCHECK(factory_override);
+
   ServiceWorkerDevToolsAgentHost* worker_agent_host =
       ServiceWorkerDevToolsManager::GetInstance()
           ->GetDevToolsAgentHostForWorker(rph->GetID(), routing_id);
@@ -351,22 +381,38 @@ bool WillCreateURLLoaderFactoryForServiceWorker(
     NOTREACHED();
     return false;
   }
+  network::mojom::URLLoaderFactoryOverride devtools_override;
+  // If caller passed some existing overrides, use those.
+  // Otherwise, use our local var, then if handlers actually
+  // decide to intercept, move it to |factory_override|.
+  network::mojom::URLLoaderFactoryOverride* handler_override =
+      *factory_override ? factory_override->get() : &devtools_override;
+
   const base::UnguessableToken& worker_token =
       worker_agent_host->devtools_worker_token();
 
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::FetchHandler>(
-          worker_agent_host, rph, worker_token, false, false,
-          loader_factory_receiver);
+          worker_agent_host, rph, worker_token, false, false, handler_override);
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, worker_token, false, false,
-                           loader_factory_receiver) ||
+                           handler_override) ||
                        had_interceptors;
   }
-  return had_interceptors;
+  if (!had_interceptors)
+    return false;
+
+  DCHECK(handler_override->overriding_factory);
+  DCHECK(handler_override->overridden_factory_receiver);
+  if (!*factory_override) {
+    *factory_override = network::mojom::URLLoaderFactoryOverride::New(
+        std::move(devtools_override.overriding_factory),
+        std::move(devtools_override.overridden_factory_receiver));
+  }
+  return true;
 }
 
 bool WillCreateURLLoaderFactory(
@@ -377,8 +423,10 @@ bool WillCreateURLLoaderFactory(
   mojo::PendingRemote<network::mojom::URLLoaderFactory> proxied_factory;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       proxied_factory.InitWithNewPipeAndPassReceiver();
-  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &receiver))
+  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &receiver,
+                                  nullptr)) {
     return false;
+  }
   mojo::MakeSelfOwnedReceiver(std::move(*factory), std::move(receiver));
   *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
       std::move(proxied_factory));

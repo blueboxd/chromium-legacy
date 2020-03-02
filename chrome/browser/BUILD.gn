@@ -687,6 +687,10 @@ jumbo_static_library("browser") {
     "media/cast_mirroring_service_host.h",
     "media/cast_remoting_connector.cc",
     "media/cast_remoting_connector.h",
+    "media/feeds/media_feeds_service.cc",
+    "media/feeds/media_feeds_service.h",
+    "media/feeds/media_feeds_service_factory.cc",
+    "media/feeds/media_feeds_service_factory.h",
     "media/history/media_history_contents_observer.cc",
     "media/history/media_history_contents_observer.h",
     "media/history/media_history_images_table.cc",
@@ -5590,11 +5594,6 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/internet_config_dialog:build",
       "//chrome/browser/resources/chromeos/internet_detail_dialog:build",
     ]
-  }
-
-  if (safe_browsing_mode > 0) {
-    deps +=
-        [ "//chrome/browser/resources/safe_browsing:make_file_types_protobuf" ]
   }
 
   if (safe_browsing_mode == 1) {

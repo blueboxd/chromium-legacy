@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class NightModeReparentingControllerTest {
     class FakeNightModeReparentingDelegate implements NightModeReparentingController.Delegate {
         ActivityTabProvider mActivityTabProvider;
         TabModelSelector mTabModelSelector;
+        boolean mIsNTPUrl;
 
         @Override
         public ActivityTabProvider getActivityTabProvider() {
@@ -69,6 +71,15 @@ public class NightModeReparentingControllerTest {
 
             return mTabModelSelector;
         }
+
+        @Override
+        public boolean isNTPUrl(String url) {
+            return mIsNTPUrl;
+        }
+
+        public void setIsNTPUrl(boolean isNTPUrl) {
+            mIsNTPUrl = isNTPUrl;
+        }
     }
 
     @Mock
@@ -82,7 +93,7 @@ public class NightModeReparentingControllerTest {
     Tab mForegroundTab;
 
     NightModeReparentingController mController;
-    NightModeReparentingController.Delegate mDelegate;
+    FakeNightModeReparentingDelegate mDelegate;
 
     @Before
     public void setUp() {
@@ -92,6 +103,7 @@ public class NightModeReparentingControllerTest {
         mIncognitoTabModel = new MockTabModel(true, null);
 
         mDelegate = new FakeNightModeReparentingDelegate();
+        mDelegate.setIsNTPUrl(false);
         mController = new NightModeReparentingController(mDelegate, mReparentingTaskDelegate);
     }
 
@@ -127,6 +139,15 @@ public class NightModeReparentingControllerTest {
     }
 
     @Test
+    public void testReparenting_singleTab_NTP() {
+        mDelegate.setIsNTPUrl(true);
+        mForegroundTab = createAndAddMockTab(1, false, UrlConstants.NTP_URL);
+        mController.onNightModeStateChanged();
+
+        Assert.assertFalse(AsyncTabParamsManager.hasParamsWithTabToReparent());
+    }
+
+    @Test
     public void testReparenting_singleTab_currentModelNullOnStart() {
         mForegroundTab = createAndAddMockTab(1, false);
         mController.onNightModeStateChanged();
@@ -139,7 +160,7 @@ public class NightModeReparentingControllerTest {
     }
 
     @Test
-    public void testReparenting_multipleTabs_onlyOneIsReparented() {
+    public void testReparenting_multipleTabs() {
         mForegroundTab = createAndAddMockTab(1, false);
         createAndAddMockTab(2, false);
         mController.onNightModeStateChanged();
@@ -157,8 +178,7 @@ public class NightModeReparentingControllerTest {
         Assert.assertEquals(1, tab.getId());
 
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
-        Assert.assertFalse("The index of the background tabs stored shouldn't have a tab index.",
-                trp.hasTabIndex());
+        Assert.assertEquals(1, trp.getTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertFalse(trp.isForegroundTab());
 
@@ -183,9 +203,7 @@ public class NightModeReparentingControllerTest {
         Assert.assertTrue(params instanceof TabReparentingParams);
 
         TabReparentingParams trp = (TabReparentingParams) params;
-        Assert.assertEquals(
-                "The index of the first tab stored should match its index in the tab stack.", 1,
-                trp.getTabIndex());
+        Assert.assertEquals(1, trp.getTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertTrue(trp.isForegroundTab());
 
@@ -210,9 +228,7 @@ public class NightModeReparentingControllerTest {
         Assert.assertTrue(params instanceof TabReparentingParams);
 
         TabReparentingParams trp = (TabReparentingParams) params;
-        Assert.assertEquals(
-                "The index of the first tab stored should match its index in the tab stack.", 0,
-                trp.getTabIndex());
+        Assert.assertEquals(0, trp.getTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertTrue(trp.isForegroundTab());
 
@@ -236,9 +252,7 @@ public class NightModeReparentingControllerTest {
         // Check the foreground tab.
         TabReparentingParams trp =
                 (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(2);
-        Assert.assertEquals(
-                "The index of the first tab stored should match its index in the tab stack.", 1,
-                trp.getTabIndex());
+        Assert.assertEquals(1, trp.getTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertTrue(trp.isForegroundTab());
 
@@ -248,13 +262,9 @@ public class NightModeReparentingControllerTest {
 
         // Check the background tabs.
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(1);
-        Assert.assertFalse("The index of the background tabs stored shouldn't have a tab index.",
-                trp.hasTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertFalse(trp.isForegroundTab());
         trp = (TabReparentingParams) AsyncTabParamsManager.getAsyncTabParams().get(3);
-        Assert.assertFalse("The index of the background tabs stored shouldn't have a tab index.",
-                trp.hasTabIndex());
         Assert.assertTrue(trp.isFromNightModeReparenting());
         Assert.assertFalse(trp.isForegroundTab());
 
@@ -282,10 +292,12 @@ public class NightModeReparentingControllerTest {
      *
      * @param id The id to give to the tab.
      * @param incognito Whether to add the tab to the incognito model or the regular model.
+     * @param url The url to set for the tab.
      * @return The tab that was added. Use the return value to set the foreground tab for tests.
      */
-    private Tab createAndAddMockTab(int id, boolean incognito) {
+    private Tab createAndAddMockTab(int id, boolean incognito, String url) {
         Tab tab = Mockito.mock(Tab.class);
+        doReturn(url).when(tab).getUrlString();
         UserDataHost udh = new UserDataHost();
         udh.setUserData(ReparentingTask.class, mTask);
         doReturn(udh).when(tab).getUserDataHost();
@@ -304,6 +316,10 @@ public class NightModeReparentingControllerTest {
         mTabIndexMapping.put(tab, index);
 
         return tab;
+    }
+
+    private Tab createAndAddMockTab(int id, boolean incognito) {
+        return createAndAddMockTab(id, incognito, "https://google.com");
     }
 
     private Tab getForegroundTab() {

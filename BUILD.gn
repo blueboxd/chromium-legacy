@@ -103,6 +103,7 @@ group("gn_all") {
   if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     deps += [
       "//chrome",
+      "//chrome/browser/ui/color:dump_colors",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
@@ -829,10 +830,7 @@ group("gn_all") {
   }
 
   if (use_color_pipeline) {
-    deps += [
-      "//chrome/browser/ui/color:dump_colors",
-      "//ui/color:color_unittests",
-    ]
+    deps += [ "//ui/color:color_unittests" ]
   }
 
   # PFFFT.

@@ -135,6 +135,7 @@ MEDIA_EXPORT extern const base::Feature kMediaCapabilitiesWithParameters;
 MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementHTTPSOnly;
+MEDIA_EXPORT extern const base::Feature kMediaFeeds;
 MEDIA_EXPORT extern const base::Feature kMediaInspectorLogging;
 MEDIA_EXPORT extern const base::Feature kMediaLearningExperiment;
 MEDIA_EXPORT extern const base::Feature kMediaLearningFramework;

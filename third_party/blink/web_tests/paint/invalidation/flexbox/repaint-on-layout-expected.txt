@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow DIV id='badge'",
           "rect": [712, 8, 80, 20],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

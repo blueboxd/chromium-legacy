@@ -24,8 +24,8 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const override;
+  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
+      const MinMaxSizesInput&) const override;
 
  private:
   const NGConstraintSpace CreateConstraintSpaceForLegend(

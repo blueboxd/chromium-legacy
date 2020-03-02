@@ -86,17 +86,12 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         mMergeThreshold = mergeThreshold;
         mUngroupThreshold = ungroupThreshold;
         mProfile = profile;
-        boolean isTabGroupEnabled = TabUiFeatureUtilities.isTabGroupsAndroidEnabled();
-        boolean isTabGroupUiImprovementEnabled =
-                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
         boolean isMRUEnabledInTabSwitcher =
                 TabSwitcherMediator.isShowingTabsInMRUOrder() && mActionsOnAllRelatedTabs;
-        // Only enable drag for users with group disabled, or with group and group ui improvement
-        // enabled at the same time. Also, disable drag for MRU-order tab switcher in start surface.
+        // Disable drag for MRU-order tab switcher in start surface.
         // TODO(crbug.com/1005931): Figure out how drag-to-reorder lives in StartSurface MRU
         // ordering scenario.
-        boolean isDragEnabled = !isMRUEnabledInTabSwitcher
-                && (!isTabGroupEnabled || isTabGroupUiImprovementEnabled);
+        boolean isDragEnabled = !isMRUEnabledInTabSwitcher;
         mDragFlags = isDragEnabled ? ItemTouchHelper.START | ItemTouchHelper.END
                         | ItemTouchHelper.UP | ItemTouchHelper.DOWN
                                    : 0;
@@ -189,7 +184,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             RecordUserAction.record("TabGrid.Drag.Start." + mComponentName);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             mIsSwipingToDismiss = false;
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
 
@@ -297,7 +292,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         }
         mCurrentActionState = actionState;
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return;
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) return;
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
                     recyclerView, viewHolder.itemView, dX, dY, mMergeThreshold);

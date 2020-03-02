@@ -11,8 +11,6 @@
 [
   {
     'name': 'chrome',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': {
         'additional_compile_targets': [
@@ -159,8 +157,6 @@
   },
   {
     'name': 'chromium',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'android-archive-dbg': {
         'additional_compile_targets': [
@@ -232,8 +228,6 @@
   },
   {
     'name': 'chromium.android',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Android ASAN (dbg)': {
         'additional_compile_targets': [
@@ -713,8 +707,6 @@
   },
   {
     'name': 'chromium.android.fyi',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Android WebView P Blink-CORS FYI (rel)': {
         'mixins': [
@@ -780,8 +772,6 @@
   },
   {
     'name': 'chromium.chromiumos',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'chromeos-amd64-generic-asan-rel': {
         'additional_compile_targets': [
@@ -874,8 +864,6 @@
   },
   {
     'name': 'chromium.clang',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'CFI Linux ToT': {
         'mixins': [
@@ -1168,8 +1156,6 @@
   },
   {
     'name': 'chromium.dawn',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Dawn Linux x64 Builder' : {},
       'Dawn Linux x64 DEPS Builder' : {},
@@ -1359,8 +1345,6 @@
   },
   {
     'name': 'chromium.dev',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'android-kitkat-arm-rel-swarming': {
         'mixins': [
@@ -1424,8 +1408,6 @@
   },
   {
     'name': 'chromium.devtools-frontend',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'DevTools Linux (chromium)': {
         'mixins': [
@@ -1440,8 +1422,6 @@
   },
   {
     'name': 'chromium.fuzz',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'ASAN Debug': {
         'additional_compile_targets': [
@@ -1532,8 +1512,6 @@
   },
   {
     'name': 'chromium.fyi',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Linux Viz': {
         'mixins': [
@@ -2103,8 +2081,6 @@
   },
   {
     'name': 'chromium.goma',
-    'bucket': 'goma',
-    'project': 'chromium',
     'machines': {
       'Chromium Android ARM 32-bit Goma RBE ToT': {
         'additional_compile_targets': [
@@ -2230,8 +2206,6 @@
   },
   {
     'name': 'chromium.goma.fyi',
-    'bucket': 'goma',
-    'project': 'chromium',
     'machines': {
       'Linux Builder Goma Canary': {
         'additional_compile_targets': [
@@ -2389,8 +2363,6 @@
     'mixins': [
       'swarming_containment_auto',
     ],
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Android Release (Nexus 5X)': {
         'browser_config': 'android-chromium',
@@ -2557,8 +2529,6 @@
     'mixins': [
       'swarming_containment_auto',
     ],
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       # BEGIN Fake builder used as mirror targets for ANGLE's GPU tryservers
       'ANGLE GPU Android Release (Nexus 5X)': {
@@ -3607,8 +3577,6 @@
   },
   {
     'name': 'chromium.linux',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Cast Audio Linux': {
         'mixins': [
@@ -3781,8 +3749,6 @@
   },
   {
     'name': 'chromium.lkgr',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'ASAN Debug': {
         'additional_compile_targets': [
@@ -3873,8 +3839,6 @@
   },
   {
     'name': 'chromium.mac',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Mac Builder': {
         'additional_compile_targets': [
@@ -3975,8 +3939,6 @@
   },
   {
     'name': 'chromium.memory',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'Android CFI': {
         'swarming': {
@@ -4127,8 +4089,6 @@
   },
   {
     'name': 'chromium.swangle',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'linux-swangle-tot-angle-x64' : {
         'mixins': [
@@ -4254,8 +4214,6 @@
   },
   {
     'name': 'chromium.webrtc',
-    'bucket': 'webrtc',
-    'project': 'chromium',
     'machines': {
       'WebRTC Chromium Android Builder': {},
       'WebRTC Chromium Android Tester': {
@@ -4314,8 +4272,6 @@
   },
   {
     'name': 'chromium.webrtc.fyi',
-    'bucket': 'webrtc.fyi',
-    'project': 'chromium',
     'machines': {
       # For builders, specify targets if the builder has no associated
       # tester (if it does, it will build what the tester needs).
@@ -4428,8 +4384,6 @@
   },
   {
     'name': 'chromium.win',
-    'bucket': 'ci',
-    'project': 'chromium',
     'machines': {
       'WebKit Win10': {
         'mixins': [
@@ -4540,8 +4494,6 @@
   },
   {
     'name': 'client.devtools-frontend.integration',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'DevTools Linux': {
         'mixins': [
@@ -4556,20 +4508,14 @@
   },
   {
     'name': 'client.openscreen.chromium',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {},
   },
   {
     'name': 'client.v8.branches',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {},
   },
   {
     'name': 'client.v8.chromium',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'Linux - Future': {
         'mixins': [
@@ -4593,8 +4539,6 @@
   },
   {
     'name': 'client.v8.fyi',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'Android V8 FYI Release (Nexus 5X)': {
         'browser_config': 'android-chromium',
@@ -4769,8 +4713,6 @@
   },
   {
     'name': 'tryserver.chromium.android',
-    'bucket': 'try',
-    'project': 'chromium',
     'machines': {
       'android-opus-kitkat-arm-rel': {
         'mixins': [
@@ -4797,8 +4739,6 @@
   },
   {
     'name': 'tryserver.chromium.linux',
-    'bucket': 'try',
-    'project': 'chromium',
     'machines': {
       'linux-layout-tests-fragment-item': {
         'additional_compile_targets': [
@@ -4826,8 +4766,6 @@
   },
   {
     'name': 'tryserver.chromium.mac',
-    'bucket': 'try',
-    'project': 'chromium',
     'machines': {
       'mac-rel': {
         'mixins': [
@@ -4844,8 +4782,6 @@
   },
   {
     'name': 'tryserver.devtools-frontend',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'devtools_frontend_linux_blink_light_rel': {
         'mixins': [
@@ -4867,8 +4803,6 @@
   },
   {
     'name': 'tryserver.webrtc',
-    'bucket': 'NA',
-    'project': 'chromium',
     'machines': {
       'android_chromium_compile': {
         'additional_compile_targets': [

@@ -16,13 +16,11 @@
 #include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
@@ -291,10 +289,10 @@ class TestHost : public AppShimHost {
   DISALLOW_COPY_AND_ASSIGN(TestHost);
 };
 
-class ExtensionAppShimHandlerTestBase : public testing::Test {
+class ExtensionAppShimHandlerTest : public testing::Test {
  protected:
-  ExtensionAppShimHandlerTestBase() {}
-  ~ExtensionAppShimHandlerTestBase() override {}
+  ExtensionAppShimHandlerTest() {}
+  ~ExtensionAppShimHandlerTest() override {}
 
   void SetUp() override {
     profile_path_a_ = profile_a_.GetPath();
@@ -544,34 +542,7 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
-  DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTestBase);
-};
-
-class ExtensionAppShimHandlerTest : public ExtensionAppShimHandlerTestBase {
- public:
-  void SetUp() override {
-    scoped_features_.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kAppShimMultiProfile});
-    ExtensionAppShimHandlerTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-class ExtensionAppShimHandlerTestMultiProfile
-    : public ExtensionAppShimHandlerTestBase {
- public:
-  void SetUp() override {
-    scoped_features_.InitWithFeatures(
-        /*enabled_features=*/{features::kAppShimMultiProfile},
-        /*disabled_features=*/{});
-    ExtensionAppShimHandlerTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTest);
 };
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
@@ -936,7 +907,7 @@ TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfile) {
+TEST_F(ExtensionAppShimHandlerTest, MultiProfile) {
   // Test with a bookmark app (host is shared).
   {
     // Create a host for profile A.
@@ -972,7 +943,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfile) {
   }
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfileShimLaunch) {
+TEST_F(ExtensionAppShimHandlerTest, MultiProfileShimLaunch) {
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
@@ -999,7 +970,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfileShimLaunch) {
   EXPECT_TRUE(terminated_callback);
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfileSelectMenu) {
+TEST_F(ExtensionAppShimHandlerTest, MultiProfileSelectMenu) {
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
@@ -1035,7 +1006,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfileSelectMenu) {
   host_aa_->ProfileSelectedFromMenu(profile_path_b_);
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
+TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
   {
     auto item_a = chrome::mojom::ProfileMenuItem::New();
     item_a->profile_path = profile_path_a_;
@@ -1099,7 +1070,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
   EXPECT_EQ(menu_items[1]->profile_path, profile_path_a_);
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, FindProfileFromBadProfile) {
+TEST_F(ExtensionAppShimHandlerTest, FindProfileFromBadProfile) {
   // Set this app to be installed for profile A and B.
   AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
                                                    profile_path_a_);
@@ -1125,7 +1096,7 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, FindProfileFromBadProfile) {
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
-TEST_F(ExtensionAppShimHandlerTestMultiProfile, FindProfileFromNoProfile) {
+TEST_F(ExtensionAppShimHandlerTest, FindProfileFromNoProfile) {
   // Set this app to be installed for profile A.
   AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
                                                    profile_path_a_);

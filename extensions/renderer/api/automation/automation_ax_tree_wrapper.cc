@@ -398,35 +398,37 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
   if (IsDesktopTree())
     return true;
 
-  AutomationAXTreeWrapper* child_of_ancestor = this;
-  AutomationAXTreeWrapper* ancestor = nullptr;
-  while ((ancestor =
-              GetParentOfTreeId(child_of_ancestor->tree()->data().tree_id))) {
+  AutomationAXTreeWrapper* descendant = this;
+  ui::AXTreeID descendant_tree_id = GetTreeID();
+  AutomationAXTreeWrapper* ancestor = descendant;
+  bool found = true;
+  while ((ancestor = GetParentOfTreeId(ancestor->tree()->data().tree_id))) {
     int32_t focus_id = ancestor->tree()->data().focus_id;
     ui::AXNode* focus = ancestor->tree()->GetFromId(focus_id);
     if (!focus)
       return false;
 
-    const ui::AXTreeID& child_tree_id =
-        child_of_ancestor->tree()->data().tree_id;
-
-    // Either the focused node points to the child tree, or the ancestor tree
-    // points to the child tree via the focused tree id. Exit early if both are
-    // not true.
+    // Surprisingly, an ancestor frame can "skip" a child frame to point to a
+    // descendant granchild, so we have to scan upwards.
     if (ui::AXTreeID::FromString(focus->GetStringAttribute(
-            ax::mojom::StringAttribute::kChildTreeId)) != child_tree_id &&
-        ancestor->tree()->data().focused_tree_id != child_tree_id)
-      return false;
+            ax::mojom::StringAttribute::kChildTreeId)) != descendant_tree_id &&
+        ancestor->tree()->data().focused_tree_id != descendant_tree_id) {
+      found = false;
+      continue;
+    }
+
+    found = true;
 
     if (ancestor->IsDesktopTree())
       return true;
 
-    child_of_ancestor = ancestor;
+    descendant_tree_id = ancestor->GetTreeID();
   }
 
-  // The only way we end up here is if the tree is detached from any desktop.
-  // This can occur in tabs-only mode.
-  return true;
+  // We can end up here if the tree is detached from any desktop.  This can
+  // occur in tabs-only mode. This is also the codepath for frames with inner
+  // focus, but which are not focused by ancestor frames.
+  return found;
 }
 
 ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {

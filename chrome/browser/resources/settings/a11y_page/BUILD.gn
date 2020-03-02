@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -37,46 +40,51 @@ js_library("captions_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr" ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":a11y_page.m",
-#    ":captions_browser_proxy.m",
-#    ":captions_subpage.m",
-#  ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":a11y_page.m",
+    ":captions_browser_proxy.m",
+    ":captions_subpage.m",
+  ]
+}
 
 js_library("a11y_page.m") {
   sources = [
     "$root_gen_dir/chrome/browser/resources/settings/a11y_page/a11y_page.m.js",
   ]
   deps = [
-    # TODO: Fill those in.
+    ":captions_browser_proxy.m",
+    "..:route.m",
+    "..:router.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":a11y_page_module" ]
 }
 
 js_library("captions_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/a11y_page/captions_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("captions_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/a11y_page/captions_subpage.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "../appearance_page:fonts_browser_proxy.m",
+    "../controls:settings_dropdown_menu.m",
+    "../prefs:prefs_behavior.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":captions_subpage_module" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":a11y_page_module",
     ":captions_subpage_module",
     ":modulize",
@@ -87,16 +95,27 @@ polymer_modulizer("a11y_page") {
   js_file = "a11y_page.js"
   html_file = "a11y_page.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/a11y_page/captions_browser_proxy.html|CaptionsBrowserProxyImpl",
+                   "chrome/browser/resources/settings/route.html|routes",
+                   "chrome/browser/resources/settings/router.html|Router",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
 
 polymer_modulizer("captions_subpage") {
   js_file = "captions_subpage.js"
   html_file = "captions_subpage.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "chrome/browser/resources/settings/a11y_page/captions_browser_proxy.html|CaptionsBrowserProxy",
+                   "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
+                   "chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.html|FontsBrowserProxy, FontsBrowserProxyImpl, FontsData",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
-
-import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [ "captions_browser_proxy.js" ]
+  namespace_rewrites = settings_namespace_rewrites
 }

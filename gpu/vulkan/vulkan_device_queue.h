@@ -41,6 +41,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
       uint32_t options,
       const VulkanInfo& info,
       const std::vector<const char*>& required_extensions,
+      const std::vector<const char*>& optional_extensions,
       bool allow_protected_memory,
       const GetPresentationSupportCallback& get_presentation_support);
 

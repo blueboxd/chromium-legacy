@@ -364,6 +364,9 @@ android_library("chrome_java") {
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_customview_java",
+
+    # TODO(bjoyce): Change to AndroidX materials after
+    # ClearBrowsingDataTabsFramgent.java is converted to AndroidX.
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_gridlayout_v7_java",
     "//third_party/android_deps:com_android_support_interpolator_java",

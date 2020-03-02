@@ -12,7 +12,6 @@ import android.view.View.OnLongClickListener;
 import android.widget.ImageButton;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
@@ -22,9 +21,11 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.findinpage.FindToolbar;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -32,6 +33,9 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
+
+import java.util.List;
 
 /**
  * A coordinator for the top toolbar component.
@@ -67,6 +71,9 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     private @Nullable StartSurfaceToolbarCoordinator mStartSurfaceToolbarCoordinator;
 
+    private final IdentityDiscController mIdentityDiscController;
+    private final OptionalBrowsingModeButtonController mOptionalButtonController;
+
     private HomepageManager.HomepageStateListener mHomepageStateListener =
             new HomepageManager.HomepageStateListener() {
                 @Override
@@ -79,15 +86,24 @@ public class TopToolbarCoordinator implements Toolbar {
      * Creates a new {@link TopToolbarCoordinator}.
      * @param controlContainer The {@link ToolbarControlContainer} for the containing activity.
      * @param toolbarLayout The {@link ToolbarLayout}.
+     * @param identityDiscController Class that controls the state of the identity disc.
+     * @param userEducationHelper Helper class for showing in-product help text bubbles.
+     * @param buttonDataProviders List of classes that wish to display an optional button in the
+     *         browsing mode toolbar.
      */
-    public TopToolbarCoordinator(
-            ToolbarControlContainer controlContainer, ToolbarLayout toolbarLayout) {
+    public TopToolbarCoordinator(ToolbarControlContainer controlContainer,
+            ToolbarLayout toolbarLayout, IdentityDiscController identityDiscController,
+            ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
+            UserEducationHelper userEducationHelper, List<ButtonDataProvider> buttonDataProviders) {
         mToolbarLayout = toolbarLayout;
+        mIdentityDiscController = identityDiscController;
+        mOptionalButtonController = new OptionalBrowsingModeButtonController(buttonDataProviders,
+                userEducationHelper, mToolbarLayout, () -> toolbarDataProvider.getTab());
         if (mToolbarLayout instanceof ToolbarPhone) {
             if (CachedFeatureFlags.isStartSurfaceEnabled()) {
                 mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(
-                        controlContainer.getRootView().findViewById(
-                                R.id.tab_switcher_toolbar_stub));
+                        controlContainer.getRootView().findViewById(R.id.tab_switcher_toolbar_stub),
+                        mIdentityDiscController, userEducationHelper);
             } else {
                 mTabSwitcherModeCoordinatorPhone = new TabSwitcherModeTTCoordinatorPhone(
                         controlContainer.getRootView().findViewById(
@@ -96,15 +112,6 @@ public class TopToolbarCoordinator implements Toolbar {
         }
         controlContainer.setToolbar(this);
         HomepageManager.getInstance().addListener(mHomepageStateListener);
-    }
-
-    /**
-     * Initialize the external dependencies required for view interaction.
-     * @param toolbarDataProvider The provider for toolbar data.
-     * @param tabController       The controller that handles interactions with the tab.
-     */
-    public void initialize(
-            ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
         mToolbarLayout.initialize(toolbarDataProvider, tabController);
     }
 
@@ -290,6 +297,7 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void updateButtonVisibility() {
         mToolbarLayout.updateButtonVisibility();
+        mOptionalButtonController.updateButtonVisibility();
     }
 
     /**
@@ -620,20 +628,6 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
-     * Enable the experimental toolbar button.
-     * @param onClickListener The {@link View.OnClickListener} to be called when the button is
-     *                        clicked.
-     * @param image The drawable to display for the button.
-     * @param contentDescriptionResId The resource id of the content description for the button.
-     * @param useTint Whether tint should be automatically applied to the button.
-     */
-    public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId, boolean useTint) {
-        mToolbarLayout.enableExperimentalButton(
-                onClickListener, image, contentDescriptionResId, useTint);
-    }
-
-    /**
      * @param isVisible Whether the bottom toolbar is visible.
      */
     public void onBottomToolbarVisibilityChanged(boolean isVisible) {
@@ -643,88 +637,7 @@ public class TopToolbarCoordinator implements Toolbar {
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.onBottomToolbarVisibilityChanged(isVisible);
         }
-    }
-
-    /**
-     * @return The experimental toolbar button if it exists.
-     */
-    public void updateExperimentalButtonImage(Drawable image) {
-        mToolbarLayout.updateExperimentalButtonImage(image);
-    }
-
-    /**
-     * Disable the experimental toolbar button.
-     */
-    public void disableExperimentalButton() {
-        mToolbarLayout.disableExperimentalButton();
-    }
-
-    /**
-     * Displays in-product help for experimental button.
-     * @param stringId The id of the string resource for the text that should be shown.
-     * @param accessibilityStringId The id of the string resource of the accessibility text.
-     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
-     */
-    public void showIPHOnExperimentalButton(@StringRes int stringId,
-            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
-        mToolbarLayout.showIPHOnExperimentalButton(
-                stringId, accessibilityStringId, dismissedCallback);
-    }
-
-    /**
-     * Show the identity disc toolbar button.
-     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
-     * @param image The drawable to display for the button.
-     * @param contentDescriptionResId The resource id of the content description for the button.
-     */
-    public void showIdentityDiscButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
-        if (mStartSurfaceToolbarCoordinator != null
-                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.showIdentityDiscButton(
-                    onClickListener, image, contentDescriptionResId);
-        }
-        enableExperimentalButton(
-                onClickListener, image, contentDescriptionResId, /*useTint= */ false);
-    }
-
-    /**
-     * Hide the identity disc toolbar button.
-     */
-    public void hideIdentityDiscButton() {
-        if (mStartSurfaceToolbarCoordinator != null
-                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.hideIdentityDiscButton();
-        }
-        disableExperimentalButton();
-    }
-
-    /**
-     * Updates image displayed on identity disc button.
-     */
-    public void updateIdentityDiscButtonImage(Drawable image) {
-        if (mStartSurfaceToolbarCoordinator != null
-                && CachedFeatureFlags.isStartSurfaceSinglePaneEnabled()) {
-            mStartSurfaceToolbarCoordinator.updateIdentityDiscButtonImage(image);
-        }
-        updateExperimentalButtonImage(image);
-    }
-
-    /**
-     * Displays in-product help for the identity disc button.
-     * @param stringId The id of the string resource for the text that should be shown.
-     * @param accessibilityStringId The id of the string resource of the accessibility text.
-     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
-     */
-    public void showIPHOnIdentityDiscButton(@StringRes int stringId,
-            @StringRes int accessibilityStringId, Runnable dismissedCallback) {
-        if (mStartSurfaceToolbarCoordinator != null
-                && mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
-            mStartSurfaceToolbarCoordinator.showIPHOnIdentityDiscButton(
-                    stringId, accessibilityStringId, dismissedCallback);
-            return;
-        }
-        showIPHOnExperimentalButton(stringId, accessibilityStringId, dismissedCallback);
+        mOptionalButtonController.updateButtonVisibility();
     }
 
     @Override

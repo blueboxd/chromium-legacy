@@ -29,7 +29,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 
@@ -1597,7 +1597,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // widths when the layout object is managed by NG. Should not be called by
   // regular code.
   // Also clears the "dirty" flag for preferred widths.
-  void SetPreferredLogicalWidthsFromNG(MinMaxSize sizes) {
+  void SetPreferredLogicalWidthsFromNG(MinMaxSizes sizes) {
     min_preferred_logical_width_ = sizes.min_size;
     max_preferred_logical_width_ = sizes.max_size;
     ClearPreferredLogicalWidthsDirty();

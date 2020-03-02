@@ -25,7 +25,7 @@ test(function() {
 }, 'Stringified numbers don\'t yield a correct color when assigned to fillStyle.');
 
 test(function() {
-  assert_throws(new Error(), function() {
+  assert_throws_js(Error, function() {
     ctx.fillStyle = { toString: function() { throw new Error("Exception"); } };
   });
 }, 'Rethrows exception thrown from toString() during stringification of non-CanvasGradient/Pattern object assigned to fillStyle.');
@@ -49,7 +49,7 @@ test(function() {
 }, 'Stringified numbers don\'t yield a correct color when assigned to strokeStyle.');
 
 test(function() {
-  assert_throws(new Error(), function() {
+  assert_throws_js(Error, function() {
     ctx.strokeStyle = { toString: function() { throw new Error("Exception"); } };
   });
 }, 'Rethrows exception thrown from toString() during stringification of non-CanvasGradient/Pattern object assigned to strokeStyle.');

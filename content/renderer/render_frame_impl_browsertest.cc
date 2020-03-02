@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params_mojom_traits.h"
@@ -400,16 +401,15 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
   ASSERT_FALSE(overlay_routing_token_.has_value());
 
   // The host should receive a request for it sent to the frame.
-  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_RequestOverlayRoutingToken::ID);
-  EXPECT_TRUE(msg);
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
 
-  // Send a token.
+  // Create a token in the browser.
   base::UnguessableToken token = base::UnguessableToken::Create();
-  FrameMsg_SetOverlayRoutingToken token_message(0, token);
-  frame()->OnMessageReceived(token_message);
+  frame()->SetOverlayRoutingToken(token);
 
-  base::RunLoop().RunUntilIdle();
+  frame()->RequestOverlayRoutingToken(
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
 }
@@ -418,22 +418,24 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
 TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
   ASSERT_FALSE(overlay_routing_token_.has_value());
   base::UnguessableToken token = base::UnguessableToken::Create();
-  FrameMsg_SetOverlayRoutingToken token_message(0, token);
-  frame()->OnMessageReceived(token_message);
+  frame()->SetOverlayRoutingToken(token);
 
-  // The frame now has a token.  We don't care if it sends the token before
-  // returning or posts a message.
-  base::RunLoop().RunUntilIdle();
+  // The frame should receive the token.
+  frame()->RequestOverlayRoutingToken(
+      base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                     base::Unretained(this)));
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
+  ASSERT_TRUE(overlay_routing_token_.has_value());
+  ASSERT_EQ(overlay_routing_token_.value(), token);
+
+  // Since the token already arrived, a new request for it shouldn't be sent.
+  overlay_routing_token_ = base::nullopt;
   frame()->RequestOverlayRoutingToken(
       base::BindOnce(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
                      base::Unretained(this)));
   ASSERT_TRUE(overlay_routing_token_.has_value());
   ASSERT_EQ(overlay_routing_token_.value(), token);
-
-  // Since the token already arrived, a request for it shouldn't be sent.
-  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_RequestOverlayRoutingToken::ID);
-  EXPECT_FALSE(msg);
+  ASSERT_EQ(1u, frame()->RequestOverlayRoutingTokenCalled());
 }
 #endif
 

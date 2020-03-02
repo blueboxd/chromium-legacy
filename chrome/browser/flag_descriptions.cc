@@ -2349,9 +2349,6 @@ const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";
 
-const char kEnableWebNfcName[] = "WebNFC";
-const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
-
 const char kEphemeralTabUsingBottomSheetName[] =
     "An ephemeral Preview Tab using the bottom sheet";
 const char kEphemeralTabUsingBottomSheetDescription[] =

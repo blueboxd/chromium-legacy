@@ -92,6 +92,12 @@ VulkanImplementationGbm::GetRequiredDeviceExtensions() {
           VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
           VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
 }
+
+std::vector<const char*>
+VulkanImplementationGbm::GetOptionalDeviceExtensions() {
+  return {};
+}
+
 VkFence VulkanImplementationGbm::CreateVkFenceForGpuFence(VkDevice vk_device) {
   VkFenceCreateInfo fence_create_info = {};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

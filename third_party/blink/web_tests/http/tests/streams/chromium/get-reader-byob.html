@@ -5,7 +5,7 @@
 <script>
 test(() => {
   const rs = new ReadableStream();
-  assert_throws(new TypeError(), () => rs.getReader({mode: 'byob'}),
-                'a TypeError should be thrown');
+  assert_throws_js(TypeError, () => rs.getReader({mode: 'byob'}),
+                   'a TypeError should be thrown');
 }, 'getReader() with mode "byob" should throw a TypeError');
 </script>

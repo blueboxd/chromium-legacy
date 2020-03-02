@@ -206,6 +206,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     @Override
     void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController) {
         super.initialize(toolbarDataProvider, tabController);
+        mLocationBar.setToolbarDataProvider(toolbarDataProvider);
         mLocationBar.updateVisualsForState();
     }
 

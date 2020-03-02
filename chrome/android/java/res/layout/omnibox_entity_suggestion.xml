@@ -8,8 +8,7 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="vertical"
-    android:minHeight="@dimen/omnibox_suggestion_height"
-    android:paddingVertical="10dp">
+    android:minHeight="@dimen/omnibox_suggestion_height">
 
     <TextView
         android:id="@+id/entity_subject"

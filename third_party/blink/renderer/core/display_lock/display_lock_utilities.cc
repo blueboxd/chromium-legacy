@@ -75,9 +75,13 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   // case we are traversing from the start position of the range.
   Element* enclosing_block =
       EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
+  // Note that we don't check the `range.EndPosition()` since we just activate
+  // the beginning of the range. In find-in-page cases, the end position is the
+  // same since the matches cannot cross block boundaries. However, in
+  // scroll-to-text, the range might be different, but we still just activate
+  // the beginning of the range. See
+  // https://github.com/WICG/display-locking/issues/125 for more details.
   DCHECK(enclosing_block);
-  DCHECK_EQ(enclosing_block,
-            EnclosingBlock(range.EndPosition(), kCannotCrossEditingBoundary));
   return enclosing_block->ActivateDisplayLockIfNeeded(
       DisplayLockActivationReason::kFindInPage);
 }

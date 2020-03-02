@@ -7,9 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 100, 200],
-          "reason": "chunk disappeared"
+          "object": "LayoutBlockFlow DIV class='square'",
+          "rect": [8, 108, 100, 100],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='square'",
+          "rect": [8, 8, 100, 100],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='target' class='square'",

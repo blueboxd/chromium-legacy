@@ -2337,7 +2337,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter"
         ],
         "merge": {
           "args": [
@@ -2397,7 +2398,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
+          "--gtest_filter=-ContentViewScrollingTest.testFling"
         ],
         "merge": {
           "args": [
@@ -2457,7 +2459,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
+          "--gtest_filter=-ContentViewScrollingTest.testFling"
         ],
         "merge": {
           "args": [
@@ -6168,6 +6171,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter"
         ],
         "merge": {
@@ -6200,11 +6204,11 @@
           ],
           "named_caches": [
             {
-              "name": "avd_generic_android28",
+              "name": "avd_generic_playstore_android28",
               "path": ".android"
             },
             {
-              "name": "system_images_android_28_google_apis_x86",
+              "name": "system_images_android_28_google_apis_playstore_x86",
               "path": ".emulator_sdk"
             }
           ],
@@ -6228,7 +6232,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter"
         ],
         "merge": {
           "args": [
@@ -6526,7 +6531,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter"
         ],
         "merge": {
           "args": [
@@ -6586,7 +6592,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--gtest_filter=-ContentViewScrollingTest.testFling"
         ],
         "merge": {
           "args": [
@@ -6646,7 +6653,8 @@
           "--disable-features=NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--gtest_filter=-ContentViewScrollingTest.testFling"
         ],
         "merge": {
           "args": [

@@ -535,9 +535,9 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto size = node.ComputeMinMaxSize(
+  auto size = node.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizeInput(/* percentage_resolution_block_size */ (LayoutUnit())));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ (LayoutUnit())));
   EXPECT_EQ(size.min_size, LayoutUnit(60));
   EXPECT_EQ(size.max_size, LayoutUnit(110));
 }
@@ -559,9 +559,9 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   EXPECT_TRUE(node.GetDocument().InQuirksMode());
 
-  node.ComputeMinMaxSize(
+  node.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
   // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
 }
 

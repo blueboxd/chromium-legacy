@@ -221,15 +221,13 @@ const CGFloat kClearButtonSize = 28.0f;
   return YES;
 }
 
-// When editing, forward the message on to |_textChangeDelegate|.
+// Record the metrics as needed.
 - (void)textFieldDidEndEditing:(UITextField*)textField
                         reason:(UITextFieldDidEndEditingReason)reason {
   if (!self.omniboxInteractedWhileFocused) {
     RecordAction(
         UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
   }
-  DCHECK(_textChangeDelegate);
-  _textChangeDelegate->EndEditing();
 }
 
 - (BOOL)textFieldShouldClear:(UITextField*)textField {

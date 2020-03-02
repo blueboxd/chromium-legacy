@@ -125,7 +125,8 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
     return;
 
   float step;
-  StepValueForRange(&step);
+  if (!StepValueForRange(&step))
+    return;
 
   value += increase ? step : -step;
 

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.share.qrcode;
 
-import android.support.design.widget.TabLayout;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 

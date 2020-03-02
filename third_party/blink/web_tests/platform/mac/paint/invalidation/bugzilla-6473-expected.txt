@@ -12,9 +12,14 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (relative positioned) P",
           "rect": [8, 130, 784, 18],
-          "reason": "chunk appeared"
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'SUCCESS'",
+          "rect": [8, 130, 70, 18],
+          "reason": "appeared"
         }
       ]
     }

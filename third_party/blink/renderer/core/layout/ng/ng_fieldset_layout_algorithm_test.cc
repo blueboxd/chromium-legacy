@@ -35,7 +35,7 @@ class NGFieldsetLayoutAlgorithmTest
     return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   }
 
-  MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
+  MinMaxSizes RunComputeMinMaxSizes(NGBlockNode node) {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         WritingMode::kHorizontalTb, TextDirection::kLtr,
         LogicalSize(LayoutUnit(), LayoutUnit()));
@@ -43,17 +43,17 @@ class NGFieldsetLayoutAlgorithmTest
         CalculateInitialMinMaxFragmentGeometry(space, node);
 
     NGFieldsetLayoutAlgorithm algorithm({node, fragment_geometry, space});
-    MinMaxSizeInput input(
+    MinMaxSizesInput input(
         /* percentage_resolution_block_size */ (LayoutUnit()));
-    auto min_max = algorithm.ComputeMinMaxSize(input);
+    auto min_max = algorithm.ComputeMinMaxSizes(input);
     EXPECT_TRUE(min_max.has_value());
     return *min_max;
   }
 
-  MinMaxSize RunComputeMinAndMax(const char* element_id) {
+  MinMaxSizes RunComputeMinMaxSizes(const char* element_id) {
     Element* element = GetDocument().getElementById(element_id);
     NGBlockNode node(ToLayoutBox(element->GetLayoutObject()));
-    return RunComputeMinAndMax(node);
+    return RunComputeMinMaxSizes(node);
   }
 
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {
@@ -483,31 +483,31 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, MinMax) {
     </div>
   )HTML");
 
-  MinMaxSize size;
+  MinMaxSizes sizes;
 
-  size = RunComputeMinAndMax("fieldset1");
-  EXPECT_EQ(size.min_size, LayoutUnit(26));
-  EXPECT_EQ(size.max_size, LayoutUnit(26));
+  sizes = RunComputeMinMaxSizes("fieldset1");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(26));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(26));
 
-  size = RunComputeMinAndMax("fieldset2");
-  EXPECT_EQ(size.min_size, LayoutUnit(102));
-  EXPECT_EQ(size.max_size, LayoutUnit(102));
+  sizes = RunComputeMinMaxSizes("fieldset2");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(102));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(102));
 
-  size = RunComputeMinAndMax("fieldset3");
-  EXPECT_EQ(size.min_size, LayoutUnit(102));
-  EXPECT_EQ(size.max_size, LayoutUnit(126));
+  sizes = RunComputeMinMaxSizes("fieldset3");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(102));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(126));
 
-  size = RunComputeMinAndMax("fieldset4");
-  EXPECT_EQ(size.min_size, LayoutUnit(152));
-  EXPECT_EQ(size.max_size, LayoutUnit(202));
+  sizes = RunComputeMinMaxSizes("fieldset4");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(152));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(202));
 
-  size = RunComputeMinAndMax("fieldset5");
-  EXPECT_EQ(size.min_size, LayoutUnit(152));
-  EXPECT_EQ(size.max_size, LayoutUnit(176));
+  sizes = RunComputeMinMaxSizes("fieldset5");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(152));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(176));
 
-  size = RunComputeMinAndMax("fieldset6");
-  EXPECT_EQ(size.min_size, LayoutUnit(76));
-  EXPECT_EQ(size.max_size, LayoutUnit(126));
+  sizes = RunComputeMinMaxSizes("fieldset6");
+  EXPECT_EQ(sizes.min_size, LayoutUnit(76));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(126));
 }
 
 // Tests that a fieldset won't fragment if it doesn't reach the fragmentation

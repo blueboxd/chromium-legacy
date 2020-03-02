@@ -27,19 +27,16 @@ void COtherUserGaiaCredential::FinalRelease() {
 
 HRESULT COtherUserGaiaCredential::GetUserGlsCommandline(
     base::CommandLine* command_line) {
-  // Don't show tos when GEM isn't enabled.
-  if (IsGemEnabled()) {
     // In default other user flow, the user has to accept tos
     // every time. So we need to set the show_tos switch to 1.
-    command_line->AppendSwitchASCII(kShowTosSwitch, "1");
-  }
-
-  HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
-      L"ep_setup_url", kGaiaSetupPath, IsGemEnabled(), command_line);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "Setting gaia url for gaia credential failed";
-    return E_FAIL;
-  }
+    bool show_tos = IsGemEnabled();
+    HRESULT hr = SetGaiaEndpointCommandLineIfNeeded(
+        L"ep_setup_url", kGaiaSetupPath, IsGemEnabled(), show_tos,
+        command_line);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Setting gaia url for gaia credential failed";
+      return E_FAIL;
+    }
   return S_OK;
 }
 }  // namespace credential_provider

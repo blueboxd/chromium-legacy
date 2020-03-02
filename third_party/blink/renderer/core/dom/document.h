@@ -315,6 +315,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ShouldInstallV8Extensions() const final;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld() override;
 
+  SecurityContext& GetSecurityContext() final { return security_context_; }
+  const SecurityContext& GetSecurityContext() const final {
+    return security_context_;
+  }
+
   // TODO(crbug.com/1029822): Temporary cast helpers while ExecutionContext is
   // migrating to LocalDOMWindow. Callsite that permanently need to convert a
   // Document to an ExecutionContext should use either GetExecutionContext() as
@@ -353,8 +358,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(crbug.com/1029822): Temporary helpers to access ExecutionContext
   // methods. These will need to be audited. Some might be useful permanent
   // helpers.
-  SecurityContext& GetSecurityContext();
-  const SecurityContext& GetSecurityContext() const;
   const SecurityOrigin* GetSecurityOrigin() const;
   SecurityOrigin* GetMutableSecurityOrigin();
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
@@ -1954,6 +1957,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<LocalFrame> frame_;
   Member<LocalDOMWindow> dom_window_;
   Member<HTMLImportsController> imports_controller_;
+
+  SecurityContext security_context_;
 
   // Document::CountUse() attributes the feature counts to the DocumentLoader
   // which is returned by Loader(). During construction Loader() returns null,

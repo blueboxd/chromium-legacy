@@ -1362,9 +1362,6 @@ extern const char kEnableRevampedContextMenuDescription[];
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
 
-extern const char kEnableWebNfcName[];
-extern const char kEnableWebNfcDescription[];
-
 extern const char kEphemeralTabUsingBottomSheetName[];
 extern const char kEphemeralTabUsingBottomSheetDescription[];
 

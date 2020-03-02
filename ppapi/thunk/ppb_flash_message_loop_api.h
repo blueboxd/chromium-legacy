@@ -23,9 +23,8 @@ class PPB_Flash_MessageLoop_API {
   // This is used by the proxy at the host side to call into the implementation.
   // |callback| is called when the message loop is signaled to quit but before
   // the method returns.
-  typedef base::Callback<void (int32_t)> RunFromHostProxyCallback;
-  virtual void RunFromHostProxy(
-      const RunFromHostProxyCallback& callback) = 0;
+  typedef base::OnceCallback<void(int32_t)> RunFromHostProxyCallback;
+  virtual void RunFromHostProxy(RunFromHostProxyCallback callback) = 0;
 };
 
 }  // namespace thunk

@@ -204,4 +204,8 @@ SharedImageRepresentationDawn::BeginScopedAccess(
       util::PassKey<SharedImageRepresentationDawn>(), this, texture);
 }
 
+SharedImageRepresentationFactoryRef::~SharedImageRepresentationFactoryRef() {
+  backing()->MarkForDestruction();
+}
+
 }  // namespace gpu

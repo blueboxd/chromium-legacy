@@ -492,6 +492,10 @@ public final class TabImpl extends ITab.Stub {
             mNewTabCallbackProxy.destroy();
             mNewTabCallbackProxy = null;
         }
+        // ObservableSupplierImpl.addObserver() posts a task to notify the observer, ensure the
+        // callback isn't run after destroy() is called (otherwise we'll get crashes as the native
+        // tab has been deleted).
+        mBrowserControlsVisibility.removeObserver(mConstraintsUpdatedCallback);
         hideFindInPageUiAndNotifyClient();
         mFindInPageCallbackClient = null;
         mNavigationController = null;

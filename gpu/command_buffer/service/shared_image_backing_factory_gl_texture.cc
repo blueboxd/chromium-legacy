@@ -686,7 +686,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     SharedImageBatchAccessManager* batch_access_manager)
     : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gles2::PassthroughCommandDecoderSupported()),
-      image_factory_(image_factory) {
+      image_factory_(image_factory),
+      workarounds_(workarounds) {
 #if defined(OS_ANDROID)
   batch_access_manager_ = batch_access_manager;
 #endif
@@ -1188,7 +1189,8 @@ SharedImageBackingFactoryGLTexture::MakeEglImageBacking(
 
   return std::make_unique<SharedImageBackingEglImage>(
       mailbox, format, size, color_space, usage, estimated_size,
-      format_info.gl_format, format_info.gl_type, batch_access_manager_);
+      format_info.gl_format, format_info.gl_type, batch_access_manager_,
+      workarounds_);
 #else
   return nullptr;
 #endif

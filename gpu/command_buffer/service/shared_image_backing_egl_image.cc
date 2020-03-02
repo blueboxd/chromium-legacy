@@ -87,7 +87,8 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
     size_t estimated_size,
     GLuint gl_format,
     GLuint gl_type,
-    SharedImageBatchAccessManager* batch_access_manager)
+    SharedImageBatchAccessManager* batch_access_manager,
+    const GpuDriverBugWorkarounds& workarounds)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -99,11 +100,20 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
       gl_type_(gl_type),
       batch_access_manager_(batch_access_manager) {
   DCHECK(batch_access_manager_);
+#if DCHECK_IS_ON()
+  created_on_context_ = gl::g_current_gl_context;
+#endif
+  // On some GPUs (NVidia) keeping reference to egl image itself is not enough,
+  // we must keep reference to at least one sibling.
+  if (workarounds.dont_delete_source_texture_for_egl_image) {
+    source_texture_ = GenEGLImageSibling();
+  }
 }
 
 SharedImageBackingEglImage::~SharedImageBackingEglImage() {
   // Un-Register this backing from the |batch_access_manager_|.
   batch_access_manager_->UnregisterEglBacking(this);
+  DCHECK(!source_texture_);
 }
 
 void SharedImageBackingEglImage::Update(
@@ -303,6 +313,17 @@ void SharedImageBackingEglImage::SetEndReadFence(
     scoped_refptr<gl::SharedGLFenceEGL> shared_egl_fence) {
   AutoLock auto_lock(this);
   read_fences_[gl::g_current_gl_context] = std::move(shared_egl_fence);
+}
+
+void SharedImageBackingEglImage::MarkForDestruction() {
+  AutoLock auto_lock(this);
+#if DCHECK_IS_ON()
+  DCHECK(!have_context() || created_on_context_ == gl::g_current_gl_context);
+#endif
+  if (source_texture_) {
+    source_texture_->RemoveLightweightRef(have_context());
+    source_texture_ = nullptr;
+  }
 }
 
 }  // namespace gpu

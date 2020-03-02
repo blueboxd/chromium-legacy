@@ -2179,8 +2179,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
-                        OnSetOverlayRoutingToken)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -5896,14 +5894,6 @@ void RenderFrameImpl::OnMixedContentFound(
                             params.had_redirect, source_location);
 }
 
-void RenderFrameImpl::OnSetOverlayRoutingToken(
-    const base::UnguessableToken& token) {
-  overlay_routing_token_ = token;
-  for (auto& cb : pending_routing_token_callbacks_)
-    std::move(cb).Run(overlay_routing_token_.value());
-  pending_routing_token_callbacks_.clear();
-}
-
 void RenderFrameImpl::RequestOverlayRoutingToken(
     media::RoutingTokenCallback callback) {
   if (overlay_routing_token_.has_value()) {
@@ -5911,11 +5901,16 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
     return;
   }
 
-  // Send a request to the host for the token.  We'll notify |callback| when it
-  // arrives later.
-  Send(new FrameHostMsg_RequestOverlayRoutingToken(routing_id_));
-
-  pending_routing_token_callbacks_.push_back(std::move(callback));
+  // Send a request to the host for the token that caches the result.
+  GetFrameHost()->RequestOverlayRoutingToken(base::BindOnce(
+      [](RenderFrameImpl* rfi, media::RoutingTokenCallback callback,
+         const base::UnguessableToken& token) {
+        rfi->overlay_routing_token_ = token;
+        std::move(callback).Run(token);
+      },
+      // This is a Mojo call where we own the Remote, so the
+      // callback lifetime won't scape the valid scope.
+      base::Unretained(this), std::move(callback)));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

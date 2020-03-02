@@ -16,7 +16,8 @@ declare_args() {
 
   # Whether to compute UI colors with the color pipeline framework,
   # instead of NativeTheme/ThemeService.
-  use_color_pipeline = false
+  # TODO(http://crbug.com/1057239): Remove this flag.
+  use_color_pipeline = true
 }
 
 enable_hidpi = is_mac || is_win || is_linux || is_ios

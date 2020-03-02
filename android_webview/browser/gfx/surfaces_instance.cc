@@ -120,14 +120,27 @@ viz::FrameSinkManagerImpl* SurfacesInstance::GetFrameSinkManager() {
   return frame_sink_manager_.get();
 }
 
-void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
-                                   const gfx::Rect& clip,
-                                   const gfx::Transform& transform,
+void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
+                                   gfx::Rect clip,
+                                   gfx::Transform transform,
                                    const gfx::Size& frame_size,
                                    const viz::SurfaceId& child_id,
                                    float device_scale_factor,
                                    const gfx::ColorSpace& color_space) {
   DCHECK(base::Contains(child_ids_, child_id));
+
+  // Support for SkiaRenderer
+  if (output_surface_provider_.renderer_settings().use_skia_renderer) {
+    output_surface_provider_.gl_surface()->RecalculateClipAndTransform(
+        &viewport, &clip, &transform);
+    bool using_fbo0 =
+        output_surface_provider_.gl_surface()->GetBackingFramebufferObject() ==
+        0;
+    bool force_reshape = was_fbo0_ != using_fbo0;
+    was_fbo0_ = using_fbo0;
+    if (force_reshape)
+      display_->ForceReshapeOnNextDraw();
+  }
 
   gfx::ColorSpace display_color_space =
       color_space.IsValid() ? color_space : gfx::ColorSpace::CreateSRGB();

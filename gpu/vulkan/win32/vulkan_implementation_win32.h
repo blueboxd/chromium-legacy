@@ -29,6 +29,7 @@ class COMPONENT_EXPORT(VULKAN_WIN32) VulkanImplementationWin32
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) override;
   std::vector<const char*> GetRequiredDeviceExtensions() override;
+  std::vector<const char*> GetOptionalDeviceExtensions() override;
   VkFence CreateVkFenceForGpuFence(VkDevice vk_device) override;
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,

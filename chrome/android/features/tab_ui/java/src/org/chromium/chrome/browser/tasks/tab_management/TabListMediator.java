@@ -230,18 +230,6 @@ class TabListMediator {
     };
 
     /**
-     * An interface to get the onClickListener for "Create group" button.
-     */
-    public interface CreateGroupButtonProvider {
-        /**
-         * @return {@link TabActionListener} to create tab group. If the given {@link Tab} is not
-         * able to create group, return null;
-         */
-        @Nullable
-        TabActionListener getCreateGroupButtonOnClickListener(Tab tab);
-    }
-
-    /**
      * An interface to get a SelectionDelegate that contains the selected items for a selectable
      * tab list.
      */
@@ -286,7 +274,6 @@ class TabListMediator {
     private final ThumbnailProvider mThumbnailProvider;
     private final TabActionListener mTabClosedListener;
     private final TitleProvider mTitleProvider;
-    private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final SelectionDelegateProvider mSelectionDelegateProvider;
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final TabGridDialogHandler mTabGridDialogHandler;
@@ -443,9 +430,6 @@ class TabListMediator {
      * @param tabListFaviconProvider Provider for all favicon related drawables.
      * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
      *                            tabs.
-     * @param createGroupButtonProvider {@link CreateGroupButtonProvider} to provide "Create group"
-     *                                   button information. It's null when "Create group" is not
-     *                                   possible.
      * @param selectionDelegateProvider Provider for a {@link SelectionDelegate} that is used for
      *                                  a selectable list. It's null when selection is not possible.
      * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
@@ -457,7 +441,6 @@ class TabListMediator {
     public TabListMediator(Context context, TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
             TabListFaviconProvider tabListFaviconProvider, boolean actionOnRelatedTabs,
-            @Nullable CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable SelectionDelegateProvider selectionDelegateProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabGridDialogHandler dialogHandler, ItemAnimationStopper itemAnimationStopper,
@@ -469,7 +452,6 @@ class TabListMediator {
         mTabListFaviconProvider = tabListFaviconProvider;
         mComponentName = componentName;
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
-        mCreateGroupButtonProvider = createGroupButtonProvider;
         mSelectionDelegateProvider = selectionDelegateProvider;
         mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
         mTabGridDialogHandler = dialogHandler;
@@ -778,7 +760,7 @@ class TabListMediator {
             }
         };
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             mTabGroupTitleEditor = new TabGroupTitleEditor(mTabModelSelector) {
                 @Override
                 protected void updateTabGroupTitle(Tab tab, String title) {
@@ -1025,8 +1007,6 @@ class TabListMediator {
             }
         }
         mModel.get(index).model.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
-        mModel.get(index).model.set(
-                TabProperties.CREATE_GROUP_LISTENER, getCreateGroupButtonListener(tab, isSelected));
         mModel.get(index).model.set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).model.set(TabProperties.TITLE, getLatestTitleForTab(tab));
         mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
@@ -1214,8 +1194,6 @@ class TabListMediator {
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
-                        .with(TabProperties.CREATE_GROUP_LISTENER,
-                                getCreateGroupButtonListener(tab, isSelected))
                         .with(CARD_ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
                                 ClosableTabGridView.AnimationStatus.CARD_RESTORE)
@@ -1342,16 +1320,6 @@ class TabListMediator {
         return mSelectionDelegateProvider == null
                 ? null
                 : mSelectionDelegateProvider.getSelectionDelegate();
-    }
-
-    @Nullable
-    private TabActionListener getCreateGroupButtonListener(Tab tab, boolean isSelected) {
-        TabActionListener createGroupButtonOnClickListener = null;
-        if (isSelected && mCreateGroupButtonProvider != null) {
-            createGroupButtonOnClickListener =
-                    mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
-        }
-        return createGroupButtonOnClickListener;
     }
 
     @VisibleForTesting

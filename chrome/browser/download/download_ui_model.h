@@ -14,10 +14,10 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/proto/download_file_types.pb.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/download/download_commands.h"

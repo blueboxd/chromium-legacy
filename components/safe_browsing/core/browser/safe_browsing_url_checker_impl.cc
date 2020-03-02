@@ -17,7 +17,6 @@
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -102,7 +101,6 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
-    signin::IdentityManager* identity_manager_on_ui,
     base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
@@ -112,7 +110,6 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
-      identity_manager_on_ui_(identity_manager_on_ui),
       url_lookup_service_on_ui_(url_lookup_service_on_ui) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
@@ -445,7 +442,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
       FROM_HERE, CreateTaskTraits(ThreadID::UI),
       base::BindOnce(&SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread,
                      weak_factory_.GetWeakPtr(), url, url_lookup_service_on_ui_,
-                     database_manager_, identity_manager_on_ui_));
+                     database_manager_));
 }
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
@@ -457,8 +454,7 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
     const GURL& url,
     base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    signin::IdentityManager* identity_manager) {
+    scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!url_lookup_service_on_ui ||
       !url_lookup_service_on_ui->CanCheckUrl(url) ||
@@ -477,8 +473,7 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
       &SafeBrowsingUrlCheckerImpl::OnRTLookupResponse, weak_checker_on_io);
 
   url_lookup_service_on_ui->StartLookup(url, std::move(request_callback),
-                                        std::move(response_callback),
-                                        identity_manager);
+                                        std::move(response_callback));
 }
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {

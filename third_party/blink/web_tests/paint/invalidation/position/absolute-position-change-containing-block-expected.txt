@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
           "rect": [100, 100, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow DIV id='container' class='fixed blue'",
           "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     },

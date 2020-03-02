@@ -107,6 +107,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   bool FireDragTimerForTest();
   void FireRippleActivationTimerForTest();
 
+  // Return the bounds in the local coordinates enclosing the small ripple area.
+  gfx::Rect CalculateSmallRippleArea() const;
+
  protected:
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

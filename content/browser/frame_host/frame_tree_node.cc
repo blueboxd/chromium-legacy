@@ -569,7 +569,7 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     speculative_frame_host->ResetLoadingState();
   // Note: there is no need to set an error code on the NavigationHandle here
   // as it has not been created yet. It is only created when the
-  // BeforeUnloadACK is received.
+  // BeforeUnloadCompleted callback is invoked.
   if (navigation_request_)
     ResetNavigationRequest(false);
 }

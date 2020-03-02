@@ -1370,8 +1370,8 @@ void NGLineBreaker::HandleAtomicInline(
   } else {
     DCHECK(mode_ == NGLineBreakerMode::kMinContent || !max_size_cache_);
     NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
-    MinMaxSizeInput input(percentage_resolution_block_size_for_min_max);
-    MinMaxSize sizes =
+    MinMaxSizesInput input(percentage_resolution_block_size_for_min_max);
+    MinMaxSizes sizes =
         ComputeMinAndMaxContentContribution(node_.Style(), child, input);
     if (mode_ == NGLineBreakerMode::kMinContent) {
       item_result->inline_size = sizes.min_size + inline_margins;

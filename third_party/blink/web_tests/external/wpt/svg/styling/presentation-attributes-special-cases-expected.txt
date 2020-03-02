@@ -19,7 +19,7 @@ PASS d presentation attribute not supported on other elements
 PASS fill presentation attribute not supported on animate
 PASS fill presentation attribute not supported on animateMotion
 PASS fill presentation attribute not supported on animateTransform
-FAIL fill presentation attribute not supported on discard assert_false: Presentation attribute fill="blue" should be supported on discard element expected false got true
+FAIL fill presentation attribute not supported on discard assert_false: Presentation attribute fill="blue" should not be supported on discard element expected false got true
 PASS fill presentation attribute not supported on set
 PASS transform presentation attribute supported on g
 PASS patternTransform presentation attribute supported on pattern

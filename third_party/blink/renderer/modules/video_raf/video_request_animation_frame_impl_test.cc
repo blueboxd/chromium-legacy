@@ -102,6 +102,9 @@ class MetadataHelper {
     metadata_.metadata.SetTimeTicks(
         media::VideoFrameMetadata::CAPTURE_BEGIN_TIME,
         now + base::TimeDelta::FromMillisecondsD(5.6785));
+    metadata_.metadata.SetTimeTicks(
+        media::VideoFrameMetadata::RECEIVE_TIME,
+        now + base::TimeDelta::FromMillisecondsD(17.1234));
     metadata_.metadata.SetDouble(media::VideoFrameMetadata::RTP_TIMESTAMP,
                                  12345);
 
@@ -151,6 +154,11 @@ class VideoRafParameterVerifierCallback
     EXPECT_TRUE(expected->metadata.GetTimeTicks(
         media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
     VerifyTicksClamping(capture_time, metadata->captureTime(), "capture_time");
+
+    base::TimeTicks receive_time;
+    EXPECT_TRUE(expected->metadata.GetTimeTicks(
+        media::VideoFrameMetadata::RECEIVE_TIME, &receive_time));
+    VerifyTicksClamping(receive_time, metadata->receiveTime(), "receive_time");
 
     base::TimeDelta processing_time;
     EXPECT_TRUE(expected->metadata.GetTimeDelta(

@@ -128,13 +128,13 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       bool has_user_gesture) {}
 
-  // Called after receiving a BeforeUnloadACK IPC from the renderer. If
-  // |frame_tree_node| has a NavigationRequest waiting for the renderer
+  // Called after BeforeUnloadCompleted callback is invoked from the renderer.
+  // If |frame_tree_node| has a NavigationRequest waiting for the renderer
   // response, then the request is either started or canceled, depending on the
   // value of |proceed|.
-  virtual void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
-                                 bool proceed,
-                                 const base::TimeTicks& proceed_time) {}
+  virtual void BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
+                                     bool proceed,
+                                     const base::TimeTicks& proceed_time) {}
 
   // Used to start a new renderer-initiated navigation, following a
   // BeginNavigation IPC from the renderer.

@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_DESCRIPTION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IMAGE;
-import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IPH;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE;
@@ -44,8 +43,6 @@ class StartSurfaceToolbarViewBinder {
             view.setIdentityDiscContentDescription(model.get(IDENTITY_DISC_DESCRIPTION));
         } else if (propertyKey == IDENTITY_DISC_IMAGE) {
             view.setIdentityDiscImage(model.get(IDENTITY_DISC_IMAGE));
-        } else if (propertyKey == IDENTITY_DISC_IPH) {
-            view.showIPHOnIdentityDisc(model.get(IDENTITY_DISC_IPH));
         } else if (propertyKey == IDENTITY_DISC_IS_VISIBLE) {
             view.setIdentityDiscVisibility(model.get(IDENTITY_DISC_IS_VISIBLE));
         } else if (propertyKey == INCOGNITO_STATE_PROVIDER) {

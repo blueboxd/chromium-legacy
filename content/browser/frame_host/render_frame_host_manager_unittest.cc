@@ -1127,7 +1127,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   auto back_navigation1 =
       NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
   back_navigation1->ReadyToCommit();
-  EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_completion());
 
   // The back navigation commits.
   back_navigation1->set_drop_unload_ack(true);
@@ -1551,7 +1551,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   WidgetDestructionObserver observer(run_loop.QuitClosure());
   host2->render_view_host()->GetWidget()->AddObserver(&observer);
 
-  manager->OnBeforeUnloadACK(true, base::TimeTicks());
+  manager->BeforeUnloadCompleted(true, base::TimeTicks());
 
   run_loop.Run();
   EXPECT_FALSE(GetPendingFrameHost(manager));
@@ -1751,7 +1751,7 @@ TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Cancel the navigation by simulating a declined beforeunload dialog.
-    contents()->GetMainFrame()->SendBeforeUnloadACK(false);
+    contents()->GetMainFrame()->SimulateBeforeUnloadCompleted(false);
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
     // Since the pending RFH is the only one for the new SiteInstance, it should
@@ -1773,7 +1773,7 @@ TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
         pending_rfh->GetSiteInstance();
     site_instance->IncrementActiveFrameCount();
 
-    contents()->GetMainFrame()->SendBeforeUnloadACK(false);
+    contents()->GetMainFrame()->SimulateBeforeUnloadCompleted(false);
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
     EXPECT_TRUE(rfh_deleted_observer.deleted());

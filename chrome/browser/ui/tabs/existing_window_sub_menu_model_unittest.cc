@@ -62,7 +62,7 @@ void ExistingWindowSubMenuModelTest::CheckBrowserTitle(
   if (expected_num_tabs > 1) {
     std::ostringstream oss;
     oss << " and " << expected_num_tabs - 1;
-    oss << ((expected_num_tabs == 2) ? " more page" : " more pages");
+    oss << ((expected_num_tabs == 2) ? " other tab" : " other tabs");
     const base::string16 expected_suffix16 = base::ASCIIToUTF16(oss.str());
 
     // Not case sensitive, since MacOS uses title case.

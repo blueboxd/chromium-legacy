@@ -245,7 +245,7 @@ CreatePendingSharedURLLoaderFactory(StoragePartitionImpl* storage_partition,
     // Allow DevTools to potentially inject itself into the proxy pipe.
     should_proxy = devtools_instrumentation::WillCreateURLLoaderFactory(
         static_cast<RenderFrameHostImpl*>(rfh), true, is_download,
-        &maybe_proxy_factory_receiver);
+        &maybe_proxy_factory_receiver, nullptr /* factory_override */);
 
     // Also allow the Content embedder to inject itself if it wants to.
     should_proxy |= GetContentClient()->browser()->WillCreateURLLoaderFactory(

@@ -19,10 +19,10 @@ jumbo_source_set("browser") {
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:util",
+    "//components/safe_browsing/core/realtime:policy_engine",
     "//components/safe_browsing/core/realtime:url_lookup_service",
     "//components/safe_browsing/core/web_ui:constants",
     "//components/security_interstitials/core:unsafe_resource",
-    "//components/signin/public/identity_manager",
     "//net:extras",
     "//services/network/public/cpp",
   ]
@@ -30,10 +30,7 @@ jumbo_source_set("browser") {
     sources += [ "//components/safe_browsing/ios/browser/safe_browsing_url_checker_impl_ios.cc" ]
   } else {
     sources += [ "//components/safe_browsing/content/browser/safe_browsing_url_checker_impl_content.cc" ]
-    deps += [
-      "//components/safe_browsing/content/web_ui",
-      "//components/safe_browsing/core/realtime:policy_engine",
-    ]
+    deps += [ "//components/safe_browsing/content/web_ui" ]
   }
 }
 

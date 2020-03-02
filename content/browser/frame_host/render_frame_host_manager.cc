@@ -382,7 +382,7 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
   render_frame_host_->render_view_host()->GetWidget()->SetIsLoading(is_loading);
 }
 
-void RenderFrameHostManager::OnBeforeUnloadACK(
+void RenderFrameHostManager::BeforeUnloadCompleted(
     bool proceed,
     const base::TimeTicks& proceed_time) {
   // If beforeunload was dispatched as part of preparing this frame for

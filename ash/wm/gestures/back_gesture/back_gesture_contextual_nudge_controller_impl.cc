@@ -12,6 +12,7 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge.h"
 #include "ash/wm/window_util.h"
 #include "components/prefs/pref_service.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -31,10 +32,7 @@ BackGestureContextualNudgeControllerImpl::
 
 BackGestureContextualNudgeControllerImpl::
     ~BackGestureContextualNudgeControllerImpl() {
-  if (is_monitoring_windows_) {
-    nudge_delegate_.reset();
-    Shell::Get()->activation_client()->RemoveObserver(this);
-  }
+  DoCleanUp();
 }
 
 void BackGestureContextualNudgeControllerImpl::OnActiveUserSessionChanged(
@@ -53,14 +51,10 @@ void BackGestureContextualNudgeControllerImpl::OnTabletModeStarted() {
 
 void BackGestureContextualNudgeControllerImpl::OnTabletModeEnded() {
   UpdateWindowMonitoring();
-
-  // Cancel in-waiting animation or in-progress animation.
-  if (nudge_)
-    nudge_->CancelAnimationOrFadeOutToHide();
 }
 
 void BackGestureContextualNudgeControllerImpl::OnTabletControllerDestroyed() {
-  tablet_mode_observer_.RemoveAll();
+  DoCleanUp();
 }
 
 void BackGestureContextualNudgeControllerImpl::OnWindowActivated(
@@ -89,10 +83,7 @@ void BackGestureContextualNudgeControllerImpl::NavigationEntryChanged(
   if (nudge_)
     nudge_->CancelAnimationOrFadeOutToHide();
 
-  if ((!nudge_ || !nudge_->ShouldNudgeCountAsShown()) &&
-      Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge()) {
-    ShowNudgeUi();
-  }
+  MaybeShowNudgeUi(window);
 }
 
 bool BackGestureContextualNudgeControllerImpl::CanShowNudge() const {
@@ -108,10 +99,16 @@ bool BackGestureContextualNudgeControllerImpl::CanShowNudge() const {
       GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
 }
 
-void BackGestureContextualNudgeControllerImpl::ShowNudgeUi() {
-  nudge_ = std::make_unique<BackGestureContextualNudge>(base::BindOnce(
-      &BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished,
-      weak_ptr_factory_.GetWeakPtr()));
+void BackGestureContextualNudgeControllerImpl::MaybeShowNudgeUi(
+    aura::Window* window) {
+  if ((!nudge_ || !nudge_->ShouldNudgeCountAsShown()) &&
+      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+      !window->is_destroying() &&
+      Shell::Get()->shell_delegate()->CanGoBack(window) && CanShowNudge()) {
+    nudge_ = std::make_unique<BackGestureContextualNudge>(base::BindOnce(
+        &BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
@@ -128,8 +125,10 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
     // If there is an active window at this moment and we should monitor its
     // navigation status, start monitoring it now.
     aura::Window* active_window = window_util::GetActiveWindow();
-    if (active_window)
+    if (active_window) {
+      MaybeShowNudgeUi(active_window);
       nudge_delegate_->MaybeStartTrackingNavigation(active_window);
+    }
 
     Shell::Get()->activation_client()->AddObserver(this);
     return;
@@ -138,6 +137,9 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
   // Stop monitoring window.
   nudge_delegate_.reset();
   Shell::Get()->activation_client()->RemoveObserver(this);
+  // Cancel any in-waiting animation or in-progress animation.
+  if (nudge_)
+    nudge_->CancelAnimationOrFadeOutToHide();
 }
 
 void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
@@ -152,6 +154,17 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
         &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring);
   }
   nudge_.reset();
+}
+
+void BackGestureContextualNudgeControllerImpl::DoCleanUp() {
+  tablet_mode_observer_.RemoveAll();
+
+  if (is_monitoring_windows_) {
+    Shell::Get()->activation_client()->RemoveObserver(this);
+    nudge_delegate_.reset();
+    nudge_.reset();
+    is_monitoring_windows_ = false;
+  }
 }
 
 }  // namespace ash

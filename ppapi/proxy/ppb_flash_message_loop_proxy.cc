@@ -30,10 +30,10 @@ class FlashMessageLoop : public PPB_Flash_MessageLoop_API, public Resource {
   // Resource overrides.
   PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API() override;
 
-  // PPB_Flash_MesssageLoop_API implementation.
+  // PPB_Flash_MessageLoop_API implementation.
   int32_t Run() override;
   void Quit() override;
-  void RunFromHostProxy(const RunFromHostProxyCallback& callback) override;
+  void RunFromHostProxy(RunFromHostProxyCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashMessageLoop);
@@ -65,8 +65,7 @@ void FlashMessageLoop::Quit() {
           API_ID_PPB_FLASH_MESSAGELOOP, host_resource()));
 }
 
-void FlashMessageLoop::RunFromHostProxy(
-    const RunFromHostProxyCallback& callback) {
+void FlashMessageLoop::RunFromHostProxy(RunFromHostProxyCallback callback) {
   // This should never be called on the plugin side.
   NOTREACHED();
 }
@@ -134,15 +133,15 @@ void PPB_Flash_MessageLoop_Proxy::OnMsgRun(
     return;
 
   PPB_Flash_MessageLoop_API::RunFromHostProxyCallback callback =
-      base::Bind(&PPB_Flash_MessageLoop_Proxy::WillQuitSoon, AsWeakPtr(),
-                 base::Passed(std::unique_ptr<IPC::Message>(reply)));
+      base::BindOnce(&PPB_Flash_MessageLoop_Proxy::WillQuitSoon, AsWeakPtr(),
+                     base::Passed(std::unique_ptr<IPC::Message>(reply)));
 
   EnterHostFromHostResource<PPB_Flash_MessageLoop_API>
       enter(flash_message_loop);
   if (enter.succeeded())
-    enter.object()->RunFromHostProxy(callback);
+    enter.object()->RunFromHostProxy(std::move(callback));
   else
-    callback.Run(PP_ERROR_BADRESOURCE);
+    std::move(callback).Run(PP_ERROR_BADRESOURCE);
 }
 
 void PPB_Flash_MessageLoop_Proxy::OnMsgQuit(

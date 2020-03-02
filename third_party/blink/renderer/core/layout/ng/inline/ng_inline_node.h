@@ -22,7 +22,6 @@ class NGInlineChildLayoutContext;
 class NGInlineNodeLegacy;
 class NGLayoutResult;
 class NGOffsetMapping;
-struct MinMaxSize;
 struct NGInlineItemsData;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
@@ -55,9 +54,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxSize ComputeMinMaxSize(WritingMode container_writing_mode,
-                               const MinMaxSizeInput&,
-                               const NGConstraintSpace* = nullptr);
+  MinMaxSizes ComputeMinMaxSizes(WritingMode container_writing_mode,
+                                 const MinMaxSizesInput&,
+                                 const NGConstraintSpace* = nullptr);
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayoutForTest() {

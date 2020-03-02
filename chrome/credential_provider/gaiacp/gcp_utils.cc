@@ -952,13 +952,14 @@ HRESULT GenerateDeviceId(std::string* device_id) {
 HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
                                            const std::string& default_endpoint,
                                            bool provide_deviceid,
+                                           bool show_tos,
                                            base::CommandLine* command_line) {
   // Registry specified endpoint.
   wchar_t endpoint_url_setting[256];
   ULONG endpoint_url_length = base::size(endpoint_url_setting);
-  if (SUCCEEDED(GetGlobalFlag(override_registry_key, endpoint_url_setting,
-                              &endpoint_url_length)) &&
-      endpoint_url_setting[0]) {
+  HRESULT hr = GetGlobalFlag(override_registry_key, endpoint_url_setting,
+                             &endpoint_url_length);
+  if (SUCCEEDED(hr) && endpoint_url_setting[0]) {
     GURL endpoint_url(endpoint_url_setting);
     if (endpoint_url.is_valid()) {
       command_line->AppendSwitchASCII(switches::kGaiaUrl,
@@ -966,15 +967,22 @@ HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
       command_line->AppendSwitchASCII(kGcpwEndpointPathSwitch,
                                       endpoint_url.path().substr(1));
     }
-  } else if (provide_deviceid) {
+    return S_OK;
+  }
+
+  if (provide_deviceid || show_tos) {
     std::string device_id;
-    HRESULT hr = GenerateDeviceId(&device_id);
+    hr = GenerateDeviceId(&device_id);
     if (SUCCEEDED(hr)) {
       command_line->AppendSwitchASCII(
           kGcpwEndpointPathSwitch,
-          base::StringPrintf("%s?device_id=%s", default_endpoint.c_str(),
-                             device_id.c_str()));
-      return S_OK;
+          base::StringPrintf("%s?device_id=%s&show_tos=%d",
+                             default_endpoint.c_str(), device_id.c_str(),
+                             show_tos ? 1 : 0));
+    } else if (show_tos) {
+      command_line->AppendSwitchASCII(
+          kGcpwEndpointPathSwitch,
+          base::StringPrintf("%s?show_tos=1", default_endpoint.c_str()));
     }
   }
   return S_OK;

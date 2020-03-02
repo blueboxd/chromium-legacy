@@ -595,10 +595,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
                     blink::mojom::FocusType /* type */,
                     int32_t /* source_routing_id */)
 
-// Notify the renderer of our overlay routing token.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetOverlayRoutingToken,
-                    base::UnguessableToken /* routing_token */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -931,10 +927,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
                     blink::mojom::FocusType /* type */,
                     int32_t /* source_routing_id */)
-
-// Request that the host send its overlay routing token for this render frame
-// via SetOverlayRoutingToken.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.

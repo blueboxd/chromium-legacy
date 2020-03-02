@@ -22,7 +22,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewStub;
 import android.widget.ImageButton;
 
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -38,6 +37,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -76,8 +76,8 @@ public class ToolbarTablet extends ToolbarLayout
     private boolean mShowTabStack;
     private boolean mToolbarButtonsVisible;
     private ImageButton[] mToolbarButtons;
-    private ImageButton mExperimentalButton;
-    private boolean mExperimentalButtonUsesTint;
+    private ImageButton mOptionalButton;
+    private boolean mOptionalButtonUsesTint;
 
     private NavigationPopup mNavigationPopup;
 
@@ -387,8 +387,8 @@ public class ToolbarTablet extends ToolbarLayout
         ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
         mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
 
-        if (mExperimentalButton != null && mExperimentalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
+        if (mOptionalButton != null && mOptionalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, tint);
         }
     }
 
@@ -568,44 +568,39 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId, boolean useTint) {
-        if (mExperimentalButton == null) {
-            ViewStub viewStub = findViewById(R.id.experimental_button_stub);
-            mExperimentalButton = (ImageButton) viewStub.inflate();
+    void updateOptionalButton(ButtonData buttonData) {
+        if (mOptionalButton == null) {
+            ViewStub viewStub = findViewById(R.id.optional_button_stub);
+            mOptionalButton = (ImageButton) viewStub.inflate();
         }
 
-        mExperimentalButtonUsesTint = useTint;
-        if (mExperimentalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
+        mOptionalButtonUsesTint = buttonData.supportsTinting;
+        if (mOptionalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, getTint());
+        } else {
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, null);
         }
 
-        mExperimentalButton.setOnClickListener(onClickListener);
-        mExperimentalButton.setImageDrawable(image);
-        mExperimentalButton.setContentDescription(
-                getContext().getResources().getString(contentDescriptionResId));
-        mExperimentalButton.setVisibility(View.VISIBLE);
+        mOptionalButton.setOnClickListener(buttonData.onClickListener);
+        mOptionalButton.setImageDrawable(buttonData.drawable);
+        mOptionalButton.setContentDescription(
+                getContext().getResources().getString(buttonData.contentDescriptionResId));
+        mOptionalButton.setVisibility(View.VISIBLE);
     }
 
     @Override
-    void updateExperimentalButtonImage(Drawable image) {
-        assert mExperimentalButton != null;
-        mExperimentalButton.setImageDrawable(image);
-    }
-
-    @Override
-    void disableExperimentalButton() {
-        if (mExperimentalButton == null || mExperimentalButton.getVisibility() == View.GONE) {
+    void hideOptionalButton() {
+        if (mOptionalButton == null || mOptionalButton.getVisibility() == View.GONE) {
             return;
         }
 
-        mExperimentalButton.setVisibility(View.GONE);
+        mOptionalButton.setVisibility(View.GONE);
     }
 
     @Override
     @VisibleForTesting
-    public View getExperimentalButtonView() {
-        return mExperimentalButton;
+    public View getOptionalButtonView() {
+        return mOptionalButton;
     }
 
     @Override

@@ -22121,6 +22121,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Sync_OpenActivityControlsPage">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user has clicked on the history usage row in
+    |chrome://settings/syncSetup| to open Activity controls page.
+  </description>
+</action>
+
 <action name="Sync_SyncEverything">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>

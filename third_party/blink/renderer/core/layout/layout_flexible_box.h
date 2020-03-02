@@ -41,7 +41,7 @@ class FlexItem;
 class FlexItemVectorView;
 class FlexLayoutAlgorithm;
 class FlexLine;
-struct MinMaxSize;
+struct MinMaxSizes;
 
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
  public:
@@ -179,9 +179,10 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit ComputeChildMarginValue(const Length& margin);
   void PrepareOrderIteratorAndMargins();
-  MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
-                                           const LayoutBox& child,
-                                           LayoutUnit border_and_padding) const;
+  MinMaxSizes ComputeMinAndMaxSizesForChild(
+      const FlexLayoutAlgorithm& algorithm,
+      const LayoutBox& child,
+      LayoutUnit border_and_padding) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;

@@ -73,7 +73,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                         ? TabListCoordinator.TabListMode.LIST
                         : TabListCoordinator.TabListMode.GRID,
                 context, tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null,
-                false, null, gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
+                false, gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
                 TabProperties.UiType.CLOSABLE, null, containerView, null, false, mComponentName);
 
         TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();

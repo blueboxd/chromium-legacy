@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "ui/aura/window.h"
 
 BackGestureContextualNudgeDelegate::BackGestureContextualNudgeDelegate(
@@ -42,9 +43,10 @@ void BackGestureContextualNudgeDelegate::MaybeStartTrackingNavigation(
   Observe(contents);
 }
 
-void BackGestureContextualNudgeDelegate::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  if (window_)
+void BackGestureContextualNudgeDelegate::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(window_);
+  if (navigation_handle->HasCommitted())
     controller_->NavigationEntryChanged(window_);
 }
 
@@ -54,6 +56,8 @@ void BackGestureContextualNudgeDelegate::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   const bool active_tab_changed = selection.active_tab_changed();
   if (active_tab_changed) {
+    DCHECK(window_);
+    controller_->NavigationEntryChanged(window_);
     content::WebContents* contents = tab_strip_model->GetActiveWebContents();
     Observe(contents);
   }

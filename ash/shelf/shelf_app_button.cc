@@ -64,12 +64,6 @@ constexpr float kAppIconScale = 1.2f;
 // The drag and drop app icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionMs = 200;
 
-// Shelf item ripple size.
-int GetInkDropLargeSize() {
-  return ash::ShelfConfig::Get()->button_size() +
-         2 * ash::ShelfConfig::Get()->scrollable_shelf_ripple_padding();
-}
-
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
 class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
@@ -536,6 +530,36 @@ void ShelfAppButton::FireRippleActivationTimerForTest() {
   ripple_activation_timer_.FireNow();
 }
 
+gfx::Rect ShelfAppButton::CalculateSmallRippleArea() const {
+  int ink_drop_small_size = ShelfConfig::Get()->hotseat_size();
+  gfx::Point center_point = GetLocalBounds().CenterPoint();
+  const int padding = ShelfConfig::Get()->GetAppIconEndPadding();
+
+  // Add padding to the ink drop for the left-most and right-most app buttons in
+  // the shelf.
+  if (padding > 0) {
+    const int current_index = shelf_view_->view_model()->GetIndexOfView(this);
+    int left_padding =
+        (shelf_view_->first_visible_index() == current_index) ? padding : 0;
+    int right_padding =
+        (shelf_view_->last_visible_index() == current_index) ? padding : 0;
+
+    if (base::i18n::IsRTL())
+      std::swap(left_padding, right_padding);
+
+    ink_drop_small_size += left_padding + right_padding;
+
+    const int x_offset = (-left_padding / 2) + (right_padding / 2);
+    center_point.Offset(x_offset, 0);
+  }
+
+  gfx::Rect small_ripple_area(
+      gfx::Size(ink_drop_small_size, ink_drop_small_size));
+  small_ripple_area.Offset(center_point.x() - ink_drop_small_size / 2,
+                           center_point.y() - ink_drop_small_size / 2);
+  return small_ripple_area;
+}
+
 const char* ShelfAppButton::GetClassName() const {
   return kViewClassName;
 }
@@ -767,33 +791,13 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
 
 std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
-  int ink_drop_small_size = ShelfConfig::Get()->hotseat_size();
-  gfx::Point center_point = GetLocalBounds().CenterPoint();
-  const int padding = ShelfConfig::Get()->GetAppIconEndPadding();
-
-  // Add padding to the ink drop for the left-most and right-most app buttons in
-  // the shelf.
-  if (padding > 0) {
-    const int current_index = shelf_view_->view_model()->GetIndexOfView(this);
-    int left_padding =
-        (shelf_view_->first_visible_index() == current_index) ? padding : 0;
-    int right_padding =
-        (shelf_view_->last_visible_index() == current_index) ? padding : 0;
-
-    if (base::i18n::IsRTL())
-      std::swap(left_padding, right_padding);
-
-    ink_drop_small_size += left_padding + right_padding;
-
-    const int x_offset = (-left_padding / 2) + (right_padding / 2);
-    center_point.Offset(x_offset, 0);
-  }
+  const gfx::Rect small_ripple_area = CalculateSmallRippleArea();
+  const int ripple_size = ShelfConfig::Get()->GetShelfItemRippleSize();
 
   return std::make_unique<views::SquareInkDropRipple>(
-      gfx::Size(GetInkDropLargeSize(), GetInkDropLargeSize()),
-      ink_drop_large_corner_radius(),
-      gfx::Size(ink_drop_small_size, ink_drop_small_size),
-      ink_drop_small_corner_radius(), center_point, GetInkDropBaseColor(),
+      gfx::Size(ripple_size, ripple_size), ink_drop_large_corner_radius(),
+      small_ripple_area.size(), ink_drop_small_corner_radius(),
+      small_ripple_area.CenterPoint(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
 }
 

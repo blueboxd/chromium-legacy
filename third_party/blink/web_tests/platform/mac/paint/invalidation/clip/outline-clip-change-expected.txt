@@ -12,9 +12,9 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment 'Lorem Ipsum'",
           "rect": [48, 84, 87, 18],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

@@ -1149,6 +1149,12 @@
   <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE" desc="The message of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
     Your docking station will operate in USB Type-C compatible mode.
   </message>
+  <message name="IDS_WILCO_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-power USB charger has been connected.">
+    Low-power charger connected
+  </message>
+  <message name="IDS_WILCO_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-power USB charger has been connected, short version.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
+  </message>
   <message name="IDS_WILCO_NOTIFICATION_LEARN_MORE" desc="Label on button in various Wilco notification.">
     Learn More
   </message>

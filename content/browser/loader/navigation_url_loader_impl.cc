@@ -1351,7 +1351,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         nullptr /* disable_secure_dns */, nullptr /* factory_override */);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true /* is_navigation */,
-            false /* is_download */, &factory_receiver)) {
+            false /* is_download */, &factory_receiver,
+            nullptr /* factory_override */)) {
       use_proxy = true;
     }
     if (use_proxy) {

@@ -270,7 +270,7 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
 TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
-  EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(3u, fake_bluetooth_instance_->le_device_found_data().size());
 
   const auto& le_device_found_data =
       fake_bluetooth_instance_->le_device_found_data().back();
@@ -283,7 +283,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(4u, fake_bluetooth_instance_->le_device_found_data().size());
   EXPECT_EQ(kTestRssi2,
             fake_bluetooth_instance_->le_device_found_data().back()->rssi());
 }
@@ -293,7 +293,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFoundForN) {
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=27", base::Time::Now());
   EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
-  EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(3u, fake_bluetooth_instance_->le_device_found_data().size());
 
   const auto& le_device_found_data =
       fake_bluetooth_instance_->le_device_found_data().back();
@@ -317,7 +317,7 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFoundForN) {
   EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(4u, fake_bluetooth_instance_->le_device_found_data().size());
   EXPECT_EQ(kTestRssi2,
             fake_bluetooth_instance_->le_device_found_data().back()->rssi());
 }

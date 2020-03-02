@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "InlineTextBox 'PASS'",
           "rect": [0, 580, 80, 20],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

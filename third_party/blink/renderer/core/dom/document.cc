@@ -655,8 +655,7 @@ Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
-                       security_initializer),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       window_agent_factory_(initializer.GetWindowAgentFactory()),
@@ -665,6 +664,7 @@ Document::Document(const DocumentInit& initializer,
       // pointer?
       dom_window_(frame_ ? frame_->DomWindow() : nullptr),
       imports_controller_(initializer.ImportsController()),
+      security_context_(security_initializer, SecurityContext::kLocal),
       use_counter_during_construction_(initializer.GetUseCounter()),
       context_document_(initializer.ContextDocument()),
       context_features_(ContextFeatures::DefaultSwitch()),
@@ -759,6 +759,7 @@ Document::Document(const DocumentInit& initializer,
   // TODO(crbug.com/1029822): SecurityContextInit will eventually not be
   // passed to the Document constructor. These will need to move.
   security_initializer.ApplyPendingDataToDocument(*this);
+  GetSecurityContext().GetOriginTrialContext()->BindExecutionContext(this);
   if (frame_) {
     pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
     pending_dp_headers_ = initializer.GetDocumentPolicy();
@@ -970,14 +971,6 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   return policy;
 }
 
-SecurityContext& Document::GetSecurityContext() {
-  return ExecutionContext::GetSecurityContext();
-}
-
-const SecurityContext& Document::GetSecurityContext() const {
-  return ExecutionContext::GetSecurityContext();
-}
-
 const SecurityOrigin* Document::GetSecurityOrigin() const {
   return GetSecurityContext().GetSecurityOrigin();
 }
@@ -1043,7 +1036,7 @@ OriginTrialContext* Document::GetOriginTrialContext() const {
 }
 
 void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
-  ExecutionContext::SetSecureContextModeForTesting(mode);
+  GetSecurityContext().SetSecureContextModeForTesting(mode);
 }
 
 bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
@@ -5805,7 +5798,7 @@ String Document::cookie(ExceptionState& exception_state) const {
     if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
-    else if (Url().ProtocolIs("data"))
+    else if (Url().ProtocolIsData())
       exception_state.ThrowSecurityError(
           "Cookies are disabled inside 'data:' URLs.");
     else
@@ -5831,7 +5824,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
           "The document is sandboxed and lacks the 'allow-same-origin' flag.");
-    else if (Url().ProtocolIs("data"))
+    else if (Url().ProtocolIsData())
       exception_state.ThrowSecurityError(
           "Cookies are disabled inside 'data:' URLs.");
     else
@@ -8126,6 +8119,7 @@ StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
 }
 
 void Document::Trace(Visitor* visitor) {
+  visitor->Trace(security_context_);
   visitor->Trace(imports_controller_);
   visitor->Trace(use_counter_during_construction_);
   visitor->Trace(doc_type_);
@@ -8671,6 +8665,15 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
       CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
     }
   }
+
+  // Don't count or report usage of WebComponentsV0 for chrome:// URLs.
+  if (Url().ProtocolIs("chrome") &&
+      (feature == WebFeature::kHTMLImports ||
+       feature == WebFeature::kElementCreateShadowRoot ||
+       feature == WebFeature::kDocumentRegisterElement)) {
+    return;
+  }
+
   Deprecation::CountDeprecation(Loader(), feature);
 }
 

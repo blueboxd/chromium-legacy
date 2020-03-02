@@ -28,10 +28,8 @@ class DesktopNode extends RootNodeWrapper {
     return true;
   }
 
-  // ================= Private methods =================
-
   /** @override */
-  refresh_() {
+  refresh() {
     // Find the currently focused child.
     let focusedChild = null;
     for (const child of this.children) {

@@ -1467,7 +1467,7 @@ String NGInlineNode::TextContentForStickyImagesQuirk(
 static LayoutUnit ComputeContentSize(
     NGInlineNode node,
     WritingMode container_writing_mode,
-    const MinMaxSizeInput& input,
+    const MinMaxSizesInput& input,
     NGLineBreakerMode mode,
     NGLineBreaker::MaxSizeCache* max_size_cache,
     base::Optional<LayoutUnit>* max_size_out) {
@@ -1501,7 +1501,7 @@ static LayoutUnit ComputeContentSize(
     STACK_ALLOCATED();
 
    public:
-    explicit FloatsMaxSize(const MinMaxSizeInput& input)
+    explicit FloatsMaxSize(const MinMaxSizesInput& input)
         : floats_inline_size_(input.float_left_inline_size +
                               input.float_right_inline_size) {
       DCHECK_GE(floats_inline_size_, 0);
@@ -1697,8 +1697,8 @@ static LayoutUnit ComputeContentSize(
       const ComputedStyle& float_style = float_node.Style();
 
       // Floats don't intrude into floats.
-      MinMaxSizeInput float_input(input.percentage_resolution_block_size);
-      MinMaxSize child_sizes =
+      MinMaxSizesInput float_input(input.percentage_resolution_block_size);
+      MinMaxSizes child_sizes =
           ComputeMinAndMaxContentContribution(style, float_node, float_input);
       LayoutUnit child_inline_margins =
           ComputeMinMaxMargins(style, float_node).InlineSum();
@@ -1737,9 +1737,9 @@ static LayoutUnit ComputeContentSize(
   return result;
 }
 
-MinMaxSize NGInlineNode::ComputeMinMaxSize(
+MinMaxSizes NGInlineNode::ComputeMinMaxSizes(
     WritingMode container_writing_mode,
-    const MinMaxSizeInput& input,
+    const MinMaxSizesInput& input,
     const NGConstraintSpace* constraint_space) {
   PrepareLayoutIfNeeded();
 
@@ -1747,7 +1747,7 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(
   // size. This gives the min-content, the width where lines wrap at every
   // break opportunity.
   NGLineBreaker::MaxSizeCache max_size_cache;
-  MinMaxSize sizes;
+  MinMaxSizes sizes;
   base::Optional<LayoutUnit> max_size;
   sizes.min_size = ComputeContentSize(*this, container_writing_mode, input,
                                       NGLineBreakerMode::kMinContent,

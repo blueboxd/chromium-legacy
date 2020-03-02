@@ -292,9 +292,11 @@ class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};
 // 1. Is gem features enabled / disabled.
 // 2. Is ep_url already set via registry.
 // 3. Does reauth email exist.
+// 4. Did user already accept TOS.
 class GcpReauthCredentialGlsTest
     : public GcpReauthCredentialGlsRunnerTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
+};
 
 TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
   USES_CONVERSION;
@@ -339,6 +341,10 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
                         A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
   }
 
+  const bool is_tos_accepted = std::get<3>(GetParam());
+  if (is_tos_accepted)
+    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(kSid), kKeyAcceptTos, 1));
+
   // Get user gls command line and extract the kGaiaUrl &
   // kGcpwEndpointPathSwitch switch from it.
   Microsoft::WRL::ComPtr<ITestCredential> test_cred;
@@ -367,13 +373,15 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
     ASSERT_TRUE(gcpw_path.empty());
   } else if (is_gem_features_enabled) {
     if (set_email_for_reauth) {
-      ASSERT_EQ(gcpw_path,
-                base::StringPrintf("embedded/reauth/windows?device_id=%s",
-                                   device_id.c_str()));
+      ASSERT_EQ(
+          gcpw_path,
+          base::StringPrintf("embedded/reauth/windows?device_id=%s&show_tos=%d",
+                             device_id.c_str(), is_tos_accepted ? 0 : 1));
     } else {
-      ASSERT_EQ(gcpw_path,
-                base::StringPrintf("embedded/setup/windows?device_id=%s",
-                                   device_id.c_str()));
+      ASSERT_EQ(
+          gcpw_path,
+          base::StringPrintf("embedded/setup/windows?device_id=%s&show_tos=%d",
+                             device_id.c_str(), is_tos_accepted ? 0 : 1));
     }
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
   } else {
@@ -385,6 +393,7 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpReauthCredentialGlsTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
 
@@ -622,18 +631,18 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(true, false));
 
 // Tests the normal reauth scenario.
-// 1. Is gem features enabled. If enabled, tos should be tested out.
-//    Otherwise, ToS shouldn't be set irrespective of the |kAcceptTos|
-//    registry entry.
+// 1. Is gem features enabled.
+// 2. Is tos already accepted.
 class GcpNormalReauthCredentialGlsRunnerTest
     : public GcpReauthCredentialGlsRunnerTest,
-      public ::testing::WithParamInterface<bool> {};
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
 
 TEST_P(GcpNormalReauthCredentialGlsRunnerTest, WithGemFeatures) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
-  bool is_gem_features_enabled = GetParam();
+  bool is_gem_features_enabled = std::get<0>(GetParam());
+  bool is_tos_already_accepted = std::get<1>(GetParam());
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
@@ -651,12 +660,13 @@ TEST_P(GcpNormalReauthCredentialGlsRunnerTest, WithGemFeatures) {
   if (is_gem_features_enabled) {
     // Set |kKeyEnableGemFeatures| registry entry to 1.
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 1u));
-    // Set that ToS was already accepted by the user.
-    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kKeyAcceptTos, 1u));
   } else {
     // Set |kKeyEnableGemFeatures| registry entry to 0.
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kKeyEnableGemFeatures, 0u));
   }
+
+  if (is_tos_already_accepted)
+    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kKeyAcceptTos, 1u));
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -673,12 +683,16 @@ TEST_P(GcpNormalReauthCredentialGlsRunnerTest, WithGemFeatures) {
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   // Verify command line switch for show_tos.
-  ASSERT_EQ("0", test->GetShowTosFromCmdLine());
+  if (is_gem_features_enabled && !is_tos_already_accepted)
+    ASSERT_EQ("1", test->GetShowTosFromCmdLine());
+  else
+    ASSERT_EQ("0", test->GetShowTosFromCmdLine());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpNormalReauthCredentialGlsRunnerTest,
-                         ::testing::Values(true, false));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
   USES_CONVERSION;

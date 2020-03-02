@@ -47,6 +47,8 @@ enum WilcoDtcSupportdEvent {
   kDockDisplay,
   // Attached dock will operate in USB Type-C compatible mode.
   kDockThunderbolt,
+  // Attached charger does not supply enough power.
+  kLowPowerCharger,
 };
 
 // Factory interface exposed by the wilco_dtc_supportd daemon, which allows both

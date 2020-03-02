@@ -87,7 +87,7 @@ function minOverloadLength(overloads)
 function throwOrReject(a_test, operation, fn, obj, args, message, cb)
 {
     if (operation.idlType.generic !== "Promise") {
-        assert_throws(new TypeError(), function() {
+        assert_throws_js(TypeError, function() {
             fn.apply(obj, args);
         }, message);
         cb();
@@ -1564,10 +1564,10 @@ IdlInterface.prototype.test_self = function()
             // "If I was not declared with a [Constructor] extended attribute,
             // then throw a TypeError."
             var interface_object = this.get_interface_object();
-            assert_throws(new TypeError(), function() {
+            assert_throws_js(TypeError, function() {
                 interface_object();
             }, "interface object didn't throw TypeError when called as a function");
-            assert_throws(new TypeError(), function() {
+            assert_throws_js(TypeError, function() {
                 new interface_object();
             }, "interface object didn't throw TypeError when called as a constructor");
         }
@@ -1785,7 +1785,7 @@ IdlInterface.prototype.test_self = function()
             var args = constructor.arguments.map(function(arg) {
                 return create_suitable_object(arg.idlType);
             });
-            assert_throws(new TypeError(), function() {
+            assert_throws_js(TypeError, function() {
                 self[name](...args);
             }.bind(this));
         }.bind(this), this.name + " interface: named constructor without 'new'");
@@ -2030,7 +2030,7 @@ IdlInterface.prototype.test_immutable_prototype = function(type, obj)
             } catch (err) {}
         });
 
-        assert_throws(new TypeError(), function() {
+        assert_throws_js(TypeError, function() {
             Object.setPrototypeOf(obj, newValue);
         });
 
@@ -2057,7 +2057,7 @@ IdlInterface.prototype.test_immutable_prototype = function(type, obj)
             } catch (err) {}
         });
 
-        assert_throws(new TypeError(), function() {
+        assert_throws_js(TypeError, function() {
             obj.__proto__ = newValue;
         });
 
@@ -2238,7 +2238,7 @@ IdlInterface.prototype.test_member_attribute = function(member)
 
             if (!member.has_extended_attribute("LenientThis")) {
                 if (member.idlType.generic !== "Promise") {
-                    assert_throws(new TypeError(), function() {
+                    assert_throws_js(TypeError, function() {
                         this.get_interface_object().prototype[member.name];
                     }.bind(this), "getting property on prototype object must throw TypeError");
                     // do_interface_attribute_asserts must be the last thing we
@@ -2522,7 +2522,7 @@ IdlInterface.prototype.test_member_stringifier = function(member)
             "property has wrong .length");
 
         // "Let O be the result of calling ToObject on the this value."
-        assert_throws(new TypeError(), function() {
+        assert_throws_js(TypeError, function() {
             interfacePrototypeObject.toString.apply(null, []);
         }, "calling stringifier with this = null didn't throw TypeError");
 
@@ -2531,7 +2531,7 @@ IdlInterface.prototype.test_member_stringifier = function(member)
         //
         // TODO: Test a platform object that implements some other
         // interface.  (Have to be sure to get inheritance right.)
-        assert_throws(new TypeError(), function() {
+        assert_throws_js(TypeError, function() {
             interfacePrototypeObject.toString.apply({}, []);
         }, "calling stringifier with this = {} didn't throw TypeError");
     }.bind(this), this.name + " interface: stringifier");
@@ -2910,7 +2910,7 @@ IdlInterface.prototype.do_interface_attribute_asserts = function(obj, member, a_
         // "Otherwise, throw a TypeError."
         if (!member.has_extended_attribute("LenientThis")) {
             if (member.idlType.generic !== "Promise") {
-                assert_throws(new TypeError(), function() {
+                assert_throws_js(TypeError, function() {
                     desc.get.call({});
                 }.bind(this), "calling getter on wrong object type must throw TypeError");
             } else {
@@ -2961,7 +2961,7 @@ IdlInterface.prototype.do_interface_attribute_asserts = function(obj, member, a_
             // attribute, then: ..."
             // "If validThis is false, then return."
             if (!member.has_extended_attribute("LenientThis")) {
-                assert_throws(new TypeError(), function() {
+                assert_throws_js(TypeError, function() {
                     desc.set.call({});
                 }.bind(this), "calling setter on wrong object type must throw TypeError");
             } else {

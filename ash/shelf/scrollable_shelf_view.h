@@ -102,6 +102,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
+  const ShelfContainerView* shelf_container_view() const {
+    return shelf_container_view_;
+  }
   ScrollArrowView* left_arrow() { return left_arrow_; }
   const ScrollArrowView* left_arrow() const { return left_arrow_; }
   ScrollArrowView* right_arrow() { return right_arrow_; }

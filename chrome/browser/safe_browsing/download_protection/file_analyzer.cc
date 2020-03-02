@@ -14,8 +14,8 @@
 #include "chrome/browser/file_util_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/file_type_policies.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {

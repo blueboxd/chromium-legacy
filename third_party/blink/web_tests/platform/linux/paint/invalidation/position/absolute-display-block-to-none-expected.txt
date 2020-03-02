@@ -7,19 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment 'When an absolute positioned element is set display:none, we should not invalidate the whole body.'",
           "rect": [8, 8, 621, 19],
-          "reason": "chunk appeared"
+          "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 621, 19],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
           "rect": [100, 100, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

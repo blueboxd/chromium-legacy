@@ -199,45 +199,40 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   }
   ASSERT_TRUE(theme_service->UsingDefaultTheme());
 
-  Browser* browser_under_test = browser();
-  BrowserView::GetBrowserViewForBrowser(browser())
-      ->GetNativeTheme()
-      ->set_use_dark_colors(false);
-  const ui::ThemeProvider* light_theme_provider =
-      &ThemeService::GetThemeProviderForProfile(browser_under_test->profile());
-  const ui::ThemeProvider* dark_theme_provider =
-      &ThemeService::GetThemeProviderForProfile(
-          browser_under_test->profile()->GetOffTheRecordProfile());
+  Browser* regular_browser = browser();
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(regular_browser);
+  browser_view->GetNativeTheme()->set_use_dark_colors(true);
+  const ui::ThemeProvider* theme_provider = browser_view->GetThemeProvider();
+  const SkColor selection_color_dark =
+      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND,
+                      OmniboxPartState::SELECTED);
+
+  browser_view->GetNativeTheme()->set_use_dark_colors(false);
+  const SkColor selection_color_light =
+      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND,
+                      OmniboxPartState::SELECTED);
 
   // Unthemed, non-incognito always has a white background. Exceptions: Inverted
   // color themes on Windows and GTK (not tested here).
-  EXPECT_EQ(SK_ColorWHITE, GetOmniboxColor(light_theme_provider,
-                                           OmniboxPart::RESULTS_BACKGROUND));
+  EXPECT_EQ(SK_ColorWHITE,
+            GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND));
 
-  // Helper to get the background selected color for |browser_under_test| using
-  // omnibox_theme.
-  auto get_selection_color = [](const ui::ThemeProvider* theme_provider) {
-    return GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND,
-                           OmniboxPartState::SELECTED);
+  auto get_selection_color = [](const Browser* browser) {
+    return GetOmniboxColor(
+        BrowserView::GetBrowserViewForBrowser(browser)->GetThemeProvider(),
+        OmniboxPart::RESULTS_BACKGROUND, OmniboxPartState::SELECTED);
   };
-
-  const SkColor selection_color_light =
-      GetOmniboxColor(light_theme_provider, OmniboxPart::RESULTS_BACKGROUND,
-                      OmniboxPartState::SELECTED);
-  const SkColor selection_color_dark =
-      GetOmniboxColor(dark_theme_provider, OmniboxPart::RESULTS_BACKGROUND,
-                      OmniboxPartState::SELECTED);
 
   // Tests below are mainly interested just whether things change, so ensure
   // that can be detected.
   EXPECT_NE(selection_color_dark, selection_color_light);
 
-  EXPECT_EQ(selection_color_light, get_selection_color(light_theme_provider));
+  EXPECT_EQ(selection_color_light, get_selection_color(regular_browser));
 
   // Check unthemed incognito windows.
   Browser* incognito_browser = CreateIncognitoBrowser();
-  browser_under_test = incognito_browser;
-  EXPECT_EQ(selection_color_dark, get_selection_color(dark_theme_provider));
+  EXPECT_EQ(selection_color_dark, get_selection_color(incognito_browser));
 
   // Install a theme (in both browsers, since it's the same profile).
   extensions::ChromeTestExtensionLoader loader(browser()->profile());
@@ -250,11 +245,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   }
 
   // Check the incognito browser first. Everything should now be light.
-  EXPECT_EQ(selection_color_light, get_selection_color(light_theme_provider));
+  EXPECT_EQ(selection_color_light, get_selection_color(incognito_browser));
 
   // Same in the non-incognito browser.
-  browser_under_test = browser();
-  EXPECT_EQ(selection_color_light, get_selection_color(light_theme_provider));
+  EXPECT_EQ(selection_color_light, get_selection_color(regular_browser));
 
   // Switch to the default theme without installing a custom theme. E.g. this is
   // what gets used on KDE or when switching to the "classic" theme in settings.
@@ -262,11 +256,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
     ThemeChangeWaiter wait(theme_service);
     theme_service->UseDefaultTheme();
   }
-  EXPECT_EQ(selection_color_light, get_selection_color(light_theme_provider));
+  EXPECT_EQ(selection_color_light, get_selection_color(regular_browser));
 
   // Check incognito again. It should now use a dark theme, even on Linux.
-  browser_under_test = incognito_browser;
-  EXPECT_EQ(selection_color_dark, get_selection_color(dark_theme_provider));
+  EXPECT_EQ(selection_color_dark, get_selection_color(incognito_browser));
 }
 
 // TODO(tapted): https://crbug.com/905508 Fix and enable on Mac.

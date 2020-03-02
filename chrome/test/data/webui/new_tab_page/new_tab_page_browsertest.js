@@ -35,8 +35,7 @@ var NewTabPageAppTest = class extends NewTabPageBrowserTest {
   }
 };
 
-// This test is flaky, https://crbug.com/1056063
-TEST_F('NewTabPageAppTest', 'DISABLED_All', function() {
+TEST_F('NewTabPageAppTest', 'All', function() {
   mocha.run();
 });
 

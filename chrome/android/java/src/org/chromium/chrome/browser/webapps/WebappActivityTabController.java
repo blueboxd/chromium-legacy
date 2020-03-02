@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
@@ -44,6 +45,13 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     private final ActivityTabProvider mActivityTabProvider;
     private final WebContentsFactory mWebContentsFactory;
     private final CustomTabActivityTabProvider mTabProvider;
+
+    private HintlessActivityTabObserver mTabSwapObserver = new HintlessActivityTabObserver() {
+        @Override
+        public void onActivityTabChanged(@Nullable Tab tab) {
+            mTabProvider.swapTab(tab);
+        }
+    };
 
     @Inject
     public WebappActivityTabController(ChromeActivity<?> activity,
@@ -131,7 +139,7 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
         mTabProvider.setInitialTab(tab, mode);
 
         // Listen to tab swapping and closing.
-        mActivityTabProvider.addObserver(mTabProvider::swapTab);
+        mActivityTabProvider.addObserverAndTrigger(mTabSwapObserver);
     }
 
     @Nullable

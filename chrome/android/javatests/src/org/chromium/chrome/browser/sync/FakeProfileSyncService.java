@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.sync;
 
+import org.chromium.base.ThreadUtils;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +23,8 @@ public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mEncryptEverythingEnabled;
     private Set<Integer> mChosenTypes = new HashSet<>();
     private boolean mCanSyncFeatureStart;
+    @GoogleServiceAuthError.State
+    private int mAuthError;
 
     public FakeProfileSyncService() {
         super();
@@ -33,6 +37,18 @@ public class FakeProfileSyncService extends ProfileSyncService {
 
     public void setEngineInitialized(boolean engineInitialized) {
         mEngineInitialized = engineInitialized;
+    }
+
+    @Override
+    public @GoogleServiceAuthError.State int getAuthError() {
+        ThreadUtils.assertOnUiThread();
+        return mAuthError;
+    }
+
+    public void setAuthError(@GoogleServiceAuthError.State int authError) {
+        ThreadUtils.assertOnUiThread();
+        mAuthError = authError;
+        syncStateChanged();
     }
 
     @Override

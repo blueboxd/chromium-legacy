@@ -137,6 +137,11 @@ VulkanImplementationScenic::GetRequiredDeviceExtensions() {
   };
 }
 
+std::vector<const char*>
+VulkanImplementationScenic::GetOptionalDeviceExtensions() {
+  return {};
+}
+
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(
     VkDevice vk_device) {
   NOTIMPLEMENTED();

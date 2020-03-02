@@ -29,6 +29,8 @@ struct AccessTokenInfo;
 
 namespace syncer {
 
+extern const base::Feature kSyncRetryFirstCanceledTokenFetch;
+
 struct SyncCredentials;
 
 // SyncAuthManager tracks the account to be used for Sync and its authentication
@@ -197,6 +199,12 @@ class SyncAuthManager : public signin::IdentityManager::Observer {
   // "Partial" because this instance is not fully populated - in particular,
   // |has_token| and |next_token_request_time| get computed on demand.
   SyncTokenStatus partial_token_status_;
+
+  // Whether there was a retry done to fetch the access token when the request
+  // was cancelled for the first time. This works around an issue that can only
+  // happen once during browser startup, so it's sufficient to have a single
+  // retry (i.e. not per request).
+  bool access_token_retried_ = false;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_{this};
 

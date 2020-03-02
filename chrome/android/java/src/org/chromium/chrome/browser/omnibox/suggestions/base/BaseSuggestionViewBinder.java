@@ -49,6 +49,8 @@ public final class BaseSuggestionViewBinder<T extends View>
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
             updateActionIcon(model, view);
+        } else if (BaseSuggestionViewProperties.IS_COMPACT == propertyKey) {
+            updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
@@ -120,8 +122,14 @@ public final class BaseSuggestionViewBinder<T extends View>
         // centered with the omnibox "Clear" button.
         final int endSpace = view.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
-
         view.setPaddingRelative(startSpace, 0, endSpace, 0);
+
+        // Compact suggestion handling: apply additional padding to the suggestion content.
+        final boolean isCompact = model.get(BaseSuggestionViewProperties.IS_COMPACT);
+        final int verticalPad = view.getResources().getDimensionPixelSize(isCompact
+                        ? R.dimen.omnibox_suggestion_compact_padding
+                        : R.dimen.omnibox_suggestion_comfortable_padding);
+        view.getContentView().setPaddingRelative(0, verticalPad, 0, verticalPad);
     }
 
     /** Update image view using supplied drawable state object. */

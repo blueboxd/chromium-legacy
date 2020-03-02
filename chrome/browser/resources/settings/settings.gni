@@ -8,6 +8,7 @@ settings_namespace_rewrites = [
   "cr_slider.SliderTick|SliderTick",
   "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
   "settings.AppearanceBrowserProxy|AppearanceBrowserProxy",
+  "settings.CaptionsBrowserProxy|CaptionsBrowserProxy",
   "settings.ChromeCleanupProxy|ChromeCleanupProxy",
   "settings.ChromeCleanupRemovalListItem|ChromeCleanupRemovalListItem",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",

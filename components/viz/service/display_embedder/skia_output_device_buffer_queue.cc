@@ -56,16 +56,31 @@ class SkiaOutputDeviceBufferQueue::Image {
       DLOG(ERROR) << "CreateSharedImage failed.";
       return false;
     }
+
+    // Initialize |shared_image_deletor_| to make sure the shared image backing
+    // will be released with the Image.
+    shared_image_deletor_.ReplaceClosure(base::BindOnce(
+        base::IgnoreResult(&gpu::SharedImageFactory::DestroySharedImage),
+        base::Unretained(factory_), mailbox));
+
     skia_representation_ = representation_factory_->ProduceSkia(
         mailbox, deps->GetSharedContextState());
+    if (!skia_representation_) {
+      DLOG(ERROR) << "ProduceSkia() failed.";
+      return false;
+    }
+
     overlay_representation_ = representation_factory_->ProduceOverlay(mailbox);
 
     // If the backing doesn't support overlay, then fallback to GL.
     if (!overlay_representation_)
       gl_representation_ = representation_factory_->ProduceGLTexture(mailbox);
-    shared_image_deletor_.ReplaceClosure(base::BindOnce(
-        base::IgnoreResult(&gpu::SharedImageFactory::DestroySharedImage),
-        base::Unretained(factory_), mailbox));
+
+    if (!overlay_representation_ && !gl_representation_) {
+      DLOG(ERROR) << "ProduceOverlay() and ProduceGLTexture() failed.";
+      return false;
+    }
+
     return true;
   }
 

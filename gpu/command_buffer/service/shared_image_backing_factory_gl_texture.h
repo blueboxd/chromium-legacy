@@ -171,6 +171,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
   UnpackStateAttribs attribs;
+  GpuDriverBugWorkarounds workarounds_;
 
 #if defined(OS_ANDROID)
   SharedImageBatchAccessManager* batch_access_manager_ = nullptr;

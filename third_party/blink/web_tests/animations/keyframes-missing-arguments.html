@@ -10,8 +10,8 @@
   setup({single_test: true});
   var keyframes = document.styleSheets[0].rules[0];
   assert_class_string(keyframes, "CSSKeyframesRule");
-  assert_throws(new TypeError(), () => { keyframes.appendRule(); });
-  assert_throws(new TypeError(), () => { keyframes.deleteRule(); });
-  assert_throws(new TypeError(), () => { keyframes.findRule(); });
+  assert_throws_js(TypeError, () => { keyframes.appendRule(); });
+  assert_throws_js(TypeError, () => { keyframes.deleteRule(); });
+  assert_throws_js(TypeError, () => { keyframes.findRule(); });
   done();
 </script>

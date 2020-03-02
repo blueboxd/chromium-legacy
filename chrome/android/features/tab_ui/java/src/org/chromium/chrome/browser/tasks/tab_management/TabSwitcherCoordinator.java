@@ -123,9 +123,8 @@ public class TabSwitcherCoordinator
 
         mTabListCoordinator =
                 new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
-                        titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
-                        mMediator, null, TabProperties.UiType.CLOSABLE, null, container,
-                        dynamicResourceLoader, true, COMPONENT_NAME);
+                        titleProvider, true, mMediator, null, TabProperties.UiType.CLOSABLE, null,
+                        container, dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
@@ -134,7 +133,7 @@ public class TabSwitcherCoordinator
                         -> mTabListCoordinator.removeSpecialListItem(
                                 TabProperties.UiType.MESSAGE, identifier));
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
                     ((ChromeTabbedActivity) context).getCompositorViewHolder(), this, mMediator,
@@ -143,7 +142,6 @@ public class TabSwitcherCoordinator
 
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
-
             mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
@@ -179,7 +177,7 @@ public class TabSwitcherCoordinator
                         NewTabTileViewBinder::bind);
             }
 
-            if (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                     && !TabSwitcherMediator.isShowingTabsInMRUOrder()) {
                 mTabGridIphDialogCoordinator = new TabGridIphDialogCoordinator(context, container);
                 IphMessageService iphMessageService =
@@ -366,7 +364,7 @@ public class TabSwitcherCoordinator
 
     private boolean shouldRegisterMessageItemType() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)
-                || (TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                || (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                         && !TabSwitcherMediator.isShowingTabsInMRUOrder());
     }
 

@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -17,7 +17,7 @@ namespace blink {
 class ComputedStyle;
 class NGEarlyBreak;
 class NGLayoutResult;
-struct MinMaxSizeInput;
+struct MinMaxSizesInput;
 
 // Operations provided by a layout algorithm.
 class NGLayoutAlgorithmOperations {
@@ -33,8 +33,8 @@ class NGLayoutAlgorithmOperations {
   // account. If the return value is empty, the caller is expected to synthesize
   // this value from the overflow rect returned from Layout called with an
   // available width of 0 and LayoutUnit::max(), respectively.
-  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const {
+  virtual base::Optional<MinMaxSizes> ComputeMinMaxSizes(
+      const MinMaxSizesInput&) const {
     return base::nullopt;
   }
 };

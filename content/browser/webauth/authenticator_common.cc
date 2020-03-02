@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/timer/timer.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
@@ -371,6 +372,47 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
   return ret;
 }
 
+// ToJSONString encodes |in| as a JSON string, using the specific escaping rules
+// required by https://github.com/w3c/webauthn/pull/1375.
+std::string ToJSONString(const std::string& in) {
+  std::string ret;
+  ret.reserve(in.size() + 2);
+  ret.push_back('"');
+
+  const char* const in_bytes = in.data();
+  // ICU uses |int32_t| for lengths.
+  const int32_t length = base::checked_cast<int32_t>(in.size());
+  int32_t offset = 0;
+
+  while (offset < length) {
+    const int32_t prior_offset = offset;
+    // Input strings must be valid UTF-8.
+    uint32_t codepoint;
+    CHECK(base::ReadUnicodeCharacter(in_bytes, length, &offset, &codepoint));
+    // offset is updated by |ReadUnicodeCharacter| to index the last byte of the
+    // codepoint. Increment it to index the first byte of the next codepoint for
+    // the subsequent iteration.
+    offset++;
+
+    if (codepoint == 0x20 || codepoint == 0x21 ||
+        (codepoint >= 0x23 && codepoint <= 0x5b) || codepoint >= 0x5d) {
+      ret.append(&in_bytes[prior_offset], &in_bytes[offset]);
+    } else if (codepoint == 0x22) {
+      ret.append("\\\"");
+    } else if (codepoint == 0x5c) {
+      ret.append("\\\\");
+    } else {
+      static const char hextable[17] = "0123456789abcdef";
+      ret.append("\\u00");
+      ret.push_back(hextable[codepoint >> 4]);
+      ret.push_back(hextable[codepoint & 15]);
+    }
+  }
+
+  ret.push_back('"');
+  return ret;
+}
+
 base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags(
     FrameTreeNode* frame_tree_node) {
   if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
@@ -576,18 +618,26 @@ std::string AuthenticatorCommon::SerializeCollectedClientDataToJson(
     base::span<const uint8_t> challenge,
     bool is_cross_origin,
     bool use_legacy_u2f_type_key /* = false */) {
-  static constexpr char kChallengeKey[] = "challenge";
-  static constexpr char kOriginKey[] = "origin";
-  static constexpr char kCrossOriginKey[] = "crossOrigin";
+  std::string ret;
+  ret.reserve(128);
 
-  base::DictionaryValue client_data;
-  client_data.SetKey(use_legacy_u2f_type_key ? "typ" : "type",
-                     base::Value(type));
-  client_data.SetKey(kChallengeKey, base::Value(Base64UrlEncode(challenge)));
-  client_data.SetKey(kOriginKey, base::Value(origin));
+  if (use_legacy_u2f_type_key) {
+    ret.append(R"({"typ":)");
+  } else {
+    ret.append(R"({"type":)");
+  }
+  ret.append(ToJSONString(type));
+
+  ret.append(R"(,"challenge":)");
+  ret.append(ToJSONString(Base64UrlEncode(challenge)));
+
+  ret.append(R"(,"origin":)");
+  ret.append(ToJSONString(origin));
 
   if (is_cross_origin) {
-    client_data.SetKey(kCrossOriginKey, base::Value(is_cross_origin));
+    ret.append(R"(,"crossOrigin":true)");
+  } else {
+    ret.append(R"(,"crossOrigin":false)");
   }
 
   if (base::RandDouble() < 0.2) {
@@ -595,14 +645,14 @@ std::string AuthenticatorCommon::SerializeCollectedClientDataToJson(
     // unreasonably specific assumptions about the clientData JSON. This is
     // done in the fashion of
     // https://tools.ietf.org/html/draft-ietf-tls-grease
-    client_data.SetKey("extra_keys_may_be_added_here",
-                       base::Value("do not compare clientDataJSON against a "
-                                   "template. See https://goo.gl/yabPex"));
+    ret.append(R"(,"extra_keys_may_be_added_here":")");
+    ret.append(
+        "do not compare clientDataJSON against a template. See "
+        "https://goo.gl/yabPex\"");
   }
 
-  std::string json;
-  base::JSONWriter::Write(client_data, &json);
-  return json;
+  ret.append("}");
+  return ret;
 }
 
 // mojom::Authenticator

@@ -38,10 +38,10 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
           space.PercentageResolutionBlockSize());
 }
 
-base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
+base::Optional<MinMaxSizes> NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   if (!Node().IsCustomLayoutLoaded())
-    return FallbackMinMaxSize(input);
+    return FallbackMinMaxSizes(input);
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   CustomLayoutScope scope;
@@ -56,7 +56,7 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
 
   if (!instance) {
     // TODO(ikilpatrick): Report this error to the developer.
-    return FallbackMinMaxSize(input);
+    return FallbackMinMaxSizes(input);
   }
 
   IntrinsicSizesResultOptions* intrinsic_sizes_result_options = nullptr;
@@ -66,10 +66,10 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
           child_percentage_resolution_block_size_for_min_max_, &scope,
           intrinsic_sizes_result_options)) {
     // TODO(ikilpatrick): Report this error to the developer.
-    return FallbackMinMaxSize(input);
+    return FallbackMinMaxSizes(input);
   }
 
-  MinMaxSize sizes;
+  MinMaxSizes sizes;
   sizes.max_size = LayoutUnit::FromDoubleRound(
       intrinsic_sizes_result_options->maxContentSize());
   sizes.min_size = std::min(
@@ -200,10 +200,10 @@ void NGCustomLayoutAlgorithm::AddAnyOutOfFlowPositionedChildren(
   }
 }
 
-base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::FallbackMinMaxSize(
-    const MinMaxSizeInput& input) const {
+base::Optional<MinMaxSizes> NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   NGBlockLayoutAlgorithm algorithm(params_);
-  return algorithm.ComputeMinMaxSize(input);
+  return algorithm.ComputeMinMaxSizes(input);
 }
 
 scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::FallbackLayout() {

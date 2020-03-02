@@ -34,9 +34,9 @@
         android:layout_gravity="top|end" >
 
         <ViewStub
-            android:id="@+id/experimental_button_stub"
-            android:inflatedId="@+id/experimental_toolbar_button"
-            android:layout="@layout/experimental_toolbar_button"
+            android:id="@+id/optional_button_stub"
+            android:inflatedId="@+id/optional_toolbar_button"
+            android:layout="@layout/optional_toolbar_button"
             style="@style/ToolbarButton"
             android:paddingStart="12dp"
             android:visibility="gone" />

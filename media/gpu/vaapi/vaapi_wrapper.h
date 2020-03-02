@@ -444,6 +444,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // DestroyContext() or DestroyContextAndSurfaces().
   VAContextID va_context_id_;
 
+  //Entrypoint configured for the corresponding context
+  VAEntrypoint va_entrypoint_;
+
   // Data queued up for HW codec, to be committed on next execution.
   std::vector<VABufferID> pending_slice_bufs_;
   std::vector<VABufferID> pending_va_bufs_;

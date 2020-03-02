@@ -185,9 +185,9 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
-  MinMaxSize sizes;
+base::Optional<MinMaxSizes> NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  MinMaxSizes sizes;
 
   // TODO(crbug.com/1011842): Need to consider content-size here.
   bool apply_size_containment = Node().ShouldApplySizeContainment();
@@ -208,10 +208,11 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
   // Size containment does not consider the content for sizing.
   if (!apply_size_containment) {
     if (NGBlockNode content = Node().GetFieldsetContent()) {
-      MinMaxSize content_minmax =
+      MinMaxSizes content_min_max_sizes =
           ComputeMinAndMaxContentContribution(Style(), content, input);
-      content_minmax += ComputeMinMaxMargins(Style(), content).InlineSum();
-      sizes.Encompass(content_minmax);
+      content_min_max_sizes +=
+          ComputeMinMaxMargins(Style(), content).InlineSum();
+      sizes.Encompass(content_min_max_sizes);
     }
   }
 

@@ -19,6 +19,9 @@ class NodeWrapper extends SAChildNode {
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
 
+    /** @private {?SARootNode} */
+    this.parent_ = parent;
+
     /** @private {boolean} */
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
 
@@ -142,25 +145,25 @@ class NodeWrapper extends SAChildNode {
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollDown(() => {});
+          ancestor.scrollDown(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollUp(() => {});
+          ancestor.scrollUp(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollRight(() => {});
+          ancestor.scrollRight(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollLeft(() => {});
+          ancestor.scrollLeft(() => this.parent_.refresh());
         }
         return SAConstants.ActionResponse.CLOSE_MENU;
       default:
@@ -225,7 +228,7 @@ class RootNodeWrapper extends SARootNode {
     this.invalidated_ = false;
 
     /** @private {function(chrome.automation.AutomationEvent)} */
-    this.childrenChangedHandler_ = this.refresh_.bind(this);
+    this.childrenChangedHandler_ = this.refresh.bind(this);
 
     /** @private {function(chrome.automation.AutomationEvent)} */
     this.locationChangedHandler_ = NavigationManager.refreshFocusRings;
@@ -298,13 +301,8 @@ class RootNodeWrapper extends SARootNode {
         this.locationChangedHandler_, false /* is_capture */);
   }
 
-  // ================= Private methods =================
-
-  /**
-   * Refreshes the children of this root node.
-   * @protected
-   */
-  refresh_() {
+  /** @override */
+  refresh() {
     // Find the currently focused child.
     let focusedChild = null;
     for (const child of this.children) {

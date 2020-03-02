@@ -12,19 +12,24 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [10, 2, 784, 592],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [10, 2, 769, 592],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         },
         {
           "object": "VerticalScrollbar",
           "rect": [787, 2, 15, 600],
           "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [779, 2, 15, 592],
+          "reason": "incremental"
         }
       ]
     }

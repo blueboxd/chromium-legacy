@@ -41,12 +41,11 @@ namespace android {
 class NET_EXPORT_PRIVATE JavaNegotiateResultWrapper {
  public:
   scoped_refptr<base::TaskRunner> callback_task_runner_;
-  base::Callback<void(int, const std::string&)> thread_safe_callback_;
+  base::OnceCallback<void(int, const std::string&)> thread_safe_callback_;
 
   JavaNegotiateResultWrapper(
       const scoped_refptr<base::TaskRunner>& callback_task_runner,
-      const base::Callback<void(int, const std::string&)>&
-          thread_safe_callback);
+      base::OnceCallback<void(int, const std::string&)> thread_safe_callback);
 
   void SetResult(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,

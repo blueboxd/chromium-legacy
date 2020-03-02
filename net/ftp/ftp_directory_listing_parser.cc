@@ -49,26 +49,26 @@ int ParseListing(const base::string16& text,
       text, newline_separator, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   struct {
-    base::Callback<bool(void)> callback;
+    base::OnceCallback<bool(void)> callback;
     FtpServerType server_type;
   } parsers[] = {
     {
-      base::Bind(&ParseFtpDirectoryListingLs, lines, current_time, entries),
+      base::BindOnce(&ParseFtpDirectoryListingLs, lines, current_time, entries),
       SERVER_LS
     },
     {
-      base::Bind(&ParseFtpDirectoryListingWindows, lines, entries),
+      base::BindOnce(&ParseFtpDirectoryListingWindows, lines, entries),
       SERVER_WINDOWS
     },
     {
-      base::Bind(&ParseFtpDirectoryListingVms, lines, entries),
+      base::BindOnce(&ParseFtpDirectoryListingVms, lines, entries),
       SERVER_VMS
     },
   };
 
   for (size_t i = 0; i < base::size(parsers); i++) {
     entries->clear();
-    if (parsers[i].callback.Run()) {
+    if (std::move(parsers[i].callback).Run()) {
       *server_type = parsers[i].server_type;
       return FillInRawName(encoding, entries);
     }

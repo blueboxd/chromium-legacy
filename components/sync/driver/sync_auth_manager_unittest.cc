@@ -349,6 +349,80 @@ TEST_F(SyncAuthManagerTest,
             GoogleServiceAuthError::AuthErrorNone());
 }
 
+TEST_F(
+    SyncAuthManagerTest,
+    RetriesAccessTokenFetchWithBackoffOnFirstCancelTransientFailWhenDisabled) {
+  // Disable the first retry without backoff on cancellation.
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndDisableFeature(kSyncRetryFirstCanceledTokenFetch);
+
+  CoreAccountId account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  auth_manager->ConnectionOpened();
+
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Expect retry with backoff.
+  EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
+}
+
+TEST_F(SyncAuthManagerTest,
+       RetriesAccessTokenFetchWithoutBackoffOnceOnFirstCancelTransientFailure) {
+  CoreAccountId account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  auth_manager->ConnectionOpened();
+
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Expect no backoff the first time the request is canceled.
+  EXPECT_FALSE(auth_manager->IsRetryingAccessTokenFetchForTest());
+
+  // Cancel the retry as well.
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Expect retry with backoff when the first retry was also canceled.
+  EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
+}
+
+TEST_F(SyncAuthManagerTest,
+       RetriesAccessTokenFetchOnFirstCancelTransientFailure) {
+  CoreAccountId account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  auth_manager->ConnectionOpened();
+
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Expect no backoff the first time the request is canceled.
+  EXPECT_FALSE(auth_manager->IsRetryingAccessTokenFetchForTest());
+
+  // Retry is a success.
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+
+  ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
+  // Don't expect any backoff when the retry is a success.
+  EXPECT_FALSE(auth_manager->IsRetryingAccessTokenFetchForTest());
+}
+
 TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
   CoreAccountId account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;

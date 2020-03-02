@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;

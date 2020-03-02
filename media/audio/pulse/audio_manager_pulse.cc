@@ -104,22 +104,27 @@ void AudioManagerPulse::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerPulse::GetInputStreamParameters(
     const std::string& device_id) {
-  int user_buffer_size = GetUserBufferSize();
-  int buffer_size =
-      user_buffer_size ? user_buffer_size : kDefaultInputBufferSize;
-
   UpdateNativeAudioHardwareInfo();
-  auto* operation = pa_context_get_source_info_by_name(
-      input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
-      this);
-  WaitForOperationCompletion(input_mainloop_, operation, input_context_);
+
+  {
+    AutoPulseLock auto_lock(input_mainloop_);
+    auto* operation = pa_context_get_source_info_by_name(
+        input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
+        this);
+    WaitForOperationCompletion(input_mainloop_, operation, input_context_);
+  }
 
   // We don't want to accidentally open a monitor device, so return invalid
-  // parameters for those.
+  // parameters for those. Note: The value of |default_source_is_monitor_|
+  // depends on the the call to pa_context_get_source_info_by_name() above.
   if (device_id == AudioDeviceDescription::kDefaultDeviceId &&
       default_source_is_monitor_) {
     return AudioParameters();
   }
+
+  const int user_buffer_size = GetUserBufferSize();
+  const int buffer_size =
+      user_buffer_size ? user_buffer_size : kDefaultInputBufferSize;
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO,
                          native_input_sample_rate_ ? native_input_sample_rate_

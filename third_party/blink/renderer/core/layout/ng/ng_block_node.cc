@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
@@ -132,15 +132,15 @@ inline scoped_refptr<const NGLayoutResult> LayoutWithAlgorithm(
   return result;
 }
 
-inline base::Optional<MinMaxSize> ComputeMinMaxSizeWithAlgorithm(
+inline base::Optional<MinMaxSizes> ComputeMinMaxSizesWithAlgorithm(
     const NGLayoutAlgorithmParams& params,
-    const MinMaxSizeInput& input) {
-  base::Optional<MinMaxSize> minmax;
+    const MinMaxSizesInput& input) {
+  base::Optional<MinMaxSizes> min_max_sizes;
   DetermineAlgorithmAndRun(
-      params, [&minmax, &input](NGLayoutAlgorithmOperations* algorithm) {
-        minmax = algorithm->ComputeMinMaxSize(input);
+      params, [&min_max_sizes, &input](NGLayoutAlgorithmOperations* algorithm) {
+        min_max_sizes = algorithm->ComputeMinMaxSizes(input);
       });
-  return minmax;
+  return min_max_sizes;
 }
 
 void UpdateLegacyMultiColumnFlowThread(
@@ -615,9 +615,9 @@ void NGBlockNode::FinishLayout(
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result, break_token);
 }
 
-MinMaxSize NGBlockNode::ComputeMinMaxSize(
+MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
     WritingMode container_writing_mode,
-    const MinMaxSizeInput& input,
+    const MinMaxSizesInput& input,
     const NGConstraintSpace* constraint_space) {
   // TODO(layoutng) Can UpdateMarkerTextIfNeeded call be moved
   // somewhere else? List items need up-to-date markers before layout.
@@ -627,13 +627,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
-  MinMaxSize sizes;
+  MinMaxSizes sizes;
   // If we're orthogonal, we have to run layout to compute the sizes. However,
   // if we're outside of layout, we can't do that. This can happen on Mac.
   if ((!CanUseNewLayout() && !is_orthogonal_flow_root) ||
-      (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
-    return ComputeMinMaxSizeFromLegacy(input);
-  }
+      (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout()))
+    return ComputeMinMaxSizesFromLegacy(input);
 
   NGConstraintSpace zero_constraint_space =
       CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace();
@@ -660,7 +659,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
-  base::Optional<MinMaxSize> maybe_sizes = ComputeMinMaxSizeWithAlgorithm(
+  base::Optional<MinMaxSizes> maybe_sizes = ComputeMinMaxSizesWithAlgorithm(
       NGLayoutAlgorithmParams(*this, fragment_geometry, *constraint_space),
       input);
 
@@ -680,7 +679,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   if (!box_->GetFrameView()->IsInPerformLayout()) {
     // We can't synthesize these using Layout() if we're not in PerformLayout.
     // This situation can happen on mac. Fall back to legacy instead.
-    return ComputeMinMaxSizeFromLegacy(input);
+    return ComputeMinMaxSizesFromLegacy(input);
   }
 
   // Have to synthesize this value.
@@ -706,8 +705,8 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   return sizes;
 }
 
-MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
-    const MinMaxSizeInput& input) const {
+MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(
+    const MinMaxSizesInput& input) const {
   bool needs_size_reset = false;
   if (!box_->HasOverrideContainingBlockContentLogicalHeight()) {
     box_->SetOverrideContainingBlockContentLogicalHeight(
@@ -715,7 +714,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
     needs_size_reset = true;
   }
 
-  MinMaxSize sizes;
+  MinMaxSizes sizes;
   // ComputeIntrinsicLogicalWidths returns content-box + scrollbar.
   box_->ComputeIntrinsicLogicalWidths(sizes.min_size, sizes.max_size);
   sizes += box_->BorderAndPaddingLogicalWidth();

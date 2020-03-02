@@ -43,7 +43,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -304,11 +303,7 @@ public class TabGroupUiMediatorUnitTest {
     }
 
     @Test
-    // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
     public void onClickExpand() {
-        // clang-format on
         initAndAssertProperties(mTab2);
 
         View.OnClickListener listener =

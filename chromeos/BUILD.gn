@@ -33,8 +33,10 @@ component("chromeos") {
   configs += [
     ":chromeos_implementation",
     "//build/config/linux/nss:system_nss_no_ssl_config",
-    "//build/config/compiler:use_orderfile_for_hugepage",
   ]
+  if (is_chromeos_device) {
+    configs += [ "//build/config/compiler:use_orderfile_for_hugepage" ]
+  }
   public_deps = [ "//chromeos/constants" ]
   deps = [
     ":chromeos_export",

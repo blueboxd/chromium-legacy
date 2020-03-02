@@ -37,36 +37,6 @@ bool CreateTimeCompare(const NotificationEntry* lhs,
   return lhs->create_time <= rhs->create_time;
 }
 
-// Vailidates notification parameters. Returns false if the parameters are
-// invalid.
-bool ValidateNotificationParams(const NotificationParams& params) {
-  // Validate time window. Currently we only support deliver notification
-  // according to a time window.
-  if (!params.schedule_params.deliver_time_start.has_value() ||
-      !params.schedule_params.deliver_time_end.has_value() ||
-      params.schedule_params.deliver_time_start.value() >
-          params.schedule_params.deliver_time_end.value()) {
-    return false;
-  }
-
-  // Validate ihnr buttons option. Custom buttons will be overwritten.
-  if (params.enable_ihnr_buttons && !params.notification_data.buttons.empty()) {
-    return false;
-  }
-
-  // Validate icon bundle data is correct: icon resource id should never be
-  // persisted to disk,since it can change in different versions. Client should
-  // overwrite with Android resource id in BeforeShowNotification callback if it
-  // is required.
-  for (const auto& icon_bundle_map : params.notification_data.icons) {
-    const auto& icon_bundle = icon_bundle_map.second;
-    if (icon_bundle.resource_id)
-      return false;
-  }
-
-  return true;
-}
-
 // Vailidates notification entry. Returns false if the entry should be deleted.
 bool ValidateNotificationEntry(const NotificationEntry& entry) {
   // Check the deliver time window.
@@ -428,6 +398,40 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     unhelpful_button.text = l10n_util::GetStringUTF16(
         IDS_NOTIFICATION_DEFAULT_UNHELPFUL_BUTTON_TEXT);
     buttons->emplace_back(std::move(unhelpful_button));
+  }
+
+  // Vailidates notification parameters. Returns false if the parameters are
+  // invalid.
+  bool ValidateNotificationParams(const NotificationParams& params) {
+    // Validate time window. Currently we only support deliver notification
+    // according to a time window, the deliver window should before the
+    // expiration duration of notification data in config.
+    if (!params.schedule_params.deliver_time_start.has_value() ||
+        !params.schedule_params.deliver_time_end.has_value() ||
+        params.schedule_params.deliver_time_start.value() >
+            params.schedule_params.deliver_time_end.value() ||
+        params.schedule_params.deliver_time_end.value() - base::Time::Now() >=
+            config_.notification_expiration) {
+      return false;
+    }
+
+    // Validate ihnr buttons option. Custom buttons will be overwritten.
+    if (params.enable_ihnr_buttons &&
+        !params.notification_data.buttons.empty()) {
+      return false;
+    }
+
+    // Validate icon bundle data is correct: icon resource id should never be
+    // persisted to disk,since it can change in different versions. Client
+    // should overwrite with Android resource id in BeforeShowNotification
+    // callback if it is required.
+    for (const auto& icon_bundle_map : params.notification_data.icons) {
+      const auto& icon_bundle = icon_bundle_map.second;
+      if (icon_bundle.resource_id)
+        return false;
+    }
+
+    return true;
   }
 
   NotificationStore notification_store_;

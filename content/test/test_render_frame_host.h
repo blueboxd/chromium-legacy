@@ -79,7 +79,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   bool did_create_new_entry,
                                   const GURL& url,
                                   ui::PageTransition transition);
-  void SendBeforeUnloadACK(bool proceed) override;
+  void SimulateBeforeUnloadCompleted(bool proceed) override;
   void SimulateUnloadACK() override;
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
@@ -132,8 +132,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // Advances the RenderFrameHost (and through it the RenderFrameHostManager) to
   // a state where a new navigation can be committed by a renderer. This
-  // simulates a BeforeUnload ACK from the renderer, and the interaction with
-  // the IO thread up until the response is ready to commit.
+  // simulates a BeforeUnload completion callback from the renderer, and the
+  // interaction with the IO thread up until the response is ready to commit.
   void PrepareForCommit();
 
   // Like PrepareForCommit, but with the socket address when needed.

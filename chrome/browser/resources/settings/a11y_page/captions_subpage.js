@@ -7,7 +7,6 @@
  * settings subpage (chrome://settings/captions).
  */
 (function() {
-'use strict';
 
 Polymer({
   is: 'settings-captions',

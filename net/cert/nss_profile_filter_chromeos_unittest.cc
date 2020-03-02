@@ -80,7 +80,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     // for both.)
     crypto::ScopedPK11Slot private_slot_1(crypto::GetPrivateSlotForChromeOSUser(
         user_1_.username_hash(),
-        base::Callback<void(crypto::ScopedPK11Slot)>()));
+        base::OnceCallback<void(crypto::ScopedPK11Slot)>()));
     ASSERT_TRUE(private_slot_1.get());
     profile_filter_1_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()),
@@ -90,7 +90,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
 
     crypto::ScopedPK11Slot private_slot_2(crypto::GetPrivateSlotForChromeOSUser(
         user_2_.username_hash(),
-        base::Callback<void(crypto::ScopedPK11Slot)>()));
+        base::OnceCallback<void(crypto::ScopedPK11Slot)>()));
     ASSERT_TRUE(private_slot_2.get());
     profile_filter_2_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),

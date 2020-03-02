@@ -188,16 +188,17 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
+base::Optional<MinMaxSizes> NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   // First calculate the min/max sizes of columns.
   NGConstraintSpace space = CreateConstraintSpaceForMinMax();
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(space, Node());
   NGBlockLayoutAlgorithm algorithm({Node(), fragment_geometry, space});
-  base::Optional<MinMaxSize> min_max_sizes = algorithm.ComputeMinMaxSize(input);
+  base::Optional<MinMaxSizes> min_max_sizes =
+      algorithm.ComputeMinMaxSizes(input);
   DCHECK(min_max_sizes.has_value());
-  MinMaxSize sizes = *min_max_sizes;
+  MinMaxSizes sizes = *min_max_sizes;
 
   // If column-width is non-auto, pick the larger of that and intrinsic column
   // width.

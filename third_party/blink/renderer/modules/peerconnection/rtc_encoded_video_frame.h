@@ -51,7 +51,6 @@ class RTCEncodedVideoFrame final : public ScriptWrappable {
  private:
   std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate_;
   std::vector<uint8_t> additional_data_vector_;
-  bool replaced_frame_data_ = false;
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
   // Exposes data from |additional_data_vector_|.

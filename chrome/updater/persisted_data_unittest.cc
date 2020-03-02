@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/updater/persisted_data.h"
+#include "chrome/updater/registration_data.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/update_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +42,29 @@ TEST(PersistedDataTest, Simple) {
   EXPECT_TRUE(base::Contains(app_ids, "someappid"));
   EXPECT_TRUE(base::Contains(app_ids, "appid1"));
   EXPECT_FALSE(base::Contains(app_ids, "appid2-nopv"));  // No valid pv.
+}
+
+TEST(PersistedDataTest, RegistrationRequest) {
+  auto pref = std::make_unique<TestingPrefServiceSimple>();
+  update_client::RegisterPrefs(pref->registry());
+  auto metadata = base::MakeRefCounted<PersistedData>(pref.get());
+
+  RegistrationRequest data;
+  data.app_id = "someappid";
+  data.brand_code = "somebrand";
+  data.tag = "arandom-tag=likethis";
+  data.version = base::Version("1.0");
+  data.existence_checker_path =
+      base::FilePath(FILE_PATH_LITERAL("some/file/path"));
+
+  metadata->RegisterApp(data);
+  EXPECT_TRUE(metadata->GetProductVersion("someappid").IsValid());
+  EXPECT_STREQ("1.0",
+               metadata->GetProductVersion("someappid").GetString().c_str());
+  EXPECT_EQ(FILE_PATH_LITERAL("some/file/path"),
+            metadata->GetExistenceCheckerPath("someappid").value());
+  EXPECT_STREQ("arandom-tag=likethis", metadata->GetTag("someappid").c_str());
+  EXPECT_STREQ("somebrand", metadata->GetBrandCode("someappid").c_str());
 }
 
 TEST(PersistedDataTest, SharedPref) {

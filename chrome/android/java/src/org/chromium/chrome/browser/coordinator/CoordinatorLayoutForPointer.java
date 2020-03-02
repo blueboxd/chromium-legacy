@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.coordinator;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 /**
  * This class overrides {@link onResolvePointerIcon} method to correctly determine the pointer icon

@@ -12,19 +12,19 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 92, 732, 94],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [58, 236, 489, 537],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutImage IMG",
-          "rect": [58, 236, 489, 537],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutImage IMG",
           "rect": [58, 142, 489, 537],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     },

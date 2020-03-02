@@ -626,9 +626,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DetachFromProxy();
 
   // Whether an ongoing navigation in this frame is waiting for a BeforeUnload
-  // ACK either from this RenderFrame or from one of its subframes.
-  bool is_waiting_for_beforeunload_ack() const {
-    return is_waiting_for_beforeunload_ack_;
+  // completion callback either from this RenderFrame or from one of its
+  // subframes.
+  bool is_waiting_for_beforeunload_completion() const {
+    return is_waiting_for_beforeunload_completion_;
   }
 
   // Whether the RFH is waiting for an unload ACK from the renderer.
@@ -674,8 +675,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // false.
   void DispatchBeforeUnload(BeforeUnloadType type, bool is_reload);
 
-  // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
-  void SimulateBeforeUnloadAck(bool proceed);
+  // Simulate beforeunload completion callback on behalf of renderer if it's
+  // unrenresponsive.
+  void SimulateBeforeUnloadCompleted(bool proceed);
 
   // Returns true if a call to DispatchBeforeUnload will actually send the
   // BeforeUnload IPC.  This can be called on a main frame or subframe.  If
@@ -684,8 +686,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // only checks the frame's descendants but not the frame itself.
   bool ShouldDispatchBeforeUnload(bool check_subframes_only);
 
-  // Allow tests to override how long to wait for beforeunload ACKs to arrive
-  // before timing out.
+  // Allow tests to override how long to wait for beforeunload completion
+  // callbacks to be invoked before timing out.
   void SetBeforeUnloadTimeoutDelayForTesting(const base::TimeDelta& timeout);
 
   // Update the frame's opener in the renderer process in response to the
@@ -1611,10 +1613,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                         mojo::ScopedMessagePipeHandle pipe);
 #endif
 
-  // Called when the frame would like an overlay routing token.  This will
-  // create one if needed.  Either way, it will send it to the frame.
-  void OnRequestOverlayRoutingToken();
-
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
@@ -1673,6 +1671,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
+  void RequestOverlayRoutingToken(
+      RequestOverlayRoutingTokenCallback callback) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
@@ -1823,15 +1823,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool same_document);
 
-  // Helper to process the beforeunload ACK. |proceed| indicates whether the
-  // navigation or tab close should be allowed to proceed.  If
-  // |treat_as_final_ack| is true, the frame should stop waiting for any
-  // further ACKs from subframes. ACKs received from the renderer set
-  // |treat_as_final_ack| to false, whereas a beforeunload timeout sets it to
-  // true.
-  void ProcessBeforeUnloadACK(
+  // Helper to process the beforeunload completion callback. |proceed| indicates
+  // whether the navigation or tab close should be allowed to proceed.  If
+  // |treat_as_final_completion_callback| is true, the frame should stop waiting
+  // for any further completion callbacks from subframes. Completion callbacks
+  // invoked from the renderer set |treat_as_final_completion_callback| to
+  // false, whereas a beforeunload timeout sets it to true.
+  void ProcessBeforeUnloadCompleted(
       bool proceed,
-      bool treat_as_final_ack,
+      bool treat_as_final_completion_callback,
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
 
@@ -1843,15 +1843,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostImpl* GetBeforeUnloadInitiator();
 
   // Called when a particular frame finishes running a beforeunload handler,
-  // possibly as part of processing beforeunload for an ancestor frame.  In
+  // possibly as part of processing beforeunload for an ancestor frame. In
   // that case, this is called on the ancestor frame that is navigating or
-  // closing, and |frame| indicates which beforeunload ACK is received.  If a
-  // beforeunload timeout occurred, |treat_as_final_ack| is set to true.
+  // closing, and |frame| indicates which beforeunload completion callback has
+  // been invoked on. If a beforeunload timeout occurred,
+  // |treat_as_final_completion_callback| is set to true.
   // |is_frame_being_destroyed| is set to true if this was called as part of
   // destroying |frame|.
-  void ProcessBeforeUnloadACKFromFrame(
+  void ProcessBeforeUnloadCompletedFromFrame(
       bool proceed,
-      bool treat_as_final_ack,
+      bool treat_as_final_completion_callback,
       RenderFrameHostImpl* frame,
       bool is_frame_being_destroyed,
       const base::TimeTicks& renderer_before_unload_start_time,
@@ -2180,31 +2181,32 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cross-site transition or a tab close attempt.
   // TODO(clamy): Remove this boolean and add one more state to the state
   // machine.
-  bool is_waiting_for_beforeunload_ack_;
+  bool is_waiting_for_beforeunload_completion_;
 
-  // Valid only when |is_waiting_for_beforeunload_ack_| is true. This indicates
-  // whether a subsequent request to launch a modal dialog should be honored or
-  // whether it should implicitly cause the unload to be canceled.
+  // Valid only when |is_waiting_for_beforeunload_completion_| is true. This
+  // indicates whether a subsequent request to launch a modal dialog should be
+  // honored or whether it should implicitly cause the unload to be canceled.
   bool beforeunload_dialog_request_cancels_unload_;
 
-  // Valid only when is_waiting_for_beforeunload_ack_ or
+  // Valid only when is_waiting_for_beforeunload_completion_ or
   // IsWaitingForUnloadACK is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderFrameHost in
   // the case of a navigation ( = true).
   bool unload_ack_is_for_navigation_;
 
   // The timeout monitor that runs from when the beforeunload is started in
-  // DispatchBeforeUnload() until either the render process ACKs it with an IPC
-  // to OnBeforeUnloadACK(), or until the timeout triggers.
+  // DispatchBeforeUnload() until either the render process invokes the
+  // respective completion callback (ProcessBeforeUnloadCompleted()), or until
+  // the timeout triggers.
   std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
 
   // The delay to use for the beforeunload timeout monitor above.
   base::TimeDelta beforeunload_timeout_delay_;
 
   // When this frame is asked to execute beforeunload, this maintains a list of
-  // frames that need to receive beforeunload ACKs.  This may include this
-  // frame and/or its descendant frames.  This excludes frames that don't have
-  // beforeunload handlers defined.
+  // frames that need beforeunload completion callbacks to be invoked on.  This
+  // may include this frame and/or its descendant frames.  This excludes frames
+  // that don't have beforeunload handlers defined.
   //
   // TODO(alexmos): For now, this always includes the navigating frame.  Make
   // this include the navigating frame only if it has a beforeunload handler

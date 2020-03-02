@@ -47,16 +47,16 @@ test(function () {
     assert_throws_dom("SYNTAX_ERR", function() {
         context.createPattern(green1x1, {oString:function(){ return null;}});
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       context.createPattern(null, '');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       context.createPattern(undefined, '');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       context.createPattern({}, '');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       context.createPattern([], '');
     });
 

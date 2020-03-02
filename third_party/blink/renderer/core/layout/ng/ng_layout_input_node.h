@@ -24,14 +24,14 @@ class LayoutObject;
 class LayoutBox;
 class NGConstraintSpace;
 class NGPaintFragment;
-struct MinMaxSize;
+struct MinMaxSizes;
 struct LogicalSize;
 struct PhysicalSize;
 
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
 // them.
-struct MinMaxSizeInput {
+struct MinMaxSizesInput {
   // The min-max size calculation (un-intuitively) requires a percentage
   // resolution size!
   // This occurs when a replaced element has an intrinsic size. E.g.
@@ -42,7 +42,7 @@ struct MinMaxSizeInput {
   //
   // As we don't perform any tree walking, we need to pass the percentage
   // resolution block-size for min/max down the min/max size calculation.
-  explicit MinMaxSizeInput(LayoutUnit percentage_resolution_block_size)
+  explicit MinMaxSizesInput(LayoutUnit percentage_resolution_block_size)
       : percentage_resolution_block_size(percentage_resolution_block_size) {}
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
@@ -157,9 +157,9 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   // Returns border box.
-  MinMaxSize ComputeMinMaxSize(WritingMode,
-                               const MinMaxSizeInput&,
-                               const NGConstraintSpace* = nullptr);
+  MinMaxSizes ComputeMinMaxSizes(WritingMode,
+                                 const MinMaxSizesInput&,
+                                 const NGConstraintSpace* = nullptr);
 
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.

@@ -7,9 +7,7 @@
 
 #include "build/build_config.h"
 
-namespace content {
-class BrowserContext;
-}
+class PrefService;
 
 namespace safe_browsing {
 
@@ -39,13 +37,14 @@ class RealTimePolicyEngine {
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by
-  // |browser_context|.
-  static bool CanPerformFullURLLookup(content::BrowserContext* browser_context);
+  // |pref_service|.
+  static bool CanPerformFullURLLookup(PrefService* pref_service,
+                                      bool is_off_the_record);
 
   // Return true if the OAuth token should be associated with the URL lookup
   // pings.
-  static bool CanPerformFullURLLookupWithToken(
-      content::BrowserContext* browser_context);
+  static bool CanPerformFullURLLookupWithToken(PrefService* pref_service,
+                                               bool is_off_the_record);
 
   friend class SafeBrowsingService;
   friend class SafeBrowsingUIHandler;
@@ -55,10 +54,10 @@ class RealTimePolicyEngine {
   static bool IsUrlLookupEnabled();
 
   // Is user opted-in to the feature?
-  static bool IsUserOptedIn(content::BrowserContext* browser_context);
+  static bool IsUserOptedIn(PrefService* pref_service);
 
   // Is the feature enabled due to enterprise policy?
-  static bool IsEnabledByPolicy(content::BrowserContext* browser_context);
+  static bool IsEnabledByPolicy();
 
   friend class RealTimePolicyEngineTest;
 };  // class RealTimePolicyEngine

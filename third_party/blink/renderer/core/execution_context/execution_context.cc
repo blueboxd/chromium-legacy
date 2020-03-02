@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -56,23 +55,15 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate,
-                                   const SecurityContextInit& init)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate)
     : isolate_(isolate),
-      security_context_(init, SecurityContext::kLocal),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       lifecycle_state_(mojom::FrameLifecycleState::kRunning),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
-      agent_(init.GetAgent()),
-      origin_trial_context_(init.GetOriginTrialContext()),
       window_interaction_tokens_(0),
-      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      secure_context_mode_(init.GetSecureContextMode()) {
-  if (origin_trial_context_)
-    origin_trial_context_->BindExecutionContext(this);
-}
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
 ExecutionContext::~ExecutionContext() = default;
 
@@ -257,7 +248,7 @@ bool ExecutionContext::IsSandboxed(mojom::blink::WebSandboxFlags mask) const {
 }
 
 const base::UnguessableToken& ExecutionContext::GetAgentClusterID() const {
-  return agent_->cluster_id();
+  return GetAgent()->cluster_id();
 }
 
 void ExecutionContext::AllowWindowInteraction() {
@@ -335,12 +326,9 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
 }
 
 void ExecutionContext::Trace(Visitor* visitor) {
-  visitor->Trace(security_context_);
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);
-  visitor->Trace(agent_);
-  visitor->Trace(origin_trial_context_);
   visitor->Trace(timers_);
   visitor->Trace(context_lifecycle_observer_list_);
   ContextLifecycleNotifier::Trace(visitor);
@@ -360,15 +348,15 @@ bool ExecutionContext::IsSameAgentCluster(
 
 v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
   // TODO(keishi): Convert to DCHECK once we assign agents everywhere.
-  if (!agent_)
+  if (!GetAgent())
     return nullptr;
-  DCHECK(agent_->event_loop());
-  return agent_->event_loop()->microtask_queue();
+  DCHECK(GetAgent()->event_loop());
+  return GetAgent()->event_loop()->microtask_queue();
 }
 
 bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
-  return origin_trial_context_ &&
-         origin_trial_context_->IsFeatureEnabled(feature);
+  return GetOriginTrialContext() &&
+         GetOriginTrialContext()->IsFeatureEnabled(feature);
 }
 
 void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {

@@ -549,6 +549,10 @@ struct AutocompleteMatch {
   base::string16 description;
   ACMatchClassifications description_class;
 
+  // An optional header text this match must appear under. Currently only
+  // zero-prefix matches may have a header.
+  base::string16 header;
+
   // If true, UI-level code should swap the contents and description fields
   // before displaying.
   // This field is set when matches are appended to autocomplete results via

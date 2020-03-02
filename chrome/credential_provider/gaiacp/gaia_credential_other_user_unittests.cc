@@ -197,17 +197,15 @@ TEST_P(GcpOtherUserCredentialGlsTest, GetUserGlsCommandLine) {
 
   EXPECT_TRUE(command_line.HasSwitch(kGcpwSigninSwitch));
   EXPECT_TRUE(command_line.HasSwitch(switches::kDisableExtensions));
-  ASSERT_EQ(is_gem_features_enabled ? "1" : "",
-            command_line.GetSwitchValueASCII(kShowTosSwitch));
 
   if (is_ep_url_set) {
     ASSERT_EQ("http://login.com/",
               command_line.GetSwitchValueASCII(switches::kGaiaUrl));
     ASSERT_TRUE(gcpw_path.empty());
   } else if (is_gem_features_enabled) {
-    ASSERT_EQ(gcpw_path,
-              base::StringPrintf("embedded/setup/windows?device_id=%s",
-                                 device_id.c_str()));
+    ASSERT_EQ(gcpw_path, base::StringPrintf(
+                             "embedded/setup/windows?device_id=%s&show_tos=1",
+                             device_id.c_str()));
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());
   } else {
     ASSERT_TRUE(command_line.GetSwitchValueASCII(switches::kGaiaUrl).empty());

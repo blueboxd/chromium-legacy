@@ -280,7 +280,6 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   base::RunLoop* run_loop() { return run_loop_.get(); }
   ArcClientAdapter* adapter() { return adapter_.get(); }
-  const base::FilePath& GetTempDir() const { return dir_.GetPath(); }
 
   bool arc_instance_stopped_called() const {
     return arc_instance_stopped_called_;

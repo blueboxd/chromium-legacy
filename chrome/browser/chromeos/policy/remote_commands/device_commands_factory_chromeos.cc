@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_fetch_status_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_get_available_routines_job.h"
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_get_routine_update_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_reboot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_refresh_machine_certificate_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_remote_powerwash_job.h"
@@ -60,6 +61,8 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
       return std::make_unique<DeviceCommandGetAvailableRoutinesJob>();
     case em::RemoteCommand_Type_DEVICE_RUN_DIAGNOSTIC_ROUTINE:
       return std::make_unique<DeviceCommandRunRoutineJob>();
+    case em::RemoteCommand_Type_DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE:
+      return std::make_unique<DeviceCommandGetRoutineUpdateJob>();
     default:
       // Other types of commands should be sent to UserCommandsFactoryChromeOS
       // instead of here.

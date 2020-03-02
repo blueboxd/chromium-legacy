@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ CORE_EXPORT base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
 // The size is computed as |NGLogicalOutOfFlowPosition|.
 // It needs to be computed in 4 stages:
 // 1. If |AbsoluteNeedsChildInlineSize| is true, compute estimated inline_size
-//    using |NGBlockNode::MinMaxSize|.
+//    using |NGBlockNode::ComputeMinMaxSize|.
 // 2. Compute part of the |NGLogicalOutOfFlowPosition| which depends on the
 //    child inline-size with |ComputePartialAbsoluteWithChildInlineSize|.
 // 3. If |AbsoluteNeedsChildBlockSize| is true, compute estimated block_size by
@@ -65,7 +65,7 @@ ComputePartialAbsoluteWithChildInlineSize(
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const NGLogicalStaticPosition&,
-    const base::Optional<MinMaxSize>& child_minmax,
+    const base::Optional<MinMaxSizes>& child_minmax,
     const base::Optional<LogicalSize>& replaced_size,
     const WritingMode container_writing_mode,
     const TextDirection container_direction);

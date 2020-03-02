@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,9 +27,13 @@ using ::testing::_;
 
 namespace media {
 
+namespace {
+
 MATCHER(ContainsDecoderErrorLog, "") {
   return CONTAINS_STRING(arg, "libgav1::Decoder::DequeueFrame failed");
 }
+
+}  // namespace
 
 class Gav1VideoDecoderTest : public testing::Test {
  public:
@@ -43,10 +49,10 @@ class Gav1VideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigWithResult(const VideoDecoderConfig& config,
                                       bool success) {
-    decoder_->Initialize(
-        config, false, nullptr, NewExpectedBoolCB(success),
-        base::Bind(&Gav1VideoDecoderTest::FrameReady, base::Unretained(this)),
-        base::NullCallback());
+    decoder_->Initialize(config, false, nullptr, NewExpectedBoolCB(success),
+                         base::BindRepeating(&Gav1VideoDecoderTest::FrameReady,
+                                             base::Unretained(this)),
+                         base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -147,9 +153,9 @@ class Gav1VideoDecoderTest : public testing::Test {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(testing::SaveArg<0>(&status));
 
-    decoder_->Decode(
-        std::move(buffer),
-        base::Bind(&Gav1VideoDecoderTest::DecodeDone, base::Unretained(this)));
+    decoder_->Decode(std::move(buffer),
+                     base::BindOnce(&Gav1VideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     return status;

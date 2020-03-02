@@ -14,7 +14,6 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/test/test_browser_context.h"
 #include "testing/platform_test.h"
 
 #if defined(OS_ANDROID)
@@ -29,22 +28,21 @@ class RealTimePolicyEngineTest : public PlatformTest {
   RealTimePolicyEngineTest() : task_environment_(CreateTestTaskEnvironment()) {}
 
   void SetUp() override {
-    user_prefs::UserPrefs::Set(&test_context_, &pref_service_);
     RegisterProfilePrefs(pref_service_.registry());
     unified_consent::UnifiedConsentService::RegisterPrefs(
         pref_service_.registry());
   }
 
   bool IsUserOptedIn() {
-    return RealTimePolicyEngine::IsUserOptedIn(&test_context_);
+    return RealTimePolicyEngine::IsUserOptedIn(&pref_service_);
   }
 
-  bool CanPerformFullURLLookup() {
-    return RealTimePolicyEngine::CanPerformFullURLLookup(&test_context_);
+  bool CanPerformFullURLLookup(bool is_off_the_record) {
+    return RealTimePolicyEngine::CanPerformFullURLLookup(&pref_service_,
+                                                         is_off_the_record);
   }
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
-  content::TestBrowserContext test_context_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 };
 
@@ -64,7 +62,7 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_LargeMemorySize) {
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
-  EXPECT_TRUE(CanPerformFullURLLookup());
+  EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
@@ -80,7 +78,7 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 
 TEST_F(RealTimePolicyEngineTest,
@@ -89,7 +87,7 @@ TEST_F(RealTimePolicyEngineTest,
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {},
       /* disabled_features */ {kRealTimeUrlLookupEnabled});
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -99,14 +97,14 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {
                                std::make_unique<base::Value>(true));
   // Verifies that setting the pref still doesn't enable the feature.
   // See crbug.com/1030815 for details.
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledUrlLookup) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(kRealTimeUrlLookupEnabled);
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
 }
 
 TEST_F(RealTimePolicyEngineTest,
@@ -114,8 +112,7 @@ TEST_F(RealTimePolicyEngineTest,
   base::test::ScopedFeatureList feature_list;
   pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                std::make_unique<base::Value>(true));
-  test_context_.set_is_off_the_record(true);
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  EXPECT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ true));
 }
 
 TEST_F(RealTimePolicyEngineTest,

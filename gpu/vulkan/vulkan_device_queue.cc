@@ -30,6 +30,7 @@ bool VulkanDeviceQueue::Initialize(
     uint32_t options,
     const VulkanInfo& info,
     const std::vector<const char*>& required_extensions,
+    const std::vector<const char*>& optional_extensions,
     bool allow_protected_memory,
     const GetPresentationSupportCallback& get_presentation_support) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
@@ -90,9 +91,40 @@ bool VulkanDeviceQueue::Initialize(
       allow_protected_memory ? VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT : 0;
 
   std::vector<const char*> enabled_extensions;
-  enabled_extensions.insert(std::end(enabled_extensions),
-                            std::begin(required_extensions),
-                            std::end(required_extensions));
+  for (const char* extension : required_extensions) {
+    const auto it =
+        std::find_if(physical_device_info.extensions.begin(),
+                     physical_device_info.extensions.end(),
+                     [extension](const VkExtensionProperties& p) {
+                       return std::strcmp(extension, p.extensionName) == 0;
+                     });
+    if (it == physical_device_info.extensions.end()) {
+      // On Fuchsia, some device extensions are provided by layers.
+      // TODO(penghuang): checking extensions against layer device extensions
+      // too.
+#if !defined(OS_FUCHSIA)
+      DLOG(ERROR) << "Required Vulkan extension " << extension
+                  << " is not supported.";
+      return false;
+#endif
+    }
+    enabled_extensions.push_back(extension);
+  }
+
+  for (const char* extension : optional_extensions) {
+    const auto it =
+        std::find_if(physical_device_info.extensions.begin(),
+                     physical_device_info.extensions.end(),
+                     [extension](const VkExtensionProperties& p) {
+                       return std::strcmp(extension, p.extensionName) == 0;
+                     });
+    if (it == physical_device_info.extensions.end()) {
+      DLOG(ERROR) << "Optional Vulkan extension " << extension
+                  << " is not supported.";
+    } else {
+      enabled_extensions.push_back(extension);
+    }
+  }
 
   uint32_t device_api_version = std::min(
       info.used_api_version, vk_physical_device_properties_.apiVersion);
@@ -171,7 +203,6 @@ bool VulkanDeviceQueue::Initialize(
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
 
   allow_protected_memory_ = allow_protected_memory;
-
   return true;
 }
 

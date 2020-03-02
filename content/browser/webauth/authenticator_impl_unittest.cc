@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -464,6 +465,14 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
         /*is_cross_origin*/ false);
   }
 
+  std::string SerializeClientDataJSON(const std::string& type,
+                                      const std::string& origin,
+                                      base::span<const uint8_t> challenge,
+                                      bool is_cross_origin) {
+    return AuthenticatorCommon::SerializeCollectedClientDataToJson(
+        type, origin, challenge, is_cross_origin);
+  }
+
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
                                                  const std::string& appid) {
     const GURL origin_url(origin);
@@ -548,6 +557,65 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
  private:
   url::ScopedSchemeRegistryForTests scoped_registry_;
 };
+
+TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
+  // First test that the output is in the expected form. Some verifiers may be
+  // depending on the exact JSON serialisation. Since the serialisation may add
+  // extra elements, this can only test that the expected value is a prefix of
+  // the returned value.
+  std::vector<uint8_t> challenge_bytes = {1, 2, 3};
+  EXPECT_TRUE(
+      SerializeClientDataJSON("t\x05ype", "ori\"gin", challenge_bytes, false)
+          .find("{\"type\":\"t\\u0005ype\",\"challenge\":\"AQID\",\"origin\":"
+                "\"ori\\\"gin\",\"crossOrigin\":false") == 0);
+
+  // Second, check that a generic JSON parser correctly parses the result.
+  static const struct {
+    const char* type;
+    const char* origin;
+    std::vector<uint8_t> challenge;
+    bool is_cross_origin;
+  } kTestCases[] = {
+      {
+          "type",
+          "origin",
+          {1, 2, 3},
+          false,
+      },
+      {
+          "t\x01y\x02pe",
+          "ori\"gin",
+          {1, 2, 3, 4},
+          true,
+      },
+      {
+          "\\\\\"\\",
+          "\x01\x02\x03\x04{}\x05c",
+          {1, 2, 3, 4, 5},
+          true,
+      },
+  };
+
+  size_t num = 0;
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(num++);
+
+    const std::string json = SerializeClientDataJSON(
+        test.type, test.origin, test.challenge, test.is_cross_origin);
+
+    const auto parsed = base::JSONReader::Read(json);
+    ASSERT_TRUE(parsed.has_value());
+    EXPECT_EQ(*parsed->FindStringKey("type"), test.type);
+    EXPECT_EQ(*parsed->FindStringKey("origin"), test.origin);
+    std::string expected_challenge;
+    base::Base64UrlEncode(
+        base::StringPiece(reinterpret_cast<const char*>(test.challenge.data()),
+                          test.challenge.size()),
+        base::Base64UrlEncodePolicy::OMIT_PADDING, &expected_challenge);
+    EXPECT_EQ(*parsed->FindStringKey("challenge"), expected_challenge);
+    EXPECT_EQ(*parsed->FindBoolKey("crossOrigin"), test.is_cross_origin);
+  }
+}
 
 // Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {

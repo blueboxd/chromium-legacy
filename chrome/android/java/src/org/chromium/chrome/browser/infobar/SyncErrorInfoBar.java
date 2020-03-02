@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -19,6 +20,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
@@ -31,11 +33,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * An {@link InfoBar} that shows sync errors and prompts the user to open settings page.
  */
-public class SyncErrorInfoBar extends ConfirmInfoBar {
+public class SyncErrorInfoBar
+        extends ConfirmInfoBar implements ProfileSyncService.SyncStateChangedListener {
     // Preference key to save the latest time this infobar is viewed.
-    private static final String PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME =
+    @VisibleForTesting
+    public static final String PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME =
             "sync_error_infobar_shown_shown_at_time";
-    private static final long MINIMAL_DURATION_BETWEEN_INFOBARS_MS =
+    @VisibleForTesting
+    public static final long MINIMAL_DURATION_BETWEEN_INFOBARS_MS =
             TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
     @IntDef({SyncErrorInfoBarType.NOT_SHOWN, SyncErrorInfoBarType.AUTH_ERROR,
@@ -82,6 +87,7 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
 
     @CalledByNative
     private void accept() {
+        ProfileSyncService.get().removeSyncStateChangedListener(this);
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
         SettingsLauncher.getInstance().launchSettingsPage(getApplicationContext(),
@@ -90,6 +96,7 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
 
     @CalledByNative
     private void dismissed() {
+        ProfileSyncService.get().removeSyncStateChangedListener(this);
         recordHistogram(mType, SyncErrorInfoBarAction.DISMISSED);
     }
 
@@ -99,11 +106,19 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
                 primaryButtonText, null);
         mType = type;
         mDetailsMessage = detailsMessage;
+        ProfileSyncService.get().addSyncStateChangedListener(this);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME, System.currentTimeMillis())
                 .apply();
         recordHistogram(mType, SyncErrorInfoBarAction.SHOWN);
+    }
+
+    @Override
+    public void syncStateChanged() {
+        if (mType != getSyncErrorInfoBarType()) {
+            onCloseButtonClicked();
+        }
     }
 
     @Override

@@ -44,7 +44,6 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -66,6 +65,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -140,8 +140,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
-    private @Nullable ImageButton mExperimentalButton;
-    private boolean mExperimentalButtonUsesTint;
+    private @Nullable ImageButton mOptionalButton;
+    private boolean mOptionalButtonUsesTint;
 
     private ObjectAnimator mTabSwitcherModeAnimation;
     private ObjectAnimator mDelayedTabSwitcherModeAnimation;
@@ -282,12 +282,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private int mPreTextureCaptureVisibility;
     private boolean mIsOverlayTabStackDrawableLight;
 
-    private AnimatorSet mExperimentalButtonAnimator;
-    private boolean mExperimentalButtonAnimationRunning;
-    private int mExperimentalButtonTranslation;
+    private AnimatorSet mOptionalButtonAnimator;
+    private boolean mOptionalButtonAnimationRunning;
+    private int mOptionalButtonTranslation;
     /**
      * The percent completion for the location bar width change animation that is run when the
-     * experimental button is shown/hidden. Animates from 1.f to 0.f when showing the button and
+     * optional button is shown/hidden. Animates from 1.f to 0.f when showing the button and
      * 0.f to 1.f when hiding the button, where 0.f indicates the location bar width is not offset
      * at all for the animation.
      */
@@ -297,7 +297,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      * A global layout listener used to capture a new texture when the experimental toolbar button
      * is added or removed.
      */
-    private ViewTreeObserver.OnGlobalLayoutListener mExperimentalButtonLayoutListener;
+    private ViewTreeObserver.OnGlobalLayoutListener mOptionalButtonLayoutListener;
 
     // The following are some properties used during animation.  We use explicit property classes
     // to avoid the cost of reflection for each animation setup.
@@ -626,7 +626,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         if (mLayoutLocationBarWithoutExtraButton) {
-            float offset = getLocationBarWidthOffsetForExperimentalButton();
+            float offset = getLocationBarWidthOffsetForOptionalButton();
             if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) leftMargin -= (int) offset;
             width += (int) offset;
         }
@@ -847,8 +847,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 (int) MathUtils.interpolate(getViewBoundsLeftOfLocationBar(visualState),
                         getFocusedLeftPositionOfLocationBarBackground(), expansion);
 
-        if (mExperimentalButtonAnimationRunning && getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
-            leftViewPosition -= getLocationBarBackgroundOffsetForExperimentalButton();
+        if (mOptionalButtonAnimationRunning && getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
+            leftViewPosition -= getLocationBarBackgroundOffsetForOptionalButton();
         }
 
         return leftViewPosition;
@@ -872,32 +872,31 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 (int) MathUtils.interpolate(getViewBoundsRightOfLocationBar(visualState),
                         getFocusedRightPositionOfLocationBarBackground(), expansion);
 
-        if (mExperimentalButtonAnimationRunning
-                && !(getLayoutDirection() == LAYOUT_DIRECTION_RTL)) {
-            rightViewPosition += getLocationBarBackgroundOffsetForExperimentalButton();
+        if (mOptionalButtonAnimationRunning && !(getLayoutDirection() == LAYOUT_DIRECTION_RTL)) {
+            rightViewPosition += getLocationBarBackgroundOffsetForOptionalButton();
         }
 
         return rightViewPosition;
     }
 
     /**
-     * @return The location bar background position offset, for use when the experimental button
+     * @return The location bar background position offset, for use when the optional button
      *         show/hide animation is running.
      */
-    private int getLocationBarBackgroundOffsetForExperimentalButton() {
-        return (int) (getLocationBarWidthOffsetForExperimentalButton() * mLocBarWidthChangePercent);
+    private int getLocationBarBackgroundOffsetForOptionalButton() {
+        return (int) (getLocationBarWidthOffsetForOptionalButton() * mLocBarWidthChangePercent);
     }
 
     /**
-     * @return The difference in the location bar width when the experimental button is hidden
-     *         rather than showing. This is effectively the width of the experimental button with
+     * @return The difference in the location bar width when the optional button is hidden
+     *         rather than showing. This is effectively the width of the optional button with
      *         some adjustment to account for possible padding differences when the button
      *         visibility changes.
      */
-    private float getLocationBarWidthOffsetForExperimentalButton() {
-        float widthChange = mExperimentalButton.getWidth();
+    private float getLocationBarWidthOffsetForOptionalButton() {
+        float widthChange = mOptionalButton.getWidth();
 
-        // When the experimental button is the only visible button after the location bar and the
+        // When the optional button is the only visible button after the location bar and the
         // button is hidden mToolbarSidePadding is used for the padding after the location bar.
         if (!isMenuButtonPresent()) {
             widthChange -= mToolbarSidePadding;
@@ -976,18 +975,18 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         int currentWidth = locationBarLayoutParams.width;
 
         float locationBarBaseTranslationX = mUnfocusedLocationBarLayoutLeft - currentLeftMargin;
-        if (mExperimentalButtonAnimationRunning) {
+        if (mOptionalButtonAnimationRunning) {
             // When showing the button, we disable location bar relayout
             // (mDisableLocationBarRelayout), so the location bar's left margin and
             // mUnfocusedLocationBarLayoutLeft have not been updated to take into account the
-            // appearance of the experimental icon. The views to left of the location bar will
+            // appearance of the optional icon. The views to left of the location bar will
             // be wider than mUnfocusedlocationBarLayoutLeft in RTL, so adjust the translation by
             // that amount.
-            // When hiding the button, we force a relayout without the experimental toolbar button
+            // When hiding the button, we force a relayout without the optional toolbar button
             // (mLayoutLocationBarWithoutExtraButton). mUnfocusedLocationBarLayoutLeft reflects
-            // the view bounds left of the location bar, which still includes the experimental
+            // the view bounds left of the location bar, which still includes the optional
             // button. The location bar left margin, however, has been adjusted to reflect its
-            // end value when the experimental button is fully hidden. The
+            // end value when the optional button is fully hidden. The
             // locationBarBaseTranslationX above accounts for the difference between
             // mUnfocusedLocationBarLayoutLeft and the location bar's current left margin.
             locationBarBaseTranslationX +=
@@ -1010,8 +1009,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         locationBarBaseTranslationX *= 1f
-                - (mExperimentalButtonAnimationRunning ? mLocBarWidthChangePercent
-                                                       : mUrlExpansionPercent);
+                - (mOptionalButtonAnimationRunning ? mLocBarWidthChangePercent
+                                                   : mUrlExpansionPercent);
 
         mLocationBarBackgroundNtpOffset.setEmpty();
         mLocationBarNtpOffsetLeft = 0;
@@ -1053,7 +1052,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mUrlBar.setTranslationX(0);
         }
 
-        if (!mExperimentalButtonAnimationRunning) {
+        if (!mOptionalButtonAnimationRunning) {
             mUrlActionContainer.setTranslationX(getUrlActionsTranslationXForExpansionAnimation(
                     isLocationBarRtl, locationBarBaseTranslationX));
             mLocationBar.setUrlFocusChangePercent(mUrlExpansionPercent);
@@ -1264,29 +1263,27 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // Translate to draw end toolbar buttons.
         translateCanvasToView(this, mToolbarButtonsContainer, canvas);
 
-        // Draw the experimental button if necessary.
-        if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
+        // Draw the optional button if necessary.
+        if (mOptionalButton != null && mOptionalButton.getVisibility() != View.GONE) {
             canvas.save();
-            Drawable expButton = mExperimentalButton.getDrawable();
+            Drawable optionalButtonDrawable = mOptionalButton.getDrawable();
 
-            translateCanvasToView(mToolbarButtonsContainer, mExperimentalButton, canvas);
+            translateCanvasToView(mToolbarButtonsContainer, mOptionalButton, canvas);
 
-            int backgroundWidth = mExperimentalButton.getDrawable().getIntrinsicWidth();
-            int backgroundHeight = mExperimentalButton.getDrawable().getIntrinsicHeight();
-            int backgroundLeft =
-                    (mExperimentalButton.getWidth() - mExperimentalButton.getPaddingLeft()
-                            - mExperimentalButton.getPaddingRight() - backgroundWidth)
+            int backgroundWidth = mOptionalButton.getDrawable().getIntrinsicWidth();
+            int backgroundHeight = mOptionalButton.getDrawable().getIntrinsicHeight();
+            int backgroundLeft = (mOptionalButton.getWidth() - mOptionalButton.getPaddingLeft()
+                                         - mOptionalButton.getPaddingRight() - backgroundWidth)
                     / 2;
-            backgroundLeft += mExperimentalButton.getPaddingLeft();
-            int backgroundTop =
-                    (mExperimentalButton.getHeight() - mExperimentalButton.getPaddingTop()
-                            - mExperimentalButton.getPaddingBottom() - backgroundHeight)
+            backgroundLeft += mOptionalButton.getPaddingLeft();
+            int backgroundTop = (mOptionalButton.getHeight() - mOptionalButton.getPaddingTop()
+                                        - mOptionalButton.getPaddingBottom() - backgroundHeight)
                     / 2;
-            backgroundTop += mExperimentalButton.getPaddingTop();
+            backgroundTop += mOptionalButton.getPaddingTop();
             canvas.translate(backgroundLeft, backgroundTop);
 
-            expButton.setAlpha(rgbAlpha);
-            expButton.draw(canvas);
+            optionalButtonDrawable.setAlpha(rgbAlpha);
+            optionalButtonDrawable.draw(canvas);
 
             canvas.restore();
         }
@@ -1474,7 +1471,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             // viewport used to draw the background.  During expansion transitions, compensation
             // is applied to increase the clip regions such that when the location bar converts
             // to the narrower collapsed layout the visible content is the same.
-            if (mUrlExpansionPercent != 1f && !mExperimentalButtonAnimationRunning) {
+            if (mUrlExpansionPercent != 1f && !mOptionalButtonAnimationRunning) {
                 int leftDelta = mUnfocusedLocationBarLayoutLeft
                         - getViewBoundsLeftOfLocationBar(mVisualState);
                 int rightDelta = getViewBoundsRightOfLocationBar(mVisualState)
@@ -1494,7 +1491,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     locationBarClipRight -= ViewCompat.getPaddingEnd(mLocationBar) * inversePercent;
                 }
             }
-            if (mExperimentalButtonAnimationRunning) {
+            if (mOptionalButtonAnimationRunning) {
                 if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
                     locationBarClipLeft += mLocationBar.getPaddingStart();
                 } else {
@@ -1685,8 +1682,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
         }
 
-        if (mExperimentalButton != null && mExperimentalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
+        if (mOptionalButton != null && mOptionalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, tint);
         }
 
         // TODO(amaralp): Have the LocationBar listen to tint changes.
@@ -2062,14 +2059,14 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             animators.add(animator);
         }
 
-        if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
+        if (mOptionalButton != null && mOptionalButton.getVisibility() != View.GONE) {
             animator = ObjectAnimator.ofFloat(
-                    mExperimentalButton, TRANSLATION_X, toolbarButtonTranslationX);
+                    mOptionalButton, TRANSLATION_X, toolbarButtonTranslationX);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
             animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
             animators.add(animator);
 
-            animator = ObjectAnimator.ofFloat(mExperimentalButton, ALPHA, 0);
+            animator = ObjectAnimator.ofFloat(mOptionalButton, ALPHA, 0);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
             animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
             animators.add(animator);
@@ -2116,17 +2113,17 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             animators.add(animator);
         }
 
-        if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
-            // TODO(twellington): it's possible that the experimental button was shown while
+        if (mOptionalButton != null && mOptionalButton.getVisibility() != View.GONE) {
+            // TODO(twellington): it's possible that the optional button was shown while
             // the url bar was focused, in which case the translation x and alpha animators
             // are a no-op. Account for this case.
-            animator = ObjectAnimator.ofFloat(mExperimentalButton, TRANSLATION_X, 0);
+            animator = ObjectAnimator.ofFloat(mOptionalButton, TRANSLATION_X, 0);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
             animator.setStartDelay(URL_CLEAR_FOCUS_EXPERIMENTAL_BUTTON_DELAY_MS);
             animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
             animators.add(animator);
 
-            animator = ObjectAnimator.ofFloat(mExperimentalButton, ALPHA, 1);
+            animator = ObjectAnimator.ofFloat(mOptionalButton, ALPHA, 1);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
             animator.setStartDelay(URL_CLEAR_FOCUS_EXPERIMENTAL_BUTTON_DELAY_MS);
             animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
@@ -2163,7 +2160,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mUrlFocusLayoutAnimator.cancel();
             mUrlFocusLayoutAnimator = null;
         }
-        if (mExperimentalButtonAnimationRunning) mExperimentalButtonAnimator.end();
+        if (mOptionalButtonAnimationRunning) mOptionalButtonAnimator.end();
 
         List<Animator> animators = new ArrayList<>();
         if (hasFocus) {
@@ -2572,75 +2569,69 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
-    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId, boolean useTint) {
-        if (mExperimentalButton == null) {
-            ViewStub viewStub = findViewById(R.id.experimental_button_stub);
-            mExperimentalButton = (ImageButton) viewStub.inflate();
+    void updateOptionalButton(ButtonData buttonData) {
+        if (mOptionalButton == null) {
+            ViewStub viewStub = findViewById(R.id.optional_button_stub);
+            mOptionalButton = (ImageButton) viewStub.inflate();
 
-            if (!isMenuButtonPresent()) mExperimentalButton.setPadding(0, 0, 0, 0);
-            mExperimentalButtonTranslation = getResources().getDimensionPixelSize(
+            if (!isMenuButtonPresent()) mOptionalButton.setPadding(0, 0, 0, 0);
+            mOptionalButtonTranslation = getResources().getDimensionPixelSize(
                     R.dimen.toolbar_optional_button_animation_translation);
-            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) mExperimentalButtonTranslation *= -1;
+            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) mOptionalButtonTranslation *= -1;
+        } else if (mOptionalButtonAnimationRunning) {
+            // TODO(https://crbug.com/865801): refine this logic to allow for same-button updates,
+            // e.g. swapping in a new drawable part way through the animation.
+            mOptionalButtonAnimator.end();
+        }
+
+        mOptionalButton.setOnClickListener(buttonData.onClickListener);
+        mOptionalButton.setImageDrawable(buttonData.drawable);
+        mOptionalButton.setContentDescription(
+                getContext().getResources().getString(buttonData.contentDescriptionResId));
+
+        mOptionalButtonUsesTint = buttonData.supportsTinting;
+        if (mOptionalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, getTint());
         } else {
-            if (mExperimentalButtonAnimationRunning) {
-                mExperimentalButtonAnimator.end();
-            }
-            assert mExperimentalButton.getVisibility()
-                    == View.GONE : "#disableExperimentalButton() should be called first.";
+            ApiCompatibilityUtils.setImageTintList(mOptionalButton, null);
         }
-
-        mExperimentalButton.setOnClickListener(onClickListener);
-        mExperimentalButton.setImageDrawable(image);
-        mExperimentalButton.setContentDescription(
-                getContext().getResources().getString(contentDescriptionResId));
-
-        mExperimentalButtonUsesTint = useTint;
-        if (mExperimentalButtonUsesTint) {
-            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
-        }
-        mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
+        mOptionalButtonLayoutListener = () -> requestLayoutHostUpdateForOptionalButton();
         if (mTabSwitcherState == STATIC_TAB) {
-            if (!mUrlFocusChangeInProgress && !urlHasFocus()) {
-                runShowExperimentalButtonAnimation();
+            if (!mUrlFocusChangeInProgress && !urlHasFocus()
+                    && mOptionalButton.getVisibility() == View.GONE) {
+                runShowOptionalButtonAnimation();
             } else {
-                mExperimentalButton.setVisibility(View.VISIBLE);
+                mOptionalButton.setVisibility(View.VISIBLE);
             }
         } else {
-            mExperimentalButton.setVisibility(View.VISIBLE);
-            getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+            mOptionalButton.setVisibility(View.VISIBLE);
+            getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
         }
     }
 
     @Override
-    void updateExperimentalButtonImage(Drawable image) {
-        assert mExperimentalButton != null;
-        mExperimentalButton.setImageDrawable(image);
-    }
-
-    @Override
-    void disableExperimentalButton() {
-        if (mExperimentalButton == null || mExperimentalButton.getVisibility() == View.GONE) {
+    void hideOptionalButton() {
+        if (mOptionalButton == null || mOptionalButton.getVisibility() == View.GONE) {
             return;
         }
 
         if (mTabSwitcherState == STATIC_TAB && !mUrlFocusChangeInProgress && !urlHasFocus()) {
-            runHideExperimentalButtonsAnimators();
+            runHideOptionalButtonsAnimators();
         } else {
-            mExperimentalButton.setVisibility(View.GONE);
-            getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+            mOptionalButton.setVisibility(View.GONE);
+            getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
         }
     }
 
     @Override
     @VisibleForTesting
-    public View getExperimentalButtonView() {
-        return mExperimentalButton;
+    public View getOptionalButtonView() {
+        return mOptionalButton;
     }
 
     /**
      * Whether the menu button is visible. Used as a proxy for whether there are end toolbar
-     * buttons besides the experimental button.
+     * buttons besides the optional button.
      */
     private boolean isMenuButtonPresent() {
         final ImageButton menuButton = getMenuButton();
@@ -2648,17 +2639,17 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         return menuButton.isShown();
     }
 
-    private void requestLayoutHostUpdateForExperimentalButton() {
+    private void requestLayoutHostUpdateForOptionalButton() {
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
-        getViewTreeObserver().removeOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+        getViewTreeObserver().removeOnGlobalLayoutListener(mOptionalButtonLayoutListener);
     }
 
     /**
-     * Runs an animation that fades in the experimental button while shortening the location bar
+     * Runs an animation that fades in the optional button while shortening the location bar
      * background.
      */
-    private void runShowExperimentalButtonAnimation() {
-        if (mExperimentalButtonAnimationRunning) mExperimentalButtonAnimator.end();
+    private void runShowOptionalButtonAnimation() {
+        if (mOptionalButtonAnimationRunning) mOptionalButtonAnimator.end();
 
         List<Animator> animators = new ArrayList<>();
 
@@ -2669,50 +2660,49 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(widthChangeAnimator);
 
-        mExperimentalButton.setAlpha(0.f);
-        ObjectAnimator buttonAnimator =
-                ObjectAnimator.ofFloat(mExperimentalButton, View.ALPHA, 1.f);
+        mOptionalButton.setAlpha(0.f);
+        ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(mOptionalButton, View.ALPHA, 1.f);
         buttonAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         buttonAnimator.setStartDelay(EXPERIMENTAL_ICON_ANIMATION_DELAY_MS);
         buttonAnimator.setDuration(EXPERIMENTAL_ICON_ANIMATION_DURATION_MS);
         animators.add(buttonAnimator);
 
-        mExperimentalButton.setTranslationX(mExperimentalButtonTranslation);
+        mOptionalButton.setTranslationX(mOptionalButtonTranslation);
         ObjectAnimator buttonTranslationAnimator =
-                ObjectAnimator.ofFloat(mExperimentalButton, View.TRANSLATION_X, 0);
+                ObjectAnimator.ofFloat(mOptionalButton, View.TRANSLATION_X, 0);
         buttonTranslationAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         buttonTranslationAnimator.setStartDelay(EXPERIMENTAL_ICON_ANIMATION_DELAY_MS);
         buttonTranslationAnimator.setDuration(EXPERIMENTAL_ICON_ANIMATION_DURATION_MS);
         animators.add(buttonTranslationAnimator);
 
-        mExperimentalButtonAnimator = new AnimatorSet();
-        mExperimentalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
+        mOptionalButtonAnimator = new AnimatorSet();
+        mOptionalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
             public void onStart(Animator animation) {
                 mDisableLocationBarRelayout = true;
-                mExperimentalButtonAnimationRunning = true;
-                mExperimentalButton.setVisibility(View.VISIBLE);
+                mOptionalButtonAnimationRunning = true;
+                mOptionalButton.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onEnd(Animator animation) {
-                onExperimentalButtonAnimationEnd();
+                onOptionalButtonAnimationEnd();
                 mDisableLocationBarRelayout = false;
-                mExperimentalButtonAnimationRunning = false;
-                getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+                mOptionalButtonAnimationRunning = false;
+                getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
                 requestLayout();
             }
         });
-        mExperimentalButtonAnimator.playTogether(animators);
-        mExperimentalButtonAnimator.start();
+        mOptionalButtonAnimator.playTogether(animators);
+        mOptionalButtonAnimator.start();
     }
 
     /**
-     * Runs an animation that fades out the experimental button while lengthening the location bar
+     * Runs an animation that fades out the optional button while lengthening the location bar
      * background.
      */
-    private void runHideExperimentalButtonsAnimators() {
-        if (mExperimentalButtonAnimationRunning) mExperimentalButtonAnimator.end();
+    private void runHideOptionalButtonsAnimators() {
+        if (mOptionalButtonAnimationRunning) mOptionalButtonAnimator.end();
 
         List<Animator> animators = new ArrayList<>();
 
@@ -2723,50 +2713,49 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(widthChangeAnimator);
 
-        mExperimentalButton.setAlpha(1.f);
-        ObjectAnimator buttonAnimator =
-                ObjectAnimator.ofFloat(mExperimentalButton, View.ALPHA, 0.f);
+        mOptionalButton.setAlpha(1.f);
+        ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(mOptionalButton, View.ALPHA, 0.f);
         buttonAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         buttonAnimator.setDuration(EXPERIMENTAL_ICON_ANIMATION_DURATION_MS);
         animators.add(buttonAnimator);
 
-        mExperimentalButton.setTranslationX(0);
+        mOptionalButton.setTranslationX(0);
         ObjectAnimator buttonTranslationAnimator = ObjectAnimator.ofFloat(
-                mExperimentalButton, View.TRANSLATION_X, mExperimentalButtonTranslation);
+                mOptionalButton, View.TRANSLATION_X, mOptionalButtonTranslation);
         buttonTranslationAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         buttonTranslationAnimator.setDuration(EXPERIMENTAL_ICON_ANIMATION_DURATION_MS);
         animators.add(buttonTranslationAnimator);
 
-        mExperimentalButtonAnimator = new AnimatorSet();
-        mExperimentalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
+        mOptionalButtonAnimator = new AnimatorSet();
+        mOptionalButtonAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
             public void onStart(Animator animation) {
                 mLayoutLocationBarWithoutExtraButton = true;
-                mExperimentalButtonAnimationRunning = true;
+                mOptionalButtonAnimationRunning = true;
                 requestLayout();
             }
 
             @Override
             public void onEnd(Animator animation) {
-                onExperimentalButtonAnimationEnd();
-                mExperimentalButton.setVisibility(View.GONE);
+                onOptionalButtonAnimationEnd();
+                mOptionalButton.setVisibility(View.GONE);
                 mLayoutLocationBarWithoutExtraButton = false;
-                mExperimentalButtonAnimationRunning = false;
-                getViewTreeObserver().addOnGlobalLayoutListener(mExperimentalButtonLayoutListener);
+                mOptionalButtonAnimationRunning = false;
+                getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
             }
         });
-        mExperimentalButtonAnimator.playTogether(animators);
-        mExperimentalButtonAnimator.start();
+        mOptionalButtonAnimator.playTogether(animators);
+        mOptionalButtonAnimator.start();
     }
 
     /**
      * Resets the alpha and translation X for all views affected by the animations for showing or
      * hiding buttons.
      */
-    private void onExperimentalButtonAnimationEnd() {
-        mExperimentalButtonAnimator = null;
-        mExperimentalButton.setAlpha(1.f);
-        mExperimentalButton.setTranslationX(0);
+    private void onOptionalButtonAnimationEnd() {
+        mOptionalButtonAnimator = null;
+        mOptionalButton.setAlpha(1.f);
+        mOptionalButton.setTranslationX(0);
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {
@@ -2867,8 +2856,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mBrandColorTransitionAnimation.cancel();
         }
 
-        if (mExperimentalButtonAnimator != null && mExperimentalButtonAnimator.isRunning()) {
-            mExperimentalButtonAnimator.cancel();
+        if (mOptionalButtonAnimator != null && mOptionalButtonAnimator.isRunning()) {
+            mOptionalButtonAnimator.cancel();
         }
     }
 }

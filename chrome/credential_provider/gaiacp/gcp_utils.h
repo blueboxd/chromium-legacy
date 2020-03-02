@@ -341,6 +341,7 @@ HRESULT GenerateDeviceId(std::string* device_id);
 HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
                                            const std::string& default_endpoint,
                                            bool provide_deviceid,
+                                           bool show_tos,
                                            base::CommandLine* command_line);
 
 // Returns the file path to installed chrome.exe.

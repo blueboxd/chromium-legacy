@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO(wylieb): Write unittests for this class.
 /** Controls the reparenting of tabs when the theme is swapped. */
 public class NightModeReparentingController implements NightModeStateProvider.Observer {
     /** Provides data to {@link NightModeReparentingController} facilitate reparenting tabs. */
@@ -35,6 +34,9 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
 
         /** Gets a {@link TabModelSelector} which is used to add the tab. */
         TabModelSelector getTabModelSelector();
+
+        /** @return Whether the given Url is an NTP url, exists solely to support unit testing. */
+        boolean isNTPUrl(String url);
     }
 
     private Delegate mDelegate;
@@ -93,7 +95,8 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
     private void reattachTab(ReparentingTask task, TabReparentingParams params, TabModel tabModel) {
         final Tab tab = params.getTabToReparent();
         task.finish(mReparentingDelegate, () -> {
-            tabModel.addTab(tab, params.getTabIndex(), TabLaunchType.FROM_REPARENTING,
+            int tabIndex = params.getTabIndex() > tabModel.getCount() ? -1 : params.getTabIndex();
+            tabModel.addTab(tab, tabIndex, TabLaunchType.FROM_REPARENTING,
                     TabCreationState.LIVE_IN_FOREGROUND);
             AsyncTabParamsManager.remove(tab.getId());
         });
@@ -108,18 +111,15 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
             List<Tab> tabs = tabsAndModels.get(model);
             for (int i = 0; i < tabs.size(); i++) {
                 Tab tab = tabs.get(i);
+
+                // Intentionally skip new tab pages and allow them to reload and restore scroll
+                // state themselves.
+                if (mDelegate.isNTPUrl(tab.getUrlString())) continue;
+
                 TabReparentingParams params = new TabReparentingParams(tab, null, null);
                 params.setFromNightModeReparenting(true);
-
-                // Only the first tab is considered foreground and that is the only one for which
-                // we need an index. It will be reattached at the end. All remaining tabs will be
-                // reattached in reverse order, therefore we can ignore the index.
-                if (tab == foregroundTab) {
-                    params.setIsForegroundTab(true);
-                    params.setTabIndex(i);
-                } else {
-                    params.setIsForegroundTab(false);
-                }
+                params.setIsForegroundTab(tab == foregroundTab);
+                params.setTabIndex(i);
 
                 AsyncTabParamsManager.add(tab.getId(), params);
                 ReparentingTask.from(tab).detach();

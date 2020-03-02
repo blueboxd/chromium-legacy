@@ -20,8 +20,8 @@ class CORE_EXPORT NGMathSpaceLayoutAlgorithm
  private:
   scoped_refptr<const NGLayoutResult> Layout() final;
 
-  base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const final;
+  base::Optional<MinMaxSizes> ComputeMinMaxSizes(
+      const MinMaxSizesInput&) const final;
 
   const NGBoxStrut border_padding_;
 };

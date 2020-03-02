@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 800, 200],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

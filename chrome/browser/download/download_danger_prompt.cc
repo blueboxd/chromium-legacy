@@ -10,9 +10,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/safe_browsing/core/file_type_policies.h"
 
 using safe_browsing::ClientDownloadResponse;
 using safe_browsing::ClientSafeBrowsingReportRequest;

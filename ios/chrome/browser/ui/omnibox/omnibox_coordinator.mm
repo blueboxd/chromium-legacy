@@ -139,6 +139,7 @@
 
 - (void)endEditing {
   [self.textField resignFirstResponder];
+  _editView->EndEditing();
 }
 
 - (void)insertTextToOmnibox:(NSString*)text {

@@ -47,7 +47,8 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 ChromeFeatureList.IMMERSIVE_UI_MODE,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST);
+                ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.PAINT_PREVIEW_TEST,
+                ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR);
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);
         CachedFeatureFlags.cacheNativeFlags(TabUiFeatureUtilities.getFeaturesToCache());
         CachedFeatureFlags.cacheAdditionalNativeFlags();

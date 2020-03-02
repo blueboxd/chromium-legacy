@@ -9,11 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/common/chrome_features.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -118,8 +116,7 @@ const std::vector<base::FilePath>& AppShimHostBootstrap::GetLaunchFiles()
 
 bool AppShimHostBootstrap::IsMultiProfile() const {
   // PWAs and bookmark apps are multi-profile capable.
-  return base::FeatureList::IsEnabled(features::kAppShimMultiProfile) &&
-         app_shim_info_->app_url.is_valid();
+  return app_shim_info_->app_url.is_valid();
 }
 
 void AppShimHostBootstrap::OnShimConnected(

@@ -197,9 +197,9 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
   container_builder_.SetBoxType(type);
 }
 
-base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
-  base::Optional<MinMaxSize> sizes =
+base::Optional<MinMaxSizes> NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  base::Optional<MinMaxSizes> sizes =
       CalculateMinMaxSizesIgnoringChildren(node_, border_scrollbar_padding_);
   if (sizes)
     return sizes;
@@ -244,13 +244,13 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
         float_right_inline_size = LayoutUnit();
     }
 
-    MinMaxSizeInput child_input(child_percentage_resolution_block_size);
+    MinMaxSizesInput child_input(child_percentage_resolution_block_size);
     if (child.IsInline() || child.IsAnonymousBlock()) {
       child_input.float_left_inline_size = float_left_inline_size;
       child_input.float_right_inline_size = float_right_inline_size;
     }
 
-    MinMaxSize child_sizes;
+    MinMaxSizes child_sizes;
     if (child.IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
@@ -259,7 +259,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
       child_sizes =
-          child.ComputeMinMaxSize(Style().GetWritingMode(), child_input);
+          child.ComputeMinMaxSizes(Style().GetWritingMode(), child_input);
     } else {
       child_sizes =
           ComputeMinAndMaxContentContribution(Style(), child, child_input);

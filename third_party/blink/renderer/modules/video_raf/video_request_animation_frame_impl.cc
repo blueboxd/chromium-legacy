@@ -167,6 +167,13 @@ void VideoRequestAnimationFrameImpl::ExecuteFrameCallbacks(
         time_converter.MonotonicTimeToZeroBasedDocumentTime(capture_time)));
   }
 
+  base::TimeTicks receive_time;
+  if (frame_metadata->metadata.GetTimeTicks(
+          media::VideoFrameMetadata::RECEIVE_TIME, &receive_time)) {
+    metadata->setReceiveTime(GetClampedTimeInMillis(
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(receive_time)));
+  }
+
   double rtp_timestamp;
   if (frame_metadata->metadata.GetDouble(
           media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {

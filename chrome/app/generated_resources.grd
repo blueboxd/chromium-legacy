@@ -6451,16 +6451,16 @@ the Bookmarks menu.">
         <message name="IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY" desc="The format for details of the title displayed in tabs and popup windows. [ICU Syntax]">
           {NUM_PAGES, plural,
             =0 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph>}
-            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 more page}
-            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # more pages}}
+            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 other tab}
+            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # other tabs}}
         </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_BROWSER_WINDOW_TITLE_MENU_ENTRY" desc="In Title Case: The format for details of the title displayed in tabs and popup windows. [ICU Syntax]">
           {NUM_PAGES, plural,
             =0 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph>}
-            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 More Page}
-            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # More Pages}}
+            =1 {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and 1 Other Tab}
+            other {<ph name="PAGE_TITLE">$1<ex>Google</ex></ph> and # Other Tabs}}
         </message>
       </if>
 

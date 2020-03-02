@@ -42,6 +42,9 @@ class WilcoDtcSupportdNotificationController {
   // Displays notification when the attached dock has unsupported Thunderbolt
   // capabilities.
   virtual std::string ShowDockThunderboltNotification() const;
+  // Displays notification when the attached charger does not supply enough
+  // power.
+  virtual std::string ShowLowPowerChargerNotification() const;
 
  private:
   void DisplayNotification(

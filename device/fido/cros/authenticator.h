@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
   void MakeCredential(CtapMakeCredentialRequest request,
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
-                    GetAssertionCallback callback) override {}
+                    GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override {}
   void Cancel() override {}
   std::string GetId() const override;
@@ -55,6 +55,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
                             MakeCredentialCallback callback,
                             dbus::Response* dbus_response,
                             dbus::ErrorResponse* error);
+
+  void OnGetAssertionResp(CtapGetAssertionRequest request,
+                          GetAssertionCallback callback,
+                          dbus::Response* dbus_response,
+                          dbus::ErrorResponse* error);
 
   base::WeakPtrFactory<ChromeOSAuthenticator> weak_factory_;
 };

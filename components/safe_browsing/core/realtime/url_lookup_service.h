@@ -27,6 +27,8 @@ namespace signin {
 class IdentityManager;
 }
 
+class PrefService;
+
 namespace safe_browsing {
 
 using RTLookupRequestCallback =
@@ -44,19 +46,25 @@ class RealTimeUrlLookupService : public KeyedService {
  public:
   RealTimeUrlLookupService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      VerdictCacheManager* cache_manager);
+      VerdictCacheManager* cache_manager,
+      signin::IdentityManager* identity_manager,
+      PrefService* pref_service,
+      bool is_off_the_record);
   ~RealTimeUrlLookupService() override;
 
   // Returns true if |url|'s scheme can be checked.
   bool CanCheckUrl(const GURL& url) const;
+
+  // Returns true if real time URL lookup is enabled. The check is based on
+  // pref settings of the associated profile, whether the profile is an off the
+  // record profile and the finch flag.
+  bool CanPerformFullURLLookup() const;
 
   // Returns true if the real time lookups are currently in backoff mode due to
   // too many prior errors. If this happens, the checking falls back to
   // local hash-based method.
   bool IsInBackoffMode() const;
 
-  // TODO(crbug.com/1041912): |identity_manager_on_ui| is unused. It will
-  // be used to obtain access token in a follow up CL.
   // Start the full URL lookup for |url|, call |request_callback| on the same
   // thread when request is sent, call |response_callback| on the same thread
   // when response is received.
@@ -64,8 +72,7 @@ class RealTimeUrlLookupService : public KeyedService {
   // cache for |url|.
   void StartLookup(const GURL& url,
                    RTLookupRequestCallback request_callback,
-                   RTLookupResponseCallback response_callback,
-                   signin::IdentityManager* identity_manager_on_ui);
+                   RTLookupResponseCallback response_callback);
 
   // KeyedService:
   // Called before the actual deletion of the object.
@@ -147,6 +154,17 @@ class RealTimeUrlLookupService : public KeyedService {
 
   // Unowned object used for getting and storing real time url check cache.
   VerdictCacheManager* cache_manager_;
+
+  // Unowned object used for getting access token when real time url check with
+  // token is enabled.
+  signin::IdentityManager* identity_manager_;
+
+  // Unowned object used for getting preference settings.
+  PrefService* pref_service_;
+
+  // A boolean indicates whether the profile associated with this
+  // |url_lookup_service| is an off the record profile.
+  bool is_off_the_record_;
 
   friend class RealTimeUrlLookupServiceTest;
 

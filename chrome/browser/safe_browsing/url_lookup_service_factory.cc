@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
@@ -31,7 +32,9 @@ RealTimeUrlLookupServiceFactory::GetInstance() {
 RealTimeUrlLookupServiceFactory::RealTimeUrlLookupServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "RealTimeUrlLookupService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(IdentityManagerFactory::GetInstance());
+}
 
 KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -52,7 +55,8 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   DCHECK(cache_manager);
   return new RealTimeUrlLookupService(
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
-      cache_manager);
+      cache_manager, IdentityManagerFactory::GetForProfile(profile),
+      profile->GetPrefs(), profile->IsOffTheRecord());
 }
 
 }  // namespace safe_browsing

@@ -71,14 +71,14 @@ class NSSCertDatabaseChromeOSTest : public TestWithTaskEnvironment,
         crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
             user_1_.username_hash(),
-            base::Callback<void(crypto::ScopedPK11Slot)>())));
+            base::OnceCallback<void(crypto::ScopedPK11Slot)>())));
     db_1_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
     db_2_.reset(new NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
             user_2_.username_hash(),
-            base::Callback<void(crypto::ScopedPK11Slot)>())));
+            base::OnceCallback<void(crypto::ScopedPK11Slot)>())));
 
     // Add observer to CertDatabase for checking that notifications from
     // NSSCertDatabaseChromeOS are proxied to the CertDatabase.

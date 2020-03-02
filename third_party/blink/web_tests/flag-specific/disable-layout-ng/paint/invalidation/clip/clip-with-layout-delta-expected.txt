@@ -12,9 +12,14 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
           "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -22,14 +27,9 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 8, 4, 19],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

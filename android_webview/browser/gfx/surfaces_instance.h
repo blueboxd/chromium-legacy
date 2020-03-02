@@ -44,9 +44,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameSinkId AllocateFrameSinkId();
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
-  void DrawAndSwap(const gfx::Size& viewport,
-                   const gfx::Rect& clip,
-                   const gfx::Transform& transform,
+  void DrawAndSwap(gfx::Size viewport,
+                   gfx::Rect clip,
+                   gfx::Transform transform,
                    const gfx::Size& frame_size,
                    const viz::SurfaceId& child_id,
                    float device_scale_factor,
@@ -112,6 +112,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameTokenGenerator next_frame_token_;
 
   gfx::Size surface_size_;
+  bool was_fbo0_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };

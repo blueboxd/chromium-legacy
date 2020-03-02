@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -60,13 +60,13 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
+MinMaxSizes NGLayoutInputNode::ComputeMinMaxSizes(
     WritingMode writing_mode,
-    const MinMaxSizeInput& input,
+    const MinMaxSizesInput& input,
     const NGConstraintSpace* space) {
   if (auto* inline_node = DynamicTo<NGInlineNode>(this))
-    return inline_node->ComputeMinMaxSize(writing_mode, input, space);
-  return To<NGBlockNode>(*this).ComputeMinMaxSize(writing_mode, input, space);
+    return inline_node->ComputeMinMaxSizes(writing_mode, input, space);
+  return To<NGBlockNode>(*this).ComputeMinMaxSizes(writing_mode, input, space);
 }
 
 void NGLayoutInputNode::IntrinsicSize(

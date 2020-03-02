@@ -136,8 +136,6 @@ size_t SharedImageBacking::EstimatedSizeForMemTracking() const {
 }
 
 bool SharedImageBacking::have_context() const {
-  DCHECK(refs_.empty());
-
   return have_context_;
 }
 

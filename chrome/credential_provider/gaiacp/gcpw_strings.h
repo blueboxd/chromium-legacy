@@ -18,6 +18,9 @@ extern const wchar_t kKeyAcceptTos[];
 // should be enabled / disabled.
 extern const wchar_t kKeyEnableGemFeatures[];
 extern const char kGaiaSetupPath[];
+
+// URL for the GEM service handling GCPW requests.
+extern const wchar_t kDefaultGcpwServiceUrl[];
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_GCPW_STRINGS_H_

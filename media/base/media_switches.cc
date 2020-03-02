@@ -627,6 +627,11 @@ const base::Feature kPreloadMediaEngagementData{
 const base::Feature kMediaEngagementHTTPSOnly{
     "MediaEngagementHTTPSOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Media Feeds to allow sites to provide specific recommendations for
+// users.
+const base::Feature kMediaFeeds{"MediaFeeds",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Send events to devtools rather than to chrome://media-internals
 const base::Feature kMediaInspectorLogging{"MediaInspectorLogging",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

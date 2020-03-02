@@ -53,13 +53,13 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        loader_factory_receiver);
+        loader_factory_receiver,
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,
     int routing_id,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        loader_factory_receiver);
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,

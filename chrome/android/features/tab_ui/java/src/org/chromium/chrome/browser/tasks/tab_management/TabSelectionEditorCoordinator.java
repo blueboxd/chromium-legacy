@@ -122,8 +122,8 @@ class TabSelectionEditorCoordinator {
         // device, and TabGroupContinuation is turned on.
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
-                null, null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
-                null, false, COMPONENT_NAME);
+                null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null, null,
+                false, COMPONENT_NAME);
         mTabListCoordinator.registerItemType(TabProperties.UiType.DIVIDER,
                 new LayoutViewBuilder(R.layout.divider_preference),
                 (model, view, propertyKey) -> {});

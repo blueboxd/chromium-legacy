@@ -182,6 +182,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The padding between the app icon and the end of the scrollable shelf.
   int GetAppIconEndPadding() const;
 
+  // Return the size of the shelf item's ripple.
+  int GetShelfItemRippleSize() const;
+
   // The animation time for dimming shelf icons, widgets, and buttons.
   base::TimeDelta DimAnimationDuration() const;
 

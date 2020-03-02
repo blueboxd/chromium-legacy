@@ -68,6 +68,20 @@ mojom("mutable_network_traffic_annotation_interface") {
   ]
 }
 
+# These interfaces are put in their own target to avoid a circular dependency,
+# which comes from the fact that the typemap for url_loader.mojom
+# (ResourceRequestBody) uses these interfaces.
+mojom("trust_tokens_interface") {
+  generate_java = true
+  sources = [ "trust_tokens.mojom" ]
+  public_deps = [ "//url/mojom:url_mojom_origin" ]
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/blink/public/platform/web_common.h"
+  }
+}
+
 # This target is split from "mojom" target as the lazy serialization may
 # cause problems. See https://crbug.com/822732.
 mojom("websocket_mojom") {
@@ -145,6 +159,7 @@ mojom("mojom") {
     ":mojom_ip_address",
     ":mojom_network_isolation_key",
     ":mutable_network_traffic_annotation_interface",
+    ":trust_tokens_interface",
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",

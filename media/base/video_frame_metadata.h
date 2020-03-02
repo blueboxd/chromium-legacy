@@ -177,6 +177,12 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource
     RTP_TIMESTAMP,
 
+    // For video frames coming from a remote source, this is the time the
+    // encoded frame was received by the platform, i.e., the time at
+    // which the last packet belonging to this frame was received over the
+    // network.
+    RECEIVE_TIME,
+
     NUM_KEYS
   };
 

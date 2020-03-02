@@ -597,6 +597,7 @@ Polymer({
 
   /** @private */
   onActivityControlsTap_() {
+    chrome.metricsPrivate.recordUserAction('Sync_OpenActivityControlsPage');
     this.browserProxy_.openActivityControlsUrl();
   },
 

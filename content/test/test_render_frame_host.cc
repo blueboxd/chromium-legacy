@@ -208,9 +208,10 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   SendNavigateWithParams(&params, was_within_same_document);
 }
 
-void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
+void TestRenderFrameHost::SimulateBeforeUnloadCompleted(bool proceed) {
   base::TimeTicks now = base::TimeTicks::Now();
-  ProcessBeforeUnloadACK(proceed, false /* treat_as_final_ack */, now, now);
+  ProcessBeforeUnloadCompleted(
+      proceed, false /* treat_as_final_completion_callback */, now, now);
 }
 
 void TestRenderFrameHost::SimulateUnloadACK() {
@@ -394,11 +395,11 @@ void TestRenderFrameHost::PrepareForCommitInternal(
       !NavigationTypeUtils::IsSameDocument(
           request->common_params().navigation_type);
 
-  // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
-  // it. If it runs it will update the request state.
+  // Simulate a beforeUnload completion callback from the renderer if the
+  // browser is waiting for it. If it runs it will update the request state.
   if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
     static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
-        ->SendBeforeUnloadACK(true);
+        ->SimulateBeforeUnloadCompleted(true);
   }
 
   if (!have_to_make_network_request)

@@ -197,8 +197,8 @@ promise_test(async t => {
   rs.controller.enqueue(new ReadableStream());
   await promise_rejects(t, 'DataCloneError', reader.read(),
                         'closed promise should reject');
-  assert_throws(new TypeError(), () => rs.controller.enqueue(),
-                'original stream should be errored');
+  assert_throws_js(TypeError, () => rs.controller.enqueue(),
+                   'original stream should be errored');
 }, 'transferring a non-serializable chunk should error both sides');
 
 promise_test(async () => {
@@ -226,8 +226,8 @@ promise_test(async () => {
   rs.controller.error();
   const {done} = await reader.read();
   assert_true(done, 'should be done');
-  assert_throws(new TypeError(), () => rs.controller.enqueue(),
-                'enqueue should throw');
+  assert_throws_js(TypeError, () => rs.controller.enqueue(),
+                   'enqueue should throw');
 }, 'race between cancel() and error() should leave sides in different states');
 
 promise_test(async () => {

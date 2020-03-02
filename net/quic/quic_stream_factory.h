@@ -287,7 +287,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Delete cached state objects in |crypto_config_|. If |origin_filter| is not
   // null, only objects on matching origins will be deleted.
   void ClearCachedStatesInCryptoConfig(
-      const base::Callback<bool(const GURL&)>& origin_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
   // Helper method that configures a DatagramClientSocket. Socket is
   // bound to the default network if the |network| param is

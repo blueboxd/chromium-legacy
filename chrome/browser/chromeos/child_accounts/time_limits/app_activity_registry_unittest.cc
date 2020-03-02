@@ -743,5 +743,26 @@ TEST_F(AppActivityRegistryTest, RemoveOldEntries) {
   }
 }
 
+TEST_F(AppActivityRegistryTest, ActiveWebAppBlocked) {
+  // Create activity for web app.
+  CreateAppActivityForApp(kApp2, base::TimeDelta::FromHours(1));
+
+  // Set Chrome as active.
+  registry().OnChromeAppActivityChanged(ChromeAppActivityState::kActive,
+                                        base::Time::Now());
+
+  // Update the time limits for Chrome.
+  AppLimit chrome_limit(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(30), base::Time::Now());
+
+  std::map<AppId, AppLimit> app_limits = {{GetChromeAppId(), chrome_limit}};
+  registry().UpdateAppLimits(app_limits);
+
+  // Web time limit should be reached.
+  EXPECT_EQ(registry().GetAppState(kApp2), AppState::kLimitReached);
+
+  EXPECT_EQ(registry().GetAppState(GetChromeAppId()), AppState::kLimitReached);
+}
+
 }  // namespace app_time
 }  // namespace chromeos

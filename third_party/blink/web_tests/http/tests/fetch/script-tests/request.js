@@ -212,9 +212,9 @@ test(function() {
                   'Request.headers should match');
     assert_equals(request6.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
-    assert_throws(new TypeError(),
-                  () => { new Request(request, {headers: null}) },
-                  'null cannot be converted to a HeaderInit');
+    assert_throws_js(TypeError,
+                     () => { new Request(request, {headers: null}) },
+                     'null cannot be converted to a HeaderInit');
   }, 'Request header test');
 
 test(function() {
@@ -412,12 +412,12 @@ test(function() {
   }, 'Request: valid method names and normalize test');
 
 test(function() {
-    assert_throws(new TypeError(),
-                  function() { new Request('http://user@localhost/'); },
-                  'Request with a URL with username must throw.');
-    assert_throws(new TypeError(),
-                  function() { new Request('http://user:pass@localhost/'); },
-                  'Request with a URL with username and password must throw.');
+    assert_throws_js(TypeError,
+                     function() { new Request('http://user@localhost/'); },
+                     'Request with a URL with username must throw.');
+    assert_throws_js(TypeError,
+                     function() { new Request('http://user:pass@localhost/'); },
+                     'Request with a URL with username and password must throw.');
   }, 'Request construction with URLs with credentials.');
 
 test(function() {

@@ -402,6 +402,12 @@ test("components_unittests") {
   if (enable_print_preview) {
     deps += [ "//components/pwg_encoder:unit_tests" ]
   }
+
+  # TODO(crbug/1056278): Enable this on Fuchsia
+  if (safe_browsing_mode != 0 && !is_fuchsia) {
+    deps += [ "//components/safe_browsing/core:file_type_policies_unittest" ]
+  }
+
   if (safe_browsing_mode == 1) {
     deps += [
       "//components/safe_browsing/core:verdict_cache_manager_unittest",

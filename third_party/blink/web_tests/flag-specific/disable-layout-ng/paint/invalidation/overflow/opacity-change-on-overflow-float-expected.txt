@@ -7,14 +7,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "InlineTextBox 'Make sure when a layer'",
           "rect": [8, 8, 761, 59],
-          "reason": "chunk appeared"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'REGRESSION (r41203): Facebook friend suggestions disappear on update. '",
+          "rect": [8, 8, 761, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'You should'",
+          "rect": [8, 8, 761, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'see a 100x100 green square below.\nIf you see any red, the test has failed.'",
+          "rect": [8, 8, 761, 59],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'switches\nfrom being self-painting to non-self-painting that a layout happens to fix up the floating objects lists. '",
+          "rect": [8, 8, 761, 59],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 761, 59],
-          "reason": "chunk disappeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV class='green'",
@@ -24,12 +44,17 @@
         {
           "object": "LayoutBlockFlow (floating) DIV class='red'",
           "rect": [8, 84, 100, 100],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV class='red'",
+          "rect": [8, 84, 100, 100],
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 84, 100, 100],
-          "reason": "chunk disappeared"
+          "object": "InlineTextBox 'Repaint test for '",
+          "rect": [8, 8, 100, 19],
+          "reason": "disappeared"
         }
       ]
     }

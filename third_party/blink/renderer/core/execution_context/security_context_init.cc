@@ -24,6 +24,11 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
+
+// This is the constructor used by RemoteSecurityContext
+SecurityContextInit::SecurityContextInit()
+    : SecurityContextInit(nullptr, nullptr, nullptr) {}
+
 // This constructor is used for non-Document contexts (i.e., workers and tests).
 // This does a simpler check than Documents to set secure_context_mode_. This
 // is only sufficient until there are APIs that are available in workers or

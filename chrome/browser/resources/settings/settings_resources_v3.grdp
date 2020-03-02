@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 3.0 Elements -->
+  <include name="IDR_SETTINGS_A11Y_PAGE_A11Y_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/a11y_page.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <if expr="not is_macosx and not chromeos">
+    <include name="IDR_SETTINGS_A11Y_PAGE_CAPTIONS_SUBPAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/captions_subpage.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
+  <if expr="is_win or is_macosx">
+    <include name="IDR_SETTINGS_A11Y_PAGE_CAPTIONS_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/a11y_page/captions_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_ABOUT_PAGE_ABOUT_PAGE_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/about_page/about_page_browser_proxy.m.js"
            use_base_dir="false"

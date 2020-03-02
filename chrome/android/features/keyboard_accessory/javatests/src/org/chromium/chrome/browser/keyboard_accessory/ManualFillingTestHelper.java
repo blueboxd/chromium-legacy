@@ -20,7 +20,6 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.app.Activity;
-import android.support.design.widget.TabLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
@@ -32,6 +31,8 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './a11y_page/a11y_page.m.js';
 import './about_page/about_page.m.js';
 import './appearance_page/appearance_page.m.js';
 import './appearance_page/appearance_fonts_page.m.js';

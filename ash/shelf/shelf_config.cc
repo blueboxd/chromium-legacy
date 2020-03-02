@@ -381,10 +381,12 @@ int ShelfConfig::GetShelfControlButtonBlurRadius() const {
 }
 
 int ShelfConfig::GetAppIconEndPadding() const {
-  return (chromeos::switches::ShouldShowShelfHotseat() &&
-          Shell::Get()->IsInTabletMode())
-             ? app_icon_end_padding_
-             : 0;
+  return chromeos::switches::ShouldShowShelfHotseat() ? app_icon_end_padding_
+                                                      : 0;
+}
+
+int ShelfConfig::GetShelfItemRippleSize() const {
+  return button_size() + 2 * scrollable_shelf_ripple_padding();
 }
 
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {

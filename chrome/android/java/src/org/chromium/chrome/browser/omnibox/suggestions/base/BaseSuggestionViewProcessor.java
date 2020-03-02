@@ -10,6 +10,7 @@ import android.text.Spannable;
 import android.text.style.StyleSpan;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
@@ -26,6 +27,7 @@ import java.util.List;
 public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor {
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
+    private boolean mEnableCompactSuggestions;
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {}
@@ -37,7 +39,10 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {}
 
     @Override
-    public void onNativeInitialized() {}
+    public void onNativeInitialized() {
+        mEnableCompactSuggestions =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS);
+    }
 
     @Override
     public void onSuggestionsReceived() {}
@@ -82,6 +87,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
         model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
+        model.set(BaseSuggestionViewProperties.IS_COMPACT, mEnableCompactSuggestions);
 
         if (canRefine(suggestion)) {
             setActionDrawableState(model,

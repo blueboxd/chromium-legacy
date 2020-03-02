@@ -2042,11 +2042,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "enable-webnfc",
-    "owners": [ "rijubrata.bhaumik@intel.com","reillyg" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "enable-webrtc-capture-multi-channel-audio-processing",
     "owners": [ "saza" ],
     "expiry_milestone": 85

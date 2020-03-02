@@ -558,7 +558,7 @@ TEST_F(RenderProcessHostUnitTest,
   // process.
   contents()->GetController().LoadURL(kUrl, Referrer(),
                                       ui::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  main_test_rfh()->SimulateBeforeUnloadCompleted(true);
   int speculative_process_host_id =
       contents()->GetPendingMainFrame()->GetProcess()->GetID();
   bool speculative_is_default_site_instance = contents()

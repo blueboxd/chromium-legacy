@@ -245,7 +245,7 @@ const base::Feature kDebounceDocumentProvider{
 // when the user presses Enter, the user may go to a surprising destination.
 const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
     "OmniboxPreserveDefaultMatchAgainstAsyncUpdate",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Demotes the relevance scores when comparing suggestions based on the
 // suggestion's |AutocompleteMatchType| and the user's |PageClassification|.

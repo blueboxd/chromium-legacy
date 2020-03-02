@@ -7,29 +7,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [0, 0, 602, 136],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow DIV id='target'",
           "rect": [0, 34, 602, 102],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [0, 0, 536, 18],
-          "reason": "chunk appeared"
+          "object": "LayoutNGBlockFlow DIV id='target'",
+          "rect": [0, 34, 602, 102],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
           "rect": [305, 35, 296, 18],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
           "rect": [153, 35, 296, 18],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

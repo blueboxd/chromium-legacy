@@ -32,7 +32,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -71,8 +70,7 @@ public class NavigationHandlerTest {
     }
 
     private Tab currentTab() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mActivityTestRule.getActivity().getActivityTabProvider().get());
+        return mActivityTestRule.getActivity().getActivityTabProvider().get();
     }
 
     private void loadNewTabPage() {

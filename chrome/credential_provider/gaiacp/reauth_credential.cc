@@ -57,8 +57,9 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
   // 1. We need to append this switch irrespective of whether its a
   // reauth flow vs add user flow.
   // 2. We only show tos for GEM usecases.
+  bool show_tos = false;
   if (!CheckIfTosAccepted() && IsGemEnabled())
-    command_line->AppendSwitchASCII(kShowTosSwitch, "1");
+    show_tos = true;
 
   // If this is an existing user with an SID, try to get its gaia id and pass
   // it to the GLS for verification.
@@ -83,11 +84,13 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
                                      OLE2CW(email_for_reauth_));
     // Use kGaiaReauthPath when there is no email_for_reauth_ field set.
     hr = SetGaiaEndpointCommandLineIfNeeded(L"ep_reauth_url", kGaiaReauthPath,
-                                            IsGemEnabled(), command_line);
+                                            IsGemEnabled(), show_tos,
+                                            command_line);
   } else {
     // Use kGaiaSetupPath when there is no email_for_reauth_ field set.
     hr = SetGaiaEndpointCommandLineIfNeeded(L"ep_reauth_url", kGaiaSetupPath,
-                                            IsGemEnabled(), command_line);
+                                            IsGemEnabled(), show_tos,
+                                            command_line);
   }
 
   if (FAILED(hr)) {

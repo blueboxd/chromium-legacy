@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.init.FirstDrawDetector;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
-import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -52,8 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
-import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -373,7 +370,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                 if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
                     // Only log when you switch a tab page directly from tab switcher.
-                    if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                    if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                             || getRelatedTabs(tab.getId()).size() == 1) {
                         RecordUserAction.record(
                                 "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -395,7 +392,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 RecordUserAction.record("MobileTabSwitched");
             }
             // Only log when you switch a tab page directly from tab switcher.
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
                     || getRelatedTabs(tab.getId()).size() == 1) {
                 RecordUserAction.record(
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
@@ -608,7 +605,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     @Override
     @Nullable
     public TabListMediator.TabActionListener openTabGridDialog(Tab tab) {
-        if (!TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
         assert getRelatedTabs(tab.getId()).size() != 1;
         assert mTabGridDialogController != null;
@@ -626,29 +622,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void onTabSelecting(int tabId) {
         mIsSelectingInTabSwitcher = true;
         mOnTabSelectingListener.onTabSelecting(LayoutManager.time(), tabId);
-    }
-
-    @Nullable
-    TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
-        if (!ableToCreateGroup(tab)
-                || TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
-            return null;
-        }
-
-        return tabId -> {
-            Tab parentTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
-            mTabModelSelector.getCurrentModel().commitAllTabClosures();
-            mTabModelSelector.openNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
-                    TabLaunchType.FROM_CHROME_UI, parentTab,
-                    mTabModelSelector.isIncognitoSelected());
-            RecordUserAction.record("TabGroup.Created.TabSwitcher");
-        };
-    }
-
-    private boolean ableToCreateGroup(Tab tab) {
-        return TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
-                && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
-                && getRelatedTabs(tab.getId()).size() == 1;
     }
 
     private boolean ableToOpenDialog(Tab tab) {

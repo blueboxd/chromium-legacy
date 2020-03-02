@@ -95,11 +95,6 @@ public class TabReparentingParams implements AsyncTabParams {
         return mTabIndex;
     }
 
-    /** @return Whether this holds a tab index. */
-    public boolean hasTabIndex() {
-        return mTabIndex != TAB_INDEX_NOT_SET;
-    }
-
     /** Set whether these params are from night mode reparenting. */
     public void setFromNightModeReparenting(boolean fromNightModeReparenting) {
         mIsFromNightModeReparenting = fromNightModeReparenting;

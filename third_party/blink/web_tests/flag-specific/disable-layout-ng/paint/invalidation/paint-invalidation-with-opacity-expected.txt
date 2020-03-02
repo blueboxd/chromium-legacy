@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "chunk appeared"
         }
       ]
     }

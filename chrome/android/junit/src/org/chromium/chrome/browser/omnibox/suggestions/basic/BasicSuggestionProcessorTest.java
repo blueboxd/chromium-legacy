@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -169,6 +170,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)
     public void getSuggestionIconTypeForSearch_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
@@ -203,6 +205,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)
     public void getSuggestionIconTypeForUrl_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
@@ -235,6 +238,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)
     public void getSuggestionIconTypeForBookmarks_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.BOOKMARK},
@@ -290,6 +294,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)
     public void suggestionFavicons_showFaviconWhenAvailable() {
         final ArgumentCaptor<LargeIconCallback> callback =
                 ArgumentCaptor.forClass(LargeIconCallback.class);
@@ -309,6 +314,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
+    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)
     public void suggestionFavicons_doNotReplaceFallbackIconWhenNoFaviconIsAvailable() {
         final ArgumentCaptor<LargeIconCallback> callback =
                 ArgumentCaptor.forClass(LargeIconCallback.class);

@@ -26,7 +26,6 @@ proto_library("webui_proto") {
 
 proto_library("realtimeapi_proto") {
   sources = [ "proto/realtimeapi.proto" ]
-
   deps = [ ":csd_proto" ]
 }
 
@@ -117,6 +116,52 @@ if (!is_ios) {
     deps = [
       "//base:base",
       "//content/public/browser",
+    ]
+  }
+}
+
+# These files have no content/ dependency, but we still aren't building them on
+# on iOS since we don't ship download protection on that platform.
+# TODO(crbug/1056278): Enable this on Fuchsia
+if (!is_ios && !is_fuchsia) {
+  proto_library("download_file_types_proto") {
+    sources = [ "proto/download_file_types.proto" ]
+  }
+
+  source_set("file_type_policies") {
+    sources = [
+      "file_type_policies.cc",
+      "file_type_policies.h",
+    ]
+
+    public_deps = [ ":download_file_types_proto" ]
+
+    deps = [
+      "//base",
+      "//components/resources:components_resources",
+      "//ui/base",
+    ]
+  }
+
+  source_set("file_type_policies_test_support") {
+    testonly = true
+    sources = [
+      "file_type_policies_test_util.cc",
+      "file_type_policies_test_util.h",
+    ]
+
+    deps = [ ":file_type_policies" ]
+  }
+
+  source_set("file_type_policies_unittest") {
+    testonly = true
+    sources = [ "file_type_policies_unittest.cc" ]
+
+    deps = [
+      ":file_type_policies",
+      "//base:base",
+      "//testing/gmock:gmock",
+      "//testing/gtest:gtest",
     ]
   }
 }

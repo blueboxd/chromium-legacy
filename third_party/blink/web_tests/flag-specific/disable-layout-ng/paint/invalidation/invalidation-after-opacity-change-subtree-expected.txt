@@ -7,9 +7,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 2046, 774, 257],
-          "reason": "chunk appeared"
+          "object": "InlineTextBox 'This test checks that switching opacity'",
+          "rect": [8, 2046, 774, 107],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'invalidates the full subtree.'",
+          "rect": [8, 2046, 774, 107],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'This text should be visible in the'",
+          "rect": [8, 2196, 655, 107],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'output.'",
+          "rect": [8, 2196, 655, 107],
+          "reason": "appeared"
         }
       ],
       "transform": 1

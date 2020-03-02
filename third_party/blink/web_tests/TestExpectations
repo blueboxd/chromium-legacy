@@ -256,7 +256,7 @@ crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gest
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
 
-crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
+crbug.com/980969 http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
@@ -6757,3 +6757,6 @@ crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtoo
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
 crbug.com/1047648 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
+
+crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Pass Failure ]
+crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Pass Timeout ]

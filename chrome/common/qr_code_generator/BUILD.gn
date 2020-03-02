@@ -4,6 +4,7 @@
 
 source_set("qr_code_generator") {
   sources = [
+    "dino_image.h",
     "qr_code_generator.cc",
     "qr_code_generator.h",
   ]

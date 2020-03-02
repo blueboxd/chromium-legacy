@@ -78,7 +78,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.is_signed_exchange_prefetch_cache_enabled &&
          obey_origin_policy == request.obey_origin_policy &&
          trusted_params == trusted_params &&
-         recursive_prefetch_token == request.recursive_prefetch_token;
+         recursive_prefetch_token == request.recursive_prefetch_token &&
+         trust_token_params == request.trust_token_params;
 }
 
 bool ResourceRequest::SendsCookies() const {

@@ -6,25 +6,25 @@ test(function(t) {
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
 
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(Infinity, Infinity);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(Infinity, 10);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(-Infinity, 10);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(10, Infinity);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(10, -Infinity);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(NaN, 10);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.createImageData(10, NaN);
     });
 }, 'Test the argument bounds of canvas createImageData.');

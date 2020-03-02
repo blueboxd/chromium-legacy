@@ -14,6 +14,10 @@ function checkScroll() {
     position = 'top';
   else if(isInView(document.getElementById("text")))
     position = 'text';
+  else if(isInView(document.getElementById("text2")))
+    position = 'text2';
+  else if(isInView(document.getElementById("text3")))
+    position = 'text3';
 
   const target = document.querySelector(":target");
   let results = {
@@ -41,4 +45,14 @@ function checkScroll() {
   <div id=text>lockedtext</div>
 </div>
 <div class=spacer></div>
+<div id=text2and3ancestor>
+  <div class=locked>
+    <div id=text2>start</div>
+  </div>
+  <div class=spacer></div>
+  <div class=locked>
+    <div id=text3>end</div>
+  </div>
+  <div class=spacer></div>
+</div>
 </body>

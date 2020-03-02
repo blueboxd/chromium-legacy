@@ -20,8 +20,6 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
@@ -430,10 +428,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteShortcutsSingleProfile) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{features::kAppShimMultiProfile});
+  info_->url = GURL();
 
   base::FilePath other_shim_path =
       shim_path_.DirName().Append("Copy of Shim.app");
@@ -489,10 +484,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteAllShortcutsForProfile) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{features::kAppShimMultiProfile});
+  info_->url = GURL();
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

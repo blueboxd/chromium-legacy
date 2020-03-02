@@ -3032,12 +3032,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceColorProfileDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceColorProfileChoices)},
 
-#if defined(OS_ANDROID)
-    {"enable-webnfc", flag_descriptions::kEnableWebNfcName,
-     flag_descriptions::kEnableWebNfcDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kWebNfc)},
-#endif
-
     {"force-effective-connection-type",
      flag_descriptions::kForceEffectiveConnectionTypeName,
      flag_descriptions::kForceEffectiveConnectionTypeDescription, kOsAll,

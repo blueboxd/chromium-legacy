@@ -92,8 +92,9 @@ class RenderFrameHostTester {
   // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
   virtual void Detach() = 0;
 
-  // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
-  virtual void SendBeforeUnloadACK(bool proceed) = 0;
+  // Calls ProcessBeforeUnloadCompleted on this RenderFrameHost with the given
+  // parameter.
+  virtual void SimulateBeforeUnloadCompleted(bool proceed) = 0;
 
   // Simulates the FrameHostMsg_Unload_ACK that fires if you commit a cross-site
   // navigation without making any network requests.

@@ -38,6 +38,7 @@ ci.builder(
         'avd_configs': [
             'tools/android/avd/proto/generic_android23.textpb',
             'tools/android/avd/proto/generic_android28.textpb',
+            'tools/android/avd/proto/generic_playstore_android28.textpb',
         ],
     },
     schedule = '0 7 * * 0 *',
@@ -1084,11 +1085,6 @@ ci.fyi_builder(
     triggered_by = ['win-pixel-builder-rel'],
 )
 
-ci.fyi_builder(
-    name = 'linux-rel-swarming',
-    executable = 'recipe:swarming/staging',
-    swarming_host = 'chromium-swarm-staging.appspot.com',
-)
 
 ci.fyi_celab_builder(
     name = 'win-celab-builder-rel',

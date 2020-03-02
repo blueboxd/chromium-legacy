@@ -7,6 +7,7 @@
 import json
 import mock
 import os
+import unittest
 
 import test_runner
 import test_runner_test
@@ -269,3 +270,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
                      res['failed']['BUILD_INTERRUPTED'])
     self.assertEqual(['TestCase1/method1', 'TestCase2/method1'],
                      res['passed'])
+
+
+if __name__ == '__main__':
+  unittest.main()

@@ -58,8 +58,8 @@ ASH_PUBLIC_EXPORT extern const char kShowWebUiLogin[];
 ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 
-ASH_PUBLIC_EXPORT bool IsUsingViewsLock();
 ASH_PUBLIC_EXPORT bool IsUsingShelfAutoDim();
+ASH_PUBLIC_EXPORT bool IsUsingViewsLock();
 
 }  // namespace switches
 }  // namespace ash

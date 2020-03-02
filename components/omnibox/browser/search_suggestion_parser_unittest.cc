@@ -234,3 +234,75 @@ TEST(SearchSuggestionParserTest, NavigationClassification) {
       {0, AutocompleteMatch::ACMatchClassification::NONE}};
   EXPECT_EQ(kNone, result.match_contents_class());
 }
+
+TEST(SearchSuggestionParserTest, ParseHeaderTexts) {
+  std::string json_data = R"([
+      "",
+      ["los angeles", "san diego", "las vegas", "san francisco"],
+      ["history", "", "", ""],
+      [],
+      {
+        "google:clientdata": {
+          "bpc": false,
+          "tlw": false
+        },
+        "google:headertexts":{
+          "a":{
+            "40007":"Not recommended for you",
+            "40008":"Recommended for you"
+          }
+        },
+        "google:suggestdetail":[
+          {
+          },
+          {
+            "zl":40007
+          },
+          {
+            "zl":40008
+          },
+          {
+            "zl":40009
+          }
+        ],
+        "google:suggestrelevance": [607, 606, 605, 604],
+        "google:suggesttype": ["PERSONALIZED_QUERY", "QUERY", "QUERY", "QUERY"]
+      }])";
+  base::Optional<base::Value> root_val = base::JSONReader::Read(json_data);
+  ASSERT_TRUE(root_val);
+  TestSchemeClassifier scheme_classifier;
+  AutocompleteInput input(base::ASCIIToUTF16(""),
+                          metrics::OmniboxEventProto::NTP_REALBOX,
+                          scheme_classifier);
+  SearchSuggestionParser::Results results;
+  ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
+      *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
+      /*is_keyword_result=*/false, &results));
+
+  {
+    const auto& suggestion_result = results.suggest_results[0];
+    ASSERT_EQ(base::ASCIIToUTF16("los angeles"),
+              suggestion_result.suggestion());
+    // This suggestion has no header text.
+    ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.header());
+  }
+  {
+    const auto& suggestion_result = results.suggest_results[1];
+    ASSERT_EQ(base::ASCIIToUTF16("san diego"), suggestion_result.suggestion());
+    ASSERT_EQ(base::ASCIIToUTF16("Not recommended for you"),
+              suggestion_result.header());
+  }
+  {
+    const auto& suggestion_result = results.suggest_results[2];
+    ASSERT_EQ(base::ASCIIToUTF16("las vegas"), suggestion_result.suggestion());
+    ASSERT_EQ(base::ASCIIToUTF16("Recommended for you"),
+              suggestion_result.header());
+  }
+  {
+    const auto& suggestion_result = results.suggest_results[3];
+    ASSERT_EQ(base::ASCIIToUTF16("san francisco"),
+              suggestion_result.suggestion());
+    // This suggestion has no header text.
+    ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.header());
+  }
+}

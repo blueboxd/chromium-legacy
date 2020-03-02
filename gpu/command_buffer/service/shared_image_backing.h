@@ -89,6 +89,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 
   virtual bool PresentSwapChain();
 
+  virtual void MarkForDestruction() {}
+
   // Allows the backing to attach additional data to the dump or dump
   // additional sub paths.
   virtual void OnMemoryDump(const std::string& dump_name,

@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -99,6 +100,22 @@ class MockFrameHost : public mojom::FrameHost {
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override {}
+
+  void set_overlay_routing_token(const base::UnguessableToken& token) {
+    overlay_routing_token_ = token;
+  }
+
+  size_t request_overlay_routing_token_called() {
+    return request_overlay_routing_token_called_;
+  }
+
+  void RequestOverlayRoutingToken(
+      media::RoutingTokenCallback callback) override {
+    request_overlay_routing_token_called_++;
+    if (overlay_routing_token_.has_value())
+      std::move(callback).Run(overlay_routing_token_.value());
+  }
+
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,
@@ -190,6 +207,9 @@ class MockFrameHost : public mojom::FrameHost {
 
   base::OnceCallback<void(const base::string16& msg)>
       did_add_message_to_console_callback_;
+
+  size_t request_overlay_routing_token_called_ = 0;
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -365,6 +385,15 @@ void TestRenderFrame::SimulateBeforeUnload(bool is_reload) {
   // process will send separate IPCs to dispatch beforeunload in any
   // out-of-process child frames.
   frame_->DispatchBeforeUnloadEvent(is_reload);
+}
+
+void TestRenderFrame::SetOverlayRoutingToken(
+    const base::UnguessableToken& token) {
+  mock_frame_host_->set_overlay_routing_token(token);
+}
+
+size_t TestRenderFrame::RequestOverlayRoutingTokenCalled() {
+  return mock_frame_host_->request_overlay_routing_token_called();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {

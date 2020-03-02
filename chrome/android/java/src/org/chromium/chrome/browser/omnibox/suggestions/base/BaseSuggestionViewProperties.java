@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonPropertie
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /** The base set of properties for most omnibox suggestions. */
@@ -24,8 +25,11 @@ public class BaseSuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionViewDelegate> SUGGESTION_DELEGATE =
             new WritableObjectPropertyKey<>();
 
+    /** Whether suggestion should be compact. */
+    public static final WritableBooleanPropertyKey IS_COMPACT = new WritableBooleanPropertyKey();
+
     public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {ICON, ACTION_ICON, SUGGESTION_DELEGATE};
+            new PropertyKey[] {ICON, IS_COMPACT, ACTION_ICON, SUGGESTION_DELEGATE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

@@ -6,9 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/file_type_policies.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

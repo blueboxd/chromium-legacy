@@ -294,9 +294,9 @@ NavigationSimulatorImpl::CreateFromPendingInFrame(
     request = test_frame_host->navigation_requests().begin()->second.get();
   CHECK(request);
 
-  // Simulate the BeforeUnload ACK if needed.
+  // Simulate the BeforeUnload completion callback if needed.
   if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
-    test_frame_host->SendBeforeUnloadACK(true /*proceed */);
+    test_frame_host->SimulateBeforeUnloadCompleted(true /* proceed */);
 
   auto simulator = base::WrapUnique(new NavigationSimulatorImpl(
       GURL(), request->browser_initiated(),
@@ -511,8 +511,9 @@ void NavigationSimulatorImpl::ReadyToCommit() {
          "navigation has finished";
 
   if (state_ < STARTED) {
-    if (block_on_before_unload_ack_ && state_ == WAITING_BEFORE_UNLOAD) {
-      // The user should have simulated the BeforeUnloadACK by themselves.
+    if (block_invoking_before_unload_completed_callback_ &&
+        state_ == WAITING_BEFORE_UNLOAD) {
+      // The user should have simulated the BeforeUnloadCompleted by themselves.
       // Finish the initialization and skip the Start simulation.
       InitializeFromStartedRequest(request_);
     } else {
@@ -609,7 +610,7 @@ void NavigationSimulatorImpl::Commit() {
       request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), same_document_);
 
-  SimulateUnloadACKForPreviousFrameIfNeeded(previous_rfh);
+  SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(previous_rfh);
 
   loading_scenario_ =
       TestRenderFrameHost::LoadingScenario::NewDocumentNavigation;
@@ -747,7 +748,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
       request_, std::move(params), std::move(interface_provider_receiver_),
       std::move(browser_interface_broker_receiver_), false /* same_document */);
 
-  SimulateUnloadACKForPreviousFrameIfNeeded(previous_rfh);
+  SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(previous_rfh);
 
   state_ = FINISHED;
   if (!keep_loading_)
@@ -1024,7 +1025,7 @@ void NavigationSimulatorImpl::DidFinishNavigation(
           navigation_handle->GetPreviousRenderFrameHostId());
       CHECK(previous_rfh) << "Previous RenderFrameHost should not be destroyed "
                              "without a Unload_ACK";
-      SimulateUnloadACKForPreviousFrameIfNeeded(previous_rfh);
+      SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(previous_rfh);
       state_ = FINISHED;
     }
     request_ = nullptr;
@@ -1053,18 +1054,18 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
   if (state_ == INITIALIZATION)
     BrowserInitiatedStartAndWaitBeforeUnload();
 
-  // Simulate the BeforeUnload ACK if needed.
+  // Simulate the BeforeUnload completion callback if needed.
   NavigationRequest* request = frame_tree_node_->navigation_request();
   if (request &&
       request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
-    if (block_on_before_unload_ack_) {
-      // Since we do not simulate the BeforeUnloadACK, DidStartNavigation will
-      // not have been called, and |request_| will not be properly set. Do it
-      // manually.
+    if (block_invoking_before_unload_completed_callback_) {
+      // Since we do not simulate the BeforeUnloadCompleted, DidStartNavigation
+      // will not have been called, and |request_| will not be properly set. Do
+      // it manually.
       request_ = request;
       return false;
     }
-    render_frame_host_->SendBeforeUnloadACK(true /*proceed */);
+    render_frame_host_->SimulateBeforeUnloadCompleted(true /* proceed */);
   }
 
   // Note: WillStartRequest checks can destroy the request synchronously, or
@@ -1363,8 +1364,9 @@ void NavigationSimulatorImpl::FailLoading(const GURL& url, int error_code) {
   render_frame_host_->DidFailLoadWithError(url, error_code);
 }
 
-void NavigationSimulatorImpl::SimulateUnloadACKForPreviousFrameIfNeeded(
-    RenderFrameHostImpl* previous_rfh) {
+void NavigationSimulatorImpl::
+    SimulateUnloadCompletionCallbackForPreviousFrameIfNeeded(
+        RenderFrameHostImpl* previous_rfh) {
   // Do not dispatch FrameHostMsg_Unload_ACK if the navigation was committed in
   // the same RenderFrameHost.
   if (previous_rfh == render_frame_host_)

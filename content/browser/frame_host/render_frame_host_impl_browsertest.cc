@@ -501,14 +501,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   RenderFrameHostImpl* main_frame =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
-  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
 
   // Answer the dialog.
   dialog_manager.Run(true, base::string16());
 
-  // There will be no beforeunload ACK, so if the beforeunload ACK timer isn't
-  // functioning then the navigation will hang forever and this test will time
-  // out. If this waiting for the load stop works, this test won't time out.
+  // There will be no beforeunload completion callback invocation, so if the
+  // beforeunload completion callback timer isn't functioning then the
+  // navigation will hang forever and this test will time out. If this waiting
+  // for the load stop works, this test won't time out.
   EXPECT_TRUE(WaitForLoadStop(wc));
   EXPECT_EQ(web_ui_page, wc->GetLastCommittedURL());
 
@@ -696,12 +697,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   shell()->LoadURL(cross_site_url);
   dialog_manager()->Wait();
 
-  // Only the main frame should be marked as waiting for beforeunload ACK as
-  // the frame being navigated.
+  // Only the main frame should be marked as waiting for beforeunload completion
+  // callback as the frame being navigated.
   RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
   RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
-  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
-  EXPECT_FALSE(child->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
+  EXPECT_FALSE(child->is_waiting_for_beforeunload_completion());
 
   // Sanity check that the main frame is waiting for subframe's beforeunload
   // ACK.
@@ -709,10 +710,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   EXPECT_EQ(main_frame, main_frame->GetBeforeUnloadInitiator());
   EXPECT_EQ(1u, main_frame->beforeunload_pending_replies_.size());
 
-  // In --site-per-process mode, the beforeunload ACK should come back from the
-  // child RFH.  Without --site-per-process, it will come from the main frame
-  // RFH, which processes beforeunload for both main frame and child frame,
-  // since they are in the same process.
+  // In --site-per-process mode, the beforeunload completion callback should
+  // happen on the child RFH.  Without --site-per-process, it will come from the
+  // main frame RFH, which processes beforeunload for both main frame and child
+  // frame, since they are in the same process.
   RenderFrameHostImpl* frame_that_sent_beforeunload_ipc =
       AreAllSitesIsolatedForTesting() ? child : main_frame;
   EXPECT_TRUE(main_frame->beforeunload_pending_replies_.count(
@@ -724,8 +725,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   EXPECT_EQ(main_url, web_contents()->GetLastCommittedURL());
 
   // Verify beforeunload state has been cleared.
-  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_ack());
-  EXPECT_FALSE(child->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_completion());
+  EXPECT_FALSE(child->is_waiting_for_beforeunload_completion());
   EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
   EXPECT_EQ(nullptr, child->GetBeforeUnloadInitiator());
   EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
@@ -733,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // Try navigating again.  The dialog should come up again.
   shell()->LoadURL(cross_site_url);
   dialog_manager()->Wait();
-  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_completion());
 
   // Now answer the dialog and allow the navigation to proceed.  Disable
   // unload ACK on the old frame so that it sticks around in pending delete
@@ -745,14 +746,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   commit_observer.WaitForCommit();
   EXPECT_EQ(cross_site_url, web_contents()->GetLastCommittedURL());
   EXPECT_FALSE(
-      web_contents()->GetMainFrame()->is_waiting_for_beforeunload_ack());
+      web_contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
 
   // The navigation that succeeded was a browser-initiated, main frame
   // navigation, so it swapped RenderFrameHosts. |main_frame| should now be
   // pending deletion and waiting for unload ACK, but it should not be waiting
-  // for the beforeunload ACK.
+  // for the beforeunload completion callback.
   EXPECT_FALSE(main_frame->is_active());
-  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_completion());
   EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
   EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
 }
@@ -952,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
 
   // Navigate main frame and ensure that it doesn't time out.  When the main
   // frame detaches the subframe, the RFHI destruction should unblock the
-  // navigation from waiting on the subframe's beforeunload ACK.
+  // navigation from waiting on the subframe's beforeunload completion callback.
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), new_url));
 }
@@ -1040,8 +1041,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   shell()->LoadURL(new_url);
 
-  // We should have two pending beforeunload ACKs at this point, and the
-  // beforeunload timer should be running.
+  // We should have two pending beforeunload completion callbacks at this point,
+  // and the beforeunload timer should be running.
   EXPECT_EQ(2u, main_frame->beforeunload_pending_replies_.size());
   EXPECT_TRUE(main_frame->beforeunload_timeout_->IsRunning());
 
@@ -1055,10 +1056,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // Don't close the dialog and allow the second beforeunload to come in and
   // attempt to show a dialog.  This should fail due to the intervention of at
   // most one dialog per navigation and respond to the renderer with the
-  // confirmation to proceed, which should trigger a beforeunload ACK
-  // from the second frame. Wait for that beforeunload ACK.  After it's
-  // received, there will be one ACK remaining for the frame that's currently
-  // showing the dialog.
+  // confirmation to proceed, which should trigger a beforeunload completion
+  // callback from the second frame. Wait for that beforeunload completion
+  // callback. After it's received, there will be one ACK remaining for the
+  // frame that's currently showing the dialog.
   while (main_frame->beforeunload_pending_replies_.size() > 1) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

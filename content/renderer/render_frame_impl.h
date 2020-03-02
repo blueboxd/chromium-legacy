@@ -1044,7 +1044,6 @@ class CONTENT_EXPORT RenderFrameImpl
       bool save_with_empty_url);
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
-  void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
@@ -1178,9 +1177,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Send |callback| our AndroidOverlay routing token when it arrives.  We may
   // call |callback| before returning.
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
-
-  // Ask the host to send our AndroidOverlay routing token to us.
-  void RequestOverlayRoutingTokenFromHost();
 
   void BindWidget(mojo::PendingReceiver<mojom::Widget> receiver);
 
@@ -1531,9 +1527,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;
-
-  // Callbacks that we should call when we get a routing token.
-  std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
 
   InputTargetClientImpl input_target_client_impl_;
 

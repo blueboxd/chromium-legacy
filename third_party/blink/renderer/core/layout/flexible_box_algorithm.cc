@@ -32,7 +32,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 
 namespace blink {
@@ -77,8 +77,8 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
                    LayoutBox* box,
                    const ComputedStyle& style,
                    LayoutUnit flex_base_content_size,
-                   MinMaxSize min_max_main_sizes,
-                   base::Optional<MinMaxSize> min_max_cross_sizes,
+                   MinMaxSizes min_max_main_sizes,
+                   base::Optional<MinMaxSizes> min_max_cross_sizes,
                    LayoutUnit main_axis_border_padding,
                    LayoutUnit cross_axis_border_padding,
                    NGPhysicalBoxStrut physical_margins)

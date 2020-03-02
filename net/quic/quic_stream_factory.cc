@@ -204,7 +204,7 @@ class ServerIdOriginFilter
   }
 
  private:
-  const base::Callback<bool(const GURL&)> origin_filter_;
+  const base::RepeatingCallback<bool(const GURL&)> origin_filter_;
 };
 
 std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
@@ -1488,7 +1488,7 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
 }
 
 void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
-    const base::Callback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   ServerIdOriginFilter filter(origin_filter);
   for (const auto& crypto_config : active_crypto_config_map_) {
     crypto_config.second->config()->ClearCachedStates(filter);

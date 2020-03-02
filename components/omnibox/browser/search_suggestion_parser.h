@@ -160,6 +160,9 @@ class SearchSuggestionParser {
       return additional_query_params_;
     }
 
+    void set_header(const base::string16& header) { header_ = header; }
+    const base::string16& header() const { return header_; }
+
     void SetAnswer(const SuggestionAnswer& answer);
     const base::Optional<SuggestionAnswer>& answer() const { return answer_; }
 
@@ -198,6 +201,10 @@ class SearchSuggestionParser {
 
     // Optional additional parameters to be added to the search URL.
     std::string additional_query_params_;
+
+    // An optional header text this suggestion must appear under. Currently only
+    // zero-prefix suggestions may have a header.
+    base::string16 header_;
 
     // Optional short answer to the input that produced this suggestion.
     base::Optional<SuggestionAnswer> answer_;

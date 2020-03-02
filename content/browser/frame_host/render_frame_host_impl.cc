@@ -881,7 +881,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       routing_id_(routing_id),
       is_waiting_for_unload_ack_(false),
       render_frame_created_(false),
-      is_waiting_for_beforeunload_ack_(false),
+      is_waiting_for_beforeunload_completion_(false),
       beforeunload_dialog_request_cancels_unload_(false),
       unload_ack_is_for_navigation_(false),
       beforeunload_timeout_delay_(base::TimeDelta::FromMilliseconds(
@@ -1122,14 +1122,14 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // details.
   render_view_host_.reset();
 
-  // If another frame is waiting for a beforeunload ACK from this frame,
-  // simulate it now.
+  // If another frame is waiting for a beforeunload completion callback from
+  // this frame, simulate it now.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
   if (beforeunload_initiator && beforeunload_initiator != this) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
-    beforeunload_initiator->ProcessBeforeUnloadACKFromFrame(
-        true /* proceed */, false /* treat_as_final_ack */, this,
-        true /* is_frame_being_destroyed */, approx_renderer_start_time,
+    beforeunload_initiator->ProcessBeforeUnloadCompletedFromFrame(
+        true /* proceed */, false /* treat_as_final_completion_callback */,
+        this, true /* is_frame_being_destroyed */, approx_renderer_start_time,
         base::TimeTicks::Now());
   }
 
@@ -1715,8 +1715,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
 #endif
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
-                        OnRequestOverlayRoutingToken)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -2887,9 +2885,9 @@ void RenderFrameHostImpl::DetachFromProxy() {
   PendingDeletionCheckCompletedOnSubtree();  // May delete |this|.
 }
 
-void RenderFrameHostImpl::ProcessBeforeUnloadACK(
+void RenderFrameHostImpl::ProcessBeforeUnloadCompleted(
     bool proceed,
-    bool treat_as_final_ack,
+    bool treat_as_final_completion_callback,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
   TRACE_EVENT_ASYNC_END1("navigation", "RenderFrameHostImpl BeforeUnload", this,
@@ -2909,32 +2907,34 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACK(
 
   // Continue processing the ACK in the frame that triggered beforeunload in
   // this frame.  This could be either this frame itself or an ancestor frame.
-  initiator->ProcessBeforeUnloadACKFromFrame(
-      proceed, treat_as_final_ack, this, false /* is_frame_being_destroyed */,
-      renderer_before_unload_start_time, renderer_before_unload_end_time);
+  initiator->ProcessBeforeUnloadCompletedFromFrame(
+      proceed, treat_as_final_completion_callback, this,
+      false /* is_frame_being_destroyed */, renderer_before_unload_start_time,
+      renderer_before_unload_end_time);
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetBeforeUnloadInitiator() {
   for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
-    if (frame->is_waiting_for_beforeunload_ack_)
+    if (frame->is_waiting_for_beforeunload_completion_)
       return frame;
   }
   return nullptr;
 }
 
-void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
+void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
     bool proceed,
-    bool treat_as_final_ack,
+    bool treat_as_final_completion_callback,
     RenderFrameHostImpl* frame,
     bool is_frame_being_destroyed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
-  // Check if we need to wait for more beforeunload ACKs.  If |proceed| is
-  // false, we know the navigation or window close will be aborted, so we don't
-  // need to wait for beforeunload ACKs from any other frames.
-  // |treat_as_final_ack| also indicates that we shouldn't wait for any other
-  // ACKs (e.g., when a beforeunload timeout fires).
-  if (!proceed || treat_as_final_ack) {
+  // Check if we need to wait for more beforeunload completion callbacks. If
+  // |proceed| is false, we know the navigation or window close will be aborted,
+  // so we don't need to wait for beforeunload completion callbacks from any
+  // other frames. |treat_as_final_completion_callback| also indicates that we
+  // shouldn't wait for any other ACKs (e.g., when a beforeunload timeout
+  // fires).
+  if (!proceed || treat_as_final_completion_callback) {
     beforeunload_pending_replies_.clear();
   } else {
     beforeunload_pending_replies_.erase(frame);
@@ -2949,7 +2949,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
   base::TimeTicks before_unload_end_time = renderer_before_unload_end_time;
   if (!renderer_before_unload_start_time.is_null() &&
       !renderer_before_unload_end_time.is_null()) {
-    base::TimeTicks receive_before_unload_ack_time = base::TimeTicks::Now();
+    base::TimeTicks before_unload_completed_time = base::TimeTicks::Now();
 
     if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
       // TimeTicks is not consistent across processes and we are passing
@@ -2959,7 +2959,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
       // See comments in inter_process_time_ticks_converter.h for more.
       InterProcessTimeTicksConverter converter(
           LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
-          LocalTimeTicks::FromTimeTicks(receive_before_unload_ack_time),
+          LocalTimeTicks::FromTimeTicks(before_unload_completed_time),
           RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
           RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
       LocalTimeTicks browser_before_unload_end_time =
@@ -2969,7 +2969,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
     }
 
     base::TimeDelta on_before_unload_overhead_time =
-        (receive_before_unload_ack_time - send_before_unload_start_time_) -
+        (before_unload_completed_time - send_before_unload_start_time_) -
         (renderer_before_unload_end_time - renderer_before_unload_start_time);
     UMA_HISTOGRAM_TIMES("Navigation.OnBeforeUnloadOverheadTime",
                         on_before_unload_overhead_time);
@@ -2979,7 +2979,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
   }
 
   // Resets beforeunload waiting state.
-  is_waiting_for_beforeunload_ack_ = false;
+  is_waiting_for_beforeunload_completion_ = false;
   has_shown_beforeunload_dialog_ = false;
   if (beforeunload_timeout_)
     beforeunload_timeout_->Stop();
@@ -2989,8 +2989,8 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
   // current navigation stop/proceed. Otherwise, send it to the
   // RenderFrameHostManager which handles closing.
   if (unload_ack_is_for_navigation_) {
-    frame_tree_node_->navigator()->OnBeforeUnloadACK(frame_tree_node_, proceed,
-                                                     before_unload_end_time);
+    frame_tree_node_->navigator()->BeforeUnloadCompleted(
+        frame_tree_node_, proceed, before_unload_end_time);
   } else {
     // We could reach this from a subframe destructor for |frame| while we're
     // in the middle of closing the current tab.  In that case, dispatch the
@@ -3001,7 +3001,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
            const base::TimeTicks& before_unload_end_time, bool proceed) {
           if (!self)
             return;
-          self->frame_tree_node()->render_manager()->OnBeforeUnloadACK(
+          self->frame_tree_node()->render_manager()->BeforeUnloadCompleted(
               proceed, before_unload_end_time);
         },
         weak_ptr_factory_.GetWeakPtr(), before_unload_end_time, proceed);
@@ -4454,13 +4454,6 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
-void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
-  // Make sure that we have a token.
-  GetOverlayRoutingToken();
-
-  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_, frame_token_));
-}
-
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
         interface_provider_receiver) {
@@ -4494,6 +4487,11 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
                                             bool user_gesture) {
   delegate_->ShowCreatedWindow(GetProcess()->GetID(), pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
+}
+
+void RenderFrameHostImpl::RequestOverlayRoutingToken(
+    RequestOverlayRoutingTokenCallback callback) {
+  std::move(callback).Run(frame_token_);
 }
 
 std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -4925,8 +4923,8 @@ void RenderFrameHostImpl::ResetWaitingState() {
   // Whenever we reset the RFH state, we should not be waiting for beforeunload
   // or close acks.  We clear them here to be safe, since they can cause
   // navigations to be ignored in DidCommitProvisionalLoad.
-  if (is_waiting_for_beforeunload_ack_) {
-    is_waiting_for_beforeunload_ack_ = false;
+  if (is_waiting_for_beforeunload_completion_) {
+    is_waiting_for_beforeunload_completion_ = false;
     if (beforeunload_timeout_)
       beforeunload_timeout_->Stop();
     has_shown_beforeunload_dialog_ = false;
@@ -5061,7 +5059,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
 
   if (!for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
-    // event from wiping out the is_waiting_for_beforeunload_ack_ state.
+    // event from wiping out the is_waiting_for_beforeunload_completion_ state.
     if (frame_tree_node_->navigation_request() &&
         frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
@@ -5085,7 +5083,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         [](base::WeakPtr<RenderFrameHostImpl> self) {
           if (!self)
             return;
-          self->frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+          self->frame_tree_node_->render_manager()->BeforeUnloadCompleted(
               true, base::TimeTicks::Now());
         },
         weak_ptr_factory_.GetWeakPtr());
@@ -5098,7 +5096,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if they click the tab close button then the browser close
   // button), and we only send the message once.
-  if (is_waiting_for_beforeunload_ack_) {
+  if (is_waiting_for_beforeunload_completion_) {
     // Some of our close messages could be for the tab, others for cross-site
     // transitions. We always want to think it's for closing the tab if any
     // of the messages were, since otherwise it might be impossible to close
@@ -5110,7 +5108,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
   } else {
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
-    is_waiting_for_beforeunload_ack_ = true;
+    is_waiting_for_beforeunload_completion_ = true;
     beforeunload_dialog_request_cancels_unload_ = false;
     unload_ack_is_for_navigation_ = for_navigation;
     send_before_unload_start_time_ = base::TimeTicks::Now();
@@ -5120,7 +5118,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
       // reply from the dialog. If this incoming request is for a DISCARD be
       // sure to reply with |proceed = false|, because the presence of a dialog
       // indicates that the page can't be discarded.
-      SimulateBeforeUnloadAck(type != BeforeUnloadType::DISCARD);
+      SimulateBeforeUnloadCompleted(type != BeforeUnloadType::DISCARD);
     } else {
       // Start a timer that will be shared by all frames that need to run
       // beforeunload in the current frame's subtree.
@@ -5220,17 +5218,17 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
   return found_beforeunload;
 }
 
-void RenderFrameHostImpl::SimulateBeforeUnloadAck(bool proceed) {
-  DCHECK(is_waiting_for_beforeunload_ack_);
+void RenderFrameHostImpl::SimulateBeforeUnloadCompleted(bool proceed) {
+  DCHECK(is_waiting_for_beforeunload_completion_);
   base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
 
   // Dispatch the ACK to prevent re-entrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&RenderFrameHostImpl::ProcessBeforeUnloadACK,
+      base::BindOnce(&RenderFrameHostImpl::ProcessBeforeUnloadCompleted,
                      weak_ptr_factory_.GetWeakPtr(), proceed,
-                     true /* treat_as_final_ack */, approx_renderer_start_time,
-                     base::TimeTicks::Now()));
+                     true /* treat_as_final_completion_callback */,
+                     approx_renderer_start_time, base::TimeTicks::Now()));
 }
 
 bool RenderFrameHostImpl::ShouldDispatchBeforeUnload(
@@ -5356,7 +5354,7 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // timers stopped in this frame or a frame up in the frame hierarchy. Restart
   // any timers that were stopped in OnRunBeforeUnloadConfirm().
   for (RenderFrameHostImpl* frame = this; frame; frame = frame->GetParent()) {
-    if (frame->is_waiting_for_beforeunload_ack_ &&
+    if (frame->is_waiting_for_beforeunload_completion_ &&
         frame->beforeunload_timeout_) {
       frame->beforeunload_timeout_->Start(beforeunload_timeout_delay_);
     }
@@ -5704,7 +5702,7 @@ void RenderFrameHostImpl::CommitNavigation(
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
-          &factory_receiver);
+          &factory_receiver, nullptr /* factory_override */);
       factory.second->Clone(std::move(factory_receiver));
       subresource_loader_factories->pending_scheme_specific_factories().emplace(
           factory.first, std::move(pending_factory_proxy));
@@ -6482,7 +6480,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
-      &default_factory_receiver);
+      &default_factory_receiver, &params->factory_override);
 
   GetProcess()->CreateURLLoaderFactory(std::move(default_factory_receiver),
                                        std::move(params));
@@ -7110,7 +7108,7 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
   if (render_view_host_->GetDelegate()->ShouldIgnoreUnresponsiveRenderer())
     return;
 
-  SimulateBeforeUnloadAck(true /* proceed */);
+  SimulateBeforeUnloadCompleted(true /* proceed */);
 }
 
 void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
@@ -7778,16 +7776,17 @@ void RenderFrameHostImpl::DidCommitNavigation(
                "url", params->url.possibly_invalid_spec(), "details",
                CommitAsTracedValue(params.get()));
 
-  // If we're waiting for a cross-site beforeunload ack from this renderer and
-  // we receive a Navigate message from the main frame, then the renderer was
-  // navigating already and sent it before hearing the FrameMsg_Stop message.
-  // Treat this as an implicit beforeunload ack to allow the pending navigation
-  // to continue.
-  if (is_waiting_for_beforeunload_ack_ && unload_ack_is_for_navigation_ &&
-      !GetParent()) {
+  // If we're waiting for a cross-site beforeunload completion callback from
+  // this renderer and we receive a Navigate message from the main frame, then
+  // the renderer was navigating already and sent it before hearing the
+  // FrameMsg_Stop message. Treat this as an implicit beforeunload completion
+  // callback to allow the pending navigation to continue.
+  if (is_waiting_for_beforeunload_completion_ &&
+      unload_ack_is_for_navigation_ && !GetParent()) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
-    ProcessBeforeUnloadACK(true /* proceed */, true /* treat_as_final_ack */,
-                           approx_renderer_start_time, base::TimeTicks::Now());
+    ProcessBeforeUnloadCompleted(
+        true /* proceed */, true /* treat_as_final_completion_callback */,
+        approx_renderer_start_time, base::TimeTicks::Now());
   }
 
   // When a frame enters pending deletion, it waits for itself and its children
@@ -7901,9 +7900,9 @@ void RenderFrameHostImpl::SendBeforeUnload(
          base::TimeTicks renderer_before_unload_end_time) {
         if (!impl)
           return;
-        impl->ProcessBeforeUnloadACK(proceed, false /* treat_as_final_ack */,
-                                     renderer_before_unload_start_time,
-                                     renderer_before_unload_end_time);
+        impl->ProcessBeforeUnloadCompleted(
+            proceed, false /* treat_as_final_completion_callback */,
+            renderer_before_unload_start_time, renderer_before_unload_end_time);
       },
       rfh);
   rfh->GetAssociatedLocalFrame()->BeforeUnload(

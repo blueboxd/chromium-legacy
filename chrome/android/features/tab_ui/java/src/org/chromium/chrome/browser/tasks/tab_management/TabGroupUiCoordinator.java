@@ -84,30 +84,21 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
 
-        mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, null, null, false, null, null, null,
-                TabProperties.UiType.STRIP, null, mTabListContainerView, null, true,
-                COMPONENT_NAME);
+        mTabStripCoordinator =
+                new TabListCoordinator(TabListCoordinator.TabListMode.STRIP, mContext,
+                        tabModelSelector, null, null, false, null, null, TabProperties.UiType.STRIP,
+                        null, mTabListContainerView, null, true, COMPONENT_NAME);
 
-        boolean isTabGroupsUiImprovementsEnabled =
-                TabUiFeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
-        // TODO(yuezhanggg): TabGridDialog should be the default mode.
-        if (isTabGroupsUiImprovementsEnabled) {
-            // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
-            // and the dialog here.
-            mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
-                    tabContentManager, activity, activity.getCompositorViewHolder(), null, null,
-                    null, mTabStripCoordinator.getTabGroupTitleEditor(),
-                    mActivity.getShareDelegateSupplier());
-        } else {
-            mTabGridDialogCoordinator = null;
-        }
+        // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
+        //  and the dialog here.
+        mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
+                tabContentManager, activity, activity.getCompositorViewHolder(), null, null, null,
+                mTabStripCoordinator.getTabGroupTitleEditor(),
+                mActivity.getShareDelegateSupplier());
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
                 activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),
-                mThemeColorProvider,
-                isTabGroupsUiImprovementsEnabled ? mTabGridDialogCoordinator.getDialogController()
-                                                 : null);
+                mThemeColorProvider, mTabGridDialogCoordinator.getDialogController());
 
         mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
         mActivityLifecycleDispatcher.register(this);

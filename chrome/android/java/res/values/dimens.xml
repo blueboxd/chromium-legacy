@@ -311,9 +311,9 @@
     <dimen name="start_surface_toolbar_button_padding_to_edge">16dp</dimen>
 
     <!-- Omnibox suggestions -->
-    <dimen name="omnibox_suggestion_height">60dp</dimen>
-    <dimen name="omnibox_suggestion_answer_height">72dp</dimen>
-    <dimen name="omnibox_suggestion_max_height">144dp</dimen>
+    <dimen name="omnibox_suggestion_height">40dp</dimen>
+    <dimen name="omnibox_suggestion_comfortable_padding">10dp</dimen>
+    <dimen name="omnibox_suggestion_compact_padding">6dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
     <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>
     <dimen name="omnibox_suggestion_second_line_text_size">14sp</dimen>

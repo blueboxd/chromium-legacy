@@ -53,7 +53,10 @@ struct WilcoDtcSupportdNotificationControllerTestParams {
     {&WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification,
      IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE,
      IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE,
-     message_center::DEFAULT_PRIORITY}};
+     message_center::DEFAULT_PRIORITY},
+    {&WilcoDtcSupportdNotificationController::ShowLowPowerChargerNotification,
+     IDS_WILCO_LOW_POWER_CHARGER_TITLE, IDS_WILCO_LOW_POWER_CHARGER_MESSAGE,
+     message_center::SYSTEM_PRIORITY}};
 
 class WilcoDtcSupportdNotificationControllerTest
     : public testing::TestWithParam<

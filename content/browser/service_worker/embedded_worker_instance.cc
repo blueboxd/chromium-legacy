@@ -1063,7 +1063,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       &bypass_redirect_checks, nullptr /* disable_secure_dns */,
       &factory_params->factory_override);
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
-      rph, routing_id, &default_factory_receiver);
+      rph, routing_id, &factory_params->factory_override);
 
   factory_params->client_security_state =
       network::mojom::ClientSecurityState::New();

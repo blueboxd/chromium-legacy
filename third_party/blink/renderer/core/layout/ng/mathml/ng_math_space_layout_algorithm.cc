@@ -34,8 +34,8 @@ scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSize> NGMathSpaceLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
+base::Optional<MinMaxSizes> NGMathSpaceLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   return CalculateMinMaxSizesIgnoringChildren(Node(), border_padding_);
 }
 

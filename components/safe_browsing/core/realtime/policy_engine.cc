@@ -13,7 +13,6 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/browser_context.h"
 
 #if defined(OS_ANDROID)
 #include "base/metrics/field_trial_params.h"
@@ -44,35 +43,34 @@ bool RealTimePolicyEngine::IsUrlLookupEnabled() {
 }
 
 // static
-bool RealTimePolicyEngine::IsUserOptedIn(
-    content::BrowserContext* browser_context) {
-  PrefService* pref_service = user_prefs::UserPrefs::Get(browser_context);
+bool RealTimePolicyEngine::IsUserOptedIn(PrefService* pref_service) {
   return pref_service->GetBoolean(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
 }
 
 // static
-bool RealTimePolicyEngine::IsEnabledByPolicy(
-    content::BrowserContext* browser_context) {
+// TODO(crbug.com/1050859): Remove this method.
+bool RealTimePolicyEngine::IsEnabledByPolicy() {
   return false;
 }
 
 // static
-bool RealTimePolicyEngine::CanPerformFullURLLookup(
-    content::BrowserContext* browser_context) {
-  if (browser_context->IsOffTheRecord())
+bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
+                                                   bool is_off_the_record) {
+  if (is_off_the_record)
     return false;
 
-  if (IsEnabledByPolicy(browser_context))
+  if (IsEnabledByPolicy())
     return true;
 
-  return IsUrlLookupEnabled() && IsUserOptedIn(browser_context);
+  return IsUrlLookupEnabled() && IsUserOptedIn(pref_service);
 }
 
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
-    content::BrowserContext* browser_context) {
-  if (!CanPerformFullURLLookup(browser_context)) {
+    PrefService* pref_service,
+    bool is_off_the_record) {
+  if (!CanPerformFullURLLookup(pref_service, is_off_the_record)) {
     return false;
   }
 

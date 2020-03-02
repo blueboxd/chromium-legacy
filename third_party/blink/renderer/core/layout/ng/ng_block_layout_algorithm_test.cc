@@ -33,7 +33,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGBaseLayoutAlgorithmTest::SetUp();
   }
 
-  MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
+  MinMaxSizes RunComputeMinMaxSizes(NGBlockNode node) {
     // The constraint space is not used for min/max computation, but we need
     // it to create the algorithm.
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
@@ -43,9 +43,9 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
         CalculateInitialMinMaxFragmentGeometry(space, node);
 
     NGBlockLayoutAlgorithm algorithm({node, fragment_geometry, space});
-    MinMaxSizeInput input(
+    MinMaxSizesInput input(
         /* percentage_resolution_block_size */ (LayoutUnit()));
-    auto min_max = algorithm.ComputeMinMaxSize(input);
+    auto min_max = algorithm.ComputeMinMaxSizes(input);
     EXPECT_TRUE(min_max.has_value());
     return *min_max;
   }
@@ -1544,7 +1544,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(kSecondChildWidth, sizes.min_size);
   EXPECT_EQ(kSecondChildWidth, sizes.max_size);
 }
@@ -1565,7 +1565,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentFloats) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(LayoutUnit(40), sizes.min_size);
   EXPECT_EQ(LayoutUnit(90), sizes.max_size);
 }
@@ -1586,7 +1586,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentFloatsClearance) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(LayoutUnit(40), sizes.min_size);
   EXPECT_EQ(LayoutUnit(50), sizes.max_size);
 }
@@ -1607,7 +1607,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentNewFormattingContext) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(LayoutUnit(100), sizes.min_size);
   EXPECT_EQ(LayoutUnit(100), sizes.max_size);
 }
@@ -1629,7 +1629,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(LayoutUnit(30), sizes.min_size);
   EXPECT_EQ(LayoutUnit(70), sizes.max_size);
 }
@@ -1647,7 +1647,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  MinMaxSize sizes = RunComputeMinAndMax(container);
+  MinMaxSizes sizes = RunComputeMinMaxSizes(container);
   EXPECT_EQ(LayoutUnit(), sizes.min_size);
   EXPECT_EQ(LayoutUnit(), sizes.max_size);
 }

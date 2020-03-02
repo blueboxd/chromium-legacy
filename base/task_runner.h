@@ -10,7 +10,9 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/post_task_and_reply_with_result_internal.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -114,6 +116,36 @@ class BASE_EXPORT TaskRunner
   bool PostTaskAndReply(const Location& from_here,
                         OnceClosure task,
                         OnceClosure reply);
+
+  // When you have these methods
+  //
+  //   R DoWorkAndReturn();
+  //   void Callback(const R& result);
+  //
+  // and want to call them in a PostTaskAndReply kind of fashion where the
+  // result of DoWorkAndReturn is passed to the Callback, you can use
+  // PostTaskAndReplyWithResult as in this example:
+  //
+  // PostTaskAndReplyWithResult(
+  //     target_thread_.task_runner(),
+  //     FROM_HERE,
+  //     BindOnce(&DoWorkAndReturn),
+  //     BindOnce(&Callback));
+  template <typename TaskReturnType, typename ReplyArgType>
+  bool PostTaskAndReplyWithResult(const Location& from_here,
+                                  OnceCallback<TaskReturnType()> task,
+                                  OnceCallback<void(ReplyArgType)> reply) {
+    DCHECK(task);
+    DCHECK(reply);
+    // std::unique_ptr used to avoid the need of a default constructor.
+    auto* result = new std::unique_ptr<TaskReturnType>();
+    return PostTaskAndReply(
+        from_here,
+        BindOnce(&internal::ReturnAsParamAdapter<TaskReturnType>,
+                 std::move(task), result),
+        BindOnce(&internal::ReplyAdapter<TaskReturnType, ReplyArgType>,
+                 std::move(reply), Owned(result)));
+  }
 
  protected:
   friend struct TaskRunnerTraits;

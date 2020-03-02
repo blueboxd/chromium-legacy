@@ -4,11 +4,15 @@
 
 #include "chrome/updater/persisted_data.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
+#include "chrome/updater/registration_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -17,8 +21,11 @@ namespace {
 // Uses the same pref as the update_client code.
 constexpr char kPersistedDataPreference[] = "updateclientdata";
 
-constexpr char kPV[] = "pv";
-constexpr char kFP[] = "fp";
+constexpr char kPV[] = "pv";    // Key for storing product version.
+constexpr char kFP[] = "fp";    // Key for storing fingerprint.
+constexpr char kECP[] = "ecp";  // Key for storing existence checker path.
+constexpr char kBC[] = "bc";    // Key for storing brand code.
+constexpr char kTG[] = "tg";    // Key for storing tag.
 
 }  // namespace
 
@@ -55,6 +62,45 @@ void PersistedData::SetFingerprint(const std::string& id,
                                    const std::string& fingerprint) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetString(id, kFP, fingerprint);
+}
+
+base::FilePath PersistedData::GetExistenceCheckerPath(
+    const std::string& id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::FilePath().AppendASCII(GetString(id, kECP));
+}
+
+void PersistedData::SetExistenceCheckerPath(const std::string& id,
+                                            const base::FilePath& ecp) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetString(id, kECP, ecp.AsUTF8Unsafe());
+}
+
+std::string PersistedData::GetBrandCode(const std::string& id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetString(id, kBC);
+}
+
+void PersistedData::SetBrandCode(const std::string& id, const std::string& bc) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetString(id, kBC, bc);
+}
+
+std::string PersistedData::GetTag(const std::string& id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetString(id, kTG);
+}
+
+void PersistedData::SetTag(const std::string& id, const std::string& tag) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetString(id, kTG, tag);
+}
+
+void PersistedData::RegisterApp(const RegistrationRequest& rq) {
+  SetProductVersion(rq.app_id, rq.version);
+  SetExistenceCheckerPath(rq.app_id, rq.existence_checker_path);
+  SetBrandCode(rq.app_id, rq.brand_code);
+  SetTag(rq.app_id, rq.tag);
 }
 
 std::vector<std::string> PersistedData::GetAppIds() const {

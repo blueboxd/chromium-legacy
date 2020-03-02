@@ -7,19 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "NGPhysicalTextFragment 'ab'",
           "rect": [8, 8, 200, 100],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

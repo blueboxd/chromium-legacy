@@ -53,57 +53,57 @@ test(function(t) {
     assert_false(ctx.isPointInPath(path, 50, 50, 'evenodd'));
 
     // Testing invalid enumeration isPointInPath (w/ and w/o Path object');
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(path, 50, 50, 'gazonk');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(50, 50, 'gazonk');
     });
 
     // Testing invalid type isPointInPath with Path object');
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(null, 50, 50);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(null, 50, 50, 'nonzero');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(null, 50, 50, 'evenodd');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(null, 50, 50, null);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(path, 50, 50, null);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(undefined, 50, 50);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(undefined, 50, 50, 'nonzero');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(undefined, 50, 50, 'evenodd');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath(undefined, 50, 50, undefined);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath([], 50, 50);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath([], 50, 50, 'nonzero');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath([], 50, 50, 'evenodd');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath({}, 50, 50);
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath({}, 50, 50, 'nonzero');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       ctx.isPointInPath({}, 50, 50, 'evenodd');
     });
 

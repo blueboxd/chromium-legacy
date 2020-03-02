@@ -7,19 +7,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 660, 19],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 660, 19],
-          "reason": "chunk disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [8, 108, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'This div should'",
+          "rect": [8, 108, 98, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'disappear.'",
+          "rect": [8, 108, 98, 39],
+          "reason": "disappeared"
         }
       ]
     }

@@ -27,7 +27,7 @@ test(function() {
   assert_throws_dom("NotSupportedError", function() { angle.convertToSpecifiedUnits(angle); });
   // Same here, via ToString conversion of object.
   assert_throws_dom("NotSupportedError", function() { angle.convertToSpecifiedUnits(svgElement); });
-  assert_throws(new TypeError(), function() { angle.convertToSpecifiedUnits(); });
+  assert_throws_js(TypeError, function() { angle.convertToSpecifiedUnits(); });
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);
 
   // Check valid arguments for 'convertToSpecifiedUnits', that should only modify the 'valueAsString'");
@@ -60,29 +60,29 @@ test(function() {
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN, 50); });
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits(-1, 50); });
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits(5, 50); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 'aString'); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 'aString'); });
   assert_equals(angle.value, 0);
 
   angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 0);
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, angle); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, angle); });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, svgElement); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, svgElement); });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, NaN); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, NaN); });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, Infinity); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, Infinity); });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG); });
 
   // All of the following unitType arguments convert to 0 (SVG_ANGLETYPE_UNKNOWN).
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits('aString', 4); });
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits(angle, 4); });
   assert_throws_dom("NotSupportedError", function() { angle.newValueSpecifiedUnits(svgElement, 4); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits('aString', 'aString'); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(angle, angle); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(svgElement, svgElement); });
-  assert_throws(new TypeError(), function() { angle.newValueSpecifiedUnits(); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits('aString', 'aString'); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(angle, angle); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(svgElement, svgElement); });
+  assert_throws_js(TypeError, function() { angle.newValueSpecifiedUnits(); });
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_DEG);
 
   // Check valid arguments for 'newValueSpecifiedUnits', that should only modify the 'valueAsString'.
@@ -153,18 +153,18 @@ test(function() {
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);
 
   // Check setting invalid 'valueInSpecifiedUnits' arguments
-  assert_throws(new TypeError(), function() { angle.valueInSpecifiedUnits = 'test'; });
+  assert_throws_js(TypeError, function() { angle.valueInSpecifiedUnits = 'test'; });
   assert_equals(angle.value, 0);
   assert_equals(angle.valueInSpecifiedUnits, 0);
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);
   angle.valueInSpecifiedUnits = 0;
   assert_equals(angle.valueInSpecifiedUnits, 0);
 
-  assert_throws(new TypeError(), function() { angle.valueInSpecifiedUnits = angle; });
+  assert_throws_js(TypeError, function() { angle.valueInSpecifiedUnits = angle; });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.valueInSpecifiedUnits = NaN; });
+  assert_throws_js(TypeError, function() { angle.valueInSpecifiedUnits = NaN; });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.valueInSpecifiedUnits = Infinity; });
+  assert_throws_js(TypeError, function() { angle.valueInSpecifiedUnits = Infinity; });
   assert_equals(angle.value, 0);
   assert_equals(angle.valueInSpecifiedUnits, 0);
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);
@@ -172,18 +172,18 @@ test(function() {
   // Check setting invalid 'value' arguments.
   angle.value = 0;
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.value = 'test'; });
+  assert_throws_js(TypeError, function() { angle.value = 'test'; });
   assert_equals(angle.value, 0);
   assert_equals(angle.valueInSpecifiedUnits, 0);
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);
 
   angle.value = 0;
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.value = angle; });
+  assert_throws_js(TypeError, function() { angle.value = angle; });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.value = NaN; });
+  assert_throws_js(TypeError, function() { angle.value = NaN; });
   assert_equals(angle.value, 0);
-  assert_throws(new TypeError(), function() { angle.value = Infinity; });
+  assert_throws_js(TypeError, function() { angle.value = Infinity; });
   assert_equals(angle.value, 0);
   assert_equals(angle.valueInSpecifiedUnits, 0);
   assert_equals(angle.unitType, SVGAngle.SVG_ANGLETYPE_UNSPECIFIED);

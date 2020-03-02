@@ -29,9 +29,9 @@ class PPB_Flash_MessageLoop_Impl::State
   }
   base::OnceClosure& quit_closure() { return quit_closure_; }
 
-  const RunFromHostProxyCallback& run_callback() const { return run_callback_; }
-  void set_run_callback(const RunFromHostProxyCallback& run_callback) {
-    run_callback_ = run_callback;
+  RunFromHostProxyCallback run_callback() { return std::move(run_callback_); }
+  void set_run_callback(RunFromHostProxyCallback run_callback) {
+    run_callback_ = std::move(run_callback);
   }
 
  private:
@@ -68,21 +68,21 @@ int32_t PPB_Flash_MessageLoop_Impl::Run() {
 }
 
 void PPB_Flash_MessageLoop_Impl::RunFromHostProxy(
-    const RunFromHostProxyCallback& callback) {
-  InternalRun(callback);
+    RunFromHostProxyCallback callback) {
+  InternalRun(std::move(callback));
 }
 
 void PPB_Flash_MessageLoop_Impl::Quit() { InternalQuit(PP_OK); }
 
 int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
-    const RunFromHostProxyCallback& callback) {
+    RunFromHostProxyCallback callback) {
   if (state_->run_called()) {
-    if (!callback.is_null())
-      callback.Run(PP_ERROR_FAILED);
+    if (callback)
+      std::move(callback).Run(PP_ERROR_FAILED);
     return PP_ERROR_FAILED;
   }
   state_->set_run_called();
-  state_->set_run_callback(callback);
+  state_->set_run_callback(std::move(callback));
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   state_->set_quit_closure(run_loop.QuitClosure());
@@ -108,8 +108,9 @@ void PPB_Flash_MessageLoop_Impl::InternalQuit(int32_t result) {
 
   std::move(state_->quit_closure()).Run();
 
-  if (!state_->run_callback().is_null())
-    state_->run_callback().Run(result);
+  RunFromHostProxyCallback run_callback = state_->run_callback();
+  if (run_callback)
+    std::move(run_callback).Run(result);
 }
 
 }  // namespace content

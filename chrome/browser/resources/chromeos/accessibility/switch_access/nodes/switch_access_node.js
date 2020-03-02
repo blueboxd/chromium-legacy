@@ -311,6 +311,9 @@ class SARootNode {
   /** Called when a group is explicitly exited. */
   onExit() {}
 
+  /** Called when the group's children may have changed. */
+  refresh() {}
+
   // ================= Debug methods =================
 
   /**

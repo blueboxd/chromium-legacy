@@ -1781,7 +1781,11 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
           os.path.basename(apk_so_path.replace('crazy.', '')))
       logging.debug('Detected --elf-file=%s', elf_path)
 
-  if map_path:
+  if args.java_only:
+    # Trust that these values will not be used, and set to None.
+    map_path = None
+    linker_name = None
+  elif map_path:
     if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
       parser.error('Expected --map-file to end with .map or .map.gz')
   elif elf_path:

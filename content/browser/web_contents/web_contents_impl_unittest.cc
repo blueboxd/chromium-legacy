@@ -1070,19 +1070,19 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  orig_rfh->SendBeforeUnloadACK(false);
-  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_completion());
+  orig_rfh->SimulateBeforeUnloadCompleted(false);
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_completion());
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
 
   // Navigate again, but simulate an onbeforeunload approval.
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_completion());
   auto navigation = NavigationSimulator::CreateFromPending(contents());
   navigation->ReadyToCommit();
-  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_completion());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
 
@@ -1112,7 +1112,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_completion());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Suppose the original renderer navigates before the new one is ready.
@@ -1120,7 +1120,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
       GURL("http://www.google.com/foo"), orig_rfh);
 
   // Verify that the pending navigation is cancelled.
-  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_completion());
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
@@ -1317,12 +1317,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   child_rfh->SendNavigateWithTransition(0, false,
                                         GURL("http://google.com/frame"),
                                         ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_completion());
 
   // Now simulate the onbeforeunload approval and verify the navigation is
   // not canceled.
   orig_rfh->PrepareForCommit();
-  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_completion());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 }
 
@@ -1347,20 +1347,22 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   const GURL kCrossSiteUrl("http://www.yahoo.com");
   auto cross_site_navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
       kCrossSiteUrl, contents());
-  cross_site_navigation->set_block_on_before_unload_ack(true);
+  cross_site_navigation->set_block_invoking_before_unload_completed_callback(
+      true);
   cross_site_navigation->Start();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_completion());
   EXPECT_NE(orig_rfh, pending_rfh);
 
   // Suppose the first navigation tries to commit now, with a
   // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
-  // but it should act as if the beforeunload ack arrived.
+  // but it should act as if the beforeunload completion callback had been
+  // invoked.
   same_site_navigation->Commit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
-  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_completion());
   // It should commit.
   ASSERT_EQ(2, controller().GetEntryCount());
   EXPECT_EQ(kSameSiteUrl, controller().GetLastCommittedEntry()->GetURL());

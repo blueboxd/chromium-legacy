@@ -115,6 +115,8 @@ class SimpleHorizontalLayoutView extends ViewGroup {
                     getChildMeasureSpec(heightSpec, 0, v.getLayoutParams().height));
         }
 
-        setMeasuredDimension(widthPx, heightPx);
+        setMeasuredDimension(widthPx,
+                MeasureSpec.makeMeasureSpec(
+                        heightPx + getPaddingTop() + getPaddingBottom(), MeasureSpec.EXACTLY));
     }
 }

@@ -40,10 +40,13 @@ void UpdateServiceInProcess::RegisterApp(
     base::OnceCallback<void(const RegistrationResponse&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // For now just do the callback.
-  const RegistrationResponse response;
-  main_task_runner_->PostTask(FROM_HERE,
-                              base::BindOnce(std::move(callback), response));
+  persisted_data_->RegisterApp(request);
+
+  // Result of registration. Currently there's no error handling in
+  // PersistedData, so we assume success every time, which is why we respond
+  // with 0.
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), RegistrationResponse(0)));
 }
 
 void UpdateServiceInProcess::UpdateAll(

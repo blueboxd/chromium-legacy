@@ -28,11 +28,12 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.support.design.widget.TabLayout;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.junit.Before;
 import org.junit.Rule;

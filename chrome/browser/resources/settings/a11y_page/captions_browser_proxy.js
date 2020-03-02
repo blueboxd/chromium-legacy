@@ -7,9 +7,13 @@
  * interact with the browser. Used on operating system that is not Chrome OS.
  */
 
+// clang-format off
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @interface */
-  class CaptionsBrowserProxy {
+  /* #export */ class CaptionsBrowserProxy {
     /**
      * Open the native captions system dialog.
      */
@@ -19,7 +23,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.CaptionsBrowserProxy}
    */
-  class CaptionsBrowserProxyImpl {
+  /* #export */ class CaptionsBrowserProxyImpl {
     /** @override */
     openSystemCaptionsDialog() {
       chrome.send('openSystemCaptionsDialog');

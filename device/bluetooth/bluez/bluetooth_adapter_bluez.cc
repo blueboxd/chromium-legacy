@@ -648,6 +648,11 @@ void BluetoothAdapterBlueZ::DeviceAdded(const dbus::ObjectPath& object_path) {
 
   devices_[device_bluez->GetAddress()] = base::WrapUnique(device_bluez);
 
+  if (properties->rssi.is_valid() && properties->eir.is_valid()) {
+    NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
+                                      properties->eir.value());
+  }
+
   for (auto& observer : observers_)
     observer.DeviceAdded(this, device_bluez);
 }
@@ -722,12 +727,15 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
   if (property_name == properties->mtu.name())
     NotifyDeviceMTUChanged(device_bluez, properties->mtu.value());
 
-  // We use the RSSI as a proxy for receiving an advertisement because it's
-  // usually updated whenever an advertisement is received.
-  if (property_name == properties->rssi.name() && properties->rssi.is_valid() &&
-      properties->eir.is_valid())
+  // Bluez does not currently provide an explicit signal for an advertisement
+  // packet being received. Currently, it implicitly does so by notifying of an
+  // RSSI change. We also listen for whether the EIR packet data has changed.
+  if ((property_name == properties->rssi.name() ||
+       property_name == properties->eir.name()) &&
+      properties->rssi.is_valid() && properties->eir.is_valid()) {
     NotifyDeviceAdvertisementReceived(device_bluez, properties->rssi.value(),
                                       properties->eir.value());
+  }
 
   if (property_name == properties->connected.name())
     NotifyDeviceConnectedStateChanged(device_bluez,

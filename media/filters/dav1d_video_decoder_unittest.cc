@@ -27,13 +27,13 @@ using ::testing::_;
 
 namespace media {
 
-// TODO(dalecurtis): There is some weird collision going on with this matcher
-// and the one defined in the AomVideoDecoder unittest. Somehow only one ends
-// up in the final binary so one test or the other will fail. To workaround this
-// give it a unique name for now...
-MATCHER(ContainsDav1dDecoderErrorLog, "") {
+namespace {
+
+MATCHER(ContainsDecoderErrorLog, "") {
   return CONTAINS_STRING(arg, "dav1d_get_picture() failed");
 }
+
+}  // namespace
 
 class Dav1dVideoDecoderTest : public testing::Test {
  public:
@@ -156,8 +156,8 @@ class Dav1dVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(testing::SaveArg<0>(&status));
 
     decoder_->Decode(std::move(buffer),
-                     base::BindRepeating(&Dav1dVideoDecoderTest::DecodeDone,
-                                         base::Unretained(this)));
+                     base::BindOnce(&Dav1dVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     return status;
@@ -222,7 +222,7 @@ TEST_F(Dav1dVideoDecoderTest, DISABLED_DecodeFrame_LargerWidth) {
 // Decode a VP9 frame which should trigger a decoder error.
 TEST_F(Dav1dVideoDecoderTest, DecodeFrame_Error) {
   Initialize();
-  EXPECT_MEDIA_LOG(ContainsDav1dDecoderErrorLog());
+  EXPECT_MEDIA_LOG(ContainsDecoderErrorLog());
   DecodeSingleFrame(ReadTestDataFile("vp9-I-frame-320x240"));
 }
 

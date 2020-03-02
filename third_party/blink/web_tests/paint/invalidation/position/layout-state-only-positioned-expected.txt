@@ -9,12 +9,12 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
-          "reason": "chunk appeared"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
-          "reason": "chunk disappeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "VerticalScrollbar",

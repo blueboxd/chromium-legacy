@@ -338,10 +338,10 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
     const base::CommandLine& command_line,
     CGaiaCredentialBase::UIProcessInfo* uiprocinfo) {
   // Record command_line parameter "show_tos" into global variable.
+  std::string gcpw_path =
+      command_line.GetSwitchValueASCII(kGcpwEndpointPathSwitch);
   show_tos_command_line_ =
-      command_line.HasSwitch(kShowTosSwitch)
-          ? command_line.GetSwitchValueASCII(kShowTosSwitch)
-          : "0";
+      (gcpw_path.find("show_tos=1") != std::string::npos) ? "1" : "0";
 
   if (fail_loading_gaia_logon_stub_)
     return E_FAIL;

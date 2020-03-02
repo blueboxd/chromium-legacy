@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutNGBlockFlow (floating) DIV class='float'",
           "rect": [8, 62, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

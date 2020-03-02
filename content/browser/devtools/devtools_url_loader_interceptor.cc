@@ -29,6 +29,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
 namespace content {
@@ -637,22 +638,33 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver) {
+    network::mojom::URLLoaderFactoryOverride* intercepting_factory) {
   if (patterns_.empty())
     return false;
 
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory> original_receiver =
-      std::move(*receiver);
+  // If we're the first interceptor to install an override, make a
+  // remote/receiver pair, then handle this similarly to appending
+  // a proxy to existing override.
+  if (!intercepting_factory->overriding_factory) {
+    DCHECK(!intercepting_factory->overridden_factory_receiver);
+    intercepting_factory->overridden_factory_receiver =
+        intercepting_factory->overriding_factory
+            .InitWithNewPipeAndPassReceiver();
+  }
   mojo::PendingRemote<network::mojom::URLLoaderFactory> target_remote;
-  *receiver = target_remote.InitWithNewPipeAndPassReceiver();
+  auto overridden_factory_receiver =
+      target_remote.InitWithNewPipeAndPassReceiver();
   mojo::PendingRemote<network::mojom::CookieManager> cookie_manager;
   int process_id = is_navigation ? 0 : rph->GetID();
   rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(
       cookie_manager.InitWithNewPipeAndPassReceiver());
   new DevToolsURLLoaderFactoryProxy(
-      frame_token, process_id, is_download, std::move(original_receiver),
+      frame_token, process_id, is_download,
+      std::move(intercepting_factory->overridden_factory_receiver),
       std::move(target_remote), std::move(cookie_manager),
       weak_factory_.GetWeakPtr());
+  intercepting_factory->overridden_factory_receiver =
+      std::move(overridden_factory_receiver);
   return true;
 }
 

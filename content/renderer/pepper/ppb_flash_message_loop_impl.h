@@ -28,7 +28,7 @@ class PPB_Flash_MessageLoop_Impl
   // PPB_Flash_MessageLoop_API implementation.
   int32_t Run() override;
   void Quit() override;
-  void RunFromHostProxy(const RunFromHostProxyCallback& callback) override;
+  void RunFromHostProxy(RunFromHostProxyCallback callback) override;
 
  private:
   class State;
@@ -40,7 +40,7 @@ class PPB_Flash_MessageLoop_Impl
   // to quit, and the result passed into it will be the same value as what this
   // method returns.
   // Please note that |callback| happens before this method returns.
-  int32_t InternalRun(const RunFromHostProxyCallback& callback);
+  int32_t InternalRun(RunFromHostProxyCallback callback);
   void InternalQuit(int32_t result);
 
   scoped_refptr<State> state_;

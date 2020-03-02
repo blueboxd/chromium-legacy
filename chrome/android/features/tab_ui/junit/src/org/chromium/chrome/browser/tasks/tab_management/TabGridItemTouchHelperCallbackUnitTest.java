@@ -66,8 +66,6 @@ import java.util.List;
  * Tests for {@link TabGridItemTouchHelperCallback}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-        ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
 @Config(manifest = Config.NONE)
 public class TabGridItemTouchHelperCallbackUnitTest {
     @Rule
@@ -318,10 +316,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void
-    onReleaseTab_MergeBackward_WithoutGroup() {
+    public void onReleaseTab_MergeBackward_WithoutGroup() {
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -346,10 +342,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void
-    onReleaseTab_MergeForward_WithoutGroup() {
+    public void onReleaseTab_MergeForward_WithoutGroup() {
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
@@ -612,10 +606,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
-    public void
-    onDragTab_Hovered_GTS_WithoutGroup() {
+    public void onDragTab_Hovered_GTS_WithoutGroup() {
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
         initAndAssertAllProperties();
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 

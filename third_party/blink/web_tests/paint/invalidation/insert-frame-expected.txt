@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "LayoutIFrame IFRAME",
           "rect": [0, 0, 104, 104],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

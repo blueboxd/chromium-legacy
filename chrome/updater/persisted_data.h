@@ -14,10 +14,13 @@
 class PrefService;
 
 namespace base {
+class FilePath;
 class Version;
-}
+}  // namespace base
 
 namespace updater {
+
+struct RegistrationRequest;
 
 // PersistedData uses the PrefService to persist updater data that outlives
 // the updater processes.
@@ -43,6 +46,23 @@ class PersistedData : public base::RefCounted<PersistedData> {
   // These functions access |fingerprint| data for the specified |id|.
   std::string GetFingerprint(const std::string& id) const;
   void SetFingerprint(const std::string& id, const std::string& fp);
+
+  // These functions access the existence checker path for the specified id.
+  base::FilePath GetExistenceCheckerPath(const std::string& id) const;
+  void SetExistenceCheckerPath(const std::string& id,
+                               const base::FilePath& ecp);
+
+  // These functions access the brand code for the specified id.
+  std::string GetBrandCode(const std::string& id) const;
+  void SetBrandCode(const std::string& id, const std::string& bc);
+
+  // These functions access the tag for the specified id.
+  std::string GetTag(const std::string& id) const;
+  void SetTag(const std::string& id, const std::string& tag);
+
+  // This function sets everything in the registration request object into the
+  // persistent data store.
+  void RegisterApp(const RegistrationRequest& rq);
 
   // Returns the app ids of the applications registered in prefs, if the
   // application has a valid version.

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 
 namespace blink {
@@ -174,9 +174,9 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   const int kWidth = 30;
 
   NGBlockNode box(ToLayoutBox(GetLayoutObjectByElementId("box")));
-  MinMaxSize sizes = box.ComputeMinMaxSize(
+  MinMaxSizes sizes = box.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_size);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_size);
 }

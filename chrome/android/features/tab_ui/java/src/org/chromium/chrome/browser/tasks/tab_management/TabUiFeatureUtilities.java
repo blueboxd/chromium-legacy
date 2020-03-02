@@ -111,15 +111,6 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * @return Whether the tab group ui improvement feature is enabled and available for use.
-     */
-    public static boolean isTabGroupsAndroidUiImprovementsEnabled() {
-        return isTabGroupsAndroidEnabled()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID);
-    }
-
-    /**
      * @return Whether the tab group continuation feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidContinuationEnabled() {

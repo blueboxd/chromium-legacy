@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -53,6 +54,11 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 };
 
 }  // namespace
+
+// Enables the retry of the token fetch without backoff on the first fetch
+// cancellation.
+const base::Feature kSyncRetryFirstCanceledTokenFetch = {
+    "SyncRetryFirstCanceledTokenFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 SyncAuthManager::SyncAuthManager(
     signin::IdentityManager* identity_manager,
@@ -498,6 +504,17 @@ void SyncAuthManager::AccessTokenFetched(
   DCHECK(ongoing_access_token_fetch_);
   ongoing_access_token_fetch_.reset();
   DCHECK(!request_access_token_retry_timer_.IsRunning());
+
+  // Retry without backoff when the request is canceled for the first time. For
+  // more details, see inline comments of
+  // PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete.
+  if (base::FeatureList::IsEnabled(kSyncRetryFirstCanceledTokenFetch) &&
+      error.state() == GoogleServiceAuthError::REQUEST_CANCELED &&
+      !access_token_retried_) {
+    access_token_retried_ = true;
+    RequestAccessToken();
+    return;
+  }
 
   access_token_ = access_token_info.token;
   partial_token_status_.token_response_time = base::Time::Now();

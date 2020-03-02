@@ -16,7 +16,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -48,7 +47,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
@@ -1182,9 +1180,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
 
 bool WebAppShortcutCreator::IsMultiProfile() const {
   // Only PWAs and bookmark apps are multi-profile capable.
-  if (!info_->url.is_valid())
-    return false;
-  return base::FeatureList::IsEnabled(features::kAppShimMultiProfile);
+  return info_->url.is_valid();
 }
 
 void WebAppShortcutCreator::RevealAppShimInFinder() const {

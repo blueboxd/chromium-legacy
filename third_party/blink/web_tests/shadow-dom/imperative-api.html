@@ -18,7 +18,7 @@ test(() => {
                     null, 'slotting manual should work');
   assert_not_equals(n.host1.attachShadow({ mode: 'open', slotting: 'auto' }),
                     null, 'slotting auto should work');
-  assert_throws(new TypeError(), () => {
+  assert_throws_js(TypeError, () => {
   n.host2.attachShadow({ mode: 'open', slotting: 'exceptional' })},
                 'others should throw exception');
 }, 'attachShadow can take slotting parameter');

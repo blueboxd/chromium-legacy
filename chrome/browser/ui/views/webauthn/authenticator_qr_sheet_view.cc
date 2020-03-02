@@ -7,6 +7,7 @@
 #include "base/base64url.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
+#include "chrome/common/qr_code_generator/dino_image.h"
 #include "chrome/common/qr_code_generator/qr_code_generator.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "ui/gfx/canvas.h"
@@ -16,57 +17,6 @@
 using QRCode = QRCodeGenerator;
 
 namespace {
-
-static constexpr int kDinoWidth = 20;
-static constexpr int kDinoHeight = 22;
-static constexpr int kDinoHeadHeight = 8;
-static constexpr int kDinoWidthBytes = (kDinoWidth + 7) / 8;
-static constexpr int kDinoBodyHeight = kDinoHeight - kDinoHeadHeight;
-
-static const uint8_t kDinoHeadRight[kDinoWidthBytes * kDinoHeadHeight] = {
-    // clang-format off
-  0b00000000, 0b00011111, 0b11100000,
-  0b00000000, 0b00111111, 0b11110000,
-  0b00000000, 0b00110111, 0b11110000,
-  0b00000000, 0b00111111, 0b11110000,
-  0b00000000, 0b00111111, 0b11110000,
-  0b00000000, 0b00111111, 0b11110000,
-  0b00000000, 0b00111110, 0b00000000,
-  0b00000000, 0b00111111, 0b11000000,
-    // clang-format on
-};
-
-static const uint8_t kDinoHeadLeft[kDinoWidthBytes * kDinoHeadHeight] = {
-    // clang-format off
-  0b00000111, 0b11111000, 0b00000000,
-  0b00001111, 0b11111100, 0b00000000,
-  0b00001111, 0b11101100, 0b00000000,
-  0b00001111, 0b11111100, 0b00000000,
-  0b00001111, 0b11111100, 0b00000000,
-  0b00001111, 0b11111100, 0b00000000,
-  0b00000000, 0b01111100, 0b00000000,
-  0b00000011, 0b11111100, 0b00000000,
-    // clang-format on
-};
-
-static const uint8_t kDinoBody[kDinoWidthBytes * kDinoBodyHeight] = {
-    // clang-format off
-  0b10000000, 0b01111100, 0b00000000,
-  0b10000001, 0b11111100, 0b00000000,
-  0b11000011, 0b11111111, 0b00000000,
-  0b11100111, 0b11111101, 0b00000000,
-  0b11111111, 0b11111100, 0b00000000,
-  0b11111111, 0b11111100, 0b00000000,
-  0b01111111, 0b11111000, 0b00000000,
-  0b00111111, 0b11111000, 0b00000000,
-  0b00011111, 0b11110000, 0b00000000,
-  0b00001111, 0b11100000, 0b00000000,
-  0b00000111, 0b01100000, 0b00000000,
-  0b00000110, 0b00100000, 0b00000000,
-  0b00000100, 0b00100000, 0b00000000,
-  0b00000110, 0b00110000, 0b00000000,
-    // clang-format on
-};
 
 // QRView displays a QR code.
 class QRView : public views::View {
@@ -81,9 +31,11 @@ class QRView : public views::View {
   // displayed QR code.
   static constexpr int kMid = (kTilePixels * (2 + QRCode::kSize + 2)) / 2;
   // kDinoX is the x-coordinate of the dino image.
-  static constexpr int kDinoX = kMid - (kDinoWidth * kDinoTilePixels) / 2;
+  static constexpr int kDinoX =
+      kMid - (dino_image::kDinoWidth * kDinoTilePixels) / 2;
   // kDinoY is the y-coordinate of the dino image.
-  static constexpr int kDinoY = kMid - (kDinoHeight * kDinoTilePixels) / 2;
+  static constexpr int kDinoY =
+      kMid - (dino_image::kDinoHeight * kDinoTilePixels) / 2;
 
   explicit QRView(const uint8_t qr_data[QRCode::kInputBytes])
       : qr_tiles_(qr_.Generate(qr_data)) {}
@@ -160,10 +112,13 @@ class QRView : public views::View {
       }
     }
 
-    PaintDinoSegment(canvas, (state_ & 1) ? kDinoHeadLeft : kDinoHeadRight,
-                     kDinoHeadHeight, 0);
-    PaintDinoSegment(canvas, kDinoBody, kDinoHeight - kDinoHeadHeight,
-                     kDinoHeadHeight);
+    PaintDinoSegment(
+        canvas,
+        (state_ & 1) ? dino_image::kDinoHeadLeft : dino_image::kDinoHeadRight,
+        dino_image::kDinoHeadHeight, 0);
+    PaintDinoSegment(canvas, dino_image::kDinoBody,
+                     dino_image::kDinoHeight - dino_image::kDinoHeadHeight,
+                     dino_image::kDinoHeadHeight);
   }
 
  private:
@@ -177,7 +132,7 @@ class QRView : public views::View {
       uint8_t current_byte;
       int bits = 0;
 
-      for (int x = 0; x < kDinoWidth; x++) {
+      for (int x = 0; x < dino_image::kDinoWidth; x++) {
         if (bits == 0) {
           current_byte = *data++;
           bits = 8;

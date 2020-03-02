@@ -334,10 +334,23 @@
         ],
       },
       'android-pie-x86-fyi-rel': {
-        # https://crbug.com/1046059
         'args': [
+          '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
+          # https://crbug.com/1046059
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter',
         ],
+        'swarming': {
+          'named_caches': [
+            {
+              'name': 'avd_generic_playstore_android28',
+              'path': '.android',
+            },
+            {
+              'name': 'system_images_android_28_google_apis_playstore_x86',
+              'path': '.emulator_sdk',
+            },
+          ]
+        },
       },
     },
   },
@@ -539,6 +552,18 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # crbug/1018434
     ],
+    'modifications': {
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-ContentViewScrollingTest.testFling',
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-ContentViewScrollingTest.testFling',
+        ],
+      },
+    },
   },
   'content_unittests': {
     'remove_from': [
@@ -1282,6 +1307,14 @@
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # https://crbug.com/1018780
     ],
+    'modifications': {
+      'android-pie-x86-fyi-rel': {
+        # https://crbug.com/1046059
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter',
+        ],
+      },
+    },
   },
   'network_service_out_of_process_components_browsertests': {
     'remove_from': [
@@ -1311,7 +1344,15 @@
       'android-code-coverage-native', # crbug/1018434
     ],
     'modifications': {
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
+        ],
+      },
       'android-pie-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
+        ],
         'swarming': {
           'shards': 10,
         },
@@ -1331,6 +1372,18 @@
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
     ],
+    'modifications': {
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-ContentViewScrollingTest.testFling',
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--gtest_filter=-ContentViewScrollingTest.testFling',
+        ],
+      },
+    },
   },
   'network_service_webview_instrumentation_test_apk': {
     # Only run these on the phone testers for now due to capacity.

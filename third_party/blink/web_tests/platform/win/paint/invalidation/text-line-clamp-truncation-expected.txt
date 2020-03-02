@@ -12,9 +12,14 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
+          "object": "InlineTextBox '___these_two_lines_should_be_identical___'",
           "rect": [8, 10, 271, 43],
-          "reason": "chunk appeared"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '___these_two_lines_should_be_identical___'",
+          "rect": [8, 10, 271, 43],
+          "reason": "appeared"
         }
       ]
     }

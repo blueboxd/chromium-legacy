@@ -65,7 +65,7 @@ TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
 }
 
 // This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstall) {
+TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -79,7 +79,7 @@ TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstall) {
 }
 
 // This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstallThenDeleteService) {
+TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -92,7 +92,7 @@ TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstallThenDeleteService) {
 }
 
 // This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, DISABLED_Do_UpgradeNoChanges) {
+TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -113,7 +113,7 @@ TEST_F(InstallServiceWorkItemTest, DISABLED_Do_UpgradeNoChanges) {
 }
 
 // This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, DISABLED_Do_UpgradeChangedCmdLine) {
+TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));

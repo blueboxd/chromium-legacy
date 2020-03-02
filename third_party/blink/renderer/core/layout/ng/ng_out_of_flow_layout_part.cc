@@ -569,7 +569,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   // The |block_estimate| is wrt. the candidate's writing mode.
   base::Optional<LayoutUnit> block_estimate;
-  base::Optional<MinMaxSize> min_max_size;
+  base::Optional<MinMaxSizes> min_max_sizes;
   scoped_refptr<const NGLayoutResult> layout_result = nullptr;
 
   // In order to calculate the offsets, we may need to know the size.
@@ -587,8 +587,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced) {
     // This is a new formatting context, so whatever happened on the outside
     // doesn't concern us.
-    MinMaxSizeInput input(container_content_size.block_size);
-    min_max_size = ComputeMinAndMaxContentSizeForOutOfFlow(
+    MinMaxSizesInput input(container_content_size.block_size);
+    min_max_sizes = ComputeMinAndMaxContentSizeForOutOfFlow(
         candidate_constraint_space, node, border_padding, input);
   }
 
@@ -596,29 +596,29 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   base::Optional<LogicalSize> replaced_aspect_ratio;
   bool is_replaced_with_only_aspect_ratio = false;
   if (is_replaced) {
-    ComputeReplacedSize(node, candidate_constraint_space, min_max_size,
+    ComputeReplacedSize(node, candidate_constraint_space, min_max_sizes,
                         &replaced_size, &replaced_aspect_ratio);
     is_replaced_with_only_aspect_ratio = !replaced_size &&
                                          replaced_aspect_ratio &&
                                          !replaced_aspect_ratio->IsEmpty();
     // If we only have aspect ratio, and no replaced size, intrinsic size
-    // defaults to 300x150. min_max_size gets computed from the intrinsic size.
-    // We reset the min_max_size because spec says that OOF-positioned size
+    // defaults to 300x150. min_max_sizes gets computed from the intrinsic size.
+    // We reset the min_max_sizes because spec says that OOF-positioned size
     // should not be constrained by intrinsic size in this case.
     // https://www.w3.org/TR/CSS22/visudet.html#inline-replaced-width
     if (is_replaced_with_only_aspect_ratio)
-      min_max_size = MinMaxSize{LayoutUnit(), LayoutUnit::NearlyMax()};
+      min_max_sizes = MinMaxSizes{LayoutUnit(), LayoutUnit::NearlyMax()};
   } else if (should_be_considered_as_replaced) {
     replaced_size =
-        LogicalSize{min_max_size->ShrinkToFit(
+        LogicalSize{min_max_sizes->ShrinkToFit(
                         candidate_constraint_space.AvailableSize().inline_size),
                     kIndefiniteSize};
   }
   NGLogicalOutOfFlowPosition node_position =
       ComputePartialAbsoluteWithChildInlineSize(
           candidate_constraint_space, candidate_style, border_padding,
-          candidate_static_position, min_max_size, replaced_size, writing_mode_,
-          container_direction);
+          candidate_static_position, min_max_sizes, replaced_size,
+          writing_mode_, container_direction);
 
   // |should_be_considered_as_replaced| sets the inline-size.
   // It does not set the block-size. This is a compatibility quirk.

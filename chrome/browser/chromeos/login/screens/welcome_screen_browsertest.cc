@@ -287,8 +287,9 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   WaitForScreenExit();
 }
 
+// Flaky: https://crbug.com/1047175.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
-                       WelcomeScreenAccessibilitySpokenFeedback) {
+                       DISABLED_WelcomeScreenAccessibilitySpokenFeedback) {
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().TapOnPath(

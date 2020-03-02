@@ -241,6 +241,10 @@ class AutocompleteProviderTest : public testing::Test {
     const base::string16 expected_associated_keyword;
   };
 
+  struct HeaderTestData {
+    std::string header;
+  };
+
   struct AssistedQueryStatsTestData {
     const AutocompleteMatch::Type match_type;
     const std::string expected_aqs;
@@ -269,6 +273,9 @@ class AutocompleteProviderTest : public testing::Test {
   void RunKeywordTest(const base::string16& input,
                       const KeywordTestData* match_data,
                       size_t size);
+
+  void UpdateResultsWithHeaderTestData(const HeaderTestData* match_data,
+                                       size_t size);
 
   void RunAssistedQueryStatsTest(
       const AssistedQueryStatsTestData* aqs_test_data,
@@ -508,6 +515,25 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
   }
 }
 
+void AutocompleteProviderTest::UpdateResultsWithHeaderTestData(
+    const HeaderTestData* match_data,
+    size_t size) {
+  // Prepare input.
+  const size_t kMaxRelevance = 1000;
+  ACMatches matches;
+  for (size_t i = 0; i < size; ++i) {
+    AutocompleteMatch match(nullptr, kMaxRelevance - i, false,
+                            AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED);
+    match.header = base::ASCIIToUTF16(match_data[i].header);
+    matches.push_back(match);
+  }
+  result_.Reset();
+  result_.AppendMatches(AutocompleteInput(), matches);
+
+  // Update headers.
+  controller_->UpdateHeaders(&result_);
+}
+
 void AutocompleteProviderTest::RunAssistedQueryStatsTest(
     const AssistedQueryStatsTestData* aqs_test_data,
     size_t size) {
@@ -724,6 +750,68 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
     SCOPED_TRACE("keyword exact match");
     RunKeywordTest(base::ASCIIToUTF16("f"), keyword_match,
                    base::size(keyword_match));
+  }
+}
+
+// Tests that match headers are updated correctly.
+TEST_F(AutocompleteProviderTest, Headers) {
+  using base::ASCIIToUTF16;
+
+  ResetControllerWithTestProviders(false, nullptr, nullptr);
+
+  const char kRecentSearchesHeader[] = "Recent Searches";
+  const char kRecommendedForYouHeader[] = "Recommended for you";
+
+  {
+    // The first header in every group of adjacent identical headers is kept.
+    HeaderTestData test_data[] = {{""},
+                                  {""},
+                                  {kRecentSearchesHeader},
+                                  {kRecentSearchesHeader},
+                                  {kRecommendedForYouHeader},
+                                  {kRecommendedForYouHeader}};
+    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
+    EXPECT_EQ(ASCIIToUTF16(kRecentSearchesHeader), result_.match_at(2)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
+    EXPECT_EQ(ASCIIToUTF16(kRecommendedForYouHeader),
+              result_.match_at(4)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
+  }
+  {
+    // All headers are cleared because identical headers cannot be interleaved
+    // by other headers.
+    HeaderTestData test_data[] = {{""},
+                                  {""},
+                                  {kRecommendedForYouHeader},
+                                  {kRecentSearchesHeader},
+                                  {kRecentSearchesHeader},
+                                  {kRecommendedForYouHeader}};
+    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(2)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(4)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
+  }
+  {
+    // All headers are cleared because an empty header cannot appear after
+    // a non-empty one.
+    HeaderTestData test_data[] = {{kRecentSearchesHeader},
+                                  {kRecentSearchesHeader},
+                                  {kRecommendedForYouHeader},
+                                  {kRecommendedForYouHeader},
+                                  {""},
+                                  {""}};
+    UpdateResultsWithHeaderTestData(test_data, base::size(test_data));
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(0)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(1)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(2)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(3)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(4)->header);
+    EXPECT_EQ(ASCIIToUTF16(""), result_.match_at(5)->header);
   }
 }
 

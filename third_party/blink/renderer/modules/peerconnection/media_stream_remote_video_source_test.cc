@@ -324,14 +324,21 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       webrtc::Timestamp::Millis(rtc::TimeMillis());
   const webrtc::Timestamp kProcessingStart =
       kProcessingFinish - webrtc::TimeDelta::Millis(1.0e3 * kProcessingTime);
+  const webrtc::Timestamp kCaptureTime =
+      kProcessingStart - webrtc::TimeDelta::Millis(20.0);
+  // Expected capture time in Chromium epoch.
+  base::TimeTicks kExpectedCaptureTime =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(kCaptureTime.ms()) +
+      time_diff();
 
   webrtc::RtpPacketInfos::vector_type packet_infos;
   for (int i = 0; i < 4; ++i) {
     packet_infos.emplace_back(kSsrc, kCsrcs, kRtpTimestamp, absl::nullopt,
                               absl::nullopt, kProcessingStart.ms() - 100 + i);
   }
-  // Capture time should be the same as the last arrival time.
-  base::TimeTicks kExpectedCaptureTime =
+  // Expected receive time should be the same as the last arrival time, in
+  // Chromium epoch.
+  base::TimeTicks kExpectedReceiveTime =
       base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(kProcessingStart.ms() - 100 + 3) +
       time_diff();
@@ -340,6 +347,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(buffer)
           .set_timestamp_rtp(kRtpTimestamp)
+          .set_ntp_time_ms(kCaptureTime.ms())
           .set_packet_infos(webrtc::RtpPacketInfos(packet_infos))
           .build();
 
@@ -360,6 +368,12 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
   EXPECT_TRUE(output_frame->metadata()->GetTimeTicks(
       media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
   EXPECT_NEAR((capture_time - kExpectedCaptureTime).InMillisecondsF(), 0.0f,
+              kChromiumWebRtcMaxTimeDiffMs);
+
+  base::TimeTicks receive_time;
+  EXPECT_TRUE(output_frame->metadata()->GetTimeTicks(
+      media::VideoFrameMetadata::RECEIVE_TIME, &receive_time));
+  EXPECT_NEAR((receive_time - kExpectedReceiveTime).InMillisecondsF(), 0.0f,
               kChromiumWebRtcMaxTimeDiffMs);
 
   double rtp_timestamp;

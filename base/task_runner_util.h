@@ -9,12 +9,15 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/post_task_and_reply_with_result_internal.h"
 #include "base/task_runner.h"
+
+// TODO: Remove these unused includes after fixing IWYU usage in
+// affected files.
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 
 namespace base {
 
@@ -32,6 +35,10 @@ namespace base {
 //     FROM_HERE,
 //     BindOnce(&DoWorkAndReturn),
 //     BindOnce(&Callback));
+//
+// DEPRECATED: Prefer calling|task_runner->PostTaskAndReplyWithResult(...)|
+// directly.
+// TODO(gab): Mass-migrate to the member method.
 template <typename TaskReturnType, typename ReplyArgType>
 bool PostTaskAndReplyWithResult(TaskRunner* task_runner,
                                 const Location& from_here,

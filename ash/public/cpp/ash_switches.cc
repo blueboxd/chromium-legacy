@@ -115,7 +115,7 @@ const char kHasInternalStylus[] = "has-internal-stylus";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// If true, the webui lock screen wil be shown. This is deprecated and will be
+// If true, the webui lock screen will be shown. This is deprecated and will be
 // removed in the future.
 const char kShowWebUiLock[] = "show-webui-lock";
 
@@ -133,12 +133,13 @@ const char kTouchscreenUsableWhileScreenOff[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
-bool IsUsingViewsLock() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
-}
-
 bool IsUsingShelfAutoDim() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
+}
+
+// Returns true if the device will NOT show the webui lock screen.
+bool IsUsingViewsLock() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
 }
 
 }  // namespace switches

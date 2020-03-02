@@ -23,11 +23,10 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressProperties.CompletionState;
@@ -51,7 +50,7 @@ public class LoadProgressMediatorTest {
     @Captor
     public ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
-    public ArgumentCaptor<Callback<Tab>> mActivityTabObserverCaptor;
+    public ArgumentCaptor<ActivityTabObserver> mActivityTabObserverCaptor;
 
     private PropertyModel mModel;
     private LoadProgressMediator mMediator;
@@ -94,7 +93,7 @@ public class LoadProgressMediatorTest {
     public void switchToLoadingTab() {
         doReturn(true).when(mTab2).isLoading();
         doReturn(0.1f).when(mTab2).getProgress();
-        mActivityTabObserverCaptor.getValue().onResult(mTab2);
+        mActivityTabObserverCaptor.getValue().onActivityTabChanged(mTab2, false);
         verify(mTab2, times(1)).addObserver(any());
 
         assertEquals(
@@ -111,7 +110,7 @@ public class LoadProgressMediatorTest {
         assertEquals(mModel.get(LoadProgressProperties.PROGRESS),
                 LoadProgressMediator.MINIMUM_LOAD_PROGRESS, MathUtils.EPSILON);
 
-        mActivityTabObserverCaptor.getValue().onResult(mTab2);
+        mActivityTabObserverCaptor.getValue().onActivityTabChanged(mTab2, false);
         verify(mTab2, times(1)).addObserver(any());
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DONT_ANIMATE);
@@ -142,7 +141,7 @@ public class LoadProgressMediatorTest {
                 LoadProgressMediator.MINIMUM_LOAD_PROGRESS, MathUtils.EPSILON);
 
         when(mTab2.getUrlString()).thenReturn(NATIVE_PAGE_URL);
-        mActivityTabObserverCaptor.getValue().onResult(mTab2);
+        mActivityTabObserverCaptor.getValue().onActivityTabChanged(mTab2, false);
         verify(mTab2, times(1)).addObserver(any());
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DONT_ANIMATE);

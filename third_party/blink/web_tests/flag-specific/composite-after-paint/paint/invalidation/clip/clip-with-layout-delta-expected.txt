@@ -25,11 +25,6 @@
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 8, 100, 100],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 4, 19],
-          "reason": "chunk appeared"
         }
       ]
     }

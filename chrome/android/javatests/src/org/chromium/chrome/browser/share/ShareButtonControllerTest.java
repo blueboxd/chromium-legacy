@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.share;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +47,7 @@ public final class ShareButtonControllerTest {
     @Before
     public void setUp() {
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(true);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, true);
         SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
@@ -65,7 +65,7 @@ public final class ShareButtonControllerTest {
         View experimentalButton = mActivityTestRule.getActivity()
                                           .getToolbarManager()
                                           .getToolbarLayoutForTesting()
-                                          .getExperimentalButtonView();
+                                          .getOptionalButtonView();
         assertNotNull("experimental button not found", experimentalButton);
         assertEquals(View.GONE, experimentalButton.getVisibility());
     }
@@ -76,7 +76,7 @@ public final class ShareButtonControllerTest {
         View experimentalButton = mActivityTestRule.getActivity()
                                           .getToolbarManager()
                                           .getToolbarLayoutForTesting()
-                                          .getExperimentalButtonView();
+                                          .getOptionalButtonView();
 
         assertNotNull("experimental button not found", experimentalButton);
         assertEquals(View.VISIBLE, experimentalButton.getVisibility());
@@ -91,7 +91,7 @@ public final class ShareButtonControllerTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:start_surface_variation/single"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testShareButtonInToolbarIsDisabledWithOverview() {
+    public void testShareButtonInToolbarNotAffectedByOverview() {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();
 
@@ -104,16 +104,32 @@ public final class ShareButtonControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
 
-        View experimentalButton = mActivityTestRule.getActivity()
-                                          .getToolbarManager()
-                                          .getToolbarLayoutForTesting()
-                                          .getExperimentalButtonView();
-        assertNotNull("experimental button not found", experimentalButton);
+        View optionalButton = mActivityTestRule.getActivity()
+                                      .getToolbarManager()
+                                      .getToolbarLayoutForTesting()
+                                      .getOptionalButtonView();
+        assertNotNull("optional button not found", optionalButton);
 
         String shareString =
                 mActivityTestRule.getActivity().getResources().getString(R.string.share);
 
-        assertNotEquals(shareString, experimentalButton.getContentDescription());
+        assertEquals(shareString, optionalButton.getContentDescription());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:start_surface_variation/single"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testShareButtonDisabledOnDataUrl() {
+        mActivityTestRule.loadUrl("data:,Hello%2C%20World!");
+
+        View experimentalButton = mActivityTestRule.getActivity()
+                                          .getToolbarManager()
+                                          .getToolbarLayoutForTesting()
+                                          .getOptionalButtonView();
+        assertNotNull("experimental button not found", experimentalButton);
+        assertEquals(View.GONE, experimentalButton.getVisibility());
     }
 
     // TODO(crbug/1036023) Add a test that checks that expected intents are fired.

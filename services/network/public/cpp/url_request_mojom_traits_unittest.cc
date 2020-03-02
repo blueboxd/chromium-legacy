@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
+#include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/mojom/origin_mojom_traits.h"
@@ -97,6 +98,17 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.trusted_params->update_network_isolation_key_on_redirect = network::
       mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
   original.trusted_params->disable_secure_dns = true;
+
+  original.trust_token_params = network::mojom::TrustTokenParams();
+  original.trust_token_params->issuer =
+      url::Origin::Create(GURL("https://issuer.com"));
+  original.trust_token_params->type =
+      mojom::TrustTokenOperationType::kRedemption;
+  original.trust_token_params->include_timestamp_header = true;
+  original.trust_token_params->sign_request_data =
+      mojom::TrustTokenSignRequestData::kInclude;
+  original.trust_token_params->additional_signed_headers.push_back(
+      "some_header");
 
   network::ResourceRequest copied;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,

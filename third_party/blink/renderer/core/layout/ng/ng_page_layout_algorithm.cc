@@ -80,13 +80,13 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
-    const MinMaxSizeInput& input) const {
+base::Optional<MinMaxSizes> NGPageLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(ConstraintSpace(), Node());
   NGBlockLayoutAlgorithm algorithm(
       {Node(), fragment_geometry, ConstraintSpace()});
-  return algorithm.ComputeMinMaxSize(input);
+  return algorithm.ComputeMinMaxSizes(input);
 }
 
 NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(

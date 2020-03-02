@@ -47,14 +47,18 @@
 
 namespace blink {
 
+class Agent;
 class ContentSecurityPolicy;
 class FeaturePolicy;
 class PolicyValue;
+class OriginTrialContext;
 class SecurityContextInit;
 class SecurityOrigin;
 struct ParsedFeaturePolicyDeclaration;
 
 using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
+
+enum class SecureContextMode { kInsecureContext, kSecureContext };
 
 // Whether to report policy violations when checking whether a feature is
 // enabled.
@@ -169,6 +173,21 @@ class CORE_EXPORT SecurityContext {
   bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
                         PolicyValue threshold_value) const;
 
+  Agent* GetAgent() const { return agent_; }
+
+  OriginTrialContext* GetOriginTrialContext() const {
+    return origin_trial_context_;
+  }
+
+  SecureContextMode GetSecureContextMode() const {
+    // secure_context_mode_ is not initialized for RemoteSecurityContexts.
+    DCHECK_EQ(context_type_, kLocal);
+    return secure_context_mode_;
+  }
+  void SetSecureContextModeForTesting(SecureContextMode mode) {
+    secure_context_mode_ = mode;
+  }
+
  protected:
   mojom::blink::WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
@@ -184,6 +203,9 @@ class CORE_EXPORT SecurityContext {
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
   const SecurityContextType context_type_;
+  Member<Agent> agent_;
+  SecureContextMode secure_context_mode_;
+  Member<OriginTrialContext> origin_trial_context_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 

@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/proto/download_file_types.pb.h"
 
 // Implementation of DownloadUIModel that wrappers around a |DownloadItem*|. As
 // such, the caller is expected to ensure that the |download| passed into the

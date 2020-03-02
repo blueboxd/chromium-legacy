@@ -115,10 +115,10 @@ class NGInlineNodeTest : public NGLayoutTest {
     return node;
   }
 
-  MinMaxSize ComputeMinMaxSize(NGInlineNode node) {
-    return node.ComputeMinMaxSize(
+  MinMaxSizes ComputeMinMaxSizes(NGInlineNode node) {
+    return node.ComputeMinMaxSizes(
         node.Style().GetWritingMode(),
-        MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+        MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
   }
 
   void CreateLine(
@@ -464,27 +464,27 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSize) {
+TEST_F(NGInlineNodeTest, MinMaxSizes) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   EXPECT_EQ(40, sizes.min_size);
   EXPECT_EQ(70, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
+TEST_F(NGInlineNodeTest, MinMaxSizesElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   EXPECT_EQ(20, sizes.min_size);
   EXPECT_EQ(60, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
+TEST_F(NGInlineNodeTest, MinMaxSizesFloats) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -496,13 +496,13 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(130, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
+TEST_F(NGInlineNodeTest, MinMaxSizesCloseTagAfterForcedBreak) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -514,14 +514,14 @@ TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   // The right border of the `</span>` is included in the line even if it
   // appears after `<br>`. crbug.com/991320.
   EXPECT_EQ(80, sizes.min_size);
   EXPECT_EQ(80, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
+TEST_F(NGInlineNodeTest, MinMaxSizesFloatsClearance) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -534,13 +534,13 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(160, sizes.max_size);
 }
 
-TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
+TEST_F(NGInlineNodeTest, MinMaxSizesTabulationWithBreakWord) {
   LoadAhem();
   SetupHtml("t", R"HTML(
     <style>
@@ -554,7 +554,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes = ComputeMinMaxSize(node);
+  MinMaxSizes sizes = ComputeMinMaxSizes(node);
   EXPECT_EQ(160, sizes.min_size);
   EXPECT_EQ(170, sizes.max_size);
 }
@@ -1371,7 +1371,7 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
   // Inline block with auto-size calls |ComputeMinMaxSize|, which may call
   // |CollectInlines|. Emulate it to ensure it does not let tests to fail.
   GetDocument().UpdateStyleAndLayoutTree();
-  ComputeMinMaxSize(NGInlineNode(layout_block_flow_));
+  ComputeMinMaxSizes(NGInlineNode(layout_block_flow_));
 
   auto lines = MarkLineBoxesDirty();
   // TODO(kojii): Ideally, 0 should be false, or even 1 as well.

@@ -103,18 +103,19 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectSubsequenceCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
+      #stacking-context {
+        position: absolute;
+        z-index: 1;
+      }
       #touchaction {
         width: 100px;
         height: 100px;
         touch-action: none;
       }
-      #sibling {
-        width: 100px;
-        height: 100px;
-        background: blue;
-      }
     </style>
-    <div id='touchaction'></div>
+    <div id='stacking-context'>
+      <div id='touchaction'></div>
+    </div>
   )HTML");
 
   const auto& scrolling_client = ViewScrollingBackgroundClient();
@@ -123,7 +124,8 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectSubsequenceCaching) {
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
                           IsSameId(touchaction, DisplayItem::kHitTest)));
 
-  const auto& hit_test_client = *touchaction->EnclosingLayer();
+  const auto& hit_test_client =
+      *ToLayoutBox(GetLayoutObjectByElementId("stacking-context"))->Layer();
   EXPECT_SUBSEQUENCE(hit_test_client, 1, 2);
 
   PaintChunk::Id root_chunk_id(scrolling_client, kDocumentBackgroundType);
@@ -192,20 +194,12 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintCaching) {
   auto root_chunk_properties =
       GetLayoutView().FirstFragment().ContentsProperties();
 
-  PaintChunk::Id hit_test_chunk_id(*touchaction->EnclosingLayer(),
-                                   kNonScrollingBackgroundChunkType);
-  auto hit_test_chunk_properties = touchaction->EnclosingLayer()
-                                       ->GetLayoutObject()
-                                       .FirstFragment()
-                                       .ContentsProperties();
   HitTestData hit_test_data;
   hit_test_data.touch_action_rects.emplace_back(LayoutRect(0, 0, 100, 100));
 
-  EXPECT_THAT(
-      RootPaintController().PaintChunks(),
-      ElementsAre(IsPaintChunk(0, 1, root_chunk_id, root_chunk_properties),
-                  IsPaintChunk(1, 3, hit_test_chunk_id,
-                               hit_test_chunk_properties, hit_test_data)));
+  EXPECT_THAT(RootPaintController().PaintChunks(),
+              ElementsAre(IsPaintChunk(0, 3, root_chunk_id,
+                                       root_chunk_properties, hit_test_data)));
 
   sibling_element->setAttribute(html_names::kStyleAttr, "background: green;");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
@@ -215,11 +209,9 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintCaching) {
   EXPECT_EQ(2, NumCachedNewItems());
   CommitAndFinishCycle();
 
-  EXPECT_THAT(
-      RootPaintController().PaintChunks(),
-      ElementsAre(IsPaintChunk(0, 1, root_chunk_id, root_chunk_properties),
-                  IsPaintChunk(1, 3, hit_test_chunk_id,
-                               hit_test_chunk_properties, hit_test_data)));
+  EXPECT_THAT(RootPaintController().PaintChunks(),
+              ElementsAre(IsPaintChunk(0, 3, root_chunk_id,
+                                       root_chunk_properties, hit_test_data)));
 }
 
 TEST_F(BlockPainterTouchActionTest, TouchActionRectScrollingContents) {
@@ -316,18 +308,12 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintChunkChanges) {
 
   PaintChunk::Id hit_test_chunk_id(*touchaction->EnclosingLayer(),
                                    kNonScrollingBackgroundChunkType);
-  auto hit_test_chunk_properties = touchaction->EnclosingLayer()
-                                       ->GetLayoutObject()
-                                       .FirstFragment()
-                                       .ContentsProperties();
   HitTestData hit_test_data;
   hit_test_data.touch_action_rects.emplace_back(LayoutRect(0, 0, 100, 100));
 
-  EXPECT_THAT(
-      RootPaintController().PaintChunks(),
-      ElementsAre(IsPaintChunk(0, 1, root_chunk_id, root_chunk_properties),
-                  IsPaintChunk(1, 2, hit_test_chunk_id,
-                               hit_test_chunk_properties, hit_test_data)));
+  EXPECT_THAT(RootPaintController().PaintChunks(),
+              ElementsAre(IsPaintChunk(0, 2, root_chunk_id,
+                                       root_chunk_properties, hit_test_data)));
 
   touchaction_element->removeAttribute(html_names::kStyleAttr);
   UpdateAllLifecyclePhasesForTest();

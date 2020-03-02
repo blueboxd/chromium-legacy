@@ -28,10 +28,6 @@ namespace content {
 class WebContents;
 }
 
-namespace signin {
-class IdentityManager;
-}
-
 namespace safe_browsing {
 
 enum class ResourceType;
@@ -88,7 +84,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const base::RepeatingCallback<content::WebContents*()>&
           web_contents_getter,
       bool real_time_lookup_enabled,
-      signin::IdentityManager* identity_manager_on_ui,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui);
 
   ~SafeBrowsingUrlCheckerImpl() override;
@@ -175,8 +170,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
       const GURL& url,
       base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui,
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-      signin::IdentityManager* identity_manager);
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
 
   // Called when the |request| from the real-time lookup service is sent.
   void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request);
@@ -244,10 +238,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // to |database_manager_|. As long as the redirection is still happening,
   // there is at least one check that needs to be cancelled.
   bool browse_url_check_sent_ = false;
-
-  // This object is used to obtain access token when real time url check with
-  // token is enabled. Can only be accessed in UI thread.
-  signin::IdentityManager* identity_manager_on_ui_;
 
   // This object is used to perform real time url check. Can only be accessed in
   // UI thread.

@@ -11,7 +11,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_google_android_material_material_java",
 
     # TODO(crbug.com/1017190): Remove this workaround.
     "//ui/android:ui_java",
@@ -22,7 +22,7 @@ android_resources("java_resources") {
   custom_package = "org.chromium.components.browser_ui.styles"
   resource_dirs = [ "java/res" ]
   deps = [
-    "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java_resources",
   ]
 }

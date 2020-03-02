@@ -1630,6 +1630,12 @@ html[dir='rtl'] .banner-close {
   width: 100%;
 }
 
+body.files-ng .thumbnail-grid {
+  padding-inline-end: 20px;
+  padding-inline-start: 16px;
+  padding-top: 20px;
+}
+
 body[type='full-page'] .thumbnail-frame > .img-container {
   position: relative;
 }
@@ -1651,6 +1657,10 @@ body[type='full-page'] .detail-name .detail-icon {
   right: 0;
 }
 
+body.files-ng .thumbnail-bottom {
+  padding: 0;
+}
+
 .thumbnail-bottom .detail-icon {
   flex: none;
   height: 16px;
@@ -1661,6 +1671,10 @@ body[type='full-page'] .detail-name .detail-icon {
   flex: auto;
   font-weight: 500;
   padding-inline-end: 6px;
+}
+
+body.files-ng .thumbnail-item .filename-label {
+  padding-inline-end: 12px;
 }
 
 /* Styles specific for the grid view. */
@@ -1676,9 +1690,34 @@ body[type='full-page'] .detail-name .detail-icon {
   width: 180px;
 }
 
+body.files-ng .thumbnail-grid .thumbnail-item {
+  background-color: inherit;
+  border-radius: 4px;
+  height: 160px;
+  margin-inline-start: 16px;
+  margin-top: 16px;
+}
+
 .thumbnail-grid .thumbnail-item.directory {
   box-shadow: 0 1px rgba(0, 0, 0, 15%);
   height: 40px;
+}
+
+body.files-ng .thumbnail-item.directory   {
+  box-shadow: none;
+  height: 40px;
+}
+
+body.files-ng #list-container .thumbnail-grid li {
+  border: 1px solid rgba(0, 0, 0, 14%);
+}
+
+body.files-ng grid .thumbnail-bottom .detail-icon {
+  cursor: pointer;
+  height: 40px;
+  padding-inline-end: 6px;
+  padding-inline-start: 6px;
+  width: 32px;
 }
 
 .thumbnail-grid .thumbnail-frame {
@@ -1695,6 +1734,7 @@ body[type='full-page'] .detail-name .detail-icon {
  background-color: rgba(51, 103, 214, 50%);
 
 }
+
 .thumbnail-grid .thumbnail-item[lead]:not([selected]) .shield {
   background-color: rgba(51, 103, 214, 20%);
 }
@@ -1747,6 +1787,10 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   width: 100%;
 }
 
+body.files-ng .thumbnail-grid .img-container {
+  height: 120px;
+}
+
 .thumbnail-grid .img-container > .thumbnail {
   -webkit-user-drag: none;
   background-color: rgb(230, 230, 230);
@@ -1783,6 +1827,11 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   height: 40px;
 }
 
+body.files-ng .thumbnail-grid .thumbnail-bottom {
+  background-color: white;
+  color: var(--google-grey-900);
+}
+
 .thumbnail-grid .thumbnail-item.directory .thumbnail-bottom {
   background-color: rgb(255, 255, 255);
 }
@@ -1795,6 +1844,29 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 .thumbnail-grid:focus .thumbnail-item[selected].directory .thumbnail-bottom,
 .thumbnail-grid:focus .thumbnail-item[lead].directory .thumbnail-bottom {
   background-color: rgb(232, 246, 253);
+}
+
+/** TODO(lucmult): Style the bg without focus */
+body.files-ng .thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom,
+body.files-ng .thumbnail-grid .thumbnail-item[lead] .thumbnail-bottom,
+body.files-ng .thumbnail-grid .thumbnail-item[selected].directory
+    .thumbnail-bottom,
+body.files-ng .thumbnail-grid .thumbnail-item[lead].directory
+    .thumbnail-bottom {
+  background-color: var(--google-blue-50);
+  color: var(--google-blue-600);
+}
+
+body.files-ng #list-container .thumbnail-grid .thumbnail-item[lead] {
+  /* 2px border: 1px via box-shadow + 1px via border, to accommodate
+     the difference between regular border 1px and selected border 2px.*/
+  border-color: var(--google-blue-600);
+  box-shadow: 0 0 0 1px var(--google-blue-600);
+}
+
+body.files-ng #list-container .thumbnail-grid .thumbnail-item[lead].directory
+    .shield {
+  height: 36px;
 }
 
 .thumbnail-grid > .spacer.folder-spacer {
@@ -2105,10 +2177,17 @@ li[renaming=''] .badge {
   width: 24px;
 }
 
-#list-container li .detail-icon {
+body:not(.files-ng) #list-container li .detail-icon {
   height: 28px;
   margin-inline-end: 6px;
   width: 28px;
+}
+
+body.files-ng #list-container list li .detail-icon {
+  height: 40px;
+  margin-inline-end: 16px;
+  margin-inline-start: 12px;
+  width: 32px;
 }
 
 #list-container li .detail-checkmark {
@@ -2542,13 +2621,6 @@ body.files-ng .table-row-cell .filename-label {
 body.files-ng.check-select list:focus li[selected] .table-row-cell
 .filename-label {
   color: var(--google-blue-600);
-}
-
-body.files-ng #list-container li .detail-icon {
-  height: 40px;
-  margin-inline-end: 16px;
-  margin-inline-start: 12px;
-  width: 32px;
 }
 
 body.files-ng #list-container li .detail-checkmark {

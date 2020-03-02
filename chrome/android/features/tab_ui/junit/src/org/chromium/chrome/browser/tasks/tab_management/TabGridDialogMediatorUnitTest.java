@@ -207,6 +207,7 @@ public class TabGridDialogMediatorUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
     }
 
     @Test

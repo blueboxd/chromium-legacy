@@ -11,13 +11,13 @@ test(function() {
     assert_throws_dom("INDEX_SIZE_ERR", function() {
       gradient.addColorStop(2, '#000');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       gradient.addColorStop(Infinity, '#000');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       gradient.addColorStop(-Infinity, '#000');
     });
-    assert_throws(new TypeError(), function() {
+    assert_throws_js(TypeError, function() {
       gradient.addColorStop(NaN, '#000');
     });
 }, 'This test checks invalid offsets on gradients.');

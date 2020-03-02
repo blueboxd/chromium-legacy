@@ -34,11 +34,6 @@ const base::Feature kAppActivityReporting{"AppActivityReporting",
 #endif
 
 #if defined(OS_MACOSX)
-// Enable the new multi-profile-aware app shim mode.
-// TODO(https://crbug.com/982024): Delete this flag when feature is complete.
-const base::Feature kAppShimMultiProfile{"AppShimMultiProfile",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Can be used to disable RemoteCocoa (hosting NSWindows for apps in the app
 // process). For debugging purposes only.
 const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",

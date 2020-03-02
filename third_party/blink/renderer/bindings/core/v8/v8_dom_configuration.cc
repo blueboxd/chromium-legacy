@@ -689,10 +689,9 @@ void V8DOMConfiguration::InstallConstants(
     v8::Local<v8::ObjectTemplate> prototype_template,
     const ConstantConfiguration* constants,
     size_t constant_count) {
-  for (size_t i = 0; i < constant_count; ++i) {
+  for (size_t i = 0; i < constant_count; ++i)
     InstallConstantInternal(isolate, interface_template, prototype_template,
                             constants[i]);
-  }
 }
 
 void V8DOMConfiguration::InstallConstant(
@@ -732,18 +731,6 @@ void V8DOMConfiguration::InstallConstants(
         v8::Local<v8::AccessorSignature>(), v8::DEFAULT,
         v8::SideEffectType::kHasNoSideEffect,
         v8::SideEffectType::kHasNoSideEffect);
-  }
-}
-
-void V8DOMConfiguration::InstallConstants(
-    v8::Isolate* isolate,
-    v8::Local<v8::Function> interface_object,
-    v8::Local<v8::Object> prototype_object,
-    const V8DOMConfiguration::ConstantConfiguration* constants,
-    size_t constant_count) {
-  for (size_t i = 0; i < constant_count; ++i) {
-    InstallConstantInternal(isolate, interface_object, prototype_object,
-                            constants[i]);
   }
 }
 

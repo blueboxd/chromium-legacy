@@ -2037,12 +2037,11 @@ bool NetworkHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        target_factory_receiver) {
+    network::mojom::URLLoaderFactoryOverride* intercepting_factory) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
              rph, frame_token, is_navigation, is_download,
-             target_factory_receiver);
+             intercepting_factory);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,

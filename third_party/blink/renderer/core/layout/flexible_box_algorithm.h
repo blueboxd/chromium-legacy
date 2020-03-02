@@ -33,7 +33,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
@@ -49,7 +49,7 @@ class FlexItem;
 class FlexLine;
 class FlexLayoutAlgorithm;
 class LayoutBox;
-struct MinMaxSize;
+struct MinMaxSizes;
 
 enum FlexSign {
   kPositiveFlexibility,
@@ -120,9 +120,9 @@ class FlexItem {
            LayoutBox*,
            const ComputedStyle& style,
            LayoutUnit flex_base_content_size,
-           MinMaxSize min_max_main_sizes,
+           MinMaxSizes min_max_main_sizes,
            // Ignored for legacy, required for NG:
-           base::Optional<MinMaxSize> min_max_cross_sizes,
+           base::Optional<MinMaxSizes> min_max_cross_sizes,
            LayoutUnit main_axis_border_padding,
            LayoutUnit cross_axis_border_padding,
            NGPhysicalBoxStrut physical_margins);
@@ -190,8 +190,8 @@ class FlexItem {
   LayoutBox* box;
   const ComputedStyle& style;
   const LayoutUnit flex_base_content_size;
-  const MinMaxSize min_max_main_sizes;
-  const base::Optional<MinMaxSize> min_max_cross_sizes;
+  const MinMaxSizes min_max_main_sizes;
+  const base::Optional<MinMaxSizes> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_padding;
   const LayoutUnit cross_axis_border_padding;

@@ -775,6 +775,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("showGridViewDownloads"),
                       TestCase("showGridViewDownloads").InGuestMode(),
+                      TestCase("showGridViewDownloads").FilesNg(),
                       TestCase("showGridViewDrive"),
                       TestCase("showGridViewButtonSwitches"),
                       TestCase("showGridViewKeyboardSelectionA11y"),

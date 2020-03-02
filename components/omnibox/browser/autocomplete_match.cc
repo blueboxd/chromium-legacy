@@ -141,6 +141,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       contents_class(match.contents_class),
       description(match.description),
       description_class(match.description_class),
+      header(match.header),
       swap_contents_and_description(match.swap_contents_and_description),
       answer(match.answer),
       transition(match.transition),
@@ -195,6 +196,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   contents_class = match.contents_class;
   description = match.description;
   description_class = match.description_class;
+  header = match.header;
   swap_contents_and_description = match.swap_contents_and_description;
   answer = match.answer;
   transition = match.transition;

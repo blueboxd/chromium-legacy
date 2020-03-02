@@ -44,5 +44,5 @@ For example, `layered_api/foo/bar/baz.mjs` is mapped to
 
 All `index.mjs` resources are mapped to `std:directory-name-relative-to-here`
 too, and they are web-exposed.  For example,
-`layered_api/elements/toast/index.mjs` is mapped to `std:elements/toast` as
-well as `std-internal://elements/toast/index.mjs`.
+`layered_api/elements/switch/index.mjs` is mapped to `std:elements/switch` as
+well as `std-internal://elements/switch/index.mjs`.

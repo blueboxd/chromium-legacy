@@ -133,38 +133,6 @@ TEST(AccountConsistencyModeManagerTest, AllowBrowserSigninSwitch) {
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               manager.GetAccountConsistencyMethod());
   }
-
-  // TODO(crbug.com/1053961): Remove signin is disallowed tests, once the switch
-  // is removed.
-  {
-    // With both switches allow browser signin and signin is allowed.
-    // Only allow browser signin should be taken into consideration.
-    base::test::ScopedCommandLine scoped_command_line;
-    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
-        "allow-browser-signin", "true");
-    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-        "disallow-signin");
-    AccountConsistencyModeManager manager(profile.get());
-    EXPECT_TRUE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
-    // Dice should be enabled.
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
-              manager.GetAccountConsistencyMethod());
-  }
-
-  {
-    // Without the switch allow browser signin but with the switch signin is
-    // disallowed.
-    base::test::ScopedCommandLine scoped_command_line;
-    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-        "disallow-signin");
-    AccountConsistencyModeManager manager(profile.get());
-    EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
-    EXPECT_TRUE(
-        profile->GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
-    // Dice should be disabled.
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-              manager.GetAccountConsistencyMethod());
-  }
 }
 
 // Checks that Dice migration happens when the manager is created.

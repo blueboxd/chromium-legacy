@@ -42,9 +42,6 @@ const LayeredAPIResource kLayeredAPIResources[] = {
     {"elements/switch/track.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS,
      Module::kElementsSwitch},
 
-    {"elements/toast/index.mjs", IDR_LAYERED_API_ELEMENTS_TOAST_INDEX_MJS,
-     Module::kElementsToast},
-
     {"elements/virtual-scroller/find-element.mjs",
      IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_FIND_ELEMENT_MJS,
      Module::kElementsVirtualScroller},

@@ -34,16 +34,17 @@ function scrollDown() {
 // The configuration of log display can be represented in the URI fragment.
 // Below are utility functions for setting/getting these parameters.
 
-function keyValueRegExp(key) {
-  return new RegExp(`\\b${key}=([^&]+)`);
+function makeKeyValueRegExp(key) {
+  return new RegExp(`\\b${key}=([^&]*)`);
 }
 
 function setUrlHashParam(key, value) {
   key = encodeURIComponent(key);
   value = encodeURIComponent(value);
+  const keyValueRegExp = makeKeyValueRegExp(key);
   const keyValue = `${key}=${value}`;
-  const replaced = window.location.hash.replace(keyValueRegExp(key), keyValue);
-  if (window.location.hash !== replaced) {
+  if (keyValueRegExp.test(window.location.hash)) {
+    const replaced = window.location.hash.replace(keyValueRegExp, keyValue);
     window.location.hash = replaced;
   } else {
     window.location.hash +=
@@ -53,11 +54,11 @@ function setUrlHashParam(key, value) {
 
 function getUrlHashParam(key) {
   key = encodeURIComponent(key);
-  const match = window.location.hash.match(keyValueRegExp(key));
+  const match = window.location.hash.match(makeKeyValueRegExp(key));
   if (!match || match[1] === undefined) {
     return undefined;
   }
-  return encodeURIComponent(match[1]);
+  return decodeURIComponent(match[1]);
 }
 
 

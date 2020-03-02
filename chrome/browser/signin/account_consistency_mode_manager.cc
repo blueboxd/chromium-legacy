@@ -69,10 +69,8 @@ bool IsBrowserSigninAllowedByCommandLine() {
         command_line->GetSwitchValueASCII(kAllowBrowserSigninArgument);
     return base::ToLowerASCII(allowBrowserSignin) == "true";
   }
-
-  // TODO(crbug.com/1053961): Remove disallow-signin argument now that it was
-  // replaced by kAllowBrowserSigninArgument.
-  return !command_line->HasSwitch("disallow-signin");
+  // If the commandline flag is not provided, the default is true.
+  return true;
 }
 #endif
 

@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_features.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
-#include "printing/printing_features.h"
 #endif
 
 using base::TimeDelta;
@@ -94,15 +93,6 @@ std::vector<int> PrintJob::GetFullPageMapping(const std::vector<int>& pages,
       mapping[page_number] = page_number;
   }
   return mapping;
-}
-
-bool PrintJob::ShouldPrintUsingXps() const {
-  // Non-modifiable jobs are PDF, need to check a different flag for those when
-  // determining whether to print with XPS or GDI print API.
-  return document_->settings().is_modifiable()
-             ? base::FeatureList::IsEnabled(features::kUseXpsForPrinting)
-             : base::FeatureList::IsEnabled(
-                   features::kUseXpsForPrintingFromPdf);
 }
 
 void PrintJob::StartConversionToNativeFormat(

@@ -43,6 +43,7 @@
 #if defined(OS_WIN)
 #include "base/threading/thread_restrictions.h"
 #include "printing/printed_page_win.h"
+#include "printing/printing_features.h"
 #endif
 
 using content::BrowserThread;
@@ -352,7 +353,9 @@ void PrintJobWorker::OnNewPage() {
 
   bool do_spool_job = true;
 #if defined(OS_WIN)
-  if (!print_job_->ShouldPrintUsingXps()) {
+  const bool source_is_pdf =
+      !print_job_->document()->settings().is_modifiable();
+  if (!printing::features::ShouldPrintUsingXps(source_is_pdf)) {
     // Using the Windows GDI print API.
     if (!OnNewPageHelperGdi())
       return;

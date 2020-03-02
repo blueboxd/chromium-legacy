@@ -174,6 +174,11 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,
                                       std::make_unique<base::Value>(false));
 
+    // GeolocationDisabled is controlled at the account level, so don't override
+    // it client-side.
+    settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
+                                      std::make_unique<base::Value>(false));
+
 #if defined(OS_CHROMEOS)
     // Mirror account consistency is required for child accounts on Chrome OS.
     settings_service->SetLocalSetting(
@@ -203,6 +208,8 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,
+                                      nullptr);
+    settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       nullptr);
 #if defined(OS_CHROMEOS)
     settings_service->SetLocalSetting(

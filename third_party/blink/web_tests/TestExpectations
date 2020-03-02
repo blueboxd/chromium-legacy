@@ -2950,6 +2950,9 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCPeerConnection-setLocalDescription-parameterless.https.html [ Timeout ]

@@ -128,7 +128,7 @@ class FontSizeSlider {
     this.element = element;
     this.supportedFontSizes = supportedFontSizes;
 
-    this.element.addEventListener('change', (e) => {
+    this.element.addEventListener('input', (e) => {
       document.body.style.fontSize =
           this.supportedFontSizes[e.target.value] + 'px';
       this.update(e.target.value);
@@ -444,7 +444,7 @@ $('settings-toggle').addEventListener('click', (e) => {
     dialog.close();
   } else {
     toggle.classList.add('activated');
-    dialog.show();
+    dialog.showModal();
   }
 });
 

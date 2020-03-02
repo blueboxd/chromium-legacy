@@ -27,8 +27,8 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
 
-  SchemeSet schemes_to_whilelist;
-  schemes_to_whilelist.insert(kChromeUIScheme);
+  SchemeSet allowed_schemes;
+  allowed_schemes.insert(kChromeUIScheme);
 
   // Do not force creation of the HistoryService if saving history is disabled.
   std::unique_ptr<InMemoryURLIndex> in_memory_url_index(new InMemoryURLIndex(
@@ -36,7 +36,7 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS),
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
-      browser_state->GetStatePath(), schemes_to_whilelist));
+      browser_state->GetStatePath(), allowed_schemes));
   in_memory_url_index->Init();
   return in_memory_url_index;
 }

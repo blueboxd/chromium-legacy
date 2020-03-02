@@ -3878,7 +3878,6 @@ test("unit_tests") {
       "../browser/toolbar/toolbar_security_icon_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
-      "../browser/util/url_utilities_unittest.cc",
     ]
     deps += [
       "//base:base_java",

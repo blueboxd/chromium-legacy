@@ -25,11 +25,11 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                   NewFixedCongestionControl(audio_config.max_bitrate)),
       samples_in_encoder_(0) {
   if (!audio_config.use_external_encoder) {
-    audio_encoder_.reset(new AudioEncoder(
+    audio_encoder_ = std::make_unique<AudioEncoder>(
         cast_environment, audio_config.channels, audio_config.rtp_timebase,
         audio_config.max_bitrate, audio_config.codec,
-        base::Bind(&AudioSender::OnEncodedAudioFrame, AsWeakPtr(),
-                   audio_config.max_bitrate)));
+        base::BindRepeating(&AudioSender::OnEncodedAudioFrame, AsWeakPtr(),
+                            audio_config.max_bitrate));
   }
 
   // AudioEncoder provides no operational status changes during normal use.

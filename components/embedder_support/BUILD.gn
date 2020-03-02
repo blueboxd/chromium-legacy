@@ -10,3 +10,21 @@ static_library("embedder_support") {
     "switches.h",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = []
+
+  deps = []
+
+  if (is_android) {
+    sources += [ "android/util/url_utilities_unittest.cc" ]
+    deps += [
+      "android:native_j_unittests_jni_headers",
+      "android:native_java_unittests_java",
+      "android:util",
+      "//base",
+      "//testing/gtest",
+    ]
+  }
+}

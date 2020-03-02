@@ -47,6 +47,8 @@ Usage:
  Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
+from __future__ import print_function
+
 import errno
 import optparse
 import os
@@ -111,7 +113,7 @@ def generate_content(component, basenames):
 def write_content(content, output_file_name):
     parent_path, file_name = os.path.split(output_file_name)
     if not os.path.exists(parent_path):
-        print 'Creating directory: %s' % parent_path
+        print('Creating directory: %s' % parent_path)
         os.makedirs(parent_path)
     with open(output_file_name, 'w') as f:
         f.write(content)

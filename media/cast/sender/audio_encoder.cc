@@ -55,12 +55,12 @@ class AudioEncoder::ImplBase
            int num_channels,
            int sampling_rate,
            int samples_per_frame,
-           const FrameEncodedCallback& callback)
+           FrameEncodedCallback callback)
       : cast_environment_(cast_environment),
         codec_(codec),
         num_channels_(num_channels),
         samples_per_frame_(samples_per_frame),
-        callback_(callback),
+        callback_(std::move(callback)),
         operational_status_(STATUS_UNINITIALIZED),
         frame_duration_(base::TimeDelta::FromMicroseconds(
             base::Time::kMicrosecondsPerSecond * samples_per_frame_ /
@@ -240,13 +240,13 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
            int num_channels,
            int sampling_rate,
            int bitrate,
-           const FrameEncodedCallback& callback)
+           FrameEncodedCallback callback)
       : ImplBase(cast_environment,
                  CODEC_AUDIO_OPUS,
                  num_channels,
                  sampling_rate,
                  sampling_rate / kDefaultFramesPerSecond, /* 10 ms frames */
-                 callback),
+                 std::move(callback)),
         encoder_memory_(new uint8_t[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
         buffer_(new float[num_channels * samples_per_frame_]) {
@@ -347,13 +347,13 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
                int num_channels,
                int sampling_rate,
                int bitrate,
-               const FrameEncodedCallback& callback)
+               FrameEncodedCallback callback)
       : ImplBase(cast_environment,
                  CODEC_AUDIO_AAC,
                  num_channels,
                  sampling_rate,
                  kAccessUnitSamples,
-                 callback),
+                 std::move(callback)),
         input_buffer_(AudioBus::Create(num_channels, kAccessUnitSamples)),
         input_bus_(AudioBus::CreateWrapper(num_channels)),
         max_access_unit_size_(0),
@@ -712,13 +712,13 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
   Pcm16Impl(const scoped_refptr<CastEnvironment>& cast_environment,
             int num_channels,
             int sampling_rate,
-            const FrameEncodedCallback& callback)
+            FrameEncodedCallback callback)
       : ImplBase(cast_environment,
                  CODEC_AUDIO_PCM16,
                  num_channels,
                  sampling_rate,
                  sampling_rate / kDefaultFramesPerSecond, /* 10 ms frames */
-                 callback),
+                 std::move(callback)),
         buffer_(new int16_t[num_channels * samples_per_frame_]) {
     if (ImplBase::operational_status_ != STATUS_UNINITIALIZED)
       return;
@@ -760,7 +760,7 @@ AudioEncoder::AudioEncoder(
     int sampling_rate,
     int bitrate,
     Codec codec,
-    const FrameEncodedCallback& frame_encoded_callback)
+    FrameEncodedCallback frame_encoded_callback)
     : cast_environment_(cast_environment) {
   // Note: It doesn't matter which thread constructs AudioEncoder, just so long
   // as all calls to InsertAudio() are by the same thread.
@@ -768,27 +768,19 @@ AudioEncoder::AudioEncoder(
   switch (codec) {
 #if !defined(OS_IOS)
     case CODEC_AUDIO_OPUS:
-      impl_ = new OpusImpl(cast_environment,
-                           num_channels,
-                           sampling_rate,
-                           bitrate,
-                           frame_encoded_callback);
+      impl_ = new OpusImpl(cast_environment, num_channels, sampling_rate,
+                           bitrate, std::move(frame_encoded_callback));
       break;
 #endif
 #if defined(OS_MACOSX)
     case CODEC_AUDIO_AAC:
-      impl_ = new AppleAacImpl(cast_environment,
-                               num_channels,
-                               sampling_rate,
-                               bitrate,
-                               frame_encoded_callback);
+      impl_ = new AppleAacImpl(cast_environment, num_channels, sampling_rate,
+                               bitrate, std::move(frame_encoded_callback));
       break;
 #endif  // defined(OS_MACOSX)
     case CODEC_AUDIO_PCM16:
-      impl_ = new Pcm16Impl(cast_environment,
-                            num_channels,
-                            sampling_rate,
-                            frame_encoded_callback);
+      impl_ = new Pcm16Impl(cast_environment, num_channels, sampling_rate,
+                            std::move(frame_encoded_callback));
       break;
     default:
       NOTREACHED() << "Unsupported or unspecified codec for audio encoder";

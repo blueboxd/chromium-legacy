@@ -54,6 +54,8 @@ http://www.chromium.org/developers/design-documents/idl-compiler#TOC-Front-end
 # Disable attribute validation, as lint can't import parent class to check
 # pylint: disable=E1101
 
+from __future__ import print_function
+
 import os.path
 import sys
 
@@ -117,7 +119,7 @@ def main(argv):
     try:
         outputdir = argv[1]
     except IndexError as err:
-        print 'Usage: %s OUTPUT_DIR' % argv[0]
+        print('Usage: %s OUTPUT_DIR' % argv[0])
         return 1
     # Important: rewrite_tables=True causes the cache file to be deleted if it
     # exists, thus making sure that PLY doesn't load it instead of regenerating

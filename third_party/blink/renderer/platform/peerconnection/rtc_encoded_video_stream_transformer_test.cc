@@ -1,0 +1,108 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
+
+#include <stdint.h>
+
+#include <memory>
+#include <vector>
+
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_scoped_refptr_cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/webrtc/api/frame_transformer_interface.h"
+#include "third_party/webrtc/api/video/encoded_frame.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
+
+namespace blink {
+
+namespace {
+
+class MockWebRtcTransformedFrameCallback
+    : public webrtc::TransformedFrameCallback {
+ public:
+  MOCK_METHOD1(OnTransformedFrame,
+               void(std::unique_ptr<webrtc::video_coding::EncodedFrame>));
+};
+
+class MockTransformerCallbackHolder {
+ public:
+  MOCK_METHOD3(OnEncodedFrame,
+               void(std::unique_ptr<webrtc::video_coding::EncodedFrame>,
+                    std::vector<uint8_t>,
+                    uint32_t));
+};
+
+}  // namespace
+
+class RTCEncodedVideoStreamTransformerTest : public ::testing::Test {
+ public:
+  RTCEncodedVideoStreamTransformerTest()
+      : main_task_runner_(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        webrtc_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner({})),
+        webrtc_callback_(
+            new rtc::RefCountedObject<MockWebRtcTransformedFrameCallback>()),
+        encoded_video_stream_transformer_(main_task_runner_) {}
+
+  void SetUp() override {
+    EXPECT_FALSE(
+        encoded_video_stream_transformer_.HasTransformedFrameCallback());
+    encoded_video_stream_transformer_.RegisterTransformedFrameCallback(
+        webrtc_callback_);
+    EXPECT_TRUE(
+        encoded_video_stream_transformer_.HasTransformedFrameCallback());
+  }
+
+  void TearDown() override {
+    encoded_video_stream_transformer_.UnregisterTransformedFrameCallback();
+    EXPECT_FALSE(
+        encoded_video_stream_transformer_.HasTransformedFrameCallback());
+  }
+
+ protected:
+  base::test::TaskEnvironment task_environment_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> webrtc_task_runner_;
+  rtc::scoped_refptr<MockWebRtcTransformedFrameCallback> webrtc_callback_;
+  MockTransformerCallbackHolder mock_transformer_callback_holder_;
+  RTCEncodedVideoStreamTransformer encoded_video_stream_transformer_;
+};
+
+TEST_F(RTCEncodedVideoStreamTransformerTest,
+       TransformerForwardsFrameToTransformerCallback) {
+  EXPECT_FALSE(encoded_video_stream_transformer_.HasTransformerCallback());
+  encoded_video_stream_transformer_.SetTransformerCallback(
+      WTF::BindRepeating(&MockTransformerCallbackHolder::OnEncodedFrame,
+                         WTF::Unretained(&mock_transformer_callback_holder_)));
+  EXPECT_TRUE(encoded_video_stream_transformer_.HasTransformerCallback());
+
+  EXPECT_CALL(mock_transformer_callback_holder_, OnEncodedFrame);
+  // Frames are pushed to the RTCEncodedVideoStreamTransformer via its delegate,
+  // which  would normally be registered with a WebRTC sender or receiver.
+  // In this test, manually send the frame to the transformer on the simulated
+  // WebRTC thread.
+  PostCrossThreadTask(
+      *webrtc_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&webrtc::FrameTransformerInterface::TransformFrame,
+                          encoded_video_stream_transformer_.Delegate(), nullptr,
+                          std::vector<uint8_t>(), 0));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(RTCEncodedVideoStreamTransformerTest, TransformerForwardsFrameToWebRTC) {
+  EXPECT_CALL(*webrtc_callback_, OnTransformedFrame);
+  encoded_video_stream_transformer_.SendFrameToSink(nullptr);
+  task_environment_.RunUntilIdle();
+}
+
+}  // namespace blink

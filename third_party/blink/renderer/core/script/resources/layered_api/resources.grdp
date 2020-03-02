@@ -12,7 +12,6 @@
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_STYLE_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/style.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS" file="../renderer/core/script/resources/layered_api/elements/switch/track.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
-  <include name="IDR_LAYERED_API_ELEMENTS_TOAST_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/toast/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_FIND_ELEMENT_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/find-element.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_INDEX_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/index.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>
   <include name="IDR_LAYERED_API_ELEMENTS_VIRTUAL_SCROLLER_SETS_MJS" file="../renderer/core/script/resources/layered_api/elements/virtual-scroller/sets.mjs" type="BINDATA" skip_minify="true" compress="gzip"/>

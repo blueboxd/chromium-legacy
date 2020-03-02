@@ -93,9 +93,8 @@ fieldset {
   font-family: 'Roboto Regular', 'Roboto', sans-serif;
   font-size: 13px;
   height: 168px;
-  left: auto;
   padding: 16px;
-  top: 3em;
+  top: 2em;
   width: 320px;
 
   /* The z-index is set so that any 'positioned' elements in the article text
@@ -106,6 +105,10 @@ fieldset {
 #settings-dialog h2 {
   font-family: 'Roboto Medium', 'Roboto', sans-serif;
   font-size: 14px;
+}
+
+#settings-dialog::backdrop {
+  opacity: 0;
 }
 
 #settings-header {

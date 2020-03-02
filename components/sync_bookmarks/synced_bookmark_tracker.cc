@@ -212,6 +212,7 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
                                 const sync_pb::UniquePosition& unique_position,
                                 const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
+  DCHECK(bookmark_node);
   auto metadata = std::make_unique<sync_pb::EntityMetadata>();
   metadata->set_is_deleted(false);
   metadata->set_server_id(sync_id);
@@ -228,6 +229,7 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
                                     .value());
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
   auto entity = std::make_unique<Entity>(bookmark_node, std::move(metadata));
+  CHECK_EQ(0U, bookmark_node_to_entities_map_.count(bookmark_node));
   bookmark_node_to_entities_map_[bookmark_node] = entity.get();
   // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
   // Should be removed after figuring out the reason for the crash.
@@ -279,6 +281,10 @@ void SyncedBookmarkTracker::MarkCommitMayHaveStarted(
 void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
   Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
+  DCHECK(!entity->metadata()->is_deleted());
+  DCHECK(entity->bookmark_node());
+  DCHECK_EQ(1U, bookmark_node_to_entities_map_.count(entity->bookmark_node()));
+
   entity->metadata()->set_is_deleted(true);
   // Clear all references to the deleted bookmark node.
   bookmark_node_to_entities_map_.erase(entity->bookmark_node());
@@ -293,6 +299,15 @@ void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
 void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
   const Entity* entity = GetEntityForSyncId(sync_id);
   DCHECK(entity);
+  // TODO(rushans): erase only if entity is not a tombstone.
+  if (entity->bookmark_node()) {
+    DCHECK(!entity->metadata()->is_deleted());
+    DCHECK_EQ(0, std::count(ordered_local_tombstones_.begin(),
+                            ordered_local_tombstones_.end(), entity));
+  } else {
+    DCHECK(entity->metadata()->is_deleted());
+  }
+
   bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   base::Erase(ordered_local_tombstones_, entity);
   sync_id_to_entities_map_.erase(sync_id);
@@ -501,6 +516,7 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
         node, std::make_unique<sync_pb::EntityMetadata>(
                   std::move(*bookmark_metadata.mutable_metadata())));
     entity->set_commit_may_have_started(true);
+    CHECK_EQ(0U, bookmark_node_to_entities_map_.count(node));
     bookmark_node_to_entities_map_[node] = entity.get();
     sync_id_to_entities_map_[sync_id] = std::move(entity);
   }
@@ -641,6 +657,10 @@ void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
   if (old_node == new_node) {
     return;
   }
+
+  CHECK_EQ(0U, bookmark_node_to_entities_map_.count(new_node));
+  CHECK_EQ(1U, bookmark_node_to_entities_map_.count(old_node));
+
   bookmark_node_to_entities_map_[new_node] =
       bookmark_node_to_entities_map_[old_node];
   bookmark_node_to_entities_map_[new_node]->set_bookmark_node(new_node);

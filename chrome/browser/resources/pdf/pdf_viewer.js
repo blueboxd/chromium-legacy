@@ -918,6 +918,9 @@ export class PDFViewer {
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
     $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     $('zoom-toolbar').setStrings(strings);
+    // Display the zoom toolbar after the UI text direction is set, to ensure it
+    // appears on the correct side of the PDF viewer.
+    $('zoom-toolbar').hidden = false;
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
     if ($('form-warning')) {

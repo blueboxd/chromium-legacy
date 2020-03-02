@@ -86,10 +86,8 @@ class WebWidget {
 
   // Called to update imperative animation state. This should be called before
   // paint, although the client can rate-limit these calls.
-  // |last_frame_time| is in seconds. |record_main_frame_metrics| is true when
-  // UMA and UKM metrics should be emitted for animation work.
-  virtual void BeginFrame(base::TimeTicks last_frame_time,
-                          bool record_main_frame_metrics) {}
+  // |last_frame_time| is in seconds.
+  virtual void BeginFrame(base::TimeTicks last_frame_time) {}
 
   // Called after UpdateAllLifecyclePhases has run in response to a BeginFrame.
   virtual void DidBeginFrame() {}

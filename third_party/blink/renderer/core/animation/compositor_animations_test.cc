@@ -486,8 +486,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
   void BeginFrame() {
-    helper_.GetWebView()->MainFrameWidget()->BeginFrame(
-        base::TimeTicks::Now(), false /* record_main_frame_metrics */);
+    helper_.GetWebView()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
   }
 
   void ForceFullCompositingUpdate() {

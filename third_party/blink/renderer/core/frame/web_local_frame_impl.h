@@ -353,7 +353,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
                                               WebFrame*,
-                                              const FramePolicy&);
+                                              const FramePolicy&,
+                                              const WebString& name);
 
   WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>,
                     WebTreeScopeType,

@@ -37,11 +37,12 @@ source_set("update_service_client_sources") {
   deps = [
     "//base",
     "//chrome/updater:base",
-    "//chrome/updater:lib",
     "//chrome/updater:version_header",
     "//chrome/updater/server",
     "//components/update_client",
   ]
+
+  libs = [ "Foundation.framework" ]
 }
 
 source_set("updater_tests") {

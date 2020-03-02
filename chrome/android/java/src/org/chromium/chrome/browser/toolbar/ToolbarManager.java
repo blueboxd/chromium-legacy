@@ -1356,7 +1356,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             // Assume data saver footer is shown only if data reduction proxy is enabled and
             // Chrome home is not
             if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                boolean isIncognito = mTabModelSelector.getCurrentModel().isIncognito();
+                Profile profile = isIncognito
+                        ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
+                        : Profile.getLastUsedRegularProfile();
+                Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
                 tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
             }
         });

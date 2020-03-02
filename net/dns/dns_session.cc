@@ -44,9 +44,9 @@ DnsSession::DnsSession(const DnsConfig& config,
                        NetLog* net_log)
     : config_(config),
       socket_pool_(std::move(socket_pool)),
-      rand_callback_(base::Bind(rand_int_callback,
-                                0,
-                                std::numeric_limits<uint16_t>::max())),
+      rand_callback_(base::BindRepeating(rand_int_callback,
+                                         0,
+                                         std::numeric_limits<uint16_t>::max())),
       net_log_(net_log) {
   socket_pool_->Initialize(&config_.nameservers, net_log);
   UMA_HISTOGRAM_CUSTOM_COUNTS("AsyncDNS.ServerCount",

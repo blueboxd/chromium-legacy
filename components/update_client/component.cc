@@ -145,11 +145,12 @@ void UnpackCompleteOnBlockingTaskRunner(
     return;
   }
 
-  base::PostTask(FROM_HERE, kTaskTraits,
-                 base::BindOnce(&InstallOnBlockingTaskRunner, main_task_runner,
-                                result.unpack_path, result.public_key,
-                                fingerprint, std::move(install_params),
-                                installer, std::move(callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(&InstallOnBlockingTaskRunner, main_task_runner,
+                     result.unpack_path, result.public_key, fingerprint,
+                     std::move(install_params), installer,
+                     std::move(callback)));
 }
 
 void StartInstallOnBlockingTaskRunner(
@@ -775,7 +776,7 @@ void Component::StateUpdatingDiff::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  base::CreateSequencedTaskRunner(kTaskTraits)
+  base::ThreadPool::CreateSequencedTaskRunner(kTaskTraits)
       ->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -838,7 +839,7 @@ void Component::StateUpdating::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  base::CreateSequencedTaskRunner(kTaskTraits)
+  base::ThreadPool::CreateSequencedTaskRunner(kTaskTraits)
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      &update_client::StartInstallOnBlockingTaskRunner,

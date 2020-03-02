@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_request_converter.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -180,6 +182,8 @@ ServiceWorkerPaymentApp::CreateCanMakePaymentEventData() {
 
   event_data->top_origin = top_origin_;
   event_data->payment_request_origin = frame_origin_;
+  if (base::FeatureList::IsEnabled(::features::kWebPaymentsMinimalUI))
+    event_data->currency = spec_->details().total->amount->currency;
 
   DCHECK(spec_->details().modifiers);
   for (const auto& modifier : *spec_->details().modifiers) {

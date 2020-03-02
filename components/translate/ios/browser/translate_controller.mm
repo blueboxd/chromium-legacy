@@ -84,7 +84,7 @@ void TranslateController::StartTranslation(const std::string& source_language,
 
 void TranslateController::SetJsTranslateManagerForTesting(
     JsTranslateManager* manager) {
-  js_manager_.reset(manager);
+  js_manager_ = manager;
 }
 
 bool TranslateController::OnJavascriptCommandReceived(

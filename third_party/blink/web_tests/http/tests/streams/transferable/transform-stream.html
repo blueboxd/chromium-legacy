@@ -37,23 +37,23 @@ promise_test(t => {
 test(() => {
   const ts = new TransformStream();
   const writer = ts.writable.getWriter();
-  assert_throws('DataCloneError', () => postMessage(ts, '*', [ts]),
-                'postMessage should throw');
+  assert_throws_dom('DataCloneError', () => postMessage(ts, '*', [ts]),
+                    'postMessage should throw');
 }, 'a TransformStream with a locked writable should not be transferable');
 
 test(() => {
   const ts = new TransformStream();
   const reader = ts.readable.getReader();
-  assert_throws('DataCloneError', () => postMessage(ts, '*', [ts]),
-                'postMessage should throw');
+  assert_throws_dom('DataCloneError', () => postMessage(ts, '*', [ts]),
+                    'postMessage should throw');
 }, 'a TransformStream with a locked readable should not be transferable');
 
 test(() => {
   const ts = new TransformStream();
   const reader = ts.readable.getReader();
   const writer = ts.writable.getWriter();
-  assert_throws('DataCloneError', () => postMessage(ts, '*', [ts]),
-                'postMessage should throw');
+  assert_throws_dom('DataCloneError', () => postMessage(ts, '*', [ts]),
+                    'postMessage should throw');
 }, 'a TransformStream with both sides locked should not be transferable');
 
 promise_test(t => {

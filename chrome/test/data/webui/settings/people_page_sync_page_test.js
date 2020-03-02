@@ -46,10 +46,10 @@ cr.define('settings_people_page_sync_page', function() {
     suiteSetup(function() {
       loadTimeData.overrideValues({
         syncSetupFriendlySettings: true,
-        sWAAOn: 'On',
-        sWAAOff: 'Off',
-        sWAAOnHint: 'sWAAOnHint',
-        sWAAOffHint: 'sWAAOffHint',
+        SwaaOn: 'On',
+        SwaaOff: 'Off',
+        SwaaOnHint: 'SwaaOnHint',
+        SwaaOffHint: 'SwaaOffHint',
         historySyncOffHint: 'historySyncOffHint',
         dataEncryptedHint: 'dataEncryptedHint',
         signinAllowed: true
@@ -566,11 +566,11 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(dashboardLink.hidden);
     });
 
-    test('sWAA', async function() {
-      function verifyResults(hidden, sWAA, sWAAHint, hideActivityControlsUrl) {
-        const sWAAText = syncPage.$$('#history-usage-state .secondary');
+    test('Swaa', async function() {
+      function verifyResults(hidden, Swaa, SwaaHint, hideActivityControlsUrl) {
+        const SwaaText = syncPage.$$('#history-usage-state .secondary');
         const historyUsageHint = syncPage.$$('#history-usage-hint');
-        assertEquals(sWAAText.hidden, hidden);
+        assertEquals(SwaaText.hidden, hidden);
         assertEquals(historyUsageHint.hidden, hidden);
         assertEquals(
             syncPage.$$('#history-usage-row')
@@ -579,8 +579,8 @@ cr.define('settings_people_page_sync_page', function() {
             hideActivityControlsUrl);
 
         if (!hidden) {
-          assertEquals(sWAAText.textContent.trim(), sWAA);
-          assertEquals(historyUsageHint.textContent.trim(), sWAAHint);
+          assertEquals(SwaaText.textContent.trim(), Swaa);
+          assertEquals(historyUsageHint.textContent.trim(), SwaaHint);
         }
       }
 
@@ -604,7 +604,7 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(syncSection.hidden);
       await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
       verifyResults(
-          /*hidden=*/ false, 'On', 'sWAAOnHint',
+          /*hidden=*/ false, 'On', 'SwaaOnHint',
           /*hideActivityControlsUrl=*/ false);
 
       // Data encrypted with custom passphrase.
@@ -621,7 +621,7 @@ cr.define('settings_people_page_sync_page', function() {
       setSyncPrefs();
       await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
       verifyResults(
-          /*hidden=*/ false, 'Off', 'sWAAOffHint',
+          /*hidden=*/ false, 'Off', 'SwaaOffHint',
           /*hideActivityControlsUrl=*/ false);
 
       // Turn history sync off.

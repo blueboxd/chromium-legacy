@@ -27,10 +27,7 @@ class PLATFORM_EXPORT RasterInvalidator {
   using RasterInvalidationFunction =
       base::RepeatingCallback<void(const IntRect&)>;
 
-  RasterInvalidator(RasterInvalidationFunction raster_invalidation_function)
-      : raster_invalidation_function_(std::move(raster_invalidation_function)) {
-    DCHECK(!raster_invalidation_function_.is_null());
-  }
+  RasterInvalidator() = default;
 
   void SetTracksRasterInvalidations(bool);
   RasterInvalidationTracking* GetTracking() const {
@@ -41,7 +38,8 @@ class PLATFORM_EXPORT RasterInvalidator {
 
   // Generate raster invalidations for all of the changed paint chunks and
   // display items in the paint artifact.
-  void Generate(scoped_refptr<const PaintArtifact>,
+  void Generate(RasterInvalidationFunction,
+                scoped_refptr<const PaintArtifact>,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
                 const FloatSize& visual_rect_subpixel_offset = FloatSize(),
@@ -49,7 +47,8 @@ class PLATFORM_EXPORT RasterInvalidator {
 
   // Generate raster invalidations for a subset of the paint chunks in the
   // paint artifact.
-  void Generate(scoped_refptr<const PaintArtifact>,
+  void Generate(RasterInvalidationFunction,
+                scoped_refptr<const PaintArtifact>,
                 const PaintChunkSubset&,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
@@ -96,7 +95,8 @@ class PLATFORM_EXPORT RasterInvalidator {
     SkMatrix chunk_to_layer_transform;
   };
 
-  void GenerateRasterInvalidations(const PaintArtifact&,
+  void GenerateRasterInvalidations(RasterInvalidationFunction,
+                                   const PaintArtifact&,
                                    const PaintChunkSubset&,
                                    const PropertyTreeState& layer_state,
                                    const FloatSize& visual_rect_subpixel_offset,
@@ -107,6 +107,7 @@ class PLATFORM_EXPORT RasterInvalidator {
                                                    wtf_size_t old_index) const;
 
   ALWAYS_INLINE void IncrementallyInvalidateChunk(
+      RasterInvalidationFunction,
       const PaintChunkInfo& old_chunk_info,
       const PaintChunkInfo& new_chunk_info,
       const DisplayItemClient&);
@@ -115,13 +116,14 @@ class PLATFORM_EXPORT RasterInvalidator {
   // get DebugName() directly or should get from |tracking_info_
   // ->old_client_debug_names|.
   enum ClientIsOldOrNew { kClientIsOld, kClientIsNew };
-  void AddRasterInvalidation(const IntRect& rect,
+  void AddRasterInvalidation(RasterInvalidationFunction function,
+                             const IntRect& rect,
                              const DisplayItemClient& client,
                              PaintInvalidationReason reason,
                              ClientIsOldOrNew old_or_new) {
     if (rect.IsEmpty())
       return;
-    raster_invalidation_function_.Run(rect);
+    function.Run(rect);
     if (tracking_info_)
       TrackRasterInvalidation(rect, client, reason, old_or_new);
   }
@@ -146,7 +148,6 @@ class PLATFORM_EXPORT RasterInvalidator {
 
   void TrackImplicitFullLayerInvalidation(const DisplayItemClient&);
 
-  RasterInvalidationFunction raster_invalidation_function_;
   gfx::Rect layer_bounds_;
   Vector<PaintChunkInfo> old_paint_chunks_info_;
   scoped_refptr<const PaintArtifact> old_paint_artifact_;

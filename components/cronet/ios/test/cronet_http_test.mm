@@ -11,7 +11,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/cronet/cronet_buildflags.h"
 #include "components/cronet/ios/test/cronet_test_base.h"
@@ -25,6 +24,10 @@
 #include "testing/gtest_mac.h"
 
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 

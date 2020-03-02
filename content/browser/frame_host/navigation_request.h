@@ -542,6 +542,14 @@ class CONTENT_EXPORT NavigationRequest
   }
   network::mojom::ClientSecurityStatePtr TakeClientSecurityState();
 
+  bool require_coop_browsing_instance_swap() const {
+    return require_coop_browsing_instance_swap_;
+  }
+
+  void set_require_coop_browsing_instance_swap() {
+    require_coop_browsing_instance_swap_ = true;
+  }
+
  private:
   friend class NavigationRequestTest;
 
@@ -1155,6 +1163,20 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::ClientSecurityStatePtr client_security_state_;
 
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
+
+  // Set to true whenever we the Cross-Origin-Opener-Policy spec requires us to
+  // do a "BrowsingContext group" swap:
+  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+  // This forces a new BrowsingInstance to be used for the RenderFrameHost the
+  // navigation will commit in. If other pages had JavaScript references to the
+  // Window object for the frame (via window.opener, window.open(), et cetera),
+  // those references will be broken; window.name will also be reset to an empty
+  // string.
+  // TODO(ahemery): COOP requires that any page during the redirect chain
+  // having an incompatible COOP triggers a BrowsingInstance swap. Even if the
+  // end document could be put in the same BrowsingInstance as the starting
+  // one. Implement the behavior.
+  bool require_coop_browsing_instance_swap_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

@@ -1,7 +1,0 @@
-specific_include_rules = {
-  "profile_impl.cc": [
-    # Profile embeds the Identity Service, but the dependence
-    # should be used *only* for Identity Service creation.
-    "+services/identity/identity_service.h",
-  ],
-}

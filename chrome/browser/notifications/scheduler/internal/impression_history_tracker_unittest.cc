@@ -57,8 +57,11 @@ TestCase CreateDefaultTestCase() {
   TestCase test_case;
   test_case.input = {{SchedulerClientType::kTest1,
                       2 /* current_max_daily_show */,
-                      {},
-                      base::nullopt /* suppression_info */}};
+                      {} /* impressions */,
+                      base::nullopt /* suppression_info */,
+                      0 /* negative_events_count */,
+                      base::nullopt /* last_negative_event_ts */,
+                      base::nullopt /* last_shown_ts */}};
   test_case.registered_clients = {SchedulerClientType::kTest1};
   test_case.expected = test_case.input;
   return test_case;
@@ -183,7 +186,7 @@ TEST_F(ImpressionHistoryTrackerTest, NewReigstedClient) {
   test_case.registered_clients.emplace_back(SchedulerClientType::kTest2);
   test_case.expected.emplace_back(test::ImpressionTestData(
       SchedulerClientType::kTest2, config().initial_daily_shown_per_type, {},
-      base::nullopt));
+      base::nullopt, 0, base::nullopt, base::nullopt));
 
   CreateTracker(test_case);
   EXPECT_CALL(*store(), Add(_, _, _));
@@ -248,6 +251,7 @@ TEST_F(ImpressionHistoryTrackerTest, AddImpression) {
   expected_impression.impression_mapping = impression_mapping;
   expected_impression.custom_data = custom_data;
   test_case.expected.back().impressions.emplace_back(expected_impression);
+  test_case.expected.back().last_shown_ts = clock()->Now();
   VerifyClientStates(test_case);
   EXPECT_EQ(*tracker()->GetImpression(kGuid1), expected_impression);
 }
@@ -387,12 +391,15 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   if (GetParam().has_suppression) {
     test_case.expected.front().suppression_info =
         SuppressionInfo(base::Time::UnixEpoch(), config().suppression_duration);
+    test_case.expected.front().negative_events_count = 1;
+    test_case.expected.front().last_negative_event_ts = base::Time::UnixEpoch();
   }
-
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
-
+  if (GetParam().impression_result == ImpressionResult::kNegative) {
+    EXPECT_CALL(*delegate(), GetThrottleConfig(_));
+  }
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick) {
     UserActionData action_data(SchedulerClientType::kTest1,

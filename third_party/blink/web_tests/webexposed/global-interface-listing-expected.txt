@@ -221,6 +221,7 @@ interface AnimationPlaybackEvent : Event
 interface AnimationTimeline
     attribute @@toStringTag
     getter currentTime
+    getter phase
     method constructor
 interface ApplicationCache : EventTarget
     attribute @@toStringTag

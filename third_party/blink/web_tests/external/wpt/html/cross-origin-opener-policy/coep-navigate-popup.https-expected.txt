@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Popup navigating to same-origin with coop/no coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-site with coop/no coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-origin with no coop/no coep assert_equals: Openee browsing context closed expected true but got false
-FAIL Popup navigating to same-site with no coop/no coep assert_equals: Openee browsing context closed expected true but got false
-Harness: the test ran to completion.
-

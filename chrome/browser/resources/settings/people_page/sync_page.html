@@ -201,18 +201,18 @@
             <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
               <div id="history-usage-hint"
-                  class="secondary" hidden$="[[!isSWAAFetched_(sWAA_)]]">
-                [[getHistoryUsageHint_(sWAA_, syncPrefs.encryptAllData,
+                  class="secondary" hidden$="[[!isSwaaFetched_(Swaa_)]]">
+                [[getHistoryUsageHint_(Swaa_, syncPrefs.encryptAllData,
                       syncPrefs.typedUrlsSynced)]]
               </div>
             </div>
             <div id="history-usage-state"
                 hidden$="[[!syncSetupFriendlySettings_]]">
               <paper-spinner-lite
-                  class="last" hidden$="[[!isSWAAFetching_(sWAA_)]]" active>
+                  class="last" hidden$="[[!isSwaaFetching_(Swaa_)]]" active>
               </paper-spinner-lite>
-              <div class="secondary" hidden$="[[!isSWAAFetched_(sWAA_)]]">
-                [[getSWAAStateText_(sWAA_)]]
+              <div class="secondary" hidden$="[[!isSwaaFetched_(Swaa_)]]">
+                [[getSwaaStateText_(Swaa_)]]
               </div>
             </div>
             <cr-icon-button class="icon-external"

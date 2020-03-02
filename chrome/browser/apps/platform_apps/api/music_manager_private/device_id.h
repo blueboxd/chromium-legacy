@@ -44,15 +44,13 @@ class DeviceId {
   // new MAC addresses at each reboot.
   static bool IsValidMacAddress(const void* bytes, size_t size);
 
-  // The traits of the task that retrieves the device id.
+  // The traits of the task on base::ThreadPool that retrieves the device id.
   //
-  // ThreadPool(): This should run on a background thread.
   // MayBlock(): Since this requires fetching disk.
   // TaskPriority: USER_VISIBLE. Though this might be conservative, depending
   //   on how GetDeviceId() is used.
   static constexpr base::TaskTraits traits() {
-    return {base::ThreadPool(), base::MayBlock(),
-            base::TaskPriority::USER_VISIBLE};
+    return {base::MayBlock(), base::TaskPriority::USER_VISIBLE};
   }
 };
 

@@ -5,7 +5,13 @@
 #ifndef CHROME_UPDATER_UPDATE_APPS_H_
 #define CHROME_UPDATER_UPDATE_APPS_H_
 
+#include <memory>
+
 namespace updater {
+class UpdateService;
+
+// A factory method to create an UpdateService class instance.
+std::unique_ptr<UpdateService> CreateUpdateService();
 
 // Updates all registered applications.
 int UpdateApps();

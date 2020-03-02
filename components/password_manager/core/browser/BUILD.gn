@@ -221,6 +221,7 @@ jumbo_static_library("browser") {
     "ui/compromised_credentials_provider.cc",
     "ui/compromised_credentials_provider.h",
     "ui/credential_provider_interface.h",
+    "ui/credential_utils.h",
     "ui/export_flow.h",
     "ui/export_progress_status.h",
     "ui/import_flow.h",

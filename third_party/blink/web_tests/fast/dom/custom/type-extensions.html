@@ -59,7 +59,7 @@ test(function() {
 }, 'register a type extension with unusual case');
 
 test(function() {
-    assert_throws(
+    assert_throws_dom(
         'NOT_SUPPORTED_ERR',
         function() {
             var p = Object.create(HTMLElement.prototype);

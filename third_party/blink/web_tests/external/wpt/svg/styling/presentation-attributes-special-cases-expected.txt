@@ -16,7 +16,11 @@ PASS x, y, width, and height presentation attributes not supported on other elem
 PASS r presentation attribute not supported on other elements
 PASS rx and ry presentation attributes not supported on other elements
 PASS d presentation attribute not supported on other elements
-FAIL fill presentation attribute not supported on animation elements assert_false: Presentation attribute fill="blue" should be supported on animate element expected false got true
+PASS fill presentation attribute not supported on animate
+PASS fill presentation attribute not supported on animateMotion
+PASS fill presentation attribute not supported on animateTransform
+FAIL fill presentation attribute not supported on discard assert_false: Presentation attribute fill="blue" should be supported on discard element expected false got true
+PASS fill presentation attribute not supported on set
 PASS transform presentation attribute supported on g
 PASS patternTransform presentation attribute supported on pattern
 PASS patternTransform presentation attribute supported on linearGradient

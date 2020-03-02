@@ -78,7 +78,10 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       painted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
-      mask_layer_(nullptr) {
+      mask_layer_(nullptr),
+      raster_invalidation_function_(
+          base::BindRepeating(&GraphicsLayer::SetNeedsDisplayInRect,
+                              base::Unretained(this))) {
   // TODO(crbug.com/1033240): Debugging information for the referenced bug.
   // Remove when it is fixed.
   CHECK(&client_);
@@ -331,6 +334,7 @@ bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
   // Generate raster invalidations for SPv1.
   IntRect layer_bounds(layer_state_->offset, IntSize(Size()));
   EnsureRasterInvalidator().Generate(
+      raster_invalidation_function_,
       GetPaintController().GetPaintArtifactShared(), layer_bounds,
       layer_state_->state, VisualRectSubpixelOffset(), this);
 
@@ -462,9 +466,7 @@ void GraphicsLayer::SetContentsTo(scoped_refptr<cc::Layer> layer,
 
 RasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
-    raster_invalidator_ =
-        std::make_unique<RasterInvalidator>(base::BindRepeating(
-            &GraphicsLayer::SetNeedsDisplayInRect, base::Unretained(this)));
+    raster_invalidator_ = std::make_unique<RasterInvalidator>();
     raster_invalidator_->SetTracksRasterInvalidations(
         client_.IsTrackingRasterInvalidations());
   }

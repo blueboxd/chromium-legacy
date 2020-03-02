@@ -28,7 +28,7 @@ expect_failure_worker = () => {
   test(() => {
     var testObject = self.internals.originTrialsTest();
     assert_idl_attribute(testObject, 'throwingAttribute');
-    assert_throws('NotSupportedError', () => {
+    assert_throws_dom('NotSupportedError', () => {
       testObject.throwingAttribute;
     }, 'Accessing attribute should throw error');
   }, 'Accessing attribute should throw error in ' + worker_type + ' worker');

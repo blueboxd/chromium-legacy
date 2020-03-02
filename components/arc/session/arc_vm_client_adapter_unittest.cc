@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -28,6 +29,10 @@
 
 namespace arc {
 namespace {
+
+constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
+constexpr const char kArcVmPerBoardFeaturesJobName[] =
+    "arcvm_2dper_2dboard_2dfeatures";
 
 constexpr const char kUserIdHash[] = "this_is_a_valid_user_id_hash";
 constexpr const char kSerialNumber[] = "AAAABBBBCCCCDDDD1234";
@@ -150,8 +155,7 @@ class ArcVmClientAdapterTest : public testing::Test,
     GetTestConciergeClient()->set_start_vm_response(start_vm_response);
 
     // Reset to the original behavior.
-    auto* upstart_client = chromeos::FakeUpstartClient::Get();
-    upstart_client->set_start_job_result(true);
+    RemoveUpstartStartJobFailure();
   }
 
   void TearDown() override {
@@ -256,6 +260,22 @@ class ArcVmClientAdapterTest : public testing::Test,
       observer.ConciergeServiceStopped();
   }
 
+  void InjectUpstartStartJobFailure(const std::string& job_name_to_fail) {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(base::BindLambdaForTesting(
+        [job_name_to_fail](const std::string& job_name,
+                           const std::vector<std::string>& env) {
+          // Return success unless |job_name| is |job_name_to_fail|.
+          return job_name != job_name_to_fail;
+        }));
+  }
+
+  void RemoveUpstartStartJobFailure() {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_start_job_cb(
+        chromeos::FakeUpstartClient::StartStopJobCallback());
+  }
+
   void RecreateRunLoop() { run_loop_ = std::make_unique<base::RunLoop>(); }
 
   base::RunLoop* run_loop() { return run_loop_.get(); }
@@ -321,8 +341,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
 // Tests that StartMiniArc() fails when Upstart fails to start the job.
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_Fail) {
   // Inject failure to FakeUpstartClient.
-  auto* upstart_client = chromeos::FakeUpstartClient::Get();
-  upstart_client->set_start_job_result(false);
+  InjectUpstartStartJobFailure(kArcVmPerBoardFeaturesJobName);
 
   StartMiniArcWithParams(false, {});
   // Confirm that no VM is started.
@@ -385,14 +404,12 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
   StartMiniArc();
 
   // Inject failure to FakeUpstartClient.
-  auto* upstart_client = chromeos::FakeUpstartClient::Get();
-  upstart_client->set_start_job_result(false);
+  InjectUpstartStartJobFailure(kArcVmServerProxyJobName);
 
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
   EXPECT_FALSE(arc_instance_stopped_called());
-  upstart_client->set_start_job_result(true);
 
   // Try to stop the VM. StopVm will fail in this case because
   // no VM is running.

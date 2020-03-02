@@ -85,12 +85,6 @@ const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// Enables or disables redirecting users who get an interstitial when
-// accessing https://support.google.com/chrome/answer/6098869 to local
-// connection help content.
-const base::Feature kBundledConnectionHelpFeature{
-    "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",

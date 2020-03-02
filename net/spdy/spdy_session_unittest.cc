@@ -243,8 +243,8 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
   }
 
   void RunResumeAfterUnstallTest(
-      const base::Callback<void(SpdyStream*)>& stall_function,
-      const base::Callback<void(SpdyStream*, int32_t)>& unstall_function);
+      base::OnceCallback<void(SpdyStream*)> stall_function,
+      base::OnceCallback<void(SpdyStream*, int32_t)> unstall_function);
 
   // SpdySession private methods.
 
@@ -4525,8 +4525,8 @@ TEST_F(SpdySessionTest, SessionFlowControlEndToEnd) {
 // Given a stall function and an unstall function, runs a test to make
 // sure that a stream resumes after unstall.
 void SpdySessionTest::RunResumeAfterUnstallTest(
-    const base::Callback<void(SpdyStream*)>& stall_function,
-    const base::Callback<void(SpdyStream*, int32_t)>& unstall_function) {
+    base::OnceCallback<void(SpdyStream*)> stall_function,
+    base::OnceCallback<void(SpdyStream*, int32_t)> unstall_function) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(
@@ -4567,13 +4567,13 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
             stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
-  stall_function.Run(stream.get());
+  std::move(stall_function).Run(stream.get());
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  unstall_function.Run(stream.get(), kBodyDataSize);
+  std::move(unstall_function).Run(stream.get(), kBodyDataSize);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -4594,53 +4594,51 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 // unstall sequences.
 
 TEST_F(SpdySessionTest, ResumeAfterUnstallSession) {
-  RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallSessionOnly,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallSessionOnly,
-                 base::Unretained(this)));
+  RunResumeAfterUnstallTest(base::BindOnce(&SpdySessionTest::StallSessionOnly,
+                                           base::Unretained(this)),
+                            base::BindOnce(&SpdySessionTest::UnstallSessionOnly,
+                                           base::Unretained(this)));
 }
 
 // Equivalent to
 // SpdyStreamTest.ResumeAfterSendWindowSizeIncrease.
 TEST_F(SpdySessionTest, ResumeAfterUnstallStream) {
   RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallStreamOnly,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallStreamOnly,
-                 base::Unretained(this)));
+      base::BindOnce(&SpdySessionTest::StallStreamOnly, base::Unretained(this)),
+      base::BindOnce(&SpdySessionTest::UnstallStreamOnly,
+                     base::Unretained(this)));
 }
 
 TEST_F(SpdySessionTest, StallSessionStreamResumeAfterUnstallSessionStream) {
   RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallSessionStream,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallSessionStream,
-                 base::Unretained(this)));
+      base::BindOnce(&SpdySessionTest::StallSessionStream,
+                     base::Unretained(this)),
+      base::BindOnce(&SpdySessionTest::UnstallSessionStream,
+                     base::Unretained(this)));
 }
 
 TEST_F(SpdySessionTest, StallStreamSessionResumeAfterUnstallSessionStream) {
   RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallStreamSession,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallSessionStream,
-                 base::Unretained(this)));
+      base::BindOnce(&SpdySessionTest::StallStreamSession,
+                     base::Unretained(this)),
+      base::BindOnce(&SpdySessionTest::UnstallSessionStream,
+                     base::Unretained(this)));
 }
 
 TEST_F(SpdySessionTest, StallStreamSessionResumeAfterUnstallStreamSession) {
   RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallStreamSession,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallStreamSession,
-                 base::Unretained(this)));
+      base::BindOnce(&SpdySessionTest::StallStreamSession,
+                     base::Unretained(this)),
+      base::BindOnce(&SpdySessionTest::UnstallStreamSession,
+                     base::Unretained(this)));
 }
 
 TEST_F(SpdySessionTest, StallSessionStreamResumeAfterUnstallStreamSession) {
   RunResumeAfterUnstallTest(
-      base::Bind(&SpdySessionTest::StallSessionStream,
-                 base::Unretained(this)),
-      base::Bind(&SpdySessionTest::UnstallStreamSession,
-                 base::Unretained(this)));
+      base::BindOnce(&SpdySessionTest::StallSessionStream,
+                     base::Unretained(this)),
+      base::BindOnce(&SpdySessionTest::UnstallStreamSession,
+                     base::Unretained(this)));
 }
 
 // Cause a stall by reducing the flow control send window to 0. The

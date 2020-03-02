@@ -313,7 +313,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         identity_test_environment_adaptor_->identity_test_env();
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
     if (user_type != user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
-      // Identity service doesn't have a primary account for Active Directory
+      // IdentityManager doesn't have a primary account for Active Directory
       // sessions. Use "unconsented" because ARC doesn't care about browser
       // sync consent.
       identity_test_env->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);

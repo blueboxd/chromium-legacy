@@ -247,7 +247,7 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
 // enable those preconditions on that platform
 #if !defined(OS_CHROMEOS)
 // Checks that setting the primary account fails if the account is not known by
-// the identity service.
+// the identity system.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
   base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;

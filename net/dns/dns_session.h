@@ -35,7 +35,7 @@ class StreamSocket;
 // to a new DnsConfig/DnsSession.
 class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
  public:
-  typedef base::Callback<int()> RandCallback;
+  typedef base::RepeatingCallback<int()> RandCallback;
 
   class NET_EXPORT_PRIVATE SocketLease {
    public:

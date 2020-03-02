@@ -5,7 +5,7 @@ PASS same-site document opening popup to https://not-web-platform.test:8444 with
 PASS same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-site"
 PASS same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-site unsafe-allow-outgoing"
 PASS same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-origin unsafe-allow-outgoing"
-FAIL same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-origin" assert_equals: name expected "" but got "same-site_to_CROSS_ORIGIN_same-origin"
-FAIL same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-origin-allow-popups" assert_equals: name expected "" but got "same-site_to_CROSS_ORIGIN_same-origin-allow-popups"
+FAIL same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-origin" assert_equals: Openee browsing context closed expected true but got false
+FAIL same-site document opening popup to https://not-web-platform.test:8444 with COOP: "same-origin-allow-popups" assert_equals: Openee browsing context closed expected true but got false
 Harness: the test ran to completion.
 

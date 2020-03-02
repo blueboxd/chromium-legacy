@@ -14,8 +14,8 @@ base::Optional<PolicyValue> ItemToPolicyValue(
   switch (item.Type()) {
     case net::structured_headers::Item::ItemType::kIntegerType:
       return PolicyValue(static_cast<double>(item.GetInteger()));
-    case net::structured_headers::Item::ItemType::kFloatType:
-      return PolicyValue(item.GetFloat());
+    case net::structured_headers::Item::ItemType::kDecimalType:
+      return PolicyValue(item.GetDecimal());
     default:
       return base::nullopt;
   }

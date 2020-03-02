@@ -19,9 +19,7 @@ const char kHelpCenterConnectionHelpUrl[] =
     "https://support.google.com/chrome/answer/6098869";
 const char kBundledConnectionHelpUrl[] = "chrome://connection-help";
 
-void MaybeRedirectToBundledHelp(content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(features::kBundledConnectionHelpFeature))
-    return;
+void RedirectToBundledHelp(content::WebContents* web_contents) {
   GURL::Replacements replacements;
   std::string error_code = web_contents->GetURL().ref();
   replacements.SetRefStr(error_code);
@@ -47,7 +45,7 @@ void ConnectionHelpTabHelper::DidFinishNavigation(
         // error.
         histogram_value = ConnectionHelpTabHelper::LearnMoreClickResult::
             kFailedWithInterstitial;
-        MaybeRedirectToBundledHelp(web_contents());
+        RedirectToBundledHelp(web_contents());
       } else {
         histogram_value =
             ConnectionHelpTabHelper::LearnMoreClickResult::kFailedOther;

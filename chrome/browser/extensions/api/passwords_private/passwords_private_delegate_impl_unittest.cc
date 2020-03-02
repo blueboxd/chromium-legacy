@@ -39,6 +39,7 @@ using MockReauthCallback = base::MockCallback<
     password_manager::PasswordAccessAuthenticator::ReauthCallback>;
 using PasswordFormList = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 using password_manager::ReauthPurpose;
+using password_manager::TestPasswordStore;
 using ::testing::Eq;
 using ::testing::Ne;
 using ::testing::Return;
@@ -51,6 +52,17 @@ constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 
 using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
+
+scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
+    Profile* profile) {
+  return base::WrapRefCounted(static_cast<TestPasswordStore*>(
+      PasswordStoreFactory::GetInstance()
+          ->SetTestingFactoryAndUse(
+              profile,
+              base::BindRepeating(&password_manager::BuildPasswordStore<
+                                  content::BrowserContext, TestPasswordStore>))
+          .get()));
+}
 
 class PasswordEventObserver
     : public extensions::TestEventRouter::EventObserver {
@@ -126,6 +138,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
+  scoped_refptr<TestPasswordStore> store_ =
+      CreateAndUseTestPasswordStore(&profile_);
   ui::TestClipboard* test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
 
@@ -134,7 +148,9 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateDelegateImplTest);
 };
 
-PasswordsPrivateDelegateImplTest::PasswordsPrivateDelegateImplTest() = default;
+PasswordsPrivateDelegateImplTest::PasswordsPrivateDelegateImplTest() {
+  SetUpRouters();
+}
 
 PasswordsPrivateDelegateImplTest::~PasswordsPrivateDelegateImplTest() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
@@ -142,17 +158,8 @@ PasswordsPrivateDelegateImplTest::~PasswordsPrivateDelegateImplTest() {
 
 void PasswordsPrivateDelegateImplTest::SetUpPasswordStore(
     std::vector<autofill::PasswordForm> forms) {
-  scoped_refptr<password_manager::TestPasswordStore> password_store(
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetInstance()
-              ->SetTestingFactoryAndUse(
-                  &profile_,
-                  base::BindRepeating(&password_manager::BuildPasswordStore<
-                                      content::BrowserContext,
-                                      password_manager::TestPasswordStore>))
-              .get()));
   for (const autofill::PasswordForm& form : forms) {
-    password_store->AddLogin(form);
+    store_->AddLogin(form);
   }
   // Spin the loop to allow PasswordStore tasks being processed.
   base::RunLoop().RunUntilIdle();

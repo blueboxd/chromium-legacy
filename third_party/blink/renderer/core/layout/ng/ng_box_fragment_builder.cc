@@ -79,6 +79,7 @@ void GatherInlineContainerFragmentsFromLinebox(
 
 void GatherInlineContainerFragmentsFromItems(
     const Vector<std::unique_ptr<NGFragmentItem>>& items,
+    const PhysicalOffset& box_offset,
     NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
     HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map) {
   const NGPhysicalLineBoxFragment* linebox = nullptr;
@@ -114,6 +115,7 @@ void GatherInlineContainerFragmentsFromItems(
            !containing_lineboxes.first);
 
     PhysicalRect fragment_rect = item->RectInContainerBlock();
+    fragment_rect.offset += box_offset;
     if (containing_lineboxes.first == linebox) {
       // Unite the start rect with the fragment's rect.
       containing_block_geometry->start_fragment_union_rect.Unite(fragment_rect);
@@ -420,7 +422,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
     GatherInlineContainerFragmentsFromItems(
         items_builder_->Items(GetWritingMode(), Direction(),
                               ToPhysicalSize(Size(), GetWritingMode())),
-        inline_containing_block_map, &containing_linebox_map);
+        PhysicalOffset(), inline_containing_block_map, &containing_linebox_map);
     return;
   }
 
@@ -435,12 +437,17 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
     if (!child.fragment->IsAnonymousBlock())
       continue;
 
-    const auto* items = To<NGPhysicalBoxFragment>(*child.fragment).Items();
+    const auto& child_fragment = To<NGPhysicalBoxFragment>(*child.fragment);
+    const auto* items = child_fragment.Items();
     if (!items)
       continue;
 
-    GatherInlineContainerFragmentsFromItems(
-        items->Items(), inline_containing_block_map, &containing_linebox_map);
+    const PhysicalOffset child_offset = child.offset.ConvertToPhysical(
+        GetWritingMode(), Direction(), ToPhysicalSize(Size(), GetWritingMode()),
+        child_fragment.Size());
+    GatherInlineContainerFragmentsFromItems(items->Items(), child_offset,
+                                            inline_containing_block_map,
+                                            &containing_linebox_map);
   }
 }
 

@@ -729,10 +729,10 @@ TEST_F(ScrollIntoViewTest, LongDistanceSmoothScrollFinishedInThreeSeconds) {
   Compositor().BeginFrame();  // update run_state_.
   Compositor().BeginFrame();  // Set start_time = now.
   Compositor().BeginFrame(0.2);
-  ASSERT_NEAR(Window().scrollY(), 864, 1);
+  ASSERT_NEAR(Window().scrollY(), 16971, 1);
 
   // Finish scrolling the container
-  Compositor().BeginFrame(2.8);
+  Compositor().BeginFrame(0.5);
   ASSERT_EQ(Window().scrollY(), target->OffsetTop());
 }
 

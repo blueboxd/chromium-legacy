@@ -48,7 +48,7 @@ TEST(ScrollOffsetAnimationCurveTest, DeltaBasedDuration) {
 
   // x decreases, y decreases.
   curve->SetInitialValue(gfx::ScrollOffset(32500.f, 500.f));
-  EXPECT_DOUBLE_EQ(3.0, curve->Duration().InSecondsF());
+  EXPECT_DOUBLE_EQ(0.7, curve->Duration().InSecondsF());
 
   // x decreases, y increases.
   curve->SetInitialValue(gfx::ScrollOffset(150.f, 119.f));
@@ -56,7 +56,7 @@ TEST(ScrollOffsetAnimationCurveTest, DeltaBasedDuration) {
 
   // x increases, y decreases.
   curve->SetInitialValue(gfx::ScrollOffset(0.f, 14600.f));
-  EXPECT_DOUBLE_EQ(2.0, curve->Duration().InSecondsF());
+  EXPECT_DOUBLE_EQ(0.7, curve->Duration().InSecondsF());
 
   // x increases, y increases.
   curve->SetInitialValue(gfx::ScrollOffset(95.f, 191.f));

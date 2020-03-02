@@ -94,7 +94,7 @@ template("fuchsia_package_runner") {
       _manifest_path,
       "//build/fuchsia/",
       "//build/util/lib/",
-      "${fuchsia_sdk}/.build-id/",
+      "//third_party/fuchsia-sdk/sdk/.build-id/",
       "${boot_image_root}/qemu/qemu-kernel.kernel",
       "${boot_image_root}/qemu/storage-full.blk",
       "${boot_image_root}/qemu/zircon-a.zbi",
@@ -107,19 +107,19 @@ template("fuchsia_package_runner") {
     if (host_os == "linux" && host_cpu == "x64" && target_cpu == "arm64") {
       data += [
         # Host tools for arm64 test bots.
-        "${fuchsia_sdk}/tools/arm64/fvm",
-        "${fuchsia_sdk}/tools/arm64/pm",
-        "${fuchsia_sdk}/tools/arm64/symbolize",
-        "${fuchsia_sdk}/tools/arm64/zbi",
+        "//third_party/fuchsia-sdk/sdk/tools/arm64/fvm",
+        "//third_party/fuchsia-sdk/sdk/tools/arm64/pm",
+        "//third_party/fuchsia-sdk/sdk/tools/arm64/symbolize",
+        "//third_party/fuchsia-sdk/sdk/tools/arm64/zbi",
         "${qemu_arm64_root}/",
       ]
     } else {
       data += [
         # Host tools for x64 test bots.
-        "${fuchsia_sdk}/tools/x64/fvm",
-        "${fuchsia_sdk}/tools/x64/pm",
-        "${fuchsia_sdk}/tools/x64/symbolize",
-        "${fuchsia_sdk}/tools/x64/zbi",
+        "//third_party/fuchsia-sdk/sdk/tools/x64/fvm",
+        "//third_party/fuchsia-sdk/sdk/tools/x64/pm",
+        "//third_party/fuchsia-sdk/sdk/tools/x64/symbolize",
+        "//third_party/fuchsia-sdk/sdk/tools/x64/zbi",
         "${qemu_root}/",
         "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
       ]

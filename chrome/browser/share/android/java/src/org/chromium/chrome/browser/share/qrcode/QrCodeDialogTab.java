@@ -12,9 +12,19 @@ import android.view.View;
 public interface QrCodeDialogTab {
     public View getView();
 
+    /**
+     *  Called when the entire dialog is resumed.
+     */
     public void onResume();
 
+    /**
+     *  Called when the entire dialog is paused.
+     */
     public void onPause();
 
+    /**
+     *  Called when the dialog is destroyed. This happens when the user has navigated away from the
+     *  dialog.
+     */
     public void onDestroy();
 }

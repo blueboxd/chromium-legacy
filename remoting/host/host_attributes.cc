@@ -93,11 +93,7 @@ static_assert(std::is_pod<Attribute>::value, "Attribute should be POD.");
 
 std::string GetHostAttributes() {
   std::vector<std::string> result;
-  // By using ranged for-loop, MSVC throws error C3316:
-  // 'const remoting::StaticAttribute [0]':
-  // an array of unknown size cannot be used in a range-based for statement.
-  for (size_t i = 0; i < base::size(kAttributes); i++) {
-    const auto& attribute = kAttributes[i];
+  for (const auto& attribute : kAttributes) {
     DCHECK_EQ(std::string(attribute.name).find(kSeparator), std::string::npos);
     if (attribute.get_value_func()) {
       result.push_back(attribute.name);

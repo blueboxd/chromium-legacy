@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <sstream>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
@@ -26,6 +28,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
+#include "ui/base/l10n/time_format.h"
 
 namespace extensions {
 
@@ -164,6 +167,27 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
   bool IsOptedInForAccountStorage() override {
     return is_opted_in_for_account_storage_;
+  }
+
+  api::passwords_private::CompromisedCredentialsInfo
+  GetCompromisedCredentialsInfo() override {
+    using ui::TimeFormat;
+    api::passwords_private::CompromisedCredential credential;
+    credential.username = "alice";
+    credential.formatted_origin = "example.com";
+    credential.change_password_url =
+        std::make_unique<std::string>("https://example.com/change-password");
+    credential.compromise_type = api::passwords_private::COMPROMISE_TYPE_LEAKED;
+    credential.elapsed_time_since_compromise = base::UTF16ToUTF8(
+        TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_LONG,
+                           base::TimeDelta::FromDays(3)));
+    api::passwords_private::CompromisedCredentialsInfo info;
+    info.compromised_credentials.push_back(std::move(credential));
+    info.elapsed_time_since_last_check =
+        std::make_unique<std::string>(base::UTF16ToUTF8(TimeFormat::Simple(
+            TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT,
+            base::TimeDelta::FromMinutes(5))));
+    return info;
   }
 
   void SetOptedInForAccountStorage(bool opted_in) {
@@ -342,6 +366,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsNotOptedInForAccountStorage) {
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsOptedInForAccountStorage) {
   SetOptedInForAccountStorage(true);
   EXPECT_TRUE(RunPasswordsSubtest("isOptedInForAccountStorage")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCompromisedCredentialsInfo) {
+  EXPECT_TRUE(RunPasswordsSubtest("getCompromisedCredentialsInfo")) << message_;
 }
 
 }  // namespace extensions

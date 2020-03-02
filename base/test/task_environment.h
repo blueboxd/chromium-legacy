@@ -40,7 +40,7 @@ namespace test {
 //  - RunLoop on the main thread
 //
 // TaskEnvironment additionally enables:
-//  - posting to base::ThreadPool() through base/task/post_task.h.
+//  - posting to base::ThreadPool through base/task/thread_pool.h.
 //
 // Hint: For content::BrowserThreads, use content::BrowserTaskEnvironment.
 //

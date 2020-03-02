@@ -15,13 +15,16 @@ class DisplayItemRasterInvalidator {
   STACK_ALLOCATED();
 
  public:
-  DisplayItemRasterInvalidator(RasterInvalidator& invalidator,
-                               const PaintArtifact& old_paint_artifact,
-                               const PaintArtifact& new_paint_artifact,
-                               const PaintChunk& old_chunk,
-                               const PaintChunk& new_chunk,
-                               const ChunkToLayerMapper& mapper)
+  DisplayItemRasterInvalidator(
+      RasterInvalidator& invalidator,
+      RasterInvalidator::RasterInvalidationFunction function,
+      const PaintArtifact& old_paint_artifact,
+      const PaintArtifact& new_paint_artifact,
+      const PaintChunk& old_chunk,
+      const PaintChunk& new_chunk,
+      const ChunkToLayerMapper& mapper)
       : invalidator_(invalidator),
+        raster_invalidation_function_(function),
         old_paint_artifact_(old_paint_artifact),
         new_paint_artifact_(new_paint_artifact),
         old_chunk_(old_chunk),
@@ -58,6 +61,7 @@ class DisplayItemRasterInvalidator {
       PaintInvalidationReason reason);
 
   RasterInvalidator& invalidator_;
+  RasterInvalidator::RasterInvalidationFunction raster_invalidation_function_;
   const PaintArtifact& old_paint_artifact_;
   const PaintArtifact& new_paint_artifact_;
   const PaintChunk& old_chunk_;

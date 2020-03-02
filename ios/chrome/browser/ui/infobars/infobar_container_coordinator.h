@@ -13,30 +13,20 @@ namespace web {
 class WebState;
 }
 
-@class CommandDispatcher;
 @protocol InfobarPositioner;
 @protocol SyncPresenter;
-class WebStateList;
 
 // Coordinator that owns and manages an InfobarContainer.
 @interface InfobarContainerCoordinator : ChromeCoordinator
 
-// TODO(crbug.com/892376): Pass a Browser object instead of BrowserState and
-// WebStateList once BVC has a Browser pointer.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
-;
-
+// Unavailable, use -initWithBaseViewController:browser:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
 
+// Unavailable, use -initWithBaseViewController:browser:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Sets the visibility of the container to |hidden|.
 - (void)hideContainer:(BOOL)hidden;
@@ -59,9 +49,6 @@ class WebStateList;
 // run.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion;
-
-// The CommandDispatcher for this Coordinator.
-@property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 
 // The delegate used to position the InfobarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;

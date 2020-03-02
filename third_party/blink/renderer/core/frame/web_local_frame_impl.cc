@@ -1660,9 +1660,10 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
     WebFrame* previous_frame,
-    const FramePolicy& frame_policy) {
-  return WebLocalFrameImpl::CreateProvisional(client, interface_registry,
-                                              previous_frame, frame_policy);
+    const FramePolicy& frame_policy,
+    const WebString& name) {
+  return WebLocalFrameImpl::CreateProvisional(
+      client, interface_registry, previous_frame, frame_policy, name);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
@@ -1690,14 +1691,16 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* previous_web_frame,
-    const FramePolicy& frame_policy) {
+    const FramePolicy& frame_policy,
+    const WebString& name) {
   DCHECK(client);
+  Frame* previous_frame = ToCoreFrame(*previous_web_frame);
+  DCHECK(name.IsEmpty() || name.Equals(previous_frame->Tree().GetName()));
   auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(),
       previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
                                          : WebTreeScopeType::kDocument,
       client, interface_registry);
-  Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
   mojom::blink::WebSandboxFlags sandbox_flags =
@@ -1724,8 +1727,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // observable, it will have the real FrameOwner, and any subsequent real
   // documents will correctly inherit sandbox flags from the owner.
   web_frame->InitializeCoreFrame(
-      *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
-      previous_frame->Tree().GetName(),
+      *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(), name,
       frame_policy.disallow_document_access
           ? nullptr
           : &ToCoreFrame(*previous_web_frame)->window_agent_factory(),

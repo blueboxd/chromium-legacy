@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/enterprise_reporting/policy_info.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -21,10 +22,27 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "extensions/common/extension_urls.h"
 
 namespace enterprise_reporting {
+namespace {
 
-ProfileReportGenerator::ProfileReportGenerator() {}
+// Extension request are moved out of the pending list once user confirm the
+// notification. However, there is no need to upload these requests anymore as
+// long as admin made a decision.
+bool ShouldUploadExtensionRequest(
+    const std::string& extension_id,
+    const std::string& webstore_update_url,
+    extensions::ExtensionManagement* extension_management) {
+  auto mode = extension_management->GetInstallationMode(extension_id,
+                                                        webstore_update_url);
+  return (mode == extensions::ExtensionManagement::INSTALLATION_BLOCKED ||
+          mode == extensions::ExtensionManagement::INSTALLATION_REMOVED) &&
+         !extension_management->IsInstallationExplicitlyBlocked(extension_id);
+}
+
+}  // namespace
+ProfileReportGenerator::ProfileReportGenerator() = default;
 
 ProfileReportGenerator::~ProfileReportGenerator() = default;
 
@@ -108,7 +126,16 @@ void ProfileReportGenerator::GetExtensionRequest() {
   if (!pending_requests)
     return;
 
+  extensions::ExtensionManagement* extension_management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+  std::string webstore_update_url =
+      extension_urls::GetDefaultWebstoreUpdateUrl().spec();
+
   for (const auto& it : *pending_requests) {
+    if (!ShouldUploadExtensionRequest(it.first, webstore_update_url,
+                                      extension_management)) {
+      continue;
+    }
     auto* request = report_->add_extension_requests();
     request->set_id(it.first);
     base::Optional<base::Time> timestamp = ::util::ValueToTime(

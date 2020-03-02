@@ -169,9 +169,6 @@ extern const char kAutoScreenBrightnessDescription[];
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
 
-extern const char kBundledConnectionHelpName[];
-extern const char kBundledConnectionHelpDescription[];
-
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -683,9 +680,6 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 
 extern const char kMixBrowserTypeTabsName[];
 extern const char kMixBrowserTypeTabsDescription[];
-
-extern const char kMixedContentSiteSettingName[];
-extern const char kMixedContentSiteSettingDescription[];
 
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];

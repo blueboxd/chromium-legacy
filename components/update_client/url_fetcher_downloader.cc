@@ -12,19 +12,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/update_client/network.h"
+#include "components/update_client/task_traits.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
-
-namespace {
-
-constexpr base::TaskTraits kTaskTraits = {
-    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-
-}  // namespace
 
 namespace update_client {
 
@@ -40,7 +32,7 @@ UrlFetcherDownloader::~UrlFetcherDownloader() {
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir,
                      base::Unretained(this)),
@@ -132,9 +124,10 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
 
   // Delete the download directory in the error cases.
   if (error && !download_dir_.empty()) {
-    base::PostTask(FROM_HERE, kTaskTraits,
-                   base::BindOnce(IgnoreResult(&base::DeleteFileRecursively),
-                                  download_dir_));
+    base::ThreadPool::PostTask(
+        FROM_HERE, kTaskTraits,
+        base::BindOnce(IgnoreResult(&base::DeleteFileRecursively),
+                       download_dir_));
   }
 
   main_task_runner()->PostTask(

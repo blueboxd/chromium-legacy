@@ -7051,8 +7051,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7127,8 +7128,9 @@ TEST_F(HostResolverManagerDnsTest,
        SetDnsConfigOverrides_OverrideEverythingCreation) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7158,8 +7160,9 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7201,8 +7204,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7235,8 +7239,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7262,8 +7267,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NoChange) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7298,8 +7304,9 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_PartialOverrides) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7323,8 +7330,9 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_OverridesEverything) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7350,8 +7358,9 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_OverridesEverything) {
 TEST_F(HostResolverManagerDnsTest, DohMapping) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7375,8 +7384,9 @@ TEST_F(HostResolverManagerDnsTest, DohMapping) {
 TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7396,8 +7406,9 @@ TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
 TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7417,8 +7428,9 @@ TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
 TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7443,8 +7455,9 @@ TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
 TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7470,8 +7483,9 @@ TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
 TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -7496,8 +7510,9 @@ TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
 TEST_F(HostResolverManagerDnsTest, DohMappingWithStrictDot) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client = DnsClient::CreateClientForTesting(
-      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  auto client =
+      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
+                                        base::BindRepeating(&base::RandInt));
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 

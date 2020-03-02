@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -98,15 +99,12 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
 
 SystemStorageGetAvailableCapacityFunction::
     SystemStorageGetAvailableCapacityFunction()
-    : query_runner_(base::CreateSequencedTaskRunner(
-          base::TaskTraits(base::ThreadPool(),
-                           base::TaskPriority::BEST_EFFORT,
-                           base::MayBlock(),
-                           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
+    : query_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 SystemStorageGetAvailableCapacityFunction::
-    ~SystemStorageGetAvailableCapacityFunction() {
-}
+    ~SystemStorageGetAvailableCapacityFunction() = default;
 
 ExtensionFunction::ResponseAction
 SystemStorageGetAvailableCapacityFunction::Run() {

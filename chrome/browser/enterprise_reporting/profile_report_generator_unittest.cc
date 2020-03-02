@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 
+#include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/util/values/values_util.h"
@@ -18,6 +19,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace enterprise_reporting {
@@ -26,7 +28,20 @@ namespace {
 constexpr char kProfile[] = "Profile";
 constexpr char kIdleProfile[] = "IdleProfile";
 constexpr char kExtensionId[] = "abcdefghijklmnopabcdefghijklmnop";
+constexpr char kExtensionId2[] = "abcdefghijklmnopabcdefghijklmnpo";
 constexpr int kFakeTime = 123456;
+
+constexpr char kAllowedExtensionSettings[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop" : {
+    "installation_mode": "allowed"
+  }
+})";
+
+constexpr char kBlockedExtensionSettings[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop" : {
+    "installation_mode": "blocked"
+  }
+})";
 
 }  // namespace
 
@@ -98,6 +113,15 @@ class ProfileReportGeneratorTest : public ::testing::Test {
     }
     profile()->GetTestingPrefService()->SetUserPref(
         prefs::kCloudExtensionRequestIds, std::move(id_values));
+  }
+
+  void SetExtensionSettings(const std::string& settings_string) {
+    base::Optional<base::Value> settings =
+        base::JSONReader::Read(settings_string);
+    ASSERT_TRUE(settings.has_value());
+    profile()->GetTestingPrefService()->SetManagedPref(
+        extensions::pref_names::kExtensionManagement,
+        base::Value::ToUniquePtrValue(std::move(*settings)));
   }
 
   TestingProfile* profile() { return profile_; }
@@ -183,6 +207,32 @@ TEST_F(ProfileReportGeneratorTest, NoPendingRequestWhenItsDisabled) {
 
   auto report = GenerateReport();
   EXPECT_EQ(0, report->extension_requests_size());
+}
+
+TEST_F(ProfileReportGeneratorTest, FilterOutApprovedPendingRequest) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kCloudExtensionRequestEnabled,
+      std::make_unique<base::Value>(true));
+  SetExtensionSettings(kAllowedExtensionSettings);
+  std::vector<std::string> ids = {kExtensionId, kExtensionId2};
+  SetExtensionToPendingList(ids);
+
+  auto report = GenerateReport();
+  ASSERT_EQ(1, report->extension_requests_size());
+  EXPECT_EQ(kExtensionId2, report->extension_requests(0).id());
+}
+
+TEST_F(ProfileReportGeneratorTest, FilterOutBlockedPendingRequest) {
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kCloudExtensionRequestEnabled,
+      std::make_unique<base::Value>(true));
+  SetExtensionSettings(kBlockedExtensionSettings);
+  std::vector<std::string> ids = {kExtensionId, kExtensionId2};
+  SetExtensionToPendingList(ids);
+
+  auto report = GenerateReport();
+  ASSERT_EQ(1, report->extension_requests_size());
+  EXPECT_EQ(kExtensionId2, report->extension_requests(0).id());
 }
 
 }  // namespace enterprise_reporting

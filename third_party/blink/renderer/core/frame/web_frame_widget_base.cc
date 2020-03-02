@@ -354,6 +354,10 @@ void WebFrameWidgetBase::Trace(Visitor* visitor) {
   visitor->Trace(current_drag_data_);
 }
 
+bool WebFrameWidgetBase::ShouldRecordMainFrameMetrics() {
+  return !!Thread::CompositorThread();
+}
+
 // TODO(665924): Remove direct dispatches of mouse events from
 // PointerLockController, instead passing them through EventHandler.
 void WebFrameWidgetBase::PointerLockMouseEvent(

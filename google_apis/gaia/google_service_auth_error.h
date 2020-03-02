@@ -13,15 +13,7 @@
 
 #include <string>
 
-#include "mojo/public/cpp/bindings/struct_traits.h"
-
 #include "url/gurl.h"
-
-namespace identity {
-namespace mojom {
-class GoogleServiceAuthErrorDataView;
-}
-}
 
 class GoogleServiceAuthError {
  public:
@@ -162,12 +154,6 @@ class GoogleServiceAuthError {
   bool IsTransientError() const;
 
  private:
-  // Allows the Identity Service to construct a GoogleServiceAuthError instance
-  // from data that has come in over the wire.
-  friend struct mojo::StructTraits<
-      identity::mojom::GoogleServiceAuthErrorDataView,
-      GoogleServiceAuthError>;
-
   GoogleServiceAuthError(State s, int error);
 
   // Construct a GoogleServiceAuthError from |state| and |error_message|.

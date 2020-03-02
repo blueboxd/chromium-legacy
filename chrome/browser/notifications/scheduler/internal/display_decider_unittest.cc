@@ -25,22 +25,34 @@ namespace {
 const std::vector<test::ImpressionTestData> kSingleClientImpressionTestData = {
     {SchedulerClientType::kTest1,
      2 /* current_max_daily_show */,
-     {},
-     base::nullopt /* suppression_info */}};
+     {} /* impressions */,
+     base::nullopt /* suppression_info */,
+     0 /* negative_events_count */,
+     base::nullopt /* negative_event_ts */,
+     base::nullopt /* last_shown_ts */}};
 
 const std::vector<test::ImpressionTestData> kClientsImpressionTestData = {
     {SchedulerClientType::kTest1,
      2 /* current_max_daily_show */,
-     {},
-     base::nullopt /* suppression_info */},
+     {} /* impressions */,
+     base::nullopt /* suppression_info */,
+     0 /* negative_events_count */,
+     base::nullopt /* negative_event_ts */,
+     base::nullopt /* last_shown_ts */},
     {SchedulerClientType::kTest2,
      5 /* current_max_daily_show */,
-     {},
-     base::nullopt /* suppression_info */},
+     {} /* impressions */,
+     base::nullopt /* suppression_info */,
+     0 /* negative_events_count */,
+     base::nullopt /* negative_event_ts */,
+     base::nullopt /* last_shown_ts */},
     {SchedulerClientType::kTest3,
      1 /* current_max_daily_show */,
-     {},
-     base::nullopt /* suppression_info */}};
+     {} /* impressions */,
+     base::nullopt /* suppression_info */,
+     0 /* negative_events_count */,
+     base::nullopt /* negative_event_ts */,
+     base::nullopt /* last_shown_ts */}};
 
 struct TestData {
   // Impression data as the input.

@@ -15,7 +15,7 @@ test(() => {
     if (document.querySelector('#log'))
       document.adoptNode(log);
   });
-  assert_throws('NotFoundError', () => { log.outerHTML = '<my-custom-element></my-custom-element>'; });
+  assert_throws_dom('NotFoundError', () => { log.outerHTML = '<my-custom-element></my-custom-element>'; });
   assert_true(upgraded, 'MyCustomElement constructor should be called');
 }, 'CEReactions should rethrow an exception by the originally-specified steps; 1');
 

@@ -24,6 +24,6 @@ test(function() {
   const scroller = document.querySelector('.scroller');
   const constructorFunc = function() { new ScrollTimeline(
       { scrollSource: scroller, orientation: 'block' }) };
-  assert_throws('NotSupportedError', constructorFunc);
+  assert_throws_dom('NotSupportedError', constructorFunc);
 }, 'If the timeRange is unspecified, object construction should fail');
 </script>

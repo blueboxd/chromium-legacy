@@ -146,6 +146,10 @@ class CORE_EXPORT WebFrameWidgetBase
 
   virtual void Trace(Visitor*);
 
+  // Returns if we should gather main frame metrics. If there is no compositor
+  // thread this returns false.
+  static bool ShouldRecordMainFrameMetrics();
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 

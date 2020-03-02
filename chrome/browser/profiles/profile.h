@@ -39,12 +39,6 @@ namespace content {
 class WebUI;
 }
 
-namespace identity {
-namespace mojom {
-class IdentityService;
-}  // namespace mojom
-}  // namespace identity
-
 namespace policy {
 class SchemaRegistryService;
 class ProfilePolicyConnector;
@@ -386,10 +380,6 @@ class Profile : public content::BrowserContext {
   virtual mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       bool in_memory,
       const base::FilePath& relative_partition_path);
-
-  // Exposes access to the profile's Identity Service instance. This may return
-  // null if the profile does not have a corresponding service instance.
-  virtual identity::mojom::IdentityService* GetIdentityService();
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of

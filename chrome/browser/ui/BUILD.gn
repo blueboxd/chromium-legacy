@@ -728,8 +728,6 @@ jumbo_static_library("ui") {
       "android/infobars/update_password_infobar.cc",
       "android/infobars/update_password_infobar.h",
       "android/login_handler_android.cc",
-      "android/omnibox/omnibox_url_emphasizer.cc",
-      "android/omnibox/omnibox_url_emphasizer.h",
       "android/omnibox/omnibox_view_util.cc",
       "android/omnibox/omnibox_view_util.h",
       "android/overlay/overlay_window_android.cc",
@@ -3963,7 +3961,6 @@ jumbo_static_library("ui") {
       "//components/services/app_service/public/cpp:app_file_handling",
       "//services/audio/public/mojom",
       "//services/device/public/mojom",
-      "//services/identity/public/mojom",
       "//services/media_session/public/mojom",
       "//services/preferences/public/mojom",
       "//ui/file_manager:file_manager",
@@ -4147,8 +4144,6 @@ jumbo_static_library("ui") {
         "webui/print_preview/local_printer_handler_chromeos.cc",
         "webui/print_preview/local_printer_handler_chromeos.h",
       ]
-
-      deps += [ "//services/identity/public/cpp:cpp_types" ]
     } else {
       sources += [
         "webui/print_preview/local_printer_handler_default.cc",

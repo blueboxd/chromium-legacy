@@ -52,8 +52,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         mMinIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mIconGenerator = FaviconUtils.createCircularIconGenerator(getResources());
-        mEndPadding = context.getResources().getDimensionPixelSize(
-                R.dimen.selectable_list_layout_row_padding);
+        mEndPadding =
+                context.getResources().getDimensionPixelSize(R.dimen.default_list_row_padding);
 
         mStartIconSelectedColorList =
                 AppCompatResources.getColorStateList(context, R.color.default_icon_color_inverse);

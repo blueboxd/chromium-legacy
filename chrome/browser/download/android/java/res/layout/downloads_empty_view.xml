@@ -13,8 +13,8 @@
         android:id="@+id/empty_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/selectable_list_layout_row_padding"
-        android:layout_marginStart="@dimen/selectable_list_layout_row_padding"
+        android:layout_marginEnd="@dimen/default_list_row_padding"
+        android:layout_marginStart="@dimen/default_list_row_padding"
         android:gravity="center"
         android:padding="@dimen/card_padding" >
 

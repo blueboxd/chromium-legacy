@@ -148,7 +148,7 @@ def constant_name(cg_context):
     return name_style.constant(kind, property_name)
 
 
-def custom_function_name(cg_context, overload_index=None):
+def custom_function_name(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     if cg_context.attribute_get:
@@ -2400,6 +2400,17 @@ def make_install_interface_template(cg_context, function_name, class_name,
             EmptyNode(),
         ])
 
+    if cg_context.class_like.identifier == "HTMLAllCollection":
+        body.extend([
+            T("// HTMLAllCollection"),
+            T("// https://html.spec.whatwg.org/C/"
+              "#the-htmlallcollection-interface"),
+            T("${instance_template}->SetCallAsFunctionHandler"
+              "(${class_name}::LegacyCallCustom);"),
+            T("${instance_template}->MarkAsUndetectable();"),
+            EmptyNode(),
+        ])
+
     func_call_pattern = ("{}(${isolate}, ${world}, ${instance_template}, "
                          "${prototype_template}, ${interface_template});")
     if install_unconditional_func_name:
@@ -2988,6 +2999,13 @@ def generate_interface(interface):
 
     # Custom callback implementations
     custom_callback_impl_decls = ListNode()
+    if interface.identifier == "HTMLAllCollection":
+        custom_callback_impl_decls.append(
+            CxxFuncDeclNode(
+                name=name_style.func("LegacyCallCustom"),
+                arg_decls=["const v8::FunctionCallbackInfo<v8::Value>&"],
+                return_type="void",
+                static=True))
     for attribute in interface.attributes:
         custom_values = attribute.extended_attributes.values_of("Custom")
         if "Getter" in custom_values:

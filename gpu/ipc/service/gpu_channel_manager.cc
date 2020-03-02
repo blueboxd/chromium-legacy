@@ -177,6 +177,7 @@ GpuChannelManager::GpuChannelManager(
       vulkan_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
       dawn_context_provider_(dawn_context_provider) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
@@ -192,6 +193,8 @@ GpuChannelManager::GpuChannelManager(
 }
 
 GpuChannelManager::~GpuChannelManager() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Clear |gpu_channels_| first to prevent reentrancy problems from GpuChannel
   // destructor.
   auto gpu_channels = std::move(gpu_channels_);
@@ -210,12 +213,16 @@ GpuChannelManager::~GpuChannelManager() {
 }
 
 gles2::Outputter* GpuChannelManager::outputter() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!outputter_)
     outputter_.reset(new gles2::TraceOutputter("GpuChannelManager Trace"));
   return outputter_.get();
 }
 
 gles2::ProgramCache* GpuChannelManager::program_cache() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!program_cache_.get()) {
     const GpuDriverBugWorkarounds& workarounds = gpu_driver_bug_workarounds_;
     bool disable_disk_cache =
@@ -238,11 +245,15 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
 }
 
 void GpuChannelManager::RemoveChannel(int client_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   delegate_->DidDestroyChannel(client_id);
   gpu_channels_.erase(client_id);
 }
 
 GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   const auto& it = gpu_channels_.find(client_id);
   return it != gpu_channels_.end() ? it->second.get() : nullptr;
 }
@@ -251,6 +262,8 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
                                                 uint64_t client_tracing_id,
                                                 bool is_gpu_host,
                                                 bool cache_shaders_on_disk) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (gr_shader_cache_ && cache_shaders_on_disk)
     gr_shader_cache_->CacheClientIdOnDisk(client_id);
 
@@ -258,6 +271,9 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
       this, scheduler_, sync_point_manager_, share_group_, task_runner_,
       io_task_runner_, client_id, client_tracing_id, is_gpu_host,
       image_decode_accelerator_worker_);
+
+  if (!gpu_channel)
+    return nullptr;
 
   GpuChannel* gpu_channel_ptr = gpu_channel.get();
   gpu_channels_[client_id] = std::move(gpu_channel);
@@ -267,12 +283,16 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
 void GpuChannelManager::InternalDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
 }
 
 void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                                int client_id,
                                                const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!sync_point_manager_->WaitOutOfOrder(
           sync_token,
           base::BindOnce(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
@@ -285,6 +305,8 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
 void GpuChannelManager::PopulateShaderCache(int32_t client_id,
                                             const std::string& key,
                                             const std::string& program) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (client_id == kGrShaderCacheClientId) {
     if (gr_shader_cache_)
       gr_shader_cache_->PopulateCache(key, program);
@@ -296,6 +318,8 @@ void GpuChannelManager::PopulateShaderCache(int32_t client_id,
 }
 
 void GpuChannelManager::LoseAllContexts() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   for (auto& kv : gpu_channels_) {
     kv.second->MarkAllContextsLost();
   }
@@ -310,6 +334,8 @@ void GpuChannelManager::LoseAllContexts() {
 }
 
 void GpuChannelManager::DestroyAllChannels() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Clear |gpu_channels_| first to prevent reentrancy problems from GpuChannel
   // destructor.
   auto gpu_channels = std::move(gpu_channels_);
@@ -319,6 +345,8 @@ void GpuChannelManager::DestroyAllChannels() {
 
 void GpuChannelManager::GetVideoMemoryUsageStats(
     VideoMemoryUsageStats* video_memory_usage_stats) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // For each context group, assign its memory usage to its PID
   video_memory_usage_stats->process_map.clear();
   uint64_t total_size = 0;
@@ -345,10 +373,14 @@ void GpuChannelManager::GetVideoMemoryUsageStats(
 }
 
 void GpuChannelManager::StartPeakMemoryMonitor(uint32_t sequence_num) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   peak_memory_monitor_.StartGpuMemoryTracking(sequence_num);
 }
 
 uint64_t GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   uint64_t total_memory = peak_memory_monitor_.GetPeakMemoryUsage(sequence_num);
   peak_memory_monitor_.StopGpuMemoryTracking(sequence_num);
   return total_memory;
@@ -356,15 +388,21 @@ uint64_t GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num) {
 
 #if defined(OS_ANDROID)
 void GpuChannelManager::DidAccessGpu() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   last_gpu_access_time_ = base::TimeTicks::Now();
 }
 
 void GpuChannelManager::WakeUpGpu() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   begin_wake_up_time_ = base::TimeTicks::Now();
   ScheduleWakeUpGpu();
 }
 
 void GpuChannelManager::ScheduleWakeUpGpu() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT2("gpu", "GpuChannelManager::ScheduleWakeUp", "idle_time",
                (now - last_gpu_access_time_).InMilliseconds(),
@@ -386,6 +424,8 @@ void GpuChannelManager::ScheduleWakeUpGpu() {
 }
 
 void GpuChannelManager::DoWakeUpGpu() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   const CommandBufferStub* stub = nullptr;
   for (const auto& kv : gpu_channels_) {
     const GpuChannel* channel = kv.second.get();
@@ -404,6 +444,8 @@ void GpuChannelManager::DoWakeUpGpu() {
 }
 
 void GpuChannelManager::OnBackgroundCleanup() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Delete all the GL contexts when the channel does not use WebGL and Chrome
   // goes to background on low-end devices.
   std::vector<int> channels_to_clear;
@@ -432,6 +474,8 @@ void GpuChannelManager::OnBackgroundCleanup() {
 #endif
 
 void GpuChannelManager::OnApplicationBackgrounded() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (shared_context_state_) {
     shared_context_state_->PurgeMemory(
         base::MemoryPressureListener::MemoryPressureLevel::
@@ -444,6 +488,8 @@ void GpuChannelManager::OnApplicationBackgrounded() {
 
 void GpuChannelManager::HandleMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
@@ -459,6 +505,8 @@ void GpuChannelManager::HandleMemoryPressure(
 
 scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     ContextResult* result) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (shared_context_state_ && !shared_context_state_->context_lost()) {
     *result = ContextResult::kSuccess;
     return shared_context_state_;
@@ -580,6 +628,8 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 }
 
 void GpuChannelManager::OnContextLost(bool synthetic_loss) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (synthetic_loss)
     return;
 
@@ -596,17 +646,23 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (gr_cache_controller_)
     gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
 void GpuChannelManager::StoreShader(const std::string& key,
                                     const std::string& shader) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   delegate_->StoreShaderToDisk(kGrShaderCacheClientId, key, shader);
 }
 
 void GpuChannelManager::SetImageDecodeAcceleratorWorkerForTesting(
     ImageDecodeAcceleratorWorker* worker) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   DCHECK(gpu_channels_.empty());
   image_decode_accelerator_worker_ = worker;
 }

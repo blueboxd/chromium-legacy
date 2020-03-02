@@ -37,6 +37,14 @@ chrome.passwordsPrivate.ExportProgressStatus = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.passwordsPrivate.CompromiseType = {
+  LEAKED: 'LEAKED',
+  PHISHED: 'PHISHED',
+};
+
+/**
  * @typedef {{
  *   origin: string,
  *   shown: string,
@@ -73,6 +81,26 @@ chrome.passwordsPrivate.ExceptionEntry;
  * }}
  */
 chrome.passwordsPrivate.PasswordExportProgress;
+
+/**
+ * @typedef {{
+ *   formattedOrigin: string,
+ *   changePasswordUrl: (string|undefined),
+ *   username: string,
+ *   elapsedTimeSinceCompromise: string,
+ *   compromiseType: !chrome.passwordsPrivate.CompromiseType
+ * }}
+ */
+chrome.passwordsPrivate.CompromisedCredential;
+
+/**
+ * @typedef {{
+ *   compromisedCredentials:
+ * !Array<!chrome.passwordsPrivate.CompromisedCredential>,
+ *   elapsedTimeSinceLastCheck: (string|undefined)
+ * }}
+ */
+chrome.passwordsPrivate.CompromisedCredentialsInfo;
 
 /**
  * Function that logs that the Passwords page was accessed from the Chrome
@@ -172,6 +200,13 @@ chrome.passwordsPrivate.cancelExportPasswords = function() {};
 chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
 
 /**
+ * Requests the latest information about compromised credentials.
+ * @param {function(!chrome.passwordsPrivate.CompromisedCredentialsInfo):void}
+ *     callback
+ */
+chrome.passwordsPrivate.getCompromisedCredentialsInfo = function(callback) {};
+
+/**
  * Fired when the saved passwords list has changed, meaning that an entry has
  * been added or removed.
  * @type {!ChromeEvent}
@@ -196,3 +231,9 @@ chrome.passwordsPrivate.onPasswordsFileExportProgress;
  * @type {!ChromeEvent}
  */
 chrome.passwordsPrivate.onAccountStorageOptInStateChanged;
+
+/**
+ * Fired when the compromised credentials changed.
+ * @type {!ChromeEvent}
+ */
+chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged;

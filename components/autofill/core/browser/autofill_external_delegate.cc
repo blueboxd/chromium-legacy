@@ -122,11 +122,17 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableHideSuggestionsUI)) {
-    if (!suggestions.empty() && (GetPopupType() == PopupType::kAddresses ||
-                                 GetPopupType() == PopupType::kUnspecified)) {
-      suggestions.push_back(
-          Suggestion(l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS)));
-      suggestions.back().frontend_id = POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS;
+    // If the user has selected a suggestion, it indicates the suggestions are
+    // useful to the user and no need  hide them. In this case,
+    // ApplyAutofillOptions() should have added a "Clear form" option instead.
+    if (!query_field_.is_autofilled) {
+      if (!suggestions.empty() && (GetPopupType() == PopupType::kAddresses ||
+                                   GetPopupType() == PopupType::kUnspecified)) {
+        suggestions.push_back(Suggestion(
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS)));
+        suggestions.back().frontend_id =
+            POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS;
+      }
     }
   }
 #endif

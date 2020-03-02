@@ -26,6 +26,7 @@ import java.util.ArrayList;
 public class QrCodeDialog extends DialogFragment {
     private ArrayList<QrCodeDialogTab> mTabs;
     private Context mContext;
+    private TabLayoutPageListener mTabLayoutPageListener;
 
     /**
      * The QrCodeDialog constructor.
@@ -57,16 +58,12 @@ public class QrCodeDialog extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        for (QrCodeDialogTab tab : mTabs) {
-            tab.onResume();
-        }
+        mTabLayoutPageListener.resumeSelectedTab();
     }
     @Override
     public void onPause() {
         super.onPause();
-        for (QrCodeDialogTab tab : mTabs) {
-            tab.onPause();
-        }
+        mTabLayoutPageListener.pauseAllTabs();
     }
 
     @Override
@@ -98,7 +95,9 @@ public class QrCodeDialog extends DialogFragment {
         ViewPager viewPager = dialogView.findViewById(
                 org.chromium.chrome.browser.share.qrcode.R.id.qrcode_view_pager);
         viewPager.setAdapter(pageAdapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+        mTabLayoutPageListener = new TabLayoutPageListener(tabLayout, mTabs);
+        viewPager.addOnPageChangeListener(mTabLayoutPageListener);
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
         return dialogView;
     }

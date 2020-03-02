@@ -13,28 +13,16 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
 namespace password_manager {
 
 namespace {
 
-// A view over a PasswordForm that only stores the signon_realm, username and
-// password. An implicit constructor is provided for convenience.
-struct CredentialView {
-  CredentialView(const autofill::PasswordForm& form)
-      : signon_realm(form.signon_realm),
-        username(form.username_value),
-        password(form.password_value) {}
-
-  std::string signon_realm;
-  base::string16 username;
-  base::string16 password;
-};
-
 // Transparent comparator that can compare various types like CredentialView or
 // CompromisedCredentials.
-struct CredentialLess {
+struct CredentialWithoutPassword {
   template <typename T, typename U>
   bool operator()(const T& lhs, const U& rhs) const {
     return std::tie(lhs.signon_realm, lhs.username) <
@@ -60,7 +48,7 @@ JoinCompromisedCredentialsWithSavedPasswords(
   // corresponding entries in saved_passwords, we are using a multiset and doing
   // look-up via equal_range. In most cases the resulting |range| should have a
   // size of 1, however.
-  std::multiset<CredentialView, CredentialLess> credentials(
+  std::multiset<CredentialView, CredentialWithoutPassword> credentials(
       saved_passwords.begin(), saved_passwords.end());
   for (const auto& compromised_credential : compromised_credentials) {
     auto range = credentials.equal_range(compromised_credential);

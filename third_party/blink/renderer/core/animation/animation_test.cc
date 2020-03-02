@@ -137,6 +137,10 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
 
     SetBodyInnerHTML("<div id='target'></div>");
 
+    MakeCompositedAnimation();
+  }
+
+  void MakeCompositedAnimation() {
     // Create a compositable animation; in this case opacity from 1 to 0.
     Timing timing;
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
@@ -1327,6 +1331,22 @@ TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
         GenerateHistogramValue(CompositorAnimations::kUnsupportedCSSProperty),
         1);
   }
+}
+
+// crbug.com/990000.
+TEST_F(AnimationAnimationTestCompositing, ReplaceCompositedAnimation) {
+  const std::string histogram_name =
+      "Blink.Animation.CompositedAnimationFailureReason";
+
+  // Start with a composited animation.
+  ResetWithCompositedAnimation();
+  ASSERT_TRUE(animation->HasActiveAnimationsOnCompositor());
+
+  // Replace the animation. The new animation should not be incompatible and
+  // therefore able to run on the compositor.
+  animation->cancel();
+  MakeCompositedAnimation();
+  ASSERT_TRUE(animation->HasActiveAnimationsOnCompositor());
 }
 
 TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {

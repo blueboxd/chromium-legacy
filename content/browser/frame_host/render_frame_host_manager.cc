@@ -2372,6 +2372,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           request->response()->cross_origin_embedder_policy.value,
           url::Origin::Create(request->common_params().url));
 
+  if (cross_origin_policy_swap)
+    request->set_require_coop_browsing_instance_swap();
+
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),
       request->dest_site_instance(), candidate_site_instance,

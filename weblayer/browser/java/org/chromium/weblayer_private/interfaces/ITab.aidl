@@ -37,4 +37,5 @@ interface ITab {
   void findInPage(in String searchText, boolean forward) = 9;
 
   void dismissTabModalOverlay() = 10;
+  void dispatchBeforeUnloadAndClose() = 11;
 }

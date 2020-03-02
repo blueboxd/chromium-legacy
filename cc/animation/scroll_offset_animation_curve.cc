@@ -17,8 +17,8 @@
 const double kConstantDuration = 9.0;
 const double kDurationDivisor = 60.0;
 
-// 3 seconds limit for long-distance programmatic scrolls
-const double kDeltaBasedMaxDuration = 180.0;
+// 0.7 seconds limit for long-distance programmatic scrolls
+const double kDeltaBasedMaxDuration = 0.7 * kDurationDivisor;
 
 const double kInverseDeltaRampStartPx = 120.0;
 const double kInverseDeltaRampEndPx = 480.0;

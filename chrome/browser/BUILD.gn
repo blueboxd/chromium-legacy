@@ -2212,8 +2212,6 @@ jumbo_static_library("browser") {
     "//services/device/public/cpp/usb",
     "//services/device/public/mojom",
     "//services/device/public/mojom:usb",
-    "//services/identity:lib",
-    "//services/identity/public/cpp:cpp_types",
     "//services/image_annotation:service",
     "//services/media_session/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",

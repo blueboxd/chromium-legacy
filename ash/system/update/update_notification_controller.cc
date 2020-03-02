@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -106,10 +107,8 @@ void UpdateNotificationController::GenerateUpdateNotification(
 }
 
 void UpdateNotificationController::OnUpdateAvailable() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits{base::ThreadPool(), base::MayBlock(),
-                       base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&CheckForSlowBoot, slow_boot_file_path_),
       base::BindOnce(&UpdateNotificationController::GenerateUpdateNotification,
                      weak_ptr_factory_.GetWeakPtr()));

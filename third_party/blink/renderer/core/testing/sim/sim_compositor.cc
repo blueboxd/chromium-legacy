@@ -91,7 +91,7 @@ void SimCompositor::RequestNewLayerTreeFrameSink(
 void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
   // There is no WebWidget like RenderWidget would have..? So go right to the
   // WebViewImpl.
-  web_view_->MainFrameWidget()->BeginFrame(last_frame_time_, false);
+  web_view_->MainFrameWidget()->BeginFrame(last_frame_time_);
   web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
   *paint_commands_ = PaintFrame();

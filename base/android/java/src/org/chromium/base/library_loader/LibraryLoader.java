@@ -95,11 +95,10 @@ public class LibraryLoader {
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
 
-    // One-way switch becomes true when the libraries are initialized (
-    // by calling LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
-    // library_loader_hooks.cc).
-    // Note that this member should remain a one-way switch, since it accessed from multiple
-    // threads without a lock.
+    // One-way switch becomes true when the libraries are initialized (by calling
+    // LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
+    // library_loader_hooks.cc).  Note that this member should remain a one-way switch, since it
+    // accessed from multiple threads without a lock.
     private volatile boolean mInitialized;
 
     // State that only transitions one-way from 0->1->2. Volatile for the same reasons as
@@ -109,7 +108,7 @@ public class LibraryLoader {
     // Guards all fields below.
     private final Object mLock = new Object();
 
-    // Guards non-Main Dex initialization, which doesn't touch any fields guarded my mLock.
+    // Guards non-Main Dex initialization, which doesn't touch any fields guarded by mLock.
     private final Object mNonMainDexLock = new Object();
 
     private NativeLibraryPreloader mLibraryPreloader;
@@ -228,11 +227,31 @@ public class LibraryLoader {
         mConfigurationSet = true;
     }
 
-    public boolean useChromiumLinker() {
-        return mUseChromiumLinker;
+    // LegacyLinker is buggy on Android 10, causing crashes (see crbug.com/980304).
+    //
+    // Rather than preventing people from running chrome_public_apk on Android 10, fallback to the
+    // system linker on this platform. We lose relocation sharing as a side-effect, but this
+    // configuration does not ship to users (since we only use LegacyLinker for APKs targeted at
+    // pre-N users).
+    //
+    // Note: This cannot be done in the build configuration, as otherwise chrome_public_apk cannot
+    // both be used as the basis to ship on L, and the default APK used by developers on 10+.
+    private boolean forceSystemLinker() {
+        boolean result =
+                mUseChromiumLinker && !mUseModernLinker && Build.VERSION.SDK_INT >= VERSION_CODES.Q;
+        if (result) {
+            Log.d(TAG,
+                    "Forcing system linker, relocations will not be shared. "
+                            + "This negatively impacts memory usage.");
+        }
+        return result;
     }
 
-    public boolean useModernLinker() {
+    public boolean useChromiumLinker() {
+        return mUseChromiumLinker && !forceSystemLinker();
+    }
+
+    boolean useModernLinker() {
         return mUseModernLinker;
     }
 
@@ -312,10 +331,11 @@ public class LibraryLoader {
         }
     }
 
+    @GuardedBy("mLock")
     private void preloadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !mUseChromiumLinker || inZygote;
+            assert !useChromiumLinker() || inZygote;
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -465,8 +485,9 @@ public class LibraryLoader {
                 // Load directly from the APK.
                 boolean is64Bit = ApiHelperForM.isProcess64Bit();
                 String zipFilePath = appInfo.sourceDir;
-                String fullPath =
-                        zipFilePath + "!/" + makeLibraryPathInZipFile(library, false, is64Bit);
+                boolean crazyPrefix = forceSystemLinker(); // See comment in this function.
+                String fullPath = zipFilePath + "!/"
+                        + makeLibraryPathInZipFile(library, crazyPrefix, is64Bit);
 
                 Log.i(TAG, "libraryName: %s", fullPath);
                 System.load(fullPath);
@@ -487,7 +508,7 @@ public class LibraryLoader {
 
             long startTime = SystemClock.uptimeMillis();
 
-            if (mUseChromiumLinker && !inZygote) {
+            if (useChromiumLinker() && !inZygote) {
                 Log.d(TAG, "Loading with the Chromium linker.");
                 // See base/android/linker/config.gni, the chromium linker is only enabled when
                 // we have a single library.

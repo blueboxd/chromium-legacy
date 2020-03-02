@@ -319,7 +319,6 @@ include_rules = [
   "+services/audio/public",
   "+services/data_decoder/public",
   "+services/device/public",
-  "+services/identity/public",
   "+services/image_annotation/public",
   "+services/media_session/public",
   "+services/metrics/metrics_mojo_service.h",

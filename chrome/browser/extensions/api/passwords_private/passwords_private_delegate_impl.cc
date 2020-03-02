@@ -111,6 +111,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
               base::BindRepeating(&PasswordsPrivateDelegateImpl::
                                       OnAccountStorageOptInStateChanged,
                                   base::Unretained(this)))),
+      password_check_delegate_(profile),
       current_entries_initialized_(false),
       current_exceptions_initialized_(false),
       is_initialized_(false),
@@ -398,6 +399,11 @@ PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
 bool PasswordsPrivateDelegateImpl::IsOptedInForAccountStorage() {
   return password_manager_util::IsOptedInForAccountStorage(
       profile_->GetPrefs(), ProfileSyncServiceFactory::GetForProfile(profile_));
+}
+
+api::passwords_private::CompromisedCredentialsInfo
+PasswordsPrivateDelegateImpl::GetCompromisedCredentialsInfo() {
+  return password_check_delegate_.GetCompromisedCredentialsInfo();
 }
 
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(

@@ -161,21 +161,21 @@ withFrame(t.step_func(function (frame) {
 
     // This document is not HTML, XHTML; it will not process custom elements.
     var documentB = documentA.implementation.createDocument(null, '');
-    assert_throws(
+    assert_throws_dom(
         'NOT_SUPPORTED_ERR',
         function() { documentB.registerElement('x-a'); });
 
     // This document will not process custom elements because there is
     // nothing to inherit from B.
     var documentC = documentB.implementation.createHTMLDocument();
-    assert_throws(
+    assert_throws_dom(
         'NOT_SUPPORTED_ERR',
         function() { documentC.registerElement('x-b'); });
 
     // Nor this one.
     var documentD = documentC.implementation.createDocument(
         'http://www.w3.org/1999/xhtml', 'html');
-    assert_throws(
+    assert_throws_dom(
         'NOT_SUPPORTED_ERR',
         function() { documentD.registerElement('x-c'); });
 

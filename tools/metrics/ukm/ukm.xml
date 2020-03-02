@@ -4289,6 +4289,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Graphics.Smoothness.Throughput">
+  <obsolete>
+    Deprecated 02/2020.
+  </obsolete>
   <owner>animations-dev@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>

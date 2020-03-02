@@ -250,28 +250,26 @@ bool Video::LoadMetadata() {
   resolution_ = gfx::Size(static_cast<uint32_t>(width->GetInt()),
                           static_cast<uint32_t>(height->GetInt()));
 
+  // Find optional frame checksums. These are only required when using the frame
+  // validator.
   const base::Value* md5_checksums =
       metadata->FindKeyOfType("md5_checksums", base::Value::Type::LIST);
-  if (!md5_checksums) {
-    LOG(ERROR) << "Key \"md5_checksums\" is not found in "
-               << metadata_file_path_;
-    return false;
-  }
-  for (const base::Value& checksum : md5_checksums->GetList()) {
-    frame_checksums_.push_back(checksum.GetString());
+  if (md5_checksums) {
+    for (const base::Value& checksum : md5_checksums->GetList()) {
+      frame_checksums_.push_back(checksum.GetString());
+    }
   }
 
+  // Find optional thumbnail checksums. These are only required when using the
+  // thumbnail test on older platforms that don't support the frame validator.
   const base::Value* thumbnail_checksums =
       metadata->FindKeyOfType("thumbnail_checksums", base::Value::Type::LIST);
-  if (!thumbnail_checksums) {
-    LOG(ERROR) << "Key \"thumbnail_checksums\" is not found in "
-               << metadata_file_path_;
-    return false;
-  }
-  for (const base::Value& checksum : thumbnail_checksums->GetList()) {
-    const std::string& checksum_str = checksum.GetString();
-    if (checksum_str.size() > 0 && checksum_str[0] != '#')
-      thumbnail_checksums_.push_back(checksum_str);
+  if (thumbnail_checksums) {
+    for (const base::Value& checksum : thumbnail_checksums->GetList()) {
+      const std::string& checksum_str = checksum.GetString();
+      if (checksum_str.size() > 0 && checksum_str[0] != '#')
+        thumbnail_checksums_.push_back(checksum_str);
+    }
   }
 
   return true;

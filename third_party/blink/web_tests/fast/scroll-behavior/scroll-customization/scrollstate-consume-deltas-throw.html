@@ -15,7 +15,7 @@ test(function() {
 function testConsumingDelta(dx, dy, consume_x, consume_y, testName, expectedError) {
   test(function() {
     var scrollState = new ScrollState({deltaX: dx, deltaY: dy});
-    assert_throws('InvalidModificationError', function() {
+    assert_throws_dom('InvalidModificationError', function() {
       scrollState.consumeDelta(consume_x, consume_y);
     });
     assert_equals(scrollState.deltaX, dx);

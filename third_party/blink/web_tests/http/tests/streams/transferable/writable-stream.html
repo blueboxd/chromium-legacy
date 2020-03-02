@@ -31,8 +31,8 @@ promise_test(t => {
 test(() => {
   const ws = new WritableStream();
   const writer = ws.getWriter();
-  assert_throws('DataCloneError', () => postMessage(ws, '*', [ws]),
-                'postMessage should throw');
+  assert_throws_dom('DataCloneError', () => postMessage(ws, '*', [ws]),
+                    'postMessage should throw');
 }, 'a locked WritableStream should not be transferable');
 
 promise_test(t => {

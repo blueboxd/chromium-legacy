@@ -1999,9 +1999,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Create the Infobar Container Coordinator.
     self.infobarContainerCoordinator = [[InfobarContainerCoordinator alloc]
         initWithBaseViewController:self
-                      browserState:self.browserState
-                      webStateList:self.browser->GetWebStateList()];
-    self.infobarContainerCoordinator.commandDispatcher = self.dispatcher;
+                           browser:self.browser];
     self.infobarContainerCoordinator.positioner = self;
     self.infobarContainerCoordinator.syncPresenter = self;
     [self.infobarContainerCoordinator start];

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,9 +82,9 @@ class AfterStartupTaskTest : public testing::Test {
  public:
   AfterStartupTaskTest() {
     ui_thread_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+        content::GetUIThreadTaskRunner({}));
     background_sequence_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool())));
+        base::ThreadPool::CreateSequencedTaskRunner({}));
     AfterStartupTaskUtils::UnsafeResetForTesting();
   }
 

@@ -53,7 +53,7 @@ class NET_EXPORT Item {
   enum ItemType {
     kNullType,
     kIntegerType,
-    kFloatType,
+    kDecimalType,
     kStringType,
     kTokenType,
     kByteSequenceType,
@@ -77,7 +77,7 @@ class NET_EXPORT Item {
 
   bool is_null() const { return type_ == kNullType; }
   bool is_integer() const { return type_ == kIntegerType; }
-  bool is_float() const { return type_ == kFloatType; }
+  bool is_decimal() const { return type_ == kDecimalType; }
   bool is_string() const { return type_ == kStringType; }
   bool is_token() const { return type_ == kTokenType; }
   bool is_byte_sequence() const { return type_ == kByteSequenceType; }
@@ -87,9 +87,9 @@ class NET_EXPORT Item {
     DCHECK_EQ(type_, kIntegerType);
     return integer_value_;
   }
-  double GetFloat() const {
-    DCHECK_EQ(type_, kFloatType);
-    return float_value_;
+  double GetDecimal() const {
+    DCHECK_EQ(type_, kDecimalType);
+    return decimal_value_;
   }
   bool GetBoolean() const {
     DCHECK_EQ(type_, kBooleanType);
@@ -110,7 +110,7 @@ class NET_EXPORT Item {
   // values here with a union or std::variant (when available).
   int64_t integer_value_ = 0;
   std::string string_value_;
-  double float_value_;
+  double decimal_value_;
   bool boolean_value_;
 };
 

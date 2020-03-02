@@ -14,10 +14,11 @@ import android.webkit.URLUtil;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -76,9 +77,12 @@ class RevampedContextMenuHeaderCoordinator {
 
             SpannableString spannableUrl =
                     new SpannableString(ChromeContextMenuPopulator.createUrlText(params));
+            ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                    new ChromeAutocompleteSchemeClassifier(Profile.getLastUsedProfile());
             OmniboxUrlEmphasizer.emphasizeUrl(spannableUrl, activity.getResources(),
-                    Profile.getLastUsedProfile(), ConnectionSecurityLevel.NONE, false,
+                    chromeAutocompleteSchemeClassifier, ConnectionSecurityLevel.NONE, false,
                     useDarkColors, false);
+            chromeAutocompleteSchemeClassifier.destroy();
             url = spannableUrl;
         }
         return url;

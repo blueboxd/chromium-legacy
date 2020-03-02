@@ -363,7 +363,7 @@ const base::Feature kContactsPickerSelectAll{"ContactsPickerSelectAll",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentIndexingDownloadHome{
-    "ContentIndexingDownloadHome", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContentIndexingDownloadHome", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentIndexingNTP{"ContentIndexingNTP",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

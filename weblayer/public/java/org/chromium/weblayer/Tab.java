@@ -215,6 +215,32 @@ public class Tab {
         }
     }
 
+    /**
+     * Runs the beforeunload handler for the main frame or any sub frame, if necessary; otherwise,
+     * asynchronously closes the tab.
+     *
+     * If there is a beforeunload handler a dialog is shown to the user which will allow them to
+     * choose whether to proceed with closing the tab. The closure will be notified via {@link
+     * NewTabCallback#onCloseTab}. The tab will not close if the user chooses to cancel the action.
+     * If there is no beforeunload handler, the tab closure will be asynchronous (but immediate) and
+     * will be notified in the same way.
+     *
+     * To close the tab synchronously without running beforeunload, use {@link Browser#destroyTab}.
+     *
+     * @since 82
+     */
+    public void dispatchBeforeUnloadAndClose() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.dispatchBeforeUnloadAndClose();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void setNewTabCallback(@Nullable NewTabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mNewTabCallback = callback;

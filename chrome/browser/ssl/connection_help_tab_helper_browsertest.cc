@@ -21,9 +21,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-class ConnectionHelpTabHelperTestBase : public InProcessBrowserTest {
+class ConnectionHelpTabHelperTest : public InProcessBrowserTest {
  public:
-  ConnectionHelpTabHelperTestBase()
+  ConnectionHelpTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_expired_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
@@ -52,29 +52,7 @@ class ConnectionHelpTabHelperTestBase : public InProcessBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_expired_server_;
-  DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTestBase);
-};
-
-class ConnectionHelpTabHelperTest : public ConnectionHelpTabHelperTestBase {
- public:
-  ConnectionHelpTabHelperTest() {
-    feature_list_.InitAndEnableFeature(features::kBundledConnectionHelpFeature);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class ConnectionHelpTabHelperTestWithFeatureDisabled
-    : public ConnectionHelpTabHelperTestBase {
- public:
-  ConnectionHelpTabHelperTestWithFeatureDisabled() {
-    feature_list_.InitAndDisableFeature(
-        features::kBundledConnectionHelpFeature);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
 };
 
 // Tests that the chrome://connection-help redirect is not triggered (and
@@ -132,27 +110,6 @@ IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTest, InterstitialOnSupportURL) {
   ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
   EXPECT_EQ(base::UTF16ToUTF8(tab_title),
             l10n_util::GetStringUTF8(IDS_CONNECTION_HELP_TITLE));
-
-  histograms.ExpectUniqueSample(
-      kHistogramName,
-      ConnectionHelpTabHelper::LearnMoreClickResult::kFailedWithInterstitial,
-      1);
-}
-
-// Tests that histogram logs correctly when an interstitial is triggered on the
-// support URL if the feature is disabled.
-IN_PROC_BROWSER_TEST_F(ConnectionHelpTabHelperTestWithFeatureDisabled,
-                       InterstitialOnSupportURL) {
-  const char kHistogramName[] = "SSL.CertificateErrorHelpCenterVisited";
-  base::HistogramTester histograms;
-
-  GURL expired_url = https_expired_server()->GetURL("/title2.html");
-  SetHelpCenterUrl(browser(), expired_url);
-  ui_test_utils::NavigateToURL(browser(), expired_url);
-
-  base::string16 tab_title;
-  ui_test_utils::GetCurrentTabTitle(browser(), &tab_title);
-  EXPECT_EQ(base::UTF16ToUTF8(tab_title), "Privacy error");
 
   histograms.ExpectUniqueSample(
       kHistogramName,

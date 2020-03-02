@@ -306,6 +306,12 @@ bool WebContentsAndroid::IsLoadingToDifferentDocument(
   return web_contents_->IsLoadingToDifferentDocument();
 }
 
+void WebContentsAndroid::DispatchBeforeUnload(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              bool auto_cancel) {
+  web_contents_->DispatchBeforeUnload(auto_cancel);
+}
+
 void WebContentsAndroid::Stop(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Stop();
 }

@@ -530,6 +530,14 @@ void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGElement::SvgAttributeChanged(attr_name);
 }
 
+bool SVGSMILElement::IsPresentationAttribute(
+    const QualifiedName& attr_name) const {
+  // Don't map 'fill' to the 'fill' property for animation elements.
+  if (attr_name == svg_names::kFillAttr)
+    return false;
+  return SVGElement::IsPresentationAttribute(attr_name);
+}
+
 void SVGSMILElement::ConnectConditions() {
   if (conditions_connected_)
     DisconnectConditions();

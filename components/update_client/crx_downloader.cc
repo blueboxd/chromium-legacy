@@ -10,8 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #if defined(OS_WIN)
@@ -120,7 +119,7 @@ void CrxDownloader::OnDownloadComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!result.error)
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE, kTaskTraits,
         base::BindOnce(&CrxDownloader::VerifyResponse, base::Unretained(this),
                        is_handled, result, download_metrics));

@@ -13,9 +13,9 @@
 <div id="log"></div>
 <script>
 test(function() {
-   assert_throws('INVALID_STATE_ERR', function() { importLink.import.open(); }, 'document.open()');
-   assert_throws('INVALID_STATE_ERR', function() { importLink.import.write('Hello'); }, 'document.write()');
-   assert_throws('INVALID_STATE_ERR', function() { importLink.import.open(); }, 'document.close()');
+   assert_throws_dom('INVALID_STATE_ERR', function() { importLink.import.open(); }, 'document.open()');
+   assert_throws_dom('INVALID_STATE_ERR', function() { importLink.import.write('Hello'); }, 'document.write()');
+   assert_throws_dom('INVALID_STATE_ERR', function() { importLink.import.open(); }, 'document.close()');
 }, 'Throws an InvalidStateError exception if the Document is an import: From the master document');
 </script>
 </body>

@@ -9,6 +9,7 @@ android_library("weblayer_java_tests") {
   testonly = true
   sources = [
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
+    "src/org/chromium/weblayer/test/CloseTabNewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
     "src/org/chromium/weblayer/test/DownloadCallbackTest.java",
@@ -28,6 +29,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/SmokeTest.java",
     "src/org/chromium/weblayer/test/TabCallbackTest.java",
     "src/org/chromium/weblayer/test/TabListCallbackTest.java",
+    "src/org/chromium/weblayer/test/TabTest.java",
     "src/org/chromium/weblayer/test/TopControlsTest.java",
     "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",

@@ -369,11 +369,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "BundledConnectionHelp",
-    "owners": [ "carlosil" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
     "expiry_milestone": 84
@@ -2559,11 +2554,6 @@
     "name": "mix-browser-type-tabs",
     "owners": [ "joelhockey", "tbuckley" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "mixed-content-setting",
-    "owners": [ "carlosil", "estark" ],
-    "expiry_milestone": 82
   },
   {
     "name": "mobile-identity-consistency",

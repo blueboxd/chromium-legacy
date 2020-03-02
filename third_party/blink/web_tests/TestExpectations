@@ -2400,6 +2400,10 @@ crbug.com/1032016 virtual/threaded/http/tests/devtools/tracing/timeline-js/timel
 crbug.com/1032016 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
 crbug.com/1032016 http/tests/devtools/bindings/livelocation-main-frame-navigated.js [ Pass Failure ]
 
+# Temporarily disabled for
+# https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/208237
+crbug.com/1057042 http/tests/devtools/console/console-pins.js [ Pass Failure ]
+
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
@@ -2950,6 +2954,27 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Fail
 crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/windowclient-navigate.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Timeout ]
@@ -6731,3 +6756,4 @@ crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.ht
 crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtools/oopif/oopif-storage.js [ Pass Timeout ]
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
+crbug.com/1047648 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]

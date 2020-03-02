@@ -84,7 +84,7 @@ class Tokenizer:
     for (token_type, regex) in TOKEN_REGEXEN:
       re_match = regex.match(self.body, pos)
       if re_match:
-        token_content = filter(lambda x: x is not None, re_match.groups())[0]
+        token_content = next(g for g in re_match.groups() if g is not None)
         token = Token(token_type, token_content, re_match.end())
         break
 

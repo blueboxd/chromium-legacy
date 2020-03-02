@@ -159,7 +159,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "services/identity/identity_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -778,10 +777,6 @@ ProfileImpl::~ProfileImpl() {
 
   FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
-  // Must be called before the IdentityManager is destroyed, which will happen
-  // during DependencyManager shutdown below.
-  identity_service_impl_.reset();
-
   // The SimpleDependencyManager should always be passed after the
   // BrowserContextDependencyManager. This is because the KeyedService instances
   // in the BrowserContextDependencyManager's dependency graph can depend on the
@@ -1052,15 +1047,6 @@ bool ProfileImpl::ShouldRestoreOldSessionCookies() {
 
 bool ProfileImpl::ShouldPersistSessionCookies() {
   return true;
-}
-
-identity::mojom::IdentityService* ProfileImpl::GetIdentityService() {
-  if (!identity_service_impl_) {
-    identity_service_impl_ = std::make_unique<identity::IdentityService>(
-        IdentityManagerFactory::GetForProfile(this),
-        remote_identity_service_.BindNewPipeAndPassReceiver());
-  }
-  return remote_identity_service_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {

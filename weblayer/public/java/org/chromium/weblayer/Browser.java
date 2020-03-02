@@ -162,6 +162,9 @@ public class Browser {
      * Disposes a Tab. If {@link tab} is the active Tab, no Tab is made active. After this call
      *  {@link tab} should not be used.
      *
+     * Note this will skip any beforeunload handlers. To run those first, use
+     * {@link Tab#dispatchBeforeUnloadAndClose} instead.
+     *
      * @param tab The Tab to dispose.
      *
      * @throws IllegalStateException is {@link tab} is not in this Browser.

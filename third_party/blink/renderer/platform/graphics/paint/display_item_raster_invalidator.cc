@@ -136,7 +136,8 @@ void DisplayItemRasterInvalidator::AddRasterInvalidation(
   if (r.IsEmpty())
     return;
 
-  invalidator_.AddRasterInvalidation(r, client, reason, old_or_new);
+  invalidator_.AddRasterInvalidation(raster_invalidation_function_, r, client,
+                                     reason, old_or_new);
 }
 
 void DisplayItemRasterInvalidator::GenerateRasterInvalidation(

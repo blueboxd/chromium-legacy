@@ -19,12 +19,12 @@ using ::testing::UnorderedElementsAre;
 class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
                                          public PaintTestConfigurations {
  protected:
-  DisplayItemRasterInvalidatorTest() : invalidator_(base::DoNothing()) {}
+  DisplayItemRasterInvalidatorTest() = default;
 
   Vector<RasterInvalidationInfo> GenerateRasterInvalidations() {
     GetPaintController().CommitNewDisplayItems();
     invalidator_.Generate(
-        GetPaintController().GetPaintArtifactShared(),
+        base::DoNothing(), GetPaintController().GetPaintArtifactShared(),
         // The layer rect is big enough not to clip display item raster
         // invalidation rects.
         IntRect(0, 0, 20000, 20000), PropertyTreeState::Root());

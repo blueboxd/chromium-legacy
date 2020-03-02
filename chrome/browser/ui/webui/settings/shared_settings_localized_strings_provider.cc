@@ -230,12 +230,12 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
         kSyncSetupFriendlySettingsStrings[] = {
             {"personalizeGoogleServicesTitle",
              IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
-            {"sWAAOn", IDS_SETTINGS_SWAA_ON},
-            {"sWAAOff", IDS_SETTINGS_SWAA_OFF},
-            {"sWAAOnHint", IDS_SETTINGS_SWAA_ON_HINT},
+            {"SwaaOn", IDS_SETTINGS_SWAA_ON},
+            {"SwaaOff", IDS_SETTINGS_SWAA_OFF},
+            {"SwaaOnHint", IDS_SETTINGS_SWAA_ON_HINT},
             {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
             {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
-            {"sWAAOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
+            {"SwaaOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
         };
     AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
   } else {

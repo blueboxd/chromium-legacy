@@ -68,6 +68,10 @@ class CONTENT_EXPORT WebContentsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
 
+  void DispatchBeforeUnload(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            bool auto_cancel);
+
   void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Cut(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Copy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

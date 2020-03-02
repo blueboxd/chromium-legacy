@@ -22,7 +22,7 @@ promise_test(async () => {
 }, 'Can implement a Mojo service and intercept it from a worker');
 
 test(t => {
-  assert_throws('NotSupportedError', () => {
+  assert_throws_dom('NotSupportedError', () => {
     new MojoInterfaceInterceptor(
         content.mojom.MojoWebTestHelper.name, 'process');
   });

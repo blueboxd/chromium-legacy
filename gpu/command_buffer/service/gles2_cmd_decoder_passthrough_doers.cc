@@ -4691,6 +4691,11 @@ error::Error GLES2DecoderPassthroughImpl::DoDescheduleUntilFinishedCHROMIUM() {
 error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(
     GLsizei count,
     const volatile GLenum* bufs) {
+  if (!feature_info_->feature_flags().ext_draw_buffers &&
+      !feature_info_->gl_version_info().is_es3) {
+    return error::kUnknownCommand;
+  }
+
   // Validate that count is non-negative before allocating a vector
   if (count < 0) {
     InsertError(GL_INVALID_VALUE, "count cannot be negative.");

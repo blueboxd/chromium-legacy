@@ -278,6 +278,12 @@ class CORE_EXPORT V8DOMConfiguration final {
       const ConstantCallbackConfiguration*,
       size_t constant_count);
 
+  static void InstallConstants(v8::Isolate* isolate,
+                               v8::Local<v8::Function> interface_object,
+                               v8::Local<v8::Object> prototype_object,
+                               const ConstantConfiguration* constants,
+                               size_t constant_count);
+
   static void InstallConstantWithGetter(
       v8::Isolate*,
       v8::Local<v8::FunctionTemplate> interface_template,

@@ -68,8 +68,8 @@ LanguageSwitching.init = function() {
     });
   }
   setAvailableVoices();
-  if (speechSynthesis) {
-    speechSynthesis.addEventListener(
+  if (window.speechSynthesis) {
+    window.speechSynthesis.addEventListener(
         'voiceschanged', setAvailableVoices, /* useCapture */ false);
   }
 };

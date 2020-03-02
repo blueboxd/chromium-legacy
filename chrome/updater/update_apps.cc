@@ -9,22 +9,16 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "chrome/updater/configurator.h"
-#include "chrome/updater/update_service_in_process.h"
+#include "chrome/updater/update_service.h"
 
 namespace updater {
 
 int UpdateApps() {
-  // TODO(crbug.com/1048653): Try to connect to an existing OOP service. For
-  // now, run an in-process service.
-
   base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop runloop;
-  auto service = std::make_unique<UpdateServiceInProcess>(
-      base::MakeRefCounted<Configurator>());
+  std::unique_ptr<UpdateService> service = CreateUpdateService();
   service->UpdateAll(base::BindOnce(
       [](base::OnceClosure quit, update_client::Error error) {
         VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);

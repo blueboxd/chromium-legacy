@@ -23,13 +23,13 @@ async_test(t => {
           r.abort();
           r.onend = () => t.done();
         } else {
-          assert_throws('InvalidStateError', () => r.start());
+          assert_throws_dom('InvalidStateError', () => r.start());
         }
       }
     }
   }
   r.start();
-  assert_throws('InvalidStateError', () => r.start());
+  assert_throws_dom('InvalidStateError', () => r.start());
 }, "Double start");
 
 </script>

@@ -855,13 +855,6 @@ void CrxInstaller::CompleteInstall() {
     return;
   }
 
-  // See how long extension install paths are.  This is important on
-  // windows, because file operations may fail if the path to a file
-  // exceeds a small constant.  See crbug.com/69693 .
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-    "Extensions.CrxInstallDirPathLength",
-        install_directory_.value().length(), 1, 500, 100);
-
   ExtensionAssetsManager* assets_manager =
       ExtensionAssetsManager::GetInstance();
   assets_manager->InstallExtension(

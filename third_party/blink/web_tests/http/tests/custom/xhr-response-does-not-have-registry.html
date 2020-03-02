@@ -9,7 +9,7 @@ var t = async_test('an XHR response document must not have a registry');
 var req = new XMLHttpRequest();
 req.onreadystatechange = t.step_func(function() {
   if (req.readyState == 4 && req.status == 200) {
-    assert_throws(
+    assert_throws_dom(
         'NOT_SUPPORTED_ERR',
         function () { req.response.registerElement('x-a'); });
     t.done();

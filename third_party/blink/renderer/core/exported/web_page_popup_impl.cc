@@ -394,7 +394,7 @@ void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
 
-void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
+void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
   if (!page_)
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so

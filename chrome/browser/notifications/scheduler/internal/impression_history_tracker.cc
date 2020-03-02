@@ -75,7 +75,7 @@ void ImpressionHistoryTrackerImpl::AddImpression(
   impression.impression_mapping = impression_mapping;
   impression.custom_data = custom_data;
   it->second->impressions.emplace_back(std::move(impression));
-
+  it->second->last_shown_ts = clock_->Now();
   impression_map_.emplace(guid, &it->second->impressions.back());
   SetNeedsUpdate(type, true /*needs_update*/);
   MaybeUpdateDb(type);
@@ -116,7 +116,9 @@ void ImpressionHistoryTrackerImpl::GetImpressionDetail(
   int num_notification_shown_today =
       notifications::NotificationsShownToday(state);
   ImpressionDetail detail(state->current_max_daily_show,
-                          num_notification_shown_today);
+                          num_notification_shown_today,
+                          state->negative_events_count,
+                          state->last_negative_event_ts, state->last_shown_ts);
   std::move(callback).Run(std::move(detail));
 }
 
@@ -375,6 +377,7 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
   SetNeedsUpdate(client_state->type, true);
   impression->integrated = true;
 
+  auto now = clock_->Now();
   auto custom_throttle_config =
       delegate_->GetThrottleConfig(client_state->type);
 
@@ -383,9 +386,11 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
                                   : config_.suppression_duration;
   // Suppress the notification, the user will not see this type of notification
   // for a while.
-  SuppressionInfo supression_info(clock_->Now(), suppression_duration);
+  SuppressionInfo supression_info(now, suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
+  client_state->last_negative_event_ts = now;
+  client_state->negative_events_count++;
   stats::LogImpressionEvent(stats::ImpressionEvent::kNewSuppression);
 }
 

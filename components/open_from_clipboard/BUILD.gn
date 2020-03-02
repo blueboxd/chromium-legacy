@@ -2,12 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 static_library("open_from_clipboard") {
   sources = [
     "clipboard_recent_content.cc",
     "clipboard_recent_content.h",
-    "clipboard_recent_content_ios.h",
-    "clipboard_recent_content_ios.mm",
   ]
 
   deps = [
@@ -26,6 +30,12 @@ static_library("open_from_clipboard") {
       "clipboard_recent_content_generic.h",
     ]
     deps += [ "//ui/base/clipboard" ]
+  } else {
+    sources += [
+      "clipboard_recent_content_ios.h",
+      "clipboard_recent_content_ios.mm",
+    ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 }
 
@@ -40,16 +50,16 @@ source_set("feature_flags") {
 # Helper classes used by "open_from_clipboard" target. These classes must have
 # no dependencies on "//base:i18n".
 source_set("open_from_clipboard_impl") {
-  sources = [
-    "clipboard_recent_content_impl_ios.h",
-    "clipboard_recent_content_impl_ios.mm",
-  ]
+  sources = []
   deps = [ "//base" ]
   assert_no_deps = [ "//base:i18n" ]
   if (is_ios) {
+    sources += [
+      "clipboard_recent_content_impl_ios.h",
+      "clipboard_recent_content_impl_ios.mm",
+    ]
     configs += [ "//build/config/compiler:enable_arc" ]
-
-    libs = [ "MobileCoreServices.framework" ]
+    frameworks = [ "MobileCoreServices.framework" ]
   }
 }
 
@@ -70,7 +80,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "clipboard_recent_content_ios_unittest.mm" ]
+  sources = []
 
   deps = [
     ":open_from_clipboard",
@@ -84,5 +94,8 @@ source_set("unit_tests") {
   if (!is_ios) {
     sources += [ "clipboard_recent_content_generic_unittest.cc" ]
     deps += [ "//ui/base/clipboard:clipboard_test_support" ]
+  } else {
+    sources += [ "clipboard_recent_content_ios_unittest.mm" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 }

@@ -4,7 +4,7 @@
 <script>
 test(function() {
     var doc = document.implementation.createDocument(null, 'test', null);
-    assert_throws(
+    assert_throws_dom(
         'NotSupportedError',
         function() { doc.registerElement('x-element'); },
         'Registering valid custom element in a document ' +
@@ -19,7 +19,7 @@ async_test(function(t) {
             var doc = request.response;
             assert_true(doc instanceof HTMLDocument,
                 'XMLHttpRequest\'s asynchronous response should be HTML document');
-            assert_throws(
+            assert_throws_dom(
                 'NotSupportedError',
                 function() { doc.registerElement('x-element'); },
                 'Registering valid custom element in ' +

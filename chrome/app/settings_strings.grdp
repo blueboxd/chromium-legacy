@@ -388,6 +388,9 @@
   <message name="IDS_SETTINGS_PASSWORDS_WEBSITE" desc="Label for the website a password is for when editing a password.">
     Website
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_ANDROID_APP" desc="Label for the app a password is for when displaying a credential and the real app display name could not be obtained.">
+      App (<ph name="ANDROID_PACKAGE_NAME">$1<ex>com.netflix.mediaclient</ex></ph>)
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_USERNAME" desc="Label for the saved username when editing a password.">
     Username
   </message>

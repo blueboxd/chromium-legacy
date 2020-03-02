@@ -29,6 +29,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   virtual bool IsDocumentTimeline() const { return false; }
   virtual bool IsScrollTimeline() const { return false; }
   virtual bool IsActive() const = 0;
+  virtual String phase() const = 0;
   // Returns the initial start time for animations that are linked to this
   // timeline. This method gets invoked when initializing the start time of an
   // animation on this timeline for the first time. It exists because the

@@ -54,7 +54,7 @@
 // Methods below are exposed for testing purposes.
 
 // Estimation of the date when the pasteboard changed.
-@property(nonatomic, strong) NSDate* lastPasteboardChangeDate;
+@property(nonatomic, copy) NSDate* lastPasteboardChangeDate;
 
 // Saves information to the user defaults about the latest pasteboard entry.
 - (void)saveToUserDefaults;

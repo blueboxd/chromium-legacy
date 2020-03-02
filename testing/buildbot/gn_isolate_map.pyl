@@ -527,11 +527,6 @@
     "label": "//:wpt_tests_isolate",
     "type": "script",
     "script": "//testing/scripts/run_wpt_tests.py",
-    "args": [
-      "--old-json-output-file-path=${ISOLATED_OUTDIR}/output.json",
-      "--new-json-output-dir=${ISOLATED_OUTDIR}",
-      "--new-json-output-filename=output.json",
-    ],
   },
   "chrome/installer/linux": {
     "label": "//chrome/installer/linux:linux",

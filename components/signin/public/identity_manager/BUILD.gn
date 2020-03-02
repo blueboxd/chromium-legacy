@@ -47,7 +47,6 @@ source_set("identity_manager") {
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",
     "//google_apis",
-    "//services/identity/public/cpp:cpp_types",
     "//ui/gfx",
   ]
 

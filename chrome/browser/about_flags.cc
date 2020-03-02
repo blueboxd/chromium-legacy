@@ -3348,10 +3348,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUsePreferredIntervalForVideoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kUsePreferredIntervalForVideo)},
 
-    {"BundledConnectionHelp", flag_descriptions::kBundledConnectionHelpName,
-     flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
-
     {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
@@ -4745,10 +4741,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"mix-browser-type-tabs", flag_descriptions::kMixBrowserTypeTabsName,
      flag_descriptions::kMixBrowserTypeTabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMixBrowserTypeTabs)},
-
-    {"mixed-content-setting", flag_descriptions::kMixedContentSiteSettingName,
-     flag_descriptions::kMixedContentSiteSettingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMixedContentSiteSetting)},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,

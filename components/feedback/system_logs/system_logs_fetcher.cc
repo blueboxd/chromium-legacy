@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -54,10 +54,10 @@ SystemLogsFetcher::SystemLogsFetcher(
       num_pending_requests_(0),
       task_runner_for_anonymizer_(
           scrub_data
-              ? base::CreateSequencedTaskRunner(
+              ? base::ThreadPool::CreateSequencedTaskRunner(
                     // User visible because this is called when the user is
                     // looking at the send feedback dialog, watching a spinner.
-                    {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+                    {base::TaskPriority::USER_VISIBLE,
                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
               : nullptr),
       anonymizer_(scrub_data ? std::make_unique<feedback::AnonymizerTool>(
@@ -142,7 +142,7 @@ void SystemLogsFetcher::RunCallbackAndDeleteSoon() {
   DCHECK(!callback_.is_null());
   std::move(callback_).Run(std::move(response_));
 
-  base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace system_logs

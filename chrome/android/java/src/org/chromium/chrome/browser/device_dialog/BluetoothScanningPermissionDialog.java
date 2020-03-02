@@ -29,8 +29,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.content_public.browser.bluetooth_scanning.Event;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -103,10 +104,14 @@ public class BluetoothScanningPermissionDialog {
         final boolean useDarkColors = !((ChromeBaseAppCompatActivity) mActivity)
                                                .getNightModeStateProvider()
                                                .isInNightMode();
-
-        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, mActivity.getResources(), profile,
-                securityLevel, /*isInternalPage=*/false, useDarkColors,
+        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                new ChromeAutocompleteSchemeClassifier(profile);
+        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, mActivity.getResources(),
+                chromeAutocompleteSchemeClassifier, securityLevel,
+                /*isInternalPage=*/false, useDarkColors,
                 /*emphasizeScheme=*/true);
+        chromeAutocompleteSchemeClassifier.destroy();
+
         // Construct a full string and replace the |originSpannableString| text with emphasized
         // version.
         SpannableString title = new SpannableString(

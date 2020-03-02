@@ -44,7 +44,7 @@ void ProducerClient::Connect(
     base::AutoLock lock(shared_memory_lock_);
     shm = shared_memory_->Clone();
   }
-  DCHECK(shm.is_valid());
+  CHECK(shm.is_valid());
 
   mojo::PendingRemote<mojom::ProducerClient> client;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
@@ -357,6 +357,7 @@ void ProducerClient::EnsureSharedMemoryBufferInitialized() {
   // The shared memory buffer is always provided by the ProducerClient, but only
   // created upon the first tracing request.
   shared_memory_ = std::make_unique<MojoSharedMemory>(kSMBSizeBytes);
+  CHECK(shared_memory_->shared_buffer().is_valid());
   shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateUnboundInstance(
       shared_memory_.get(), kSMBPageSizeBytes);
 }

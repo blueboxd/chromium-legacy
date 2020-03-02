@@ -25,7 +25,7 @@ test(function () {
 
     for (var i = 0; i < invalidNames.length; i++) {
         var invalidName = invalidNames[i];
-        assert_throws('SYNTAX_ERR', function (){
+        assert_throws_dom('SYNTAX_ERR', function (){
             document.registerElement(invalidName, createRegisterParameters());
         }, 'register invalid custom element name: ' + invalidName);
     }
@@ -34,10 +34,10 @@ test(function () {
 
 test(function (){
     document.registerElement('x-foo', createRegisterParameters());
-    assert_throws('NOT_SUPPORTED_ERR', function (){
+    assert_throws_dom('NOT_SUPPORTED_ERR', function (){
         document.registerElement('x-foo', createRegisterParameters());
     }, 'register already registered "x-foo"');
-    assert_throws('NOT_SUPPORTED_ERR', function (){
+    assert_throws_dom('NOT_SUPPORTED_ERR', function (){
         document.registerElement('X-FOO', createRegisterParameters());
     }, 'register "X-FOO", same as already registered "x-foo"');
 }, 'name conflicts');

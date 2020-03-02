@@ -451,8 +451,9 @@ public class WebLayerShellActivity extends FragmentActivity {
             if (controller.canGoBack()) {
                 controller.goBack();
                 return;
-            } else if (!mPreviousTabList.isEmpty()) {
-                closeTab(mBrowser.getActiveTab());
+            }
+            if (!mPreviousTabList.isEmpty()) {
+                mBrowser.getActiveTab().dispatchBeforeUnloadAndClose();
                 return;
             }
         }

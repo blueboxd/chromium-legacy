@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -50,7 +49,7 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
 
  private:
   // The implementation instance.
-  base::scoped_nsobject<ClipboardRecentContentImplIOS> implementation_;
+  __strong ClipboardRecentContentImplIOS* implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContentIOS);
 };

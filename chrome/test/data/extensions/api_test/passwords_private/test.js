@@ -206,6 +206,30 @@ var availableTests = [
 
     chrome.passwordsPrivate.isOptedInForAccountStorage(callback);
   },
+
+  function getCompromisedCredentialsInfo() {
+    var callback = function(compromisedCredentialsInfo) {
+      chrome.test.assertEq(
+          '5 mins ago', compromisedCredentialsInfo.elapsedTimeSinceLastCheck);
+      chrome.test.assertEq(
+          1, compromisedCredentialsInfo.compromisedCredentials.length);
+
+      var compromisedCredential =
+          compromisedCredentialsInfo.compromisedCredentials[0];
+      chrome.test.assertEq(
+          'example.com', compromisedCredential.formattedOrigin);
+      chrome.test.assertEq(
+          'https://example.com/change-password',
+          compromisedCredential.changePasswordUrl);
+      chrome.test.assertEq('alice', compromisedCredential.username);
+      chrome.test.assertEq(
+          '3 days ago', compromisedCredential.elapsedTimeSinceCompromise);
+      chrome.test.assertEq('LEAKED', compromisedCredential.compromiseType);
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.getCompromisedCredentialsInfo(callback);
+  }
 ];
 
 var testToRun = window.location.search.substring(1);

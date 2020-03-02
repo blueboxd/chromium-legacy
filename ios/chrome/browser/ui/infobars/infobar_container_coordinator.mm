@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -29,8 +30,6 @@
 @interface InfobarContainerCoordinator () <InfobarContainer,
                                            InfobarContainerConsumer>
 
-@property(nonatomic, assign) WebStateList* webStateList;
-
 // ViewController of the Infobar currently being presented, can be nil.
 @property(nonatomic, weak) UIViewController* infobarViewController;
 // UIViewController that contains legacy Infobars.
@@ -38,8 +37,6 @@
     LegacyInfobarContainerViewController* legacyContainerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 // If YES the legacyContainer Fullscreen support will be disabled.
 // TODO(crbug.com/927064): Remove this once the legacy container is no longer
 // needed.
@@ -61,12 +58,9 @@
 @implementation InfobarContainerCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:(ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
-    _webStateList = webStateList;
     _infobarCoordinators = [NSMutableArray array];
     _infobarCoordinatorsToPresent = [NSMutableArray array];
   }
@@ -75,13 +69,12 @@
 
 - (void)start {
   DCHECK(self.positioner);
-  DCHECK(self.dispatcher);
 
   // Creates the LegacyInfobarContainerVC.
   LegacyInfobarContainerViewController* legacyContainer =
       [[LegacyInfobarContainerViewController alloc]
           initWithFullscreenController:FullscreenController::FromBrowserState(
-                                           self.browserState)];
+                                           self.browser->GetBrowserState())];
   [self.baseViewController addChildViewController:legacyContainer];
   // TODO(crbug.com/892376): Shouldn't modify the BaseVC hierarchy, BVC
   // needs to handle this.
@@ -97,12 +90,20 @@
   self.mediator = [[InfobarContainerMediator alloc]
       initWithConsumer:self
         legacyConsumer:self.legacyContainerViewController
-          webStateList:self.webStateList];
+          webStateList:self.browser->GetWebStateList()];
 
   self.mediator.syncPresenter = self.syncPresenter;
 
-  [[UpgradeCenter sharedInstance] registerClient:self.mediator
-                                  withDispatcher:self.dispatcher];
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(displayModalInfobar:)];
+
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  [[UpgradeCenter sharedInstance]
+      registerClient:self.mediator
+      withDispatcher:static_cast<id<ApplicationCommands>>(
+                         self.browser->GetCommandDispatcher())];
 }
 
 - (void)stop {
@@ -115,6 +116,8 @@
   [self.legacyContainerViewController.view removeFromSuperview];
   [self.legacyContainerViewController removeFromParentViewController];
   self.legacyContainerViewController = nil;
+
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
 }
 
 #pragma mark - Public Interface
@@ -176,21 +179,6 @@
 
 #pragma mark - Accessors
 
-- (void)setCommandDispatcher:(CommandDispatcher*)commandDispatcher {
-  if (commandDispatcher == self.commandDispatcher) {
-    return;
-  }
-
-  if (self.commandDispatcher) {
-    [self.commandDispatcher stopDispatchingToTarget:self];
-  }
-
-  [commandDispatcher startDispatchingToTarget:self
-                                  forSelector:@selector(displayModalInfobar:)];
-  _commandDispatcher = commandDispatcher;
-  self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
-}
-
 - (InfobarBannerPresentationState)infobarBannerState {
   DCHECK(IsInfobarUIRebootEnabled());
   for (InfobarCoordinator* infobarCoordinator in self.infobarCoordinators) {
@@ -223,10 +211,14 @@
   // doing so might cause undefined behavior since no badge was added.
   if (infobarCoordinator.hasBadge)
     infobarCoordinator.badgeDelegate = self.mediator;
-  infobarCoordinator.browserState = self.browserState;
-  infobarCoordinator.webState = self.webStateList->GetActiveWebState();
+  infobarCoordinator.browserState = self.browser->GetBrowserState();
+  infobarCoordinator.webState =
+      self.browser->GetWebStateList()->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;
-  infobarCoordinator.dispatcher = self.dispatcher;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  infobarCoordinator.dispatcher = static_cast<id<ApplicationCommands>>(
+      self.browser->GetCommandDispatcher());
   infobarCoordinator.infobarContainer = self;
   [self presentBannerForInfobarCoordinator:infobarCoordinator];
 }

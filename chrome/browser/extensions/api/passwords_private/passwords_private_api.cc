@@ -220,4 +220,14 @@ ResponseAction PasswordsPrivateIsOptedInForAccountStorageFunction::Run() {
       GetDelegate(browser_context())->IsOptedInForAccountStorage())));
 }
 
+// PasswordsPrivateGetCompromisedCredentialsInfoFunction:
+PasswordsPrivateGetCompromisedCredentialsInfoFunction::
+    ~PasswordsPrivateGetCompromisedCredentialsInfoFunction() = default;
+
+ResponseAction PasswordsPrivateGetCompromisedCredentialsInfoFunction::Run() {
+  return RespondNow(ArgumentList(
+      api::passwords_private::GetCompromisedCredentialsInfo::Results::Create(
+          GetDelegate(browser_context())->GetCompromisedCredentialsInfo())));
+}
+
 }  // namespace extensions

@@ -34,7 +34,8 @@ public class WebappDeferredStartupWithStorageHandler {
     }
 
     private final ChromeActivity<?> mActivity;
-    private final @Nullable String mWebApkId;
+    private final @Nullable String mWebappId;
+    private final boolean mIsWebApk;
     private final List<Task> mDeferredWithStorageTasks = new ArrayList<>();
 
     @Inject
@@ -43,9 +44,8 @@ public class WebappDeferredStartupWithStorageHandler {
         mActivity = activity;
 
         WebappExtras webappExtras = intentDataProvider.getWebappExtras();
-        mWebApkId = (webappExtras != null && intentDataProvider.isWebApkActivity())
-                ? webappExtras.id
-                : null;
+        mWebappId = (webappExtras != null) ? webappExtras.id : null;
+        mIsWebApk = intentDataProvider.isWebApkActivity();
     }
 
     /**
@@ -66,13 +66,14 @@ public class WebappDeferredStartupWithStorageHandler {
     private void runDeferredTask() {
         if (mActivity.isActivityFinishingOrDestroyed()) return;
 
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mWebApkId);
-        if (storage != null || mWebApkId == null) {
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mWebappId);
+        if (storage != null || !mIsWebApk) {
             runTasks(storage, false /* didCreateStorage */);
+            return;
         }
 
         WebappRegistry.getInstance().register(
-                mWebApkId, new WebappRegistry.FetchWebappDataStorageCallback() {
+                mWebappId, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         runTasks(storage, true /* didCreateStorage */);

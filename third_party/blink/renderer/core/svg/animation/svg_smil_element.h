@@ -135,6 +135,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   const ProgressState& GetProgressState() const { return last_progress_; }
 
  private:
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+
   void BuildPendingResource() override;
   void ClearResourceAndEventBaseReferences();
   void ClearConditions();

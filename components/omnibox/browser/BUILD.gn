@@ -260,6 +260,11 @@ jumbo_static_library("browser") {
   }
 
   if (is_android) {
+    sources += [
+      "autocomplete_scheme_classifier_android.cc",
+      "autocomplete_scheme_classifier_android.h",
+      "omnibox_url_emphasizer.cc",
+    ]
     deps += [ ":jni_headers" ]
   }
 
@@ -270,13 +275,35 @@ jumbo_static_library("browser") {
 
 if (is_android) {
   android_resources("java_resources") {
-    resource_dirs = [ "android/java/res" ]
-    deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+    sources = [
+      "android/java/res/drawable-hdpi/omnibox_https_valid.png",
+      "android/java/res/drawable-hdpi/omnibox_info.png",
+      "android/java/res/drawable-hdpi/omnibox_not_secure_warning.png",
+      "android/java/res/drawable-mdpi/omnibox_https_valid.png",
+      "android/java/res/drawable-mdpi/omnibox_info.png",
+      "android/java/res/drawable-mdpi/omnibox_not_secure_warning.png",
+      "android/java/res/drawable-xhdpi/omnibox_https_valid.png",
+      "android/java/res/drawable-xhdpi/omnibox_info.png",
+      "android/java/res/drawable-xhdpi/omnibox_not_secure_warning.png",
+      "android/java/res/drawable-xxhdpi/omnibox_https_valid.png",
+      "android/java/res/drawable-xxhdpi/omnibox_info.png",
+      "android/java/res/drawable-xxhdpi/omnibox_not_secure_warning.png",
+      "android/java/res/drawable-xxxhdpi/omnibox_https_valid.png",
+      "android/java/res/drawable-xxxhdpi/omnibox_info.png",
+      "android/java/res/drawable-xxxhdpi/omnibox_not_secure_warning.png",
+      "android/java/res/values/colors.xml",
+    ]
+    deps = [
+      "//components/browser_ui/strings/android:browser_ui_strings_grd",
+      "//ui/android:ui_java_resources",
+    ]
     custom_package = "org.chromium.components.omnibox"
   }
 
   android_library("browser_java") {
     sources = [
+      "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
+      "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
@@ -284,6 +311,9 @@ if (is_android) {
     deps = [
       ":java_resources",
       "//base:base_java",
+      "//base:jni_java",
+      "//components/embedder_support/android:util_java",
+      "//content/public/android:content_java",
       "//third_party/android_deps:com_android_support_support_compat_java",
     ]
 
@@ -291,6 +321,7 @@ if (is_android) {
       ":browser_java_enums_srcjar",
       "//components/security_state/core:security_state_enums_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 
   java_cpp_enum("browser_java_enums_srcjar") {
@@ -303,6 +334,8 @@ if (is_android) {
 
   generate_jni("jni_headers") {
     sources = [
+      "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
+      "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
   }

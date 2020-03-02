@@ -15,6 +15,13 @@ import java.util.Map;
 
 /**
  * Java accessor for base/feature_list.h state.
+ *
+ * This class provides methods to access values of feature flags registered in
+ * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc and as a constant
+ * in this class.
+ *
+ * This class also provides methods to access values of field trial parameters associated to those
+ * flags.
  */
 @JNINamespace("chrome::android")
 @MainDex
@@ -26,15 +33,12 @@ public abstract class ChromeFeatureList {
     private ChromeFeatureList() {}
 
     /** Access to default values of the native chrome feature flag. */
-    @VisibleForTesting
     private static boolean sTestCanUseDefaults;
 
     /**
-     * This is called explicitly for instrumentation tests
-     * via Features#applyForInstrumentation method. Unit tests and
-     * RoboElectric tests must not invoke this and
-     * should rely on the {@link Features} annotations to enable
-     * or disable any feature flags.
+     * This is called explicitly for instrumentation tests via Features#applyForInstrumentation().
+     * Unit tests and Robolectric tests must not invoke this and should rely on the {@link Features}
+     * annotations to enable or disable any feature flags.
      */
     @VisibleForTesting
     public static void setTestCanUseDefaultsForTesting() {
@@ -42,8 +46,8 @@ public abstract class ChromeFeatureList {
     }
 
     /**
-     *  We reset the value to false after the instrumentation test to avoid any unwanted
-     *  persistence of the state. This is invoked by Features#reset method.
+     * We reset the value to false after the instrumentation test to avoid any unwanted
+     * persistence of the state. This is invoked by Features#reset().
      */
     @VisibleForTesting
     public static void resetTestCanUseDefaultsForTesting() {
@@ -104,6 +108,13 @@ public abstract class ChromeFeatureList {
      *
      * Note: Features queried through this API must be added to the array
      * |kFeaturesExposedToJava| in chrome/browser/android/chrome_feature_list.cc
+     *
+     * Calling this has the side effect of bucketing this client, which may cause an experiment to
+     * be marked as active.
+     *
+     * Should be called only after native is loaded. If {@link #isInitialized()} return true, this
+     * method is safe to call.  In tests, this will return any values set through
+     * {@link #setTestFeatures(Map)}, even before native is loaded.
      *
      * @param featureName The name of the feature to query.
      * @return Whether the feature is enabled or not.

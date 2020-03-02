@@ -11,14 +11,14 @@ var embedderName = 'embeddercustomelement';
 window.internals.addEmbedderCustomElementName(embedderName);
 
 test(() => {
-  assert_throws('SyntaxError', () => {
+  assert_throws_dom('SyntaxError', () => {
     window.customElements.define(
         embedderName, class extends HTMLElement {});
   });
 }, 'customElements.define embedder element name');
 
 test(() => {
-  assert_throws('NotSupportedError', () => {
+  assert_throws_dom('NotSupportedError', () => {
     window.customElements.define(
         'valid-name', class extends HTMLElement {}, {extends: embedderName});
   });

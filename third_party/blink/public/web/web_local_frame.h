@@ -113,13 +113,18 @@ class WebLocalFrame : public WebFrame {
   // attached to the frame tree by calling Swap(). It swaps with the
   // |previous_web_frame|.
   //
+  // |name| should either match the name of the frame that might be replaced, or
+  // be an empty string (e.g. if the browsing context name needs to be cleared
+  // due to Cross-Origin Opener Policy).
+  //
   // Otherwise, if the load should not commit, call Detach() to discard the
   // frame.
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       WebFrame* previous_web_frame,
-      const FramePolicy&);
+      const FramePolicy&,
+      const WebString& name);
 
   // Creates a new local child of this frame. Similar to the other methods that
   // create frames, the returned frame should be freed by calling Close() when

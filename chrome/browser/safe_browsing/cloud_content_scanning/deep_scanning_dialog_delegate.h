@@ -119,6 +119,22 @@ class DeepScanningDialogDelegate {
     uint64_t size = 0;
   };
 
+  // File contents used as input for |file_info_| and the BinaryUploadService.
+  struct FileContents {
+    FileContents();
+    explicit FileContents(BinaryUploadService::Result result);
+    FileContents(FileContents&&);
+    FileContents& operator=(FileContents&&);
+
+    BinaryUploadService::Result result = BinaryUploadService::Result::UNKNOWN;
+    BinaryUploadService::Request::Data data;
+
+    // Store the file size separately instead of using data.contents.size() to
+    // keep track of size for large files.
+    int64_t size = 0;
+    std::string sha256;
+  };
+
   // Enum to identify special cases when deep scanning doesn't happen either
   // because the file is too large or encrypted. This is used to show
   // appropriate messages in the upload UI dialog to inform the user of why
@@ -189,6 +205,9 @@ class DeepScanningDialogDelegate {
   // Determines if a request result should be used to allow a data use or to
   // block it.
   static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);
+
+  // Callback used by FileSourceRequest to read file data on a blocking thread.
+  static FileContents GetFileContentsSHA256Blocking(const base::FilePath& path);
 
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,

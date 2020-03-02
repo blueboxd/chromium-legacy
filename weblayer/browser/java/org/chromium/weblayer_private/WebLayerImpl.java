@@ -12,6 +12,7 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.SparseArray;
 import android.webkit.ValueCallback;
@@ -52,6 +53,8 @@ import org.chromium.weblayer_private.metrics.UmaUtils;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Root implementation class for WebLayer.
@@ -179,7 +182,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BuildInfo.setBrowserPackageInfo(packageInfo);
         int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
         if (resourcesPackageId < 0x7f && resourcesPackageId != 2) {
-            throw new AndroidRuntimeException("WebLayer can't be used with another shared library");
+            throw new AndroidRuntimeException(
+                    "WebLayer can't be used with another shared library. Loaded packages: "
+                    + getLoadedPackageNames(appContext));
         }
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
@@ -345,6 +350,29 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /** Gets a string with all the loaded package names in this context. */
+    private static String getLoadedPackageNames(Context appContext) {
+        try {
+            Method getAssignedPackageIdentifiers =
+                    AssetManager.class.getMethod("getAssignedPackageIdentifiers");
+            SparseArray packageIdentifiers = (SparseArray) getAssignedPackageIdentifiers.invoke(
+                    appContext.getResources().getAssets());
+            List<String> packageNames = new ArrayList<>();
+            for (int i = 0; i < packageIdentifiers.size(); i++) {
+                String name = (String) packageIdentifiers.valueAt(i);
+                int key = packageIdentifiers.keyAt(i);
+                // This is the android package.
+                if (key == 1) {
+                    continue;
+                }
+                packageNames.add(name + ":" + key);
+            }
+            return TextUtils.join(",", packageNames);
+        } catch (ReflectiveOperationException e) {
+            return "unknown";
         }
     }
 

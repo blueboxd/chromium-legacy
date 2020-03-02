@@ -145,6 +145,11 @@ bool ScrollTimeline::IsActive() const {
   return layout_box && layout_box->HasOverflowClip();
 }
 
+String ScrollTimeline::phase() const {
+  // TODO(crbug.com/1046833) - Not yet Implemented
+  return "inactive";
+}
+
 // Scroll-linked animations are initialized with the start time of zero.
 base::Optional<base::TimeDelta>
 ScrollTimeline::InitialStartTimeForAnimations() {

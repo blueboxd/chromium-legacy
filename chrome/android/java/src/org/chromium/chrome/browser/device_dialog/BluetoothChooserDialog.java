@@ -29,9 +29,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.location.LocationUtils;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -194,9 +195,12 @@ public class BluetoothChooserDialog
         final boolean useDarkColors = !((ChromeBaseAppCompatActivity) mActivity)
                                                .getNightModeStateProvider()
                                                .isInNightMode();
+        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                new ChromeAutocompleteSchemeClassifier(profile);
 
-        OmniboxUrlEmphasizer.emphasizeUrl(origin, mActivity.getResources(), profile, mSecurityLevel,
-                false, useDarkColors, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(origin, mActivity.getResources(),
+                chromeAutocompleteSchemeClassifier, mSecurityLevel, false, useDarkColors, true);
+        chromeAutocompleteSchemeClassifier.destroy();
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =
                 new SpannableString(mActivity.getString(R.string.bluetooth_dialog_title, mOrigin));

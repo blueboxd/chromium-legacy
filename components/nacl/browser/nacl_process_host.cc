@@ -808,12 +808,11 @@ bool NaClProcessHost::StartNaClExecution() {
       // We have to reopen the file in the browser process; we don't want a
       // compromised renderer to pass an arbitrary fd that could get loaded
       // into the plugin process.
-      base::PostTaskAndReplyWithResult(
+      base::ThreadPool::PostTaskAndReplyWithResult(
           FROM_HERE,
           // USER_BLOCKING because it is on the critical path of displaying the
           // official virtual keyboard on Chrome OS. https://crbug.com/976542
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING},
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
           base::BindOnce(OpenNaClReadExecImpl, file_path,
                          true /* is_executable */),
           base::BindOnce(&NaClProcessHost::StartNaClFileResolved,
@@ -1045,11 +1044,11 @@ void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
   }
 
   // Open the file.
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       // USER_BLOCKING because it is on the critical path of displaying the
       // official virtual keyboard on Chrome OS. https://crbug.com/976542
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(OpenNaClReadExecImpl, file_path, true /* is_executable */),
       base::BindOnce(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
                      file_token_lo, file_token_hi, file_path));

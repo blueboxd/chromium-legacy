@@ -86,9 +86,9 @@ test(function () {
 
 test(function () {
     mediaList.mediaText = "screen, tv";
-    assert_throws({ name: "TypeError" },
-                  function () { document.appendMedium(); },
-                  "Not enough arguments");
+    assert_throws_js(TypeError,
+                     function () { document.appendMedium(); },
+                     "Not enough arguments");
 }, "Add without argument");
 
 // - deleteMedium()
@@ -165,8 +165,8 @@ test(function () {
 
 test(function () {
     mediaList.mediaText = "tv, print, screen";
-    assert_throws({ name: "TypeError" },
-                  function () { document.deleteMedium(); },
-                  "Not enough arguments");
+    assert_throws_js(TypeError,
+                     function () { document.deleteMedium(); },
+                     "Not enough arguments");
 }, "Remove without argument");
 </script>

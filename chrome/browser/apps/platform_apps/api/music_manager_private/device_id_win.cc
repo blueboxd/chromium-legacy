@@ -23,7 +23,7 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -176,8 +176,8 @@ void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
     LOG(ERROR) << "Could not find appropriate MAC address.";
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, mac_address));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, mac_address));
 }
 
 std::string GetRlzMachineId() {
@@ -209,7 +209,7 @@ void GetMacAddressCallback(const DeviceId::IdCallback& callback,
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE, traits(),
       base::Bind(&GetMacAddress, base::Bind(&DeviceId::IsValidMacAddress),
                  base::Bind(&GetMacAddressCallback, callback)));

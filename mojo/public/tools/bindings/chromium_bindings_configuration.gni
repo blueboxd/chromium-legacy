@@ -38,7 +38,6 @@ _typemap_imports = [
   "//sandbox/mac/mojom/typemaps.gni",
   "//services/audio/public/cpp/typemaps.gni",
   "//services/device/public/mojom/typemaps.gni",
-  "//services/identity/public/cpp/typemaps.gni",
   "//services/media_session/public/cpp/typemaps.gni",
   "//services/network/public/cpp/typemaps.gni",
   "//services/proxy_resolver/public/cpp/typemaps.gni",

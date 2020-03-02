@@ -79,15 +79,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
   EXPECT_EQ(UpdateClientEvents::COMPONENT_NOT_UPDATED,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
 
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::NO_UPDATE), 1)));
-  histogram_tester.ExpectTotalCount(
-      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
-
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
 
@@ -130,17 +121,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
   // UpdateService should emit an error update event.
   EXPECT_EQ(UpdateClientEvents::COMPONENT_UPDATE_ERROR,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
-
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
-          1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
-              testing::ElementsAre(base::Bucket(403, 1)));
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
@@ -196,17 +176,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
   extension_service()->updater()->CheckNow(std::move(params));
   run_loop2.Run();
 
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
-          3)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
-              testing::ElementsAre(base::Bucket(304, 2), base::Bucket(305, 1)));
-
   ASSERT_EQ(2, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
 
@@ -259,15 +228,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
 
   run_loop.Run();
-
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_SUCCESS), 1)));
-  histogram_tester.ExpectTotalCount(
-      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();

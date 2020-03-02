@@ -5,10 +5,11 @@
 #ifndef CHROME_UPDATER_MAC_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 #define CHROME_UPDATER_MAC_UPDATE_SERVICE_OUT_OF_PROCESS_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/callback_forward.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ref_counted.h"
-#import "chrome/updater/server/mac/service_protocol.h"
+#include "base/sequence_checker.h"
 #include "chrome/updater/update_service.h"
 
 @class CRUUpdateServiceOutOfProcessImpl;

@@ -75,6 +75,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   Animation* Play(AnimationEffect*);
 
   bool IsActive() const override;
+  String phase() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();

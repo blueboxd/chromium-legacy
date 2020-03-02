@@ -3413,6 +3413,17 @@ void NavigationRequest::DidCommitNavigation(
 
   StopCommitTimeout();
 
+  // Switching BrowsingInstance because of COOP resets the name of the frame.
+  // The renderer already knows locally about it because we sent an empty name
+  // at frame creation time. The renderer has now committed the page and we can
+  // safely enforce the empty name on the browser side.
+  if (require_coop_browsing_instance_swap()) {
+    std::string name, unique_name;
+    // "COOP swaps" only affect main frames, that have an empty unique name.
+    DCHECK(frame_tree_node_->unique_name().empty());
+    frame_tree_node_->SetFrameName(name, unique_name);
+  }
+
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
   if (!IsSameDocument() && state_ != DID_COMMIT_ERROR_PAGE) {

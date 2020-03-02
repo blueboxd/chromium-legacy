@@ -25,6 +25,8 @@ class UpdateLayout;
 class V8Compile;
 }  // namespace probe
 
+using blink::protocol::Maybe;
+
 class CORE_EXPORT InspectorPerformanceAgent final
     : public InspectorBaseAgent<protocol::Performance::Metainfo>,
       public base::sequence_manager::TaskTimeObserver {
@@ -37,7 +39,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Restore() override;
 
   // Performance protocol domain implementation.
-  protocol::Response enable() override;
+  protocol::Response enable(Maybe<String> time_domain) override;
   protocol::Response disable() override;
   protocol::Response setTimeDomain(const String& time_domain) override;
   protocol::Response getMetrics(
@@ -70,6 +72,8 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void InnerEnable();
   base::TimeTicks GetTimeTicksNow();
   base::TimeTicks GetThreadTimeNow();
+  bool HasTimeDomain(const String& time_domain);
+  protocol::Response InnerSetTimeDomain(const String& time_domain);
 
   Member<InspectedFrames> inspected_frames_;
   base::TimeDelta layout_duration_;

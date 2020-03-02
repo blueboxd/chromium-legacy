@@ -39,15 +39,18 @@ FakeUpstartClient* FakeUpstartClient::Get() {
 void FakeUpstartClient::StartJob(const std::string& job,
                                  const std::vector<std::string>& upstart_env,
                                  VoidDBusMethodCallback callback) {
+  const bool result =
+      start_job_cb_ ? start_job_cb_.Run(job, upstart_env) : true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), start_job_result_));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeUpstartClient::StopJob(const std::string& job,
                                 const std::vector<std::string>& upstart_env,
                                 VoidDBusMethodCallback callback) {
+  const bool result = stop_job_cb_ ? stop_job_cb_.Run(job, upstart_env) : true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), stop_job_result_));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeUpstartClient::StartAuthPolicyService() {

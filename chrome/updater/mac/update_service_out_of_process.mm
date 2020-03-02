@@ -4,15 +4,16 @@
 
 #include "chrome/updater/mac/update_service_out_of_process.h"
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #include "chrome/updater/updater_version.h"
 #include "components/update_client/update_client_errors.h"

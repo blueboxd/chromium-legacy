@@ -275,7 +275,13 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   }
 
   void SetClientHintExpectationsOnSubresources(bool expect_client_hints) {
+    base::AutoLock lock(expect_client_hints_on_subresources_lock_);
     expect_client_hints_on_subresources_ = expect_client_hints;
+  }
+
+  bool expect_client_hints_on_subresources() {
+    base::AutoLock lock(expect_client_hints_on_subresources_lock_);
+    return expect_client_hints_on_subresources_;
   }
 
   // Verify that the user is not notified that cookies or JavaScript were
@@ -548,9 +554,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     }
 
     if (!is_main_frame_navigation) {
-      VerifyClientHintsReceived(expect_client_hints_on_subresources_, request);
+      VerifyClientHintsReceived(expect_client_hints_on_subresources(), request);
 
-      if (expect_client_hints_on_subresources_) {
+      if (expect_client_hints_on_subresources()) {
         double value = 0.0;
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
@@ -724,7 +730,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   // Expect client hints on all the main frame request.
   bool expect_client_hints_on_main_frame_;
   // Expect client hints on all the subresource requests.
-  bool expect_client_hints_on_subresources_;
+  bool expect_client_hints_on_subresources_
+      GUARDED_BY(expect_client_hints_on_subresources_lock_);
+
+  base::Lock expect_client_hints_on_subresources_lock_;
 
   size_t count_user_agent_hint_headers_seen_;
   size_t count_ua_mobile_client_hints_headers_seen_;

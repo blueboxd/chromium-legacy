@@ -131,6 +131,9 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public void dispatchBeforeUnload(boolean autoCancel) {}
+
+    @Override
     public void stop() {}
 
     @Override

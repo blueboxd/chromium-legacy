@@ -71,25 +71,11 @@ bool WaitForVerdict() {
   return state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
 }
 
-struct FileContents {
-  FileContents() : result(BinaryUploadService::Result::UNKNOWN) {}
-  explicit FileContents(BinaryUploadService::Result result) : result(result) {}
-  FileContents(FileContents&&) = default;
-  FileContents& operator=(FileContents&&) = default;
-
-  BinaryUploadService::Result result;
-  BinaryUploadService::Request::Data data;
-
-  // Store the file size separately instead of using data.contents.size() to
-  // keep track of size for large files.
-  int64_t size = 0;
-  std::string sha256;
-};
-
-FileContents GetFileContentsForLargeFile(const base::FilePath& path,
-                                         base::File* file) {
+DeepScanningDialogDelegate::FileContents GetFileContentsForLargeFile(
+    const base::FilePath& path,
+    base::File* file) {
   size_t file_size = file->GetLength();
-  FileContents file_contents;
+  DeepScanningDialogDelegate::FileContents file_contents;
   file_contents.result = BinaryUploadService::Result::FILE_TOO_LARGE;
   file_contents.size = file_size;
 
@@ -104,7 +90,7 @@ FileContents GetFileContentsForLargeFile(const base::FilePath& path,
         &buf[0], BinaryUploadService::kMaxUploadSizeBytes);
 
     if (bytes_currently_read == -1)
-      return FileContents();
+      return DeepScanningDialogDelegate::FileContents();
 
     secure_hash->Update(buf.data(), bytes_currently_read);
 
@@ -116,10 +102,11 @@ FileContents GetFileContentsForLargeFile(const base::FilePath& path,
   return file_contents;
 }
 
-FileContents GetFileContentsForNormalFile(const base::FilePath& path,
-                                          base::File* file) {
+DeepScanningDialogDelegate::FileContents GetFileContentsForNormalFile(
+    const base::FilePath& path,
+    base::File* file) {
   size_t file_size = file->GetLength();
-  FileContents file_contents;
+  DeepScanningDialogDelegate::FileContents file_contents;
   file_contents.result = BinaryUploadService::Result::SUCCESS;
   file_contents.size = file_size;
   file_contents.data.contents.resize(file_size);
@@ -128,24 +115,12 @@ FileContents GetFileContentsForNormalFile(const base::FilePath& path,
       file->ReadAtCurrentPos(&file_contents.data.contents[0], file_size);
 
   if (bytes_currently_read == -1)
-    return FileContents();
+    return DeepScanningDialogDelegate::FileContents();
 
   DCHECK_EQ(static_cast<size_t>(bytes_currently_read), file_size);
 
   file_contents.sha256 = crypto::SHA256HashString(file_contents.data.contents);
   return file_contents;
-}
-
-// Callback used by FileSourceRequest to read file data on a blocking thread.
-FileContents GetFileContentsSHA256Blocking(const base::FilePath& path) {
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid())
-    return FileContents();
-
-  return static_cast<size_t>(file.GetLength()) >
-                 BinaryUploadService::kMaxUploadSizeBytes
-             ? GetFileContentsForLargeFile(path, &file)
-             : GetFileContentsForNormalFile(path, &file);
 }
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -269,7 +244,8 @@ void DeepScanningDialogDelegate::FileSourceRequest::GetRequestData(
     DataCallback callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&GetFileContentsSHA256Blocking, path_),
+      base::BindOnce(&DeepScanningDialogDelegate::GetFileContentsSHA256Blocking,
+                     path_),
       base::BindOnce(&FileSourceRequest::OnGotFileContents,
                      weakptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -296,6 +272,16 @@ DeepScanningDialogDelegate::FileInfo::FileInfo() = default;
 DeepScanningDialogDelegate::FileInfo::FileInfo(FileInfo&& other) = default;
 DeepScanningDialogDelegate::FileInfo::~FileInfo() = default;
 
+DeepScanningDialogDelegate::FileContents::FileContents() = default;
+DeepScanningDialogDelegate::FileContents::FileContents(
+    BinaryUploadService::Result result)
+    : result(result) {}
+
+DeepScanningDialogDelegate::FileContents::FileContents(FileContents&& other) =
+    default;
+DeepScanningDialogDelegate::FileContents&
+DeepScanningDialogDelegate::FileContents::operator=(
+    DeepScanningDialogDelegate::FileContents&& other) = default;
 DeepScanningDialogDelegate::~DeepScanningDialogDelegate() = default;
 
 void DeepScanningDialogDelegate::Cancel() {
@@ -337,6 +323,20 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
     case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
       return AllowUnsupportedFileTypes();
   }
+}
+
+// static
+DeepScanningDialogDelegate::FileContents
+DeepScanningDialogDelegate::GetFileContentsSHA256Blocking(
+    const base::FilePath& path) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return FileContents();
+
+  return static_cast<size_t>(file.GetLength()) >
+                 BinaryUploadService::kMaxUploadSizeBytes
+             ? GetFileContentsForLargeFile(path, &file)
+             : GetFileContentsForNormalFile(path, &file);
 }
 
 // static

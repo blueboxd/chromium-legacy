@@ -1475,8 +1475,7 @@ void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   AsView().page->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
-                             bool record_main_frame_metrics) {
+void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime",
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
@@ -1498,7 +1497,7 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
 
   base::Optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
-  if (record_main_frame_metrics) {
+  if (WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
     ukm_timer.emplace(MainFrameImpl()
                           ->GetFrame()
                           ->View()
@@ -1519,13 +1518,12 @@ void WebViewImpl::DidBeginFrame() {
 }
 
 void WebViewImpl::BeginRafAlignedInput() {
-  if (MainFrameImpl()) {
+  if (MainFrameImpl() && WebFrameWidgetBase::ShouldRecordMainFrameMetrics())
     raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
-  }
 }
 
 void WebViewImpl::EndRafAlignedInput() {
-  if (MainFrameImpl()) {
+  if (MainFrameImpl() && WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
     DCHECK(raf_aligned_input_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,

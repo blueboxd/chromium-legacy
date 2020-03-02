@@ -88,7 +88,7 @@ test(() => {
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
   a.start();
-  assert_throws('InvalidModificationError', () => { b.start(); });
+  assert_throws_dom('InvalidModificationError', () => { b.start(); });
   a.stop();
 }, "interface interceptors are mutually exclusive");
 
@@ -100,7 +100,7 @@ test(() => {
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
   a.start();
-  assert_throws('InvalidModificationError', () => { b.start(); });
+  assert_throws_dom('InvalidModificationError', () => { b.start(); });
   a.stop();
 }, "process scope interface interceptors are mutually exclusive");
 

@@ -195,6 +195,19 @@ class PasswordsPrivateIsOptedInForAccountStorageFunction
   ResponseAction Run() override;
 };
 
+class PasswordsPrivateGetCompromisedCredentialsInfoFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getCompromisedCredentialsInfo",
+                             PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO)
+
+ protected:
+  ~PasswordsPrivateGetCompromisedCredentialsInfoFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_API_H_

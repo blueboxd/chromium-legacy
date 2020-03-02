@@ -80,8 +80,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time,
-                  bool record_main_frame_metrics) override;
+  void BeginFrame(base::TimeTicks last_frame_time) override;
   void DidBeginFrame() override;
   void BeginRafAlignedInput() override;
   void EndRafAlignedInput() override;
@@ -104,7 +103,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetCursorVisibilityState(bool is_visible) override;
   void OnFallbackCursorModeToggled(bool is_on) override;
 
-  void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;

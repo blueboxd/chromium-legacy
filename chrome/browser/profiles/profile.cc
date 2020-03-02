@@ -337,10 +337,6 @@ mojo::Remote<network::mojom::NetworkContext> Profile::CreateNetworkContext(
       ->CreateNetworkContext(in_memory, relative_partition_path);
 }
 
-identity::mojom::IdentityService* Profile::GetIdentityService() {
-  return nullptr;
-}
-
 bool Profile::IsNewProfile() {
 #if !defined(OS_ANDROID)
   // The profile is new if the preference files has just been created, except on

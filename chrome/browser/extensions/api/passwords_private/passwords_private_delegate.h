@@ -106,6 +106,12 @@ class PasswordsPrivateDelegate : public KeyedService {
   // opted in to use the Google account storage for passwords (as opposed to
   // local/profile storage).
   virtual bool IsOptedInForAccountStorage() = 0;
+
+  // Obtains information about compromised credentials. This includes the last
+  // time a check was run, as well as all compromised credentials that are
+  // present in the password store.
+  virtual api::passwords_private::CompromisedCredentialsInfo
+  GetCompromisedCredentialsInfo() = 0;
 };
 
 }  // namespace extensions

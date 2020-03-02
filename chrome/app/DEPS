@@ -60,7 +60,6 @@ specific_include_rules = {
     "+extensions/buildflags",
     "+extensions/common",
     "+media/capture/video/chromeos/mojom",
-    "+services/identity",
     "+services/image_annotation/public",
     "+services/resource_coordinator/public",
     "+third_party/blink/public/mojom",

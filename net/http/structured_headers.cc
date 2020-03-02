@@ -39,11 +39,11 @@ constexpr char kKeyChars15[] = DIGIT LCALPHA "_-.*";
 constexpr int64_t kMaxInteger = 999'999'999'999'999L;
 constexpr int64_t kMinInteger = -999'999'999'999'999L;
 
-// Smallest value which is too large for an sh-float. This is the smallest
-// double which will round up to 1e14 when serialized, which exceeds the range
-// for sh-float. Any float less than this should round down. This behaviour is
+// Smallest value which is too large for an sh-decimal. This is the smallest
+// double which will round up to 1e12 when serialized, which exceeds the range
+// for sh-decimal. Any float less than this should round down. This behaviour is
 // verified by unit tests.
-constexpr double kTooLargeFloat = 1e14 - 0.05;
+constexpr double kTooLargeDecimal = 1e12 - 0.0005;
 
 // Parser for (a subset of) Structured Headers for HTTP defined in [SH09] and
 // [SH15]. [SH09] compatibility is retained for use by Web Packaging, and can be
@@ -314,12 +314,12 @@ class StructuredHeaderParser {
   // Parses a Number ([SH09] 4.2.8, [SH15] 4.2.4).
   base::Optional<Item> ReadNumber() {
     bool is_negative = ConsumeChar('-');
-    bool is_float = false;
+    bool is_decimal = false;
     size_t decimal_position = 0;
     size_t i = 0;
     for (; i < input_.size(); ++i) {
-      if (i > 0 && input_[i] == '.' && !is_float) {
-        is_float = true;
+      if (i > 0 && input_[i] == '.' && !is_decimal) {
+        is_decimal = true;
         decimal_position = i;
         continue;
       }
@@ -330,18 +330,22 @@ class StructuredHeaderParser {
       LogParseError("ReadNumber", "DIGIT");
       return base::nullopt;
     }
-    if (!is_float) {
+    if (!is_decimal) {
       // [SH15] restricts the range of integers further.
       if (version_ == kDraft15 && i > 15) {
         LogParseError("ReadNumber", "integer too long");
         return base::nullopt;
       }
     } else {
-      if (i > 16) {
+      if (version_ != kDraft15 && i > 16) {
         LogParseError("ReadNumber", "float too long");
         return base::nullopt;
       }
-      if (i - decimal_position > 7) {
+      if (version_ == kDraft15 && decimal_position > 12) {
+        LogParseError("ReadNumber", "decimal too long");
+        return base::nullopt;
+      }
+      if (i - decimal_position > (version_ == kDraft15 ? 4 : 7)) {
         LogParseError("ReadNumber", "too many digits after decimal");
         return base::nullopt;
       }
@@ -353,7 +357,7 @@ class StructuredHeaderParser {
     std::string output_number_string(input_.substr(0, i));
     input_.remove_prefix(i);
 
-    if (is_float) {
+    if (is_decimal) {
       // Convert to a 64-bit double, and return if the conversion is
       // successful.
       double f;
@@ -549,47 +553,42 @@ class StructuredHeaderSerializer {
       output_ << value.GetInteger();
       return true;
     }
-    if (value.is_float()) {
-      // Serializes a Float ([SH15] 4.1.5).
-      double float_value = value.GetFloat();
-      if (!std::isfinite(float_value) || fabs(float_value) >= kTooLargeFloat)
+    if (value.is_decimal()) {
+      // Serializes a Decimal ([SH15] 4.1.5).
+      double decimal_value = value.GetDecimal();
+      if (!std::isfinite(decimal_value) ||
+          fabs(decimal_value) >= kTooLargeDecimal)
         return false;
 
       // Handle sign separately to simplify the rest of the formatting.
-      if (float_value < 0)
+      if (decimal_value < 0)
         output_ << "-";
       // Unconditionally take absolute value to ensure that -0 is serialized as
       // "0.0", with no negative sign, as required by spec. (4.1.5, step 2).
-      float_value = fabs(float_value);
+      decimal_value = fabs(decimal_value);
+      double remainder = fmod(decimal_value, 0.002);
+      if (remainder == 0.0005) {
+        // Value ended in exactly 0.0005, 0.0025, 0.0045, etc. Round down.
+        decimal_value -= 0.0005;
+      } else if (remainder == 0.0015) {
+        // Value ended in exactly 0.0015, 0.0035, 0,0055, etc. Round up.
+        decimal_value += 0.0005;
+      } else {
+        // Standard rounding will work in all other cases.
+        decimal_value = round(decimal_value * 1000.0) / 1000.0;
+      }
 
-      // Use standard library functions to write the float, and then truncate
+      // Use standard library functions to write the decimal, and then truncate
       // if necessary to conform to spec.
 
-      // To handle rounding correctly, use the number of integer digits before
-      // rounding to determine how many fractional digits to round to and print.
-      // 18 bytes is sufficient in all cases (maximum of 15 significant digits,
-      // plus the decimal point, and a null terminator. In any cases where
-      // rounding the value increases the number of characters output, the bytes
-      // truncated by snprintf would all be '0' characters, which would have
-      // been trimmed in the next step anyway.
+      // Maximum is 12 integer digits, one decimal point, three fractional
+      // digits, and a null terminator.
       char buffer[17];
+      base::snprintf(buffer, base::size(buffer), "%#.3f", decimal_value);
 
-      if (float_value < 1e9) {
-        base::snprintf(buffer, base::size(buffer), "%#.6f", float_value);
-      } else if (float_value < 1e10) {
-        base::snprintf(buffer, base::size(buffer), "%#.5f", float_value);
-      } else if (float_value < 1e11) {
-        base::snprintf(buffer, base::size(buffer), "%#.4f", float_value);
-      } else if (float_value < 1e12) {
-        base::snprintf(buffer, base::size(buffer), "%#.3f", float_value);
-      } else if (float_value < 1e13) {
-        base::snprintf(buffer, base::size(buffer), "%#.2f", float_value);
-      } else {
-        base::snprintf(buffer, base::size(buffer), "%#.1f", float_value);
-      }
       // Strip any trailing 0s after the decimal point, but leave at least one
-      // digit after it in all cases. (So 1.230000 becomes 1.23, but 1.000000
-      // becomes 1.0.)
+      // digit after it in all cases. (So 1.230 becomes 1.23, but 1.000 becomes
+      // 1.0.)
       base::StringPiece formatted_number(buffer);
       auto truncate_index = formatted_number.find_last_not_of('0');
       if (formatted_number[truncate_index] == '.')
@@ -679,7 +678,7 @@ Item::Item(std::string&& value, Item::ItemType type)
 Item::Item(const char* value, Item::ItemType type)
     : Item(std::string(value), type) {}
 Item::Item(int64_t value) : type_(kIntegerType), integer_value_(value) {}
-Item::Item(double value) : type_(kFloatType), float_value_(value) {}
+Item::Item(double value) : type_(kDecimalType), decimal_value_(value) {}
 Item::Item(bool value) : type_(kBooleanType), boolean_value_(value) {}
 
 bool operator==(const Item& lhs, const Item& rhs) {
@@ -694,8 +693,8 @@ bool operator==(const Item& lhs, const Item& rhs) {
       return lhs.string_value_ == rhs.string_value_;
     case Item::kIntegerType:
       return lhs.integer_value_ == rhs.integer_value_;
-    case Item::kFloatType:
-      return lhs.float_value_ == rhs.float_value_;
+    case Item::kDecimalType:
+      return lhs.decimal_value_ == rhs.decimal_value_;
     case Item::kBooleanType:
       return lhs.boolean_value_ == rhs.boolean_value_;
   }

@@ -354,6 +354,18 @@ void ClientStateToProto(ClientState* client_state,
         TimeDeltaToMilliseconds(suppression.duration));
     suppression_proto->set_recover_goal(suppression.recover_goal);
   }
+
+  proto->set_negative_events_count(client_state->negative_events_count);
+
+  if (client_state->last_negative_event_ts.has_value()) {
+    proto->set_last_negative_event_ts(
+        TimeToMilliseconds(client_state->last_negative_event_ts.value()));
+  }
+
+  if (client_state->last_shown_ts.has_value()) {
+    proto->set_last_shown_ts(
+        TimeToMilliseconds(client_state->last_shown_ts.value()));
+  }
 }
 
 void ClientStateFromProto(proto::ClientState* proto,
@@ -402,6 +414,17 @@ void ClientStateFromProto(proto::ClientState* proto,
         MillisecondsToTimeDelta(proto_suppression.duration_ms()));
     suppression_info.recover_goal = proto_suppression.recover_goal();
     client_state->suppression_info = std::move(suppression_info);
+  }
+
+  client_state->negative_events_count = proto->negative_events_count();
+
+  if (proto->has_last_shown_ts()) {
+    client_state->last_shown_ts = MillisecondsToTime(proto->last_shown_ts());
+  }
+
+  if (proto->has_last_negative_event_ts()) {
+    client_state->last_negative_event_ts =
+        MillisecondsToTime(proto->last_negative_event_ts());
   }
 }
 

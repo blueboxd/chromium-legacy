@@ -2415,7 +2415,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
+// TODO(1057340): This test leaks memory.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_TearDownTest DISABLED_TearDownTest
+#else
+#define MAYBE_TearDownTest TearDownTest
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
   extensions::AppWindow* window = nullptr;

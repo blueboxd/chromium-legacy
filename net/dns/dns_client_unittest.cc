@@ -45,7 +45,8 @@ class DnsClientTest : public TestWithTaskEnvironment {
 
   void SetUp() override {
     client_ = DnsClient::CreateClientForTesting(
-        nullptr /* net_log */, &socket_factory_, base::Bind(&base::RandInt));
+        nullptr /* net_log */, &socket_factory_,
+        base::BindRepeating(&base::RandInt));
   }
 
   DnsConfig BasicValidConfig() {

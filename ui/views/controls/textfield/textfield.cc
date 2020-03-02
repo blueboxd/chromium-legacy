@@ -371,6 +371,7 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
   OnCaretBoundsChanged();
+  UpdateCursorViewPosition();
   OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
 

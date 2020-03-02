@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,7 +23,7 @@ IconLoader* IconLoader::Create(const base::FilePath& file_path,
 void IconLoader::Start() {
   target_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE, traits(),
       base::BindOnce(&IconLoader::ReadGroup, base::Unretained(this)));
 }

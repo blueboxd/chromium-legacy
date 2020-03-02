@@ -4,9 +4,11 @@
 
 // https://drafts.csswg.org/web-animations/#the-animationtimeline-interface
 
+enum TimelinePhase { "inactive", "before", "active", "after" };
 [
     RuntimeEnabled=WebAnimationsAPI,
     Exposed=Window
 ] interface AnimationTimeline {
     readonly attribute double? currentTime;
+    [RuntimeEnabled=ScrollTimeline] readonly attribute TimelinePhase phase;
 };

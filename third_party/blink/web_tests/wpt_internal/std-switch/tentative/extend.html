@@ -22,7 +22,7 @@ test(()=> {
 test(()=> {
   class MySwitchElement2 extends StdSwitchElement {
   }
-  assert_throws('NotSupportedError', () => {
+  assert_throws_dom('NotSupportedError', () => {
     customElements.define('my-switch2', MySwitchElement2, {extends: 'std-switch'});
   });
 }, 'Should not be able to define a customized built-in element for std-switch');

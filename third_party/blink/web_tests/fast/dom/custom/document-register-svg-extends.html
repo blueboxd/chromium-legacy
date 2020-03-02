@@ -6,7 +6,7 @@
 test(function () {
     var proto = Object.create(SVGGElement.prototype);
 
-    assert_throws('NOT_SUPPORTED_ERR', function() {
+    assert_throws_dom('NOT_SUPPORTED_ERR', function() {
         document.registerElement('x-foo', {prototype: proto});
     }, 'register of an SVG element requires the extends parameter');
 

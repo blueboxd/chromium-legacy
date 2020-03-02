@@ -14,8 +14,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -63,9 +64,12 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
                                                .getNightModeStateProvider()
                                                .isInNightMode();
 
-        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, activity.getResources(), profile,
-                securityLevel, false /* isInternalPage */, useDarkColors,
-                true /* emphasizeHttpsScheme */);
+        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                new ChromeAutocompleteSchemeClassifier(profile);
+        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, activity.getResources(),
+                chromeAutocompleteSchemeClassifier, securityLevel, false /* isInternalPage */,
+                useDarkColors, true /* emphasizeHttpsScheme */);
+        chromeAutocompleteSchemeClassifier.destroy();
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =
                 new SpannableString(activity.getString(R.string.usb_chooser_dialog_prompt, origin));

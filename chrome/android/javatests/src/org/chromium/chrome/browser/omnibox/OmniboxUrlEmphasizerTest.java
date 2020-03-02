@@ -12,6 +12,7 @@ import android.support.test.rule.UiThreadTestRule;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,12 +23,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -45,15 +47,22 @@ public class OmniboxUrlEmphasizerTest {
             RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private Profile mProfile;
+    private ChromeAutocompleteSchemeClassifier mChromeAutocompleteSchemeClassifier;
     private Resources mResources;
 
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfile = Profile.getLastUsedRegularProfile();
+            mChromeAutocompleteSchemeClassifier = new ChromeAutocompleteSchemeClassifier(mProfile);
             mResources =
                     InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
         });
+    }
+
+    @After
+    public void tearDown() {
+        mChromeAutocompleteSchemeClassifier.destroy();
     }
 
     /**
@@ -147,8 +156,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testShortSecureHTTPSUrl() {
         Spannable url = new SpannableStringBuilder("https://www.google.com/");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.SECURE, false, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.SECURE, false, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 4, spans.length);
@@ -175,8 +184,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testShortSecureHTTPSUrlWithLightColors() {
         Spannable url = new SpannableStringBuilder("https://www.google.com/");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.SECURE, false, false, false);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.SECURE, false, false, false);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 4, spans.length);
@@ -205,8 +214,8 @@ public class OmniboxUrlEmphasizerTest {
     public void testLongInsecureHTTPSUrl() {
         Spannable url =
                 new SpannableStringBuilder("https://www.google.com/q?query=abc123&results=1");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.DANGEROUS, false, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.DANGEROUS, false, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 5, spans.length);
@@ -234,8 +243,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testVeryShortHTTPWarningUrl() {
         Spannable url = new SpannableStringBuilder("m.w.co/p");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.WARNING, false, true, false);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.WARNING, false, true, false);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 2, spans.length);
@@ -257,8 +266,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testAboutPageUrl() {
         Spannable url = new SpannableStringBuilder("about:blank");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, true, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 3, spans.length);
@@ -284,8 +293,8 @@ public class OmniboxUrlEmphasizerTest {
     public void testDataUrl() {
         Spannable url =
                 new SpannableStringBuilder("data:text/plain;charset=utf-8;base64,VGVzdCBVUkw=");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, false, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, false, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 2, spans.length);
@@ -306,8 +315,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testInternalChromePageUrl() {
         Spannable url = new SpannableStringBuilder("chrome://bookmarks");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, true, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 3, spans.length);
@@ -332,8 +341,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testInternalChromeNativePageUrl() {
         Spannable url = new SpannableStringBuilder("chrome-native://bookmarks");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, true, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 3, spans.length);
@@ -358,8 +367,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testInvalidUrl() {
         Spannable url = new SpannableStringBuilder("invalidurl");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, true, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, true, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 1, spans.length);
@@ -378,8 +387,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testEmptyUrl() {
         Spannable url = new SpannableStringBuilder("");
-        OmniboxUrlEmphasizer.emphasizeUrl(
-                url, mResources, mProfile, ConnectionSecurityLevel.NONE, false, true, true);
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mChromeAutocompleteSchemeClassifier,
+                ConnectionSecurityLevel.NONE, false, true, true);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 0, spans.length);
@@ -399,22 +408,22 @@ public class OmniboxUrlEmphasizerTest {
         url = "http://www.google.com/";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":",
                 "http://www.google.com".length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "https://www.google.com/";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":",
                 "https://www.google.com".length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "http://www.news.com/dir/a/b/c/page.html?foo=bar";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":",
                 "http://www.news.com".length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "http://www.test.com?foo=bar";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":",
                 "http://www.test.com".length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
     }
 
     /**
@@ -431,15 +440,15 @@ public class OmniboxUrlEmphasizerTest {
         // Data URLs have no origin.
         url = "data:ABC123";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", 0,
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "data:kf94hfJEj#N";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", 0,
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "data:text/plain;charset=utf-8;base64,dGVzdA==";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", 0,
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
     }
 
     /**
@@ -456,22 +465,22 @@ public class OmniboxUrlEmphasizerTest {
         // In non-HTTP/HTTPS/data URLs, the whole URL is considered the origin.
         url = "file://my/pc/somewhere/foo.html";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "about:blank";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "chrome://version";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "chrome-native://bookmarks";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
 
         url = "invalidurl";
         Assert.assertEquals("Unexpected origin end index for url " + url + ":", url.length(),
-                OmniboxUrlEmphasizer.getOriginEndIndex(url, mProfile));
+                OmniboxUrlEmphasizer.getOriginEndIndex(url, mChromeAutocompleteSchemeClassifier));
     }
 }

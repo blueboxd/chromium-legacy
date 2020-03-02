@@ -22,7 +22,6 @@
 #include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/browser/updater/update_data_provider.h"
 #include "extensions/browser/updater/update_service_factory.h"
-#include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -36,38 +35,6 @@ UpdateService* update_service_override = nullptr;
 constexpr size_t kMaxExtensionsPerUpdate = 22;
 
 void SendUninstallPingCompleteCallback(update_client::Error error) {}
-
-void ReportUpdateCheckResult(ExtensionUpdaterUpdateResult update_result,
-                             int error_code) {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUpdaterUpdateResults",
-                            update_result,
-                            ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-
-  // This UMA histogram measures update check results of the unified extension
-  // updater.
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UnifiedExtensionUpdaterUpdateResults",
-                            update_result,
-                            ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-
-  switch (update_result) {
-    case ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR:
-      base::UmaHistogramSparse(
-          "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", error_code);
-      break;
-    case ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR:
-      base::UmaHistogramSparse(
-          "Extensions.UnifiedExtensionUpdaterDownloadErrors", error_code);
-      break;
-    case ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.UnifiedExtensionUpdaterUpdateServiceErrors",
-          static_cast<update_client::Error>(error_code),
-          update_client::Error::MAX_VALUE);
-      break;
-    default:
-      break;
-  }
-}
 
 }  // namespace
 
@@ -150,17 +117,14 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
   switch (event) {
     case Events::COMPONENT_UPDATED:
       complete_event = true;
-      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::UPDATE_SUCCESS, 0);
       break;
     case Events::COMPONENT_UPDATE_ERROR:
       complete_event = true;
       finish_delayed_installation = true;
-      HandleComponentUpdateErrorEvent(extension_id);
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
       finish_delayed_installation = true;
-      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::NO_UPDATE, 0);
       break;
     case Events::COMPONENT_UPDATE_FOUND:
       HandleComponentUpdateFoundEvent(extension_id);
@@ -323,39 +287,6 @@ void UpdateService::RemoveUpdateClientObserver(
     update_client::UpdateClient::Observer* observer) {
   if (update_client_)
     update_client_->RemoveObserver(observer);
-}
-
-void UpdateService::HandleComponentUpdateErrorEvent(
-    const std::string& extension_id) const {
-  update_client::ErrorCategory error_category =
-      update_client::ErrorCategory::kNone;
-  int error_code = 0;
-  update_client::CrxUpdateItem update_item;
-  if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
-    error_category = update_item.error_category;
-    error_code = update_item.error_code;
-  }
-
-  switch (error_category) {
-    case update_client::ErrorCategory::kUpdateCheck:
-      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
-                              error_code);
-      break;
-    case update_client::ErrorCategory::kDownload:
-      ReportUpdateCheckResult(
-          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR, error_code);
-      break;
-    case update_client::ErrorCategory::kUnpack:
-    case update_client::ErrorCategory::kInstall:
-      ReportUpdateCheckResult(
-          ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR, 0);
-      break;
-    case update_client::ErrorCategory::kNone:
-    case update_client::ErrorCategory::kService:
-      ReportUpdateCheckResult(
-          ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR, error_code);
-      break;
-  }
 }
 
 void UpdateService::HandleComponentUpdateFoundEvent(

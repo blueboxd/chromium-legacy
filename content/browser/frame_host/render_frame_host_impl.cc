@@ -2073,6 +2073,17 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   params->replication_state.frame_policy =
       frame_tree_node()->pending_frame_policy();
 
+  // If we switched BrowsingInstances because of the COOP header, we should
+  // clear the frame name. This below informs the renderer at frame creation.
+  NavigationRequest* navigation_request =
+      frame_tree_node()->navigation_request();
+  if (navigation_request &&
+      navigation_request->require_coop_browsing_instance_swap()) {
+    params->replication_state.name = "";
+    // "COOP swaps" only affect main frames, that have an empty unique name.
+    DCHECK(params->replication_state.unique_name.empty());
+  }
+
   params->frame_owner_properties =
       frame_tree_node()->frame_owner_properties().Clone();
 

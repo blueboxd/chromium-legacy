@@ -23,6 +23,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -155,8 +156,10 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
         }
 
         Barcode firstCode = barcodes.valueAt(0);
-        Toast.makeText(mContext, firstCode.rawValue, Toast.LENGTH_LONG).show();
         if (!URLUtil.isValidUrl(firstCode.rawValue)) {
+            String toastMessage =
+                    mContext.getString(R.string.qr_code_not_a_url_label, firstCode.rawValue);
+            Toast.makeText(mContext, toastMessage, Toast.LENGTH_LONG).show();
             camera.setOneShotPreviewCallback(this);
             return;
         }

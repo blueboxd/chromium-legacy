@@ -30,8 +30,7 @@
 
 #include "third_party/blink/public/web/web_frame.h"
 
-#include <stdarg.h>
-
+#include <initializer_list>
 #include <limits>
 #include <memory>
 
@@ -6300,12 +6299,12 @@ class CompositedSelectionBoundsTest
     }
   }
 
-  void RunTestWithMultipleFiles(const char* test_file, ...) {
-    va_list aux_files;
-    va_start(aux_files, test_file);
-    while (const char* aux_file = va_arg(aux_files, const char*))
-      RegisterMockedHttpURLLoad(aux_file);
-    va_end(aux_files);
+  void RunTestWithMultipleFiles(
+      const char* test_file,
+      std::initializer_list<const char*> auxiliary_files) {
+    for (const char* auxiliary_file : auxiliary_files) {
+      RegisterMockedHttpURLLoad(auxiliary_file);
+    }
 
     RunTest(test_file);
   }
@@ -6354,7 +6353,7 @@ TEST_F(CompositedSelectionBoundsTest, SplitLayer) {
 }
 TEST_F(CompositedSelectionBoundsTest, Iframe) {
   RunTestWithMultipleFiles("composited_selection_bounds_iframe.html",
-                           "composited_selection_bounds_basic.html", nullptr);
+                           {"composited_selection_bounds_basic.html"});
 }
 TEST_F(CompositedSelectionBoundsTest, Editable) {
   RunTest("composited_selection_bounds_editable.html");
@@ -10704,8 +10703,7 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
-    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now(),
-                                                       false);
+    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
     MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
     MainFrame()->View()->MainFrameWidget()->DidBeginFrame();
@@ -10799,8 +10797,7 @@ class WebLocalFrameVisibilityChangeTest
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
-    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now(),
-                                                       false);
+    MainFrame()->View()->MainFrameWidget()->BeginFrame(base::TimeTicks::Now());
     MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
     MainFrame()->View()->MainFrameWidget()->DidBeginFrame();

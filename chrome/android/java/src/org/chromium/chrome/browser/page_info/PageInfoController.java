@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -45,6 +45,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.components.page_info.CookieControlsView;
 import org.chromium.components.page_info.PageInfoDialog;
@@ -215,10 +216,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
+        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                new ChromeAutocompleteSchemeClassifier(profile);
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            profile, displayUrlBuilder.toString());
+                            displayUrlBuilder.toString(), chromeAutocompleteSchemeClassifier);
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(activity, R.style.TextAppearance_RobotoMediumStyle),
@@ -227,11 +230,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
 
         final boolean useDarkColors = !activity.getNightModeStateProvider().isInNightMode();
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(), profile,
-                mSecurityLevel, mIsInternalPage, useDarkColors, /*emphasizeScheme=*/true);
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(),
+                chromeAutocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkColors,
+                /*emphasizeScheme=*/true);
         viewParams.url = displayUrlBuilder;
-        viewParams.urlOriginLength =
-                OmniboxUrlEmphasizer.getOriginEndIndex(displayUrlBuilder.toString(), profile);
+        viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
+                displayUrlBuilder.toString(), chromeAutocompleteSchemeClassifier);
+        chromeAutocompleteSchemeClassifier.destroy();
 
         if (SiteSettingsHelper.isSiteSettingsAvailable(webContents)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
@@ -583,7 +588,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                     : PreviewPageState.INSECURE_PAGE_PREVIEW;
 
             PreviewsUma.recordPageInfoOpened(bridge.getPreviewsType(webContents));
-            Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+            Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(Profile.fromWebContents(webContents));
             tracker.notifyEvent(EventConstants.PREVIEWS_VERBOSE_STATUS_OPENED);
         }
 

@@ -390,6 +390,10 @@ public class WebappRegistry {
                 new ArrayList<Pair<String, WebappDataStorage>>();
         if (initAll) {
             for (String id : webapps) {
+                // See crbug.com/1055566 for details on bug which caused this scenario to occur.
+                if (id == null) {
+                    id = "";
+                }
                 if (!mStorages.containsKey(id)) {
                     initedStorages.add(Pair.create(id, WebappDataStorage.open(id)));
                 }

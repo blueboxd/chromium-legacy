@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/passwords_private/password_check_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_porter.h"
@@ -39,7 +40,7 @@ namespace extensions {
 
 // Concrete PasswordsPrivateDelegate implementation.
 class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
-                                     public PasswordUIView  {
+                                     public PasswordUIView {
  public:
   explicit PasswordsPrivateDelegateImpl(Profile* profile);
   ~PasswordsPrivateDelegateImpl() override;
@@ -65,6 +66,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
   bool IsOptedInForAccountStorage() override;
+  api::passwords_private::CompromisedCredentialsInfo
+  GetCompromisedCredentialsInfo() override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
@@ -130,6 +133,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   std::unique_ptr<password_manager::PasswordAccountStorageOptInWatcher>
       password_account_storage_opt_in_watcher_;
+
+  PasswordCheckDelegate password_check_delegate_;
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without

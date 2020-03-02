@@ -8,6 +8,8 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 
+import androidx.annotation.WorkerThread;
+
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.task.PostTask;
@@ -18,8 +20,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import androidx.annotation.WorkerThread;
 
 /**
  * This class updates the notification permission for an Origin based on the notification permission
@@ -106,7 +106,7 @@ public class NotificationPermissionUpdater {
         browsableIntent.addCategory(Intent.CATEGORY_BROWSABLE);
 
         try (BrowserServicesMetrics.TimingMetric unused =
-                     BrowserServicesMetrics.getBrowsableIntentResolutionTimingContext()) {
+                        BrowserServicesMetrics.getBrowsableIntentResolutionTimingContext()) {
             return PackageManagerUtils.resolveActivity(browsableIntent, 0) != null;
         }
     }

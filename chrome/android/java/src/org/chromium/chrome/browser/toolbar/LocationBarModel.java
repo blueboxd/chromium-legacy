@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.Previews;
@@ -37,6 +37,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -227,10 +228,13 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 // Ignore as this only is for applying color
             }
 
+            ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                    new ChromeAutocompleteSchemeClassifier(getProfile());
             OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText, mContext.getResources(),
-                    getProfile(), getSecurityLevel(), isInternalPage,
+                    chromeAutocompleteSchemeClassifier, getSecurityLevel(), isInternalPage,
                     !ColorUtils.shouldUseLightForegroundOnBackground(getPrimaryColor()),
                     shouldEmphasizeHttpsScheme());
+            chromeAutocompleteSchemeClassifier.destroy();
         }
 
         return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
@@ -289,15 +293,16 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public Profile getProfile() {
-        Profile lastUsedProfile = Profile.getLastUsedProfile();
+        Profile lastUsedRegularProfile = Profile.getLastUsedRegularProfile();
         if (mIsIncognito) {
             // When in overview mode with no open tabs, there has not been created an
             // OffTheRecordProfile yet. #getOffTheRecordProfile will create a profile if none
             // exists.
-            assert lastUsedProfile.hasOffTheRecordProfile() || isInOverviewAndShowingOmnibox();
-            return lastUsedProfile.getOffTheRecordProfile();
+            assert lastUsedRegularProfile.hasOffTheRecordProfile()
+                    || isInOverviewAndShowingOmnibox();
+            return lastUsedRegularProfile.getOffTheRecordProfile();
         }
-        return lastUsedProfile.getOriginalProfile();
+        return lastUsedRegularProfile;
     }
 
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {

@@ -18,6 +18,12 @@ blink_core_sources("generated") {
       [ "//third_party/blink/renderer/bindings:generate_bindings_enumeration" ]
 }
 
+blink_core_sources("generated_for_testing") {
+  sources = generated_enumeration_sources_for_testing_in_core
+  deps =
+      [ "//third_party/blink/renderer/bindings:generate_bindings_enumeration" ]
+}
+
 generate_origin_trial_features("bindings_core_origin_trial_features") {
   sources =
       core_idl_files + core_idl_with_modules_dependency_files +

@@ -160,6 +160,11 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         Cursor imageCursor =
                 mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
 
+        if (imageCursor == null) {
+            Log.e(TAG, "Content Resolver query() returned null");
+            return null;
+        }
+
         Log.i(TAG,
                 "Found " + imageCursor.getCount() + " media files, when requesting columns: "
                         + Arrays.toString(selectColumns) + ", with WHERE " + whereClause

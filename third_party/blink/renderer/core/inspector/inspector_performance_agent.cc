@@ -20,6 +20,8 @@
 
 namespace blink {
 
+namespace TimeDomain = protocol::Performance::SetTimeDomain::TimeDomainEnum;
+
 using protocol::Response;
 
 namespace {
@@ -61,9 +63,22 @@ void InspectorPerformanceAgent::InnerEnable() {
   thread_time_origin_ = GetThreadTimeNow();
 }
 
-protocol::Response InspectorPerformanceAgent::enable() {
-  if (enabled_.Get())
+protocol::Response InspectorPerformanceAgent::enable(
+    Maybe<String> optional_time_domain) {
+  String time_domain = optional_time_domain.fromMaybe(TimeDomain::TimeTicks);
+  if (enabled_.Get()) {
+    if (!HasTimeDomain(time_domain)) {
+      return Response::Error(
+          "Cannot change time domain while performance metrics collection is "
+          "enabled.");
+    }
     return Response::OK();
+  }
+
+  Response response = InnerSetTimeDomain(time_domain);
+  if (!response.isSuccess())
+    return response;
+
   enabled_.Set(true);
   InnerEnable();
   return Response::OK();
@@ -89,6 +104,7 @@ void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
 }
 }  // namespace
 
+// TODO(crbug.com/1056306): remove this redundant API.
 Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
   if (enabled_.Get()) {
     return Response::Error(
@@ -96,25 +112,11 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
         " is enabled.");
   }
 
-  if (time_domain ==
-      protocol::Performance::SetTimeDomain::TimeDomainEnum::TimeTicks) {
-    use_thread_ticks_.Clear();
-  } else if (time_domain == protocol::Performance::SetTimeDomain::
-                                TimeDomainEnum::ThreadTicks) {
-    if (!base::ThreadTicks::IsSupported()) {
-      return Response::Error("Thread time is not supported on this platform.");
-    }
-    base::ThreadTicks::WaitUntilInitialized();
-    use_thread_ticks_.Set(true);
-  } else {
-    return Response::Error("Invalid time domain specification.");
-  }
-
   // Prevent this devtools command duration from being collected to avoid
   // using start and end time from different time domains.
   devtools_command_start_ticks_ = base::TimeTicks();
 
-  return Response::OK();
+  return InnerSetTimeDomain(time_domain);
 }
 
 base::TimeTicks InspectorPerformanceAgent::GetTimeTicksNow() {
@@ -126,6 +128,31 @@ base::TimeTicks InspectorPerformanceAgent::GetThreadTimeNow() {
   return base::TimeTicks() +
          base::TimeDelta::FromMicroseconds(
              base::ThreadTicks::Now().since_origin().InMicroseconds());
+}
+
+bool InspectorPerformanceAgent::HasTimeDomain(const String& time_domain) {
+  return use_thread_ticks_.Get() ? time_domain == TimeDomain::ThreadTicks
+                                 : time_domain == TimeDomain::TimeTicks;
+}
+
+Response InspectorPerformanceAgent::InnerSetTimeDomain(
+    const String& time_domain) {
+  DCHECK(!enabled_.Get());
+
+  if (time_domain == TimeDomain::TimeTicks) {
+    use_thread_ticks_.Clear();
+    return Response::OK();
+  }
+
+  if (time_domain == TimeDomain::ThreadTicks) {
+    if (!base::ThreadTicks::IsSupported())
+      return Response::Error("Thread time is not supported on this platform.");
+    base::ThreadTicks::WaitUntilInitialized();
+    use_thread_ticks_.Set(true);
+    return Response::OK();
+  }
+
+  return Response::Error("Invalid time domain specification.");
 }
 
 Response InspectorPerformanceAgent::getMetrics(
@@ -270,6 +297,9 @@ void InspectorPerformanceAgent::Will(const probe::RecalculateStyle& probe) {
 }
 
 void InspectorPerformanceAgent::Did(const probe::RecalculateStyle& probe) {
+  if (recalc_style_start_ticks_.is_null())
+    return;
+
   base::TimeDelta delta = GetTimeTicksNow() - recalc_style_start_ticks_;
   recalc_style_duration_ += delta;
   recalc_style_count_++;
@@ -291,8 +321,9 @@ void InspectorPerformanceAgent::Will(const probe::UpdateLayout& probe) {
 }
 
 void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
-  if (--layout_depth_)
+  if (--layout_depth_ || layout_start_ticks_.is_null())
     return;
+
   base::TimeDelta delta = GetTimeTicksNow() - layout_start_ticks_;
   layout_duration_ += delta;
   layout_count_++;
@@ -314,6 +345,9 @@ void InspectorPerformanceAgent::Will(const probe::V8Compile& probe) {
 }
 
 void InspectorPerformanceAgent::Did(const probe::V8Compile& probe) {
+  if (v8compile_start_ticks_.is_null())
+    return;
+
   base::TimeDelta delta = GetTimeTicksNow() - v8compile_start_ticks_;
   v8compile_duration_ += delta;
   v8compile_start_ticks_ = base::TimeTicks();
@@ -328,11 +362,12 @@ void InspectorPerformanceAgent::WillStartDebuggerTask() {
 }
 
 void InspectorPerformanceAgent::DidFinishDebuggerTask() {
-  if (!devtools_command_start_ticks_.is_null()) {
-    devtools_command_duration_ +=
-        GetTimeTicksNow() - devtools_command_start_ticks_;
-    devtools_command_start_ticks_ = base::TimeTicks();
-  }
+  if (devtools_command_start_ticks_.is_null())
+    return;
+
+  devtools_command_duration_ +=
+      GetTimeTicksNow() - devtools_command_start_ticks_;
+  devtools_command_start_ticks_ = base::TimeTicks();
 }
 
 // Will/DidProcessTask() ignore caller provided times to ensure time domain
@@ -343,10 +378,11 @@ void InspectorPerformanceAgent::WillProcessTask(base::TimeTicks start_time) {
 
 void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
                                                base::TimeTicks end_time) {
-  if (!task_start_ticks_.is_null()) {
-    task_duration_ += GetTimeTicksNow() - task_start_ticks_;
-    task_start_ticks_ = base::TimeTicks();
-  }
+  if (task_start_ticks_.is_null())
+    return;
+
+  task_duration_ += GetTimeTicksNow() - task_start_ticks_;
+  task_start_ticks_ = base::TimeTicks();
 }
 
 void InspectorPerformanceAgent::Trace(Visitor* visitor) {

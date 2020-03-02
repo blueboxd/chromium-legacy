@@ -11,10 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -28,28 +26,6 @@ public class NewTabCallbackTest {
             new InstrumentationActivityTestRule();
 
     private InstrumentationActivity mActivity;
-
-    private static final class CloseTabNewTabCallbackImpl extends NewTabCallback {
-        private final CallbackHelper mCallbackHelper = new CallbackHelper();
-
-        @Override
-        public void onNewTab(Tab tab, int mode) {}
-
-        @Override
-        public void onCloseTab() {
-            mCallbackHelper.notifyCalled();
-        }
-
-        public void waitForCloseTab() {
-            try {
-                // waitForFirst() only handles a single call. If you need more convert from
-                // waitForFirst().
-                mCallbackHelper.waitForFirst();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     @Test
     @SmallTest

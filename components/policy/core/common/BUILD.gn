@@ -165,7 +165,6 @@ jumbo_source_set("internal") {
     "//extensions/buildflags",
     "//google_apis",
     "//net",
-    "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
     "//third_party/libxml:xml_writer",
     "//third_party/re2",

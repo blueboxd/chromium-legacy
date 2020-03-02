@@ -17,14 +17,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 PasswordsPrivateEventRouter::PasswordsPrivateEventRouter(
     content::BrowserContext* context)
-    : context_(context),
-      event_router_(nullptr) {
+    : context_(context), event_router_(nullptr) {
   event_router_ = EventRouter::Get(context_);
 }
 
@@ -93,6 +93,17 @@ void PasswordsPrivateEventRouter::OnAccountStorageOptInStateChanged(
       api::passwords_private::OnAccountStorageOptInStateChanged::kEventName,
       api::passwords_private::OnAccountStorageOptInStateChanged::Create(
           opted_in));
+  event_router_->BroadcastEvent(std::move(extension_event));
+}
+
+void PasswordsPrivateEventRouter::OnCompromisedCredentialsInfoChanged(
+    api::passwords_private::CompromisedCredentialsInfo
+        compromised_credentials_info) {
+  auto extension_event = std::make_unique<Event>(
+      events::PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED,
+      api::passwords_private::OnCompromisedCredentialsInfoChanged::kEventName,
+      api::passwords_private::OnCompromisedCredentialsInfoChanged::Create(
+          compromised_credentials_info));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 

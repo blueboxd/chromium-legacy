@@ -96,7 +96,7 @@ class BatchRequestConfigurator : public BatchRequestConfiguratorInterface {
 class DriveAPIService : public DriveServiceInterface,
                         public google_apis::AuthServiceObserver {
  public:
-  // |identity_manager| is used for interacting with the identity service.
+  // |identity_manager| is used for interacting with the identity system.
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |url_loader_factory| is used to create SimpleURLLoaders used to create
   // OAuth tokens.

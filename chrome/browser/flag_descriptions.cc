@@ -276,12 +276,6 @@ const char kBackForwardCacheDescription[] =
     "will lead to various breakages, up to and including user data loss. "
     "Do not enable unless you work on this feature";
 
-const char kBundledConnectionHelpName[] = "Bundled Connection Help";
-const char kBundledConnectionHelpDescription[] =
-    "Enables or disables redirection to local help content for users who get "
-    "an interstitial after clicking the 'Learn More' link on a previous "
-    "interstitial.";
-
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -1154,12 +1148,6 @@ const char kMixBrowserTypeTabsName[] = "Mix browser type tabs";
 const char kMixBrowserTypeTabsDescription[] =
     "Allows tabs to be dragged between any browsers that support tabs, "
     "including apps";
-
-const char kMixedContentSiteSettingName[] =
-    "Blockable mixed content switch as site setting";
-const char kMixedContentSiteSettingDescription[] =
-    "Removes the blockable mixed content shield, and adds an 'Insecure "
-    "Content' site setting to allow blockable mixed content.";
 
 const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =

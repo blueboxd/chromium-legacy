@@ -24,8 +24,8 @@ test(() => {
   var g = new webkitSpeechGrammar();
   g.weight = 2;
   assert_equals(g.weight, 2.0);
-  assert_throws({name: "TypeError"}, () => g.weight = NaN);
-  assert_throws({name: "TypeError"}, () => g.weight = Infinity);
+  assert_throws_js(TypeError, () => g.weight = NaN);
+  assert_throws_js(TypeError, () => g.weight = Infinity);
   assert_equals(g.weight, 2.0);
   g.src = "grammar.xml";
   assert_equals(g.src, base + "grammar.xml");
@@ -70,14 +70,14 @@ test(() => {
                 "data:application/xml,%3Cgrammar%3Efoo%3C/grammar%3E");
   assert_equals(gs[2].weight, 4);
 
-  assert_throws({name: "TypeError"},
-                () => gs.addFromUri("http://foo.tld/grammar.xml", NaN));
-  assert_throws({name: "TypeError"},
-                () => gs.addFromUri("http://foo.tld/grammar.xml", Infinity));
-  assert_throws({name: "TypeError"},
-                () => gs.addFromString("foo", NaN));
-  assert_throws({name: "TypeError"},
-                () => gs.addFromString("foo", Infinity));
+  assert_throws_js(TypeError,
+                   () => gs.addFromUri("http://foo.tld/grammar.xml", NaN));
+  assert_throws_js(TypeError,
+                   () => gs.addFromUri("http://foo.tld/grammar.xml", Infinity));
+  assert_throws_js(TypeError,
+                   () => gs.addFromString("foo", NaN));
+  assert_throws_js(TypeError,
+                   () => gs.addFromString("foo", Infinity));
 }, "Creating a grammar list");
 
 </script>

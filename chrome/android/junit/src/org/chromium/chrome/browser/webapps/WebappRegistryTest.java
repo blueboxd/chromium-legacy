@@ -152,6 +152,29 @@ public class WebappRegistryTest {
         assertEquals(secondExpected, WebappRegistry.getRegisteredWebappIdsForTesting());
     }
 
+    /**
+     * Test behaviour when there is a webapp with a null id registered. See crbug.com/1055566
+     * for details of the bug which caused this to occur.
+     */
+    @Test
+    @Feature({"Webapp"})
+    public void testWebappNullId() throws Exception {
+        addWebappsToRegistry(new String[] {null});
+        registerWebapp(null, createShortcutWebappInfo("https://www.google.ca"));
+        assertEquals(1, WebappRegistry.getRegisteredWebappIdsForTesting().size());
+
+        WebappRegistry.refreshSharedPrefsForTesting();
+
+        // Does not crash.
+        assertEquals(null,
+                WebappRegistry.getInstance().getWebappDataStorageForUrl("https://www.google.ca/"));
+
+        long currentTime = System.currentTimeMillis();
+        WebappRegistry.getInstance().unregisterOldWebapps(
+                currentTime + WebappRegistry.FULL_CLEANUP_DURATION);
+        assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
+    }
+
     @Test
     @Feature({"Webapp"})
     public void testUnregisterClearsRegistry() throws Exception {

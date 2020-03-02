@@ -5,10 +5,24 @@
 (function() {
 
 /**
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See SyncSetupSettignsDisplayedSwaaState in
+ * tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const displayedSwaaState = {
+  ON: 0,
+  OFF_ENCRYPTION_ON: 1,
+  OFF_HISTORY_SYNC_OFF: 2,
+  OFF_WEB_AND_APP_ACTIVITY: 3,
+  NONE: 4,
+};
+
+/**
  * All possible states for the sWAA bit.
  * @enum {string}
  */
-const sWAAState = {
+const SwaaState = {
   NOT_FETCHED: 'not-fetched',
   FETCHING: 'fetching',
   FAILED: 'failed',
@@ -150,19 +164,19 @@ Polymer({
     },
 
     /** @private */
-    sWAA_: {
+    Swaa_: {
       type: String,
-      value: sWAAState.NOT_FETCHED,
+      value: SwaaState.NOT_FETCHED,
     },
   },
 
-  observers: ['fetchSWAA_(syncSectionDisabled_, historyNotSyncedOrEncrypted_)'],
+  observers: ['fetchSwaa_(syncSectionDisabled_, historyNotSyncedOrEncrypted_)'],
 
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
 
   /**
-   * The visibility changed callback is used to refetch the |sWAA_| bit when
+   * The visibility changed callback is used to refetch the |Swaa_| bit when
    * the page is foregrounded.
    * @private {?Function}
    */
@@ -292,7 +306,7 @@ Polymer({
    * a query to |Web and App Activity| is needed.
    * @private
    */
-  fetchSWAA_() {
+  fetchSwaa_() {
     const router = settings.Router.getInstance();
     if (router.getCurrentRoute() !== router.getRoutes().SYNC) {
       return;
@@ -308,27 +322,51 @@ Polymer({
     }
 
     if (this.syncSectionDisabled_) {
-      this.sWAA_ = sWAAState.NOT_FETCHED;
+      this.Swaa_ = SwaaState.NOT_FETCHED;
       return;
     }
 
     if (this.historyNotSyncedOrEncrypted_) {
-      this.sWAA_ = sWAAState.OFF;
+      this.Swaa_ = SwaaState.OFF;
+      this.recordDisplayedSwaa();
       return;
     }
 
-    if (this.sWAA_ === sWAAState.FETCHING) {
+    if (this.Swaa_ === SwaaState.FETCHING) {
       return;
     }
 
-    this.sWAA_ = sWAAState.FETCHING;
-    const updateSWAA = historyRecordingEnabled => {
-      this.sWAA_ = historyRecordingEnabled.requestSucceeded ?
-          (historyRecordingEnabled.historyRecordingEnabled ? sWAAState.ON :
-                                                             sWAAState.OFF) :
-          sWAAState.FAILED;
+    this.Swaa_ = SwaaState.FETCHING;
+    const updateSwaa = historyRecordingEnabled => {
+      this.Swaa_ = historyRecordingEnabled.requestSucceeded ?
+          (historyRecordingEnabled.historyRecordingEnabled ? SwaaState.ON :
+                                                             SwaaState.OFF) :
+          SwaaState.FAILED;
+      this.recordDisplayedSwaa();
     };
-    this.browserProxy_.queryIsHistoryRecordingEnabled().then(updateSWAA);
+    this.browserProxy_.queryIsHistoryRecordingEnabled().then(updateSwaa);
+  },
+
+  /** @private */
+  recordDisplayedSwaa() {
+    let currentDisplayedSwaa;
+    if (this.Swaa_ === SwaaState.FAILED) {
+      currentDisplayedSwaa = displayedSwaaState.NONE;
+    } else if (this.Swaa_ === SwaaState.ON) {
+      currentDisplayedSwaa = displayedSwaaState.ON;
+    } else {
+      assert(this.Swaa_ === SwaaState.OFF);
+      if (this.syncPrefs.encryptAllData) {
+        currentDisplayedSwaa = displayedSwaaState.OFF_ENCRYPTION_ON;
+      } else if (!this.syncPrefs.typedUrlsSynced) {
+        currentDisplayedSwaa = displayedSwaaState.OFF_HISTORY_SYNC_OFF;
+      } else {
+        currentDisplayedSwaa = displayedSwaaState.OFF_WEB_AND_APP_ACTIVITY;
+      }
+    }
+    chrome.metricsPrivate.recordEnumerationValue(
+        'Settings.SyncSetup.DisplayedSwaaState', currentDisplayedSwaa,
+        Object.keys(displayedSwaaState).length);
   },
 
   /**
@@ -338,7 +376,7 @@ Polymer({
    */
   visibilityHandler_() {
     if (document.visibilityState === 'visible') {
-      this.fetchSWAA_();
+      this.fetchSwaa_();
     }
   },
 
@@ -348,11 +386,11 @@ Polymer({
    * @private
    */
   getHistoryUsageHint_() {
-    if (this.sWAA_ === sWAAState.ON) {
-      return this.i18n('sWAAOnHint');
+    if (this.Swaa_ === SwaaState.ON) {
+      return this.i18n('SwaaOnHint');
     }
 
-    if (this.sWAA_ === sWAAState.OFF) {
+    if (this.Swaa_ === SwaaState.OFF) {
       if (this.syncPrefs.encryptAllData) {
         return this.i18n('dataEncryptedHint');
       }
@@ -360,7 +398,7 @@ Polymer({
       if (!this.syncPrefs.typedUrlsSynced) {
         return this.i18n('historySyncOffHint');
       }
-      return this.i18n('sWAAOffHint');
+      return this.i18n('SwaaOffHint');
     }
     return '';
   },
@@ -368,11 +406,11 @@ Polymer({
   /**
    * @private
    */
-  getSWAAStateText_() {
-    if (!this.isSWAAFetched_()) {
+  getSwaaStateText_() {
+    if (!this.isSwaaFetched_()) {
       return '';
     }
-    return this.i18n(this.sWAA_ === sWAAState.ON ? 'sWAAOn' : 'sWAAOff');
+    return this.i18n(this.Swaa_ === SwaaState.ON ? 'SwaaOn' : 'SwaaOff');
   },
 
   /**
@@ -465,24 +503,24 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSWAAFetching_() {
-    return this.sWAA_ === sWAAState.FETCHING;
+  isSwaaFetching_() {
+    return this.Swaa_ === SwaaState.FETCHING;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  isSWAAFetched_() {
-    return this.sWAA_ === sWAAState.ON || this.sWAA_ === sWAAState.OFF;
+  isSwaaFetched_() {
+    return this.Swaa_ === SwaaState.ON || this.Swaa_ === SwaaState.OFF;
   },
 
   /** @private */
   onNavigateToPage_() {
     const router = settings.Router.getInstance();
     assert(router.getCurrentRoute() == router.getRoutes().SYNC);
-    this.sWAA_ = sWAAState.NOT_FETCHED;
-    this.fetchSWAA_();
+    this.Swaa_ = SwaaState.NOT_FETCHED;
+    this.fetchSwaa_();
     if (this.beforeunloadCallback_) {
       return;
     }
@@ -552,8 +590,8 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    if (this.sWAA_ === sWAAState.FAILED) {
-      this.fetchSWAA_();
+    if (this.Swaa_ === SwaaState.FAILED) {
+      this.fetchSwaa_();
     }
   },
 
@@ -727,5 +765,4 @@ Polymer({
     }
   },
 });
-
 })();

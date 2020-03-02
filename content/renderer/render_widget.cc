@@ -1125,7 +1125,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
     input_event_queue_->DispatchRafAlignedInput(frame_time);
   }
 
-  GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
+  GetWebWidget()->BeginFrame(frame_time);
 }
 
 void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {

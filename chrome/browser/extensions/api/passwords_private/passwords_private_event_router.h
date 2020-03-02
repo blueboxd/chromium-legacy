@@ -57,6 +57,12 @@ class PasswordsPrivateEventRouter : public KeyedService {
   // account-scoped password storage.
   void OnAccountStorageOptInStateChanged(bool opted_in);
 
+  // Notifies listeners about a change to the information about compromised
+  // credentials.
+  void OnCompromisedCredentialsInfoChanged(
+      api::passwords_private::CompromisedCredentialsInfo
+          compromised_credentials_info);
+
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);
 

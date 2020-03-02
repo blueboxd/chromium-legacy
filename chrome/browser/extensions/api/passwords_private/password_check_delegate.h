@@ -1,0 +1,82 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_
+
+#include "base/memory/scoped_refptr.h"
+#include "base/scoped_observer.h"
+#include "chrome/common/extensions/api/passwords_private.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
+#include "components/password_manager/core/browser/ui/credential_utils.h"
+#include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+
+class Profile;
+
+namespace password_manager {
+class PasswordStore;
+}
+
+namespace extensions {
+
+// This class handles the part of the passwordsPrivate extension API that deals
+// with the bulk password check feature.
+class PasswordCheckDelegate
+    : public password_manager::CompromisedCredentialsProvider::Observer {
+ public:
+  using CredentialPasswordsMap =
+      std::map<password_manager::CredentialWithPassword,
+               std::vector<autofill::PasswordForm>,
+               password_manager::PasswordCredentialLess>;
+
+  explicit PasswordCheckDelegate(Profile* profile);
+  PasswordCheckDelegate(const PasswordCheckDelegate&) = delete;
+  PasswordCheckDelegate& operator=(const PasswordCheckDelegate&) = delete;
+  ~PasswordCheckDelegate() override;
+
+  // Obtains information about compromised credentials. This includes the last
+  // time a check was run, as well as all compromised credentials that are
+  // present in the password store.
+  api::passwords_private::CompromisedCredentialsInfo
+  GetCompromisedCredentialsInfo() const;
+
+ private:
+  // password_manager::CompromisedCredentialsProvider::Observer:
+  // Invokes PasswordsPrivateEventRouter::OnCompromisedCredentialsInfoChanged if
+  // a valid pointer can be obtained.
+  void OnCompromisedCredentialsChanged(
+      password_manager::CompromisedCredentialsProvider::CredentialsView
+          credentials) override;
+
+  // Raw pointer to the underlying profile. Needs to outlive this instance.
+  Profile* profile_ = nullptr;
+
+  // Handle to the password store, powering both |saved_passwords_presenter_|
+  // and |compromised_credentials_provider_|.
+  scoped_refptr<password_manager::PasswordStore> password_store_;
+
+  // Used by |compromised_credentials_provider_| to obtain the list of saved
+  // passwords.
+  password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
+
+  // Used to obtain the list of compromised credentials.
+  password_manager::CompromisedCredentialsProvider
+      compromised_credentials_provider_;
+
+  // A scoped observer for |compromised_credentials_provider_|.
+  ScopedObserver<password_manager::CompromisedCredentialsProvider,
+                 password_manager::CompromisedCredentialsProvider::Observer>
+      observed_compromised_credentials_provider_{this};
+
+  // A map that matches CredentialWithPasswords to corresponding PasswordForms.
+  // This is required to inject affiliation information into Android
+  // credentials, as well as being able to reflect edits and removals of
+  // compromised credentials in the underlying password store.
+  CredentialPasswordsMap credentials_to_forms_;
+};
+
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORD_CHECK_DELEGATE_H_

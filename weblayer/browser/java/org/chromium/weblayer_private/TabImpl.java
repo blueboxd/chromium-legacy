@@ -17,6 +17,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
@@ -189,15 +190,21 @@ public final class TabImpl extends ITab.Stub {
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            SelectionPopupController selectionController =
+                    SelectionPopupController.fromWebContents(mWebContents);
             if (mBrowser.getContext() == null) {
                 // The Context and ViewContainer in which Autofill was previously operating have
                 // gone away, so tear down |mAutofillProvider|.
                 mAutofillProvider = null;
+                selectionController.setNonSelectionActionModeCallback(null);
             } else {
                 // Set up |mAutofillProvider| to operate in the new Context.
                 mAutofillProvider = new AutofillProviderImpl(
                         mBrowser.getContext(), mBrowser.getViewAndroidDelegateContainerView());
                 mAutofillProvider.setWebContents(mWebContents);
+
+                selectionController.setNonSelectionActionModeCallback(
+                        new AutofillActionModeCallback(mBrowser.getContext(), mAutofillProvider));
             }
 
             TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
@@ -401,6 +408,12 @@ public final class TabImpl extends ITab.Stub {
     public void dismissTabModalOverlay() {
         BrowserViewController controller = getViewController();
         if (controller != null) controller.dismissTabModalOverlay();
+    }
+
+    @Override
+    public void dispatchBeforeUnloadAndClose() {
+        StrictModeWorkaround.apply();
+        mWebContents.dispatchBeforeUnload(false);
     }
 
     @CalledByNative

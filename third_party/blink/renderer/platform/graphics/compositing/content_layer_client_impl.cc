@@ -24,7 +24,7 @@ namespace blink {
 
 ContentLayerClientImpl::ContentLayerClientImpl()
     : cc_picture_layer_(cc::PictureLayer::Create(this)),
-      raster_invalidator_(
+      raster_invalidation_function_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
                               base::Unretained(this))),
       layer_state_(PropertyTreeState::Uninitialized()) {}
@@ -85,8 +85,8 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (layer_state != layer_state_)
     cc_picture_layer_->SetSubtreePropertyChanged();
 
-  raster_invalidator_.Generate(paint_artifact, paint_chunks, layer_bounds,
-                               layer_state);
+  raster_invalidator_.Generate(raster_invalidation_function_, paint_artifact,
+                               paint_chunks, layer_bounds, layer_state);
   layer_state_ = layer_state;
 
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the

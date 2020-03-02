@@ -7,7 +7,7 @@ promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var stream = res.body;
         var reader = stream.getReader();
-        assert_throws({name: 'TypeError'}, function() { stream.getReader() });
+        assert_throws_js(TypeError, function() { stream.getReader() });
         reader.releaseLock();
         var another = stream.getReader();
         assert_not_equals(another, reader);

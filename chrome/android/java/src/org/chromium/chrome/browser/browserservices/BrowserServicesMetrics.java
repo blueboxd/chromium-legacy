@@ -8,7 +8,6 @@ import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
@@ -45,9 +44,13 @@ public class BrowserServicesMetrics {
     }
 
     public static void recordVerificationTime(long duration, boolean online) {
-        RecordHistogram.recordTimesHistogram(
-                online ? "BrowserServices.VerificationTime.Online"
-                        : "BrowserServices.VerificationTime.Offline", duration);
+        if (online) {
+            RecordHistogram.recordTimesHistogram(
+                    "BrowserServices.VerificationTime.Online", duration);
+        } else {
+            RecordHistogram.recordTimesHistogram(
+                    "BrowserServices.VerificationTime.Offline", duration);
+        }
     }
 
     /**
@@ -86,15 +89,14 @@ public class BrowserServicesMetrics {
             return SystemClock.uptimeMillis();
         }
 
-        public TimingMetric(String metric) {
+        private TimingMetric(String metric) {
             mMetric = metric;
             mStart = now();
         }
 
         @Override
         public void close() {
-            // Use {@link CachedMetrics} so this can be called before native is loaded.
-            new CachedMetrics.MediumTimesHistogramSample(mMetric).record(now() - mStart);
+            RecordHistogram.recordMediumTimesHistogram(mMetric, now() - mStart);
         }
     }
 

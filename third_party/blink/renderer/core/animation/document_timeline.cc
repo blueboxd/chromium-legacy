@@ -187,6 +187,13 @@ base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
   return result;
 }
 
+String DocumentTimeline::phase() const {
+  if (IsActive()) {
+    return "active";
+  }
+  return "inactive";
+}
+
 void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {
   for (const auto& animation : animations_needing_update_)
     animation->PauseForTesting(pause_time);

@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -19,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -231,7 +231,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
   // process.
-  std::unordered_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
+  base::flat_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -302,6 +302,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   viz::DawnContextProvider* dawn_context_provider_ = nullptr;
 
   GpuPeakMemoryMonitor peak_memory_monitor_;
+
+  THREAD_CHECKER(thread_checker_);
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

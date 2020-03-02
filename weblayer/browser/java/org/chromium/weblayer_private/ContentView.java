@@ -264,13 +264,13 @@ public class ContentView extends RelativeLayout
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Calls may come while/after WebContents is destroyed. See https://crbug.com/821750#c8.
-        if (mWebContents != null && mWebContents.isDestroyed()) return null;
+        if (mWebContents == null || mWebContents.isDestroyed()) return null;
         return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (mWebContents != null && mWebContents.isDestroyed()) return false;
+        if (mWebContents == null || mWebContents.isDestroyed()) return false;
         return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 

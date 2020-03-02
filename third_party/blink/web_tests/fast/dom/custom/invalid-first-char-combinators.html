@@ -8,7 +8,7 @@ test(function () {
 
     for (var i = 0; i < invalidCombinators.length; i++) {
         var invalidCombinator = String.fromCharCode(invalidCombinators[i]) + '-xfoo';
-        assert_throws('SYNTAX_ERR', function () {
+        assert_throws_dom('SYNTAX_ERR', function () {
             document.registerElement(invalidCombinator);
         }, 'registering custom element: *' +
         invalidCombinator + '* should throw syntax error');

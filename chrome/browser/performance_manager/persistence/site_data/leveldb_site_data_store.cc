@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -419,11 +420,10 @@ LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabaseImpl() {
 }
 
 LevelDBSiteDataStore::LevelDBSiteDataStore(const base::FilePath& db_path)
-    : blocking_task_runner_(base::CreateSequencedTaskRunner(
+    : blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           // The |BLOCK_SHUTDOWN| trait is required to ensure that a clearing of
           // the database won't be skipped.
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       async_helper_(new AsyncHelper(db_path),
                     base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -556,15 +556,20 @@ bool CompositorAnimations::ConvertTimingForCompositor(
       timing.iteration_duration->is_zero())
     return false;
 
-  out.adjusted_iteration_count =
-      std::isfinite(timing.iteration_count) ? timing.iteration_count : -1;
-  out.scaled_duration = timing.iteration_duration.value();
-  out.direction = timing.direction;
   // Compositor's time offset is positive for seeking into the animation.
   DCHECK(animation_playback_rate);
   out.scaled_time_offset = -base::TimeDelta::FromSecondsD(
                                timing.start_delay / animation_playback_rate) +
                            time_offset;
+  // Start delay is effectively +/- infinity.
+  if (out.scaled_time_offset.is_max() || out.scaled_time_offset.is_min())
+    return false;
+
+  out.adjusted_iteration_count =
+      std::isfinite(timing.iteration_count) ? timing.iteration_count : -1;
+  out.scaled_duration = timing.iteration_duration.value();
+  out.direction = timing.direction;
+
   out.playback_rate = animation_playback_rate;
   out.fill_mode = timing.fill_mode == Timing::FillMode::AUTO
                       ? Timing::FillMode::NONE
@@ -572,7 +577,6 @@ bool CompositorAnimations::ConvertTimingForCompositor(
   out.iteration_start = timing.iteration_start;
 
   DCHECK_GT(out.scaled_duration, AnimationTimeDelta());
-  DCHECK(!out.scaled_time_offset.is_max() && !out.scaled_time_offset.is_min());
   DCHECK(out.adjusted_iteration_count > 0 ||
          out.adjusted_iteration_count == -1);
   DCHECK(std::isfinite(out.playback_rate) && out.playback_rate);

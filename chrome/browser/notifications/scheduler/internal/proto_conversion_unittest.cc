@@ -84,7 +84,14 @@ TEST(ProtoConversionTest, ClientStateProtoConversion) {
   // Verify basic fields.
   ClientState client_state;
   test::ImpressionTestData test_data{
-      SchedulerClientType::kTest1, 3, {}, base::nullopt};
+      SchedulerClientType::kTest1,
+      3 /* current_max_daily_show */,
+      {} /* impressions */,
+      base::nullopt /* suppression_info */,
+      0 /* negative_events_count */,
+      base::nullopt /* negative_event_ts */,
+      base::nullopt /* last_shown_ts */,
+  };
   test::AddImpressionTestData(test_data, &client_state);
   TestClientStateConversion(&client_state);
 
@@ -97,6 +104,10 @@ TEST(ProtoConversionTest, ClientStateProtoConversion) {
   auto suppression = SuppressionInfo(last_trigger_time, duration);
   suppression.recover_goal = 5;
   client_state.suppression_info = std::move(suppression);
+  client_state.last_shown_ts = last_trigger_time;
+  client_state.negative_events_count = 1;
+  client_state.last_negative_event_ts =
+      last_trigger_time + base::TimeDelta::FromMinutes(1);
   TestClientStateConversion(&client_state);
 }
 

@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '986680240f81ee8a7f3b8e6c41e34fe4a199fdc4',
+  'skia_revision': '777e146564b419c3826672571fb02f4b7aae9184',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '0e841118af5bce4a09c69c6cdd8e9ce97813bc57',
+  'v8_revision': 'ff1896a1424538c6b314d2d4b167a56b81fdc0db',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5a58091e4d1af91708e59cbae0518dd129debd37',
+  'devtools_frontend_revision': '5f96597ad93d83de80585695f2d071157eac34c0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -852,7 +852,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2998999dca235eedb6e1180569e955942ddcd78c',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '6566156b03a02a3269ef099feccf40b762aa7668',
       'condition': 'checkout_linux',
   },
 
@@ -1429,7 +1429,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c6a65c8866487c6adc0a7bb472d3bad9389501f9',
+    Var('webrtc_git') + '/src.git' + '@' + 'ae92244054c4c2dc5f1a523c7477a8312c581bfe',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1504,7 +1504,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@90d83a0b66e6cc7972708f41ee3bd9177829d3d4',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b780372797eaec36d324a4d1d85e78185c782d2a',
     'condition': 'checkout_src_internal',
   },
 

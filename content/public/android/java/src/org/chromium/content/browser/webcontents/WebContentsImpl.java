@@ -439,6 +439,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public void dispatchBeforeUnload(boolean autoCancel) {
+        if (mNativeWebContentsAndroid == 0) return;
+        WebContentsImplJni.get().dispatchBeforeUnload(
+                mNativeWebContentsAndroid, WebContentsImpl.this, autoCancel);
+    }
+
+    @Override
     public void stop() {
         checkNotDestroyed();
         WebContentsImplJni.get().stop(mNativeWebContentsAndroid, WebContentsImpl.this);
@@ -1053,6 +1060,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         String getEncoding(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isLoading(long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isLoadingToDifferentDocument(long nativeWebContentsAndroid, WebContentsImpl caller);
+        void dispatchBeforeUnload(
+                long nativeWebContentsAndroid, WebContentsImpl caller, boolean autoCancel);
         void stop(long nativeWebContentsAndroid, WebContentsImpl caller);
         void cut(long nativeWebContentsAndroid, WebContentsImpl caller);
         void copy(long nativeWebContentsAndroid, WebContentsImpl caller);

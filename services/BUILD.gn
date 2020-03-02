@@ -22,7 +22,6 @@ test("services_unittests") {
   # section below. If you are unsure, contact blundell@chromium.org.
   deps = [
     "//services/content:tests",
-    "//services/identity:tests",
     "//services/metrics/public/cpp:tests",
     "//services/network:tests",
     "//services/network/public/cpp:tests",
@@ -55,7 +54,6 @@ test("services_unittests") {
       "//components/signin/public/android:java",
       "//services/data_decoder/public/cpp/android:safe_json_java",
       "//services/device:java",
-      "//services/identity:java",
       "//services/media_session/public/cpp/android:media_session_java",
       "//services/tracing:tracing_test_helper_java",
 

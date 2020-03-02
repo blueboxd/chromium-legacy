@@ -445,8 +445,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
-  void BeginFrame(base::TimeTicks last_frame_time,
-                  bool record_main_frame_metrics);
+  void BeginFrame(base::TimeTicks last_frame_time);
   void DidBeginFrame();
   void BeginRafAlignedInput();
   void EndRafAlignedInput();

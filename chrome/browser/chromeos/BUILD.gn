@@ -280,8 +280,6 @@ source_set("chromeos") {
     "//services/device/public/cpp/usb",
     "//services/device/public/mojom",
     "//services/device/public/mojom:usb",
-    "//services/identity/public/cpp:cpp_types",
-    "//services/identity/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/preferences/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",

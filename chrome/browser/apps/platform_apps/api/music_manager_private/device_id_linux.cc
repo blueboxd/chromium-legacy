@@ -20,7 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -182,8 +182,8 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
     raw_device_id = mac_address + disk_id;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, raw_device_id));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, raw_device_id));
 }
 
 }  // namespace
@@ -192,7 +192,7 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE, traits(),
       base::BindOnce(&GetRawDeviceIdImpl,
                      base::Bind(&DeviceId::IsValidMacAddress), callback));

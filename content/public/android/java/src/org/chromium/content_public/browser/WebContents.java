@@ -195,6 +195,14 @@ public interface WebContents extends Parcelable {
     boolean isLoadingToDifferentDocument();
 
     /**
+     * Runs the beforeunload handler, if any. The tab will be closed if there's no beforeunload
+     * handler or if the user accepts closing.
+     *
+     * @param autoCancel See C++ WebContents for explanation.
+     */
+    void dispatchBeforeUnload(boolean autoCancel);
+
+    /**
      * Stop any pending navigation.
      */
     void stop();

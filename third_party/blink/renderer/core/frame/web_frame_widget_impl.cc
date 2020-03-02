@@ -251,8 +251,7 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time,
-                                    bool record_main_frame_metrics) {
+void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
@@ -262,7 +261,7 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time,
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  if (record_main_frame_metrics) {
+  if (WebFrameWidgetBase::ShouldRecordMainFrameMetrics()) {
     SCOPED_UMA_AND_UKM_TIMER(
         LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator(),
         LocalFrameUkmAggregator::kAnimate);
@@ -543,9 +542,6 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   web_sizing_info.has_width = sizing_info.has_width;
   web_sizing_info.has_height = sizing_info.has_height;
   Client()->IntrinsicSizingInfoChanged(web_sizing_info);
-}
-
-void WebFrameWidgetImpl::ApplyViewportChanges(const ApplyViewportChangesArgs&) {
 }
 
 void WebFrameWidgetImpl::MouseCaptureLost() {

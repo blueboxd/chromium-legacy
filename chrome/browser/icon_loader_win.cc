@@ -8,7 +8,7 @@
 #include <shellapi.h>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/win/dpi.h"
@@ -32,7 +32,7 @@ IconLoader::IconGroup IconLoader::GroupForFilepath(
 scoped_refptr<base::TaskRunner> IconLoader::GetReadIconTaskRunner() {
   // Technically speaking, only a thread with COM is needed, not one that has
   // a COM STA. However, this is what is available for now.
-  return base::CreateCOMSTATaskRunner(traits());
+  return base::ThreadPool::CreateCOMSTATaskRunner(traits());
 }
 
 void IconLoader::ReadIcon() {

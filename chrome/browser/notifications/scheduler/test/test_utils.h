@@ -23,17 +23,23 @@ namespace test {
 // Flattened type state data used in test to generate client states.
 struct ImpressionTestData {
   ImpressionTestData(SchedulerClientType type,
-                     int current_max_daily_show,
+                     size_t current_max_daily_show,
                      std::vector<Impression> impressions,
-                     base::Optional<SuppressionInfo> suppression_info);
+                     base::Optional<SuppressionInfo> suppression_info,
+                     size_t negative_events_count,
+                     base::Optional<base::Time> last_negative_event_ts,
+                     base::Optional<base::Time> last_shown_ts);
 
   ImpressionTestData(const ImpressionTestData& other);
   ~ImpressionTestData();
 
   SchedulerClientType type;
-  int current_max_daily_show;
+  size_t current_max_daily_show;
   std::vector<Impression> impressions;
   base::Optional<SuppressionInfo> suppression_info;
+  size_t negative_events_count;
+  base::Optional<base::Time> last_negative_event_ts;
+  base::Optional<base::Time> last_shown_ts;
 };
 
 // Add one impression test data into a client state.

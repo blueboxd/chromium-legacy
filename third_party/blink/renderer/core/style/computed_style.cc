@@ -27,7 +27,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
@@ -1335,6 +1337,23 @@ Color ComputedStyle::GetColor() const {
 }
 void ComputedStyle::SetColor(const Color& v) {
   SetColorInternal(v);
+}
+
+bool ComputedStyle::SetEffectiveZoom(float f) {
+  // Clamp the effective zoom value to a smaller (but hopeful still large
+  // enough) range, to avoid overflow in derived computations.
+  float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
+  if (EffectiveZoom() == clamped_effective_zoom)
+    return false;
+  SetInternalEffectiveZoom(clamped_effective_zoom);
+  // Record UMA for the effective zoom in order to assess the relative
+  // importance of sub-pixel behavior, and related features and bugs.
+  // Clamp to a max of 400%, to make the histogram behave better at no
+  // real cost to our understanding of the zooms in use.
+  base::UmaHistogramSparse(
+      "Blink.EffectiveZoom",
+      base::ClampToRange<float>(clamped_effective_zoom * 100, 0, 400));
+  return true;
 }
 
 static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,

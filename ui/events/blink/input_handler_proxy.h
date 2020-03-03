@@ -187,9 +187,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   SynchronousInputHandler* synchronous_input_handler_;
 
-#if DCHECK_IS_ON()
-  bool expect_scroll_update_end_;
-#endif
   bool gesture_scroll_on_impl_thread_;
   bool gesture_pinch_in_progress_ = false;
   bool in_inertial_scrolling_ = false;

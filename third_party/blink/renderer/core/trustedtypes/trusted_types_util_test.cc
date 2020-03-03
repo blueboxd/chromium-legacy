@@ -22,7 +22,7 @@
 
 namespace blink {
 
-void GetStringFromTrustedHTMLThrows(
+void TrustedTypesCheckForHTMLThrows(
     const StringOrTrustedHTML& string_or_trusted_html) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
@@ -32,7 +32,7 @@ void GetStringFromTrustedHTMLThrows(
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = GetStringFromTrustedHTML(string_or_trusted_html, &document,
+  String s = TrustedTypesCheckForHTML(string_or_trusted_html, &document,
                                       exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
@@ -41,14 +41,14 @@ void GetStringFromTrustedHTMLThrows(
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = GetStringFromTrustedHTML(string_or_trusted_html, &document,
+  String s1 = TrustedTypesCheckForHTML(string_or_trusted_html, &document,
                                        exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
 }
 
-void GetStringFromTrustedScriptThrows(
+void TrustedTypesCheckForScriptThrows(
     const StringOrTrustedScript& string_or_trusted_script) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
@@ -58,7 +58,7 @@ void GetStringFromTrustedScriptThrows(
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = GetStringFromTrustedScript(
+  String s = TrustedTypesCheckForScript(
       string_or_trusted_script, document.ToExecutionContext(), exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
@@ -67,14 +67,14 @@ void GetStringFromTrustedScriptThrows(
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = GetStringFromTrustedScript(
+  String s1 = TrustedTypesCheckForScript(
       string_or_trusted_script, document.ToExecutionContext(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
 }
 
-void GetStringFromTrustedScriptURLThrows(
+void TrustedTypesCheckForScriptURLThrows(
     const StringOrTrustedScriptURL& string_or_trusted_script_url) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
@@ -84,7 +84,7 @@ void GetStringFromTrustedScriptURLThrows(
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
-  String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
+  String s = TrustedTypesCheckForScriptURL(string_or_trusted_script_url,
                                            document.ToExecutionContext(),
                                            exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -94,7 +94,7 @@ void GetStringFromTrustedScriptURLThrows(
       network::mojom::ContentSecurityPolicyType::kEnforce,
       network::mojom::ContentSecurityPolicySource::kMeta);
   ASSERT_FALSE(exception_state.HadException());
-  String s1 = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
+  String s1 = TrustedTypesCheckForScriptURL(string_or_trusted_script_url,
                                             document.ToExecutionContext(),
                                             exception_state);
   EXPECT_TRUE(exception_state.HadException());
@@ -102,8 +102,7 @@ void GetStringFromTrustedScriptURLThrows(
   exception_state.ClearException();
 }
 
-// Functions for checking non-throwing cases.
-void GetStringFromTrustedHTMLWorks(
+void TrustedTypesCheckForHTMLWorks(
     const StringOrTrustedHTML& string_or_trusted_html,
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
@@ -113,12 +112,12 @@ void GetStringFromTrustedHTMLWorks(
       network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
-  String s = GetStringFromTrustedHTML(string_or_trusted_html, &document,
+  String s = TrustedTypesCheckForHTML(string_or_trusted_html, &document,
                                       exception_state);
   ASSERT_EQ(s, expected);
 }
 
-void GetStringFromTrustedScriptWorks(
+void TrustedTypesCheckForScriptWorks(
     const StringOrTrustedScript& string_or_trusted_script,
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
@@ -128,12 +127,12 @@ void GetStringFromTrustedScriptWorks(
       network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
-  String s = GetStringFromTrustedScript(
+  String s = TrustedTypesCheckForScript(
       string_or_trusted_script, document.ToExecutionContext(), exception_state);
   ASSERT_EQ(s, expected);
 }
 
-void GetStringFromTrustedScriptURLWorks(
+void TrustedTypesCheckForScriptURLWorks(
     const StringOrTrustedScriptURL& string_or_trusted_script_url,
     String expected) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
@@ -143,52 +142,52 @@ void GetStringFromTrustedScriptURLWorks(
       network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
-  String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
+  String s = TrustedTypesCheckForScriptURL(string_or_trusted_script_url,
                                            document.ToExecutionContext(),
                                            exception_state);
   ASSERT_EQ(s, expected);
 }
 
-// GetStringFromTrustedHTML tests
-TEST(TrustedTypesUtilTest, GetStringFromTrustedHTML_TrustedHTML) {
+// TrustedTypesCheckForHTML tests
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForHTML_TrustedHTML) {
   auto* html = MakeGarbageCollected<TrustedHTML>("A string");
   StringOrTrustedHTML trusted_value =
       StringOrTrustedHTML::FromTrustedHTML(html);
-  GetStringFromTrustedHTMLWorks(trusted_value, "A string");
+  TrustedTypesCheckForHTMLWorks(trusted_value, "A string");
 }
 
-TEST(TrustedTypesUtilTest, GetStringFromTrustedHTML_String) {
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForHTML_String) {
   StringOrTrustedHTML string_value =
       StringOrTrustedHTML::FromString("A string");
-  GetStringFromTrustedHTMLThrows(string_value);
+  TrustedTypesCheckForHTMLThrows(string_value);
 }
 
-// GetStringFromTrustedScript tests
-TEST(TrustedTypesUtilTest, GetStringFromTrustedScript_TrustedScript) {
+// TrustedTypesCheckForScript tests
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForScript_TrustedScript) {
   auto* script = MakeGarbageCollected<TrustedScript>("A string");
   StringOrTrustedScript trusted_value =
       StringOrTrustedScript::FromTrustedScript(script);
-  GetStringFromTrustedScriptWorks(trusted_value, "A string");
+  TrustedTypesCheckForScriptWorks(trusted_value, "A string");
 }
 
-TEST(TrustedTypesUtilTest, GetStringFromTrustedScript_String) {
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForScript_String) {
   StringOrTrustedScript string_value =
       StringOrTrustedScript::FromString("A string");
-  GetStringFromTrustedScriptThrows(string_value);
+  TrustedTypesCheckForScriptThrows(string_value);
 }
 
-// GetStringFromTrustedScriptURL tests
-TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_TrustedScriptURL) {
+// TrustedTypesCheckForScriptURL tests
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForScriptURL_TrustedScriptURL) {
   String url_address = "http://www.example.com/";
   auto* script_url = MakeGarbageCollected<TrustedScriptURL>(url_address);
   StringOrTrustedScriptURL trusted_value =
       StringOrTrustedScriptURL::FromTrustedScriptURL(script_url);
-  GetStringFromTrustedScriptURLWorks(trusted_value, "http://www.example.com/");
+  TrustedTypesCheckForScriptURLWorks(trusted_value, "http://www.example.com/");
 }
 
-TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_String) {
+TEST(TrustedTypesUtilTest, TrustedTypesCheckForScriptURL_String) {
   StringOrTrustedScriptURL string_value =
       StringOrTrustedScriptURL::FromString("A string");
-  GetStringFromTrustedScriptURLThrows(string_value);
+  TrustedTypesCheckForScriptURLThrows(string_value);
 }
 }  // namespace blink

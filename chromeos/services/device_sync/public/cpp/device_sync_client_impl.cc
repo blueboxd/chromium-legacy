@@ -259,12 +259,18 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     return;
   }
 
-  if (features::ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV1DeviceSync()) {
+    local_instance_id_ = local_device_metadata->instance_id.empty()
+                             ? base::nullopt
+                             : base::make_optional<std::string>(
+                                   local_device_metadata->instance_id);
+    local_legacy_device_id_ = local_device_metadata->GetDeviceId().empty()
+                                  ? base::nullopt
+                                  : base::make_optional<std::string>(
+                                        local_device_metadata->GetDeviceId());
+  } else {
     DCHECK(!local_device_metadata->instance_id.empty());
     local_instance_id_ = local_device_metadata->instance_id;
-  } else {
-    DCHECK(!local_device_metadata->GetDeviceId().empty());
-    local_legacy_device_id_ = local_device_metadata->GetDeviceId();
   }
 
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);

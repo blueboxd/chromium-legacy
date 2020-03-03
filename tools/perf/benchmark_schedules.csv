@@ -3,8 +3,8 @@ View a prettier version of this at,https://docs.google.com/spreadsheets/d/1RQepn
 benchmark name,total device usage hours per cycle,platforms count (unabridged),platforms count (abridged),platforms where unabridged,platforms where abridged
 rendering.mobile,8.67,3,0,"Android Nexus5X WebView Perf, android-pixel2-perf, android-pixel2_webview-perf",
 rendering.desktop,6.89,5,1,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",Win 7 Nvidia GPU Perf
-system_health.common_mobile,5.00,5,2,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf","Android Nexus5 Perf, android-pixel2_weblayer-perf"
-system_health.memory_mobile,4.71,5,1,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf",android-pixel2_weblayer-perf
+system_health.common_mobile,4.63,5,2,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf","Android Nexus5 Perf, android-pixel2_weblayer-perf"
+system_health.memory_mobile,4.55,5,1,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf",android-pixel2_weblayer-perf
 v8.browsing_mobile,3.87,5,0,"Android Nexus5X WebView Perf, android-go-perf, android-go_webview-perf, android-pixel2-perf, android-pixel2_webview-perf",
 system_health.common_desktop,3.23,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",
 system_health.memory_desktop,2.66,5,0,"linux-perf, mac-10_12_laptop_low_end-perf, mac-10_13_laptop_high_end-perf, win-10-perf, win-10_laptop_low_end-perf",

@@ -973,7 +973,7 @@ DocumentFragment* Range::createContextualFragment(
   Document& document = start_.Container().GetDocument();
 
   String markup =
-      GetStringFromTrustedHTML(string_or_html, &document, exception_state);
+      TrustedTypesCheckForHTML(string_or_html, &document, exception_state);
   if (!exception_state.HadException()) {
     return createContextualFragmentFromString(markup, exception_state);
   }

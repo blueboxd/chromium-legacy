@@ -63,7 +63,7 @@ PulseAudioOutputStream::PulseAudioOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
     AudioManagerBase* manager,
-    const AudioManager::LogCallback log_callback)
+    AudioManager::LogCallback log_callback)
     : params_(AudioParameters(params.format(),
                               params.channel_layout(),
                               params.sample_rate(),

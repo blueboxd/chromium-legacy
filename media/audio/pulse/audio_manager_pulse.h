@@ -90,11 +90,12 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
   AudioOutputStream* MakeOutputStream(const AudioParameters& params,
                                       const std::string& device_id,
-                                      const LogCallback& log_callback);
+                                      LogCallback log_callback);
 
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,
-                                    const std::string& device_id);
+                                    const std::string& device_id,
+                                    LogCallback log_callback);
 
   // Updates |native_input_sample_rate_| and |native_channel_count_|.
   void UpdateNativeAudioHardwareInfo();

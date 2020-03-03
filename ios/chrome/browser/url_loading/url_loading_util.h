@@ -10,6 +10,7 @@
 #include "components/sessions/core/session_id.h"
 #include "ui/base/window_open_disposition.h"
 
+class Browser;
 class ChromeBrowserState;
 class GURL;
 
@@ -31,6 +32,6 @@ void LoadJavaScriptURL(const GURL& url,
 // into |browser_state|.
 void RestoreTab(const SessionID session_id,
                 WindowOpenDisposition disposition,
-                ChromeBrowserState* browser_state);
+                Browser* browser);
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_UTIL_H_

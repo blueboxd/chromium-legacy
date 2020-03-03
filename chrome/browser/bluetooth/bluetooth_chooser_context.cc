@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -90,9 +91,10 @@ base::Value DeviceInfoToDeviceObject(
 }  // namespace
 
 BluetoothChooserContext::BluetoothChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         ContentSettingsType::BLUETOOTH_GUARD,
-                         ContentSettingsType::BLUETOOTH_CHOOSER_DATA) {}
+    : ChooserContextBase(
+          ContentSettingsType::BLUETOOTH_GUARD,
+          ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
+          HostContentSettingsMapFactory::GetForProfile(profile)) {}
 
 BluetoothChooserContext::~BluetoothChooserContext() = default;
 
@@ -287,6 +289,13 @@ bool BluetoothChooserContext::IsAllowedToAccessService(
 // static
 std::string BluetoothChooserContext::GetObjectName(const base::Value& object) {
   return *object.FindStringKey(kDeviceNameKey);
+}
+
+// static
+WebBluetoothDeviceId BluetoothChooserContext::GetObjectDeviceId(
+    const base::Value& object) {
+  std::string device_id_str = *object.FindStringKey(kWebBluetoothDeviceIdKey);
+  return WebBluetoothDeviceId(device_id_str);
 }
 
 bool BluetoothChooserContext::IsValidObject(const base::Value& object) {

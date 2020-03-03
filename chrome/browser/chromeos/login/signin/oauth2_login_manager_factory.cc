@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -17,7 +16,6 @@ OAuth2LoginManagerFactory::OAuth2LoginManagerFactory()
           "OAuth2LoginManager",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(AccountReconcilorFactory::GetInstance());
 }
 
 OAuth2LoginManagerFactory::~OAuth2LoginManagerFactory() {}

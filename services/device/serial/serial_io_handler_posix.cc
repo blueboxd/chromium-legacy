@@ -295,6 +295,11 @@ bool SerialIoHandlerPosix::PostOpen() {
 #endif
 }
 
+void SerialIoHandlerPosix::PreClose() {
+  StopWatchingFileRead();
+  StopWatchingFileWrite();
+}
+
 SerialIoHandlerPosix::SerialIoHandlerPosix(
     const base::FilePath& port,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)

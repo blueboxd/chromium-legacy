@@ -6,7 +6,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
 #include "base/test/bind_test_util.h"
@@ -229,21 +228,6 @@ TEST_F(PostTaskTestWithExecutor, RegisterExecutorTwice) {
   testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(
       RegisterTaskExecutor(TestTaskTraitsExtension::kExtensionId, &executor_));
-}
-
-TEST_F(PostTaskTestWithExecutor, PriorityInherited) {
-  internal::ScopedSetTaskPriorityForCurrentThread scoped_priority(
-      TaskPriority::BEST_EFFORT);
-  TaskTraits traits = {TestExtensionBoolTrait()};
-  TaskTraits traits_with_inherited_priority = traits;
-  traits_with_inherited_priority.InheritPriority(TaskPriority::BEST_EFFORT);
-  EXPECT_FALSE(traits_with_inherited_priority.priority_set_explicitly());
-  EXPECT_CALL(executor_,
-              PostDelayedTaskMock(_, traits_with_inherited_priority, _, _))
-      .Times(1);
-  EXPECT_TRUE(PostTask(FROM_HERE, traits, DoNothing()));
-  EXPECT_TRUE(executor_.runner()->HasPendingTask());
-  executor_.runner()->ClearPendingTasks();
 }
 
 namespace {

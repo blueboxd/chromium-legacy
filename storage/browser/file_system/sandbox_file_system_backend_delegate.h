@@ -138,11 +138,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
                                              QuotaManagerProxy* proxy,
                                              FileSystemType type) override;
-  void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
-                                         std::set<GURL>* origins) override;
-  void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
-                                         const std::string& host,
-                                         std::set<GURL>* origins) override;
+  void GetOriginsForTypeOnFileTaskRunner(
+      FileSystemType type,
+      std::set<url::Origin>* origins) override;
+  void GetOriginsForHostOnFileTaskRunner(
+      FileSystemType type,
+      const std::string& host,
+      std::set<url::Origin>* origins) override;
   int64_t GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
                                          const url::Origin& origin,
                                          FileSystemType type) override;

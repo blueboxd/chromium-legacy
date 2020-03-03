@@ -30,14 +30,6 @@ class PostTaskAndReplyWithTraitsTaskRunner
   const TaskTraits traits_;
 };
 
-// Returns TaskTraits based on |traits|. If TaskPriority hasn't been set
-// explicitly in |traits|, the returned TaskTraits will inherit the current
-// TaskPriority.
-TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
-  traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
-  return traits;
-}
-
 internal::ThreadPoolImpl* GetThreadPoolImpl() {
   auto* instance = ThreadPoolInstance::Get();
   DCHECK(instance)
@@ -84,8 +76,7 @@ bool ThreadPool::PostDelayedTask(const Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
                                  TimeDelta delay) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetThreadPoolImpl()->PostDelayedTask(from_here, adjusted_traits,
+  return GetThreadPoolImpl()->PostDelayedTask(from_here, traits,
                                               std::move(task), delay);
 }
 
@@ -113,9 +104,7 @@ scoped_refptr<SequencedTaskRunner> ThreadPool::CreateSequencedTaskRunner(
 // static
 scoped_refptr<UpdateableSequencedTaskRunner>
 ThreadPool::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetThreadPoolImpl()->CreateUpdateableSequencedTaskRunner(
-      adjusted_traits);
+  return GetThreadPoolImpl()->CreateUpdateableSequencedTaskRunner(traits);
 }
 
 // static

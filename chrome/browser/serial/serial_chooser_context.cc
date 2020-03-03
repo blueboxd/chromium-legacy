@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -51,9 +52,9 @@ base::Value PortInfoToValue(const device::mojom::SerialPortInfo& port) {
 }  // namespace
 
 SerialChooserContext::SerialChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         ContentSettingsType::SERIAL_GUARD,
-                         ContentSettingsType::SERIAL_CHOOSER_DATA),
+    : ChooserContextBase(ContentSettingsType::SERIAL_GUARD,
+                         ContentSettingsType::SERIAL_CHOOSER_DATA,
+                         HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 SerialChooserContext::~SerialChooserContext() = default;

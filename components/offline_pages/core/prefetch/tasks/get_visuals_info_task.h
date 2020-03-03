@@ -34,10 +34,9 @@ class GetVisualsInfoTask : public Task {
                      ResultCallback callback);
   ~GetVisualsInfoTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void CompleteTaskAndForwardResult(Result result);
   PrefetchStore* prefetch_store_;
   int64_t offline_id_;

@@ -47,6 +47,11 @@ void BuildState::RemoveObserver(const BuildStateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool BuildState::HasObserver(const BuildStateObserver* observer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return observers_.HasObserver(observer);
+}
+
 void BuildState::NotifyObserversOnUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)

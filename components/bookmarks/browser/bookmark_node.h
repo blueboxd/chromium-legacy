@@ -44,7 +44,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   typedef std::map<std::string, std::string> MetaInfoMap;
 
-  static const int64_t kInvalidSyncTransactionVersion;
   static const char kRootNodeGuid[];
   static const char kBookmarkBarNodeGuid[];
   static const char kOtherBookmarksNodeGuid[];
@@ -124,11 +123,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
   void SetMetaInfoMap(const MetaInfoMap& meta_info_map);
   // Returns NULL if there are no values in the map.
   const MetaInfoMap* GetMetaInfoMap() const;
-
-  void set_sync_transaction_version(int64_t sync_transaction_version) {
-    sync_transaction_version_ = sync_transaction_version;
-  }
-  int64_t sync_transaction_version() const { return sync_transaction_version_; }
 
   // TitledUrlNode interface methods.
   const base::string16& GetTitledUrlNodeTitle() const override;
@@ -217,9 +211,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode>, public TitledUrlNode {
 
   // A map that stores arbitrary meta information about the node.
   std::unique_ptr<MetaInfoMap> meta_info_map_;
-
-  // The sync transaction version.
-  int64_t sync_transaction_version_ = kInvalidSyncTransactionVersion;
 
   const bool is_permanent_node_;
 

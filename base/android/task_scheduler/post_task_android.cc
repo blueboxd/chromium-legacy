@@ -45,14 +45,12 @@ std::array<uint8_t, TaskTraitsExtensionStorage::kStorageSize> GetExtensionData(
 // static
 TaskTraits PostTaskAndroid::CreateTaskTraits(
     JNIEnv* env,
-    jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
     jboolean use_thread_pool,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data) {
-  return TaskTraits(priority_set_explicitly,
-                    static_cast<TaskPriority>(priority), may_block,
+  return TaskTraits(static_cast<TaskPriority>(priority), may_block,
                     use_thread_pool,
                     TaskTraitsExtensionStorage(
                         extension_id, GetExtensionData(env, extension_data)));
@@ -60,7 +58,6 @@ TaskTraits PostTaskAndroid::CreateTaskTraits(
 
 void JNI_PostTask_PostDelayedTask(
     JNIEnv* env,
-    jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
     jboolean use_thread_pool,
@@ -72,8 +69,8 @@ void JNI_PostTask_PostDelayedTask(
   // BindOnce because JNIEnv is thread specific.
   PostDelayedTask(FROM_HERE,
                   PostTaskAndroid::CreateTaskTraits(
-                      env, priority_set_explicitly, priority, may_block,
-                      use_thread_pool, extension_id, extension_data),
+                      env, priority, may_block, use_thread_pool, extension_id,
+                      extension_data),
                   BindOnce(&PostTaskAndroid::RunJavaTask,
                            base::android::ScopedJavaGlobalRef<jobject>(task)),
                   TimeDelta::FromMilliseconds(delay));

@@ -9,7 +9,34 @@ source_set("advanced_settings_signin") {
   sources = [
     "advanced_settings_signin_coordinator.h",
     "advanced_settings_signin_coordinator.mm",
+    "advanced_settings_signin_mediator.h",
+    "advanced_settings_signin_mediator.mm",
+    "advanced_settings_signin_navigation_controller.h",
+    "advanced_settings_signin_navigation_controller.mm",
   ]
   public_deps =
       [ "//ios/chrome/browser/ui/authentication/signin:signin_headers" ]
+  deps = [
+    ":constants",
+    "//components/sync",
+    "//components/unified_consent",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/authentication/signin:signin_protected",
+    "//ios/chrome/browser/ui/settings:settings_controller_protocol",
+    "//ios/chrome/browser/ui/settings/google_services:constants",
+    "//ios/web/public",
+    "//ui/base",
+  ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "advanced_settings_signin_constants.h",
+    "advanced_settings_signin_constants.mm",
+  ]
 }

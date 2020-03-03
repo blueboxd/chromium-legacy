@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_verifier.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 class GoogleServiceAuthError;
@@ -25,8 +25,8 @@ namespace chromeos {
 // This class is responsible for restoring authenticated web sessions out of
 // OAuth2 refresh tokens or pre-authenticated cookie jar.
 class OAuth2LoginManager : public KeyedService,
-                           public signin::IdentityManager::Observer,
-                           public AccountReconcilor::Observer {
+                           public OAuth2LoginVerifier::Delegate,
+                           public signin::IdentityManager::Observer {
  public:
   // Session restore states.
   enum SessionRestoreState {
@@ -143,12 +143,16 @@ class OAuth2LoginManager : public KeyedService,
   // KeyedService implementation.
   void Shutdown() override;
 
+  // OAuth2LoginVerifier::Delegate overrides.
+  void OnSessionMergeSuccess() override;
+  void OnSessionMergeFailure(bool connection_error) override;
+  void OnListAccountsSuccess(
+      const std::vector<gaia::ListedAccount>& accounts) override;
+  void OnListAccountsFailure(bool connection_error) override;
+
   // signin::IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-
-  // AccountReconcilor::Observer implementation:
-  void OnStateChanged(signin_metrics::AccountReconcilorState state) override;
 
   // Signals delegate that authentication is completed, kicks off token fetching
   // process.
@@ -157,10 +161,7 @@ class OAuth2LoginManager : public KeyedService,
   // Retrieves IdentityManager for |user_profile_|.
   signin::IdentityManager* GetIdentityManager();
 
-  // Retrieves AccountReconcilor for |user_profile_|.
-  AccountReconcilor* GetAccountReconcilor();
-
-  // Retrieves the primary account for |user_profile_|.
+  // Retrieves the primary account ID for |user_profile_|.
   CoreAccountId GetUnconsentedPrimaryAccountId();
 
   // Records |refresh_token_| to token service. The associated account id is
@@ -168,6 +169,10 @@ class OAuth2LoginManager : public KeyedService,
   // account id is not present, GetAccountInfoOfRefreshToken will be called to
   // retrieve the associated account info.
   void StoreOAuth2Token();
+
+  // Checks if primary account sessions cookies are stale and restores them
+  // if needed.
+  void VerifySessionCookies();
 
   // Issue GAIA cookie recovery (MergeSession) from |refresh_token_|.
   void RestoreSessionCookies();
@@ -198,6 +203,8 @@ class OAuth2LoginManager : public KeyedService,
   // Whether there is pending TokenService::LoadCredentials call.
   bool pending_token_service_load_ = false;
 
+  std::unique_ptr<OAuth2LoginVerifier> login_verifier_;
+
   // OAuth2 refresh token.
   std::string refresh_token_;
 
@@ -212,9 +219,6 @@ class OAuth2LoginManager : public KeyedService,
   // TODO(zelidrag|gspencer): Figure out how to get rid of ProfileHelper so we
   // can change the line below to base::ObserverList<Observer, true>.
   base::ObserverList<Observer, false>::Unchecked observer_list_;
-
-  ScopedObserver<AccountReconcilor, AccountReconcilor::Observer>
-      account_reconcilor_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };

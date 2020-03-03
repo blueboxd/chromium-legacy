@@ -136,6 +136,9 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Performs platform-specific, one-time port configuration on open.
   virtual bool PostOpen();
 
+  // Performs platform-specific operations before |file_| is closed.
+  virtual void PreClose();
+
   // Called by the implementation to signal that the active read has completed.
   // WARNING: Calling this method can destroy the SerialIoHandler instance
   // if the associated I/O operation was the only thing keeping it alive.

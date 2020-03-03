@@ -505,14 +505,6 @@ void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
   RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableFetchMetadata(bool enable) {
-  RuntimeEnabledFeatures::SetFetchMetadataEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableFetchMetadataDestination(bool enable) {
-  RuntimeEnabledFeatures::SetFetchMetadataDestinationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {
   RuntimeEnabledFeatures::SetTimerThrottlingForBackgroundTabsEnabled(enable);
 }

@@ -701,6 +701,57 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test,
           ->is_under_advanced_protection);
 }
 
+// Sets up a new user with stored refresh token.
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_SetInvalidTokenStatus) {
+  StartNewUserSession(/*wait_for_merge=*/true,
+                      /*is_under_advanced_protection=*/false);
+}
+
+// Tests that an auth error marks invalid auth token status despite
+// OAuth2LoginManager thinks merge session is done successfully
+IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
+  RequestDeferrer list_accounts_request_deferer;
+  AddRequestDeferer("/ListAccounts", &list_accounts_request_deferer);
+
+  SetupGaiaServerForUnexpiredAccount();
+  SimulateNetworkOnline();
+
+  // Signs in as the existing user created in pre test.
+  ExistingUserController* const controller =
+      ExistingUserController::current_controller();
+  UserContext user_context(
+      user_manager::USER_TYPE_REGULAR,
+      AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId));
+  user_context.SetKey(Key(kTestAccountPassword));
+  controller->Login(user_context, SigninSpecifics());
+
+  // Wait until /ListAccounts request happens so that an auth error can be
+  // generated after user profile is available but before merge session
+  // finishes.
+  list_accounts_request_deferer.WaitForRequestToStart();
+
+  // Make sure that merge session is not finished.
+  OAuth2LoginManager* const login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(GetProfile());
+  ASSERT_NE(OAuth2LoginManager::SESSION_RESTORE_DONE, login_manager->state());
+
+  // Generate an auth error.
+  signin::SetInvalidRefreshTokenForAccount(
+      IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile()),
+      PickAccountId(GetProfile(), kTestGaiaId, kTestEmail));
+
+  // Let go /ListAccounts request.
+  list_accounts_request_deferer.UnblockRequest();
+
+  // Wait for the session merge to finish with success.
+  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
+
+  // User oauth2 token status should be marked as invalid because of auth error
+  // and regardless of the merge session outcome.
+  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestEmail),
+            user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+}
+
 constexpr char kGooglePageContent[] =
     "<html><title>Hello!</title><script>alert('hello');</script>"
     "<body>Hello Google!</body></html>";
@@ -709,7 +760,6 @@ constexpr char kRandomPageContent[] =
 constexpr char kHelloPagePath[] = "/hello_google";
 constexpr char kRandomPagePath[] = "/non_google_page";
 constexpr char kMergeSessionPath[] = "/MergeSession";
-constexpr char kMultiLoginPath[] = "/oauth/multilogin";
 
 // FakeGoogle serves content of http://www.google.com/hello_google page for
 // merge session tests.
@@ -742,8 +792,7 @@ class FakeGoogle {
       http_response->set_code(net::HTTP_OK);
       http_response->set_content_type("text/html");
       http_response->set_content(kRandomPageContent);
-    } else if ((hang_merge_session_ && request_path == kMergeSessionPath) ||
-               (hang_merge_session_ && request_path == kMultiLoginPath)) {
+    } else if (hang_merge_session_ && request_path == kMergeSessionPath) {
       merge_session_event_.Signal();
       base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                      base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
@@ -827,7 +876,6 @@ class MergeSessionTest : public OAuth2Test,
   void RegisterAdditionalRequestHandlers() override {
     OAuth2Test::RegisterAdditionalRequestHandlers();
     AddRequestDeferer("/MergeSession", &merge_session_deferer_);
-    AddRequestDeferer("/oauth/multilogin", &merge_session_deferer_);
 
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &FakeGoogle::HandleRequest, base::Unretained(&fake_google_)));

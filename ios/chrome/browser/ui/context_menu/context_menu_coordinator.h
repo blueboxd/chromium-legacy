@@ -25,6 +25,7 @@
 // location, the context menu will originate from |location| in |view|.
 // Context menu will be presented from |viewController|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                     inView:(UIView*)view
                                 atLocation:(CGPoint)location

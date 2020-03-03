@@ -24,7 +24,6 @@ class BASE_EXPORT PostTaskAndroid {
 
   static TaskTraits CreateTaskTraits(
       JNIEnv* env,
-      jboolean priority_set_explicitly,
       jint priority,
       jboolean may_block,
       jboolean use_thread_pool,

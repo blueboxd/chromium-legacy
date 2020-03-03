@@ -66,6 +66,9 @@ class MEDIA_EXPORT CoreAudioUtil {
   // it is safe to call from other threads.
   static bool IsSupported();
 
+  // Converts a COM error into a human-readable string.
+  static std::string ErrorToString(HRESULT hresult);
+
   // Prints/logs all fields of the format structure in |format|.
   // Also supports extended versions (WAVEFORMATEXTENSIBLE).
   static std::string WaveFormatToString(WaveFormatWrapper format);

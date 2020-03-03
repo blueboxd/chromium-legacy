@@ -2,7 +2,3 @@
 -NavigationBrowserTest.HistoryBackCancelPendingNavigationUserGesture/1
 -SitePerProcessBrowserTest.*
 -TextFragmentAnchorBrowserTest.DisabledOnScriptNavigation/0
-
-# crbug.com/1037939
--BackForwardCacheBrowserTest.VideoSuspendAndResume
--P/CompositorImplBrowserTestRefreshRate.VideoPreference/0

@@ -122,9 +122,14 @@ class PickRequestTaskTest : public RequestQueueTaskTestBase {
 
   PickRequestTask* task() { return task_.get(); }
 
-  void TaskCompletionCallback(Task* completed_task);
+  base::OnceClosure TaskCompletionCallback() {
+    return base::BindOnce(&PickRequestTaskTest::OnTaskComplete,
+                          base::Unretained(this));
+  }
 
  protected:
+  void OnTaskComplete() { task_complete_called_ = true; }
+
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -153,10 +158,6 @@ void PickRequestTaskTest::SetUp() {
 
   InitializeStore();
   PumpLoop();
-}
-
-void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
-  task_complete_called_ = true;
 }
 
 void PickRequestTaskTest::RequestPicked(
@@ -204,13 +205,10 @@ void PickRequestTaskTest::MakePickRequestTask() {
       base::BindOnce(&PickRequestTaskTest::RequestCountCallback,
                      base::Unretained(this)),
       conditions, disabled_requests_, &prioritized_requests_));
-  task_->SetTaskCompletionCallbackForTesting(
-      base::BindRepeating(&PickRequestTaskTest::TaskCompletionCallback,
-                          base::Unretained(this)));
 }
 
 TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -240,7 +238,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -261,7 +259,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithSameRetryCountButEarlier) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -287,7 +285,7 @@ TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -311,7 +309,7 @@ TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -335,7 +333,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -360,7 +358,7 @@ TEST_F(PickRequestTaskTest, ChooseLaterRequest) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -380,7 +378,7 @@ TEST_F(PickRequestTaskTest, ChooseNonExpiredRequest) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -406,7 +404,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -432,7 +430,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -461,7 +459,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -493,7 +491,7 @@ TEST_F(PickRequestTaskTest, ChoosePrioritizedRequests) {
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -531,7 +529,7 @@ TEST_F(PickRequestTaskTest, ChooseFromTwoPrioritizedRequests) {
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return

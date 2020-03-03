@@ -227,6 +227,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String connectionState() const;
 
+  bool canTrickleIceCandidates(bool&) const;
+
   void restartIce();
 
   // A local stream is any stream associated with a sender.

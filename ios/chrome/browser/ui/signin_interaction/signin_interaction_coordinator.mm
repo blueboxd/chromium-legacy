@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
 
@@ -19,9 +18,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SigninInteractionCoordinator () <
-    AdvancedSigninSettingsCoordinatorDelegate,
-    SigninInteractionPresenting>
+@interface SigninInteractionCoordinator () <SigninInteractionPresenting>
 
 // Coordinator to present alerts.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -42,10 +39,6 @@
 
 // Sign-in completion.
 @property(nonatomic, copy) signin_ui::CompletionCallback signinCompletion;
-
-// Advanced sign-in settings coordinator.
-@property(nonatomic, strong)
-    AdvancedSigninSettingsCoordinator* advancedSigninSettingsCoordinator;
 
 @end
 
@@ -130,28 +123,24 @@
 - (void)cancel {
   [self.controller cancel];
   [self interrupSigninCoordinatorWithAction:
-            SigninCoordinatorInterruptActionNoDismiss];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
-                                                  animated:YES
-                                                completion:nil];
+            SigninCoordinatorInterruptActionNoDismiss
+                                 completion:nil];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
   [self interrupSigninCoordinatorWithAction:
-            SigninCoordinatorInterruptActionDismissWithAnimation];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
-                                                  animated:YES
-                                                completion:nil];
+            SigninCoordinatorInterruptActionDismissWithAnimation
+                                 completion:nil];
 }
 
 - (void)abortAndDismissSettingsViewAnimated:(BOOL)animated
                                  completion:(ProceduralBlock)completion {
   DCHECK(!self.controller);
-  DCHECK(self.advancedSigninSettingsCoordinator);
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
-                                                  animated:animated
-                                                completion:completion];
+  SigninCoordinatorInterruptAction action =
+      animated ? SigninCoordinatorInterruptActionDismissWithAnimation
+               : SigninCoordinatorInterruptActionDismissWithoutAnimation;
+  [self interrupSigninCoordinatorWithAction:action completion:completion];
 }
 
 #pragma mark - Properties
@@ -161,17 +150,7 @@
 }
 
 - (BOOL)isSettingsViewPresented {
-  return self.advancedSigninSettingsCoordinator != nil;
-}
-
-#pragma mark - AdvancedSigninSettingsCoordinatorDelegate
-
-- (void)advancedSigninSettingsCoordinatorDidClose:
-            (AdvancedSigninSettingsCoordinator*)coordinator
-                                         signedin:(BOOL)signedin {
-  DCHECK_EQ(self.advancedSigninSettingsCoordinator, coordinator);
-  self.advancedSigninSettingsCoordinator = nil;
-  [self signinDoneWithSuccess:signedin];
+  return self.coordinator.isSettingsViewPresented;
 }
 
 #pragma mark - SigninInteractionPresenting
@@ -280,14 +259,25 @@
 
 // Shows the advanced sign-in settings UI.
 - (void)showAdvancedSigninSettings {
-  DCHECK(!self.advancedSigninSettingsCoordinator);
+  DCHECK(!self.coordinator);
   DCHECK(self.presentingViewController);
-  self.advancedSigninSettingsCoordinator =
-      [[AdvancedSigninSettingsCoordinator alloc]
-          initWithBaseViewController:self.presentingViewController
-                             browser:self.browser];
-  self.advancedSigninSettingsCoordinator.delegate = self;
-  [self.advancedSigninSettingsCoordinator start];
+  self.coordinator = [SigninCoordinator
+      advancedSettingsSigninCoordinatorWithBaseViewController:
+          self.presentingViewController
+                                                      browser:self.browser];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        [weakSelf advancedSigninDoneWithSigninResult:signinResult];
+      };
+  [self.coordinator start];
+}
+
+- (void)advancedSigninDoneWithSigninResult:
+    (SigninCoordinatorResult)signinResult {
+  [self.coordinator stop];
+  self.coordinator = nil;
+  [self signinDoneWithSuccess:signinResult == SigninCoordinatorResultSuccess];
 }
 
 // Called when the sign-in is done.
@@ -299,18 +289,19 @@
     self.signinCompletion(success);
     self.signinCompletion = nil;
   }
-  [self.advancedSigninSettingsCoordinator stop];
-  self.advancedSigninSettingsCoordinator = nil;
-  self.presentingViewController = nil;
 }
 
 - (void)interrupSigninCoordinatorWithAction:
-    (SigninCoordinatorInterruptAction)action {
+            (SigninCoordinatorInterruptAction)action
+                                 completion:(ProceduralBlock)completion {
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock interruptCompletion = ^() {
     // |weakSelf.coordinator.signinCompletion| is called before this interrupt
     // block. The signin completion has to set |coordinator| to nil.
     DCHECK(!weakSelf.coordinator);
+    if (completion) {
+      completion();
+    }
   };
   [self.coordinator interruptWithAction:action completion:interruptCompletion];
 }

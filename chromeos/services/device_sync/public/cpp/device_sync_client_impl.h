@@ -125,9 +125,13 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
 
   base::Optional<std::string> local_instance_id_;
 
-  // TODO(https://crbug.com/951969): Only track local Instance ID after v2
-  // DeviceSync is launched, when the local device is guaranteed to have an
-  // Instance ID.
+  // TODO(https://crbug.com/1019206): Track only the local Instance ID after v1
+  // DeviceSync is disabled, when the local device is guaranteed to have an
+  // Instance ID. Note: When v1 and v2 DeviceSync are running in parallel, if we
+  // are still waiting for the first v2 DeviceSync to successfully complete, it
+  // is possible that only v1 device data--which does not contain Instance
+  // IDs--is loaded by the RemoteDeviceProvider. In that case, the local device
+  // will not have an Instance ID until the very first v2 DeviceSync succeeds.
   base::Optional<std::string> local_legacy_device_id_;
 
   base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_{this};

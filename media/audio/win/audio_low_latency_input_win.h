@@ -91,65 +91,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
       public base::DelegateSimpleThread::Delegate,
       public AudioConverter::InputCallback {
  public:
-  // The ctor takes all the usual parameters, plus |manager| which is the
-  // the audio manager who is creating this object.
-  WASAPIAudioInputStream(AudioManagerWin* manager,
-                         const AudioParameters& params,
-                         const std::string& device_id,
-                         const AudioManager::LogCallback& log_callback);
-
-  // The dtor is typically called by the AudioManager only and it is usually
-  // triggered by calling AudioInputStream::Close().
-  ~WASAPIAudioInputStream() override;
-
-  // Implementation of AudioInputStream.
-  bool Open() override;
-  void Start(AudioInputCallback* callback) override;
-  void Stop() override;
-  void Close() override;
-  double GetMaxVolume() override;
-  void SetVolume(double volume) override;
-  double GetVolume() override;
-  bool IsMuted() override;
-  void SetOutputDeviceForAec(const std::string& output_device_id) override;
-
-  bool started() const { return started_; }
-
- private:
-  // DelegateSimpleThread::Delegate implementation.
-  void Run() override;
-
-  // Pulls capture data from the endpoint device and pushes it to the sink.
-  void PullCaptureDataAndPushToSink();
-
-  // Issues the OnError() callback to the |sink_|.
-  void HandleError(HRESULT err);
-
-  // The Open() method is divided into these sub methods.
-  HRESULT SetCaptureDevice();
-  HRESULT GetAudioEngineStreamFormat();
-  // Returns whether the desired format is supported or not and writes the
-  // result of a failing system call to |*hr|, or S_OK if successful. If this
-  // function returns false with |*hr| == S_FALSE, the OS supports a closest
-  // match but we don't support conversion to it.
-  bool DesiredFormatIsSupported(HRESULT* hr);
-  void SetupConverterAndStoreFormatInfo();
-  HRESULT InitializeAudioEngine();
-  void ReportOpenResult(HRESULT hr) const;
-  // Reports stats for format related audio client initilization
-  // (IAudioClient::Initialize) errors, that is if |hr| is an error related to
-  // the format.
-  void MaybeReportFormatRelatedInitError(HRESULT hr) const;
-
-  // AudioConverter::InputCallback implementation.
-  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
-
-  // Detects and counts glitches based on |device_position|.
-  void UpdateGlitchCount(UINT64 device_position);
-
-  // Reports glitch stats and resets associated variables.
-  void ReportAndResetGlitchStats();
-
   // Used to track down where we fail during initialization which at the
   // moment seems to be happening frequently and we're not sure why.
   // The reason might be expected (e.g. trying to open "default" on a machine
@@ -174,6 +115,67 @@ class MEDIA_EXPORT WASAPIAudioInputStream
     OPEN_RESULT_OK_WITH_RESAMPLING = 14,
     OPEN_RESULT_MAX = OPEN_RESULT_OK_WITH_RESAMPLING
   };
+
+  // The ctor takes all the usual parameters, plus |manager| which is the
+  // the audio manager who is creating this object.
+  WASAPIAudioInputStream(AudioManagerWin* manager,
+                         const AudioParameters& params,
+                         const std::string& device_id,
+                         AudioManager::LogCallback log_callback);
+
+  // The dtor is typically called by the AudioManager only and it is usually
+  // triggered by calling AudioInputStream::Close().
+  ~WASAPIAudioInputStream() override;
+
+  // Implementation of AudioInputStream.
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool IsMuted() override;
+  void SetOutputDeviceForAec(const std::string& output_device_id) override;
+
+  bool started() const { return started_; }
+
+ private:
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
+
+  // DelegateSimpleThread::Delegate implementation.
+  void Run() override;
+
+  // Pulls capture data from the endpoint device and pushes it to the sink.
+  void PullCaptureDataAndPushToSink();
+
+  // Issues the OnError() callback to the |sink_|.
+  void HandleError(HRESULT err);
+
+  // The Open() method is divided into these sub methods.
+  HRESULT SetCaptureDevice();
+  HRESULT GetAudioEngineStreamFormat();
+  // Returns whether the desired format is supported or not and writes the
+  // result of a failing system call to |*hr|, or S_OK if successful. If this
+  // function returns false with |*hr| == S_FALSE, the OS supports a closest
+  // match but we don't support conversion to it.
+  bool DesiredFormatIsSupported(HRESULT* hr);
+  void SetupConverterAndStoreFormatInfo();
+  HRESULT InitializeAudioEngine();
+  void ReportOpenResult(HRESULT hr);
+  // Reports stats for format related audio client initialization
+  // (IAudioClient::Initialize) errors, that is if |hr| is an error related to
+  // the format.
+  void MaybeReportFormatRelatedInitError(HRESULT hr) const;
+
+  // AudioConverter::InputCallback implementation.
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
+
+  // Detects and counts glitches based on |device_position|.
+  void UpdateGlitchCount(UINT64 device_position);
+
+  // Reports glitch stats and resets associated variables.
+  void ReportAndResetGlitchStats();
 
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerWin* const manager_;
@@ -283,7 +285,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   std::unique_ptr<AudioBus> convert_bus_;
   bool imperfect_buffer_size_conversion_ = false;
 
-  // Callback to send log messages.
+  // Callback to send log messages to registered clients.
   AudioManager::LogCallback log_callback_;
 
   // For detecting and reporting glitches.

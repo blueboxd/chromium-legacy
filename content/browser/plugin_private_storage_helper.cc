@@ -267,9 +267,9 @@ class PluginPrivateDataDeletionHelper {
         begin_(begin),
         end_(end),
         callback_(std::move(callback)) {}
-  ~PluginPrivateDataDeletionHelper() {}
+  ~PluginPrivateDataDeletionHelper() = default;
 
-  void CheckOriginsOnFileTaskRunner(const std::set<GURL>& origins);
+  void CheckOriginsOnFileTaskRunner(const std::set<url::Origin>& origins);
 
  private:
   // Keeps track of the pending work. When |task_count_| goes to 0 then
@@ -287,7 +287,7 @@ class PluginPrivateDataDeletionHelper {
 };
 
 void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
-    const std::set<GURL>& origins) {
+    const std::set<url::Origin>& origins) {
   DCHECK(filesystem_context_->default_file_task_runner()
              ->RunsTasksInCurrentSequence());
   IncrementTaskCount();
@@ -306,7 +306,7 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
     // for this origin.
     base::File::Error error;
     base::FilePath path = obfuscated_file_util->GetDirectoryForOriginAndType(
-        url::Origin::Create(origin), "", false, &error);
+        origin, "", false, &error);
     if (error != base::File::FILE_OK) {
       DLOG(ERROR) << "Unable to read directory for " << origin;
       continue;
@@ -326,7 +326,7 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
       IncrementTaskCount();
       PluginPrivateDataByOriginChecker* helper =
           new PluginPrivateDataByOriginChecker(
-              filesystem_context_.get(), origin.GetOrigin(),
+              filesystem_context_.get(), origin.GetURL().GetOrigin(),
               plugin_path.BaseName().MaybeAsASCII(), begin_, end_,
               decrement_callback);
       base::PostTask(
@@ -389,7 +389,7 @@ void PluginPrivateDataDeletionHelper::DecrementTaskCount(
 
 void ClearPluginPrivateDataOnFileTaskRunner(
     scoped_refptr<storage::FileSystemContext> filesystem_context,
-    const GURL& storage_origin,
+    const GURL& storage_origin_url,
     StoragePartition::OriginMatcherFunction origin_matcher,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const base::Time begin,
@@ -397,7 +397,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
     base::OnceClosure callback) {
   DCHECK(filesystem_context->default_file_task_runner()
              ->RunsTasksInCurrentSequence());
-  DVLOG(3) << "Clearing plugin data for origin: " << storage_origin;
+  DVLOG(3) << "Clearing plugin data for origin: " << storage_origin_url;
 
   storage::FileSystemBackend* backend =
       filesystem_context->GetFileSystemBackend(
@@ -405,7 +405,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
 
   // Determine the set of origins used.
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_util->GetOriginsForTypeOnFileTaskRunner(
       storage::kFileSystemTypePluginPrivate, &origins);
 
@@ -417,9 +417,10 @@ void ClearPluginPrivateDataOnFileTaskRunner(
 
   // If a specific origin is provided, then check that it is in the list
   // returned and remove all the other origins.
-  if (!storage_origin.is_empty()) {
-    DCHECK(!origin_matcher) << "Only 1 of |storage_origin| and "
+  if (!storage_origin_url.is_empty()) {
+    DCHECK(!origin_matcher) << "Only 1 of |storage_origin_url| and "
                                "|origin_matcher| should be specified.";
+    url::Origin storage_origin = url::Origin::Create(storage_origin_url);
     if (!base::Contains(origins, storage_origin)) {
       // Nothing matches, so nothing to do.
       std::move(callback).Run();
@@ -433,14 +434,13 @@ void ClearPluginPrivateDataOnFileTaskRunner(
 
   // If a filter is provided, determine which origins match.
   if (origin_matcher) {
-    DCHECK(storage_origin.is_empty())
-        << "Only 1 of |storage_origin| and |origin_matcher| should be "
+    DCHECK(storage_origin_url.is_empty())
+        << "Only 1 of |storage_origin_url| and |origin_matcher| should be "
            "specified.";
-    std::set<GURL> origins_to_check;
+    std::set<url::Origin> origins_to_check;
     origins_to_check.swap(origins);
     for (const auto& origin : origins_to_check) {
-      if (origin_matcher.Run(url::Origin::Create(origin),
-                             special_storage_policy.get()))
+      if (origin_matcher.Run(origin, special_storage_policy.get()))
         origins.insert(origin);
     }
 

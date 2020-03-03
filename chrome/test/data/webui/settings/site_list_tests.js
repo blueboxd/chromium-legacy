@@ -1044,7 +1044,7 @@ suite('EditExceptionDialog', function() {
   setup(function() {
     cookieException = {
       category: settings.ContentSettingsTypes.COOKIES,
-      embeddingOrigin: 'http://foo.com',
+      embeddingOrigin: settings.SITE_EXCEPTION_WILDCARD,
       incognito: false,
       setting: settings.ContentSetting.BLOCK,
       enforcement: '',
@@ -1116,7 +1116,7 @@ suite('EditExceptionDialog', function() {
         })
         .then(function(args) {
           assertEquals(newValue, args[0]);
-          assertEquals(newValue, args[1]);
+          assertEquals(settings.SITE_EXCEPTION_WILDCARD, args[1]);
           assertEquals(settings.ContentSettingsTypes.COOKIES, args[2]);
           assertEquals(cookieException.setting, args[3]);
           assertEquals(cookieException.incognito, args[4]);

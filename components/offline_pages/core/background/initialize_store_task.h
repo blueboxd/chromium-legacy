@@ -28,10 +28,9 @@ class InitializeStoreTask : public Task {
                       RequestQueueStore::InitializeCallback callback);
   ~InitializeStoreTask() override;
 
+ private:
   // TaskQueue::Task implementation.
   void Run() override;
-
- private:
   // Step 1. Initialize store.
   void InitializeStore();
   // Step 2a. Completes initialization if successful or tries to reset if there

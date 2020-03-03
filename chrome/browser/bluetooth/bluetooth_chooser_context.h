@@ -10,12 +10,14 @@
 #include <utility>
 
 #include "base/containers/flat_set.h"
-#include "chrome/browser/permissions/chooser_context_base.h"
+#include "components/permissions/chooser_context_base.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
+
+class Profile;
 
 namespace base {
 class Value;
@@ -77,6 +79,8 @@ class BluetoothChooserContext : public ChooserContextBase {
 
   // Returns the human readable string representing the given object.
   static std::string GetObjectName(const base::Value& object);
+  static blink::WebBluetoothDeviceId GetObjectDeviceId(
+      const base::Value& object);
 
  protected:
   // ChooserContextBase implementation;

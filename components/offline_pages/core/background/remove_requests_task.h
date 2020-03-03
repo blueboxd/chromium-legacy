@@ -24,10 +24,9 @@ class RemoveRequestsTask : public Task {
                      RequestQueueStore::UpdateCallback callback);
   ~RemoveRequestsTask() override;
 
+ private:
   // TaskQueue::Task implementation.
   void Run() override;
-
- private:
   // Step 1. Removes requests from the store.
   void RemoveRequests();
   // Step for early termination, that builds failure result.

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -45,18 +46,16 @@ BrowserReportGenerator::BrowserReportGenerator() = default;
 BrowserReportGenerator::~BrowserReportGenerator() = default;
 
 void BrowserReportGenerator::Generate(ReportCallback callback) {
-  DCHECK(!callback_);
-  callback_ = std::move(callback);
-
   auto report = std::make_unique<em::BrowserReport>();
   GenerateBasicInfos(report.get());
   GenerateProfileInfos(report.get());
 
   // std::move is required here because the function completes the report
   // asynchronously.
-  GeneratePluginsIfNeeded(std::move(report));
+  GeneratePluginsIfNeeded(std::move(callback), std::move(report));
 }
 
+// static
 void BrowserReportGenerator::GenerateBasicInfos(em::BrowserReport* report) {
 #if !defined(OS_CHROMEOS)
   report->set_browser_version(version_info::GetVersionNumber());
@@ -66,6 +65,7 @@ void BrowserReportGenerator::GenerateBasicInfos(em::BrowserReport* report) {
   report->set_executable_path(GetExecutablePath());
 }
 
+// static
 void BrowserReportGenerator::GenerateProfileInfos(em::BrowserReport* report) {
   for (auto* entry : g_browser_process->profile_manager()
                          ->GetProfileAttributesStorage()
@@ -86,18 +86,20 @@ void BrowserReportGenerator::GenerateProfileInfos(em::BrowserReport* report) {
 }
 
 void BrowserReportGenerator::GeneratePluginsIfNeeded(
+    ReportCallback callback,
     std::unique_ptr<em::BrowserReport> report) {
 #if defined(OS_CHROMEOS) || !BUILDFLAG(ENABLE_PLUGINS)
-  std::move(callback_).Run(std::move(report));
+  std::move(callback).Run(std::move(report));
 #else
-  content::PluginService::GetInstance()->GetPlugins(
-      base::BindOnce(&BrowserReportGenerator::OnPluginsReady,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(report)));
+  content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
+      &BrowserReportGenerator::OnPluginsReady, weak_ptr_factory_.GetWeakPtr(),
+      std::move(callback), std::move(report)));
 #endif
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 void BrowserReportGenerator::OnPluginsReady(
+    ReportCallback callback,
     std::unique_ptr<em::BrowserReport> report,
     const std::vector<content::WebPluginInfo>& plugins) {
   for (content::WebPluginInfo plugin : plugins) {
@@ -108,7 +110,7 @@ void BrowserReportGenerator::OnPluginsReady(
     plugin_info->set_description(base::UTF16ToUTF8(plugin.desc));
   }
 
-  std::move(callback_).Run(std::move(report));
+  std::move(callback).Run(std::move(report));
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

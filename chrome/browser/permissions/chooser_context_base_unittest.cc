@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/permissions/chooser_context_base.h"
+#include "components/permissions/chooser_context_base.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
@@ -22,9 +22,10 @@ class TestChooserContext : public ChooserContextBase {
  public:
   // This class uses the USB content settings type for testing purposes only.
   explicit TestChooserContext(Profile* profile)
-      : ChooserContextBase(profile,
-                           ContentSettingsType::USB_GUARD,
-                           ContentSettingsType::USB_CHOOSER_DATA) {}
+      : ChooserContextBase(
+            ContentSettingsType::USB_GUARD,
+            ContentSettingsType::USB_CHOOSER_DATA,
+            HostContentSettingsMapFactory::GetForProfile(profile)) {}
   ~TestChooserContext() override {}
 
   bool IsValidObject(const base::Value& object) override {

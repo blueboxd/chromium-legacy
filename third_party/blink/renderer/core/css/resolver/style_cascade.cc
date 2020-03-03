@@ -490,6 +490,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
       return cssvalue::CSSUnsetValue::Create();
     }
 
+    resolver.shorthand_cache_.value = &value;
     resolver.shorthand_cache_.parsed_properties = std::move(parsed_properties);
   }
 

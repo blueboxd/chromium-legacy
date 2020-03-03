@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
@@ -83,7 +84,7 @@ TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
       &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -102,7 +103,7 @@ TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
       &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -122,7 +123,7 @@ TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
       &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(2UL, last_result()->item_statuses.size());
@@ -145,7 +146,7 @@ TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
       &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(0UL, last_result()->item_statuses.size());
@@ -161,7 +162,7 @@ TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
       &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(2UL, last_result()->item_statuses.size());

@@ -22,19 +22,6 @@
 
 namespace content {
 
-bool IsFetchMetadataEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures) ||
-         base::FeatureList::IsEnabled(network::features::kFetchMetadata);
-}
-
-bool IsFetchMetadataDestinationEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures) ||
-         base::FeatureList::IsEnabled(
-             network::features::kFetchMetadataDestination);
-}
-
 void UpdateAdditionalHeadersForBrowserInitiatedRequest(
     net::HttpRequestHeaders* headers,
     BrowserContext* browser_context,

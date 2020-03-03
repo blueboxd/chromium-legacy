@@ -32,14 +32,6 @@ class PostTaskAndReplyWithTraitsTaskRunner
   const TaskTraits traits_;
 };
 
-// Returns TaskTraits based on |traits|. If TaskPriority hasn't been set
-// explicitly in |traits|, the returned TaskTraits will inherit the current
-// TaskPriority.
-TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
-  traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
-  return traits;
-}
-
 TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
   const bool has_extension =
       traits.extension_id() != TaskTraitsExtensionStorage::kInvalidExtensionId;
@@ -93,9 +85,8 @@ bool PostDelayedTask(const Location& from_here,
                      const TaskTraits& traits,
                      OnceClosure task,
                      TimeDelta delay) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetTaskExecutorForTraits(adjusted_traits)
-      ->PostDelayedTask(from_here, adjusted_traits, std::move(task), delay);
+  return GetTaskExecutorForTraits(traits)->PostDelayedTask(
+      from_here, traits, std::move(task), delay);
 }
 
 bool PostTaskAndReply(const Location& from_here,
@@ -128,9 +119,8 @@ CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
            TaskTraitsExtensionStorage::kInvalidExtensionId)
       << "Extension traits cannot be used with "
          "CreateUpdateableSequencedTaskRunner().";
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
   return static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get())
-      ->CreateUpdateableSequencedTaskRunner(adjusted_traits);
+      ->CreateUpdateableSequencedTaskRunner(traits);
 }
 
 scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunner(

@@ -46,7 +46,6 @@ std::string PermanentNodeTypeToGuid(BookmarkNode::Type type) {
 // BookmarkNode ---------------------------------------------------------------
 
 // static
-const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 const char BookmarkNode::kRootNodeGuid[] =
     "00000000-0000-4000-a000-000000000001";
 const char BookmarkNode::kBookmarkBarNodeGuid[] =

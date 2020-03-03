@@ -351,14 +351,6 @@ AccountReconcilor::GetScopedSyncDataDeletion() {
   return base::WrapUnique(new ScopedSyncedDataDeletion(this));
 }
 
-GoogleServiceAuthError AccountReconcilor::GetReconcileError() const {
-  return error_during_last_reconcile_;
-}
-
-bool AccountReconcilor::IsReconcileEnabled() const {
-  return delegate_->IsReconcileEnabled();
-}
-
 void AccountReconcilor::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

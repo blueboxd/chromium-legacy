@@ -27,10 +27,10 @@ class MarkPageAccessedTask : public Task {
                        const base::Time& access_time);
   ~MarkPageAccessedTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
 
- private:
   void OnMarkPageAccessedDone(bool result);
 
   // The metadata store used to update the page. Not owned.

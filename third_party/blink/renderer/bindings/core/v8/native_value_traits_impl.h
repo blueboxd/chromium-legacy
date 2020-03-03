@@ -213,7 +213,7 @@ struct NativeValueTraits<IDLStringStringContextTrustedHTMLBase<mode>>
       V8StringResource<mode> string(value);
       if (!string.Prepare(isolate, exception_state))
         return String();
-      return GetStringFromTrustedHTML(string, execution_context,
+      return TrustedTypesCheckForHTML(string, execution_context,
                                       exception_state);
     }
   }
@@ -235,7 +235,7 @@ struct NativeValueTraits<IDLStringStringContextTrustedScriptBase<mode>>
       V8StringResource<mode> string(value);
       if (!string.Prepare(isolate, exception_state))
         return String();
-      return GetStringFromTrustedScript(string, execution_context,
+      return TrustedTypesCheckForScript(string, execution_context,
                                         exception_state);
     }
   }
@@ -257,7 +257,7 @@ struct NativeValueTraits<IDLUSVStringStringContextTrustedScriptURLBase<mode>>
       V8StringResource<mode> string(value);
       if (!string.Prepare(isolate, exception_state))
         return String();
-      return GetStringFromTrustedScriptURL(string, execution_context,
+      return TrustedTypesCheckForScriptURL(string, execution_context,
                                            exception_state);
     }
   }

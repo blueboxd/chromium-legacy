@@ -38,10 +38,8 @@ class AddUniqueUrlsTask : public Task {
                     const std::string& name_space,
                     const std::vector<PrefetchURL>& prefetch_urls);
   ~AddUniqueUrlsTask() override;
-
-  void Run() override;
-
  private:
+  void Run() override;
   void OnUrlsAdded(Result result);
 
   // Dispatcher to call back to with results. Not owned.

@@ -253,20 +253,20 @@ void PluginPrivateFileSystemBackend::PerformStorageCleanupOnFileTaskRunner(
 
 void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type,
-    std::set<GURL>* origins) {
+    std::set<url::Origin>* origins) {
   if (!CanHandleType(type))
     return;
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value())
-    origins->insert(origin->GetURL());
+    origins->insert(origin.value());
 }
 
 void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type,
     const std::string& host,
-    std::set<GURL>* origins) {
+    std::set<url::Origin>* origins) {
   if (!CanHandleType(type))
     return;
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
@@ -274,7 +274,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == net::GetHostOrSpecFromURL(origin->GetURL()))
-      origins->insert(origin->GetURL());
+      origins->insert(origin.value());
   }
 }
 

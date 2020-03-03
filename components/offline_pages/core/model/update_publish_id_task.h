@@ -31,10 +31,10 @@ class UpdatePublishIdTask : public Task {
                       base::OnceCallback<void(bool)> callback);
   ~UpdatePublishIdTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
 
- private:
   void OnUpdatePublishIdDone(bool result);
 
   // The metadata store used to update the page. Not owned.

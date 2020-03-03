@@ -75,6 +75,7 @@ const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 24;
 
+constexpr SkColor kChallengeResponseSmartCardIconColor = gfx::kGoogleGrey200;
 constexpr SkColor kChallengeResponseArrowBackgroundColor =
     SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kChallengeResponseErrorColor = gfx::kGoogleRed300;
@@ -596,7 +597,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
       case State::kAuthenticating:
         return gfx::CreateVectorIcon(kLockScreenSmartCardIcon,
                                      kChallengeResponseIconSizeDp,
-                                     SK_ColorWHITE);
+                                     kChallengeResponseSmartCardIconColor);
       case State::kFailure:
         return gfx::CreateVectorIcon(kLockScreenSmartCardFailureIcon,
                                      kChallengeResponseIconSizeDp,

@@ -66,8 +66,8 @@ void HTMLObjectElement::Trace(Visitor* visitor) {
 const AttrNameToTrustedType& HTMLObjectElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"data", SpecificTrustedType::kTrustedScriptURL},
-                        {"codebase", SpecificTrustedType::kTrustedScriptURL}}));
+                      ({{"data", SpecificTrustedType::kScriptURL},
+                        {"codebase", SpecificTrustedType::kScriptURL}}));
   return attribute_map;
 }
 

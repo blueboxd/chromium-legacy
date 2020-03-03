@@ -1139,7 +1139,6 @@ jumbo_component("base") {
       "mac/scoped_nsautorelease_pool.h",
       "mac/scoped_nsautorelease_pool.mm",
       "mac/scoped_nsobject.h",
-      "mac/scoped_nsobject.mm",
       "mac/scoped_objc_class_swizzler.h",
       "mac/scoped_objc_class_swizzler.mm",
       "mac/scoped_sending_event.h",
@@ -1993,7 +1992,6 @@ jumbo_component("base") {
       "mac/scoped_nsautorelease_pool.h",
       "mac/scoped_nsautorelease_pool.mm",
       "mac/scoped_nsobject.h",
-      "mac/scoped_nsobject.mm",
       "mac/scoped_objc_class_swizzler.h",
       "mac/scoped_objc_class_swizzler.mm",
       "mac/scoped_typeref.h",
@@ -2435,10 +2433,7 @@ bundle_data("base_unittests_bundle_data") {
 if (is_ios || is_mac) {
   source_set("base_unittests_arc") {
     testonly = true
-    sources = [
-      "mac/bind_objc_block_unittest_arc.mm",
-      "mac/scoped_nsobject_unittest_arc.mm",
-    ]
+    sources = [ "mac/bind_objc_block_unittest_arc.mm" ]
     configs += [ "//build/config/compiler:enable_arc" ]
     deps = [
       ":base",

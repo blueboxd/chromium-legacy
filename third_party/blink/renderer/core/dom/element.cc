@@ -2247,9 +2247,9 @@ void Element::setAttribute(const AtomicString& local_name,
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
 
-  String trusted_value = GetStringFromSpecificTrustedType(
-      value, ExpectedTrustedTypeForAttribute(q_name),
-      GetDocument().ToExecutionContext(), exception_state);
+  String trusted_value =
+      TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name), value,
+                           GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2280,9 +2280,9 @@ void Element::setAttribute(const QualifiedName& name,
                          ? GetElementData()->Attributes().FindIndex(name)
                          : kNotFound;
 
-  String trusted_value = GetStringFromSpecificTrustedType(
-      value, ExpectedTrustedTypeForAttribute(name),
-      GetDocument().ToExecutionContext(), exception_state);
+  String trusted_value =
+      TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(name), value,
+                           GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -2300,7 +2300,8 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 
 void Element::setAttribute(
     const AtomicString& local_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
+        string_or_trusted,
     ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
@@ -2313,8 +2314,8 @@ void Element::setAttribute(
   wtf_size_t index;
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
-  String value = GetStringFromSpecificTrustedType(
-      string_or_TT, ExpectedTrustedTypeForAttribute(q_name),
+  String value = TrustedTypesCheckFor(
+      ExpectedTrustedTypeForAttribute(q_name), string_or_trusted,
       GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
@@ -2350,7 +2351,7 @@ SpecificTrustedType Element::ExpectedTrustedTypeForAttribute(
     // starting with "on", including e.g. "one". We use this pattern elsewhere
     // (e.g. in IsEventHandlerAttribute) but it's not ideal. Consider using
     // the event attribute of the resulting AttributeTriggers.
-    return SpecificTrustedType::kTrustedScript;
+    return SpecificTrustedType::kScript;
   }
 
   return SpecificTrustedType::kNone;
@@ -2360,7 +2361,7 @@ void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedHTML& stringOrHTML,
                            ExceptionState& exception_state) {
   String valueString =
-      GetStringFromTrustedHTML(stringOrHTML, &GetDocument(), exception_state);
+      TrustedTypesCheckForHTML(stringOrHTML, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
@@ -2369,7 +2370,7 @@ void Element::setAttribute(const QualifiedName& name,
 void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScript& stringOrScript,
                            ExceptionState& exception_state) {
-  String valueString = GetStringFromTrustedScript(
+  String valueString = TrustedTypesCheckForScript(
       stringOrScript, GetDocument().ToExecutionContext(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
@@ -2379,7 +2380,7 @@ void Element::setAttribute(const QualifiedName& name,
 void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScriptURL& stringOrURL,
                            ExceptionState& exception_state) {
-  String valueString = GetStringFromTrustedScriptURL(
+  String valueString = TrustedTypesCheckForScriptURL(
       stringOrURL, GetDocument().ToExecutionContext(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
@@ -3919,10 +3920,9 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   SynchronizeAllAttributes();
   const UniqueElementData& element_data = EnsureUniqueElementData();
 
-  String value = GetStringFromSpecificTrustedType(
-      attr_node->value(),
+  String value = TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(attr_node->GetQualifiedName()),
-      GetDocument().ToExecutionContext(), exception_state);
+      attr_node->value(), GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -4033,15 +4033,16 @@ bool Element::ParseAttributeName(QualifiedName& out,
 void Element::setAttributeNS(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
+        string_or_trusted,
     ExceptionState& exception_state) {
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
                           exception_state))
     return;
 
-  String value = GetStringFromSpecificTrustedType(
-      string_or_TT, ExpectedTrustedTypeForAttribute(parsed_name),
+  String value = TrustedTypesCheckFor(
+      ExpectedTrustedTypeForAttribute(parsed_name), string_or_trusted,
       GetDocument().ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
@@ -4693,7 +4694,7 @@ void Element::SetInnerHTMLFromString(const String& html) {
 void Element::setInnerHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
   String html =
-      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
+      TrustedTypesCheckForHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetInnerHTMLFromString(html, exception_state);
   }
@@ -4758,7 +4759,7 @@ void Element::SetOuterHTMLFromString(const String& html,
 void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
   String html =
-      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
+      TrustedTypesCheckForHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetOuterHTMLFromString(html, exception_state);
   }
@@ -4908,7 +4909,7 @@ void Element::insertAdjacentHTML(const String& where,
                                  const StringOrTrustedHTML& string_or_html,
                                  ExceptionState& exception_state) {
   String markup =
-      GetStringFromTrustedHTML(string_or_html, &GetDocument(), exception_state);
+      TrustedTypesCheckForHTML(string_or_html, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     insertAdjacentHTML(where, markup, exception_state);
   }

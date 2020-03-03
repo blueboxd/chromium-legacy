@@ -2045,12 +2045,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
 class MultiOriginSessionRestoreTest : public SessionRestoreTest {
  public:
   MultiOriginSessionRestoreTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    feature_list_.InitWithFeatures(
-        {network::features::kFetchMetadata,
-         network::features::kFetchMetadataDestination},
-        {});
-  }
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
     SessionRestoreTest::SetUpOnMainThread();

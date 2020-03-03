@@ -54,9 +54,6 @@ class CompositorTimingHistory::UMAReporter {
       base::TimeDelta duration) = 0;
   virtual void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta duration) = 0;
-
-  // Synchronization measurements
-  virtual void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) = 0;
 };
 
 namespace {
@@ -384,11 +381,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.SwapToAckLatency",
                                         duration);
   }
-
-  void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.MainAndImplFrameTimeDelta", delta);
-  }
 };
 
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -462,8 +454,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.SwapToAckLatency",
                                         duration);
   }
-
-  void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
 
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -492,7 +482,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
   void AddSubmitToAckLatency(base::TimeDelta duration) override {}
-  void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
 
 }  // namespace
@@ -685,13 +674,11 @@ void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
 void CompositorTimingHistory::WillBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
-  DCHECK_EQ(base::TimeTicks(), begin_main_frame_frame_time_);
 
   compositor_frame_reporting_controller_->WillBeginMainFrame(args.frame_id);
 
   begin_main_frame_on_critical_path_ = args.on_critical_path;
   begin_main_frame_sent_time_ = Now();
-  begin_main_frame_frame_time_ = args.frame_time;
 
   did_send_begin_main_frame_ = true;
   SetBeginMainFrameNeededContinuously(true);
@@ -709,7 +696,6 @@ void CompositorTimingHistory::BeginMainFrameAborted(
   compositor_frame_reporting_controller_->BeginMainFrameAborted(id);
   base::TimeTicks begin_main_frame_end_time = Now();
   DidBeginMainFrame(begin_main_frame_end_time);
-  begin_main_frame_frame_time_ = base::TimeTicks();
 }
 
 void CompositorTimingHistory::NotifyReadyToCommit(
@@ -728,7 +714,6 @@ void CompositorTimingHistory::WillCommit() {
 }
 
 void CompositorTimingHistory::DidCommit() {
-  DCHECK_EQ(base::TimeTicks(), pending_tree_main_frame_time_);
   DCHECK_EQ(pending_tree_creation_time_, base::TimeTicks());
   DCHECK_NE(commit_start_time_, base::TimeTicks());
 
@@ -741,8 +726,6 @@ void CompositorTimingHistory::DidCommit() {
 
   pending_tree_is_impl_side_ = false;
   pending_tree_creation_time_ = begin_main_frame_end_time;
-  pending_tree_main_frame_time_ = begin_main_frame_frame_time_;
-  begin_main_frame_frame_time_ = base::TimeTicks();
 }
 
 void CompositorTimingHistory::DidBeginMainFrame(
@@ -883,13 +866,7 @@ void CompositorTimingHistory::DidActivate() {
   if (enabled_)
     activate_duration_history_.InsertSample(activate_duration);
 
-  // The synchronous compositor doesn't necessarily draw every new active tree.
-  if (!using_synchronous_renderer_compositor_)
-    DCHECK_EQ(base::TimeTicks(), active_tree_main_frame_time_);
-  active_tree_main_frame_time_ = pending_tree_main_frame_time_;
-
   activate_start_time_ = base::TimeTicks();
-  pending_tree_main_frame_time_ = base::TimeTicks();
 }
 
 void CompositorTimingHistory::WillDraw() {
@@ -897,12 +874,7 @@ void CompositorTimingHistory::WillDraw() {
   draw_start_time_ = Now();
 }
 
-void CompositorTimingHistory::DrawAborted() {
-  active_tree_main_frame_time_ = base::TimeTicks();
-}
-
 void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
-                                      base::TimeTicks impl_frame_time,
                                       size_t composited_animations_count,
                                       size_t main_thread_animations_count,
                                       bool current_frame_had_raf,
@@ -942,17 +914,6 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   draw_end_time_prev_ = draw_end_time;
 
   if (used_new_active_tree) {
-    DCHECK_NE(base::TimeTicks(), active_tree_main_frame_time_);
-    base::TimeDelta main_and_impl_delta =
-        impl_frame_time - active_tree_main_frame_time_;
-    DCHECK_GE(main_and_impl_delta, base::TimeDelta());
-    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-                 "CompositorTimingHistory::DidDraw",
-                 "active_tree_main_frame_time", active_tree_main_frame_time_,
-                 "impl_frame_time", impl_frame_time);
-    uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
-    active_tree_main_frame_time_ = base::TimeTicks();
-
     bool current_main_frame_had_visual_update =
         main_thread_animations_count > 0 || current_frame_had_raf;
     bool previous_main_frame_had_visual_update =

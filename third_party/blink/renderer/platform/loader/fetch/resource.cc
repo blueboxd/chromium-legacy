@@ -490,7 +490,7 @@ void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
   is_revalidating_ = true;
-  resource_request_.CopyFrom(request);
+  resource_request_.CopyHeadFrom(request);
   status_ = ResourceStatus::kNotStarted;
 }
 

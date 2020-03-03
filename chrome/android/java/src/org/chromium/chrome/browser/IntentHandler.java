@@ -274,7 +274,7 @@ public class IntentHandler {
     private static boolean sTestIntentsEnabled;
 
     private final IntentHandlerDelegate mDelegate;
-    private final String mPackageName;
+    private final Activity mActivity;
 
     /**
      * Receiver for screen unlock broadcast.
@@ -329,9 +329,9 @@ public class IntentHandler {
         sTestIntentsEnabled = enabled;
     }
 
-    public IntentHandler(IntentHandlerDelegate delegate, String packageName) {
+    public IntentHandler(Activity activity, IntentHandlerDelegate delegate) {
         mDelegate = delegate;
-        mPackageName = packageName;
+        mActivity = activity;
     }
 
     /**
@@ -420,9 +420,9 @@ public class IntentHandler {
         }
     }
 
-    private static void updateDeferredIntent(Intent intent) {
+    private void updateDeferredIntent(Intent intent) {
         if (sDelayedScreenIntentHandler == null && intent != null) {
-            sDelayedScreenIntentHandler = new DelayedScreenLockIntentHandler();
+            sDelayedScreenIntentHandler = new DelayedScreenLockIntentHandler(mActivity);
         }
 
         if (sDelayedScreenIntentHandler != null) {
@@ -850,7 +850,7 @@ public class IntentHandler {
      * @param intent Intent to check.
      * @return true if the intent should be ignored.
      */
-    public static boolean shouldIgnoreIntent(Intent intent) {
+    public boolean shouldIgnoreIntent(Intent intent) {
         // Although not documented to, many/most methods that retrieve values from an Intent may
         // throw. Because we can't control what packages might send to us, we should catch any
         // Throwable and then fail closed (safe). This is ugly, but resolves top crashers in the
@@ -1060,8 +1060,9 @@ public class IntentHandler {
 
         // Intents from chrome open in the same tab by default, all others only clobber
         // tabs created by the same app.
-        return mPackageName.equals(appId) ? TabOpenType.CLOBBER_CURRENT_TAB
-                                          : TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB;
+        return mActivity.getPackageName().equals(appId)
+                ? TabOpenType.CLOBBER_CURRENT_TAB
+                : TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB;
     }
 
     private static boolean isInvalidScheme(String scheme) {

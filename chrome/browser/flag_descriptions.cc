@@ -69,11 +69,6 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
-const char kEnableClipboardProviderTextSuggestionsName[] =
-    "Omnibox clipboard text search suggestions";
-const char kEnableClipboardProviderTextSuggestionsDescription[] =
-    "Enables search suggestions in omnibox";
-
 const char kEnableFtpName[] = "Enable support for FTP URLs";
 const char kEnableFtpDescription[] =
     "When enabled, the browser will handle navigations to ftp:// URLs by "

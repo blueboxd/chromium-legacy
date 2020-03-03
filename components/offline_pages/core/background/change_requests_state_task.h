@@ -26,10 +26,9 @@ class ChangeRequestsStateTask : public Task {
                           RequestQueueStore::UpdateCallback callback);
   ~ChangeRequestsStateTask() override;
 
+ private:
   // TaskQueue::Task implementation.
   void Run() override;
-
- private:
   // Step 1. Reading the requests.
   void ReadRequests();
   // Step 2. Updates available requests.

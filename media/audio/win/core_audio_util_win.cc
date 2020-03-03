@@ -4,6 +4,7 @@
 
 #include "media/audio/win/core_audio_util_win.h"
 
+#include <comdef.h>
 #include <devicetopology.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <objbase.h>
@@ -684,7 +685,15 @@ bool CoreAudioUtil::IsSupported() {
   return g_is_supported;
 }
 
-// CoreAudioUtil implementation.
+std::string CoreAudioUtil::ErrorToString(HRESULT hresult) {
+  const _com_error error(hresult);
+  // If the HRESULT is within the range 0x80040200 to 0x8004FFFF, the WCode()
+  // method returns the HRESULT minus 0x80040200; otherwise, it returns zero.
+  return base::StringPrintf("HRESULT: 0x%08lX, WCode: %u, message: \"%s\"",
+                            error.Error(), error.WCode(),
+                            base::UTF16ToUTF8(error.ErrorMessage()).c_str());
+}
+
 std::string CoreAudioUtil::WaveFormatToString(const WaveFormatWrapper format) {
   // Start with the WAVEFORMATEX part.
   std::string wave_format = base::StringPrintf(

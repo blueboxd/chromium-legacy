@@ -111,6 +111,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/win/audio_manager_win.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -129,7 +130,8 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   WASAPIAudioOutputStream(AudioManagerWin* manager,
                           const std::string& device_id,
                           const AudioParameters& params,
-                          ERole device_role);
+                          ERole device_role,
+                          AudioManager::LogCallback log_callback);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
@@ -151,6 +153,8 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   bool started() const { return render_thread_.get() != NULL; }
 
  private:
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
+
   // DelegateSimpleThread::Delegate implementation.
   void Run() override;
 
@@ -246,6 +250,9 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Pointer to the client that will deliver audio samples to be played out.
   AudioSourceCallback* source_;
+
+  // Callback to send log messages to registered clients.
+  AudioManager::LogCallback log_callback_;
 
   // An IAudioClient interface which enables a client to create and initialize
   // an audio stream between an audio application and the audio engine.

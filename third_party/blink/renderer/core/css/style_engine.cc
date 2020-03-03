@@ -894,6 +894,26 @@ void StyleEngine::PlatformColorsChanged() {
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
   if (!element.InActiveDocument())
     return true;
+  if (GetDocument().InStyleRecalc()) {
+#if DCHECK_IS_ON()
+    // TODO(futhark): The InStyleRecalc() if-guard above should have been a
+    // DCHECK(!InStyleRecalc()), but there are a couple of cases where we try to
+    // invalidate style from style recalc:
+    //
+    // 1. We may animate the class attribute of an SVG element and change it
+    //    during style recalc when applying the animation effect.
+    // 2. We may call SetInlineStyle on elements in a UA shadow tree as part of
+    //    style recalc. For instance from HTMLImageFallbackHelper.
+    //
+    // If there are more cases, we need to adjust the DCHECKs below, but ideally
+    // The origin of these invalidations should be fixed.
+    if (!element.IsSVGElement()) {
+      DCHECK(element.ContainingShadowRoot());
+      DCHECK(element.ContainingShadowRoot()->IsUserAgent());
+    }
+#endif  // DCHECK_IS_ON()
+    return true;
+  }
   if (GetDocument().GetStyleChangeType() == kSubtreeStyleChange)
     return true;
   Element* root = GetDocument().documentElement();

@@ -59,16 +59,6 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 const base::Feature kDelayRequestsOnMultiplexedConnections{
     "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Implementation of https://mikewest.github.io/sec-metadata/
-const base::Feature kFetchMetadata{"FetchMetadata",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
-// The `Sec-Fetch-Dest` header is split out from the main "FetchMetadata"
-// feature so we can ship the broader feature without this specifific bit
-// while we continue discussion.
-const base::Feature kFetchMetadataDestination{"FetchMetadataDestination",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When kRequestInitiatorSiteLock is enabled, then CORB, CORP and Sec-Fetch-Site
 // will validate network::ResourceRequest::request_initiator against
 // network::mojom::URLLoaderFactoryParams::request_initiator_site_lock.

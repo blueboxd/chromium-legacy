@@ -40,10 +40,10 @@ class StoreVisualsTask : public Task {
       std::string favicon,
       CompleteCallback callback);
 
+ private:
   // Task implementation:
   void Run() override;
 
- private:
   StoreVisualsTask(OfflinePageMetadataStore* store,
                    int64_t offline_id,
                    std::string thumbnail,

@@ -25,7 +25,8 @@ namespace {
 // Returns true if navigation URL repesents Chrome's New Tab Page.
 bool IsNptUrl(const GURL& url) {
   return url.GetOrigin() == kChromeUINewTabURL ||
-         (url.SchemeIs(url::kAboutScheme) && url.path() == "//newtab");
+         (url.SchemeIs(url::kAboutScheme) &&
+          (url.path() == "//newtab" || url.path() == "//newtab/"));
 }
 }
 

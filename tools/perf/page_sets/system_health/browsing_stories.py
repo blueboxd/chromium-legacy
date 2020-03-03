@@ -133,8 +133,9 @@ class CnnStory2018(_ArticleBrowsingStory):
   URL = 'http://edition.cnn.com/'
   ITEM_SELECTOR = '.cd__content > h3 > a'
   ITEMS_TO_VISIT = 2
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2018]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018
+  ]
 
 
 class FacebookMobileStory2019(_ArticleBrowsingStory):
@@ -241,8 +242,7 @@ class QqMobileStory2019(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 2
 
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2019]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2019]
 
 
 class RedditDesktopStory2018(_ArticleBrowsingStory):
@@ -570,8 +570,10 @@ class YouTubeMobileStory2019(_MediaBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR_INDEX = 3
   ITEMS_TO_VISIT = 8
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
-          story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+  TAGS = [
+      story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
+      story_tags.YEAR_2019
+  ]
 
 
 class YouTubeDesktopStory2019(_MediaBrowsingStory):
@@ -854,8 +856,7 @@ class BrowseAvitoMobileStory2019(_ArticleBrowsingStory):
   NAME = 'browse:shopping:avito:2019'
   URL = 'https://www.avito.ru/rossiya'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
-          story_tags.YEAR_2019]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
   ITEM_SELECTOR = '._3eXe2'
   ITEMS_TO_VISIT = 4

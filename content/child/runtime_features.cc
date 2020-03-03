@@ -181,10 +181,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {wf::EnableWebXRHitTest, features::kWebXrHitTest, kUseFeatureState},
           {wf::EnableWebXRIncubations, features::kWebXrIncubations,
            kEnableOnly},
-          {wf::EnableFetchMetadata, network::features::kFetchMetadata,
-           kUseFeatureState},
-          {wf::EnableFetchMetadataDestination,
-           network::features::kFetchMetadataDestination, kUseFeatureState},
           {wf::EnableUserActivationPostMessageTransfer,
            features::kUserActivationPostMessageTransfer, kUseFeatureState},
           {wf::EnableUserActivationSameOriginVisibility,
@@ -546,8 +542,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // these features.
   if (enable_experimental_web_platform_features) {
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
-    WebRuntimeFeatures::EnableFetchMetadata(true);
-    WebRuntimeFeatures::EnableFetchMetadataDestination(true);
   }
 
   WebRuntimeFeatures::EnableBackForwardCache(

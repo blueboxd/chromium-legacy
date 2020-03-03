@@ -91,11 +91,12 @@ enum NetId {
 class NetworkChangeNotifierAndroid::BlockingThreadObjects {
  public:
   BlockingThreadObjects()
-      : address_tracker_(base::DoNothing(),
-                         base::DoNothing(),
-                         // We're only interested in tunnel interface changes.
-                         base::Bind(NotifyNetworkChangeNotifierObservers),
-                         std::unordered_set<std::string>()) {}
+      : address_tracker_(
+            base::DoNothing(),
+            base::DoNothing(),
+            // We're only interested in tunnel interface changes.
+            base::BindRepeating(NotifyNetworkChangeNotifierObservers),
+            std::unordered_set<std::string>()) {}
 
   void Init() {
     address_tracker_.Init();

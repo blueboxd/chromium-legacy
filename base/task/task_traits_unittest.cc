@@ -10,7 +10,6 @@ namespace base {
 
 TEST(TaskTraitsTest, Default) {
   constexpr TaskTraits traits = {};
-  EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_FALSE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
@@ -22,7 +21,6 @@ TEST(TaskTraitsTest, Default) {
 
 TEST(TaskTraitsTest, TaskPriority) {
   constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT};
-  EXPECT_TRUE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_FALSE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
@@ -35,7 +33,6 @@ TEST(TaskTraitsTest, TaskPriority) {
 TEST(TaskTraitsTest, TaskShutdownBehavior) {
   constexpr TaskTraits traits = {ThreadPool(),
                                  TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_TRUE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
@@ -47,7 +44,6 @@ TEST(TaskTraitsTest, TaskShutdownBehavior) {
 
 TEST(TaskTraitsTest, ThreadPolicy) {
   constexpr TaskTraits traits = {ThreadPolicy::MUST_USE_FOREGROUND};
-  EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_FALSE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
@@ -59,7 +55,6 @@ TEST(TaskTraitsTest, ThreadPolicy) {
 
 TEST(TaskTraitsTest, MayBlock) {
   constexpr TaskTraits traits = {MayBlock()};
-  EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_FALSE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
@@ -71,7 +66,6 @@ TEST(TaskTraitsTest, MayBlock) {
 
 TEST(TaskTraitsTest, WithBaseSyncPrimitives) {
   constexpr TaskTraits traits = {WithBaseSyncPrimitives()};
-  EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_FALSE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
@@ -84,34 +78,14 @@ TEST(TaskTraitsTest, WithBaseSyncPrimitives) {
 TEST(TaskTraitsTest, UpdatePriority) {
   {
     TaskTraits traits = {};
-    EXPECT_FALSE(traits.priority_set_explicitly());
     traits.UpdatePriority(TaskPriority::BEST_EFFORT);
     EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
-    EXPECT_TRUE(traits.priority_set_explicitly());
   }
 
   {
     TaskTraits traits = {TaskPriority::USER_VISIBLE};
-    EXPECT_TRUE(traits.priority_set_explicitly());
     traits.UpdatePriority(TaskPriority::BEST_EFFORT);
     EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
-    EXPECT_TRUE(traits.priority_set_explicitly());
-  }
-}
-
-TEST(TaskTraitsTest, InheritPriority) {
-  {
-    TaskTraits traits = {};
-    traits.InheritPriority(TaskPriority::BEST_EFFORT);
-    EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
-    EXPECT_FALSE(traits.priority_set_explicitly());
-  }
-
-  {
-    TaskTraits traits = {TaskPriority::USER_VISIBLE};
-    traits.InheritPriority(TaskPriority::BEST_EFFORT);
-    EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
-    EXPECT_TRUE(traits.priority_set_explicitly());
   }
 }
 
@@ -119,7 +93,6 @@ TEST(TaskTraitsTest, MultipleTraits) {
   constexpr TaskTraits traits = {
       TaskPriority::BEST_EFFORT, TaskShutdownBehavior::BLOCK_SHUTDOWN,
       ThreadPolicy::MUST_USE_FOREGROUND, MayBlock(), WithBaseSyncPrimitives()};
-  EXPECT_TRUE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_TRUE(traits.shutdown_behavior_set_explicitly());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
@@ -137,8 +110,6 @@ TEST(TaskTraitsTest, Copy) {
 
   EXPECT_EQ(traits, traits_copy);
 
-  EXPECT_EQ(traits.priority_set_explicitly(),
-            traits_copy.priority_set_explicitly());
   EXPECT_EQ(traits.priority(), traits_copy.priority());
   EXPECT_EQ(traits.shutdown_behavior_set_explicitly(),
             traits_copy.shutdown_behavior_set_explicitly());

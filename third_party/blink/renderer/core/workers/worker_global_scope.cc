@@ -174,7 +174,7 @@ void WorkerGlobalScope::importScripts(
     ExceptionState& exception_state) {
   Vector<String> string_urls;
   for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
-    String string_url = GetStringFromTrustedScriptURL(
+    String string_url = TrustedTypesCheckForScriptURL(
         stringOrUrl, GetExecutionContext(), exception_state);
     if (exception_state.HadException())
       return;

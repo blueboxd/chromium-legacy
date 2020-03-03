@@ -32,6 +32,12 @@ typedef void (^SigninCoordinatorCompletionCallback)(
 // This completion needs to be set before calling -[SigninCoordinator start].
 @property(nonatomic, copy) SigninCoordinatorCompletionCallback signinCompletion;
 
+// Returns YES if the Google services settings view is presented.
+// TODO(crbug.com/971989): This property exists for the implementation
+// transition.
+@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
+    BOOL settingsViewPresented;
+
 // Returns a coordinator for user sign-in workflow.
 // |viewController| presents the sign-in.
 // |identity| is the identity preselected with the sign-in opens.

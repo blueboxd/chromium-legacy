@@ -40,9 +40,6 @@ class MarkOperationDoneTask : public Task {
                         const std::string& operation_name);
   ~MarkOperationDoneTask() override;
 
-  // Task implementation.
-  void Run() override;
-
   StoreResult store_result() const { return std::get<0>(result_); }
 
   // Number of rows changed, or -1 if there was a store error (or not yet
@@ -50,6 +47,8 @@ class MarkOperationDoneTask : public Task {
   int64_t change_count() const { return std::get<1>(result_); }
 
  private:
+  // Task implementation.
+  void Run() override;
   void MarkOperationDone(int updated_entry_count);
   void Done(TaskResult result);
 

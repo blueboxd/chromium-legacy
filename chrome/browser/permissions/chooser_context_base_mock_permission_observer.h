@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
 #define CHROME_BROWSER_PERMISSIONS_CHOOSER_CONTEXT_BASE_MOCK_PERMISSION_OBSERVER_H_
 
-#include "chrome/browser/permissions/chooser_context_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/chooser_context_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 

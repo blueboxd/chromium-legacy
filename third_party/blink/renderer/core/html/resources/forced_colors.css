@@ -11,7 +11,6 @@
 @media forced-colors {
   body {
     background-color: Canvas;
-    color: CanvasText;
     fill: currentColor;
   }
 

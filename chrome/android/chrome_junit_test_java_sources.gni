@@ -77,6 +77,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunIntegrationUnitTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/ToSAckedReceiverTest.java",
+  "junit/src/org/chromium/chrome/browser/flags/CachedFeatureFlagsAnnotationUnitTest.java",
   "junit/src/org/chromium/chrome/browser/flags/CachedFeatureFlagsUnitTest.java",
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",

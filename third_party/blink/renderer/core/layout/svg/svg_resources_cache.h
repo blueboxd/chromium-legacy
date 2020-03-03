@@ -42,8 +42,7 @@ class SVGResourcesCache {
   static SVGResources* CachedResourcesForLayoutObject(const LayoutObject&);
 
   // Called from all SVG layoutObjects addChild() methods.
-  static void ClientWasAddedToTree(LayoutObject&,
-                                   const ComputedStyle& new_style);
+  static void ClientWasAddedToTree(LayoutObject&);
 
   // Called from all SVG layoutObjects removeChild() methods.
   static void ClientWillBeRemovedFromTree(LayoutObject&);

@@ -1079,11 +1079,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-clipboard-provider-text-suggestions",
-    "owners": [ "gangwu", "chrome-omnibox-team@google.com"],
-    "expiry_milestone": 84
-  },
-  {
     "name": "enable-close-tab-suggestions",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 82
@@ -1374,7 +1369,7 @@
   {
     "name": "enable-heavy-ad-intervention",
     "owners": [ "johnidel", "jkarlin" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "enable-heuristic-stylus-palm-rejection",
@@ -2258,7 +2253,7 @@
   {
     "name": "forced-colors",
     "owners": [ "weblayout@microsoft.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "form-controls-refresh",
@@ -2352,7 +2347,7 @@
   {
     "name": "heavy-ad-privacy-mitigations-opt-out",
     "owners": [ "johnidel", "jkarlin" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "help-app",

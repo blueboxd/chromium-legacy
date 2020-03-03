@@ -161,10 +161,6 @@ export class TabSwiper {
     }
 
     const yDiff = this.currentPointerDownEvent_.clientY - event.clientY;
-    const animationTime = yDiff;
-    this.animation_.currentTime =
-        Math.max(0, Math.min(SWIPE_FINISH_THRESHOLD_PX, animationTime));
-
     if (!this.animationInitiated_ &&
         Math.abs(yDiff) > TRANSLATE_ANIMATION_THRESHOLD_PX) {
       this.animationInitiated_ = true;
@@ -181,22 +177,17 @@ export class TabSwiper {
       return;
     }
 
-    const pixelsSwiped = this.animation_.currentTime;
+    const yDiff = this.currentPointerDownEvent_.clientY - event.clientY;
+    const pixelsSwiped =
+        Math.max(0, Math.min(SWIPE_FINISH_THRESHOLD_PX, yDiff));
     const swipedEnoughToClose = pixelsSwiped > SWIPE_START_THRESHOLD_PX;
     const wasHighVelocity = pixelsSwiped /
             (event.timeStamp - this.currentPointerDownEvent_.timeStamp) >
         SWIPE_VELOCITY_THRESHOLD;
 
-    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX) {
-      // The user has swiped the max amount of pixels to swipe and the animation
-      // has already completed all its keyframes, so just fire the onfinish
-      // events on the animation.
-      this.animation_.finish();
-    } else if (swipedEnoughToClose || wasHighVelocity) {
-      this.animation_.play();
-    } else {
-      this.animation_.cancel();
-      this.animation_.currentTime = 0;
+    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX || swipedEnoughToClose ||
+        wasHighVelocity) {
+      this.element_.dispatchEvent(new CustomEvent('swipe'));
     }
 
     this.clearPointerEvents_();

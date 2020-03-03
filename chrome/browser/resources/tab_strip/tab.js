@@ -236,8 +236,6 @@ export class TabElement extends CustomElement {
 
   /** @private */
   onSwipe_() {
-    // Prevent slideOut animation from playing.
-    this.remove();
     this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.SWIPED_TO_CLOSE);
   }
 

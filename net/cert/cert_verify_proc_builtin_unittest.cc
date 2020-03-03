@@ -41,9 +41,9 @@ class DummySystemTrustStoreProvider : public SystemTrustStoreProvider {
 };
 
 std::unique_ptr<test_server::HttpResponse> HangRequestAndCallback(
-    base::Closure callback,
+    base::OnceClosure callback,
     const test_server::HttpRequest& request) {
-  callback.Run();
+  std::move(callback).Run();
   return std::make_unique<test_server::HungResponse>();
 }
 
@@ -55,7 +55,7 @@ std::unique_ptr<test_server::HttpResponse> FailRequestAndFailTest(
     const std::string& message,
     scoped_refptr<base::TaskRunner> main_task_runner,
     const test_server::HttpRequest& request) {
-  main_task_runner->PostTask(FROM_HERE, base::Bind(FailTest, message));
+  main_task_runner->PostTask(FROM_HERE, base::BindOnce(FailTest, message));
   auto response = std::make_unique<test_server::BasicHttpResponse>();
   response->set_code(HTTP_NOT_ACCEPTABLE);
   return response;
@@ -191,7 +191,7 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
   for (int i = expected_request_count; i < expected_request_count + 1; ++i) {
     std::string path = base::StringPrintf("/failtest/%i", i);
     crl_urls.emplace_back(test_server.GetURL(path));
-    test_server.RegisterRequestHandler(base::Bind(
+    test_server.RegisterRequestHandler(base::BindRepeating(
         &test_server::HandlePrefixedRequest, path,
         base::BindRepeating(FailRequestAndFailTest,
                             "additional request made after deadline exceeded",
@@ -261,7 +261,7 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   for (int i = expected_request_count; i < expected_request_count + 1; ++i) {
     std::string path = base::StringPrintf("/failtest/%i", i);
     ocsp_urls.emplace_back(test_server.GetURL(path));
-    test_server.RegisterRequestHandler(base::Bind(
+    test_server.RegisterRequestHandler(base::BindRepeating(
         &test_server::HandlePrefixedRequest, path,
         base::BindRepeating(FailRequestAndFailTest,
                             "additional request made after deadline exceeded",

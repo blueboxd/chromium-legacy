@@ -70,13 +70,6 @@ class BookmarkLoadDetails {
     model_meta_info_map_ = meta_info_map;
   }
 
-  int64_t model_sync_transaction_version() const {
-    return model_sync_transaction_version_;
-  }
-  void set_model_sync_transaction_version(int64_t sync_transaction_version) {
-    model_sync_transaction_version_ = sync_transaction_version;
-  }
-
   // Max id of the nodes.
   void set_max_id(int64_t max_id) { max_id_ = max_id; }
   int64_t max_id() const { return max_id_; }
@@ -128,7 +121,6 @@ class BookmarkLoadDetails {
   LoadManagedNodeCallback load_managed_node_callback_;
   std::unique_ptr<TitledUrlIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
-  int64_t model_sync_transaction_version_;
   int64_t max_id_ = 1;
   std::string computed_checksum_;
   std::string stored_checksum_;

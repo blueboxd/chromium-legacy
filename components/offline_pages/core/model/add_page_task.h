@@ -30,10 +30,10 @@ class AddPageTask : public Task {
               AddPageTaskCallback callback);
   ~AddPageTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
 
- private:
   void OnAddPageDone(ItemActionStatus status);
   void InformAddPageDone(AddPageResult result);
 

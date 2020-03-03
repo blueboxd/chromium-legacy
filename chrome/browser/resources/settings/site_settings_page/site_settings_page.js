@@ -192,7 +192,7 @@ cr.define('settings', function() {
         route: 'SITE_SETTINGS_PAYMENT_HANDLER',
         id: Id.PAYMENT_HANDLER,
         label: 'siteSettingsPaymentHandler',
-        icon: 'settings:bluetooth-scanning',
+        icon: 'settings:payment-handler',
         enabledLabel: 'siteSettingsPaymentHandlerAllow',
         disabledLabel: 'siteSettingsPaymentHandlerBlock',
         shouldShow: () =>

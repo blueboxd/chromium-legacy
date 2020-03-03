@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
@@ -177,7 +178,7 @@ TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
   QueueRequests(request1, request2);
 
   // Initiate cleanup.
-  task()->Run();
+  task()->Execute(base::DoNothing());
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
@@ -199,7 +200,7 @@ TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
   QueueRequests(request1, request2);
 
   // Initiate cleanup.
-  task()->Run();
+  task()->Execute(base::DoNothing());
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
@@ -221,7 +222,7 @@ TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
   QueueRequests(request1, request2);
 
   // Initiate cleanup.
-  task()->Run();
+  task()->Execute(base::DoNothing());
   PumpLoop();
 
   // See what is left in the queue, should be just the other request.
@@ -246,7 +247,7 @@ TEST_F(CleanupTaskTest, IgnoreRequestInProgress) {
   QueueRequests(request1, request2);
 
   // Initiate cleanup.
-  task()->Run();
+  task()->Execute(base::DoNothing());
   PumpLoop();
 
   // See what is left in the queue, request1 should be left in the queue even

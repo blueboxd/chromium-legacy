@@ -32,7 +32,7 @@ namespace blink {
 Document* DOMParser::parseFromString(const StringOrTrustedHTML& stringOrHTML,
                                      const String& type,
                                      ExceptionState& exception_state) {
-  String value = GetStringFromTrustedHTML(stringOrHTML, context_document_,
+  String value = TrustedTypesCheckForHTML(stringOrHTML, context_document_,
                                           exception_state);
   if (!exception_state.HadException()) {
     return parseFromStringInternal(value, type);

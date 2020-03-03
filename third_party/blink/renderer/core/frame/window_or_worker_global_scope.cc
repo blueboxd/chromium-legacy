@@ -156,7 +156,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
     const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  String handler = GetStringFromTrustedScript(
+  String handler = TrustedTypesCheckForScript(
       string_or_trusted_script, execution_context, exception_state);
   if (exception_state.HadException())
     return 0;
@@ -211,7 +211,7 @@ int WindowOrWorkerGlobalScope::setInterval(
     const HeapVector<ScriptValue>& arguments,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  String handler = GetStringFromTrustedScript(
+  String handler = TrustedTypesCheckForScript(
       string_or_trusted_script, execution_context, exception_state);
   if (exception_state.HadException())
     return 0;

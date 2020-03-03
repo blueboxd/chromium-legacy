@@ -36,10 +36,9 @@ class GetOperationTask : public Task {
                    GetOperationFinishedCallback callback);
   ~GetOperationTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void StartGetOperationRequests(OperationResultList list);
 
   PrefetchStore* prefetch_store_;

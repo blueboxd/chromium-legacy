@@ -22,9 +22,8 @@ class ImportCleanupTask : public Task {
                     PrefetchImporter* prefetch_importer);
   ~ImportCleanupTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void OnPrefetchItemUpdated(bool row_was_updated);
 
   PrefetchStore* prefetch_store_;        // Outlives this class.

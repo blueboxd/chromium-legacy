@@ -241,7 +241,7 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
       communications || device_id == AudioDeviceDescription::kDefaultDeviceId
           ? std::string()
           : device_id,
-      params, communications ? eCommunications : eConsole);
+      params, communications ? eCommunications : eConsole, log_callback);
 }
 
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR
@@ -261,7 +261,6 @@ AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
     const std::string& device_id,
     const LogCallback& log_callback) {
   // Used for both AUDIO_PCM_LOW_LATENCY and AUDIO_PCM_LINEAR.
-  DVLOG(1) << "MakeLowLatencyInputStream: " << device_id;
   return new WASAPIAudioInputStream(this, params, device_id, log_callback);
 }
 

@@ -31,10 +31,9 @@ class GeneratePageBundleTask : public Task {
                          PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void StartGeneratePageBundle(std::unique_ptr<UrlAndIds> url_and_ids);
 
   PrefetchDispatcher* prefetch_dispatcher_;

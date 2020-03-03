@@ -11,8 +11,8 @@
   --pin-keyboard-pin-input-style: {
     width: 192px;
   };
+  --pin-keyboard-input-letter-spacing: 14px;
   --pin-keyboard-number-color: var(--google-grey-900);
-  --cr-input-letter-spacing: 14px;
   --cr-icon-button-margin-start: 5px;
 }
 

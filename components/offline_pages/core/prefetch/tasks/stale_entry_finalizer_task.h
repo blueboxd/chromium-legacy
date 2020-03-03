@@ -34,12 +34,11 @@ class StaleEntryFinalizerTask : public Task {
                           PrefetchStore* prefetch_store);
   ~StaleEntryFinalizerTask() override;
 
-  void Run() override;
-
   // Will be set to true upon after an error-free run.
   Result final_status() const { return final_status_; }
 
  private:
+  void Run() override;
   void OnFinished(Result result);
 
   // Not owned.

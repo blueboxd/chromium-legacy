@@ -29,6 +29,7 @@ source_set("settings_root") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ui/base",
   ]
+  public_deps = [ ":settings_controller_protocol" ]
 }
 
 source_set("settings_root_constants") {
@@ -191,6 +192,12 @@ source_set("settings") {
     "LocalAuthentication.framework",
     "UIKit.framework",
   ]
+}
+
+source_set("settings_controller_protocol") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "settings_controller_protocol.h" ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("constants") {

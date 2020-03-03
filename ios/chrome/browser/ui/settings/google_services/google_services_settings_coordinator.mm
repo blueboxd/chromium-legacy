@@ -272,6 +272,7 @@
 - (void)manageSyncSettingsCoordinatorWasPopped:
     (ManageSyncSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.manageSyncSettingsCoordinator, coordinator);
+  [self.manageSyncSettingsCoordinator stop];
   self.manageSyncSettingsCoordinator = nil;
 }
 

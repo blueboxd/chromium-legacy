@@ -36,10 +36,10 @@ void GetOriginsForTypeOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
   for (auto origin : origins)
-    origins_ptr->insert(url::Origin::Create(origin));
+    origins_ptr->insert(origin);
 }
 
 void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
@@ -52,10 +52,10 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_util->GetOriginsForHostOnFileTaskRunner(type, host, &origins);
   for (auto origin : origins)
-    origins_ptr->insert(url::Origin::Create(origin));
+    origins_ptr->insert(origin);
 }
 
 void DidGetFileSystemQuotaClientOrigins(

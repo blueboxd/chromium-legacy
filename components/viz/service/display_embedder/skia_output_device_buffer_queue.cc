@@ -43,7 +43,14 @@ class SkiaOutputDeviceBufferQueue::Image {
   Image(gpu::SharedImageFactory* factory,
         gpu::SharedImageRepresentationFactory* representation_factory)
       : factory_(factory), representation_factory_(representation_factory) {}
-  ~Image() = default;
+  ~Image() {
+    // TODO(vasilyt): As we are going to delete image anyway we should be able
+    // to abort write to avoid unnecessary flush to submit semaphores.
+    if (scoped_skia_write_access_) {
+      EndWriteSkia();
+    }
+    DCHECK(!scoped_skia_write_access_);
+  }
 
   bool Initialize(const gfx::Size& size,
                   const gfx::ColorSpace& color_space,

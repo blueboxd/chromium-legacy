@@ -25,10 +25,9 @@ class GeneratePageBundleReconcileTask : public Task {
       PrefetchNetworkRequestFactory* request_factory);
   ~GeneratePageBundleReconcileTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void FinishedUpdate(bool success);
 
   PrefetchStore* prefetch_store_;

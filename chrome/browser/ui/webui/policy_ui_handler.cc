@@ -918,7 +918,7 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (updater_policies_) {
     base::Value updater_policies(base::Value::Type::DICTIONARY);
-    updater_policies.SetStringKey("name", "Updater Policies");
+    updater_policies.SetStringKey("name", "Google Update Policies");
     updater_policies.SetKey("policyNames", GetGoogleUpdatePolicyNames());
     names.SetKey("updater", std::move(updater_policies));
   }

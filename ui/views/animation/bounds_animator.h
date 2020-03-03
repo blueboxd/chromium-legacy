@@ -176,7 +176,9 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // transform of the views and therefore skips repainting and relayouting until
   // the end of the animation. Note that this may not look as good as the
   // regular version, depending on the content and the source and destination
-  // bounds.
+  // bounds. In the case the provided source bounds is empty, we cannot derive a
+  // transform so that particular view will still use a bounds animation, even
+  // with this flag on.
   const bool use_transforms_;
 
   base::ObserverList<BoundsAnimatorObserver>::Unchecked observers_;

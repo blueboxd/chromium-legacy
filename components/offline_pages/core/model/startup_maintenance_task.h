@@ -23,10 +23,10 @@ class StartupMaintenanceTask : public Task {
                          ArchiveManager* archive_manager);
   ~StartupMaintenanceTask() override;
 
+ private:
   // Task implementation:
   void Run() override;
 
- private:
   void OnStartupMaintenanceDone(bool result);
 
   // The store containing the offline pages. Not owned.

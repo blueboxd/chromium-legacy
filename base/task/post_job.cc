@@ -134,7 +134,7 @@ void JobHandle::Join() {
   DCHECK_GE(internal::GetTaskPriorityForCurrentThread(),
             task_source_->priority_racy())
       << "Join may not be called on Job with higher priority than the current "
-         "one.";
+         "thread.";
   UpdatePriority(internal::GetTaskPriorityForCurrentThread());
   bool must_run = task_source_->WillJoin();
   while (must_run)
@@ -173,10 +173,8 @@ JobHandle PostJob(const Location& from_here,
   DCHECK_EQ(traits.extension_id(),
             TaskTraitsExtensionStorage::kInvalidExtensionId);
 
-  TaskTraits adjusted_traits = traits;
-  adjusted_traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
   auto task_source = base::MakeRefCounted<internal::JobTaskSource>(
-      from_here, adjusted_traits, std::move(worker_task),
+      from_here, traits, std::move(worker_task),
       std::move(max_concurrency_callback),
       static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get()));
   const bool queued =

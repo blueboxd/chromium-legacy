@@ -1,13 +1,11 @@
-# crbug/1036553
--org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTabMenuDismissedOnOrientationChange
--org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarAppears
--org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarOverflowMenus
--org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarReopenOnTarget
-
 # crbug/1036571
+-org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithHint
+-org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithoutHint
 -org.chromium.shape_detection.FaceDetectionImplTest.testDetectRotatedFaceWithGmsCore
+-org.chromium.shape_detection.FaceDetectionImplTest.testDetectValidImageWithGmsCore
 -org.chromium.shape_detection.TextDetectionImplTest.testDetectSucceedsOnValidBitmap
 -org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testBarcodeDetection
+-org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testTextDetection
 
 # crbug/1017141
 -org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMultiWindowTest.testMoveTabsAcrossWindow_GTS_WithoutGroup
@@ -19,8 +17,14 @@
 # vr tests do not apply to emulator
 -org.chromium.chrome.browser.hardware_acceleration.ManifestHWATest.testAccelerationDisabled
 
-# crbug/1017141
--org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMultiWindowTest.testMoveTabsAcrossWindow_GTS_WithoutGroup
-
 # crbug/1032118
 -org.chromium.chrome.browser.notifications.StandardNotificationBuilderTest.testSetAll
+
+# crbug/1036551
+-org.chromium.chrome.browser.tabmodel.TabModelMergingTest.testMergeOnColdStartIntoChromeTabbedActivity2
+
+# crbug/1036459
+-org.chromium.chrome.browser.ntp.NewTabPageTest.testFocusFakebox
+
+# crbug/1040088
+-org.chromium.chrome.browser.payments.PaymentRequestRetryTest.testRetryWithShippingAddressErrorsAndPayerErrors

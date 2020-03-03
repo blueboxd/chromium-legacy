@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/gradient_view.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -25,6 +26,7 @@ const CGFloat kButtonTitleContentInset = 8.0;
 
 // Layout constants for buttons.
 struct AuthenticationViewConstants {
+  CGFloat GradientHeight;
   CGFloat ButtonHeight;
   CGFloat ButtonHorizontalPadding;
   CGFloat ButtonTopPadding;
@@ -32,6 +34,7 @@ struct AuthenticationViewConstants {
 };
 
 const AuthenticationViewConstants kCompactConstants = {
+    40,  // GradientHeight
     36,  // ButtonHeight
     16,  // ButtonHorizontalPadding
     16,  // ButtonTopPadding
@@ -39,6 +42,7 @@ const AuthenticationViewConstants kCompactConstants = {
 };
 
 const AuthenticationViewConstants kRegularConstants = {
+    kCompactConstants.GradientHeight,
     1.5 * kCompactConstants.ButtonHeight,
     32,  // ButtonHorizontalPadding
     32,  // ButtonTopPadding
@@ -66,6 +70,9 @@ enum AuthenticationButtonType {
 // Property that denotes whether the unified consent screen reached bottom has
 // triggered.
 @property(nonatomic, assign) BOOL hasUnifiedConsentScreenReachedBottom;
+// Gradient used to hide text that is close to the bottom of the screen. This
+// gives users the hint that there is more to scroll through.
+@property(nonatomic, strong) GradientView* gradientView;
 
 @end
 
@@ -126,28 +133,57 @@ enum AuthenticationButtonType {
 
   [self addConfirmationButtonToView];
   [self embedUserConsentView];
+  [self addActivityIndicatorToView];
   [self addSkipSigninButtonToView];
+
+  [self.view addSubview:self.gradientView];
 
   // The layout constraints should be added at the end once all of the views
   // have been created.
   AuthenticationViewConstants constants = self.authenticationViewConstants;
+
+  // Embedded view constraints.
   AddSameConstraintsWithInsets(
       self.unifiedConsentViewController.view, self.view,
       ChromeDirectionalEdgeInsetsMake(0, 0,
-                                      constants.ButtonHeight +
+                                      2 * constants.ButtonHeight +
                                           constants.ButtonBottomPadding +
                                           constants.ButtonTopPadding,
                                       0));
+
+  // Skip sign-in button constraints.
   AddSameConstraintsToSidesWithInsets(
       self.skipSigninButton, self.view,
       LayoutSides::kBottom | LayoutSides::kLeading,
-      ChromeDirectionalEdgeInsetsMake(0, constants.ButtonHorizontalPadding,
-                                      constants.ButtonBottomPadding, 0));
+      ChromeDirectionalEdgeInsetsMake(
+          0, constants.ButtonHorizontalPadding,
+          constants.ButtonBottomPadding + constants.ButtonHeight, 0));
+
+  // Activity indicator constraints.
+  AddSameCenterConstraints(self.view, self.activityIndicator);
+
+  // Confirmation button constraints.
   AddSameConstraintsToSidesWithInsets(
       self.confirmationButton, self.view,
       LayoutSides::kBottom | LayoutSides::kTrailing,
-      ChromeDirectionalEdgeInsetsMake(0, 0, constants.ButtonBottomPadding,
-                                      constants.ButtonHorizontalPadding));
+      ChromeDirectionalEdgeInsetsMake(
+          0, 0, constants.ButtonBottomPadding + constants.ButtonHeight,
+          constants.ButtonHorizontalPadding));
+
+  // Gradient layer constraints.
+  self.gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [self.gradientView.bottomAnchor
+        constraintEqualToAnchor:self.unifiedConsentViewController.view
+                                    .bottomAnchor],
+    [self.gradientView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.gradientView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+
+    [self.gradientView.heightAnchor
+        constraintEqualToConstant:constants.GradientHeight],
+  ]];
 }
 
 #pragma mark - Properties
@@ -179,6 +215,16 @@ enum AuthenticationButtonType {
 - (const AuthenticationViewConstants&)authenticationViewConstants {
   BOOL isRegularSizeClass = IsRegularXRegularSizeClass(self.traitCollection);
   return isRegularSizeClass ? kRegularConstants : kCompactConstants;
+}
+
+// Sets up gradient that masks text when the iOS device size is a compact size.
+// This is to hint to the user that there is additional text below the end of
+// the screen.
+- (UIView*)gradientView {
+  if (!_gradientView) {
+    _gradientView = [[GradientView alloc] init];
+  }
+  return _gradientView;
 }
 
 #pragma mark - Subviews

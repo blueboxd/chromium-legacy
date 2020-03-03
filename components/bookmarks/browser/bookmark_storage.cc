@@ -141,8 +141,6 @@ void LoadBookmarks(const base::FilePath& path,
       details->set_ids_reassigned(codec.ids_reassigned());
       details->set_guids_reassigned(codec.guids_reassigned());
       details->set_model_meta_info_map(codec.model_meta_info_map());
-      details->set_model_sync_transaction_version(
-          codec.model_sync_transaction_version());
       UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
                           TimeTicks::Now() - start_time);
       int64_t size = 0;
@@ -202,9 +200,7 @@ void LoadBookmarks(const base::FilePath& path,
 
 BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
     : load_managed_node_callback_(client->GetLoadManagedNodeCallback()),
-      index_(std::make_unique<TitledUrlIndex>()),
-      model_sync_transaction_version_(
-          BookmarkNode::kInvalidSyncTransactionVersion) {
+      index_(std::make_unique<TitledUrlIndex>()) {
   // WARNING: do NOT add |client| as a member. Much of this code runs on another
   // thread, and |client_| is not thread safe, and/or may be destroyed before
   // this.

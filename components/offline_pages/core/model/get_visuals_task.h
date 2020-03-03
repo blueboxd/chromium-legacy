@@ -27,11 +27,11 @@ class GetVisualsTask : public Task {
                  CompleteCallback complete_callback);
   ~GetVisualsTask() override;
 
-  // Task implementation:
-  void Run() override;
-
  private:
   typedef std::unique_ptr<OfflinePageVisuals> Result;
+
+  // Task implementation:
+  void Run() override;
 
   void Complete(Result result);
 

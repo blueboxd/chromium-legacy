@@ -51,7 +51,6 @@ class BookmarkCodec {
       const BookmarkNode* other_folder_node,
       const BookmarkNode* mobile_folder_node,
       const BookmarkNode::MetaInfoMap* model_meta_info_map,
-      int64_t sync_transaction_version,
       const std::string& sync_metadata_str);
 
   // Decodes the previously encoded value to the specified nodes as well as
@@ -81,11 +80,6 @@ class BookmarkCodec {
     return model_meta_info_map_;
   }
 
-  // Return the sync transaction version of the bookmark model root.
-  int64_t model_sync_transaction_version() const {
-    return model_sync_transaction_version_;
-  }
-
   // Returns whether the IDs were reassigned during decoding. Always returns
   // false after encoding.
   bool ids_reassigned() const { return ids_reassigned_; }
@@ -110,7 +104,6 @@ class BookmarkCodec {
   static const char kDateModifiedKey[];
   static const char kChildrenKey[];
   static const char kMetaInfo[];
-  static const char kSyncTransactionVersion[];
   // Allows the BookmarkClient to read and a write a string blob from the JSON
   // file. That string captures the bookmarks sync metadata.
   static const char kSyncMetadata[];
@@ -154,14 +147,10 @@ class BookmarkCodec {
                   BookmarkNode* parent,
                   BookmarkNode* node);
 
-  // Decodes the meta info from the supplied value. If the meta info contains
-  // a "sync.transaction_version" key, the value of that field will be stored
-  // in the sync_transaction_version variable, then deleted. This is for
-  // backward-compatibility reasons.
-  // meta_info_map and sync_transaction_version must not be NULL.
+  // Decodes the meta info from the supplied value. meta_info_map must not be
+  // nullptr.
   bool DecodeMetaInfo(const base::DictionaryValue& value,
-                      BookmarkNode::MetaInfoMap* meta_info_map,
-                      int64_t* sync_transaction_version);
+                      BookmarkNode::MetaInfoMap* meta_info_map);
 
   // Decodes the meta info from the supplied sub-node dictionary. The values
   // found will be inserted in meta_info_map with the given prefix added to the
@@ -220,9 +209,6 @@ class BookmarkCodec {
 
   // Meta info set on bookmark model root.
   BookmarkNode::MetaInfoMap model_meta_info_map_;
-
-  // Sync transaction version set on bookmark model root.
-  int64_t model_sync_transaction_version_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkCodec);
 };

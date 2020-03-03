@@ -65,6 +65,8 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
             put(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, false);
             put(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, false);
+            put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
+            put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
         }
     };
 
@@ -179,6 +181,24 @@ public class CachedFeatureFlags {
     public static void setForTesting(String featureName, @Nullable Boolean value) {
         String preferenceName = getPrefForFeatureFlag(featureName);
         sBoolValuesReturned.put(preferenceName, value);
+    }
+
+    /**
+     * Sets the feature flags to use in JUnit and instrumentation tests.
+     */
+    @VisibleForTesting
+    public static void setFeaturesForTesting(Map<String, Boolean> features) {
+        assert features != null;
+
+        for (Map.Entry<String, Boolean> entry : features.entrySet()) {
+            String key = entry.getKey();
+
+            if (!sDefaults.containsKey(key)) {
+                continue;
+            }
+
+            setForTesting(key, entry.getValue());
+        }
     }
 
     /**

@@ -9,13 +9,9 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
-#include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_id_from_account_info.h"
-#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -71,12 +67,6 @@ void OAuth2LoginManager::ContinueSessionRestore() {
       << "Exchanging cookies for OAuth 2.0 tokens is no longer supported";
 
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
-  account_reconcilor_observer_.Add(GetAccountReconcilor());
-
-  // AccountReconcilor may be disabled while migrations are running.
-  if (GetAccountReconcilor()->IsReconcileEnabled()) {
-    OnStateChanged(GetAccountReconcilor()->GetState());
-  }
 
   // Save passed OAuth2 refresh token.
   if (restore_strategy_ == RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN) {
@@ -91,10 +81,12 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 }
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS);
   signin::IdentityManager* identity_manager = GetIdentityManager();
-  if (!identity_manager->HasAccountWithRefreshToken(
+  if (identity_manager->HasAccountWithRefreshToken(
           GetUnconsentedPrimaryAccountId())) {
+    VLOG(1) << "OAuth2 refresh token is already loaded.";
+    VerifySessionCookies();
+  } else {
     VLOG(1) << "Waiting for OAuth2 refresh token being loaded from database.";
 
     // Flag user with unknown token status in case there are no saved tokens
@@ -108,6 +100,10 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
                 .email),
         user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
   }
+}
+
+void OAuth2LoginManager::Stop() {
+  login_verifier_.reset();
 }
 
 bool OAuth2LoginManager::SessionRestoreIsRunning() const {
@@ -137,38 +133,22 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
   }
   // Only restore session cookies for the primary account in the profile.
   if (GetUnconsentedPrimaryAccountId() == account_info.account_id) {
+    // The refresh token has changed, so stop any ongoing actions that were
+    // based on the old refresh token.
+    Stop();
+
     // Token is loaded. Undo the flagging before token loading.
     DCHECK(!account_info.gaia.empty());
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         AccountIdFromAccountInfo(account_info),
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-  }
-}
 
-void OAuth2LoginManager::OnStateChanged(
-    signin_metrics::AccountReconcilorState state) {
-  if (state == signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_OK) {
-    RecordSessionRestoreOutcome(SESSION_RESTORE_SUCCESS, SESSION_RESTORE_DONE);
-    GetAccountReconcilor()->RemoveObserver(this);
-  } else if (state ==
-             signin_metrics::AccountReconcilorState::ACCOUNT_RECONCILOR_ERROR) {
-    if (GetAccountReconcilor()->GetReconcileError().IsTransientError()) {
-      RecordSessionRestoreOutcome(SESSION_RESTORE_MERGE_SESSION_FAILED,
-                                  SESSION_RESTORE_CONNECTION_FAILED);
-    } else {
-      RecordSessionRestoreOutcome(SESSION_RESTORE_MERGE_SESSION_FAILED,
-                                  SESSION_RESTORE_FAILED);
-    }
-    GetAccountReconcilor()->RemoveObserver(this);
+    VerifySessionCookies();
   }
 }
 
 signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
-}
-
-AccountReconcilor* OAuth2LoginManager::GetAccountReconcilor() {
-  return AccountReconcilorFactory::GetForProfile(user_profile_);
 }
 
 CoreAccountId OAuth2LoginManager::GetUnconsentedPrimaryAccountId() {
@@ -200,9 +180,103 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   OnRefreshTokenUpdatedForAccount(primary_account_info);
 }
 
+void OAuth2LoginManager::VerifySessionCookies() {
+  DCHECK(!login_verifier_.get());
+  login_verifier_ = std::make_unique<OAuth2LoginVerifier>(
+      this, GetIdentityManager(), GetUnconsentedPrimaryAccountId(),
+      oauthlogin_access_token_);
+
+  if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
+    login_verifier_->VerifyUserCookies();
+    return;
+  }
+
+  RestoreSessionCookies();
+}
+
+void OAuth2LoginManager::RestoreSessionCookies() {
+  SetSessionRestoreState(SESSION_RESTORE_IN_PROGRESS);
+  login_verifier_->VerifyProfileTokens();
+}
+
 void OAuth2LoginManager::Shutdown() {
   GetIdentityManager()->RemoveObserver(this);
-  account_reconcilor_observer_.RemoveAll();
+  login_verifier_.reset();
+}
+
+void OAuth2LoginManager::OnSessionMergeSuccess() {
+  VLOG(1) << "OAuth2 refresh and/or GAIA token verification succeeded.";
+  RecordSessionRestoreOutcome(SESSION_RESTORE_SUCCESS, SESSION_RESTORE_DONE);
+}
+
+void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
+  LOG(ERROR) << "OAuth2 refresh and GAIA token verification failed!"
+             << " connection_error: " << connection_error;
+  RecordSessionRestoreOutcome(SESSION_RESTORE_MERGE_SESSION_FAILED,
+                              connection_error
+                                  ? SESSION_RESTORE_CONNECTION_FAILED
+                                  : SESSION_RESTORE_FAILED);
+}
+
+void OAuth2LoginManager::OnListAccountsSuccess(
+    const std::vector<gaia::ListedAccount>& accounts) {
+  MergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
+  // Let's analyze which accounts we see logged in here:
+  CoreAccountId user_account_id = GetUnconsentedPrimaryAccountId();
+  if (!accounts.empty()) {
+    bool found = false;
+    bool first = true;
+    for (std::vector<gaia::ListedAccount>::const_iterator iter =
+             accounts.begin();
+         iter != accounts.end(); ++iter) {
+      if (iter->id == user_account_id) {
+        found = iter->valid;
+        break;
+      }
+
+      first = false;
+    }
+
+    if (!found)
+      outcome = POST_MERGE_MISSING_PRIMARY_ACCOUNT;
+    else if (!first)
+      outcome = POST_MERGE_PRIMARY_NOT_FIRST_ACCOUNT;
+
+  } else {
+    outcome = POST_MERGE_NO_ACCOUNTS;
+  }
+
+  bool is_pre_merge = (state_ == SESSION_RESTORE_PREPARING);
+  RecordCookiesCheckOutcome(is_pre_merge, outcome);
+  // If the primary account is missing during the initial cookie freshness
+  // check, try to restore GAIA session cookies form the OAuth2 tokens.
+  if (is_pre_merge) {
+    if (outcome != POST_MERGE_SUCCESS &&
+        outcome != POST_MERGE_PRIMARY_NOT_FIRST_ACCOUNT) {
+      RestoreSessionCookies();
+    } else {
+      // We are done with this account, it's GAIA cookies are legit.
+      RecordSessionRestoreOutcome(SESSION_RESTORE_NOT_NEEDED,
+                                  SESSION_RESTORE_DONE);
+    }
+  }
+}
+
+void OAuth2LoginManager::OnListAccountsFailure(bool connection_error) {
+  bool is_pre_merge = (state_ == SESSION_RESTORE_PREPARING);
+  RecordCookiesCheckOutcome(is_pre_merge, connection_error
+                                              ? POST_MERGE_CONNECTION_FAILED
+                                              : POST_MERGE_VERIFICATION_FAILED);
+  if (is_pre_merge) {
+    if (!connection_error) {
+      // If we failed to get account list, our cookies might be stale so we
+      // need to attempt to restore them.
+      RestoreSessionCookies();
+    } else {
+      RecordSessionRestoreOutcome(SESSION_RESTORE_LISTACCOUNTS_FAILED,
+                                  SESSION_RESTORE_CONNECTION_FAILED);
+    }
+  }
 }
 
 void OAuth2LoginManager::RecordSessionRestoreOutcome(
@@ -211,6 +285,19 @@ void OAuth2LoginManager::RecordSessionRestoreOutcome(
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore", outcome,
                             SESSION_RESTORE_COUNT);
   SetSessionRestoreState(state);
+}
+
+// static
+void OAuth2LoginManager::RecordCookiesCheckOutcome(
+    bool is_pre_merge,
+    MergeVerificationOutcome outcome) {
+  if (is_pre_merge) {
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PreMergeVerification", outcome,
+                              POST_MERGE_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PostMergeVerification", outcome,
+                              POST_MERGE_COUNT);
+  }
 }
 
 void OAuth2LoginManager::SetSessionRestoreState(

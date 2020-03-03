@@ -9,7 +9,7 @@
 
 #include "ios/chrome/browser/ui/history/history_consumer.h"
 
-class ChromeBrowserState;
+class Browser;
 enum class UrlLoadStrategy;
 
 @class ContextMenuCoordinator;
@@ -21,8 +21,8 @@ enum class UrlLoadStrategy;
 @interface HistoryTableViewController
     : ChromeTableViewController <HistoryConsumer,
                                  UIAdaptivePresentationControllerDelegate>
-// The ViewController's BrowserState.
-@property(nonatomic, assign) ChromeBrowserState* browserState;
+// The ViewController's Browser.
+@property(nonatomic, assign) Browser* browser;
 // Abstraction to communicate with HistoryService and WebHistoryService.
 // Not owned by HistoryTableViewController.
 @property(nonatomic, assign) history::BrowsingHistoryService* historyService;

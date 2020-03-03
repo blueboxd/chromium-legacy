@@ -140,20 +140,18 @@ const struct {
   bool is_not_property : 1;
   bool is_not_attribute : 1;
 } kTypeTable[] = {
-    {"embed", "src", nullptr, SpecificTrustedType::kTrustedScriptURL},
-    {"iframe", "srcdoc", nullptr, SpecificTrustedType::kTrustedHTML},
-    {"object", "codeBase", nullptr, SpecificTrustedType::kTrustedScriptURL},
-    {"object", "data", nullptr, SpecificTrustedType::kTrustedScriptURL},
-    {"script", "innerText", nullptr, SpecificTrustedType::kTrustedScript, false,
+    {"embed", "src", nullptr, SpecificTrustedType::kScriptURL},
+    {"iframe", "srcdoc", nullptr, SpecificTrustedType::kHTML},
+    {"object", "codeBase", nullptr, SpecificTrustedType::kScriptURL},
+    {"object", "data", nullptr, SpecificTrustedType::kScriptURL},
+    {"script", "innerText", nullptr, SpecificTrustedType::kScript, false, true},
+    {"script", "src", nullptr, SpecificTrustedType::kScriptURL},
+    {"script", "text", nullptr, SpecificTrustedType::kScript, false, true},
+    {"script", "textContent", nullptr, SpecificTrustedType::kScript, false,
      true},
-    {"script", "src", nullptr, SpecificTrustedType::kTrustedScriptURL},
-    {"script", "text", nullptr, SpecificTrustedType::kTrustedScript, false,
-     true},
-    {"script", "textContent", nullptr, SpecificTrustedType::kTrustedScript,
-     false, true},
-    {"*", "innerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
-    {"*", "outerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
-    {"*", "on*", nullptr, SpecificTrustedType::kTrustedScript, true, false},
+    {"*", "innerHTML", nullptr, SpecificTrustedType::kHTML, false, true},
+    {"*", "outerHTML", nullptr, SpecificTrustedType::kHTML, false, true},
+    {"*", "on*", nullptr, SpecificTrustedType::kScript, true, false},
 };
 
 // Does a type table entry match a property?
@@ -185,11 +183,11 @@ bool EqualsAttribute(decltype(*kTypeTable)& left,
 
 String getTrustedTypeName(SpecificTrustedType type) {
   switch (type) {
-    case SpecificTrustedType::kTrustedHTML:
+    case SpecificTrustedType::kHTML:
       return "TrustedHTML";
-    case SpecificTrustedType::kTrustedScript:
+    case SpecificTrustedType::kScript:
       return "TrustedScript";
-    case SpecificTrustedType::kTrustedScriptURL:
+    case SpecificTrustedType::kScriptURL:
       return "TrustedScriptURL";
     case SpecificTrustedType::kNone:
       return String();

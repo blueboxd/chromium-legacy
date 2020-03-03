@@ -161,7 +161,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 mIntent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
 
         // Check if a web search Intent is being handled.
-        IntentHandler intentHandler = new IntentHandler(this, mActivity.getPackageName());
+        IntentHandler intentHandler = new IntentHandler(mActivity, this);
         String url = IntentHandler.getUrlFromIntent(mIntent);
         if (url == null && tabId == Tab.INVALID_TAB_ID && !incognito
                 && intentHandler.handleWebSearchIntent(mIntent)) {

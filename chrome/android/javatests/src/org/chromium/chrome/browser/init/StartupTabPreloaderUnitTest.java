@@ -159,12 +159,15 @@ public class StartupTabPreloaderUnitTest {
 
     private StartupTabPreloader createStartupTabPreloader(
             Intent intent, TabCreatorManager tabCreatorManager) {
-        return new StartupTabPreloader(new Supplier<Intent>() {
-            @Override
-            public Intent get() {
-                return intent;
-            }
-        }, new ActivityLifecycleDispatcherImpl(), null, tabCreatorManager);
+        return new StartupTabPreloader(
+                new Supplier<Intent>() {
+                    @Override
+                    public Intent get() {
+                        return intent;
+                    }
+                },
+                new ActivityLifecycleDispatcherImpl(), null, tabCreatorManager,
+                new IntentHandler(null, null));
     }
 
     private static class ChromeTabCreatorManager implements TabCreatorManager {

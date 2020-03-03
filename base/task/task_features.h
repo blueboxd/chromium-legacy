@@ -40,12 +40,6 @@ extern const BASE_EXPORT Feature kUseNativeThreadPool;
 // minutes, instead of 30 seconds.
 extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
 
-// Under this feature, the current default of inheriting priority when posting
-// from the ThreadPool is disabled.
-// Details @
-// https://docs.google.com/document/d/13PIBPuSPJbrgHAgyRbY22EWAfH2narnxpa_CgBmZbSY
-extern const BASE_EXPORT Feature kNoPriorityInheritanceFromThreadPool;
-
 }  // namespace base
 
 #endif  // BASE_TASK_TASK_FEATURES_H_

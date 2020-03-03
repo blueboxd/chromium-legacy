@@ -93,21 +93,6 @@
             ]
         }
     ],
-    "AndroidClipboardTextSuggestions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxEnableClipboardProviderTextSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpContextualSearchPromotePanelOpen": [
         {
             "platforms": [
@@ -490,26 +475,6 @@
                     "name": "Enabled_20191017",
                     "enable_features": [
                         "EnableZeroStateMixedTypesRanker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AppendFrameOriginToNetworkIsolationKey": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AppendFrameOriginToNetworkIsolationKey"
                     ]
                 }
             ]
@@ -5205,9 +5170,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_Stable",
                     "enable_features": [
-                        "SplitCacheByNetworkIsolationKey"
+                        "AppendFrameOriginToNetworkIsolationKey",
+                        "SplitCacheByNetworkIsolationKey",
+                        "UseRegistrableDomainInNetworkIsolationKey"
                     ]
                 }
             ]
@@ -5856,26 +5823,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UsePreferredIntervalForVideo"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UseRegistrableDomainInNetworkIsolationKey": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseRegistrableDomainInNetworkIsolationKey"
                     ]
                 }
             ]

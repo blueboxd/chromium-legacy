@@ -682,8 +682,8 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
           widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
       auto scoped_event_metrics_monitor =
           widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
-              {ui::WebEventTypeToEventType(input_event.GetType()),
-               input_event.TimeStamp()});
+              {ui::WebEventTypeToEventType(gesture_event->GetType()),
+               gesture_event->TimeStamp()});
       widget_->GetWebWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(*gesture_event.get()));
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.os.Handler;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -137,6 +138,10 @@ public class TabGroupUiMediator {
 
             @Override
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
+                if (type == TabLaunchType.FROM_CHROME_UI && mIsTabGroupUiVisible) {
+                    mModel.set(TabGroupUiProperties.INITIAL_SCROLL_INDEX,
+                            getRelatedTabsForId(tab.getId()).size() - 1);
+                }
                 if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE
                         || type == TabLaunchType.FROM_STARTUP) {
                     return;
@@ -283,6 +288,15 @@ public class TabGroupUiMediator {
                 && BottomToolbarConfiguration.isBottomToolbarEnabled();
         assert (mVisibilityController == null) == isDuetTabStripIntegrationEnabled;
         if (isDuetTabStripIntegrationEnabled) return;
+        if (mIsTabGroupUiVisible) {
+            // Post to make sure that the recyclerView already knows how many visible items it has.
+            // This is to make sure that we can scroll to a state where the selected tab is in the
+            // middle of the strip.
+            Handler handler = new Handler();
+            handler.post(()
+                                 -> mModel.set(TabGroupUiProperties.INITIAL_SCROLL_INDEX,
+                                         listOfTabs.indexOf(mTabModelSelector.getCurrentTab())));
+        }
         mVisibilityController.setBottomControlsVisible(mIsTabGroupUiVisible);
     }
 

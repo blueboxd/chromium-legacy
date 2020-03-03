@@ -132,7 +132,7 @@ void ShadowRoot::SetInnerHTMLFromString(const String& markup,
 void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                               ExceptionState& exception_state) {
   String html =
-      GetStringFromTrustedHTML(stringOrHtml, &GetDocument(), exception_state);
+      TrustedTypesCheckForHTML(stringOrHtml, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     SetInnerHTMLFromString(html, exception_state);
   }

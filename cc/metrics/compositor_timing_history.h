@@ -88,10 +88,8 @@ class CC_EXPORT CompositorTimingHistory {
   void ReadyToActivate();
   void WillActivate();
   void DidActivate();
-  void DrawAborted();
   void WillDraw();
   void DidDraw(bool used_new_active_tree,
-               base::TimeTicks impl_frame_time,
                size_t composited_animations_count,
                size_t main_thread_animations_count,
                bool current_frame_had_raf,
@@ -157,16 +155,13 @@ class CC_EXPORT CompositorTimingHistory {
   RollingTimeDeltaHistory draw_duration_history_;
 
   bool begin_main_frame_on_critical_path_;
-  base::TimeTicks begin_main_frame_frame_time_;
   base::TimeTicks begin_main_frame_sent_time_;
   base::TimeTicks begin_main_frame_start_time_;
   base::TimeTicks commit_start_time_;
-  base::TimeTicks pending_tree_main_frame_time_;
   base::TimeTicks pending_tree_creation_time_;
   base::TimeTicks pending_tree_ready_to_activate_time_;
   base::TimeTicks prepare_tiles_start_time_;
   base::TimeTicks activate_start_time_;
-  base::TimeTicks active_tree_main_frame_time_;
   base::TimeTicks draw_start_time_;
   base::TimeTicks submit_start_time_;
 

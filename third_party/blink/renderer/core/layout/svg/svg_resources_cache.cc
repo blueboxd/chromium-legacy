@@ -194,8 +194,7 @@ void SVGResourcesCache::ResourceReferenceChanged(LayoutObject& layout_object) {
       layout_object, true);
 }
 
-void SVGResourcesCache::ClientWasAddedToTree(LayoutObject& layout_object,
-                                             const ComputedStyle& new_style) {
+void SVGResourcesCache::ClientWasAddedToTree(LayoutObject& layout_object) {
   if (!layout_object.GetNode())
     return;
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
@@ -204,7 +203,8 @@ void SVGResourcesCache::ClientWasAddedToTree(LayoutObject& layout_object,
   if (!LayoutObjectCanHaveResources(layout_object))
     return;
   SVGResourcesCache& cache = ResourcesCache(layout_object.GetDocument());
-  if (cache.AddResourcesFromLayoutObject(layout_object, new_style))
+  if (cache.AddResourcesFromLayoutObject(layout_object,
+                                         layout_object.StyleRef()))
     layout_object.SetNeedsPaintPropertyUpdate();
 }
 

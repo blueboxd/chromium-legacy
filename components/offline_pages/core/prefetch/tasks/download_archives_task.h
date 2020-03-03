@@ -47,9 +47,8 @@ class DownloadArchivesTask : public Task {
                        PrefService* prefs);
   ~DownloadArchivesTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void SendItemsToPrefetchDownloader(
       std::unique_ptr<ItemsToDownload> items_to_download);
 

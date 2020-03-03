@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#import "base/test/task_environment.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -24,6 +26,7 @@ class ContextMenuCoordinatorTest : public PlatformTest {
     [window_ makeKeyAndVisible];
     view_controller_ = [[UIViewController alloc] init];
     [window_ setRootViewController:view_controller_];
+    browser_ = std::make_unique<TestBrowser>();
   }
 
   ~ContextMenuCoordinatorTest() override {
@@ -31,16 +34,20 @@ class ContextMenuCoordinatorTest : public PlatformTest {
   }
 
  protected:
+  base::test::TaskEnvironment task_environment_;
+
   UIWindow* previous_key_window_;
   ContextMenuCoordinator* menu_coordinator_;
   UIWindow* window_;
   UIViewController* view_controller_;
+  std::unique_ptr<Browser> browser_;
 };
 
 // Tests the context menu reports as visible after presenting.
 TEST_F(ContextMenuCoordinatorTest, ValidateIsVisible) {
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
+                         browser:browser_.get()
                            title:@"Context Menu"
                           inView:view_controller_.view
                       atLocation:CGPointZero];
@@ -52,6 +59,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateIsVisible) {
 TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnStop) {
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
+                         browser:browser_.get()
                            title:nil
                           inView:view_controller_.view
                       atLocation:CGPointZero];
@@ -64,6 +72,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnStop) {
 TEST_F(ContextMenuCoordinatorTest, ValidateActions) {
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
+                         browser:browser_.get()
                            title:nil
                           inView:view_controller_.view
                       atLocation:CGPointZero];
@@ -98,6 +107,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateActions) {
 TEST_F(ContextMenuCoordinatorTest, CancelButtonExists) {
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
+                         browser:browser_.get()
                            title:nil
                           inView:view_controller_.view
                       atLocation:CGPointZero];
@@ -121,6 +131,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateContextMenuParams) {
   NSString* title = @"Context Menu Title";
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
+                         browser:browser_.get()
                            title:title
                           inView:view_controller_.view
                       atLocation:location];

@@ -826,7 +826,7 @@ static Node* NodeOrStringToNode(
                             ? node_or_string.GetAsString()
                             : node_or_string.GetAsNode()->textContent();
 
-  string_value = GetStringFromTrustedScript(
+  string_value = TrustedTypesCheckForScript(
       string_value, document.ToExecutionContext(), exception_state);
   if (exception_state.HadException())
     return nullptr;

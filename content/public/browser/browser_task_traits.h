@@ -23,10 +23,14 @@ struct NonNestable {};
 
 // Semantic annotations which tell the scheduler what type of task it's dealing
 // with. This will be used by the scheduler for dynamic prioritization and for
-// attribution in traces, etc...
+// attribution in traces, etc... In general, BrowserTaskType::kDefault is what
+// you want (it's implicit if you don't specify this trait). Only explicitly
+// specify this trait if you carefully isolated a set of tasks that have no
+// ordering requirements with anything else (in doubt, consult with
+// scheduler-dev@chromium.org).
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.browser
 enum class BrowserTaskType {
-  // A catch all tasks that don't fit the types below.
+  // A catch all for tasks that don't fit the types below.
   kDefault,
 
   // Critical startup tasks.

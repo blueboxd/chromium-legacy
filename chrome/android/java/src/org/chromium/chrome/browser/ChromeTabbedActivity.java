@@ -1082,7 +1082,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                     this.getLifecycleDispatcher());
             mIntentWithEffect = false;
             if (getSavedInstanceState() == null && intent != null) {
-                if (!IntentHandler.shouldIgnoreIntent(intent)) {
+                if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
                 }
 

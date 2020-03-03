@@ -304,10 +304,6 @@ class BookmarkModel : public BookmarkUndoProvider,
     return non_cloned_keys_;
   }
 
-  // Sets the sync transaction version of |node|.
-  void SetNodeSyncTransactionVersion(const BookmarkNode* node,
-                                     int64_t sync_transaction_version);
-
   // Notify BookmarkModel that the favicons for the given page URLs (e.g.
   // http://www.google.com) and the given icon URL (e.g.
   // http://www.google.com/favicon.ico) have changed. It is valid to call

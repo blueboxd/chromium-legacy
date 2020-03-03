@@ -146,6 +146,25 @@ TEST_F(BreadcrumbManagerTabHelperTest, AboutNewTabNavigationStart) {
       << events.front();
 }
 
+// Tests metadata for about://newtab/ NTP navigation.
+TEST_F(BreadcrumbManagerTabHelperTest, AboutNewTabNavigationStart2) {
+  BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("about://newtab/"));
+  first_web_state_.OnNavigationStarted(&context);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+
+  EXPECT_NE(std::string::npos, events.front().find(base::StringPrintf(
+                                   "%s%lld", kBreadcrumbDidStartNavigation,
+                                   context.GetNavigationId())))
+      << events.front();
+  EXPECT_NE(std::string::npos, events.front().find(kBreadcrumbNtpNavigation))
+      << events.front();
+}
+
 // Tests unique ID in DidStartNavigation and DidStartNavigation.
 TEST_F(BreadcrumbManagerTabHelperTest, NavigationUniqueId) {
   BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);

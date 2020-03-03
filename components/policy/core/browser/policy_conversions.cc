@@ -195,7 +195,7 @@ Value ArrayPolicyConversions::ToValue() {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 Value ArrayPolicyConversions::GetUpdaterPolicies() {
   Value chrome_policies_data(Value::Type::DICTIONARY);
-  chrome_policies_data.SetKey("name", Value("Updater Policies"));
+  chrome_policies_data.SetKey("name", Value("Google Update Policies"));
   chrome_policies_data.SetKey("id", Value("updater"));
   chrome_policies_data.SetKey("policies", client()->GetUpdaterPolicies());
   return chrome_policies_data;

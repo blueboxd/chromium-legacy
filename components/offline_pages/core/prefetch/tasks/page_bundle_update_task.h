@@ -43,10 +43,9 @@ class PageBundleUpdateTask : public Task {
                        const std::vector<RenderPageInfo>& pages);
   ~PageBundleUpdateTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void FinishedWork(PageBundleUpdateResult result);
 
   // Owned by PrefetchService which also transitively owns |this|, so raw

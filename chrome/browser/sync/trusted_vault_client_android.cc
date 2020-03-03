@@ -103,6 +103,10 @@ void TrustedVaultClientAndroid::StoreKeys(
   NOTREACHED();
 }
 
+void TrustedVaultClientAndroid::RemoveAllStoredKeys() {
+  // StoreKeys() not supported on Android, nothing to remove.
+}
+
 void TrustedVaultClientAndroid::MarkKeysAsStale(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {

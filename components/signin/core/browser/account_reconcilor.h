@@ -123,16 +123,6 @@ class AccountReconcilor : public KeyedService,
   // from being invalidated during the deletion.
   std::unique_ptr<ScopedSyncedDataDeletion> GetScopedSyncDataDeletion();
 
-  // Returns the 'Most severe' error encountered during the last attempt to
-  // reconcile (after the state is already set to ACCOUNT_RECONCILOR_OK or
-  // ACCOUNT_RECONCILOR_ERROR).
-  // If the last reconciliation attempt was successful, this will be
-  // |GoogleServiceAuthError::State::NONE|.
-  GoogleServiceAuthError GetReconcileError() const;
-
-  // Returns true if the reconcilor is enabled.
-  bool IsReconcileEnabled() const;
-
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTest;

@@ -79,17 +79,16 @@ void BrowsingDataFileSystemHelper::FetchFileSystemInfoInFileThread(
     storage::FileSystemQuotaUtil* quota_util =
         filesystem_context_->GetQuotaUtil(type);
     DCHECK(quota_util);
-    std::set<GURL> origins;
+    std::set<url::Origin> origins;
     quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
-    for (const GURL& current : origins) {
-      if (!BrowsingDataHelper::HasWebScheme(current))
+    for (const auto& current : origins) {
+      if (!BrowsingDataHelper::HasWebScheme(current.GetURL()))
         continue;  // Non-websafe state is not considered browsing data.
       int64_t usage = quota_util->GetOriginUsageOnFileTaskRunner(
-          filesystem_context_.get(), url::Origin::Create(current), type);
+          filesystem_context_.get(), current, type);
       auto inserted =
           file_system_info_map
-              .insert(std::make_pair(
-                  current, FileSystemInfo(url::Origin::Create(current))))
+              .insert(std::make_pair(current.GetURL(), FileSystemInfo(current)))
               .first;
       inserted->second.usage_map[type] = usage;
     }

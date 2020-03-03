@@ -164,10 +164,8 @@ void DiskCacheEntryTest::InternalSyncIO() {
   ASSERT_TRUE(nullptr != entry);
 
   // The bulk of the test runs from within the callback, on the cache thread.
-  RunTaskForTest(base::Bind(&DiskCacheEntryTest::InternalSyncIOBackground,
-                            base::Unretained(this),
-                            entry));
-
+  RunTaskForTest(base::BindOnce(&DiskCacheEntryTest::InternalSyncIOBackground,
+                                base::Unretained(this), entry));
 
   entry->Doom();
   entry->Close();
@@ -400,9 +398,8 @@ void DiskCacheEntryTest::ExternalSyncIO() {
   ASSERT_THAT(CreateEntry("the first key", &entry), IsOk());
 
   // The bulk of the test runs from within the callback, on the cache thread.
-  RunTaskForTest(base::Bind(&DiskCacheEntryTest::ExternalSyncIOBackground,
-                            base::Unretained(this),
-                            entry));
+  RunTaskForTest(base::BindOnce(&DiskCacheEntryTest::ExternalSyncIOBackground,
+                                base::Unretained(this), entry));
 
   entry->Doom();
   entry->Close();

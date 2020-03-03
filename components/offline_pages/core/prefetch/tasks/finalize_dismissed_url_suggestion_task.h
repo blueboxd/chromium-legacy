@@ -34,9 +34,8 @@ class FinalizeDismissedUrlSuggestionTask : public Task {
                                      const ClientId& client_id);
   ~FinalizeDismissedUrlSuggestionTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void OnComplete(bool removed);
 
   PrefetchStore* prefetch_store_;

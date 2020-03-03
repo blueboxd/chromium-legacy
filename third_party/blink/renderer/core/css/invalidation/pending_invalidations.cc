@@ -26,6 +26,7 @@ void PendingInvalidations::ScheduleInvalidationSetsForNode(
     const InvalidationLists& invalidation_lists,
     ContainerNode& node) {
   DCHECK(node.InActiveDocument());
+  DCHECK(!node.GetDocument().InStyleRecalc());
   bool requires_descendant_invalidation = false;
 
   if (node.GetStyleChangeType() < kSubtreeStyleChange) {

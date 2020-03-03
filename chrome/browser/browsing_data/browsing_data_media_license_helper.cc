@@ -99,19 +99,19 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
           filesystem_context_->GetFileSystemBackend(kType));
 
   // Determine the set of origins used.
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   std::list<MediaLicenseInfo> result;
   backend->GetOriginsForTypeOnFileTaskRunner(kType, &origins);
-  for (const GURL& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin))
+  for (const auto& origin : origins) {
+    if (!BrowsingDataHelper::HasWebScheme(origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
 
     int64_t size;
     base::Time last_modified_time;
-    backend->GetOriginDetailsOnFileTaskRunner(filesystem_context_.get(),
-                                              url::Origin::Create(origin),
+    backend->GetOriginDetailsOnFileTaskRunner(filesystem_context_.get(), origin,
                                               &size, &last_modified_time);
-    result.push_back(MediaLicenseInfo(origin, size, last_modified_time));
+    result.push_back(
+        MediaLicenseInfo(origin.GetURL(), size, last_modified_time));
   }
 
   base::PostTask(FROM_HERE, {BrowserThread::UI},

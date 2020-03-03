@@ -53,7 +53,7 @@ HTMLScriptElement::HTMLScriptElement(Document& document,
 const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedScriptURL}}));
+                      ({{"src", SpecificTrustedType::kScriptURL}}));
   return attribute_map;
 }
 
@@ -136,7 +136,7 @@ void HTMLScriptElement::text(StringOrTrustedScript& result) {
 void HTMLScriptElement::setInnerText(
     const StringOrTrustedScript& string_or_trusted_script,
     ExceptionState& exception_state) {
-  String value = GetStringFromTrustedScript(string_or_trusted_script,
+  String value = TrustedTypesCheckForScript(string_or_trusted_script,
                                             GetDocument().ToExecutionContext(),
                                             exception_state);
   if (!exception_state.HadException()) {
@@ -151,7 +151,7 @@ void HTMLScriptElement::setInnerText(
 void HTMLScriptElement::setTextContent(
     const StringOrTrustedScript& string_or_trusted_script,
     ExceptionState& exception_state) {
-  String value = GetStringFromTrustedScript(string_or_trusted_script,
+  String value = TrustedTypesCheckForScript(string_or_trusted_script,
                                             GetDocument().ToExecutionContext(),
                                             exception_state);
   if (!exception_state.HadException()) {

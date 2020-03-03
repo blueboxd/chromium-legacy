@@ -30,13 +30,19 @@ class ReportGenerator {
   ReportGenerator();
   virtual ~ReportGenerator();
 
-  virtual void Generate(ReportCallback callback);
+  // Asynchronously generates a queue of report requests, providing them to
+  // |callback| when ready. If |with_profiles| is true, full details are
+  // included for all loaded profiles; otherwise, only profile name and path
+  // are included.
+  virtual void Generate(bool with_profiles, ReportCallback callback);
 
   void SetMaximumReportSizeForTesting(size_t size);
 
  protected:
   // Creates a basic request that will be used by all Profiles.
-  void CreateBasicRequest();
+  void CreateBasicRequest(std::unique_ptr<ReportRequest> basic_request,
+                          bool with_profiles,
+                          ReportCallback callback);
 
   // Returns an OS report contains basic OS information includes OS name, OS
   // architecture and OS version.
@@ -55,17 +61,17 @@ class ReportGenerator {
 #if defined(OS_CHROMEOS)
   // Collect the Android application information installed on primary profile,
   // and set it to |basic_request_|.
-  virtual void SetAndroidAppInfos();
+  virtual void SetAndroidAppInfos(ReportRequest* basic_request);
 #endif
 
  private:
-  void OnBrowserReportReady(std::unique_ptr<em::BrowserReport> browser_report);
+  void OnBrowserReportReady(bool with_profiles,
+                            ReportCallback callback,
+                            std::unique_ptr<ReportRequest> basic_request,
+                            std::unique_ptr<em::BrowserReport> browser_report);
 
   ReportRequestQueueGenerator report_request_queue_generator_;
   BrowserReportGenerator browser_report_generator_;
-  ReportCallback callback_;
-  // Basic information that is shared among requests.
-  ReportRequest basic_request_;
 
   base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_{this};
 

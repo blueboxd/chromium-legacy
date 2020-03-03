@@ -305,7 +305,8 @@ class StructuredHeaderParser {
 
   // Parses a Token ([SH09] 4.2.10, [SH15] 4.2.6).
   base::Optional<Item> ReadToken() {
-    if (input_.empty() || !base::IsAsciiAlpha(input_.front())) {
+    if (input_.empty() ||
+        !(base::IsAsciiAlpha(input_.front()) || input_.front() == '*')) {
       LogParseError("ReadToken", "ALPHA");
       return base::nullopt;
     }
@@ -538,7 +539,8 @@ class StructuredHeaderSerializer {
     if (value.is_token()) {
       // Serializes a Token ([SH15] 4.1.7).
       if (!value.GetString().size() ||
-          !base::IsAsciiAlpha(value.GetString().front()))
+          !(base::IsAsciiAlpha(value.GetString().front()) ||
+            value.GetString().front() == '*'))
         return false;
       if (value.GetString().find_first_not_of(kTokenChars15) !=
           std::string::npos)

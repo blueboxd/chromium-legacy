@@ -244,4 +244,28 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewTo) {
   EXPECT_EQ(repaint_count, child()->repaint_count());
 }
 
+// Tests that the transforms option does not crash when a view's bounds start
+// off empty.
+TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
+  RecreateAnimator(/*use_transforms=*/true);
+
+  gfx::Rect initial_bounds(0, 0, 0, 0);
+  child()->SetBoundsRect(initial_bounds);
+  gfx::Rect target_bounds(10, 10, 20, 20);
+
+  child()->set_repaint_count(0);
+  animator()->AnimateViewTo(child(), target_bounds);
+  animator()->SetAnimationDelegate(child(),
+                                   std::make_unique<TestAnimationDelegate>());
+
+  // The animator should be animating now.
+  EXPECT_TRUE(animator()->IsAnimating());
+  EXPECT_TRUE(animator()->IsAnimating(child()));
+
+  // Run the message loop; the delegate exits the loop when the animation is
+  // done.
+  base::RunLoop().Run();
+  EXPECT_EQ(target_bounds, child()->bounds());
+}
+
 }  // namespace views

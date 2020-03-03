@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.AnnotationRule;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.lang.annotation.Annotation;
@@ -88,12 +89,14 @@ public class Features {
 
     private void applyForJUnit() {
         ChromeFeatureList.setTestFeatures(mRegisteredState);
+        CachedFeatureFlags.setFeaturesForTesting(mRegisteredState);
     }
 
     private void applyForInstrumentation() {
         ChromeFeatureList.setTestCanUseDefaultsForTesting();
         mergeFeatureLists("enable-features", true);
         mergeFeatureLists("disable-features", false);
+        CachedFeatureFlags.setFeaturesForTesting(mRegisteredState);
     }
 
     /**
@@ -123,6 +126,7 @@ public class Features {
         sInstance = null;
         ChromeFeatureList.setTestFeatures(null);
         ChromeFeatureList.resetTestCanUseDefaultsForTesting();
+        CachedFeatureFlags.resetFlagsForTesting();
     }
 
     /**

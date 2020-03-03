@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.TINT;
+
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -19,26 +24,47 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class TabGroupUiViewBinder {
     /**
+     * ViewHolder class to get access to all {@link View}s inside the TabGroupUi.
+     */
+    public static class ViewHolder {
+        public final TabGroupUiToolbarView toolbarView;
+        public final RecyclerView contentView;
+
+        ViewHolder(TabGroupUiToolbarView toolbarView, RecyclerView contentView) {
+            this.toolbarView = toolbarView;
+            this.contentView = contentView;
+        }
+    }
+    /**
      * Binds the given model to the given view, updating the payload in propertyKey.
      *
-     * @param model       The model to use.
-     * @param view        The view to use.
-     * @param propertyKey The key for the property to update for.
+     * @param model             The model to use.
+     * @param viewHolder        The {@link ViewHolder} to use.
+     * @param propertyKey       The key for the property to update for.
      */
-    public static void bind(
-            PropertyModel model, TabGroupUiToolbarView view, PropertyKey propertyKey) {
+    public static void bind(PropertyModel model, ViewHolder viewHolder, PropertyKey propertyKey) {
         if (LEFT_BUTTON_ON_CLICK_LISTENER == propertyKey) {
-            view.setLeftButtonOnClickListener(model.get(LEFT_BUTTON_ON_CLICK_LISTENER));
+            viewHolder.toolbarView.setLeftButtonOnClickListener(
+                    model.get(LEFT_BUTTON_ON_CLICK_LISTENER));
         } else if (RIGHT_BUTTON_ON_CLICK_LISTENER == propertyKey) {
-            view.setRightButtonOnClickListener(model.get(RIGHT_BUTTON_ON_CLICK_LISTENER));
+            viewHolder.toolbarView.setRightButtonOnClickListener(
+                    model.get(RIGHT_BUTTON_ON_CLICK_LISTENER));
         } else if (IS_MAIN_CONTENT_VISIBLE == propertyKey) {
-            view.setMainContentVisibility(model.get(IS_MAIN_CONTENT_VISIBLE));
+            viewHolder.toolbarView.setMainContentVisibility(model.get(IS_MAIN_CONTENT_VISIBLE));
         } else if (PRIMARY_COLOR == propertyKey) {
-            view.setPrimaryColor(model.get(PRIMARY_COLOR));
+            viewHolder.toolbarView.setPrimaryColor(model.get(PRIMARY_COLOR));
         } else if (TINT == propertyKey) {
-            view.setTint(model.get(TINT));
+            viewHolder.toolbarView.setTint(model.get(TINT));
         } else if (LEFT_BUTTON_DRAWABLE_ID == propertyKey) {
-            view.setLeftButtonDrawableId(model.get(LEFT_BUTTON_DRAWABLE_ID));
+            viewHolder.toolbarView.setLeftButtonDrawableId(model.get(LEFT_BUTTON_DRAWABLE_ID));
+        } else if (INITIAL_SCROLL_INDEX == propertyKey) {
+            int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
+            LinearLayoutManager manager =
+                    (LinearLayoutManager) viewHolder.contentView.getLayoutManager();
+            int showingItemsCount =
+                    manager.findLastVisibleItemPosition() - manager.findFirstVisibleItemPosition();
+            // Try to scroll to a state where the selected tab is in the middle of the strip.
+            manager.scrollToPositionWithOffset(index - showingItemsCount / 2, 0);
         }
     }
 }

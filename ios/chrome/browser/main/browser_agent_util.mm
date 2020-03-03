@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent_util.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
+#import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
@@ -25,6 +26,7 @@ void AttachBrowserAgents(Browser* browser) {
   if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
     BreadcrumbManagerBrowserAgent::CreateForBrowser(browser);
   }
+  LiveTabContextBrowserAgent::CreateForBrowser(browser);
   TabInsertionBrowserAgent::CreateForBrowser(browser);
   AttachInfobarOverlayBrowserAgent(browser);
   SyncedWindowDelegateBrowserAgent::CreateForBrowser(browser);

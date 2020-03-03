@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -74,7 +75,7 @@ void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
         result = cb_result;
         run_loop.Quit();
       }));
-  task->Run();
+  task->Execute(base::DoNothing());
   run_loop.Run();
   EXPECT_EQ(AddPageResult::SUCCESS, result);
 }
@@ -107,7 +108,7 @@ OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
               page = new OfflinePageItem(cb_pages[0]);
             run_loop.Quit();
           })));
-  task->Run();
+  task->Execute(base::DoNothing());
   run_loop.Run();
   return base::WrapUnique<OfflinePageItem>(page);
 }

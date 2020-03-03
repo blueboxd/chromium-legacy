@@ -395,12 +395,12 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateH264Parser(int pes_pid) {
-  auto on_video_config_changed = base::Bind(
+  auto on_video_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnVideoConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_video_buffer = base::Bind(&Mp2tStreamParser::OnEmitVideoBuffer,
                                          base::Unretained(this), pes_pid);
 
-  return std::make_unique<EsParserH264>(on_video_config_changed,
+  return std::make_unique<EsParserH264>(std::move(on_video_config_changed),
                                         on_emit_video_buffer);
 }
 
@@ -435,7 +435,7 @@ bool Mp2tStreamParser::ShouldForceEncryptedParser() {
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
     int pes_pid,
     bool emit_clear_buffers) {
-  auto on_video_config_changed = base::Bind(
+  auto on_video_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnVideoConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_video_buffer = base::Bind(&Mp2tStreamParser::OnEmitVideoBuffer,
                                          base::Unretained(this), pes_pid);
@@ -444,8 +444,8 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
                          : base::Bind(&Mp2tStreamParser::GetDecryptConfig,
                                       base::Unretained(this));
   return std::make_unique<EsParserH264>(
-      on_video_config_changed, on_emit_video_buffer, initial_encryption_scheme_,
-      get_decrypt_config);
+      std::move(on_video_config_changed), on_emit_video_buffer,
+      initial_encryption_scheme_, get_decrypt_config);
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedAacParser(

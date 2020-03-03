@@ -35,9 +35,8 @@ class DownloadCleanupTask : public Task {
           success_downloads);
   ~DownloadCleanupTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void OnFinished(bool success);
 
   PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.

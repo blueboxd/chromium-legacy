@@ -576,7 +576,7 @@ Transform TransformAboutPivot(const Point& pivot, const Transform& transform) {
 }
 
 Transform TransformBetweenRects(const RectF& src, const RectF& dst) {
-  DCHECK(!src.IsEmpty() && !dst.IsEmpty());
+  DCHECK(!src.IsEmpty());
   Transform result;
   result.Translate(dst.origin() - src.origin());
   result.Scale(dst.width() / src.width(), dst.height() / src.height());

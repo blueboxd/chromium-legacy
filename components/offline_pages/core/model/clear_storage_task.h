@@ -50,10 +50,10 @@ class ClearStorageTask : public Task {
                    ClearStorageCallback callback);
   ~ClearStorageTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
 
- private:
   void OnGetStorageStatsDone(const ArchiveManager::StorageStats& stats);
   void OnClearPagesDone(std::pair<size_t, DeletePageResult> result);
   void InformClearStorageDone(size_t pages_cleared, ClearStorageResult result);

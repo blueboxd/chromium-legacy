@@ -21,9 +21,7 @@ struct WebPluginInfo;
 
 namespace enterprise_reporting {
 
-/**
- * A report generator that collects Browser related information.
- */
+// A report generator that collects Browser related information.
 class BrowserReportGenerator {
  public:
   using ReportCallback =
@@ -32,30 +30,33 @@ class BrowserReportGenerator {
   BrowserReportGenerator();
   ~BrowserReportGenerator();
 
-  // Generate a BrowserReport with following fields.
+  // Generates a BrowserReport with the following fields:
   // - browser_version, channel, executable_path
   // - user profiles: id, name, is_full_report (always be false).
   // - plugins: name, version, filename, description.
   void Generate(ReportCallback callback);
 
  private:
-  // Generate browser_version, channel, executable_path info in the given
+  // Generates browser_version, channel, executable_path info in the given
   // report instance.
-  void GenerateBasicInfos(em::BrowserReport* report);
+  static void GenerateBasicInfos(em::BrowserReport* report);
 
-  // Generate user profiles info in the given report instance.
-  void GenerateProfileInfos(em::BrowserReport* report);
+  // Generates user profiles info in the given report instance.
+  static void GenerateProfileInfos(em::BrowserReport* report);
 
-  // Generate plugin info in the given report instance, if needed. It requires
-  // the ownership of report instance to pass into ReportCallback method.
-  void GeneratePluginsIfNeeded(std::unique_ptr<em::BrowserReport> report);
+  // Generates plugin info in the given report instance, if needed. Passes
+  // |report| to |callback| either asynchronously when the plugin info is
+  // available, or synchronously otherwise.
+  void GeneratePluginsIfNeeded(ReportCallback callback,
+                               std::unique_ptr<em::BrowserReport> report);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  void OnPluginsReady(std::unique_ptr<em::BrowserReport> report,
+  // Populates |report| with the plugin info in |plugins|, then passes the
+  // report to |callback|.
+  void OnPluginsReady(ReportCallback callback,
+                      std::unique_ptr<em::BrowserReport> report,
                       const std::vector<content::WebPluginInfo>& plugins);
 #endif
-
-  ReportCallback callback_;
 
   base::WeakPtrFactory<BrowserReportGenerator> weak_ptr_factory_{this};
 

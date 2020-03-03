@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -40,6 +41,16 @@ bool IsReportingEnabled() {
       prefs::kCloudReportingEnabled);
 }
 
+// Returns true if this build should generate basic reports when an update is
+// detected.
+constexpr bool ShouldReportUpdates() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 }  // namespace
 
 ReportScheduler::ReportScheduler(
@@ -59,6 +70,8 @@ ReportScheduler::~ReportScheduler() {
                                   stale_profiles_->size(),
                                   kMaximumTrackedProfiles);
   }
+  if (ShouldReportUpdates())
+    g_browser_process->GetBuildState()->RemoveObserver(this);
 }
 
 bool ReportScheduler::IsNextReportScheduledForTesting() const {
@@ -74,6 +87,14 @@ void ReportScheduler::OnDMTokenUpdated() {
   OnReportEnabledPrefChanged();
 }
 
+void ReportScheduler::OnUpdate(const BuildState* build_state) {
+  DCHECK(ShouldReportUpdates());
+  // A new version has been detected on the machine and a restart is now needed
+  // for it to take effect. Send a basic report (without profile info)
+  // immediately.
+  GenerateAndUploadReport(kTriggerUpdate);
+}
+
 void ReportScheduler::RegisterPrefObserver() {
   pref_change_registrar_.Init(g_browser_process->local_state());
   pref_change_registrar_.Add(
@@ -86,7 +107,7 @@ void ReportScheduler::RegisterPrefObserver() {
 
 void ReportScheduler::OnReportEnabledPrefChanged() {
   if (!IsReportingEnabled()) {
-    StopRequestTimer();
+    Stop();
     return;
   }
 
@@ -95,16 +116,26 @@ void ReportScheduler::OnReportEnabledPrefChanged() {
   // initialized, and will keep valid during whole life-cycle.
 #if !defined(OS_CHROMEOS)
   if (!SetupBrowserPolicyClientRegistration()) {
-    StopRequestTimer();
+    Stop();
     return;
   }
 #endif
 
-  Start();
+  // Start the periodic report timer.
+  Start(g_browser_process->local_state()->GetTime(kLastUploadTimestamp));
+
+  if (ShouldReportUpdates()) {
+    // Watch for browser updates if not already doing so.
+    auto* build_state = g_browser_process->GetBuildState();
+    if (!build_state->HasObserver(this))
+      build_state->AddObserver(this);
+  }
 }
 
-void ReportScheduler::StopRequestTimer() {
+void ReportScheduler::Stop() {
   request_timer_.Stop();
+  if (ShouldReportUpdates())
+    g_browser_process->GetBuildState()->RemoveObserver(this);
 }
 
 bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
@@ -127,36 +158,58 @@ bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
   return true;
 }
 
-void ReportScheduler::Start() {
-  // The |next_upload_time| is based on the |lastUploadTimestamp| in the
-  // |local_state|, after that, it's 24 hours for each succeeded upload.
-  base::Time next_upload_time =
-      g_browser_process->local_state()->GetTime(kLastUploadTimestamp) +
-      kDefaultUploadInterval;
+void ReportScheduler::Start(base::Time last_upload_time) {
+  // The next report is triggered 24h after the previous was uploaded.
+  const base::Time next_upload_time = last_upload_time + kDefaultUploadInterval;
   if (VLOG_IS_ON(1)) {
     base::TimeDelta first_request_delay = next_upload_time - base::Time::Now();
     VLOG(1) << "Schedule the first report in about "
             << first_request_delay.InHours() << " hour(s) and "
             << first_request_delay.InMinutes() % 60 << " minute(s).";
   }
-  request_timer_.Start(
-      FROM_HERE, next_upload_time,
-      base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
-                          base::Unretained(this)));
+  request_timer_.Start(FROM_HERE, next_upload_time,
+                       base::BindOnce(&ReportScheduler::GenerateAndUploadReport,
+                                      base::Unretained(this), kTriggerTimer));
 }
 
-void ReportScheduler::GenerateAndUploadReport() {
-  VLOG(1) << "Generating enterprise report.";
-  report_generator_->Generate(base::BindOnce(
-      &ReportScheduler::OnReportGenerated, base::Unretained(this)));
+void ReportScheduler::GenerateAndUploadReport(ReportTrigger trigger) {
+  if (active_trigger_ != kTriggerNone) {
+    // A report is already being generated. Remember this trigger to be handled
+    // once the current report completes.
+    pending_triggers_ |= trigger;
+    return;
+  }
+
+  active_trigger_ = trigger;
+  bool with_profiles = true;
+  switch (trigger) {
+    case kTriggerNone:
+      NOTREACHED();
+      FALLTHROUGH;
+    case kTriggerTimer:
+      VLOG(1) << "Generating enterprise report.";
+      break;
+    case kTriggerUpdate:
+      VLOG(1) << "Generating basic enterprise report upon update.";
+      with_profiles = false;
+      break;
+  }
+
+  report_generator_->Generate(
+      with_profiles, base::BindOnce(&ReportScheduler::OnReportGenerated,
+                                    base::Unretained(this)));
 }
 
 void ReportScheduler::OnReportGenerated(
     ReportGenerator::ReportRequests requests) {
+  DCHECK_NE(active_trigger_, kTriggerNone);
   if (requests.empty()) {
     SYSLOG(ERROR)
         << "No cloud report can be generated. Likely the report is too large.";
-    // We can't generate any report, stop the reporting.
+    // Do not restart the periodic report timer, as it's likely that subsequent
+    // attempts to generate full reports would also fail.
+    active_trigger_ = kTriggerNone;
+    RunPendingTriggers();
     return;
   }
   VLOG(1) << "Uploading enterprise report.";
@@ -170,6 +223,7 @@ void ReportScheduler::OnReportGenerated(
 }
 
 void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
+  DCHECK_NE(active_trigger_, kTriggerNone);
   VLOG(1) << "The enterprise report upload result " << status << ".";
   switch (status) {
     case ReportUploader::kSuccess:
@@ -182,21 +236,32 @@ void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
     case ReportUploader::kTransientError:
       // Stop retrying and schedule the next report to avoid stale report.
       // Failure count is not reset so retry delay remains.
-      {
-        base::Time now = base::Time::Now();
+      if (active_trigger_ == kTriggerTimer) {
+        const base::Time now = base::Time::Now();
         g_browser_process->local_state()->SetTime(kLastUploadTimestamp, now);
-        if (IsReportingEnabled()) {
-          request_timer_.Start(
-              FROM_HERE, now + kDefaultUploadInterval,
-              base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
-                                  base::Unretained(this)));
-        }
+        if (IsReportingEnabled())
+          Start(now);
       }
       break;
     case ReportUploader::kPersistentError:
       // No future upload until Chrome relaunch or pref change event.
       break;
   }
+
+  active_trigger_ = kTriggerNone;
+  RunPendingTriggers();
+}
+
+void ReportScheduler::RunPendingTriggers() {
+  DCHECK_EQ(active_trigger_, kTriggerNone);
+  if (!pending_triggers_)
+    return;
+
+  // Timer-triggered reports are a superset of those triggered by an update, so
+  // favor them and consider that they serve both purposes.
+  uint32_t pending_triggers = std::exchange(pending_triggers_, 0);
+  GenerateAndUploadReport(
+      (pending_triggers & kTriggerTimer) != 0 ? kTriggerTimer : kTriggerUpdate);
 }
 
 void ReportScheduler::TrackStaleProfiles() {

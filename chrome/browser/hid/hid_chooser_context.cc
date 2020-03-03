@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/device_service.h"
@@ -31,9 +32,9 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
 }  // namespace
 
 HidChooserContext::HidChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         ContentSettingsType::HID_GUARD,
-                         ContentSettingsType::HID_CHOOSER_DATA),
+    : ChooserContextBase(ContentSettingsType::HID_GUARD,
+                         ContentSettingsType::HID_CHOOSER_DATA,
+                         HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 HidChooserContext::~HidChooserContext() = default;

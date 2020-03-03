@@ -3275,6 +3275,42 @@
       },
     },
 
+    'storage_service_gtests': {
+      'storage_service_unsandboxed_browser_tests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess',
+        ],
+        'swarming': {
+          'shards': 15,
+        },
+        'test': 'browser_tests',
+      },
+      'storage_service_unsandboxed_content_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'content_browsertests',
+      },
+      'storage_service_unsandboxed_extensions_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess',
+        ],
+        'test': 'extensions_browsertests',
+      },
+      'storage_service_unsandboxed_interactive_ui_tests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess'
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'interactive_ui_tests',
+      },
+    },
+
     'swangle_gtests': {
       'angle_deqp_egl_tests': {
         'args': [
@@ -4401,6 +4437,7 @@
       'aura_gtests',
       'mojo_chromiumos_specific_gtests',
       'network_service_gtests',
+      'storage_service_gtests',
     ],
 
     'mojo_linux_gtests': [
@@ -4410,6 +4447,7 @@
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+      'storage_service_gtests',
     ],
 
     'network_service_extra_gtests': [

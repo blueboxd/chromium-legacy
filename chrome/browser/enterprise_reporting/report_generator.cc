@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -33,28 +33,31 @@ ReportGenerator::ReportGenerator() = default;
 
 ReportGenerator::~ReportGenerator() = default;
 
-void ReportGenerator::Generate(ReportCallback callback) {
-  DCHECK(!callback_);
-  callback_ = std::move(callback);
-  CreateBasicRequest();
+void ReportGenerator::Generate(bool with_profiles, ReportCallback callback) {
+  CreateBasicRequest(std::make_unique<ReportRequest>(), with_profiles,
+                     std::move(callback));
 }
 
 void ReportGenerator::SetMaximumReportSizeForTesting(size_t size) {
   report_request_queue_generator_.SetMaximumReportSizeForTesting(size);
 }
 
-void ReportGenerator::CreateBasicRequest() {
+void ReportGenerator::CreateBasicRequest(
+    std::unique_ptr<ReportRequest> basic_request,
+    bool with_profiles,
+    ReportCallback callback) {
 #if defined(OS_CHROMEOS)
-  SetAndroidAppInfos();
+  SetAndroidAppInfos(basic_request.get());
 #else
-  basic_request_.set_computer_name(this->GetMachineName());
-  basic_request_.set_os_user_name(GetOSUserName());
-  basic_request_.set_serial_number(GetSerialNumber());
-  basic_request_.set_allocated_os_report(GetOSReport().release());
+  basic_request->set_computer_name(this->GetMachineName());
+  basic_request->set_os_user_name(GetOSUserName());
+  basic_request->set_serial_number(GetSerialNumber());
+  basic_request->set_allocated_os_report(GetOSReport().release());
 #endif
 
   browser_report_generator_.Generate(base::BindOnce(
-      &ReportGenerator::OnBrowserReportReady, weak_ptr_factory_.GetWeakPtr()));
+      &ReportGenerator::OnBrowserReportReady, weak_ptr_factory_.GetWeakPtr(),
+      with_profiles, std::move(callback), std::move(basic_request)));
 }
 
 std::unique_ptr<em::OSReport> ReportGenerator::GetOSReport() {
@@ -84,8 +87,9 @@ std::string ReportGenerator::GetSerialNumber() {
 
 #if defined(OS_CHROMEOS)
 
-void ReportGenerator::SetAndroidAppInfos() {
-  basic_request_.clear_android_app_infos();
+void ReportGenerator::SetAndroidAppInfos(ReportRequest* basic_request) {
+  DCHECK(basic_request);
+  basic_request->clear_android_app_infos();
 
   // Android application is only supported for primary profile.
   Profile* primary_profile =
@@ -106,7 +110,7 @@ void ReportGenerator::SetAndroidAppInfos() {
 
   AndroidAppInfoGenerator generator;
   for (std::string app_id : prefs->GetAppIds()) {
-    em::AndroidAppInfo* app_info = basic_request_.add_android_app_infos();
+    em::AndroidAppInfo* app_info = basic_request->add_android_app_infos();
     generator.Generate(prefs, app_id)->Swap(app_info);
   }
 }
@@ -114,11 +118,24 @@ void ReportGenerator::SetAndroidAppInfos() {
 #endif
 
 void ReportGenerator::OnBrowserReportReady(
+    bool with_profiles,
+    ReportCallback callback,
+    std::unique_ptr<ReportRequest> basic_request,
     std::unique_ptr<em::BrowserReport> browser_report) {
-  basic_request_.set_allocated_browser_report(browser_report.release());
-  ReportRequests requests =
-      report_request_queue_generator_.Generate(basic_request_);
-  std::move(callback_).Run(std::move(requests));
+  basic_request->set_allocated_browser_report(browser_report.release());
+
+  if (with_profiles) {
+    // Generate a queue of requests containing detailed profile information.
+    std::move(callback).Run(
+        report_request_queue_generator_.Generate(*basic_request));
+    return;
+  }
+
+  // Return a queue containing only the basic request and browser report without
+  // detailed profile information.
+  ReportRequests requests;
+  requests.push(std::move(basic_request));
+  std::move(callback).Run(std::move(requests));
 }
 
 }  // namespace enterprise_reporting

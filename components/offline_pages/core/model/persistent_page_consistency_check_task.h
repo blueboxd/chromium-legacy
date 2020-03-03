@@ -46,10 +46,10 @@ class PersistentPageConsistencyCheckTask : public Task {
       PersistentPageConsistencyCheckCallback callback);
   ~PersistentPageConsistencyCheckTask() override;
 
+ private:
   // Task implementation:
   void Run() override;
 
- private:
   void OnPersistentPageConsistencyCheckDone(CheckResult result);
 
   // The store containing the offline pages. Not owned.

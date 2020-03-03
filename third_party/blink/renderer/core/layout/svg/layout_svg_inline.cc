@@ -145,7 +145,7 @@ void LayoutSVGInline::StyleDidChange(StyleDifference diff,
 void LayoutSVGInline::AddChild(LayoutObject* child,
                                LayoutObject* before_child) {
   LayoutInline::AddChild(child, before_child);
-  SVGResourcesCache::ClientWasAddedToTree(*child, child->StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*child);
 
   if (LayoutSVGText* text_layout_object =
           LayoutSVGText::LocateLayoutSVGTextAncestor(this))

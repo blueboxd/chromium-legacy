@@ -183,8 +183,9 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
       this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &NetworkQualityEstimator::OnNewThroughputObservationAvailable,
+          weak_ptr_factory_.GetWeakPtr()),
       tick_clock_, net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(

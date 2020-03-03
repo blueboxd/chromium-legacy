@@ -59,7 +59,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
             network_quality_estimator,
             params,
             base::ThreadTaskRunnerHandle::Get(),
-            base::Bind(
+            base::BindRepeating(
                 &TestThroughputAnalyzer::OnNewThroughputObservationAvailable,
                 base::Unretained(this)),
             tick_clock,

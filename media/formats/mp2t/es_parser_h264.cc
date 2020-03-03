@@ -177,9 +177,9 @@ std::unique_ptr<uint8_t[]> AdjustAUForSampleAES(
 // 3 bytes for the start code + 1 byte for the NALU type.
 const int kMinAUDSize = 4;
 
-EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+EsParserH264::EsParserH264(NewVideoConfigCB new_video_config_cb,
                            const EmitBufferCB& emit_buffer_cb)
-    : es_adapter_(new_video_config_cb, emit_buffer_cb),
+    : es_adapter_(std::move(new_video_config_cb), emit_buffer_cb),
       h264_parser_(new H264Parser()),
       current_access_unit_pos_(0),
       next_access_unit_pos_(0)
@@ -192,11 +192,11 @@ EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
 }
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+EsParserH264::EsParserH264(NewVideoConfigCB new_video_config_cb,
                            const EmitBufferCB& emit_buffer_cb,
                            EncryptionScheme init_encryption_scheme,
                            const GetDecryptConfigCB& get_decrypt_config_cb)
-    : es_adapter_(new_video_config_cb, emit_buffer_cb),
+    : es_adapter_(std::move(new_video_config_cb), emit_buffer_cb),
       h264_parser_(new H264Parser()),
       current_access_unit_pos_(0),
       next_access_unit_pos_(0),

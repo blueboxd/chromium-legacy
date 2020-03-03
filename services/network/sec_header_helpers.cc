@@ -153,8 +153,6 @@ void SetFetchMetadataHeaders(
     const mojom::URLLoaderFactoryParams& factory_params) {
   DCHECK(request);
   DCHECK_NE(0u, request->url_chain().size());
-  if (!base::FeatureList::IsEnabled(features::kFetchMetadata))
-    return;
 
   // Only append the header to potentially trustworthy URLs.
   const GURL& target_url =
@@ -171,9 +169,6 @@ void SetFetchMetadataHeaders(
 void MaybeRemoveSecHeaders(net::URLRequest* request,
                            const GURL& pending_redirect_url) {
   DCHECK(request);
-
-  if (!base::FeatureList::IsEnabled(features::kFetchMetadata))
-    return;
 
   // If our redirect destination is not trusted it would not have had sec-ch- or
   // sec-fetch- prefixed headers added to it. Our previous hops may have added

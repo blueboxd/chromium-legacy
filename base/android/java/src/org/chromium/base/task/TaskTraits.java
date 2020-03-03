@@ -79,7 +79,6 @@ public class TaskTraits {
 
     // For convenience of the JNI code, we use primitive types only.
     // Note shutdown behavior is not supported on android.
-    boolean mPrioritySetExplicitly;
     int mPriority;
     boolean mMayBlock;
     boolean mUseThreadPool;
@@ -89,11 +88,11 @@ public class TaskTraits {
 
     // Derive custom traits from existing trait constants.
     private TaskTraits() {
-        mPriority = TaskPriority.USER_VISIBLE;
+        // Assume USER_BLOCKING by default.
+        mPriority = TaskPriority.USER_BLOCKING;
     }
 
     private TaskTraits(TaskTraits other) {
-        mPrioritySetExplicitly = other.mPrioritySetExplicitly;
         mPriority = other.mPriority;
         mMayBlock = other.mMayBlock;
         mUseThreadPool = other.mUseThreadPool;
@@ -103,7 +102,6 @@ public class TaskTraits {
 
     public TaskTraits taskPriority(int taskPriority) {
         TaskTraits taskTraits = new TaskTraits(this);
-        taskTraits.mPrioritySetExplicitly = true;
         taskTraits.mPriority = taskPriority;
         return taskTraits;
     }
@@ -181,10 +179,8 @@ public class TaskTraits {
             return true;
         } else if (object instanceof TaskTraits) {
             TaskTraits other = (TaskTraits) object;
-            return mPrioritySetExplicitly == other.mPrioritySetExplicitly
-                    && mPriority == other.mPriority && mMayBlock == other.mMayBlock
-                    && mUseThreadPool == other.mUseThreadPool
-                    && mExtensionId == other.mExtensionId
+            return mPriority == other.mPriority && mMayBlock == other.mMayBlock
+                    && mUseThreadPool == other.mUseThreadPool && mExtensionId == other.mExtensionId
                     && Arrays.equals(mExtensionData, other.mExtensionData)
                     && mIsChoreographerFrame == other.mIsChoreographerFrame;
         } else {
@@ -195,7 +191,6 @@ public class TaskTraits {
     @Override
     public int hashCode() {
         int hash = 31;
-        hash = 37 * hash + (mPrioritySetExplicitly ? 0 : 1);
         hash = 37 * hash + mPriority;
         hash = 37 * hash + (mMayBlock ? 0 : 1);
         hash = 37 * hash + (mUseThreadPool ? 0 : 1);

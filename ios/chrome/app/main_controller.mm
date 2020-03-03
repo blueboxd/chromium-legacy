@@ -776,11 +776,20 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)stopChromeMain {
+  // This code is per-window.
+
   // Teardown UI state that is associated with scenes.
   [self.sceneController teardownUI];
 
   [_mainCoordinator stop];
   _mainCoordinator = nil;
+
+  // Invariant: The UI is stopped before the model is shutdown.
+  DCHECK(!_mainCoordinator);
+  [self.browserViewWrangler shutdown];
+  self.browserViewWrangler = nil;
+
+  // End of per-window code.
 
   [_spotlightManager shutdown];
   _spotlightManager = nil;
@@ -795,11 +804,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             self.mainBrowserState));
   }
-
-  // Invariant: The UI is stopped before the model is shutdown.
-  DCHECK(!_mainCoordinator);
-  [self.browserViewWrangler shutdown];
-  self.browserViewWrangler = nil;
 
   _extensionSearchEngineDataUpdater = nullptr;
 

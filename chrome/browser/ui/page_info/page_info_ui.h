@@ -11,10 +11,10 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/chooser_context_base.h"
 #include "components/safe_browsing/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 

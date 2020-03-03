@@ -577,6 +577,8 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   }
   public_saml_url_fetcher_.reset();
 
+  was_security_token_pin_canceled_ = false;
+
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
 }
@@ -782,11 +784,14 @@ void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
                  << net::ErrorToShortString(error_code);
     return;
   }
-  if (error_code == net::ERR_TIMED_OUT &&
-      is_security_token_pin_dialog_running()) {
-    // Timeout errors are expected when the security token PIN is not entered by
-    // the user on time. In that case, return the user back to the first sign-in
-    // step instead of showing the network error screen.
+  if ((was_security_token_pin_canceled_ && error_code == net::ERR_FAILED) ||
+      (is_security_token_pin_dialog_running() &&
+       error_code == net::ERR_TIMED_OUT)) {
+    // Specific errors are expected when the security token PIN is aborted
+    // (either with a generic failure if the user canceled the dialog, or with a
+    // timeout error if the user didn't enter it on time). In that case, return
+    // the user back to the first sign-in step instead of showing the network
+    // error screen.
     ReloadGaia(/*force_reload=*/true);
     return;
   }
@@ -1116,6 +1121,7 @@ void GaiaScreenHandler::HandleSecurityTokenPinEntered(
     return;
   }
 
+  was_security_token_pin_canceled_ = user_input.empty();
   if (user_input.empty()) {
     security_token_pin_entered_callback_.Reset();
     std::move(security_token_pin_dialog_closed_callback_).Run();

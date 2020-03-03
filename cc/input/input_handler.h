@@ -183,14 +183,20 @@ class CC_EXPORT InputHandler {
   // accumulated within this ScrollBegin() scope is reported in the return
   // value's |accumulated_overscroll| field. Should only be called if
   // ScrollBegin() returned SCROLL_STARTED.
+  //
+  // Is a no-op if no scroller was latched to in ScrollBegin and returns an
+  // empty-initialized InputHandlerScrollResult.
+  //
   // |delayed_by| is the delay from the event that caused the scroll. This is
   // taken into account when determining the duration of the animation if one
   // is created.
   virtual InputHandlerScrollResult ScrollUpdate(ScrollState* scroll_state,
                                                 base::TimeDelta delayed_by) = 0;
 
-  // Stop scrolling the selected layer. Should only be called if ScrollBegin()
-  // returned SCROLL_STARTED. Snap to a snap position if |should_snap| is true.
+  // Stop scrolling the selected layer. Must be called only if ScrollBegin()
+  // returned SCROLL_STARTED. No-op if ScrollBegin wasn't called or didn't
+  // result in a successful scroll latch. Snap to a snap position if
+  // |should_snap| is true.
   virtual void ScrollEnd(bool should_snap) = 0;
 
   virtual InputHandlerPointerResult MouseMoveAt(

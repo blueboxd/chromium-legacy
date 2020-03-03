@@ -61,6 +61,11 @@ class TrustedVaultClient {
                          const std::vector<std::vector<uint8_t>>& keys,
                          int last_key_version) = 0;
 
+  // Allows implementation to remove all previously stored keys.
+  // Implementations must erase all keys saved during StoreKeys() call. Used
+  // when accounts cookies deleted by the user action.
+  virtual void RemoveAllStoredKeys() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TrustedVaultClient);
 };

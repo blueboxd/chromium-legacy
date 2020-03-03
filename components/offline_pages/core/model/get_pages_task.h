@@ -37,9 +37,6 @@ class GetPagesTask : public Task {
 
   ~GetPagesTask() override;
 
-  // Task implementation:
-  void Run() override;
-
   // Reads and returns all pages matching |criteria|. This function reads
   // from the database and should be called from within an
   // |SqlStoreBase::Execute()| call.
@@ -48,6 +45,9 @@ class GetPagesTask : public Task {
       sql::Database* db);
 
  private:
+  // Task implementation:
+  void Run() override;
+
   void CompleteWithResult(ReadResult result);
 
   OfflinePageMetadataStore* store_;

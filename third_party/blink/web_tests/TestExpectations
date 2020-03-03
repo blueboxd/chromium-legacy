@@ -56,6 +56,8 @@ crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
+crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
+crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
 
 # The following tests would pass with User Activation Delegation.
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
@@ -6277,7 +6279,8 @@ crbug.com/1035309 http/tests/devtools/throttling/mobile-throttling.js [ Pass Fai
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
-crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Timeout ]
+crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
+crbug.com/878878 [ Win10 ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Timeout ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Timeout ]
 

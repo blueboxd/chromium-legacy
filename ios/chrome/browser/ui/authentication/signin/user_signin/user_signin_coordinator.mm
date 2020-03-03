@@ -180,9 +180,9 @@ using signin_metrics::PromoAction;
       ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
         if (signinResult == SigninCoordinatorResultSuccess) {
           weakSelf.unifiedConsentCoordinator.selectedIdentity = identity;
-          [weakSelf.addAccountSigninCoordinator stop];
-          weakSelf.addAccountSigninCoordinator = nil;
         }
+        [weakSelf.addAccountSigninCoordinator stop];
+        weakSelf.addAccountSigninCoordinator = nil;
       };
   [self.addAccountSigninCoordinator start];
 }

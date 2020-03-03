@@ -40,96 +40,16 @@
         "name": "startup.mobile/maps_pwa:with_http_cache"
     },
     {
-        "duration": "43.0",
-        "name": "system_health.common_mobile/background:media:imgur:2019"
-    },
-    {
-        "duration": "42.0",
-        "name": "system_health.common_mobile/background:search:google:2019"
-    },
-    {
         "duration": "52.0",
         "name": "system_health.common_mobile/background:tools:gmail:2019"
-    },
-    {
-        "duration": "77.0",
-        "name": "system_health.common_mobile/browse:media:youtube:2019"
     },
     {
         "duration": "135.0",
         "name": "system_health.common_mobile/browse:news:cnn:2018"
     },
     {
-        "duration": "55.0",
-        "name": "system_health.common_mobile/browse:news:qq:2019"
-    },
-    {
-        "duration": "76.0",
-        "name": "system_health.common_mobile/browse:shopping:avito:2019"
-    },
-    {
-        "duration": "33.0",
-        "name": "system_health.common_mobile/load:chrome:blank"
-    },
-    {
-        "duration": "31.0",
-        "name": "system_health.common_mobile/load:games:bubbles:2019"
-    },
-    {
-        "duration": "34.0",
-        "name": "system_health.common_mobile/load:games:lazors"
-    },
-    {
-        "duration": "39.0",
-        "name": "system_health.common_mobile/load:games:spychase:2018"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.common_mobile/load:media:google_images:2018"
-    },
-    {
-        "duration": "39.0",
-        "name": "system_health.common_mobile/load:media:imgur:2018"
-    },
-    {
         "duration": "32.0",
         "name": "system_health.common_mobile/load:media:youtube:2018"
-    },
-    {
-        "duration": "41.0",
-        "name": "system_health.common_mobile/load:news:irctc:2019"
-    },
-    {
-        "duration": "58.0",
-        "name": "system_health.common_mobile/load:news:nytimes:2019"
-    },
-    {
-        "duration": "34.0",
-        "name": "system_health.common_mobile/load:news:reddit:2019"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.common_mobile/load:news:washingtonpost:2019"
-    },
-    {
-        "duration": "42.0",
-        "name": "system_health.common_mobile/load:search:baidu:2018"
-    },
-    {
-        "duration": "33.0",
-        "name": "system_health.common_mobile/load:search:ebay:2018"
-    },
-    {
-        "duration": "30.0",
-        "name": "system_health.common_mobile/load:search:taobao:2019"
-    },
-    {
-        "duration": "30.0",
-        "name": "system_health.common_mobile/load:tools:docs:2019"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.common_mobile/load:tools:stackoverflow:2018"
     },
     {
         "duration": "110.0",

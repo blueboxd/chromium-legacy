@@ -182,6 +182,29 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {
               ElementsAre(kKey2, kKey3));
 }
 
+TEST_F(FileBasedTrustedVaultClientTest, ShouldRemoveAllStoredKeys) {
+  const std::string kGaiaId1 = "user1";
+  const std::string kGaiaId2 = "user2";
+  const std::vector<uint8_t> kKey1 = {0, 1, 2, 3, 4};
+  const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
+  const std::vector<uint8_t> kKey3 = {2, 3, 4};
+
+  client_.StoreKeys(kGaiaId1, {kKey1}, /*last_key_version=*/0);
+  client_.StoreKeys(kGaiaId2, {kKey2, kKey3}, /*last_key_version=*/1);
+
+  // Wait until the last write completes.
+  WaitForFlush();
+  client_.RemoveAllStoredKeys();
+
+  // Wait until the last write completes.
+  WaitForFlush();
+
+  // Keys should be removed from both in-memory and disk storages.
+  EXPECT_THAT(FetchKeysAndWait(kGaiaId1), IsEmpty());
+  EXPECT_THAT(FetchKeysAndWait(kGaiaId2), IsEmpty());
+  EXPECT_FALSE(base::PathExists(file_path_));
+}
+
 }  // namespace
 
 }  // namespace syncer

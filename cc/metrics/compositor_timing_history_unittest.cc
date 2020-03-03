@@ -68,7 +68,7 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.DidActivate();
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
-    timing_history_.DidDraw(true, Now(), composited_animations_count,
+    timing_history_.DidDraw(true, composited_animations_count,
                             main_thread_animations_count, current_frame_had_raf,
                             next_frame_has_pending_raf, false);
   }
@@ -85,7 +85,7 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.DidActivate();
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
-    timing_history_.DidDraw(false, Now(), composited_animations_count,
+    timing_history_.DidDraw(false, composited_animations_count,
                             main_thread_animations_count, false, false,
                             has_custom_property_animation);
   }
@@ -148,7 +148,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(true, Now(), 0, 0, false, false, false);
+  timing_history_.DidDraw(true, 0, 0, false, false, false);
 
   EXPECT_EQ(begin_main_frame_queue_duration,
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -200,7 +200,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(false, Now(), 0, 0, false, false, false);
+  timing_history_.DidDraw(false, 0, 0, false, false, false);
 
   EXPECT_EQ(base::TimeDelta(),
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());

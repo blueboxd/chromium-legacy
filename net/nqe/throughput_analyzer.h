@@ -20,7 +20,7 @@
 #include "net/log/net_log_with_source.h"
 
 namespace {
-typedef base::Callback<void(int32_t)> ThroughputObservationCallback;
+typedef base::RepeatingCallback<void(int32_t)> ThroughputObservationCallback;
 }
 
 namespace base {

@@ -55,9 +55,9 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux {
   // interfaces used to connect to the internet can cause critical network
   // changed signals to be lost allowing incorrect stale state to persist.
   AddressTrackerLinux(
-      const base::Closure& address_callback,
-      const base::Closure& link_callback,
-      const base::Closure& tunnel_callback,
+      const base::RepeatingClosure& address_callback,
+      const base::RepeatingClosure& link_callback,
+      const base::RepeatingClosure& tunnel_callback,
       const std::unordered_set<std::string>& ignored_interfaces);
   virtual ~AddressTrackerLinux();
 
@@ -151,9 +151,9 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux {
   // overridden by tests.
   GetInterfaceNameFunction get_interface_name_;
 
-  base::Closure address_callback_;
-  base::Closure link_callback_;
-  base::Closure tunnel_callback_;
+  base::RepeatingClosure address_callback_;
+  base::RepeatingClosure link_callback_;
+  base::RepeatingClosure tunnel_callback_;
 
   // Note that |watcher_| must be inactive when |netlink_fd_| is closed.
   base::ScopedFD netlink_fd_;

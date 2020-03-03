@@ -2411,7 +2411,7 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(1, counter->callback_count());
 
   // NULL callback is safe.
-  cm->FlushStore(base::Closure());
+  cm->FlushStore(base::OnceClosure());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());

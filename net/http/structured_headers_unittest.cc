@@ -61,6 +61,7 @@ const struct ItemTestCase {
     {"bad token - item", "abc$@%!", base::nullopt},
     {"leading whitespace", " foo", Token("foo"), "foo"},
     {"trailing whitespace", "foo ", Token("foo"), "foo"},
+    {"leading asterisk", "*foo", Token("*foo")},
     // Number
     {"basic integer", "42", Integer(42L)},
     {"zero integer", "0", Integer(0L)},
@@ -427,6 +428,7 @@ const ItemTestCase sh09_item_test_cases[] = {
      "*iQ==*"},
     {"non-ASCII binary", "*/+Ah*", Item("\xFF\xE0!", Item::kByteSequenceType)},
     {"base64url binary", "*_-Ah*", base::nullopt},
+    {"token with leading asterisk", "*foo", base::nullopt},
 };
 
 // For Structured Headers Draft 15
@@ -763,7 +765,6 @@ TEST(StructuredHeaderTest, UnserializableTokens) {
       {"begins with colon", ":token"},
       {"begins with percent", "%token"},
       {"begins with period", ".token"},
-      {"begins with asterisk", "*token"},
       {"begins with slash", "/token"},
   };
   for (const auto& bad_token : bad_tokens) {

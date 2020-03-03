@@ -59,7 +59,7 @@ void BoundsAnimator::AnimateViewTo(
   data.animation = CreateAnimation();
   data.delegate = std::move(delegate);
 
-  if (use_transforms_) {
+  if (use_transforms_ && !data.start_bounds.IsEmpty()) {
     // Calculate the target transform. Note that we don't reset the transform if
     // there already was one, otherwise users will end up with visual bounds
     // different than what they set.
@@ -222,7 +222,7 @@ void BoundsAnimator::AnimationEndedOrCanceled(const gfx::Animation* animation,
   // Save the data for later clean up.
   Data data = RemoveFromMaps(view);
 
-  if (use_transforms_) {
+  if (data.target_transform) {
     // Set the bounds at the end of the animation and reset the transform.
     view->SetTransform(gfx::Transform());
     if (type == AnimationEndType::kEnded)
@@ -248,8 +248,7 @@ void BoundsAnimator::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK(view);
   const Data& data = data_[view];
 
-  if (use_transforms_) {
-    DCHECK(data.target_transform);
+  if (data.target_transform) {
     const gfx::Transform current_transform = gfx::Tween::TransformValueBetween(
         animation->GetCurrentValue(), gfx::Transform(), *data.target_transform);
     view->SetTransform(current_transform);
@@ -282,7 +281,6 @@ void BoundsAnimator::AnimationCanceled(const gfx::Animation* animation) {
 void BoundsAnimator::AnimationContainerProgressed(
     gfx::AnimationContainer* container) {
   if (!repaint_bounds_.IsEmpty()) {
-    DCHECK(!use_transforms_);
     // Adjust for rtl.
     repaint_bounds_.set_x(parent_->GetMirroredXWithWidthInView(
         repaint_bounds_.x(), repaint_bounds_.width()));

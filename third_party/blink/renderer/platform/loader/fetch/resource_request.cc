@@ -113,8 +113,8 @@ void ResourceRequest::CopyFrom(const ResourceRequest& src) {
   *this = src;
 }
 
-void ResourceRequest::CopyHeadFrom(const ResourceRequestHead* src) {
-  this->ResourceRequestHead::operator=(*src);
+void ResourceRequest::CopyHeadFrom(const ResourceRequestHead& src) {
+  this->ResourceRequestHead::operator=(src);
 }
 
 std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(

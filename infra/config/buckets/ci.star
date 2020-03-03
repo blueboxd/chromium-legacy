@@ -1186,7 +1186,7 @@ ci.fyi_ios_builder(
 ci.fyi_mac_builder(
     name = 'Mac Builder Next',
     cores = None,
-    os = os.MAC_10_14,
+    os = None,
 )
 
 ci.fyi_mac_builder(

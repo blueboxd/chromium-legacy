@@ -19,14 +19,6 @@ namespace content {
 
 class BrowserContext;
 
-// Returns true if either of FetchMetadata or experimental-web-platform-features
-// is enabled.
-bool IsFetchMetadataEnabled();
-
-// Returns true if either of FetchMetadataDestination or
-// experimental-web-platform-features is enabled.
-bool IsFetchMetadataDestinationEnabled();
-
 // Sets request headers appropriate for browser-initiated resource requests,
 // i.e., requests for navigations and dedicated/shared/service worker
 // scripts.

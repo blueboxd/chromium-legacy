@@ -502,20 +502,6 @@ void BookmarkModel::AddNonClonedKey(const std::string& key) {
   non_cloned_keys_.insert(key);
 }
 
-void BookmarkModel::SetNodeSyncTransactionVersion(
-    const BookmarkNode* node,
-    int64_t sync_transaction_version) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(client_->CanSyncNode(node));
-
-  if (sync_transaction_version == node->sync_transaction_version())
-    return;
-
-  AsMutable(node)->set_sync_transaction_version(sync_transaction_version);
-  if (store_)
-    store_->ScheduleSave();
-}
-
 void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
                                       const GURL& icon_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -895,8 +881,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
                    VisibilityComparator(client_.get()));
 
   root_->SetMetaInfoMap(details->model_meta_info_map());
-  root_->set_sync_transaction_version(
-      details->model_sync_transaction_version());
 
   loaded_ = true;
   client_->DecodeBookmarkSyncMetadata(

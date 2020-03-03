@@ -371,14 +371,14 @@ void SandboxFileSystemBackendDelegate::PerformStorageCleanupOnFileTaskRunner(
 
 void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type,
-    std::set<GURL>* origins) {
+    std::set<url::Origin>* origins) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(origins);
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   base::Optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (enumerator->HasFileSystemType(type))
-      origins->insert(origin->GetURL());
+      origins->insert(origin.value());
   }
   switch (type) {
     case kFileSystemTypeTemporary:
@@ -395,7 +395,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
 void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type,
     const std::string& host,
-    std::set<GURL>* origins) {
+    std::set<url::Origin>* origins) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(origins);
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
@@ -403,7 +403,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
   while ((origin = enumerator->Next()).has_value()) {
     if (host == net::GetHostOrSpecFromURL(origin->GetURL()) &&
         enumerator->HasFileSystemType(type))
-      origins->insert(origin->GetURL());
+      origins->insert(origin.value());
   }
 }
 

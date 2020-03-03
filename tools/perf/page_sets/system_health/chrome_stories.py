@@ -13,7 +13,7 @@ class BlankAboutBlankStory(system_health_story.SystemHealthStory):
   """Story that loads the about:blank page."""
   NAME = 'load:chrome:blank'
   URL = 'about:blank'
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
+  TAGS = [story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # Request a RAF and wait for it to be processed to ensure that the metric

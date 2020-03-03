@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/sync/test/integration/cookie_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -675,6 +676,60 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   EXPECT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    PRE_ShouldClearEncryptionKeysFromTheWebWhenSigninCookiesCleared) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+  const GURL retrieval_url =
+      GetTrustedVaultRetrievalURL(*embedded_test_server(), kTestEncryptionKey);
+
+  ASSERT_TRUE(SetupClients());
+
+  // Explicitly add signin cookie (normally it would be done during the keys
+  // retrieval or before it).
+  cookie_helper::AddSigninCookie(GetProfile(0));
+
+  TrustedVaultKeysChangedStateChecker keys_fetched_checker(GetSyncService(0));
+  // Mimic opening a web page where the user can interact with the retrieval
+  // flow, while the user is signed out.
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
+
+  // Wait until the title changes to "OK" via Javascript, which indicates
+  // completion.
+  PageTitleChecker title_checker(
+      /*expected_title=*/"OK",
+      GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(title_checker.Wait());
+  EXPECT_TRUE(keys_fetched_checker.Wait());
+
+  // Mimic signin cookie clearing.
+  TrustedVaultKeysChangedStateChecker keys_cleared_checker(GetSyncService(0));
+  cookie_helper::DeleteSigninCookies(GetProfile(0));
+  EXPECT_TRUE(keys_cleared_checker.Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientNigoriWithWebApiTest,
+    ShouldClearEncryptionKeysFromTheWebWhenSigninCookiesCleared) {
+  const std::string kTestEncryptionKey = "testpassphrase1";
+
+  // Mimic the account being already using a trusted vault passphrase.
+  encryption_helper::SetNigoriInFakeServer(
+      GetFakeServer(), BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}));
+
+  // Sign in and start sync.
+  ASSERT_TRUE(SetupSync());
+
+  EXPECT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  EXPECT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override

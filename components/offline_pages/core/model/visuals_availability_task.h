@@ -25,10 +25,10 @@ class VisualsAvailabilityTask : public Task {
                           VisualsAvailableCallback exists_callback);
   ~VisualsAvailabilityTask() override;
 
+ private:
   // Task implementation:
   void Run() override;
 
- private:
   void OnVisualsAvailable(VisualsAvailability availability);
 
   OfflinePageMetadataStore* store_;

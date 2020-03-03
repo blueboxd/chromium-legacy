@@ -1967,6 +1967,25 @@ String RTCPeerConnection::connectionState() const {
   return String();
 }
 
+bool RTCPeerConnection::canTrickleIceCandidates(bool& is_null) const {
+  is_null = true;
+  if (closed_ || !peer_handler_->RemoteDescription()) {
+    return false;
+  }
+  webrtc::PeerConnectionInterface* native_connection =
+      peer_handler_->NativePeerConnection();
+  if (!native_connection) {
+    return false;
+  }
+  absl::optional<bool> can_trickle =
+      native_connection->can_trickle_ice_candidates();
+  if (!can_trickle) {
+    return false;
+  }
+  is_null = false;
+  return *can_trickle;
+}
+
 void RTCPeerConnection::restartIce() {
   if (closed_)
     return;

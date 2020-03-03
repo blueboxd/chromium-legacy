@@ -909,7 +909,7 @@ class ComputedStyle : public ComputedStyleBase,
     SetZIndexInternal(0);
   }
 
-  bool SetEffectiveZoom(float);
+  CORE_EXPORT bool SetEffectiveZoom(float);
   float EffectiveZoom() const;
 
   // -webkit-clip-path
@@ -2985,16 +2985,6 @@ class ComputedStyle : public ComputedStyleBase,
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Values);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Data);
 };
-
-inline bool ComputedStyle::SetEffectiveZoom(float f) {
-  // Clamp the effective zoom value to a smaller (but hopeful still large
-  // enough) range, to avoid overflow in derived computations.
-  float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
-  if (EffectiveZoom() == clamped_effective_zoom)
-    return false;
-  SetInternalEffectiveZoom(clamped_effective_zoom);
-  return true;
-}
 
 inline float ComputedStyle::EffectiveZoom() const {
   return InternalEffectiveZoom();

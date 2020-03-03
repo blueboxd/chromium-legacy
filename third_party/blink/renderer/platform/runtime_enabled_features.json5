@@ -721,14 +721,6 @@
       name: "FeaturePolicyVibrateFeature"
     },
     {
-      name: "FetchMetadata",
-      status: "stable"
-    },
-    {
-      name: "FetchMetadataDestination",
-      status: "experimental"
-    },
-    {
       // Also enabled when blink::features::kFileHandlingAPI is overridden
       // on the command line (or via chrome://flags).
       name: "FileHandling",
@@ -959,10 +951,6 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
-      name: "LinkSystemColors",
-      status: "stable",
-    },
-    {
       name:"ManualSlotting",
       status:"experimental",
     },
@@ -1135,10 +1123,6 @@
     // Not a web exposed feature, enabled from the command line.
     {
       name: "NewRemotePlaybackPipeline",
-    },
-    {
-      name: "NewSystemColors",
-      status: "stable",
     },
     {
       name: "NoIdleEncodingForWebTests",

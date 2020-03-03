@@ -1089,6 +1089,49 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRootLayerAttached) {
             status.main_thread_scrolling_reasons);
 }
 
+// Tests that receiving ScrollUpdate and ScrollEnd calls that don't have a
+// matching ScrollBegin are just dropped and are a no-op. This can happen due
+// to pre-commit input deferral which causes some input events to be dropped
+// before the first commit in a renderer has occurred. See the flag
+// kAllowPreCommitInput and how it's used.
+TEST_F(LayerTreeHostImplTest, ScrollUpdateAndEndNoOpWithoutBegin) {
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(1000, 1000));
+
+  // Simulate receiving a gesture mid-stream so that the Begin wasn't ever
+  // processed. This shouldn't cause any state change but we should crash or
+  // DCHECK.
+  {
+    EXPECT_FALSE(host_impl_->CurrentlyScrollingNode());
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 10),
+                                         InputHandler::TOUCHSCREEN)
+                                 .get());
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 10),
+                                         InputHandler::TOUCHSCREEN)
+                                 .get());
+    EXPECT_FALSE(host_impl_->CurrentlyScrollingNode());
+    host_impl_->ScrollEnd();
+  }
+
+  // Ensure a new gesture is now able to correctly scroll.
+  {
+    InputHandler::ScrollStatus status =
+        host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 10),
+                                           InputHandler::TOUCHSCREEN)
+                                    .get(),
+                                InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_TRUE(host_impl_->CurrentlyScrollingNode());
+
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 10),
+                                         InputHandler::TOUCHSCREEN)
+                                 .get());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 10),
+                     CurrentScrollOffset(OuterViewportScrollLayer()));
+
+    host_impl_->ScrollEnd();
+  }
+}
+
 // Test that specifying a scroller to ScrollBegin (i.e. avoid hit testing)
 // returns the correct status if the scroller cannot be scrolled on the
 // compositor thread.

@@ -118,6 +118,13 @@ using signin_metrics::PromoAction;
   DCHECK(!self.signinCompletion);
 }
 
+#pragma mark - Properties
+
+- (BOOL)isSettingsViewPresented {
+  // TODO(crbug.com/971989): Remove this method.
+  return NO;
+}
+
 #pragma mark - Private
 
 - (void)runCompletionCallbackWithSigninResult:

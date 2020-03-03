@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/change_requests_state_task.h"
@@ -84,7 +85,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenStoreEmpty) {
       &store_, kRequestId1,
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -103,7 +104,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenExists) {
       &store_, kRequestId1,
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  start_request_task.Run();
+  start_request_task.Execute(base::DoNothing());
   PumpLoop();
   ClearResults();
 
@@ -112,7 +113,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenExists) {
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
 
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -132,7 +133,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenItemMissing) {
       &store_, kRequestId2,
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -151,7 +152,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
       &store_, kRequestId1,
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  start_request_task.Run();
+  start_request_task.Execute(base::DoNothing());
   PumpLoop();
   ClearResults();
 
@@ -162,7 +163,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
       &store_, requests, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  pauseTask.Run();
+  pauseTask.Execute(base::DoNothing());
   PumpLoop();
 
   // Abort the task, the state should not change from PAUSED.
@@ -171,7 +172,7 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
       base::BindOnce(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
 
-  abortTask.Run();
+  abortTask.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());

@@ -4,6 +4,8 @@
 
 source_set("permissions") {
   sources = [
+    "chooser_context_base.cc",
+    "chooser_context_base.h",
     "features.cc",
     "features.h",
     "notification_permission_ui_selector.h",

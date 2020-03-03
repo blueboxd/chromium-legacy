@@ -4353,7 +4353,7 @@ void Document::write(v8::Isolate* isolate,
   for (const String& string : text)
     builder.Append(string);
   String string =
-      GetStringFromTrustedHTML(builder.ToString(), this, exception_state);
+      TrustedTypesCheckForHTML(builder.ToString(), this, exception_state);
   if (exception_state.HadException())
     return;
 
@@ -4370,7 +4370,7 @@ void Document::writeln(v8::Isolate* isolate,
   for (const String& string : text)
     builder.Append(string);
   String string =
-      GetStringFromTrustedHTML(builder.ToString(), this, exception_state);
+      TrustedTypesCheckForHTML(builder.ToString(), this, exception_state);
   if (exception_state.HadException())
     return;
 

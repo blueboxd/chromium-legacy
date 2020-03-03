@@ -343,6 +343,9 @@ TEST(TransformUtilTest, TransformBetweenRects) {
     verify(test_case.first, test_case.second);
     verify(test_case.second, test_case.first);
   }
+
+  // Tests the case where the destination is an empty rectangle.
+  verify(RectF(0.f, 0.f, 3.f, 5.f), RectF());
 }
 
 }  // namespace

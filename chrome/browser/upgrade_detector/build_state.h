@@ -70,6 +70,7 @@ class BuildState {
 
   void AddObserver(BuildStateObserver* observer);
   void RemoveObserver(const BuildStateObserver* observer);
+  bool HasObserver(const BuildStateObserver* observer) const;
 
  private:
   void NotifyObserversOnUpdate();

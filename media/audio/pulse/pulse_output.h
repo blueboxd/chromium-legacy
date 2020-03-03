@@ -43,7 +43,7 @@ class PulseAudioOutputStream : public AudioOutputStream {
   PulseAudioOutputStream(const AudioParameters& params,
                          const std::string& device_id,
                          AudioManagerBase* manager,
-                         const AudioManager::LogCallback log_callback);
+                         AudioManager::LogCallback log_callback);
 
   ~PulseAudioOutputStream() override;
 

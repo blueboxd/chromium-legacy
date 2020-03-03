@@ -25,9 +25,8 @@ class ImportCompletedTask : public Task {
                       bool success);
   ~ImportCompletedTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void OnStateUpdatedToFinished(bool success);
 
   PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.

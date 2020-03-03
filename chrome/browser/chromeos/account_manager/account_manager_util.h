@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_UTIL_H_
 
-#include "base/callback_forward.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 
 class Profile;

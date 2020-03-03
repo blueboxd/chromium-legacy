@@ -13,6 +13,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -253,7 +254,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+      SyncSetupServiceFactory::GetForBrowserState(_browser->GetBrowserState());
   if (syncSetupService->IsSyncEnabled() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
@@ -998,6 +999,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self.navigationController
+                         browser:_browser
                            title:menuTitle
                           inView:self.tableView
                       atLocation:touchLocation];
@@ -1037,7 +1039,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
+        ->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
@@ -1049,7 +1052,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
+        ->Load(params);
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }
@@ -1059,13 +1063,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
   // TODO(crbug.com/1032550) : Update this call to pass in the current WebState.
-  new_tab_page_uma::RecordAction(_browserState,
+  new_tab_page_uma::RecordAction(_browser->GetBrowserState(),
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    UrlLoadingServiceFactory::GetForBrowserState(_browser->GetBrowserState())
+        ->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }

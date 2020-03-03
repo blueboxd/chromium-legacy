@@ -3058,6 +3058,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   _contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self
+                         browser:self.browser
                            title:params.menu_title
                           inView:params.view
                       atLocation:params.location];
@@ -3875,11 +3876,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   const std::unique_ptr<sessions::TabRestoreService::Entry>& entry =
       tabRestoreService->entries().front();
   // Only handle the TAB type.
+  // TODO(crbug.com/1056596) : Support WINDOW restoration under multi-window.
   if (entry->type != sessions::TabRestoreService::TAB)
     return;
 
   [self.dispatcher openURLInNewTab:[OpenNewTabCommand command]];
-  RestoreTab(entry->id, WindowOpenDisposition::CURRENT_TAB, self.browserState);
+  RestoreTab(entry->id, WindowOpenDisposition::CURRENT_TAB, self.browser);
 }
 
 #pragma mark - MainContentUI
@@ -3912,7 +3914,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidBecomeFirstResponder:self.browserState];
 
-  [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
+  // On the non-incognito NTP, the primaryToolbarCoordinator focuses the
+  // location bar itself when focusing the fakebox (while animating the
+  // fakebox). On all other pages, the fakebox is focused here after the
+  // location bar becomes first responder.
+  if (!IsVisibleURLNewTabPage(self.currentWebState) || self.isOffTheRecord) {
+    [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
+  }
 }
 
 - (void)locationBarDidResignFirstResponder {

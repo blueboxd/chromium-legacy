@@ -36,7 +36,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
@@ -121,7 +120,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   SigninClientFactory::GetInstance();
   SnapshotCacheFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
-  TabRestoreServiceDelegateImplIOSFactory::GetInstance();
   TextToSpeechPlaybackControllerFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
   UnifiedConsentServiceFactory::GetInstance();

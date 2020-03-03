@@ -26,7 +26,7 @@ class BASE_EXPORT ScopedSetTaskPriorityForCurrentThread {
 };
 
 // Returns the priority of the task running on the current thread,
-// or TaskPriority::USER_VISIBLE if none.
+// or TaskPriority::USER_BLOCKING by default if none.
 BASE_EXPORT TaskPriority GetTaskPriorityForCurrentThread();
 
 }  // namespace internal

@@ -162,10 +162,13 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 }
             }
 
-            fireCanMakePaymentEvent(webContents, registrationId, scope,
-                    mDelegate.getParams().getId(), mDelegate.getParams().getTopLevelOrigin(),
-                    mDelegate.getParams().getPaymentRequestOrigin(), supportedRequestedMethodData,
-                    supportedRequestedModifiers, /*callback=*/this, app);
+            ServiceWorkerPaymentAppBridgeJni.get().fireCanMakePaymentEvent(webContents,
+                    registrationId, scope, mDelegate.getParams().getId(),
+                    mDelegate.getParams().getTopLevelOrigin(),
+                    mDelegate.getParams().getPaymentRequestOrigin(),
+                    supportedRequestedMethodData.toArray(new PaymentMethodData[0]),
+                    supportedRequestedModifiers.toArray(new PaymentDetailsModifier[0]),
+                    /*callback=*/this, app);
         }
 
         /** Called when an installable payment handler is found. */
@@ -282,34 +285,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
             return;
         }
         ServiceWorkerPaymentAppBridgeJni.get().getServiceWorkerPaymentAppsInfo(callback);
-    }
-
-    /**
-     * Returns whether the app can make a payment.
-     *
-     * @param webContents      The web contents that invoked PaymentRequest.
-     * @param registrationId   The service worker registration ID of the Payment App.
-     * @param swScope          The service worker scope.
-     * @param paymentRequestId The payment request identifier.
-     * @param origin           The origin of this merchant.
-     * @param iframeOrigin     The origin of the iframe that invoked PaymentRequest. Same as origin
-     *                         if PaymentRequest was not invoked from inside an iframe.
-     * @param methodData       The PaymentMethodData objects that are relevant for this payment
-     *                         app.
-     * @param modifiers        Payment method specific modifiers to the payment items and the total.
-     * @param callback         Called after the payment app is finished running.
-     * @param app              The payment handler where the event is being fired.
-     */
-    private static void fireCanMakePaymentEvent(WebContents webContents, long registrationId,
-            String swScope, String paymentRequestId, String origin, String iframeOrigin,
-            Set<PaymentMethodData> methodData, Set<PaymentDetailsModifier> modifiers,
-            PaymentHandlerFinder callback, ServiceWorkerPaymentApp app) {
-        ThreadUtils.assertOnUiThread();
-
-        ServiceWorkerPaymentAppBridgeJni.get().fireCanMakePaymentEvent(webContents, registrationId,
-                swScope, paymentRequestId, origin, iframeOrigin,
-                methodData.toArray(new PaymentMethodData[0]),
-                modifiers.toArray(new PaymentDetailsModifier[0]), callback, app);
     }
 
     /**

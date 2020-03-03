@@ -4909,6 +4909,9 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
 }
 
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
+  if (!CurrentlyScrollingNode())
+    return;
+
   // Note that if we deferred the scroll end then we should not snap. We will
   // snap once we deliver the deferred scroll end.
   if (mutator_host_->IsImplOnlyScrollAnimating()) {

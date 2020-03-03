@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/common/pref_names.h"
@@ -131,9 +132,9 @@ void UsbChooserContext::DeviceObserver::OnDeviceRemoved(
 void UsbChooserContext::DeviceObserver::OnDeviceManagerConnectionError() {}
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         ContentSettingsType::USB_GUARD,
-                         ContentSettingsType::USB_CHOOSER_DATA),
+    : ChooserContextBase(ContentSettingsType::USB_GUARD,
+                         ContentSettingsType::USB_CHOOSER_DATA,
+                         HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {
 #if defined(OS_CHROMEOS)
   bool is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(profile);

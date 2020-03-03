@@ -14,6 +14,7 @@
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
 
@@ -27,7 +28,8 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
                         const std::string& device_name,
                         const AudioParameters& params,
                         pa_threaded_mainloop* mainloop,
-                        pa_context* context);
+                        pa_context* context,
+                        AudioManager::LogCallback log_callback);
 
   ~PulseAudioInputStream() override;
 
@@ -76,7 +78,12 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   // PulseAudio API structs.
   pa_threaded_mainloop* pa_mainloop_; // Weak.
+
   pa_context* pa_context_;  // Weak.
+
+  // Callback to send log messages to registered clients.
+  AudioManager::LogCallback log_callback_;
+
   pa_stream* handle_;
 
   base::ThreadChecker thread_checker_;

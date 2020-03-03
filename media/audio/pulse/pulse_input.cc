@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -14,19 +15,37 @@
 
 namespace media {
 
+namespace {
+
+PRINTF_FORMAT(2, 3)
+void SendLogMessage(const AudioManagerBase::LogCallback& callback,
+                    const char* format,
+                    ...) {
+  if (callback.is_null())
+    return;
+  va_list args;
+  va_start(args, format);
+  callback.Run("PAIS::" + base::StringPrintV(format, args));
+  va_end(args);
+}
+
+}  // namespace
+
 using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
 
 // Number of blocks of buffers used in the |fifo_|.
 const int kNumberOfBlocksBufferInFifo = 2;
 
-PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
-                                             const std::string& device_name,
-                                             const AudioParameters& params,
-                                             pa_threaded_mainloop* mainloop,
-                                             pa_context* context)
+PulseAudioInputStream::PulseAudioInputStream(
+    AudioManagerPulse* audio_manager,
+    const std::string& device_name,
+    const AudioParameters& params,
+    pa_threaded_mainloop* mainloop,
+    pa_context* context,
+    AudioManager::LogCallback log_callback)
     : audio_manager_(audio_manager),
-      callback_(NULL),
+      callback_(nullptr),
       device_name_(device_name),
       params_(params),
       channels_(0),
@@ -38,10 +57,13 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
             kNumberOfBlocksBufferInFifo),
       pa_mainloop_(mainloop),
       pa_context_(context),
-      handle_(NULL) {
+      log_callback_(std::move(log_callback)),
+      handle_(nullptr) {
   DCHECK(mainloop);
   DCHECK(context);
   CHECK(params_.IsValid());
+  SendLogMessage(log_callback_, "%s({device_id=%s}, {params=[%s]})", __func__,
+                 device_name.c_str(), params.AsHumanReadableString().c_str());
 }
 
 PulseAudioInputStream::~PulseAudioInputStream() {
@@ -52,13 +74,19 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 
 bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SendLogMessage(log_callback_, "%s()", __func__);
   if (device_name_ == AudioDeviceDescription::kDefaultDeviceId &&
-      audio_manager_->DefaultSourceIsMonitor())
+      audio_manager_->DefaultSourceIsMonitor()) {
+    SendLogMessage(log_callback_, "%s => (ERROR: can't open monitor device)",
+                   __func__);
     return false;
+  }
 
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!pulse::CreateInputStream(pa_mainloop_, pa_context_, &handle_, params_,
                                 device_name_, &StreamNotifyCallback, this)) {
+    SendLogMessage(log_callback_, "%s => (ERROR: failed to open PA stream)",
+                   __func__);
     return false;
   }
 
@@ -71,6 +99,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   DCHECK(handle_);
+  SendLogMessage(log_callback_, "%s()", __func__);
 
   // AGC needs to be started out of the lock.
   StartAgc();
@@ -97,6 +126,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
 
 void PulseAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SendLogMessage(log_callback_, "%s()", __func__);
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!stream_started_)
     return;
@@ -118,23 +148,24 @@ void PulseAudioInputStream::Stop() {
   }
 
   // Stop the stream.
-  pa_stream_set_read_callback(handle_, NULL, NULL);
+  pa_stream_set_read_callback(handle_, nullptr, nullptr);
   operation =
       pa_stream_cork(handle_, 1, &pulse::StreamSuccessCallback, pa_mainloop_);
   if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                   handle_)) {
     callback_->OnError();
   }
-  callback_ = NULL;
+  callback_ = nullptr;
 }
 
 void PulseAudioInputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SendLogMessage(log_callback_, "%s()", __func__);
   {
     AutoPulseLock auto_lock(pa_mainloop_);
     if (handle_) {
       // Disable all the callbacks before disconnecting.
-      pa_stream_set_state_callback(handle_, NULL, NULL);
+      pa_stream_set_state_callback(handle_, nullptr, nullptr);
       pa_operation* operation =
           pa_stream_flush(handle_, &pulse::StreamSuccessCallback, pa_mainloop_);
       WaitForOperationCompletion(pa_mainloop_, operation, pa_context_, handle_);
@@ -144,7 +175,7 @@ void PulseAudioInputStream::Close() {
 
       // Release PulseAudio structures.
       pa_stream_unref(handle_);
-      handle_ = NULL;
+      handle_ = nullptr;
     }
   }
 
@@ -161,9 +192,10 @@ void PulseAudioInputStream::SetVolume(double volume) {
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!handle_)
     return;
+  SendLogMessage(log_callback_, "%s({volume=%.2f})", __func__, volume);
 
   size_t index = pa_stream_get_device_index(handle_);
-  pa_operation* operation = NULL;
+  pa_operation* operation = nullptr;
   if (!channels_) {
     // Get the number of channels for the source only when the |channels_| is 0.
     // We are assuming the stream source is not changed on the fly here.
@@ -172,7 +204,9 @@ void PulseAudioInputStream::SetVolume(double volume) {
     if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                     handle_) ||
         !channels_) {
-      DLOG(WARNING) << "Failed to get the number of channels for the source";
+      SendLogMessage(log_callback_,
+                     "%s => (WARNING: failed to read number of channels)",
+                     __func__);
       return;
     }
   }
@@ -180,7 +214,7 @@ void PulseAudioInputStream::SetVolume(double volume) {
   pa_cvolume pa_volume;
   pa_cvolume_set(&pa_volume, channels_, volume);
   operation = pa_context_set_source_volume_by_index(
-      pa_context_, index, &pa_volume, NULL, NULL);
+      pa_context_, index, &pa_volume, nullptr, nullptr);
 
   // Don't need to wait for this task to complete.
   pa_operation_unref(operation);
@@ -309,7 +343,7 @@ void PulseAudioInputStream::ReadData() {
                                           params_.sample_rate()));
   do {
     size_t length = 0;
-    const void* data = NULL;
+    const void* data = nullptr;
     pa_stream_peek(handle_, &data, &length);
     if (!data || length == 0)
       break;

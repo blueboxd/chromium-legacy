@@ -155,7 +155,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   int DoomEntriesSince(const base::Time initial_time);
   std::unique_ptr<TestIterator> CreateIterator();
   void FlushQueueForTest();
-  void RunTaskForTest(const base::Closure& closure);
+  void RunTaskForTest(base::OnceClosure closure);
   int ReadData(disk_cache::Entry* entry, int index, int offset,
                net::IOBuffer* buf, int len);
   int WriteData(disk_cache::Entry* entry, int index, int offset,

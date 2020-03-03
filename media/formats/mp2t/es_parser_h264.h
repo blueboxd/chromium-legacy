@@ -40,12 +40,13 @@ namespace mp2t {
 //
 class MEDIA_EXPORT EsParserH264 : public EsParser {
  public:
-  typedef base::Callback<void(const VideoDecoderConfig&)> NewVideoConfigCB;
+  using NewVideoConfigCB =
+      base::RepeatingCallback<void(const VideoDecoderConfig&)>;
 
-  EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+  EsParserH264(NewVideoConfigCB new_video_config_cb,
                const EmitBufferCB& emit_buffer_cb);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+  EsParserH264(NewVideoConfigCB new_video_config_cb,
                const EmitBufferCB& emit_buffer_cb,
                EncryptionScheme init_encryption_scheme,
                const GetDecryptConfigCB& get_decrypt_config_cb);

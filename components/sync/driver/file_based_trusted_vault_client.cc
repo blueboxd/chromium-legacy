@@ -98,6 +98,11 @@ class FileBasedTrustedVaultClient::Backend
     WriteToDisk(data_, file_path_);
   }
 
+  void RemoveAllStoredKeys() {
+    base::DeleteFile(file_path_, /*recursive=*/false);
+    data_.Clear();
+  }
+
  private:
   friend class base::RefCountedThreadSafe<Backend>;
 
@@ -153,6 +158,13 @@ void FileBasedTrustedVaultClient::StoreKeys(
   backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Backend::StoreKeys, backend_, gaia_id, keys,
                                 last_key_version));
+  observer_list_.Notify();
+}
+
+void FileBasedTrustedVaultClient::RemoveAllStoredKeys() {
+  TriggerLazyInitializationIfNeeded();
+  backend_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Backend::RemoveAllStoredKeys, backend_));
   observer_list_.Notify();
 }
 

@@ -928,15 +928,6 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
     if (!isValueAllowedInMode(id, context.Mode()))
       return nullptr;
     CSSIdentifierValue* color = ConsumeIdent(range);
-    if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
-        (color->GetValueID() == CSSValueID::kLinktext ||
-         color->GetValueID() == CSSValueID::kVisitedtext)) {
-      return nullptr;
-    } else if (!RuntimeEnabledFeatures::NewSystemColorsEnabled() &&
-               (id == CSSValueID::kActivetext || id == CSSValueID::kField ||
-                id == CSSValueID::kFieldtext)) {
-      return nullptr;
-    }
     return color;
   }
   RGBA32 color = Color::kTransparent;

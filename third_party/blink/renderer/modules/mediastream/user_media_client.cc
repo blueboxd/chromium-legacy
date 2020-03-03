@@ -148,8 +148,8 @@ void UserMediaClient::RequestUserMedia(UserMediaRequest* user_media_request) {
 
   int request_id = g_next_request_id++;
   blink::WebRtcLogMessage(base::StringPrintf(
-      "UMCI::RequestUserMedia. request_id=%d, audio constraints=%s, "
-      "video constraints=%s",
+      "UMCI::RequestUserMedia({request_id=%d}, {audio constraints=%s}, "
+      "{video constraints=%s})",
       request_id,
       user_media_request->AudioConstraints().ToString().Utf8().c_str(),
       user_media_request->VideoConstraints().ToString().Utf8().c_str()));

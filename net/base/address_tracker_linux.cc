@@ -156,9 +156,9 @@ AddressTrackerLinux::AddressTrackerLinux()
       threads_waiting_for_connection_type_initialization_(0) {}
 
 AddressTrackerLinux::AddressTrackerLinux(
-    const base::Closure& address_callback,
-    const base::Closure& link_callback,
-    const base::Closure& tunnel_callback,
+    const base::RepeatingClosure& address_callback,
+    const base::RepeatingClosure& link_callback,
+    const base::RepeatingClosure& tunnel_callback,
     const std::unordered_set<std::string>& ignored_interfaces)
     : get_interface_name_(GetInterfaceName),
       address_callback_(address_callback),

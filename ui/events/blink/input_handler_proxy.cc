@@ -181,9 +181,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
     : client_(client),
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
-#if DCHECK_IS_ON()
-      expect_scroll_update_end_(false),
-#endif
       gesture_scroll_on_impl_thread_(false),
       scroll_sequence_ignored_(false),
       touch_result_(kEventDispositionUndefined),
@@ -810,9 +807,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   if (scroll_predictor_)
     scroll_predictor_->ResetOnGestureScrollBegin(gesture_event);
 
-#if DCHECK_IS_ON()
-  expect_scroll_update_end_ = true;
-#endif
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
   cc::ElementIdType element_id_type =
@@ -876,10 +870,6 @@ InputHandlerProxy::HandleGestureScrollUpdate(
                -gesture_event.data.scroll_update.delta_x, "dy",
                -gesture_event.data.scroll_update.delta_y);
 
-#if DCHECK_IS_ON()
-  DCHECK(expect_scroll_update_end_);
-#endif
-
   if (scroll_sequence_ignored_) {
     TRACE_EVENT_INSTANT0("input", "Scroll Sequence Ignored",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -898,9 +888,6 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   if (snap_fling_controller_->HandleGestureScrollUpdate(
           GetGestureScrollUpdateInfo(gesture_event))) {
-#if DCHECK_IS_ON()
-    expect_scroll_update_end_ = false;
-#endif
     gesture_scroll_on_impl_thread_ = false;
     return DROP_EVENT;
   }
@@ -938,11 +925,6 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
-#if DCHECK_IS_ON()
-  DCHECK(expect_scroll_update_end_);
-  expect_scroll_update_end_ = false;
-#endif
-
   if (scroll_sequence_ignored_)
     return DROP_EVENT;
 

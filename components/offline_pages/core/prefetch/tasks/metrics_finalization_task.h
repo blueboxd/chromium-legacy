@@ -23,10 +23,9 @@ class MetricsFinalizationTask : public Task {
   explicit MetricsFinalizationTask(PrefetchStore* prefetch_store);
   ~MetricsFinalizationTask() override;
 
+ private:
   // Task implementation.
   void Run() override;
-
- private:
   void MetricsFinalized(bool result);
 
   PrefetchStore* prefetch_store_;

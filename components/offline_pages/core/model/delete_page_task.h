@@ -60,9 +60,6 @@ class DeletePageTask : public Task {
 
   ~DeletePageTask() override;
 
-  // Task implementation.
-  void Run() override;
-
   // Deletes a single page from the database. This function reads
   // from the database and should be called from within an
   // |SqlStoreBase::Execute()| call.
@@ -77,6 +74,9 @@ class DeletePageTask : public Task {
  private:
   using DeleteFunction =
       base::OnceCallback<DeletePageTaskResult(sql::Database*)>;
+
+  // Task implementation.
+  void Run() override;
 
   // Making the constructor private, in order to use static methods to create
   // tasks.

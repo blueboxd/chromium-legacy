@@ -24,9 +24,8 @@ class SentGetOperationCleanupTask : public Task {
                               PrefetchNetworkRequestFactory* request_factory);
   ~SentGetOperationCleanupTask() override;
 
-  void Run() override;
-
  private:
+  void Run() override;
   void OnFinished(bool success);
 
   PrefetchStore* prefetch_store_;                   // Outlives this class.

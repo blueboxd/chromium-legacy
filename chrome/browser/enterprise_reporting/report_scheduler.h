@@ -5,18 +5,19 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_SCHEDULER_H_
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_SCHEDULER_H_
 
+#include <stdint.h>
 #include <memory>
 #include <queue>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/enterprise_reporting/notification/extension_request_observer_factory.h"
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_uploader.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
+#include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace policy {
@@ -25,9 +26,12 @@ class CloudPolicyClient;
 
 namespace enterprise_reporting {
 
-// Schedules the next report and handles retry in case of error. It also cancels
-// all pending uploads if the report policy is turned off.
-class ReportScheduler : public ProfileManagerObserver {
+// Schedules report generation and upload every 24 hours and upon browser update
+// for desktop Chrome while cloud reporting is enabled via administrative
+// policy. If either of these triggers fires while a report is being generated,
+// processing is deferred until the existing processing completes.
+class ReportScheduler : public ProfileManagerObserver,
+                        public BuildStateObserver {
  public:
   ReportScheduler(policy::CloudPolicyClient* client,
                   std::unique_ptr<ReportGenerator> report_generator);
@@ -43,7 +47,18 @@ class ReportScheduler : public ProfileManagerObserver {
 
   void OnDMTokenUpdated();
 
+  // BuildStateObserver:
+  void OnUpdate(const BuildState* build_state) override;
+
  private:
+  // The trigger leading to report generation. Values are bitmasks in the
+  // |pending_triggers_| bitfield.
+  enum ReportTrigger : uint32_t {
+    kTriggerNone = 0,          // No trigger.
+    kTriggerTimer = 1U << 0,   // The periodic timer expired.
+    kTriggerUpdate = 1U << 1,  // An update was detected.
+  };
+
   // Observes CloudReportingEnabled policy.
   void RegisterPrefObserver();
 
@@ -51,24 +66,30 @@ class ReportScheduler : public ProfileManagerObserver {
   // policy value check during startup.
   void OnReportEnabledPrefChanged();
 
-  // Stop |request_timer_| if it is existing.
-  void StopRequestTimer();
+  // Stops the periodic timer and the update observer.
+  void Stop();
 
   // Register |cloud_policy_client_| with dm token and client id for desktop
   // browser only. (Chrome OS doesn't need this step here.)
   bool SetupBrowserPolicyClientRegistration();
 
-  // Schedules the first update request.
-  void Start();
+  // Starts the periodic timer based on the last time a report was uploaded.
+  void Start(base::Time last_upload_time);
 
-  // Generates a report and uploads it.
-  void GenerateAndUploadReport();
+  // Starts report generation in response to |trigger|.
+  void GenerateAndUploadReport(ReportTrigger trigger);
 
-  // Callback once report is generated.
+  // Continues processing a report (contained in the |requests| collection) by
+  // sending it to the uploader.
   void OnReportGenerated(ReportGenerator::ReportRequests requests);
 
-  // Callback once report upload request is finished.
+  // Finishes processing following report upload. |status| indicates the result
+  // of the attempted upload.
   void OnReportUploaded(ReportUploader::ReportStatus status);
+
+  // Initiates report generation for any triggers that arrived during generation
+  // of another report.
+  void RunPendingTriggers();
 
   // Tracks profiles that miss at least one report.
   void TrackStaleProfiles();
@@ -91,6 +112,14 @@ class ReportScheduler : public ProfileManagerObserver {
   std::unique_ptr<base::flat_set<base::FilePath>> stale_profiles_;
 
   ExtensionRequestObserverFactory extension_request_observer_factory_;
+
+  // The trigger responsible for initiating active report generation.
+  ReportTrigger active_trigger_ = kTriggerNone;
+
+  // The set of triggers that have fired while processing a report (a bitfield
+  // of ReportTrigger values). They will be handled following completion of the
+  // in-process report.
+  uint32_t pending_triggers_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ReportScheduler);
 };

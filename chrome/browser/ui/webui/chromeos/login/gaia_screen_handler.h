@@ -446,6 +446,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Is non-empty iff the dialog is active.
   SecurityTokenPinDialogClosedCallback
       security_token_pin_dialog_closed_callback_;
+  // Whether the PIN dialog shown during the current authentication attempt was
+  // canceled by the user.
+  bool was_security_token_pin_canceled_ = false;
 
   // Handler for |samlChallengeMachineKey| request.
   std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_;

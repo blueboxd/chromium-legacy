@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 
 class Browser;
 @protocol BrowserCommands;
@@ -17,19 +18,6 @@ class Browser;
 
 // The accessibility identifier for the settings' "Done" button.
 extern NSString* const kSettingsDoneButtonId;
-
-@protocol SettingsControllerProtocol<NSObject>
-
-@optional
-
-// Notifies the controller that the settings screen is being dismissed.
-- (void)settingsWillBeDismissed;
-
-// Notifies the controller that is popped out from the settings navigation
-// controller.
-- (void)viewControllerWasPopped;
-
-@end
 
 @protocol SettingsNavigationControllerDelegate<NSObject>
 

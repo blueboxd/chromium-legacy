@@ -61,8 +61,7 @@
 - (void)start {
   // Initialize and configure HistoryTableViewController.
   self.historyTableViewController = [[HistoryTableViewController alloc] init];
-  self.historyTableViewController.browserState =
-      self.browser->GetBrowserState();
+  self.historyTableViewController.browser = self.browser;
   self.historyTableViewController.loadStrategy = self.loadStrategy;
 
   // Initialize and set HistoryMediator

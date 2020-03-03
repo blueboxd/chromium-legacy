@@ -2090,7 +2090,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // TODO(dtapuska): revisit this when we have a better way to re-dispatch
   // requests.
   ResourceRequest request;
-  request.CopyFrom(stale_resource->GetResourceRequest());
+  request.CopyHeadFrom(stale_resource->GetResourceRequest());
   FetchParameters params(std::move(request));
   params.SetStaleRevalidation(true);
   params.MutableResourceRequest().SetSkipServiceWorker(true);

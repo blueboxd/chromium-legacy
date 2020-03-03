@@ -28,7 +28,7 @@ namespace util {
 namespace chromeos {
 
 const base::Feature kCrOSUserSpaceLowMemoryNotification{
-    "kCrOSUserSpaceLowMemoryNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrOSUserSpaceLowMemoryNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 // Pointer to the SystemMemoryPressureEvaluator used by TabManagerDelegate for

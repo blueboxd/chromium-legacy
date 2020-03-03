@@ -6,10 +6,12 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -210,6 +212,31 @@ bool TrustedVaultKeyRequiredStateChecker::IsExitConditionSatisfied(
              ->GetUserSettings()
              ->IsTrustedVaultKeyRequiredForPreferredDataTypes() ==
          desired_state_;
+}
+
+TrustedVaultKeysChangedStateChecker::TrustedVaultKeysChangedStateChecker(
+    syncer::ProfileSyncService* service)
+    : keys_changed_(false) {
+  // base::Unretained() is safe here, because callback won't be called once
+  // |subscription_| is destroyed.
+  subscription_ = service->GetSyncClientForTest()
+                      ->GetTrustedVaultClient()
+                      ->AddKeysChangedObserver(base::BindRepeating(
+                          &TrustedVaultKeysChangedStateChecker::OnKeysChanged,
+                          base::Unretained(this)));
+}
+
+TrustedVaultKeysChangedStateChecker::~TrustedVaultKeysChangedStateChecker() =
+    default;
+
+bool TrustedVaultKeysChangedStateChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for trusted vault keys change";
+  return keys_changed_;
+}
+
+void TrustedVaultKeysChangedStateChecker::OnKeysChanged() {
+  keys_changed_ = true;
 }
 
 ScopedScryptFeatureToggler::ScopedScryptFeatureToggler(

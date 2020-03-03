@@ -30,10 +30,10 @@ class CleanupVisualsTask : public Task {
                      CleanupVisualsCallback complete_callback);
   ~CleanupVisualsTask() override;
 
+ private:
   // Task implementation:
   void Run() override;
 
- private:
   void Complete(Result result);
   OfflinePageMetadataStore* store_;
   base::Time now_;

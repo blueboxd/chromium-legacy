@@ -31,7 +31,7 @@ class _BackgroundStory(system_health_story.SystemHealthStory):
 class BackgroundGoogleStory2019(_BackgroundStory):
   NAME = 'background:search:google:2019'
   URL = 'https://www.google.co.uk/#q=tom+cruise+movies'
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+  TAGS = [story_tags.YEAR_2019]
 
   def _DidLoadDocument(self, action_runner):
     # Activte the immersive movie browsing experience
@@ -64,7 +64,7 @@ class BackgroundImgurMobileStory2019(_BackgroundStory):
   NAME = 'background:media:imgur:2019'
   URL = 'http://imgur.com/gallery/hUita'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+  TAGS = [story_tags.YEAR_2019]
 
 
 class BackgroundGmailMobileStory2019(loading_stories.LoadGmailStory2019):

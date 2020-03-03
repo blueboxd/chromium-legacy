@@ -10,6 +10,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -103,6 +105,22 @@ class TrustedVaultKeyRequiredStateChecker
 
  private:
   const bool desired_state_;
+};
+
+// Checker used to block until trusted vault keys are changed.
+class TrustedVaultKeysChangedStateChecker : public StatusChangeChecker {
+ public:
+  explicit TrustedVaultKeysChangedStateChecker(
+      syncer::ProfileSyncService* service);
+  ~TrustedVaultKeysChangedStateChecker() override;
+
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  void OnKeysChanged();
+
+  bool keys_changed_;
+  std::unique_ptr<syncer::TrustedVaultClient::Subscription> subscription_;
 };
 
 // Helper for setting scrypt-related feature flags.

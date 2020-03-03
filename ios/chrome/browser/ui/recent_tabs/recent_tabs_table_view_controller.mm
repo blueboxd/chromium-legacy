@@ -18,9 +18,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #include "ios/chrome/browser/sessions/session_util.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -943,6 +942,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     return;
 
   // Only TAB type is handled.
+  // TODO(crbug.com/1056596) : Support WINDOW restoration under multi-window.
   DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
@@ -956,7 +956,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   WindowOpenDisposition disposition =
       self.isIncognito ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                        : self.restoredTabDisposition;
-  RestoreTab(entry->id, disposition, self.browserState);
+  RestoreTab(entry->id, disposition, self.browser);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -1060,6 +1060,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Present sheet/popover using controller that is added to view hierarchy.
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self
+                         browser:self.browser
                            title:nil
                           inView:self.tableView
                       atLocation:viewCoordinate];

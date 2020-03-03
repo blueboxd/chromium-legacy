@@ -2436,27 +2436,17 @@ bool AXLayoutObject::IsDataTable() const {
   if (HasAOMPropertyOrARIAAttribute(AOMStringProperty::kRole, role))
     return true;
 
-  if (!layout_object_->IsTable())
-    return false;
-
   // When a section of the document is contentEditable, all tables should be
   // treated as data tables, otherwise users may not be able to work with rich
   // text editors that allow creating and editing tables.
   if (GetNode() && HasEditableStyle(*GetNode()))
     return true;
 
-  // If there's no node, it's definitely a layout table. This happens
-  // when table CSS styles are used without a complete table DOM structure.
-  LayoutNGTableInterface* table =
-      ToInterface<LayoutNGTableInterface>(layout_object_);
-  table->RecalcSectionsIfNeeded();
-  Node* table_node = layout_object_->GetNode();
-
   // This employs a heuristic to determine if this table should appear.
   // Only "data" tables should be exposed as tables.
   // Unfortunately, there is no good way to determine the difference
   // between a "layout" table and a "data" table.
-  auto* table_element = DynamicTo<HTMLTableElement>(table_node);
+  auto* table_element = DynamicTo<HTMLTableElement>(GetNode());
   if (!table_element)
     return false;
 
@@ -2473,6 +2463,23 @@ bool AXLayoutObject::IsDataTable() const {
   // if there's a colgroup or col element, it's probably a data table.
   if (Traversal<HTMLTableColElement>::FirstChild(*table_element))
     return true;
+
+  // Everything from here forward uses cell style info, but only if a CSS table.
+  // If this code is reached for a <table> with another display type, consider
+  // this to be a layout table.
+  // TODO(accessibility) consider rewriting the following cell inspection code
+  // using purely DOM methods, such as table->rows()->Item(index)->cells().
+  if (!layout_object_->IsTable())
+    return false;
+
+  // If there's no node, it's definitely a layout table. This happens
+  // when table CSS styles are used without a complete table DOM structure.
+  LayoutNGTableInterface* table =
+      ToInterface<LayoutNGTableInterface>(layout_object_);
+  table->RecalcSectionsIfNeeded();
+  Node* table_node = layout_object_->GetNode();
+  if (!table_node)
+    return false;
 
   // go through the cell's and check for tell-tale signs of "data" table status
   // cells have borders, or use attributes like headers, abbr, scope or axis

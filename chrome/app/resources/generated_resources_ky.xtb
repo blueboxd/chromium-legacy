@@ -869,7 +869,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Native Client модулу: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(бош)</translation>
-<translation id="2191223688506386601">Акыркы нерсе калды</translation>
 <translation id="2191754378957563929">Күйүк</translation>
 <translation id="2192505247865591433">Кимден:</translation>
 <translation id="2193365732679659387">Ишеним жөндөөлөрү</translation>
@@ -2568,7 +2567,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4555769855065597957">Көлөкө</translation>
 <translation id="4555863373929230635">Сырсөздөрдү Google аккаунтуңузга сактоо үчүн кирип, шайкештирүүнү күйгүзүңүз.</translation>
 <translation id="4558426062282641716">Авто-ишке киргизүүгө уруксат суралды</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> тууралуу кеңештер менен Google өнүмдөрү боюнча жаңылыктарды алып, пикир билдириңиз. Жазылууну каалаган убакта токтотууга болот.</translation>
 <translation id="4559617833001311418">Бул сайт кыймыл же жарык сенсорлорун колдонуп жатат.</translation>
 <translation id="4561893854334016293">Акыркы убакта уруксаттар өзгөргөн жок</translation>
 <translation id="4562155214028662640">Манжа изин кошуу</translation>
@@ -2838,7 +2836,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" сериялык портко туташканы жатат</translation>
 <translation id="4944310289250773232">Бул аутентификация кызматынын башкы түйүнү - <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Аракеттер</translation>
-<translation id="4952981627953231344">Plugin VM'ди бул түзмөктө колдонууга болбойт. Уюмуңуздун түзмөгүнүн администраторуна кайрылыңыз.</translation>
 <translation id="4953808748584563296">Демейки ток сары аватар</translation>
 <translation id="4955710816792587366">PIN кодуңузду тандаңыз</translation>
 <translation id="4959262764292427323">Бардык түзмөктөрүңүздө колдонуу үчүн сырсөздөр Google аккаунтуңузда сакталат</translation>
@@ -3021,6 +3018,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5233736638227740678">&amp;Чаптоо</translation>
 <translation id="5234764350956374838">Этибарга албоо</translation>
 <translation id="5235050375939235066">Колдонмону чыгарып салуу керекпи?</translation>
+<translation id="523505283826916779">Атайын мүмкүнчүлүктөрдү жөндөө</translation>
 <translation id="5235750401727657667">Жаңы өтмөк ачылганда, учурдагы барактын ордуна ал көрүнсүн</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" колдонмосу автоматтык түрдө өчүрүлдү.</translation>
 <translation id="5241128660650683457">Каралган вебсайттарыңыздагы бардык дайын-даректериңизди окуңуз</translation>
@@ -3441,7 +3439,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5804241973901381774">Уруксаттар</translation>
 <translation id="5805697420284793859">Терезе башкаргычы</translation>
 <translation id="5806773519584576205">0° (Демейки)</translation>
-<translation id="5811750797187914944">Даяр болду!</translation>
 <translation id="5812674658566766066">Баарын жайып көрсөтүү</translation>
 <translation id="5814126672212206791">Туташуу түрү</translation>
 <translation id="5815645614496570556">X.400 Дарек</translation>
@@ -4062,7 +4059,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6680442031740878064">Бош орун: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Баалоо</translation>
 <translation id="6681668084120808868">Сүрөт тартуу</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" чыгарылып салынат.</translation>
 <translation id="668599234725812620">Google Play'ди ачуу</translation>
 <translation id="6686490380836145850">Өтмөктөрдү оңго карай жабуу</translation>
 <translation id="6686817083349815241">Сырсөзүңүздү сактаңыз</translation>
@@ -4644,7 +4640,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> кеңейтүүсү терген текстиңиздин баарын, анын ичинде сырсөздөр жана насыя картаңыздын номерлери сыяктуу жеке дайын-даректериңизди топтошу мүмкүн. Бул кеңейтүүнү колдоносузбу?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Эски сырсөзүңүздү унутуп койдуңузбу?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> жана аны менен байланышкан дайындар бул түзмөктөн өчүрүлөт.</translation>
 <translation id="7496732379142025470">Батареяны үнөмдөө максатында, "Окей Google" буйругу түзмөгүңүз кубат булагына туташкан учурда гана иштейт. Өзгөртүү үчүн, Жөндөөлөргө өтүңүз.</translation>
 <translation id="7497215489070763236">Сервердин CA тастыктамасы</translation>
 <translation id="7497981768003291373">Текст түрүндө сакталган акыркы WebRTC таржымалдары жок.</translation>

@@ -400,7 +400,7 @@ void WebContentsAccessibilityAndroid::Enable(JNIEnv* env,
   // web contents.
   if (manager) {
     set_root_manager(manager);
-    manager->set_web_contents_accessibility(this);
+    manager->set_web_contents_accessibility(GetWeakPtr());
     return;
   }
 
@@ -1400,6 +1400,11 @@ void WebContentsAccessibilityAndroid::CollectStats() {
   CAPABILITY_TYPE_HISTOGRAM(capabilities_mask, CAN_REQUEST_FILTER_KEY_EVENTS);
   CAPABILITY_TYPE_HISTOGRAM(capabilities_mask, CAN_CONTROL_MAGNIFICATION);
   CAPABILITY_TYPE_HISTOGRAM(capabilities_mask, CAN_PERFORM_GESTURES);
+}
+
+base::WeakPtr<WebContentsAccessibilityAndroid>
+WebContentsAccessibilityAndroid::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 jlong JNI_WebContentsAccessibilityImpl_Init(

@@ -40,7 +40,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
   // preserve_buffer_content & supports_post_sub_buffer to true to let
   // SkiaOutputBufferImpl to manager damages.
   capabilities_.preserve_buffer_content = true;
-  capabilities_.output_surface_origin = SurfaceOrigin::kTopLeft;
+  capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   capabilities_.supports_post_sub_buffer = true;
   capabilities_.supports_pre_transform = true;
 }

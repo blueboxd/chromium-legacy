@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
+<translation id="1098170124587656448">‏Chromium עוזר להגן עליך מפני פרצות באבטחת המידע, תוספים לא תקינים ועוד</translation>
 <translation id="1104942323762546749">‏Chromium רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="113122355610423240">‏Chromium מוגדר כדפדפן ברירת המחדל</translation>
 <translation id="1185134272377778587">‏על Chromium</translation>
@@ -65,6 +66,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">‏התאמה אישית וניהול של Chromium נחוצה פעולה שלך - יש ללחוץ לקבלת פרטים נוספים.</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
+<translation id="3945058413678539331">‏Chromium מנסה להעתיק את הסיסמאות. כדי לאפשר למערכת לעשות זאת, יש להזין את הסיסמה שלך ל-Windows.</translation>
 <translation id="4036079820698952681">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chromium</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="421369550622382712">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים בשביל Chromium.</translation>
@@ -187,6 +189,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8013436988911883588">‏אחרי מתן גישה ל-Chromium, אתרים יוכלו לבקש ממך גישה.</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8248265253516264921">‏אם אין לתמונה תיאור מועיל, Chromium ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google. אפשר להשבית את האפשרות הזו בכל זמן דרך ההגדרות.</translation>
+<translation id="8276522524898344151">‏Chromium מנסה להעתיק את הסיסמאות.</translation>
 <translation id="8290862415967981663">‏Chromium‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="8330519371938183845">‏כניסה לחשבון תסנכרן ותתאים אישית את Chromium בכל המכשירים שברשותך</translation>
 <translation id="8340674089072921962">‏בכתובת <ph name="USER_EMAIL_ADDRESS" /> השתמשו בעבר ב-Chromium</translation>

@@ -167,6 +167,12 @@ void ExtensionPopup::DevToolsAgentHostAttached(
 
 void ExtensionPopup::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
+  // If the extension's page is open it will be closed when the extension
+  // is uninstalled, and if DevTools are attached, we will be notified here.
+  // But because OnExtensionUnloaded was already called, |host_| is
+  // no longer valid.
+  if (!host())
+    return;
   if (host()->host_contents() == agent_host->GetWebContents())
     show_action_ = SHOW;
 }

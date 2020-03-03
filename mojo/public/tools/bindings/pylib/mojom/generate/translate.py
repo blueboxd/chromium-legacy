@@ -278,9 +278,11 @@ def _Struct(module, parsed_struct):
     struct.constants = []
     struct.fields_data = []
   else:
-    struct.enums = map(
-        lambda enum: _Enum(module, enum, struct),
-        _ElemsOfType(parsed_struct.body, ast.Enum, parsed_struct.mojom_name))
+    struct.enums = list(
+        map(
+            lambda enum: _Enum(module, enum, struct),
+            _ElemsOfType(parsed_struct.body, ast.Enum,
+                         parsed_struct.mojom_name)))
     struct.constants = map(
         lambda constant: _Constant(module, constant, struct),
         _ElemsOfType(parsed_struct.body, ast.Const, parsed_struct.mojom_name))
@@ -428,9 +430,9 @@ def _Interface(module, parsed_iface):
   interface.mojom_name = parsed_iface.mojom_name
   interface.spec = 'x:' + module.mojom_namespace + '.' + interface.mojom_name
   module.kinds[interface.spec] = interface
-  interface.enums = map(
-      lambda enum: _Enum(module, enum, interface),
-      _ElemsOfType(parsed_iface.body, ast.Enum, parsed_iface.mojom_name))
+  interface.enums = list(
+      map(lambda enum: _Enum(module, enum, interface),
+          _ElemsOfType(parsed_iface.body, ast.Enum, parsed_iface.mojom_name)))
   interface.constants = map(
       lambda constant: _Constant(module, constant, interface),
       _ElemsOfType(parsed_iface.body, ast.Const, parsed_iface.mojom_name))
@@ -527,9 +529,9 @@ def _Enum(module, parsed_enum, parent_kind):
   enum.parent_kind = parent_kind
   enum.attributes = _AttributeListToDict(parsed_enum.attribute_list)
   if not enum.native_only:
-    enum.fields = map(
-        lambda field: _EnumField(module, enum, field, parent_kind),
-        parsed_enum.enum_value_list)
+    enum.fields = list(
+        map(lambda field: _EnumField(module, enum, field, parent_kind),
+            parsed_enum.enum_value_list))
     enum.min_value, enum.max_value = _ResolveNumericEnumValues(enum.fields)
 
   module.kinds[enum.spec] = enum
@@ -682,8 +684,8 @@ def _Module(tree, path, imports):
     for enum in struct.enums:
       all_defined_kinds[enum.spec] = enum
   for union in module.unions:
-    union.fields = map(lambda field:
-        _UnionField(module, field, union), union.fields_data)
+    union.fields = list(
+        map(lambda field: _UnionField(module, field, union), union.fields_data))
     del union.fields_data
     all_defined_kinds[union.spec] = union
   for interface in module.interfaces:

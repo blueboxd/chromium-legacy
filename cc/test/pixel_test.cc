@@ -236,8 +236,8 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
       std::move(context_provider), flipped_output_surface
-                                       ? viz::SurfaceOrigin::kTopLeft
-                                       : viz::SurfaceOrigin::kBottomLeft);
+                                       ? gfx::SurfaceOrigin::kTopLeft
+                                       : gfx::SurfaceOrigin::kBottomLeft);
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();

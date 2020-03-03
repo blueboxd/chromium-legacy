@@ -8,18 +8,20 @@ let crostiniPage = null;
 /** @type {?TestCrostiniBrowserProxy} */
 let crostiniBrowserProxy = null;
 
-function setCrostiniPrefs(
-    enabled, opt_sharedPaths, opt_sharedUsbDevices, opt_forwardedPorts) {
+function setCrostiniPrefs(enabled, optional = {}) {
+  const {sharedPaths = {}, sharedUsbDevices = [], forwardedPorts = []} =
+      optional;
+
   crostiniPage.prefs = {
     crostini: {
       enabled: {value: enabled},
-      port_forwarding: {ports: {value: opt_forwardedPorts || []}},
+      port_forwarding: {ports: {value: forwardedPorts}},
     },
     guest_os: {
-      paths_shared_to_vms: {value: opt_sharedPaths || {}},
+      paths_shared_to_vms: {value: sharedPaths},
     },
   };
-  crostiniBrowserProxy.sharedUsbDevices = opt_sharedUsbDevices || [];
+  crostiniBrowserProxy.sharedUsbDevices = sharedUsbDevices;
   Polymer.dom.flush();
 }
 
@@ -74,13 +76,13 @@ suite('CrostiniPageTests', function() {
           .then(() => {
             assertFalse(button.disabled);
             cr.webUIListenerCallback('crostini-installer-status-changed', true);
-            flushAsync();
+            return flushAsync();
           })
           .then(() => {
             assertTrue(button.disabled);
             cr.webUIListenerCallback(
                 'crostini-installer-status-changed', false);
-            flushAsync();
+            return flushAsync();
           })
           .then(() => {
             assertFalse(button.disabled);
@@ -286,20 +288,22 @@ suite('CrostiniPageTests', function() {
       /** @type {?SettingsCrostiniPortForwarding} */
       let subpage;
       setup(function() {
-        setCrostiniPrefs(true, {}, [], [
-          {
-            'port_number': 5000,
-            'protocol_type': 0,
-            'label': 'Label1',
-            'active': true
-          },
-          {
-            'port_number': 5001,
-            'protocol_type': 1,
-            'label': 'Label2',
-            'active': false
-          },
-        ]);
+        setCrostiniPrefs(true, {
+          forwardedPorts: [
+            {
+              port_number: 5000,
+              protocol_type: 0,
+              label: 'Label1',
+              active: true
+            },
+            {
+              port_number: 5001,
+              protocol_type: 1,
+              label: 'Label2',
+              active: false
+            },
+          ]
+        });
 
         return flushAsync()
             .then(() => {
@@ -410,13 +414,18 @@ suite('CrostiniPageTests', function() {
       // elements.
       assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
       cr.webUIListenerCallback('crostini-installer-status-changed', true);
-      return flushAsync().then(() => {
-        assertFalse(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
-        cr.webUIListenerCallback('crostini-installer-status-changed', false);
-        return flushAsync().then(() => {
-          assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
-        });
-      });
+      return flushAsync()
+          .then(() => {
+            assertFalse(
+                !!subpage.shadowRoot.querySelector('#remove').clientWidth);
+            cr.webUIListenerCallback(
+                'crostini-installer-status-changed', false);
+            return flushAsync();
+          })
+          .then(() => {
+            assertTrue(
+                !!subpage.shadowRoot.querySelector('#remove').clientWidth);
+          });
     });
 
     test('HideOnDisable', function() {
@@ -436,15 +445,18 @@ suite('CrostiniPageTests', function() {
     let subpage;
 
     setup(function() {
-      setCrostiniPrefs(true, {'path1': ['termina'], 'path2': ['termina']});
-      return flushAsync().then(() => {
-        settings.Router.getInstance().navigateTo(
-            settings.routes.CROSTINI_SHARED_PATHS);
-        return flushAsync().then(() => {
-          subpage = crostiniPage.$$('settings-crostini-shared-paths');
-          assertTrue(!!subpage);
-        });
-      });
+      setCrostiniPrefs(
+          true, {sharedPaths: {path1: ['termina'], path2: ['termina']}});
+      return flushAsync()
+          .then(() => {
+            settings.Router.getInstance().navigateTo(
+                settings.routes.CROSTINI_SHARED_PATHS);
+            return flushAsync();
+          })
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-shared-paths');
+            assertTrue(!!subpage);
+          });
     });
 
     test('Sanity', function() {
@@ -464,7 +476,7 @@ suite('CrostiniPageTests', function() {
           .then(([vmName, path]) => {
             assertEquals('termina', vmName);
             assertEquals('path1', path);
-            setCrostiniPrefs(true, {'path2': ['termina']});
+            setCrostiniPrefs(true, {sharedPaths: {path2: ['termina']}});
             return flushAsync();
           })
           .then(() => {
@@ -481,7 +493,7 @@ suite('CrostiniPageTests', function() {
           .then(([vmName, path]) => {
             assertEquals('termina', vmName);
             assertEquals('path2', path);
-            setCrostiniPrefs(true, {});
+            setCrostiniPrefs(true, {sharedPaths: {}});
             return flushAsync();
           })
           .then(() => {
@@ -523,11 +535,13 @@ suite('CrostiniPageTests', function() {
     let subpage;
 
     setup(function() {
-      setCrostiniPrefs(true, {}, [
-        {'shared': true, 'guid': '0001', 'name': 'usb_dev1'},
-        {'shared': false, 'guid': '0002', 'name': 'usb_dev2'},
-        {'shared': true, 'guid': '0003', 'name': 'usb_dev3'}
-      ]);
+      setCrostiniPrefs(true, {
+        sharedUsbDevices: [
+          {shared: true, guid: '0001', name: 'usb_dev1'},
+          {shared: false, guid: '0002', name: 'usb_dev2'},
+          {shared: true, guid: '0003', name: 'usb_dev3'}
+        ]
+      });
 
       return flushAsync()
           .then(() => {
@@ -560,7 +574,7 @@ suite('CrostiniPageTests', function() {
 
             // Simulate a change in the underlying model.
             cr.webUIListenerCallback('crostini-shared-usb-devices-changed', [
-              {'shared': true, 'guid': '0001', 'name': 'usb_dev1'},
+              {shared: true, guid: '0001', name: 'usb_dev1'},
             ]);
             Polymer.dom.flush();
             assertEquals(

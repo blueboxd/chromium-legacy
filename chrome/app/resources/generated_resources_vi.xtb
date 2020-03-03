@@ -869,7 +869,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2190069059097339078">Trình nhận thông tin đăng nhập WiFi</translation>
 <translation id="219008588003277019">Mô-đun Ứng dụng khách Gốc: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(trống)</translation>
-<translation id="2191223688506386601">Một điều cuối cùng</translation>
 <translation id="2191754378957563929">Đang bật</translation>
 <translation id="2192505247865591433">Từ:</translation>
 <translation id="2193365732679659387">Cài đặt tin cậy</translation>
@@ -2568,7 +2567,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4555769855065597957">Bóng</translation>
 <translation id="4555863373929230635">Để lưu mật khẩu vào Tài khoản Google của bạn, hãy đăng nhập và bật tính năng đồng bộ hóa.</translation>
 <translation id="4558426062282641716">Đã yêu cầu quyền tự động chạy</translation>
-<translation id="4558491878126948419">Nhận các mẹo dành cho <ph name="DEVICE_TYPE" />, thông tin cập nhật về các sản phẩm của Google và chia sẻ phản hồi. Bạn có thể hủy đăng ký bất kỳ lúc nào.</translation>
 <translation id="4559617833001311418">Trang web này đang sử dụng cảm biến chuyển động hoặc ánh sáng của thiết bị.</translation>
 <translation id="4561893854334016293">Bạn chưa thay đổi quyền nào gần đây</translation>
 <translation id="4562155214028662640">Thêm vân tay</translation>
@@ -2838,7 +2836,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" muốn kết nối với một cổng nối tiếp</translation>
 <translation id="4944310289250773232">Dịch vụ xác thực này do <ph name="SAML_DOMAIN" /> lưu trữ</translation>
 <translation id="495170559598752135">Tác vụ</translation>
-<translation id="4952981627953231344">Thiết bị này không cho phép sử dụng Plugin VM. Hãy liên hệ với quản trị viên thiết bị của tổ chức bạn.</translation>
 <translation id="4953808748584563296">Hình đại diện màu cam mặc định</translation>
 <translation id="4955710816792587366">Chọn mã PIN</translation>
 <translation id="4959262764292427323">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy, bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào</translation>
@@ -3021,6 +3018,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5233736638227740678">&amp;Dán</translation>
 <translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5235050375939235066">Gỡ cài đặt ứng dụng?</translation>
+<translation id="523505283826916779">Hỗ trợ tiếp cận</translation>
 <translation id="5235750401727657667">Thay thế trang bạn sẽ nhìn thấy khi mở tab mới</translation>
 <translation id="5238278114306905396">Ứng dụng "<ph name="EXTENSION_NAME" />" đã được tự động xóa.</translation>
 <translation id="5241128660650683457">Đọc tất cả dữ liệu của bạn trên các trang web bạn truy cập</translation>
@@ -3441,7 +3439,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="5805697420284793859">Trình quản lý cửa sổ</translation>
 <translation id="5806773519584576205">0° (Mặc định)</translation>
-<translation id="5811750797187914944">Đã hoàn tất</translation>
 <translation id="5812674658566766066">Mở rộng tất cả</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
 <translation id="5815645614496570556">Địa chỉ X.400</translation>
@@ -4062,7 +4059,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6680442031740878064">Còn trống: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Tốc độ</translation>
 <translation id="6681668084120808868">Chụp ảnh</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" sẽ được gỡ cài đặt.</translation>
 <translation id="668599234725812620">Mở Google Play</translation>
 <translation id="6686490380836145850">Đóng tab phía bên phải</translation>
 <translation id="6686817083349815241">Lưu mật khẩu của bạn</translation>
@@ -4644,7 +4640,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7493386493263658176">Tiện ích <ph name="EXTENSION_NAME" /> có thể thu thập tất cả nội dung bạn nhập, bao gồm dữ liệu cá nhân như mật khẩu và số thẻ tín dụng. Bạn có muốn sử dụng tiện ích này không?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Quên mật khẩu cũ của bạn?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> và dữ liệu liên kết với ứng dụng sẽ bị xóa khỏi thiết bị này.</translation>
 <translation id="7496732379142025470">Để tiết kiệm pin, “Ok Google” chỉ bật khi thiết bị của bạn kết nối với nguồn điện. Để thay đổi, hãy truy cập vào mục Cài đặt.</translation>
 <translation id="7497215489070763236">Chứng chỉ CA máy chủ</translation>
 <translation id="7497981768003291373">Bạn không ghi nhật ký văn bản WebRTC nào gần đây.</translation>

@@ -417,7 +417,9 @@ public class NavigationTest {
 
         int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
 
-        mActivityTestRule.navigateAndWait(url);
+        // navigateAndWait() expects a success code, so it won't work here.
+        runOnUiThreadBlocking(
+                () -> { activity.getTab().getNavigationController().navigate(Uri.parse(url)); });
 
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);

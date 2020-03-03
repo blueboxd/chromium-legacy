@@ -289,21 +289,42 @@ TEST(GURLTest, Resolve) {
     bool expected_valid;
     const char* expected;
   } resolve_cases[] = {
-    {"http://www.google.com/", "foo.html", true, "http://www.google.com/foo.html"},
-    {"http://www.google.com/foo/", "bar", true, "http://www.google.com/foo/bar"},
-    {"http://www.google.com/foo/", "/bar", true, "http://www.google.com/bar"},
-    {"http://www.google.com/foo", "bar", true, "http://www.google.com/bar"},
-    {"http://www.google.com/", "http://images.google.com/foo.html", true, "http://images.google.com/foo.html"},
-    {"http://www.google.com/", "http://images.\tgoogle.\ncom/\rfoo.html", true, "http://images.google.com/foo.html"},
-    {"http://www.google.com/blah/bloo?c#d", "../../../hello/./world.html?a#b", true, "http://www.google.com/hello/world.html?a#b"},
-    {"http://www.google.com/foo#bar", "#com", true, "http://www.google.com/foo#com"},
-    {"http://www.google.com/", "Https:images.google.com", true, "https://images.google.com/"},
+      {"http://www.google.com/", "foo.html", true,
+       "http://www.google.com/foo.html"},
+      {"http://www.google.com/foo/", "bar", true,
+       "http://www.google.com/foo/bar"},
+      {"http://www.google.com/foo/", "/bar", true, "http://www.google.com/bar"},
+      {"http://www.google.com/foo", "bar", true, "http://www.google.com/bar"},
+      {"http://www.google.com/", "http://images.google.com/foo.html", true,
+       "http://images.google.com/foo.html"},
+      {"http://www.google.com/", "http://images.\tgoogle.\ncom/\rfoo.html",
+       true, "http://images.google.com/foo.html"},
+      {"http://www.google.com/blah/bloo?c#d", "../../../hello/./world.html?a#b",
+       true, "http://www.google.com/hello/world.html?a#b"},
+      {"http://www.google.com/foo#bar", "#com", true,
+       "http://www.google.com/foo#com"},
+      {"http://www.google.com/", "Https:images.google.com", true,
+       "https://images.google.com/"},
       // A non-standard base can be replaced with a standard absolute URL.
-    {"data:blahblah", "http://google.com/", true, "http://google.com/"},
-    {"data:blahblah", "http:google.com", true, "http://google.com/"},
+      {"data:blahblah", "http://google.com/", true, "http://google.com/"},
+      {"data:blahblah", "http:google.com", true, "http://google.com/"},
       // Filesystem URLs have different paths to test.
-    {"filesystem:http://www.google.com/type/", "foo.html", true, "filesystem:http://www.google.com/type/foo.html"},
-    {"filesystem:http://www.google.com/type/", "../foo.html", true, "filesystem:http://www.google.com/type/foo.html"},
+      {"filesystem:http://www.google.com/type/", "foo.html", true,
+       "filesystem:http://www.google.com/type/foo.html"},
+      {"filesystem:http://www.google.com/type/", "../foo.html", true,
+       "filesystem:http://www.google.com/type/foo.html"},
+      // https://crbug.com/530123 - scheme validation (e.g. are "10.0.0.7:"
+      // or "x1:" valid schemes) when deciding if |relative| is an absolute url.
+      {"file:///some/dir/ip-relative.html", "10.0.0.7:8080/foo.html", true,
+       "file:///some/dir/10.0.0.7:8080/foo.html"},
+      {"file:///some/dir/", "1://host", true, "file:///some/dir/1://host"},
+      {"file:///some/dir/", "x1://host", true, "x1://host"},
+      {"file:///some/dir/", "X1://host", true, "x1://host"},
+      {"file:///some/dir/", "x.://host", true, "x.://host"},
+      {"file:///some/dir/", "x+://host", true, "x+://host"},
+      {"file:///some/dir/", "x-://host", true, "x-://host"},
+      {"file:///some/dir/", "x!://host", true, "file:///some/dir/x!://host"},
+      {"file:///some/dir/", "://host", true, "file:///some/dir/://host"},
   };
 
   for (size_t i = 0; i < base::size(resolve_cases); i++) {

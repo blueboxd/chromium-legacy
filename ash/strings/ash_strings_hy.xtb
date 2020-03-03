@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Մարտկոցի լիցքը սպառվում է</translation>
 <translation id="2135456203358955318">Ամրացված խոշորացույց</translation>
 <translation id="2144487987174258011">Վերագործարկեք Adobe Flash Player-ի թարմացումն ավարտելու համար</translation>
-<translation id="2148902151539191989">ՀԵՏ</translation>
 <translation id="2208323208084708176">Միասնական աշխատասեղանի ռեժիմ</translation>
 <translation id="2220572644011485463">PIN կոդը կամ գաղտնաբառը</translation>
 <translation id="2222338659135520253">Անհրաժեշտ է մուտք գործել</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> աշխատաշրջանը կառավարվում է <ph name="DOMAIN" /> տիրույթի կողմից</translation>
 <translation id="2427507373259914951">Ձախ սեղմում</translation>
 <translation id="2429753432712299108">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորման թույլտվություն է խնդրում: Նախքան ընդունելը հաստատեք, որ սարքի վրա ցուցադրվում է այս կոդը` <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
 <translation id="2473177541599297363">Լուծաչափի հաստատում</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2484513351006226581">Ստեղնաշարի դասավորությունը փոխելու համար սեղմեք <ph name="KEYBOARD_SHORTCUT" />։</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Ավտոմատ սեղմում</translation>
 <translation id="4215497585250573029">VPN կարգավորումներ</translation>
 <translation id="4217571870635786043">Ձայնային ներածում</translation>
-<translation id="421885205185866088">Խելացի քարտի PIN կոդ <ph name="USER_EMAIL_ADDRESS" /> հասցեի համար</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Ցուցադրել ծանուցումների կարգավորումները: Ծանուցումներն անջատած են:</translation>
 <translation id="4269883910223712419">Այս սարքի ադմինիստրատորը կարող է՝</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորվելու թույլտվություն է խնդրում:</translation>
 <translation id="453661520163887813">Լրիվ կլիցքավորվի <ph name="TIME" />-ից</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
 <translation id="4570957409596482333">«Ընտրեք և լսեք» կոճակ</translation>
 <translation id="4585337515783392668">Դադարեցնել հեռարձակումը անհայտ սարքին</translation>
 <translation id="4628757576491864469">Սարքեր</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Անկթարթային մուտքի կետ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Բոլոր առկա օգտատերերն արդեն հավելվել են այս աշխատաշրջանին:</translation>
+<translation id="54609108002486618">Կառավարվող</translation>
 <translation id="5465662442746197494">Օգնությո՞ւն է պետք:</translation>
 <translation id="5496819745535887422">Ձեր ադմինիստրատորը վերակայում է ձեր սարքը: Երբ սարքը վերագործարկվի, բոլոր տվյալները կջնջվեն:</translation>
 <translation id="5519195206574732858">LTE</translation>

@@ -571,8 +571,6 @@ void PropertyTreeManager::CreateCompositorScrollNode(
 
   compositor_node.transform_id = scroll_offset_translation.id;
 
-  // TODO(pdr): Set the scroll node's non_fast_scrolling_region value.
-
   scroll_node.SetCcNodeId(new_sequence_number_, id);
 
   GetScrollTree().SetScrollOffset(compositor_element_id,

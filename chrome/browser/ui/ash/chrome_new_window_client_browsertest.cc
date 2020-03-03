@@ -324,6 +324,10 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kSwitchAccessSubPage));
   TestOpenChromePage(ChromePage::TETHERSETTINGS,
                      base_url.Resolve(chrome::kTetherSettingsSubPage));
+  TestOpenChromePage(ChromePage::ETHERNET,
+                     base_url.Resolve(chrome::kEthernetSettingsSubPage));
+  TestOpenChromePage(ChromePage::CELLULAR,
+                     base_url.Resolve(chrome::kCellularSettingsSubPage));
 }
 
 void TestAllBrowserSettingPages(const GURL& base_url) {

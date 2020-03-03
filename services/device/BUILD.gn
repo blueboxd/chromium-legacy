@@ -130,6 +130,7 @@ source_set("tests") {
     "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "generic_sensor/platform_sensor_fusion_unittest.cc",
     "generic_sensor/platform_sensor_provider_unittest_android.cc",
+    "generic_sensor/platform_sensor_util_unittest.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_gyroscope_unittest.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_unittest.cc",
     "geolocation/geolocation_provider_impl_unittest.cc",

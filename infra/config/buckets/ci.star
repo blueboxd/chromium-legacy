@@ -1190,13 +1190,6 @@ ci.fyi_mac_builder(
 )
 
 ci.fyi_mac_builder(
-    name = 'Mac10.14 Tests',
-    cores = None,
-    os = os.MAC_10_14,
-    triggered_by = ['Mac Builder Next'],
-)
-
-ci.fyi_mac_builder(
     name = 'Mac deterministic',
     cores = None,
     executable = 'recipe:swarming/deterministic_build',

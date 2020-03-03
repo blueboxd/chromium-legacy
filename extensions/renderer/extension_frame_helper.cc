@@ -314,6 +314,16 @@ void ExtensionFrameHelper::ReadyToCommitNavigation(
   v8::Local<v8::Context> context =
       render_frame()->GetWebFrame()->MainWorldScriptContext();
   v8::Context::Scope context_scope(context);
+  // Normally we would use Document's URL for all kinds of checks, e.g. whether
+  // to inject a content script. However, when committing a navigation, we
+  // should use the URL of a Document being committed instead. This URL is
+  // accessible through WebDocumentLoader::GetURL().
+  // The scope below temporary maps a frame to a document loader, so that places
+  // which retrieve URL can use the right one. Ideally, we would plumb the
+  // correct URL (or maybe WebDocumentLoader) through the callchain, but there
+  // are many callers which will have to pass nullptr.
+  ScriptContext::ScopedFrameDocumentLoader scoped_document_loader(
+      render_frame()->GetWebFrame(), document_loader);
   extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),
                                                 context, kMainWorldId);
   // TODO(devlin): Add constants for main world id, no extension group.

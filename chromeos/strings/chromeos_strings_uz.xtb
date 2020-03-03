@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
 <translation id="1195447618553298278">Noma’lum xatolik.</translation>
+<translation id="1468664791493211953">Takliflar</translation>
 <translation id="1482734542997480527">Bu qurilma <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi va faoliyatingiz kuzatilishi mumkin.</translation>
 <translation id="150962533380566081">PUK kod xato.</translation>
 <translation id="1510238584712386396">Ishga tushirish paneli</translation>
@@ -42,6 +43,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7690294790491645610">Yangi parolni tasdiqlang.</translation>
 <translation id="808894953321890993">Parolni almashtirish</translation>
+<translation id="8208861521865154048">Imtiyozlar</translation>
 <translation id="8747900814994928677">Almashtiruvni tasdiqlang</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> uchun chiptani yangilash</translation>
 <translation id="9111102763498581341">Qulfdan yechish</translation>

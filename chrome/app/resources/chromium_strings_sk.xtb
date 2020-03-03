@@ -13,6 +13,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="151962892725702025">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="1524282610922162960">Zdieľajte kartu prehliadača Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Správca požaduje nové spustenie prehliadača Chromium, aby sa použila aktualizácia}=1{Správca požaduje nové spustenie prehliadača Chromium, aby sa použila aktualizácia. Vaše okno inkognito sa neotvorí.}few{Správca požaduje nové spustenie prehliadača Chromium, aby sa použila aktualizácia. Vaše # okná inkognito sa neotvoria.}many{Správca požaduje nové spustenie prehliadača Chromium, aby sa použila aktualizácia. Your # Incognito windows won't reopen.}other{Správca požaduje nové spustenie prehliadača Chromium, aby sa použila aktualizácia. Vašich # okien inkognito sa neotvorí.}}</translation>
+<translation id="1663739491876737434">Chromium nemôže skontrolovať heslá. Skúste to znova zajtra.</translation>
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
 <translation id="1774152462503052664">Povoliť prehliadaču Chromium spustenie na pozadí</translation>
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
@@ -63,6 +64,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="358997566136285270">Logo prehliadača Chromium</translation>
 <translation id="3639635944603682591">Dáta prehliadania tejto osoby sa odstránia z tohto zariadenia. Ak ich chcete obnoviť, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{K dispozícii je aktualizácia pre Chromium, ktorá bude použitá po najbližšom novom spustení.}=1{K dispozícii je aktualizácia pre Chromium, ktorá bude použitá po najbližšom novom spustení. Vaše okno inkognito sa neotvorí.}few{K dispozícii je aktualizácia pre Chromium, ktorá bude použitá po najbližšom novom spustení. Vaše # okná inkognito sa neotvoria.}many{K dispozícii je aktualizácia pre Chromium, ktorá bude použitá po najbližšom novom spustení. Your # Incognito windows won't reopen.}other{K dispozícii je aktualizácia pre Chromium, ktorá bude použitá po najbližšom novom spustení. Vašich # okien inkognito sa neotvorí.}}</translation>
+<translation id="3685209450716071127">Chromium nemôže skontrolovať heslá. Skontrolujte internetové pripojenie.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Správca vás žiada o nové spustenie prehliadača Chromium, aby sa použila táto aktualizácia}=1{Správca vás žiada o nové spustenie prehliadača Chromium, aby sa použila táto aktualizácia. Vaše okno inkognito sa neotvorí.}few{Správca vás žiada o nové spustenie prehliadača Chromium, aby sa použila táto aktualizácia. Vaše # okná inkognito sa neotvoria.}many{Správca vás žiada o nové spustenie prehliadača Chromium, aby sa použila táto aktualizácia. Your # Incognito windows won't reopen.}other{Správca vás žiada o nové spustenie prehliadača Chromium, aby sa použila táto aktualizácia. Vašich # okien inkognito sa neotvorí.}}</translation>
 <translation id="3713809861844741608">Otvoriť odkaz na novej &amp;karte prehliadača Chromium</translation>
 <translation id="3728336900324680424">Chromium bude mať prístup na váš Disk, aby mohol v paneli s adresou zobrazovať návrhy</translation>
@@ -94,7 +96,9 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4943838377383847465">Chromium je v režime na pozadí.</translation>
 <translation id="4987820182225656817">Hostia môžu používať prehliadač Chromium bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
 <translation id="4994636714258228724">Pridajte si účet do prehliadača Chromium</translation>
+<translation id="5093066630040073147">Žiadne uložené heslá. Chromium môže skontrolovať heslá, keď ich uložíte do účtu Google.</translation>
 <translation id="5277894862589591112">Ak chcete zmeny použiť, spustite Chromium znova</translation>
+<translation id="5310059007469274549">Chromium nemôže kontrolovať heslá, pretože je ich príliš veľa</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Aktualizuje sa Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Povoliť prihlásenie do prehliadača Chromium</translation>
@@ -104,12 +108,14 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="5480860683791598150">Chromium potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
+<translation id="5488573303232097702">Chromium sa neaktualizoval. Vyskytol sa problém. Vyriešte problémy so sťahovaním aktualizácií Chromu a neúspešnými aktualizáciami.</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Je k dispozícii aktualizácia prehliadača Chromium}=1{Je k dispozícii aktualizácia prehliadača Chromium}few{Aktualizácia prehliadača Chromium je k dispozícii už # dni}many{Aktualizácia prehliadača Chromium je k dispozícii už # dňa}other{Aktualizácia prehliadača Chromium je k dispozícii už # dní}}</translation>
 <translation id="5631814766731275228">Meno a obrázok profilu Chromium</translation>
 <translation id="5634636535844844681">Chromium vyžaduje Windows 7 alebo vyšší.</translation>
 <translation id="5653831366781983928">Reštartujte Chromium</translation>
 <translation id="5698481217667032250">Zobraziť Chromium v tomto jazyku</translation>
+<translation id="5814748786105822016">Chromium nemôže skontrolovať heslá</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Vitajte v prehliadači Chromium</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
@@ -125,6 +131,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6212496753309875659">Tento počítač už obsahuje novšiu verziu prehliadača Chromium. Ak softvér nefunguje, odinštalujte prehliadač Chromium a skúste to znova.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium sa teraz reštartuje}=1{Chromium sa reštartuje o 1 sekundu}few{Chromium sa reštartuje o # sekundy}many{Chromium sa reštartuje o # sekundy}other{Chromium sa reštartuje o # sekúnd}}</translation>
 <translation id="6248213926982192922">Nastavte Chromium ako svoj predvolený prehliadač</translation>
+<translation id="6266342355635466082">Chromium nemôže skontrolovať dostupnosť aktualizácií. Skontrolujte internetové pripojenie.</translation>
 <translation id="6268381023930128611">Odhlásiť sa z prehliadača Chromium?</translation>
 <translation id="6295779123002464101">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="6309712487085796862">Chromium používa vašu kameru.</translation>
@@ -199,12 +206,14 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium znova spustite do jedného dňa}few{Chromium znova spustite do # dní}many{Chromium znova spustite do # dňa}other{Chromium znova spustite do # dní}}</translation>
 <translation id="8453117565092476964">Archív inštalácie je poškodený alebo neplatný. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="8493179195440786826">Prehliadač Chromium je zastaraný</translation>
+<translation id="8568283329061645092">Keď sa prihlásite pomocou účtu Google, Chromium môže skontrolovať vaše heslá</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autori Chromium. Všetky práva vyhradené.</translation>
 <translation id="8619360774459241877">Spúšťa sa Chromium…</translation>
 <translation id="8621669128220841554">Inštalácia zlyhala kvôli neznámej chybe. Skúste prehliadač Chromium stiahnuť znova.</translation>
 <translation id="8682540261359803721">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia prehliadača Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chromium alebo pri vyhľadávaní pomocou všeobecného poľa.</translation>
 <translation id="8704119203788522458">Toto je váš prehliadač Chromium</translation>
+<translation id="8774315820480073720">Aktualizácie prehliadača Chromium riadi váš správca</translation>
 <translation id="8796602469536043152">Chromium potrebuje povolenie pre tento web na prístup k fotoaparátu a mikrofónu</translation>
 <translation id="8803635938069941624">Zmluvné podmienky systému OS Chromium</translation>
 <translation id="8821041990367117597">Prehliadaču Chromium sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>

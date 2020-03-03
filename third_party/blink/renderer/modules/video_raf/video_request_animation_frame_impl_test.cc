@@ -58,13 +58,12 @@ class MockFunction : public ScriptFunction {
 class MetadataHelper {
  public:
   static VideoFramePresentationMetadata* GetDefaultMedatada() {
-    InitializeFields();
+    DCHECK(initialized);
     return &metadata_;
   }
 
   static std::unique_ptr<VideoFramePresentationMetadata> CopyDefaultMedatada() {
-    InitializeFields();
-
+    DCHECK(initialized);
     auto copy = std::make_unique<VideoFramePresentationMetadata>();
 
     copy->presented_frames = metadata_.presented_frames;
@@ -78,8 +77,7 @@ class MetadataHelper {
     return copy;
   }
 
- private:
-  static void InitializeFields() {
+  static void InitializeFields(base::TimeTicks now) {
     if (initialized)
       return;
 
@@ -87,7 +85,6 @@ class MetadataHelper {
     // tell whether or not the implementation clamped their values. Therefore,
     // we manually set the values for a deterministic test, and make sure we
     // have sub-microsecond resolution for those values.
-    base::TimeTicks now = base::TimeTicks::Now();
 
     metadata_.presented_frames = 42;
     metadata_.presentation_time =
@@ -111,6 +108,7 @@ class MetadataHelper {
     initialized = true;
   }
 
+ private:
   static bool initialized;
   static VideoFramePresentationMetadata metadata_;
 };
@@ -344,6 +342,7 @@ TEST_F(VideoRequestAnimationFrameImplTest,
 
 TEST_F(VideoRequestAnimationFrameImplTest, VerifyParameters) {
   auto timing = GetDocument().Loader()->GetTiming();
+  MetadataHelper::InitializeFields(timing.ReferenceMonotonicTime());
 
   auto* callback =
       MakeGarbageCollected<VideoRafParameterVerifierCallback>(timing);

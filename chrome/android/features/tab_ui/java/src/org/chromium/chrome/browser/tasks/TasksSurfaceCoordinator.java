@@ -28,11 +28,11 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final TabSwitcher mTabSwitcher;
     private final TasksView mView;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
-    private final MostVisitedListCoordinator mMostVisitedList;
     private final TasksSurfaceMediator mMediator;
+    private MostVisitedListCoordinator mMostVisitedList;
 
     public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel, boolean hasMVTiles) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mView.initialize(activity.getLifecycleDispatcher());
         mPropertyModelChangeProcessor =
@@ -57,14 +57,17 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         mMediator = new TasksSurfaceMediator(propertyModel, fakeboxDelegate,
                 incognitoLearnMoreClickListener, incognitoCookieControlsManager, isTabCarousel);
 
-        LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
-        mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);
+        if (hasMVTiles) {
+            LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
+            mMostVisitedList =
+                    new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);
+        }
     }
 
     /** TasksSurface implementation. */
     @Override
     public void initialize() {
-        mMostVisitedList.initialize();
+        if (mMostVisitedList != null) mMostVisitedList.initialize();
         mMediator.initialize();
     }
 

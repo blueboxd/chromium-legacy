@@ -1735,7 +1735,7 @@ gfx::Rect AppsGridView::GetTargetIconRectInFolder(
   const gfx::Rect icon_ideal_bounds =
       folder_item_view->GetIconBoundsForTargetViewBounds(
           GetAppListConfig(), view_ideal_bounds,
-          folder_item_view->GetIconImage().size());
+          folder_item_view->GetIconImage().size(), /*icon_scale=*/1.0f);
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(folder_item_view->item());
   return folder_item->GetTargetIconRectInFolderForItem(

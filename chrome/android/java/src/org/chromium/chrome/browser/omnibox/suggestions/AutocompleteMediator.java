@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionPr
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.clipboard.ClipboardSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
@@ -195,6 +196,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 new EditUrlSuggestionProcessor(mContext, host, mDelegate, iconBridgeSupplier);
         registerSuggestionProcessor(new AnswerSuggestionProcessor(
                 mContext, host, mUrlBarEditingTextProvider, imageFetcherSupplier));
+        registerSuggestionProcessor(
+                new ClipboardSuggestionProcessor(mContext, host, iconBridgeSupplier));
         registerSuggestionProcessor(
                 new EntitySuggestionProcessor(mContext, host, imageFetcherSupplier));
         registerSuggestionProcessor(new TailSuggestionProcessor(mContext, host));

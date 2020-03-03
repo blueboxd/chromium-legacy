@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="2135456203358955318">ذره‌بین متصل</translation>
 <translation id="2144487987174258011">‏برای به‌روزرسانی Adobe Flash Player، راه‌اندازی مجدد کنید</translation>
-<translation id="2148902151539191989">برگشت</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
 <translation id="2220572644011485463">پین یا گذرواژه</translation>
 <translation id="2222338659135520253">ورود به سیستم لازم است</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> جلسه مدیریت‌شده‌ای است که توسط <ph name="DOMAIN" /> مدیریت می‌شود</translation>
 <translation id="2427507373259914951">کلیک چپ</translation>
 <translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلیدواژه در آن دستگاه نشان داده می‌شود: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">نمایش گذرواژه</translation>
 <translation id="2473177541599297363">تأیید وضوح</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2484513351006226581">برای تغییر طرح‌بندی صفحه‌کلید، <ph name="KEYBOARD_SHORTCUT" /> را فشار دهید.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">دکمه کلیک خودکار</translation>
 <translation id="4215497585250573029">‏تنظیمات VPN</translation>
 <translation id="4217571870635786043">املا</translation>
-<translation id="421885205185866088">پین کارت هوشمند برای <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
 <translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> مانده تا کامل شود</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="4570957409596482333">دکمه «انتخاب برای شنیدن»</translation>
 <translation id="4585337515783392668">توقف ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="4628757576491864469">دستگاه‌ها</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">اشتراک‌گذاری اینترنت فوری</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
+<translation id="54609108002486618">مدیریت شده</translation>
 <translation id="5465662442746197494">به راهنمایی نیاز دارید؟</translation>
 <translation id="5496819745535887422">سرپرست درحال عقب‌گرد کردن دستگاهتان است. همه داده‌ها بعد از بازراه‌اندازی دستگاه پاک می‌شود.</translation>
 <translation id="5519195206574732858">LTE</translation>

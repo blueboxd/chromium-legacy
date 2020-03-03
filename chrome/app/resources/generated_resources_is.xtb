@@ -869,7 +869,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2190069059097339078">Niðurhal Wi-Fi skilríkja</translation>
 <translation id="219008588003277019">Eining sérforritaðs biðlara: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(autt)</translation>
-<translation id="2191223688506386601">Eitt að lokum</translation>
 <translation id="2191754378957563929">Kveikt</translation>
 <translation id="2192505247865591433">Frá:</translation>
 <translation id="2193365732679659387">Trauststillingar</translation>
@@ -2568,7 +2567,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4555769855065597957">Móri</translation>
 <translation id="4555863373929230635">Skráðu þig inn og kveiktu á samstillingu til að vista aðgangsorð á Google reikningnum þínum.</translation>
 <translation id="4558426062282641716">Beðið um heimild til sjálfvirkrar ræsingar</translation>
-<translation id="4558491878126948419">Fáðu ábendingar varðandi <ph name="DEVICE_TYPE" />, upplýsingar um vörur frá Google og sendu okkur ábendingar. Þú getur hætt áskrift hvenær sem er.</translation>
 <translation id="4559617833001311418">Þetta vefsvæði er að nota hreyfi- eða birtuskynjarana þína.</translation>
 <translation id="4561893854334016293">Engum heimildum hefur verið breytt nýlega</translation>
 <translation id="4562155214028662640">Bæta fingrafari við</translation>
@@ -2838,7 +2836,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />“ vill tengjast við raðtengi</translation>
 <translation id="4944310289250773232">Þessi auðkenningarþjónusta er hýst af <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Aðgerðir</translation>
-<translation id="4952981627953231344">Plugin VM er ekki leyfilegt í þessu tæki. Hafðu samband við tækjastjóra fyrirtækisins.</translation>
 <translation id="4953808748584563296">Sjálfgefin appelsínugul notandamynd</translation>
 <translation id="4955710816792587366">Veldu þér PIN-númer</translation>
 <translation id="4959262764292427323">Aðgangsorð eru vistuð á Google reikningnum þínum til að þú getir notað þau í hvaða tæki sem er</translation>
@@ -3021,6 +3018,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5233736638227740678">Líma</translation>
 <translation id="5234764350956374838">Hunsa</translation>
 <translation id="5235050375939235066">Á að fjarlægja forrit?</translation>
+<translation id="523505283826916779">Aðgengisstillingar</translation>
 <translation id="5235750401727657667">Skipta út síðunni sem þú sérð þegar nýr flipi er opnaður</translation>
 <translation id="5238278114306905396">Forritið „<ph name="EXTENSION_NAME" />“ var sjálfkrafa fjarlægt.</translation>
 <translation id="5241128660650683457">Lesa öll gögnin þín á vefsvæðum sem þú heimsækir</translation>
@@ -3441,7 +3439,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5804241973901381774">Heimildir</translation>
 <translation id="5805697420284793859">Gluggastjórnun</translation>
 <translation id="5806773519584576205">0° (sjálfgefið)</translation>
-<translation id="5811750797187914944">Allt til reiðu</translation>
 <translation id="5812674658566766066">Stækka allt</translation>
 <translation id="5814126672212206791">Gerð tengingar</translation>
 <translation id="5815645614496570556">X.400-vistfang</translation>
@@ -4062,7 +4059,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6680442031740878064">Laust: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hraði</translation>
 <translation id="6681668084120808868">Taka mynd</translation>
-<translation id="6681964764822470072">„<ph name="APP_NAME" />“ verður fjarlægt.</translation>
 <translation id="668599234725812620">Opna Google Play</translation>
 <translation id="6686490380836145850">Loka flipum hægra megin</translation>
 <translation id="6686817083349815241">Vista aðgangsorðið</translation>
@@ -4644,7 +4640,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7493386493263658176">Viðbótin <ph name="EXTENSION_NAME" /> má safna öllum texta sem þú slærð inn, þar á meðal persónugögnum á borð við aðgangsorð og greiðslukortanúmer. Viltu nota þessa viðbót?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Gleymdirðu gamla aðgangsorðinu þínu?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> og gögn sem því tengjast verða fjarlægð úr þessu tæki.</translation>
 <translation id="7496732379142025470">Til að spara rafhlöðuna er aðeins kveikt á „Ok Google“ þegar tækið þitt er tengt við aflgjafa. Þú getur breytt þessu í stillingunum.</translation>
 <translation id="7497215489070763236">CA-vottorð þjóns</translation>
 <translation id="7497981768003291373">Þú ert ekki með neina nýlega WebRTC-textaannála.</translation>
@@ -5152,7 +5147,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8158117992543756526">Þetta tæki hætti að fá sjálfvirkar hugbúnaðar- og öryggisuppfærslur <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="816055135686411707">Villa við að stilla traust vottorðs</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
-<translation id="8161293209665121583">Lestarstilling vefsíðna</translation>
+<translation id="8161293209665121583">Lestrarstilling vefsíðna</translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{Færa flipa í nýjan glugga}one{Færa flipa í nýjan glugga}other{Færa flipa í nýjan glugga}}</translation>
 <translation id="8168435359814927499">Efni</translation>
 <translation id="8174047975335711832">Upplýsingar um tæki</translation>

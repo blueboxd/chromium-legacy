@@ -25,7 +25,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   bool IsOffscreen() override;
   void* GetHandle() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;

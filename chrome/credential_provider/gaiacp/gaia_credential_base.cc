@@ -179,9 +179,18 @@ HRESULT GetExistingAccountMappingFromCD(
     return hr;
   }
 
-  *sam_account_name = SearchForKeyInStringDictUTF8(
-      cd_user_response_json_string,
-      {kKeyCustomSchemas, kKeyEnhancedDesktopSecurity, kKeyADAccounts});
+  std::vector<std::string> sam_account_names;
+  hr = SearchForListInStringDictUTF8(
+      "value", cd_user_response_json_string,
+      {kKeyCustomSchemas, kKeyEnhancedDesktopSecurity, kKeyADAccounts},
+      &sam_account_names);
+
+  // Note: We only consider the first sam_account_name right now.
+  // We will expand this to consider all account names listed in the
+  // multi-value and perform username resolution in the future.
+  if (sam_account_names.size() > 0) {
+    *sam_account_name = sam_account_names.at(0);
+  }
 
   hr = SearchForListInStringDictUTF8(
       "value", cd_user_response_json_string,

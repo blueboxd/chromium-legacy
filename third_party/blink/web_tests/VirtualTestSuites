@@ -340,13 +340,6 @@
     "args": ["--autoplay-policy=document-user-activation-required"]
   },
   {
-    "prefix": "sxg-with-network-service",
-    "bases": ["external/wpt/signed-exchange",
-              "http/tests/devtools/sxg",
-              "http/tests/loading/sxg"],
-    "args": ["--enable-features=NetworkService"]
-  },
-  {
     "prefix": "sxg-subresource",
     "bases": ["external/wpt/signed-exchange"],
     "args": ["--enable-features=SignedExchangeSubresourcePrefetch"]

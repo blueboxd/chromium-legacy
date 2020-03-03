@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="2135456203358955318">Lupa acoblada</translation>
 <translation id="2144487987174258011">Reinicia per actualitzar Adobe Flash Player</translation>
-<translation id="2148902151539191989">ENRERE</translation>
 <translation id="2208323208084708176">Mode d'escriptori unificat</translation>
 <translation id="2220572644011485463">PIN o contrasenya</translation>
 <translation id="2222338659135520253">Cal iniciar la sessió</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> és una sessió gestionada per <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Fes clic amb el botó esquerre</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY" />.</translation>
+<translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="2473177541599297363">Confirma la resolució</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2484513351006226581">Prem <ph name="KEYBOARD_SHORTCUT" /> per canviar el disseny del teclat.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Botó Clics automàtics</translation>
 <translation id="4215497585250573029">Configuració de VPN</translation>
 <translation id="4217571870635786043">Dictat</translation>
-<translation id="421885205185866088">PIN de la targeta intel·ligent per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
 <translation id="4269883910223712419">L'administrador d'aquest dispositiu pot dur a terme les accions següents:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> per completar la càrrega</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Oculta la contrasenya</translation>
 <translation id="4570957409596482333">Botó Escolta la selecció</translation>
 <translation id="4585337515783392668">Deixa d'emetre en un receptor desconegut</translation>
 <translation id="4628757576491864469">Dispositius</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Compartició de xarxa instantània</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
+<translation id="54609108002486618">Gestionat</translation>
 <translation id="5465662442746197494">Necessiteu ajuda?</translation>
 <translation id="5496819745535887422">L'administrador està canviant la versió del dispositiu a una d'anterior. Quan es reiniciï el dispositiu, se'n suprimiran totes les dades.</translation>
 <translation id="5519195206574732858">LTE</translation>

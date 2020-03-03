@@ -149,7 +149,7 @@
 <translation id="1195558154361252544">Известувањата се автоматски блокирани за сите сајтови, освен за оние за коишто сте ги дозволиле</translation>
 <translation id="1197088940767939838">Портокалова</translation>
 <translation id="1197979282329025000">Настана грешка при вчитување способности на печатач за печатачот <ph name="PRINTER_NAME" />. Овој печатач не може да се регистрира кај <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="119944043368869598">Исчисти ги сите</translation>
+<translation id="119944043368869598">Избриши ги сите</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1202596434010270079">Апликацијата на Киоск е ажурирана. Отстранете ја USB-меморијата.</translation>
 <translation id="120368089816228251">Музичка нота</translation>
@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Модул на матичен клиент: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(празно)</translation>
-<translation id="2191223688506386601">Уште едно нешто</translation>
 <translation id="2191754378957563929">Вклучен</translation>
 <translation id="2192505247865591433">Од:</translation>
 <translation id="2193365732679659387">Поставки на довербата</translation>
@@ -2414,7 +2413,7 @@
 <translation id="4330387663455830245">Никогаш не преведувај <ph name="LANGUAGE" /></translation>
 <translation id="4332976768901252016">Поставете родителски контроли</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 со RSA енкрипција</translation>
-<translation id="4336434711095810371">Исчисти ги сите податоци</translation>
+<translation id="4336434711095810371">Избриши ги сите податоци</translation>
 <translation id="4336979451636460645">За дневници на мрежата, погледнете: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> сака да комуницира со апликацијата „<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4345587454538109430">Конфигурирај…</translation>
@@ -2568,7 +2567,6 @@
 <translation id="4555769855065597957">Сенка</translation>
 <translation id="4555863373929230635">За да се зачувуваат лозинки во сметката на Google, најавете се и вклучете синхронизација.</translation>
 <translation id="4558426062282641716">Потребна е дозвола за автоматско стартување</translation>
-<translation id="4558491878126948419">Добивајте совети за <ph name="DEVICE_TYPE" />, новости за производи на Google и споделувајте повратни информации. Отпишете се во секое време.</translation>
 <translation id="4559617833001311418">Сајтов пристапува до сензорите за движење или светлина.</translation>
 <translation id="4561893854334016293">Нема неодамна променети дозволи</translation>
 <translation id="4562155214028662640">Додај отпечаток</translation>
@@ -2838,7 +2836,6 @@
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />“ сака да се поврзе со сериска порта</translation>
 <translation id="4944310289250773232">Оваа услуга за автентикација е хостирана од <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Дејства</translation>
-<translation id="4952981627953231344">Plugin VM не е дозволен на уредов. Контактирајте со администраторот на уредот во вашата организација.</translation>
 <translation id="4953808748584563296">Стандарден портокалов аватар</translation>
 <translation id="4955710816792587366">Изберете PIN</translation>
 <translation id="4959262764292427323">Лозинките се зачувуваат во вашата сметка на Google за да може да ги користите на кој било уред</translation>
@@ -3021,6 +3018,7 @@
 <translation id="5233736638227740678">&amp;Залепи</translation>
 <translation id="5234764350956374838">Отфрли</translation>
 <translation id="5235050375939235066">Дали да се деинсталира апликацијата?</translation>
+<translation id="523505283826916779">Поставки за пристапност</translation>
 <translation id="5235750401727657667">Заменете ја страницата што ја гледате при отворање нова картичка</translation>
 <translation id="5238278114306905396">Апликацијата „<ph name="EXTENSION_NAME" />“ е автоматски отстранета.</translation>
 <translation id="5241128660650683457">Читајте ги сите ваши податоци на веб-локациите што ги посетувате</translation>
@@ -3441,7 +3439,6 @@
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5805697420284793859">Управник со прозорци</translation>
 <translation id="5806773519584576205">0° (стандардно)</translation>
-<translation id="5811750797187914944">Готово</translation>
 <translation id="5812674658566766066">Прошири ги сите</translation>
 <translation id="5814126672212206791">Тип врска</translation>
 <translation id="5815645614496570556">X.400 адреса</translation>
@@ -4062,7 +4059,6 @@
 <translation id="6680442031740878064">Слободен простор: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Брзина</translation>
 <translation id="6681668084120808868">Фотографирај</translation>
-<translation id="6681964764822470072">„<ph name="APP_NAME" />“ ќе се деинсталира.</translation>
 <translation id="668599234725812620">Отвори Google Play</translation>
 <translation id="6686490380836145850">Затвори картички на десно</translation>
 <translation id="6686817083349815241">Зачувајте ја лозинката</translation>
@@ -4644,7 +4640,6 @@
 <translation id="7493386493263658176">Екстензијата <ph name="EXTENSION_NAME" /> ќе може да го собира текстот што го пишувате, вклучувајќи ги личните податоци, како лозинки и броеви на кредитни картички. Дали сакате да ја користите?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Ја заборавивте вашата стара лозинка?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> и податоците поврзани со неа ќе бидат отстранети од уредов.</translation>
 <translation id="7496732379142025470">Заради заштеда на батеријата, „Ok Google“ е вклучен само кога уредот е поврзан на извор на напојување. За да извршите промени, одете во „Поставки“.</translation>
 <translation id="7497215489070763236">Сертификат ЦА на сервер</translation>
 <translation id="7497981768003291373">Немате неодамна снимена текстуална евиденција на WebRTC.</translation>
@@ -5943,7 +5938,7 @@
 <translation id="939598580284253335">Внеси пристапна фраза</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> споделува картичка на Chrome и аудио.</translation>
-<translation id="945522503751344254">Испрати повратни информации</translation>
+<translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="947329552760389097">&amp;Проверете ги елементите</translation>
 <translation id="952992212772159698">Не е активиран</translation>
 <translation id="957960681186851048">Сајтов се обиде автоматски да преземе повеќе датотеки</translation>

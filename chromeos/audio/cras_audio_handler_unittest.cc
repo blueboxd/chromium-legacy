@@ -44,6 +44,10 @@ class FakeMediaControllerManager
     return remote;
   }
 
+  void CreateActiveMediaController(
+      mojo::PendingReceiver<media_session::mojom::MediaController> receiver)
+      override {}
+
   MOCK_METHOD0(SuspendAllSessions, void());
 
  private:

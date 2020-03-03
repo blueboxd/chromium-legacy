@@ -127,6 +127,7 @@ jumbo_component("gfx") {
     "shadow_value.h",
     "skbitmap_operations.cc",
     "skbitmap_operations.h",
+    "surface_origin.h",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
     "text_constants.h",

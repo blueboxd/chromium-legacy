@@ -151,7 +151,9 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
     return true;
   }
 
-  bool FlipsVertically() const override { return true; }
+  gfx::SurfaceOrigin GetOrigin() const override {
+    return gfx::SurfaceOrigin::kTopLeft;
+  }
 
   void SwapComplete() {
     DCHECK(!callbacks_.empty());

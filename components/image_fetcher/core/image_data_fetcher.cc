@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
+#include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -16,6 +18,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -103,6 +106,21 @@ void ImageDataFetcher::FetchImageData(
     net::URLRequest::ReferrerPolicy referrer_policy,
     bool send_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Handle data urls explicitly since SimpleURLLoader doesn't.
+  if (image_url.SchemeIs(url::kDataScheme)) {
+    std::string mime_type, charset, data;
+    if (!net::DataURL::Parse(image_url, &mime_type, &charset, &data)) {
+      DVLOG(0) << "Failed to parse data url";
+    }
+
+    // Post a task to maintain our guarantee that the call won't be called
+    // synchronously.
+    base::PostTask(FROM_HERE, BindOnce(std::move(callback), std::move(data),
+                                       RequestMetadata()));
+    return;
+  }
+
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = image_url;
   request->referrer_policy = referrer_policy;

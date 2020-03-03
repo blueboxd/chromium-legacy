@@ -161,7 +161,7 @@ bool ClearNV12Padding(const VAImage& image,
                       const gfx::Size& visible_size,
                       uint8_t* data) {
   DCHECK_EQ(2u, image.num_planes);
-  DCHECK_EQ(image.format.fourcc, VA_FOURCC_NV12);
+  DCHECK_EQ(image.format.fourcc, static_cast<uint32_t>(VA_FOURCC_NV12));
 
   size_t visible_width_bytes[2] = {};
   if (!GetNV12VisibleWidthBytes(visible_size.width(), 0u,

@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Jūsų nuostatų negalima nuskaityti.
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
+<translation id="1098170124587656448">„Chromium“ gali padėti apsisaugoti nuo duomenų saugos pažeidimų, blogų plėtinių ir daugiau</translation>
 <translation id="1104942323762546749">„Chromium“ nori eksportuoti jūsų slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="113122355610423240">„Chromium“ yra numatytoji naršyklė</translation>
 <translation id="1185134272377778587">Apie „Chromium“</translation>
@@ -69,6 +70,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
 <translation id="388648406173476553">Tinkinkite ir valdykite „Chromium“. Reikia atkreipti dėmesį – spustelėkite ir peržiūrėkite išsamią informaciją.</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
+<translation id="3945058413678539331">„Chromium“ bando kopijuoti slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="4036079820698952681">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie <ph name="BEGIN_LINK" />dabartinius nustatymus<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="421369550622382712">Atraskite puikių „Chromium“ programų, žaidimų, plėtinių ir temų.</translation>
@@ -191,6 +193,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8013436988911883588">Kai „Chromium“ galės pasiekti duomenis, svetainės taip pat galės prašyti suteikti leidimą juos pasiekti.</translation>
 <translation id="81770708095080097">Šis failas pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="8248265253516264921">Jei nebus naudingo vaizdo aprašo, „Chromium“ bandys jums jį pateikti. Kad būtų galima kurti aprašus, vaizdai siunčiami į sistemą „Google“. Šią parinktį galite bet kada išjungti skiltyje „Nustatymai“.</translation>
+<translation id="8276522524898344151">„Chromium“ bando kopijuoti slaptažodžius.</translation>
 <translation id="8290862415967981663">Šis failas gali būti pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="8330519371938183845">Prisijunkite, kad galėtumėte sinchronizuoti ir suasmeninti „Chromium“ skirtinguose įrenginiuose</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> anksčiau naudojo „Chromium“</translation>

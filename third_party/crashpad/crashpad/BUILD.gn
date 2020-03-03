@@ -20,19 +20,6 @@ config("crashpad_config") {
   include_dirs = [ "." ]
 }
 
-# TODO(fuchsia:46805): Remove this once instances of UB have been cleaned up.
-config("disable_ubsan") {
-  if (crashpad_is_in_fuchsia) {
-    cflags = [ "-fno-sanitize=undefined" ]
-  }
-  visibility = [
-    "snapshot:snapshot",
-    "minidump:minidump_test",
-    "third_party/gtest:gtest",
-    "util:util",
-  ]
-}
-
 if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
   test("crashpad_tests") {
     deps = [
@@ -47,10 +34,6 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
         "snapshot:snapshot_test",
         "util:util_test",
       ]
-    }
-    if (crashpad_is_in_fuchsia) {
-      # TODO(fuchsia:46559): Fix the leaks and remove this.
-      deps += [ "//build/config/sanitizers:suppress-lsan.DO-NOT-USE-THIS" ]
     }
   }
 

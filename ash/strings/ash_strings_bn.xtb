@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2135456203358955318">ডক করা ম্যাগনিফায়ার</translation>
 <translation id="2144487987174258011">Adobe ফ্ল্যাশ প্লেয়ার আপডেট করার জন্য বন্ধ করে আবার চালু করুন</translation>
-<translation id="2148902151539191989">ফিরুন</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
 <translation id="2220572644011485463">PIN বা পাসওয়ার্ড</translation>
 <translation id="2222338659135520253">সাইন-ইন করা প্রয়োজন</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DOMAIN" /> দ্বারা পরিচালিত <ph name="DISPLAY_NAME" /> একটি পরিচালিত সেশন</translation>
 <translation id="2427507373259914951">বাঁদিকের বোতামে ক্লিক করুন</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, এই পাস কীটি ডিভাইসে প্রদর্শিত হয়েছে কিনা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
 <translation id="2473177541599297363">রেজোলিউশন কনফার্ম করুন</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2484513351006226581">কীবোর্ড লে-আউট পরিবর্তন করতে <ph name="KEYBOARD_SHORTCUT" /> টিপুন।</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">অটোমেটিক ক্লিক বোতাম</translation>
 <translation id="4215497585250573029">ভিপিএন সেটিংস</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" />-এর স্মার্ট কার্ড পিন</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি বন্ধ আছে</translation>
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">পাসওয়ার্ড লুকান</translation>
 <translation id="4570957409596482333">বাছুন ও শুনুন বোতাম</translation>
 <translation id="4585337515783392668">অজানা ডিভাইসে কাস্ট করা বন্ধ করুন</translation>
 <translation id="4628757576491864469">ডিভাইস</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">ঝটপট টিথারিং</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
+<translation id="54609108002486618">পরিচালিত</translation>
 <translation id="5465662442746197494">সাহায্য চান?</translation>
 <translation id="5496819745535887422">আপনার অ্যাডমিনিস্ট্রেটর আপনার ডিভাইসটি রোল ব্যাক করেছেন। ডিভাইসটি রিস্টার্টের সময় সমস্ত ডেটা মুছে ফেলা হবে।</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -482,6 +483,7 @@
 <translation id="7405710164030118432">ডিভাইসটি আনলক করতে আপনার Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন</translation>
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
+<translation id="7466449121337984263">সেন্সরটি স্পর্শ করুন</translation>
 <translation id="7497767806359279797">ভাষা এবং কীবোর্ড বেছে নিন</translation>
 <translation id="7526573455193969409">নেটওয়ার্কের উপরে নজর রাখা হতে পারে</translation>
 <translation id="7536035074519304529">আইপি অ্যাড্রেস: <ph name="ADDRESS" /></translation>

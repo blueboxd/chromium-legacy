@@ -866,7 +866,6 @@
 <translation id="2190069059097339078">‏گیرنده اعتبارنامه‌های WiFi</translation>
 <translation id="219008588003277019">‏ماژول Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(خالی)</translation>
-<translation id="2191223688506386601">آخرین نکته</translation>
 <translation id="2191754378957563929">روشن</translation>
 <translation id="2192505247865591433">از:</translation>
 <translation id="2193365732679659387">تنظیمات اطمینان</translation>
@@ -2565,7 +2564,6 @@
 <translation id="4555769855065597957">سایه</translation>
 <translation id="4555863373929230635">‏برای ذخیره گذرواژه در «حساب Google»، به سیستم وارد شوید و همگام‌سازی را روشن کنید.</translation>
 <translation id="4558426062282641716">مجوز راه‌اندازی خودکار لازم است</translation>
-<translation id="4558491878126948419">‏نکته‌ها و به‌روزرسانی‌های <ph name="DEVICE_TYPE" /> درباره محصولات Google دریافت کنید و بازخوردتان را هم‌رسانی کنید. هر زمان خواستید اشتراک را لغو کنید.</translation>
 <translation id="4559617833001311418">این سایت به حسگرهای نور یا حرکت دستگاهتان دسترسی دارد.</translation>
 <translation id="4561893854334016293">هیچ اجازه‌ای را اخیراً تغییر نداده‌اید</translation>
 <translation id="4562155214028662640">افزودن اثر انگشت</translation>
@@ -2835,7 +2833,6 @@
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» می‌خواهد به یک درگاه سریالی متصل شود</translation>
 <translation id="4944310289250773232">این خدمات احراز هویت توسط <ph name="SAML_DOMAIN" /> میزبانی می‌شود</translation>
 <translation id="495170559598752135">کنش‌ها</translation>
-<translation id="4952981627953231344">‏Plugin VM در این دستگاه مجاز نیست. با سرپرست دستگاه سازمانتان تماس بگیرید.</translation>
 <translation id="4953808748584563296">چهره‌نمای پیش‌فرض نارنجی</translation>
 <translation id="4955710816792587366">پین خودتان را انتخاب کنید</translation>
 <translation id="4959262764292427323">‏گذرواژه‌ها در حساب Google شما ذخیره می‌شود تا بتوانید در همه دستگاه‌هایتان از آن‌ها استفاده کنید</translation>
@@ -3018,6 +3015,7 @@
 <translation id="5233736638227740678">&amp;جای‌گذاری</translation>
 <translation id="5234764350956374838">لغو کردن</translation>
 <translation id="5235050375939235066">برنامه حذف نصب شود؟</translation>
+<translation id="523505283826916779">تنظیمات دسترس‌پذیری</translation>
 <translation id="5235750401727657667">جایگزین کردن صفحه‌ای که هنگام باز کردن برگه جدید می‌بینید</translation>
 <translation id="5238278114306905396">برنامه «<ph name="EXTENSION_NAME" />» به‌طور خودکار حذف شد.</translation>
 <translation id="5241128660650683457">خواندن همه داده‌هایتان در وب‌سایت‌هایی که بازدید می‌کنید</translation>
@@ -3438,7 +3436,6 @@
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5805697420284793859">مدیر پنجره</translation>
 <translation id="5806773519584576205">۰ درجه (پیش‌فرض)</translation>
-<translation id="5811750797187914944">همه چیز آماده است</translation>
 <translation id="5812674658566766066">بزرگ کردن همه</translation>
 <translation id="5814126672212206791">نوع اتصال</translation>
 <translation id="5815645614496570556">‏آدرس X.400</translation>
@@ -4059,7 +4056,6 @@
 <translation id="6680442031740878064">در دسترس: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">رتبه‌بندی</translation>
 <translation id="6681668084120808868">عکسبرداری</translation>
-<translation id="6681964764822470072">«<ph name="APP_NAME" />» حذف نصب می‌شود.</translation>
 <translation id="668599234725812620">‏باز کردن Google Play</translation>
 <translation id="6686490380836145850">بستن برگه‌ها به چپ</translation>
 <translation id="6686817083349815241">ذخیره گذرواژه‌تان</translation>
@@ -4641,7 +4637,6 @@
 <translation id="7493386493263658176">ممکن است افزونه <ph name="EXTENSION_NAME" /> همه نوشتاری را که تایپ می‌کنید (از جمله داده‌های شخصی مانند گذرواژه‌ها و شماره کارت‌های اعتباری) جمع‌آوری کند. می‌خواهید از این افزونه استفاده کنید؟</translation>
 <translation id="7494694779888133066">‏<ph name="WIDTH" /> ‏x‏ <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">گذرواژه قدیمی‌تان را فراموش کردید؟</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> و داده‌های مرتبط با آن از این دستگاه برداشته می‌شود.</translation>
 <translation id="7496732379142025470">‏برای صرفه‌جویی در مصرف باتری، «Ok Google» فقط زمانی روشن است که دستگاهتان به برق متصل باشد. برای انجام تغییرات به «تنظیمات» بروید.</translation>
 <translation id="7497215489070763236">گواهینامه مرکز صدور گواهی سرور</translation>
 <translation id="7497981768003291373">‏هیچ گزارش نوشتاری WebRTC که اخیراً ثبت شده باشد ندارید.</translation>

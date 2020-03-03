@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Бага эрчим хүчээр цэнэглэгч</translation>
 <translation id="2135456203358955318">Суурилуулсан томруулагч</translation>
 <translation id="2144487987174258011">Adobe Flash Player-г шинэчлэхийн тулд дахин эхлүүлнэ үү</translation>
-<translation id="2148902151539191989">БУЦАХ</translation>
 <translation id="2208323208084708176">Компьютерийн нэгдмэл горим</translation>
 <translation id="2220572644011485463">ПИН, эсвэл нууц үг</translation>
 <translation id="2222338659135520253">Нэвтрэх шаардлагатай</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> нь <ph name="DOMAIN" />-н удирдаж буй хяналттай харилцан үйлдэл юм</translation>
 <translation id="2427507373259914951">Зүүн талыг товших</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth төхөөрөмж нь холбогдох зөвшөөрөл хүсч байна. Хүлээж авахаасаа өмнө <ph name="PASSKEY" /> дамжуулах түлхүүр үг нь энэ төхөөрөмж дээр гарч ирсэн байгаа эсэхийг шалгана уу.</translation>
+<translation id="2435457462613246316">Нууц үг харуулах</translation>
 <translation id="2473177541599297363">Нягтралыг баталгаажуулах</translation>
 <translation id="2482878487686419369">Мэдэгдэл</translation>
 <translation id="2484513351006226581">Гарын бүдүүвчийг солихын тулд <ph name="KEYBOARD_SHORTCUT" />-г дарна уу.</translation>
@@ -256,7 +256,6 @@
 <translation id="4195877955194704651">Автомат даралтын товчлуур</translation>
 <translation id="4215497585250573029">VPN тохиргоо</translation>
 <translation id="4217571870635786043">Заавар</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" />-н ухаалаг картын ПИН</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Мэдэгдлийн тохиргоог харуулна уу. Мэдэгдлийг унтраасан байна</translation>
 <translation id="4269883910223712419">Энэ төхөөрөмжийн админ дараах зүйлсийг хийх боломжтой:</translation>
@@ -286,6 +285,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth төхөөрөмж хослох зөвшөөрөл хүсч байна.</translation>
 <translation id="453661520163887813">Дүүртэл <ph name="TIME" /> үлдсэн</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4570957409596482333">Ярихаар сонгох товчлуур</translation>
 <translation id="4585337515783392668">Үл мэдэгдэх хүлээн авагч руу дамжуулахаа зогсоох</translation>
 <translation id="4628757576491864469">Төхөөрөмжүүд</translation>
@@ -337,6 +337,7 @@
 <translation id="5430931332414098647">Шуурхай модем болгох</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Бүх боломжтой хэрэглэгчдийг энэ хуралдаанд оруулсан байна.</translation>
+<translation id="54609108002486618">Удирдсан</translation>
 <translation id="5465662442746197494">Танд тусламж хэрэгтэй байна уу?</translation>
 <translation id="5496819745535887422">Tаны админ төхөөрөмжийг тань буцаан шилжүүлж байна. Төхөөрөмжийг дахин эхлүүлсний дараа бүх өгөгдөл устсан байх болно.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -482,6 +483,7 @@
 <translation id="7405710164030118432">Энэ төхөөрөмжийн түгжээг тайлахын тулд Family Link-н эцэг эхийн нэвтрэх кодоо оруулна уу</translation>
 <translation id="742594950370306541">Камерыг ашиглаж байна.</translation>
 <translation id="743058460480092004">Камер болон микрофоныг ашиглаж байна.</translation>
+<translation id="7466449121337984263">Мэдрэгчид хүрнэ үү</translation>
 <translation id="7497767806359279797">Хэл болон гарыг сонгох</translation>
 <translation id="7526573455193969409">Сүлжээг хянаж байж болзошгүй</translation>
 <translation id="7536035074519304529">IP хаяг: <ph name="ADDRESS" /></translation>

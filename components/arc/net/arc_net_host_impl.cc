@@ -36,10 +36,10 @@
 namespace {
 
 constexpr int kGetNetworksListLimit = 100;
-// Millisecond delay before asking for a network property update when no IP
+// Delay in millisecond before asking for a network property update when no IP
 // configuration can be retrieved for a network.
 constexpr base::TimeDelta kNetworkPropertyUpdateDelay =
-    base::TimeDelta::FromMilliseconds(3000);
+    base::TimeDelta::FromMilliseconds(5000);
 
 chromeos::NetworkStateHandler* GetStateHandler() {
   return chromeos::NetworkHandler::Get()->network_state_handler();
@@ -52,10 +52,6 @@ chromeos::ManagedNetworkConfigurationHandler* GetManagedConfigurationHandler() {
 
 chromeos::NetworkConnectionHandler* GetNetworkConnectionHandler() {
   return chromeos::NetworkHandler::Get()->network_connection_handler();
-}
-
-void RequestUpdateForNetwork(const std::string& service_path) {
-  GetStateHandler()->RequestUpdateForNetwork(service_path);
 }
 
 bool IsDeviceOwner() {
@@ -367,18 +363,6 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
     mojo->connection_state =
         TranslateConnectionState(network_state->connection_state());
     AddDeviceProperties(mojo.get(), network_state->device_path());
-  }
-
-  if (mojo->ip_configs->empty()) {
-    LOG(WARNING) << "No IP configuration for " << network_state->path();
-    // A newly connected network may not immediately have any usable IP config
-    // object if IPv4 dhcp or IPv6 autoconf have not completed yet. Schedule
-    // with a few seconds delay a forced property update for that service to
-    // ensure the IP configuration is sent to ARC.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&RequestUpdateForNetwork, network_state->path()),
-        kNetworkPropertyUpdateDelay);
   }
 
   return mojo;
@@ -1119,7 +1103,40 @@ void ArcNetHostImpl::ActiveNetworksChanged(
 
   std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations =
       TranslateNetworkStates(arc_vpn_service_path_, active_networks);
+
+  // A newly connected network may not immediately have any usable IP config
+  // object if IPv4 dhcp or IPv6 autoconf have not completed yet. Schedule
+  // with a few seconds delay a forced property update for that service to
+  // ensure the IP configuration is sent to ARC. Ensure that at most one such
+  // request is scheduled for a given service.
+  for (const auto& network : network_configurations) {
+    if (!network->ip_configs->empty())
+      continue;
+
+    if (!network->service_name)
+      continue;
+
+    const std::string& path = network->service_name.value();
+    if (pending_service_property_requests_.insert(path).second) {
+      LOG(WARNING) << "No IP configuration for " << path;
+      // TODO(hugobenichi): add exponential backoff for the case when IP
+      // configuration stays unavailable.
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&ArcNetHostImpl::RequestUpdateForNetwork,
+                         weak_factory_.GetWeakPtr(), path),
+          kNetworkPropertyUpdateDelay);
+    }
+  }
+
   net_instance->ActiveNetworksChanged(std::move(network_configurations));
+}
+
+void ArcNetHostImpl::RequestUpdateForNetwork(const std::string& service_path) {
+  // TODO(hugobenichi): skip the request if the IP configuration for this
+  // service has been received since then and ARC has been notified about it.
+  pending_service_property_requests_.erase(service_path);
+  GetStateHandler()->RequestUpdateForNetwork(service_path);
 }
 
 void ArcNetHostImpl::NetworkListChanged() {

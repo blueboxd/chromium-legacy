@@ -5189,9 +5189,7 @@ crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.
 
 # Prefetching Signed Exchange DevTools tests are flaky.
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
-crbug.com/851363 virtual/sxg-with-network-service/http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
-crbug.com/851363 virtual/sxg-with-network-service/http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]

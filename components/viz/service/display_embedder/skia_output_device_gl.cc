@@ -44,9 +44,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
       gl_surface_(std::move(gl_surface)) {
   // Only BufferQueue should support async swap.
   DCHECK(!gl_surface_->SupportsAsyncSwap());
-  capabilities_.output_surface_origin = gl_surface_->FlipsVertically()
-                                            ? SurfaceOrigin::kTopLeft
-                                            : SurfaceOrigin::kBottomLeft;
+  capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces) {
@@ -137,8 +135,9 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
 
   GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
                                       framebuffer_info);
-  auto origin = gl_surface_->FlipsVertically() ? kTopLeft_GrSurfaceOrigin
-                                               : kBottomLeft_GrSurfaceOrigin;
+  auto origin = (gl_surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft)
+                    ? kTopLeft_GrSurfaceOrigin
+                    : kBottomLeft_GrSurfaceOrigin;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_state_->gr_context(), render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);

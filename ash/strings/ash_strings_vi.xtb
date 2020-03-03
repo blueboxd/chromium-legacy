@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2135456203358955318">Phóng to ở vị trí cố định</translation>
 <translation id="2144487987174258011">Khởi động lại để cập nhật Adobe Flash Player</translation>
-<translation id="2148902151539191989">QUAY LẠI</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
 <translation id="2220572644011485463">Mã PIN hoặc mật khẩu</translation>
 <translation id="2222338659135520253">Cần đăng nhập</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> là một phiên được <ph name="DOMAIN" /> quản lý</translation>
 <translation id="2427507373259914951">Nhấp chuột trái</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2473177541599297363">Xác nhận độ phân giải</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="2484513351006226581">Hãy nhấn <ph name="KEYBOARD_SHORTCUT" /> để chuyển bố cục bàn phím.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Nút Lượt nhấp tự động</translation>
 <translation id="4215497585250573029">Cài đặt mạng riêng ảo (VPN)</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
-<translation id="421885205185866088">Mã PIN của thẻ thông minh cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
 <translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"muốn được phép ghép nối.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> cho đến khi đầy</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Ẩn mật khẩu</translation>
 <translation id="4570957409596482333">Nút Chọn để nói</translation>
 <translation id="4585337515783392668">Dừng truyền trên bộ thu không xác định</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Chia sẻ kết nối tức thì</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
+<translation id="54609108002486618">Được quản lý</translation>
 <translation id="5465662442746197494">Bạn cần trợ giúp?</translation>
 <translation id="5496819745535887422">Quản trị viên đang hạ cấp hệ điều hành của thiết bị của bạn. Tất cả dữ liệu sẽ bị xóa khi thiết bị khởi động lại.</translation>
 <translation id="5519195206574732858">LTE</translation>

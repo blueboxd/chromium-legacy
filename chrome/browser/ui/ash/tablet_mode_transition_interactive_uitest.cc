@@ -61,7 +61,8 @@ class TabletModeTransitionTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabletModeTransitionTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
+// TODO(http://crbug.com/1057864): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, DISABLED_EnterExit) {
   // Activate the first window. The top window is the only window which animates
   // and is the one we should check to see if the tablet animation has finished.
   Browser* browser = BrowserList::GetInstance()->GetLastActive();

@@ -104,6 +104,7 @@
 <translation id="4293420128516039005">আপনার সব ডিভাইস জুড়ে Chrome সিঙ্ক করতে এবং নিজের মতো সাজিয়ে নিতে সাইন-ইন করুন</translation>
 <translation id="4328355335528187361">Google Chrome ডেভেলপার (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">ডেটার নিরাপত্তা লঙ্ঘন, এক্সটেনশন এবং আরও অনেক কিছুর থেকে Chrome আপনাকে সুরক্ষিত রাখতে সাহায্য করে</translation>
 <translation id="4343195214584226067">Chrome-এ <ph name="EXTENSION_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Google Chrome এ আরেকটি ক্রিয়াকলাপ প্রক্রিয়ায় আছে। দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -199,12 +200,14 @@
 <translation id="7777080907402804672">যদি ছবিতে প্রয়োজনীয় বিবরণ দেওয়া না থাকে, তাহলে Chrome আপনাকে একটি বিবরণ দেওয়ার চেষ্টা করবে। বিবরণ তৈরির জন্য, Google-এ ছবি পাঠানো হয়। সেটিংসে গিয়ে আপনি যেকোনও সময়ে এটি বন্ধ করতে পারেন।</translation>
 <translation id="7781002470561365167">Google Chrome-এর একটি নতুন ভার্সন উপলভ্য।</translation>
 <translation id="7787950393032327779">অন্য একটি কম্পিউটারে (<ph name="HOST_NAME" />) প্রোফাইলটি অন্য Google Chrome প্রক্রিয়া (<ph name="PROCESS_ID" />) দ্বারা ব্যবহৃত হচ্ছে বলে মনে হচ্ছে৷ Chrome প্রোফাইলটিকে লক করেছে যাতে এটি বিকৃত না হয়ে যায়৷ যদি আপনি নিশ্চিত হন যে আর কোনো প্রক্রিয়া এই প্রোফাইলটিকে ব্যবহার করছে না, তবে আপনি প্রোফাইলটিকে আনলক করতে পারেন এবং Chrome কে পুনরায় লঞ্চ করতে পারেন৷</translation>
+<translation id="7801699035218095297">Google Chrome পাসওয়ার্ড কপি করার চেষ্টা করছে। এর অনুমতি দিতে আপনার Windows পাসওয়ার্ড টাইপ করুন।</translation>
 <translation id="7808348361785373670">Chrome থেকে সরান...</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টল করা যায়নি৷ অনুগ্রহ করে আবার Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="7855730255114109580">Google Chrome আপ টু ডেট আছে</translation>
 <translation id="7890208801193284374">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chrome-এর সেটআপ করতে পারবেন৷</translation>
 <translation id="7896673875602241923">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST" /> হিসাবে Chrome-এ সাইন-ইন করেছেন। আপনার তথ্য আলাদা রাখার জন্য অনুগ্রহ করে একটি নতুন Chrome ব্যবহারকারী তৈরি করুন।</translation>
 <translation id="7916016681687251387">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি। এখনই ঠিক করুন।</translation>
+<translation id="7930071585467473040">Google Chrome পাসওয়ার্ড কপি করার চেষ্টা করছে।</translation>
 <translation id="7962410387636238736">Windows XP ও Windows Vista আর সমর্থিত না হওয়ার জন্য এই কম্পিউটারে আর Google Chrome আপডেট পাবে না</translation>
 <translation id="8008534537613507642">Chrome আবার ইন্সটল করুন</translation>
 <translation id="8013993649590906847">যদি ছবিতে প্রয়োজনীয় বিবরণ দেওয়া না থাকে, তাহলে Chrome আপনাকে একটি বিবরণ দেওয়ার চেষ্টা করবে। বিবরণ তৈরির জন্য, Google-এ ছবি পাঠানো হয়।</translation>

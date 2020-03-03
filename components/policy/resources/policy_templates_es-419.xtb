@@ -2308,7 +2308,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4322842393287974810">Permitir que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de instalaciones de apps de Android</translation>
-<translation id="4343382787226139147">Especifica los certificados de cliente que deben inscribirse con el protocolo de administración de dispositivos.</translation>
+<translation id="4343382787226139147">Especifica los Certificados de cliente que deben inscribirse con el protocolo de administración de dispositivos.</translation>
 <translation id="4346674324214534449">Te permite establecer si se bloquearán los anuncios en sitios con anuncios intrusivos.
 
       Si se establece esta política como 2, se bloquearán los anuncios en sitios con anuncios intrusivos.
@@ -3530,7 +3530,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6310223829319187614">Habilitar la opción de autocompletar el nombre de dominio durante el accceso del usuario</translation>
 <translation id="631081324835911099">Fuerza el cierre de sesión del usuario cuando el token de autenticación de la cuenta principal deja de ser válido.
         Esta política puede proteger al usuario del acceso a contenido restringido en propiedades web de Google.
-        Si se establece esta política como verdadera, el usuario saldrá de su cuenta cuando el token de autenticación deje de ser válido, y fallarán los intentos para restablecer este token.
+        Si se establece esta política como verdadera, se cerrará la sesión del usuario cuando el token de autenticación deje de ser válido y fallen los intentos para restablecerlo.
         Si se establece como falsa o no se establece, el usuario podrá seguir trabajando sin estar autenticado.</translation>
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
@@ -4492,7 +4492,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
-<translation id="7951605113561734721">Especifica los certificados de cliente en todo el dispositivo que deben inscribirse con el protocolo de administración de dispositivos.</translation>
+<translation id="7951605113561734721">Especifica los Certificados de cliente de todo el dispositivo que deben inscribirse con el protocolo de administración de dispositivos.</translation>
 <translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y evita que los usuarios las cambien.
 
       Las opciones de configuración de la página principal del usuario solo estarán completamente bloqueadas si se selecciona la página principal como la página Nueva pestaña o si se establece como una dirección URL y se especifica la dirección URL de la página principal. Si no se establece la dirección URL de la página principal, el usuario aún podrá configurar la página principal como la página Nueva pestaña al especificar la opción "chrome://newtab".

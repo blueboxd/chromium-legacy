@@ -24,6 +24,7 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+class WebDocumentLoader;
 class WebLocalFrame;
 }
 
@@ -175,6 +176,21 @@ class ScriptContext {
   // alias that is available.
   bool IsAnyFeatureAvailableToContext(const extensions::Feature& api,
                                       CheckAliasStatus check_alias);
+
+  // Scope which maps a frame to a document loader. This is used by various
+  // static methods below, which need to account for "just about to load"
+  // document when retrieving URL.
+  class ScopedFrameDocumentLoader {
+   public:
+    ScopedFrameDocumentLoader(blink::WebLocalFrame* frame,
+                              blink::WebDocumentLoader* document_loader);
+    ~ScopedFrameDocumentLoader();
+
+   private:
+    blink::WebLocalFrame* frame_;
+    blink::WebDocumentLoader* document_loader_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedFrameDocumentLoader);
+  };
 
   // Utility to get the URL we will match against for a frame. If the frame has
   // committed, this is the commited URL. Otherwise it is the provisional URL.

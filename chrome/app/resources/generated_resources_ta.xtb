@@ -863,7 +863,6 @@
 <translation id="2190069059097339078">வைஃபை கிரெடென்ஷியல் கெட்டர்</translation>
 <translation id="219008588003277019">நேட்டிவ் கிளையன்ட் மாடியூல்: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(காலி)</translation>
-<translation id="2191223688506386601">இறுதியாக ஒரு விஷயம்</translation>
 <translation id="2191754378957563929">இயக்கப்பட்டுள்ளது</translation>
 <translation id="2192505247865591433">அனுப்புநர்:</translation>
 <translation id="2193365732679659387">நம்பிக்கை தொடர்பான அமைப்புகள்</translation>
@@ -2546,7 +2545,6 @@
 <translation id="4555769855065597957">நிழல்</translation>
 <translation id="4555863373929230635">கடவுச்சொற்களை உங்கள் Google கணக்கில் சேமிக்க உள்நுழைந்து ஒத்திசைவை இயக்கவும்.</translation>
 <translation id="4558426062282641716">தானியங்கு துவக்கத்திற்கான அனுமதி கோரப்பட்டது</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> உதவிக்குறிப்புகள் மற்றும் Google தயாரிப்புகள் தொடர்பான அறிவிப்புகளைப் பெறலாம், கருத்தைப் பகிரலாம். எந்த நேரத்திலும் குழுவிலகலாம்.</translation>
 <translation id="4559617833001311418">நகர்வு அல்லது ஒளி சென்சார்களை இந்தத் தளம் பயன்படுத்துகிறது.</translation>
 <translation id="4562155214028662640">கைரேகையைச் சேர்</translation>
 <translation id="4562494484721939086">சேவை இல்லை</translation>
@@ -2808,7 +2806,6 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ஒரு சீரியல் போர்ட்டுடன் இணைக்க விரும்புகிறது</translation>
 <translation id="4944310289250773232"><ph name="SAML_DOMAIN" /> நிறுவனத்தின் மூலம் அடையாளச் சேவை ஹோஸ்ட் செய்யப்படுகிறது</translation>
 <translation id="495170559598752135">செயல்கள்</translation>
-<translation id="4952981627953231344">இந்தச் சாதனத்தில் Plugin VM அனுமதிக்கப்படவில்லை. உங்கள் நிறுவனத்தின் சாதன நிர்வாகியைத் தொடர்புகொள்ளவும்.</translation>
 <translation id="4953808748584563296">இயல்பு ஆரஞ்சுநிற அவதார்</translation>
 <translation id="4955710816792587366">பின்னைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="4959262764292427323">கடவுச்சொற்களை வேறு சாதனங்களிலும் பயன்படுத்துவதற்காக, அவை உங்கள் Google கணக்கில் சேமிக்கப்பட்டுள்ளன</translation>
@@ -2989,6 +2986,7 @@
 <translation id="5233736638227740678">&amp;ஒட்டு</translation>
 <translation id="5234764350956374838">நிராகரி</translation>
 <translation id="5235050375939235066">ஆப்ஸை நிறுவல் நீக்கவா?</translation>
+<translation id="523505283826916779">அணுகல்தன்மை அமைப்புகள்</translation>
 <translation id="5235750401727657667">புதிய தாவலைத் திறக்கும் போது காண்பிக்கப்படும் பக்கத்தை மாற்று</translation>
 <translation id="5238278114306905396">ஆப்ஸின் "<ph name="EXTENSION_NAME" />" ஆனது தானாக அகற்றப்பட்டது.</translation>
 <translation id="5241128660650683457">நீங்கள் செல்லும் இணையதளங்களில் உள்ள உங்கள் தரவு அனைத்தையும் படிக்கவும்</translation>
@@ -3404,7 +3402,6 @@
 <translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5805697420284793859">சாளர நிர்வாகி</translation>
 <translation id="5806773519584576205">0° (இயல்புநிலை)</translation>
-<translation id="5811750797187914944">முடிந்தது</translation>
 <translation id="5812674658566766066">அனைத்தையும் விரிவாக்கு</translation>
 <translation id="5814126672212206791">இணைப்பு வகை</translation>
 <translation id="5815645614496570556">X.400 முகவரி</translation>
@@ -4011,7 +4008,6 @@
 <translation id="6680442031740878064">இருக்கும் இடம்: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">மதிப்பிடு</translation>
 <translation id="6681668084120808868">புகைப்படம் எடு</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" நிறுவல் நீக்கப்படும்.</translation>
 <translation id="668599234725812620">Google Playஐத் திற</translation>
 <translation id="6686490380836145850">வலப்பக்கத்தில் உள்ள தாவல்களை மூடுக</translation>
 <translation id="6686817083349815241">உங்கள் கடவுச்சொல்லைச் சேமிக்கவும்</translation>
@@ -4589,7 +4585,6 @@
 <translation id="7493386493263658176">கடவுச்சொற்கள், கிரெடிட் கார்டு எண்கள் போன்ற தனிப்பட்ட தரவு உட்பட, நீங்கள் உள்ளிடும் எல்லா உரையையும் <ph name="EXTENSION_NAME" /> நீட்டிப்பு சேகரிக்கக்கூடும். இந்த நீட்டிப்பைப் பயன்படுத்த விரும்புகிறீர்களா?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">பழைய கடவுச்சொல் மறந்துவிட்டதா?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> மற்றும் அதனுடன் தொடர்புடைய தரவு இந்தச் சாதனத்திலிருந்து அகற்றப்படும்.</translation>
 <translation id="7496732379142025470">பேட்டரியைச் சேமிக்க, சாதனம் சார்ஜ் செய்யப்படும்போது மட்டுமே “Ok Google” அம்சம் கிடைக்கும். மாற்றங்களைச் செய்ய ‘அமைப்புகளுக்குச்’ செல்லவும்.</translation>
 <translation id="7497215489070763236">சேவையக CA சான்றிதழ்</translation>
 <translation id="7497981768003291373">சமீபத்தில் எடுக்கப்பட்ட WebRTC உரைப் பதிவுகள் எதுவும் இல்லை.</translation>

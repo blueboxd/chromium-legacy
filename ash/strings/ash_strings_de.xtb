@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Schwaches Ladegerät</translation>
 <translation id="2135456203358955318">Angedockte Lupe</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
-<translation id="2148902151539191989">ZURÜCK</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
 <translation id="2220572644011485463">PIN oder Passwort</translation>
 <translation id="2222338659135520253">Anmeldung erforderlich</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
 <translation id="2427507373259914951">Linksklick</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
+<translation id="2435457462613246316">Passwort anzeigen</translation>
 <translation id="2473177541599297363">Auflösung bestätigen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2484513351006226581">Drücken Sie <ph name="KEYBOARD_SHORTCUT" />, um das Tastaturlayout zu ändern.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Schaltfläche für automatische Klicks</translation>
 <translation id="4215497585250573029">VPN-Einstellungen</translation>
 <translation id="4217571870635786043">Spracheingabe</translation>
-<translation id="421885205185866088">Smartcard-PIN für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind deaktiviert.</translation>
 <translation id="4269883910223712419">Der Administrator dieses Geräts kann Folgendes tun:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Voll geladen in <ph name="TIME" /> h</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4570957409596482333">Vorlese-Schaltfläche</translation>
 <translation id="4585337515783392668">Streaming an unbekannten Empfänger beenden</translation>
 <translation id="4628757576491864469">Geräte</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle verfügbaren Nutzer wurden bereits zur Sitzung hinzugefügt.</translation>
+<translation id="54609108002486618">Verwaltet</translation>
 <translation id="5465662442746197494">Brauchen Sie Hilfe?</translation>
 <translation id="5496819745535887422">Ihr Administrator setzt das Gerät zurück. Beim Neustart des Geräts werden alle Daten gelöscht.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">Wenn Sie das Gerät entsperren möchten, geben Sie Ihren Eltern-Zugangscode für Family Link ein</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
+<translation id="7466449121337984263">Berühren Sie den Sensor</translation>
 <translation id="7497767806359279797">Sprache und Tastatur auswählen</translation>
 <translation id="7526573455193969409">Das Netzwerk wird möglicherweise überwacht</translation>
 <translation id="7536035074519304529">IP-Adresse: <ph name="ADDRESS" /></translation>

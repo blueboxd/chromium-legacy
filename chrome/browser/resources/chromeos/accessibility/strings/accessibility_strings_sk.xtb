@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1206619573307042055">pohyblivý prvok</translation>
 <translation id="1207086294218137981">Žiadny ďalší nadpis štvrtej úrovne</translation>
+<translation id="1212770441379271564">Nasledujúce skratky nie sú príkazy čítačky ChromeVox, ale sú stále veľmi užitočné a pomôžu vám naplno využívať Chrome.
+    Ak chcete prechádzať dopredu medzi klikateľnými položkami, ako sú tlačidlá a odkazy, stláčajte kláves Tab. Ak chcete prechádzať dozadu, stláčajte klávesy Shift + Tab.
+    Ak chcete aktivovať panel s adresou prehliadača Chrome (nazývaný tiež všeobecné pole), stlačte klávesy Control + L.
+    Ak chcete otvoriť novú kartu a automaticky na ňu prejsť, stlačte klávesy Ctrl + T. Kurzor sa presunie do omniboxu.
+    Ak chcete zavrieť kartu, stlačte kombináciu klávesov Ctrl + W.
+    Ak chcete prechádzať dopredu medzi otvorenými kartami, stlačte kombináciu klávesov Ctrl + Tab.
+    Ak chcete otvoriť Ponuku prehliadača Chromw, stlačte kombináciu klávesov Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – hlas prehliadača Chrome</translation>
 <translation id="1225969361094801578">Tmavobridlicovosivá</translation>
 <translation id="1229276918471378188">Predchádzajúci skok</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">výber farieb</translation>
 <translation id="4221012616705981690">Žiadny predchádzajúci zoznam</translation>
 <translation id="4221071177874897997">Označiť tučne:</translation>
+<translation id="4225355998815256469">Ovládacie prvky formulára</translation>
 <translation id="4229646983878045487">dátum a čas</translation>
 <translation id="4230834257931120629">Svetlobridlicovosivá</translation>
 <translation id="4231102694147661229">Povoliť funkciu Pre vývojárov</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Veta</translation>
 <translation id="4623097797855662355">Kolofón</translation>
 <translation id="463135993322337640">Ak chcete získať ďalšie informácie o novinkách, stlačte tlačidlá ChromeVox + O + N</translation>
+<translation id="4646606380313237501">{"ar": "arabčina",
+    "as": "asámčina",
+    "aw": "awadhčina",
+    "be": "bengálčina",
+    "bg": "bulharčina",
+    "bh": "bihárčina",
+    "bo": "tibetčina",
+    "br": "bradžčina",
+    "ca": "katalánčina",
+    "ckb": "sorání",
+    "cs": "čeština",
+    "cy": "waleština",
+    "da": "dánčina",
+    "de": "nemčina",
+    "de_CH": "nemčina (švajčiarska)",
+    "de_DE": "nemčina (nemecká)",
+    "dra": "drávidčina",
+    "el": "gréčtina",
+    "en": "angličtina",
+    "en_CA": "angličtina (kanadská)",
+    "en_GB": "angličtina (britská)",
+    "en_US": "angličtina (americká)",
+    "eo": "esperanto",
+    "es": "španielčina",
+    "et": "estónčina",
+    "fa": "perzština",
+    "fr": "francúzština",
+    "fr_CA": "francúzština (kanadská)",
+    "fr_FR": "francúzština (francúzska)",
+    "fi": "fínčina",
+    "ga": "írčina",
+    "gd": "škótska gaelčina",
+    "gon": "gondčina",
+    "gu": "gudžarátčina",
+    "he": "hebrejčina",
+    "hi": "hindčina",
+    "hr": "chorvátčina",
+    "hu": "maďarčina",
+    "hy": "arménčina",
+    "is": "islandčina",
+    "it": "taliančina",
+    "iu": "inuktitutčina",
+    "ka": "kannadčina",
+    "kh": "khasijčina",
+    "ko": "kórejčina",
+    "kok": "konkánčina",
+    "kru": "kurukhčina",
+    "ks": "kašmírčina",
+    "lt": "litovčina",
+    "lv": "lotyština",
+    "mao": "maorčina",
+    "ml": "malajálamčina",
+    "mt": "maltčina",
+    "mwr": "marwarčina",
+    "mn": "mongolčina",
+    "mun": "mundčina",
+    "nb": "nórčina (bokmal)",
+    "ne": "nepálčina",
+    "nl": "holandčina",
+    "no": "nórčina",
+    "or": "uríjčina",
+    "pi": "pálí",
+    "pl": "poľština",
+    "pt": "portugalčina",
+    "pu": "pandžábčina",
+    "ro": "rumunčina",
+    "ru": "ruština",
+    "sa": "sanskrit",
+    "si": "sindhčina",
+    "sin": "sinhalčina",
+    "sk": "slovenčina",
+    "sl": "slovinčina",
+    "sr": "srbčina",
+    "sv": "švédčina",
+    "ta": "tamilčina",
+    "te": "telugčina",
+    "tr": "turečtina",
+    "tsn": "afrikánčina",
+    "uk": "ukrajinčina",
+    "ur": "urdčina",
+    "vi": "vietnamčina",
+    "zh": "čínština",
+    "zh_TW": "čínština (tradičná chanská)"}</translation>
 <translation id="4647836961514597010">Výber farieb</translation>
 <translation id="4660783501463101648">Klasická verzia bola odstránená. Prepínač na klávesnici umožňujúci prepnúť späť na verziu ChromeVox Classic bol odstránený.</translation>
 <translation id="4661075872484491155">strom</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Rýchly režim bol povolený</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{čiarka}few{# čiarky}many{# commas}other{# čiarok}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, textové pole</translation>
+<translation id="532485153932049746">Formátovanie textu
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, odkaz</translation>
 <translation id="5331522683003474486">Ovládajte zariadenie iba jedným alebo dvoma prepínačmi.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braillovo písmo</translation>
 <translation id="5402791055281059602">Upozornenie týkajúce sa režimu</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{bodkočiarka}few{# bodkočiarky}many{# semicolons}other{# bodkočiarok}}</translation>
+<translation id="5420259671171615858">Hľadajte v ponukách</translation>
 <translation id="5435274640623994081">Povoliť zápis zvukovej ikony do denníka</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak je menšie ako}few{# znaky je menšie ako}many{# less than signs}other{# znakov je menšie ako}}</translation>
 <translation id="5444587279251314700">(aktívne)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Zistila sa pravopisná chyba</translation>
 <translation id="7408482676469142474">tabuľka</translation>
 <translation id="7425395583360211003">vrátiť</translation>
+<translation id="7429415133937917139">Simuluje výstup obnoviteľného Braillovho displeja na paneli ChromeVox v hornej časti obrazovky</translation>
 <translation id="7434509671034404296">Vývojár</translation>
 <translation id="743783356331413498">Príklad</translation>
 <translation id="7439060726180460871">Adresár</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Predchádzajúci prepínač</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Žiadne ďalšie kombinované pole</translation>
+<translation id="772146615414628379">Blahoželáme! Úspešne ste sa naučili základy používania čítačky ChromeVox. Ponuku s príkazmi čítačky ChromeVox môžete kedykoľvek otvoriť stlačením kombinácie klávesov Hľadať + Bodka. Ak sa chcete o čítačke ChromeVox a systéme Chrome OS dozvedieť viac, navštívte nasledujúce články.
+    Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlačidlo Zavrieť a kliknite naň.</translation>
 <translation id="7724603315864178912">Vystrihnúť</translation>
 <translation id="7731785449856576010">Žiadna ďalšia miniaplikácia pre médiá</translation>
 <translation id="773906353055481349">Prechádzajte po bunkách stlačením klávesov Hľadať + Ctrl + Alt</translation>

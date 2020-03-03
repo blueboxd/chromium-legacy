@@ -11,7 +11,9 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -535,6 +537,31 @@ TEST_F(BackGestureEventHandlerTest, ARCFullscreenedWindow) {
   GenerateBackSequence();
   // Second back gesture in a row should trigger go back. Fullscreen will be
   // dependent on how the app choses to handle the back event.
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+// Tests the back gesture behavior when a virtual keyboard is visible.
+TEST_F(BackGestureEventHandlerTest, BackGestureWithVKTest) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  KeyboardController* keyboard_controller = KeyboardController::Get();
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kExtensionEnabled);
+  // The keyboard needs to be in a loaded state before being shown.
+  ASSERT_TRUE(keyboard::test::WaitUntilLoaded());
+  keyboard_controller->ShowKeyboard();
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
+
+  GenerateBackSequence();
+  // First back gesture should hide the virtual keyboard.
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  GenerateBackSequence();
+  // Second back gesture should trigger go back.
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }

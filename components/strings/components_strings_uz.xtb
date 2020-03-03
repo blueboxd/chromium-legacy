@@ -315,6 +315,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2289385804009217824">Qirqish</translation>
 <translation id="2292556288342944218">Internet taqiqlab qo‘yilgan</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">Yuklanmagan</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">Sayt nomi mana bunga oʻxshash ekan: <ph name="LOOKALIKE_DOMAIN" />. Odatda shubhali kimsalar sayt manzilida kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="2316887270356262533">Xotiradan 1 MB tozalanadi. Bundan keyin ba’zi veb-saytlar sekinroq yuklanishi mumkin.</translation>
@@ -443,6 +444,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2909946352844186028">Tarmoqda o‘zgarish yuz berdi.</translation>
 <translation id="2910133103376701357">Qurilmangiz va hisobingiz <ph name="ENROLLMENT_DOMAIN" /> domeni tomonidan boshqariladi.</translation>
 <translation id="2911973620368911614">Vazifa hisobidagi foydalanuvchi identifikatori</translation>
+<translation id="2915068235268646559">Ishdan chiqdi: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Boshqa dasturlarni yoping</translation>
 <translation id="2922350208395188000">Server sertifikatini tekshirib bo‘lmadi.</translation>
 <translation id="2925673989565098301">Yetkazib berish usuli</translation>
@@ -451,6 +453,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2930577230479659665">Har bir nusxa chekkasini qirqish</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati <ph name="DOMAIN2" /> tomonidan berilgan. Server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
+<translation id="2943895734390379394">Yuklash vaqti:</translation>
 <translation id="2948083400971632585">Ulanishga sozlangan proksilarni sozlamalar sahifasida o‘chirib qo‘yishingiz mumkin.</translation>
 <translation id="2951588413176968965">Pochta qutim</translation>
 <translation id="295526156371527179">Diqqat: Bu parametr lugʻat emasligi uchun belgilangan parametrga birlashtirilmadi.</translation>
@@ -1080,6 +1083,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="563324245173044180">Soxta kontent bloklandi.</translation>
 <translation id="5644090287519800334">Tasvirning old tomondagi X oʻqidagi siljish</translation>
 <translation id="5645854190134202180">Ikkinchi navbat</translation>
+<translation id="5654927323611874862">Yuklangan ishdan chiqish hisoboti identifikatori:</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">Bu qurilma administratori qoʻshimcha funksiyali kengaytmalar oʻrnatdi. Kengaytmalarda ayrim maʼlumotlaringizga ruxsat bor.</translation>
@@ -1386,6 +1390,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="7079718277001814089">Ehtiyot bo‘ling! Bu sayt zararli.</translation>
 <translation id="7081308185095828845">Bu funksiya qurilmangizda ishlamaydi</translation>
 <translation id="7083258188081898530">Tarnov 9</translation>
+<translation id="7086090958708083563">Foydalanuvchi hisobot yuklanishini talab qilgan</translation>
 <translation id="7087282848513945231">Okrug</translation>
 <translation id="7090678807593890770">Google orqali qidiring: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Berkitish</translation>
@@ -1548,6 +1553,7 @@ Batafsil axborot:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> saytiga o‘tish (xavfli)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikat</translation>
 <translation id="7716147886133743102">Administrator bloklagan</translation>
+<translation id="7716375162095500223">Hali yuklanmagan yoki rad qilingan</translation>
 <translation id="7716424297397655342">Bu saytni keshdan yuklab bo‘lmadi</translation>
 <translation id="7723047071702270851">Kartani tahrirlang</translation>
 <translation id="7740996059027112821">Standart</translation>
@@ -1692,6 +1698,7 @@ Batafsil axborot:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Shaxsiy ma’lumotlaringizga havfli bo‘lishiga qaramay va zararli dasturlar hali olib tashlanmagan bo‘lsa ham bu saytga baribir o‘tishni xohlasangiz, <ph name="BEGIN_LINK" />bu yerni bosing<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Xatcho‘plar paneli</translation>
+<translation id="8355270400102541638">Qurilmadagi ishdan chiqish konteksti:</translation>
 <translation id="8363502534493474904">Parvoz rejimini o‘chirib ko‘ring</translation>
 <translation id="8364627913115013041">Tayinlanmagan.</translation>
 <translation id="8368476060205742148">Google Play xizmatlari</translation>
@@ -1712,6 +1719,7 @@ Batafsil axborot:
 <translation id="8461694314515752532">Sinxronlangan ma’lumotlarni kodli ibora bilan shifrlash</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ta kredit karta}other{# ta kredit karta}}</translation>
 <translation id="8473863474539038330">Mazillar va boshqa ma’lumotlar</translation>
+<translation id="8474910779563686872">Dasturchilar uchun tafsilotlarni chiqarish</translation>
 <translation id="8479754468255770962">Quyi chapdan steplerlash</translation>
 <translation id="8483780878231876732">Google hisobingizga biriktirilgan kartalardan foydalanish uchun Chrome hisobiga kiring.</translation>
 <translation id="8488350697529856933">Tatbiq etish obyekti</translation>
@@ -1837,6 +1845,7 @@ Batafsil axborot:
 <translation id="9103872766612412690"><ph name="SITE" /> sayti ma’lumotlaringizni himoyalash uchun shifrlashdan foydalanadi, lekin hozir Chromium <ph name="SITE" /> saytiga ulanish uchun uringanda, ushbu sayt shubhali va noto‘g‘ri tasdiqlash ma’lumotlarini qaytarmoqda. Bunday holat zararli sayt o‘zini <ph name="SITE" /> o‘rnida ko‘rsatayotganda yoki Wi-Fi ulanishi uzilib qolganda yuz berishi mumkin. Shaxsiy ma’lumotlaringizga hech qanday xavf tug‘ilgani yo‘q, chunki Chromium aloqani ma’lumotlar almashinuvidan oldin uzib qo‘ydi.</translation>
 <translation id="9106062320799175032">To‘lov manzilini kiriting</translation>
 <translation id="9114524666733003316">Karta tasdiqlanmoqda...</translation>
+<translation id="9119042192571987207">Yuklangan</translation>
 <translation id="9128870381267983090">Tarmoqqa ulanish</translation>
 <translation id="9137013805542155359">Asl tilda ko‘rsatish</translation>
 <translation id="9141013498910525015">Manzillarni boshqarish</translation>

@@ -674,12 +674,12 @@ void AppListItemView::Layout() {
     return;
 
   const gfx::Rect icon_bounds = GetIconBoundsForTargetViewBounds(
-      GetAppListConfig(), rect, icon_->GetImage().size());
+      GetAppListConfig(), rect, icon_->GetImage().size(), icon_scale_);
   icon_->SetBoundsRect(icon_bounds);
 
   if (icon_shadow_) {
     const gfx::Rect icon_shadow_bounds = GetIconBoundsForTargetViewBounds(
-        GetAppListConfig(), rect, icon_shadow_->size());
+        GetAppListConfig(), rect, icon_shadow_->size(), icon_scale_);
     icon_shadow_->SetBoundsRect(icon_shadow_bounds);
   }
 
@@ -961,9 +961,10 @@ void AppListItemView::SetDragUIState() {
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const AppListConfig& config,
     const gfx::Rect& target_bounds,
-    const gfx::Size& icon_size) {
+    const gfx::Size& icon_size,
+    const float icon_scale) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, 0, 0, config.grid_icon_bottom_padding());
+  rect.Inset(0, 0, 0, config.grid_icon_bottom_padding() * icon_scale);
   rect.ClampToCenteredSize(icon_size);
   return rect;
 }

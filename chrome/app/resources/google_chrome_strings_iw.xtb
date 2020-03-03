@@ -102,6 +102,7 @@
 <translation id="4293420128516039005">‏כניסה לחשבון תסנכרן ותתאים אישית את Chrome בכל המכשירים שברשותך</translation>
 <translation id="4328355335528187361">‏גרסת הפיתוח של Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">‏Chrome עוזר להגן עליך מפני פרצות באבטחת המידע, תוספים לא תקינים ועוד</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">‏מתבצעת כרגע פעולה אחרת ב-Google Chrome. נסה שוב מאוחר יותר.</translation>
@@ -195,12 +196,14 @@
 <translation id="7777080907402804672">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google. אפשר להשבית את האפשרות הזו בכל זמן דרך ההגדרות.</translation>
 <translation id="7781002470561365167">‏גרסה חדשה של Google Chrome זמינה כעת.</translation>
 <translation id="7787950393032327779">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך אחר של Google Chrome‏ (<ph name="PROCESS_ID" />) במחשב אחר (<ph name="HOST_NAME" />)‏. Chrome נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chrome מחדש.</translation>
+<translation id="7801699035218095297">‏Google Chrome מנסה להעתיק את הסיסמאות. כדי לאפשר את הפעולה הזו, יש להקליד את הסיסמה שלך ל-Windows.</translation>
 <translation id="7808348361785373670">‏הסר מ-Chrome...</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="7855730255114109580">‏Google Chrome מעודכן</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7896673875602241923">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chrome כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="7916016681687251387">‏מערכת Chrome OS לא הצליחה לסנכרן את הנתונים שלך. לפתרון הבעיה עכשיו.</translation>
+<translation id="7930071585467473040">‏Google Chrome מנסה להעתיק את הסיסמאות.</translation>
 <translation id="7962410387636238736">‏המחשב הזה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista</translation>
 <translation id="8008534537613507642">‏התקן מחדש את Chrome</translation>
 <translation id="8013993649590906847">‏אם אין לתמונה תיאור מועיל, Chrome ינסה לספק לך תיאור. כדי ליצור תיאורים, התמונות נשלחות אל Google.</translation>

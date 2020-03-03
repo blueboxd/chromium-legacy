@@ -296,6 +296,11 @@ base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.RunningActiveTime();
 }
 
+const base::Optional<AppLimit>& AppActivityRegistry::GetWebTimeLimit() const {
+  DCHECK(base::Contains(activity_registry_, GetChromeAppId()));
+  return activity_registry_.at(GetChromeAppId()).limit;
+}
+
 AppState AppActivityRegistry::GetAppState(const AppId& app_id) const {
   DCHECK(base::Contains(activity_registry_, app_id));
   return activity_registry_.at(app_id).activity.app_state();

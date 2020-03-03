@@ -12,29 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_TEST_IOS_HOST_SHARED_OBJECT_H_
-#define CRASHPAD_TEST_IOS_HOST_SHARED_OBJECT_H_
+#ifndef CRASHPAD_TEST_IOS_HOST_EDO_PLACEHOLDER_H_
+#define CRASHPAD_TEST_IOS_HOST_EDO_PLACEHOLDER_H_
 
 #import <UIKit/UIKit.h>
 
-@interface CPTestSharedObject : NSObject
-// Returns the string "crashpad" for testing EDO.
+@interface EDOPlaceholder : NSObject
 - (NSString*)testEDO;
-
-// Triggers an EXC_BAD_ACCESS exception and crash.
-- (void)crashBadAccess;
-
-// Triggers a crash with a call to kill(SIGABRT).
-- (void)crashKillAbort;
-
-// Triggers a segfault crash.
-- (void)crashSegv;
-
-// Trigger a crash with a __builtin_trap.
-- (void)crashTrap;
-
-// Trigger a crash with an abort().
-- (void)crashAbort;
 @end
 
-#endif  // CRASHPAD_TEST_IOS_HOST_SHARED_OBJECT_H_
+#endif  // CRASHPAD_TEST_IOS_HOST_EDO_PLACEHOLDER_H_

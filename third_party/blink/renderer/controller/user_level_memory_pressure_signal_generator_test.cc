@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -90,7 +91,14 @@ class UserLevelMemoryPressureSignalGeneratorTest : public testing::Test {
 
 constexpr double kMemoryThresholdBytes = 1024 * 1024 * 1024;
 
-TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
+// Flaky on Android, see crbug/1054788.
+#if defined(OS_ANDROID)
+#define MAYBE_GeneratesWhenOverThreshold DISABLED_GeneratesWhenOverThreshold
+#else
+#define MAYBE_GeneratesWhenOverThreshold GeneratesWhenOverThreshold
+#endif
+TEST_F(UserLevelMemoryPressureSignalGeneratorTest,
+       MAYBE_GeneratesWhenOverThreshold) {
   {
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();

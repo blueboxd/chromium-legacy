@@ -8,7 +8,7 @@ include_rules = [
   "+components/security_interstitials/content",
   "+components/security_interstitials/core",
   "+components/signin/public",
-  "+components/sync/protocol",
+  "+components/sync",
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/unified_consent",
   "+components/user_prefs/user_prefs.h",

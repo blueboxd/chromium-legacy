@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 
+#include <utility>
+
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace ui {
@@ -39,7 +41,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  public:
   BrowserAccessibilityManagerAndroid(
       const ui::AXTreeUpdate& initial_tree,
-      WebContentsAccessibilityAndroid* web_contents_accessibility,
+      base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -59,8 +61,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   }
   bool prune_tree_for_screen_reader() { return prune_tree_for_screen_reader_; }
 
-  void set_web_contents_accessibility(WebContentsAccessibilityAndroid* wcax) {
-    web_contents_accessibility_ = wcax;
+  void set_web_contents_accessibility(
+      base::WeakPtr<WebContentsAccessibilityAndroid> wcax) {
+    web_contents_accessibility_ = std::move(wcax);
   }
 
   bool ShouldRespectDisplayedPasswordText();
@@ -118,10 +121,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // Handle a hover event from the renderer process.
   void HandleHoverEvent(BrowserAccessibility* node);
 
-  // Pointer to WebContentsAccessibility for reaching Java layer.
+  // A weak reference to WebContentsAccessibility for reaching Java layer.
   // Only the root manager has the reference. Should be accessed through
   // |GetWebContentsAXFromRootManager| rather than directly.
-  WebContentsAccessibilityAndroid* web_contents_accessibility_;
+  base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility_;
 
   // See docs for set_prune_tree_for_screen_reader, above.
   bool prune_tree_for_screen_reader_;

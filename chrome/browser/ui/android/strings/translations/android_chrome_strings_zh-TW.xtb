@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">清除歷史記錄、Cookie、網站資料、快取…</translation>
 <translation id="129382876167171263">網站儲存的檔案會顯示在這裡</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
+<translation id="1303339473099049190">找不到指定密碼。請檢查你輸入的內容，然後再試一次。</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - 來自 <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">將分頁加入群組</translation>
 <translation id="1327257854815634930">瀏覽記錄已開啟</translation>
@@ -323,6 +324,7 @@
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3353615205017136254">由 Google 提供的精簡版網頁。輕觸 [載入原始頁面] 按鈕即可載入原始頁面。</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
+<translation id="3373979091428520308">如要將這個頁面分享至另一部裝置，你必須在另一部裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="3374023511497244703">你的書籤、歷史記錄、密碼和其他 Chrome 資料將停止同步到你的 Google 帳戶</translation>
 <translation id="3384347053049321195">分享圖片</translation>
 <translation id="3386292677130313581">允許網站存取你的位置資訊前，必須先詢問你 (建議)</translation>
@@ -672,6 +674,7 @@
 <translation id="5956665950594638604">在新分頁中開啟 Chrome 說明中心</translation>
 <translation id="5958275228015807058">前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5962718611393537961">輕觸即可收合</translation>
+<translation id="5964805880140440652">如要將這個頁面分享至另一部裝置，你必須在 Chrome 設定中開啟同步功能</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6036057147555329831">其他 ICU</translation>

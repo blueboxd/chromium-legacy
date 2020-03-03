@@ -589,7 +589,6 @@ crbug.com/874695 virtual/streaming-preload/http/tests/fetch/workers/stream-reade
 crbug.com/874695 virtual/streaming-preload/http/tests/fetch/workers/thorough/* [ Slow ]
 crbug.com/874695 http/tests/devtools/sxg/sxg-cert-not-found.js [ Slow ]
 crbug.com/874695 http/tests/devtools/sxg/sxg-disable-cache.js [ Slow ]
-crbug.com/874695 virtual/sxg-with-network-service/http/tests/devtools/sxg/sxg-disable-cache.js [ Slow ]
 crbug.com/874695 virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Slow ]
 crbug.com/874695 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Slow ]
 crbug.com/874695 virtual/scalefactor200/css3/filters/effect-brightness-clamping-hw.html [ Slow ]

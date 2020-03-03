@@ -869,7 +869,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2190069059097339078">Pangkuha ng mga Kredensyal ng WiFi</translation>
 <translation id="219008588003277019">Module ng Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(walang laman)</translation>
-<translation id="2191223688506386601">Isang bagay na lang</translation>
 <translation id="2191754378957563929">Naka-on</translation>
 <translation id="2192505247865591433">Mula:</translation>
 <translation id="2193365732679659387">Mga setting ng pagtitiwala</translation>
@@ -2568,7 +2567,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4555769855065597957">Shadow</translation>
 <translation id="4555863373929230635">Para mag-save ng mga password sa iyong Google Account, mag-sign in at i-on ang pag-sync.</translation>
 <translation id="4558426062282641716">Hiniling ang pahintulot sa awtomatikong paglulunsad</translation>
-<translation id="4558491878126948419">Makatanggap ng mga tip sa <ph name="DEVICE_TYPE" /> at update tungkol sa mga produkto ng Google at magbahagi ng feedback. Mag-unsubscribe anumang oras.</translation>
 <translation id="4559617833001311418">Ina-access ng site na ito ang iyong sensor ng paggalaw o liwanag.</translation>
 <translation id="4561893854334016293">Walang kamakailang binagong pahintulot</translation>
 <translation id="4562155214028662640">Magdagdag ng Fingerprint</translation>
@@ -2838,7 +2836,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4943691134276646401">Gustong kumonekta ng "<ph name="CHROME_EXTENSION_NAME" />" sa isang serial port</translation>
 <translation id="4944310289250773232">Hino-host ng <ph name="SAML_DOMAIN" /> ang serbisyo sa pag-authenticate na ito</translation>
 <translation id="495170559598752135">Mga Pagkilos</translation>
-<translation id="4952981627953231344">Hindi pinapayagan ang Plugin VM sa device na ito. Makipag-ugnayan sa administrator ng device ng iyong organisasyon.</translation>
 <translation id="4953808748584563296">Default na orange na avatar</translation>
 <translation id="4955710816792587366">Piliin ang iyong PIN</translation>
 <translation id="4959262764292427323">Sine-save ang mga password sa iyong Google Account para magamit mo ang mga ito sa anumang device</translation>
@@ -3021,6 +3018,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5233736638227740678">I-&amp;paste</translation>
 <translation id="5234764350956374838">Balewalain</translation>
 <translation id="5235050375939235066">I-uninstall ang app?</translation>
+<translation id="523505283826916779">Mga setting ng accessibility</translation>
 <translation id="5235750401727657667">Palitan ang page na nakikita mo kapag nagbubukas ng bagong tab</translation>
 <translation id="5238278114306905396">Awtomatikong inalis ang app na "<ph name="EXTENSION_NAME" />."</translation>
 <translation id="5241128660650683457">Basahin ang lahat ng iyong data sa mga website na binibisita mo</translation>
@@ -3441,7 +3439,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5805697420284793859">Window manager</translation>
 <translation id="5806773519584576205">0° (Default)</translation>
-<translation id="5811750797187914944">Handa na ang lahat</translation>
 <translation id="5812674658566766066">I-expand lahat</translation>
 <translation id="5814126672212206791">Uri ng koneksyon</translation>
 <translation id="5815645614496570556">Address na X.400</translation>
@@ -4062,7 +4059,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">I-rate</translation>
 <translation id="6681668084120808868">Kumuha ng larawan</translation>
-<translation id="6681964764822470072">Ia-uninstall ang "<ph name="APP_NAME" />."</translation>
 <translation id="668599234725812620">Buksan ang Google Play</translation>
 <translation id="6686490380836145850">Isara ang mga tab sa kanan</translation>
 <translation id="6686817083349815241">I-save ang iyong password</translation>
@@ -4644,7 +4640,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7493386493263658176">Maaaring kolektahin ng extension ng <ph name="EXTENSION_NAME" /> ang lahat ng text na ita-type mo, kabilang ang personal na data tulad ng mga password at numero ng credit card. Gusto mo bang gamitin ang extension na ito?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Nakalimutan mo ba ang iyong dating password?</translation>
-<translation id="7496511874649569424">Aalisin sa device na ito ang <ph name="LINUX_APP_NAME" /> at ang data na nauugnay rito.</translation>
 <translation id="7496732379142025470">Para makatipid ng baterya, naka-on lang ang “Ok Google” kapag nakasaksak ang iyong device. Para gumawa ng mga pagbabago, pumunta sa Mga Setting.</translation>
 <translation id="7497215489070763236">CA certificate ng server</translation>
 <translation id="7497981768003291373">Wala kang kamakailang nakuhang log ng text ng WebRTC.</translation>

@@ -2017,8 +2017,6 @@ jumbo_component("base") {
     } else {
       sources += [ "time/time_exploded_ios.cc" ]
     }
-
-    libs += [ "UIKit.framework" ]
   }
 
   if (dep_libevent) {

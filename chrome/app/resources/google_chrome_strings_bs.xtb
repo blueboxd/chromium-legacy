@@ -202,7 +202,7 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="7777080907402804672">Ako slika ne sadrži koristan opis, Chrome će ga pokušati pružiti. Slike se šalju Googleu radi kreiranja opisa. To možete isključiti u postavkama kad god želite.</translation>
 <translation id="7781002470561365167">Dostupna je nova verzija preglednika Google Chrome.</translation>
 <translation id="7787950393032327779">Izgleda da neki drugi Google Chrome proces (<ph name="PROCESS_ID" />) koristi ovaj profil na nekom drugom računaru (<ph name="HOST_NAME" />).  Chrome je zaključao profil kako ne bi došlo do oštećenja.  Ako ste sigurni da nijedan drugi proces ne koristi ovaj profil, možete ga otključati i ponovo pokrenuti Chrome.</translation>
-<translation id="7801699035218095297">Google Chrome pokušava kopirati lozinke. Napišite lozinku za Windows da dozvolite ovo.</translation>
+<translation id="7801699035218095297">Google Chrome pokušava kopirati lozinke. Unesite svoju lozinku za Windows da to dozvolite.</translation>
 <translation id="7808348361785373670">Ukloni iz Chromea…</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene greške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome je ažuriran</translation>

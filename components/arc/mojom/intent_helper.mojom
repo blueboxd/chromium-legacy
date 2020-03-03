@@ -168,8 +168,10 @@ enum ChromePage {
   SWITCHACCESS,
   STYLUS,
   TETHERSETTINGS,
+  ETHERNET,
+  CELLULAR,
 
-  LAST = TETHERSETTINGS,
+  LAST = CELLULAR,
 };
 
 // Describes an unique chrome app.

@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2135456203358955318">Монтирана лупа екрана</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
-<translation id="2148902151539191989">НАЗАД</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
 <translation id="2220572644011485463">PIN или лозинка</translation>
 <translation id="2222338659135520253">Пријављивање је обавезно</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> је сесија којом управља <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Леви клик</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Прикажи лозинку</translation>
 <translation id="2473177541599297363">Потврдите резолуцију</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2484513351006226581">Притисните <ph name="KEYBOARD_SHORTCUT" /> да бисте променили распоред тастатуре.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4215497585250573029">Подешавања VPN-а</translation>
 <translation id="4217571870635786043">Диктирање</translation>
-<translation id="421885205185866088">PIN паметне картице за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Прегледајте подешавања обавештења. Обавештења су искључена</translation>
 <translation id="4269883910223712419">Администратор овог уређаја може:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до краја пуњења</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Сакриј лозинку</translation>
 <translation id="4570957409596482333">Дугме Изаберите за говор</translation>
 <translation id="4585337515783392668">Заустави пребацивање на непознати пријемник</translation>
 <translation id="4628757576491864469">Уређаји</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Тренутно привезивање</translation>
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
+<translation id="54609108002486618">Управљани</translation>
 <translation id="5465662442746197494">Потребна вам је помоћ?</translation>
 <translation id="5496819745535887422">Администратор враћа уређај на ранију верзију. Сви подаци ће бити избрисани када се уређај рестартује.</translation>
 <translation id="5519195206574732858">LTE</translation>

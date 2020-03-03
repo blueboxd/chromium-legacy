@@ -3538,7 +3538,9 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
 
   def testCanLaunchApp(self):
     app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
-    driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path])
+    driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path],
+      experimental_options=
+        {"useUnsupportedLaunchAppDeprecationWorkaround": True})
     old_handles = driver.GetWindowHandles()
     self.assertEqual(1, len(old_handles))
     driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')

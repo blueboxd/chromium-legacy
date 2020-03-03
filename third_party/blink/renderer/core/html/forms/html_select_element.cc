@@ -998,13 +998,7 @@ void HTMLSelectElement::DispatchBlurEvent(
     mojom::blink::FocusType type,
     InputDeviceCapabilities* source_capabilities) {
   type_ahead_.ResetSession();
-  // We only need to fire change events here for menu lists, because we fire
-  // change events for list boxes whenever the selection change is actually
-  // made.  This matches other browsers' behavior.
-  select_type_->DispatchEventsIfSelectedOptionChanged();
-  last_on_change_selection_.clear();
-  if (PopupIsVisible())
-    HidePopup();
+  select_type_->DidBlur();
   HTMLFormControlElementWithState::DispatchBlurEvent(new_focused_element, type,
                                                      source_capabilities);
 }

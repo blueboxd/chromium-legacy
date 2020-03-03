@@ -869,7 +869,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2190069059097339078">Dohvaćanje vjerodajnica za Wi-Fi</translation>
 <translation id="219008588003277019">Modul Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(prazno)</translation>
-<translation id="2191223688506386601">Još samo jedna stvar</translation>
 <translation id="2191754378957563929">Uključeno</translation>
 <translation id="2192505247865591433">Šalje:</translation>
 <translation id="2193365732679659387">Postavke pouzdanosti</translation>
@@ -2568,7 +2567,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4555769855065597957">Sjena</translation>
 <translation id="4555863373929230635">Da biste spremili zaporke na svoj Google račun, prijavite se i uključite sinkronizaciju.</translation>
 <translation id="4558426062282641716">Zatraženo je dopuštenje za automatsko pokretanje</translation>
-<translation id="4558491878126948419">Saznajte savjete za <ph name="DEVICE_TYPE" /> i novosti o Googleovim proizvodima te dijelite povratne informacije. Pretplatu možete otkazati kad god želite.</translation>
 <translation id="4559617833001311418">Ova web-lokacija pristupa vašim senzorima pokreta ili svjetla.</translation>
 <translation id="4561893854334016293">Nema nedavno promijenjenih dopuštenja</translation>
 <translation id="4562155214028662640">Dodaj otisak prsta</translation>
@@ -2838,7 +2836,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" želi se povezati sa serijskim priključkom</translation>
 <translation id="4944310289250773232">Tu uslugu provjere autentičnosti hostira <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Radnje</translation>
-<translation id="4952981627953231344">Dodatak VM nije dopušten na ovom uređaju. Obratite se administratoru uređaja organizacije.</translation>
 <translation id="4953808748584563296">Zadani narančasti avatar</translation>
 <translation id="4955710816792587366">Odaberite PIN</translation>
 <translation id="4959262764292427323">Zaporke se spremaju na vaš Google račun kako biste ih mogli upotrebljavati na bilo kojem uređaju</translation>
@@ -3021,6 +3018,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5233736638227740678">&amp;Zalijepi</translation>
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="5235050375939235066">Želite li deinstalirati aplikaciju?</translation>
+<translation id="523505283826916779">Postavke pristupačnosti</translation>
 <translation id="5235750401727657667">Zamijenite stranicu koja se prikazuje prilikom otvaranja nove kartice</translation>
 <translation id="5238278114306905396">Aplikacija "<ph name="EXTENSION_NAME" />" automatski je uklonjena.</translation>
 <translation id="5241128660650683457">čitati sve vaše podatke s web-lokacija koje posjetite</translation>
@@ -3441,7 +3439,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5804241973901381774">Dozvoljeno</translation>
 <translation id="5805697420284793859">Upravitelj prozora</translation>
 <translation id="5806773519584576205">0° (zadano)</translation>
-<translation id="5811750797187914944">Sve je spremno</translation>
 <translation id="5812674658566766066">Proširi sve</translation>
 <translation id="5814126672212206791">Vrsta veze</translation>
 <translation id="5815645614496570556">X.400 adresa</translation>
@@ -4062,7 +4059,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6680442031740878064">Dostupno: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Brzina</translation>
 <translation id="6681668084120808868">Snimite fotografiju</translation>
-<translation id="6681964764822470072">Aplikacija "<ph name="APP_NAME" />" deinstalirat će se.</translation>
 <translation id="668599234725812620">Otvori Google Play</translation>
 <translation id="6686490380836145850">Zatvori kartice s desne strane</translation>
 <translation id="6686817083349815241">Spremite zaporku</translation>
@@ -4644,7 +4640,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7493386493263658176">Proširenje <ph name="EXTENSION_NAME" /> možda prikuplja cjelokupni tekst koji unesete, uključujući osobne podatke kao što su zaporke i brojevi kreditnih kartica. Želite li koristiti to proširenje?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Jeste li zaboravili staru zaporku?</translation>
-<translation id="7496511874649569424">Aplikacija <ph name="LINUX_APP_NAME" /> i s njom povezani podaci uklonit će se s ovog uređaja.</translation>
 <translation id="7496732379142025470">Radi uštede baterije značajka “Ok Google” uključena je samo kad je uređaj priključen na napajanje. To možete promijeniti u Postavkama.</translation>
 <translation id="7497215489070763236">CA certifikat poslužitelja</translation>
 <translation id="7497981768003291373">Nemate nedavno snimljenih WebRTC tekstnih zapisnika.</translation>

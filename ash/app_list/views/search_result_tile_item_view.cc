@@ -557,7 +557,8 @@ void SearchResultTileItemView::Layout() {
 
   if (IsSuggestedAppTileShownInAppPage()) {
     icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
-        AppListConfig::instance(), rect, icon_->GetImage().size()));
+        AppListConfig::instance(), rect, icon_->GetImage().size(),
+        /*icon_scale=*/1.0f));
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
         AppListConfig::instance(), rect, title_->GetPreferredSize()));
   } else {

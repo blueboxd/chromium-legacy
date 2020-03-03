@@ -13,6 +13,8 @@ import android.util.AttributeSet;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.ArrayList;
@@ -193,5 +195,13 @@ public class RadioButtonWithEditText extends RadioButtonWithDescription {
      */
     public void setHint(int hintId) {
         mEditText.setHint(hintId);
+    }
+
+    /**
+     * @return the EditText living inside this widget.
+     */
+    @VisibleForTesting
+    public EditText getEditTextForTests() {
+        return mEditText;
     }
 }

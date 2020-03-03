@@ -693,6 +693,8 @@ jumbo_static_library("browser") {
     "media/feeds/media_feeds_service_factory.h",
     "media/history/media_history_contents_observer.cc",
     "media/history/media_history_contents_observer.h",
+    "media/history/media_history_feeds_table.cc",
+    "media/history/media_history_feeds_table.h",
     "media/history/media_history_images_table.cc",
     "media/history/media_history_images_table.h",
     "media/history/media_history_keyed_service.cc",

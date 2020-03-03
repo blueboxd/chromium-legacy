@@ -186,6 +186,11 @@ struct Capabilities {
   std::set<WebViewInfo::Type> window_types;
 
   bool use_automation_extension;
+
+  // Temporary capability to enable LaunchApp command
+  // TODO remove with all LaunchApp code in m84.
+  // see https://crbug.com/chromedriver/1778
+  bool enable_launch_app;
 };
 
 bool GetChromeOptionsDictionary(const base::DictionaryValue& params,

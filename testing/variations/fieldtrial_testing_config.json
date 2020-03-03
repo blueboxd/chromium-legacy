@@ -3691,6 +3691,7 @@
                         "extra-safelisted-request-headers-for-enterprise": "x-googapps-allowed-domains"
                     },
                     "enable_features": [
+                        "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
                         "OutOfBlinkCors"
                     ]
                 }

@@ -10,6 +10,7 @@
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -40,6 +41,12 @@ class RealTimePolicyEngineTest : public PlatformTest {
   bool CanPerformFullURLLookup(bool is_off_the_record) {
     return RealTimePolicyEngine::CanPerformFullURLLookup(&pref_service_,
                                                          is_off_the_record);
+  }
+
+  bool CanPerformFullURLLookupWithToken(bool is_off_the_record,
+                                        syncer::SyncService* sync_service) {
+    return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
+        &pref_service_, is_off_the_record, sync_service);
   }
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
@@ -125,6 +132,56 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
   ASSERT_TRUE(IsUserOptedIn());
+}
+
+TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookupWithToken_SyncControlled) {
+  base::test::ScopedFeatureList feature_list;
+#if defined(OS_ANDROID)
+  int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
+  int memory_size_threshold = system_memory_size - 1;
+  feature_list.InitWithFeaturesAndParameters(
+      /* enabled_features */ {{kRealTimeUrlLookupEnabled,
+                               {{kRealTimeUrlLookupMemoryThresholdMb,
+                                 base::NumberToString(memory_size_threshold)}}},
+                              {kRealTimeUrlLookupEnabledWithToken, {}}},
+      /* disabled_features */ {});
+#else
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kRealTimeUrlLookupEnabled,
+                              kRealTimeUrlLookupEnabledWithToken},
+      /* disabled_features */ {});
+#endif
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  syncer::TestSyncService sync_service;
+
+  // Sync is disabled.
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DISABLE_REASON_USER_CHOICE});
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
+                                                &sync_service));
+
+  // Sync is enabled.
+  sync_service.SetDisableReasons({});
+  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  EXPECT_TRUE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
+                                               &sync_service));
+
+  // History sync is disabled.
+  sync_service.GetUserSettings()->SetSelectedTypes(
+      /* sync_everything */ false, {});
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
+                                                &sync_service));
+
+  // Custom passphrase is enabled.
+  sync_service.GetUserSettings()->SetSelectedTypes(
+      false, {syncer::UserSelectableType::kHistory});
+  sync_service.SetIsUsingSecondaryPassphrase(true);
+  EXPECT_FALSE(CanPerformFullURLLookupWithToken(/* is_off_the_record */ false,
+                                                &sync_service));
 }
 
 TEST_F(RealTimePolicyEngineTest,

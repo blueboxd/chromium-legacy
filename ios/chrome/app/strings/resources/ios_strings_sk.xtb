@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Upraviť záložku</translation>
 <translation id="2179182049312275900">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach.</translation>
 <translation id="2198757192731523470">Google môže pomocou vašej histórie prispôsobiť Vyhľadávanie, reklamy a ďalšie služby Googlu.</translation>
+<translation id="2218443599109088993">Oddialiť</translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
 <translation id="2239626343334228536">Vymazávajú sa dáta prehliadania…</translation>
 <translation id="2257567812274161158">Synchronizácia nefunguje.</translation>
@@ -417,6 +418,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6464071786529933911">Otvoriť na novej karte inkognito</translation>
 <translation id="6476800141292307438">Stránka sa prekladá do jazyka <ph name="LANGUAGE" />. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="6482629121755362506">Počet odstránených položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="6561262006871132942">Priblížiť</translation>
 <translation id="6610002944194042868">Možnosti prekladu</translation>
 <translation id="6628106477656132239">Neplatný dátum vypršania platnosti</translation>
 <translation id="6638511529934826365">Priblížiť text…</translation>

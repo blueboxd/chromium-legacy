@@ -141,7 +141,7 @@ void BinaryUploadService::UploadForDeepScanning(
   std::string token = base::RandBytesAsString(128);
   token = base::HexEncode(token.data(), token.size());
   active_tokens_[raw_request] = token;
-  raw_request->set_request_token(std::move(token));
+  raw_request->set_request_token(token);
 
   if (!binary_fcm_service_) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},

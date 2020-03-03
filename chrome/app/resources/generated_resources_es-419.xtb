@@ -866,7 +866,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2190069059097339078">Captador de credenciales de Wi-Fi</translation>
 <translation id="219008588003277019">Módulo Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(vacío)</translation>
-<translation id="2191223688506386601">El último paso</translation>
 <translation id="2191754378957563929">Sí</translation>
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configuración de confianza</translation>
@@ -1705,7 +1704,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3341703758641437857">Permitir el acceso a las URL del archivo</translation>
 <translation id="3342361181740736773">"<ph name="TRIGGERING_EXTENSION_NAME" />" desea quitar esta extensión.</translation>
 <translation id="3345135638360864351">No se pudo enviar la solicitud de acceso al sitio a <ph name="NAME" />. Vuelve a intentarlo.</translation>
-<translation id="3345634917232014253">Hace un momento, se ejecutó la verificación de seguridad</translation>
+<translation id="3345634917232014253">La verificación de seguridad se ejecutó recientemente</translation>
 <translation id="3345886924813989455">No se ha encontrado el navegador compatible</translation>
 <translation id="3347086966102161372">Copiar dirección de la imagen</translation>
 <translation id="3348038390189153836">Se detectó un dispositivo removible.</translation>
@@ -2565,7 +2564,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4555769855065597957">Sombra</translation>
 <translation id="4555863373929230635">Para guardar contraseñas en tu Cuenta de Google, accede a ella y activa la sincronización.</translation>
 <translation id="4558426062282641716">Solicitud de permiso de inicio automático</translation>
-<translation id="4558491878126948419">Obtén sugerencias y actualizaciones para <ph name="DEVICE_TYPE" /> sobre los productos de Google y comparte tus comentarios. Puedes anular la suscripción en cualquier momento.</translation>
 <translation id="4559617833001311418">Este sitio puede acceder a los sensores de movimiento o luz.</translation>
 <translation id="4561893854334016293">No se cambió ningún permiso recientemente</translation>
 <translation id="4562155214028662640">Agregar huella digital</translation>
@@ -2835,7 +2833,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" quiere conectarse a un puerto en serie</translation>
 <translation id="4944310289250773232"><ph name="SAML_DOMAIN" /> aloja este servicio de autenticación</translation>
 <translation id="495170559598752135">Acciones</translation>
-<translation id="4952981627953231344">No se permite usar Plugin VM en este dispositivo. Comunícate con el administrador de dispositivos de tu organización.</translation>
 <translation id="4953808748584563296">Avatar naranja predeterminado</translation>
 <translation id="4955710816792587366">Elige un PIN</translation>
 <translation id="4959262764292427323">Las contraseñas se guardan en tu cuenta de Google para que puedas usarlas en cualquier dispositivo</translation>
@@ -3018,6 +3015,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5233736638227740678">&amp;Pegar</translation>
 <translation id="5234764350956374838">Rechazar</translation>
 <translation id="5235050375939235066">¿Desinstalar la app?</translation>
+<translation id="523505283826916779">Configuración de accesibilidad</translation>
 <translation id="5235750401727657667">Reemplazar la página que ves cuando abres una pestaña nueva</translation>
 <translation id="5238278114306905396">Se eliminó automáticamente la aplicación "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="5241128660650683457">Leer todos los datos de los sitios web que visitas</translation>
@@ -3438,7 +3436,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
 <translation id="5806773519584576205">0° (predeterminado)</translation>
-<translation id="5811750797187914944">Listo</translation>
 <translation id="5812674658566766066">Expandir todo</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X 400</translation>
@@ -4059,7 +4056,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidad</translation>
 <translation id="6681668084120808868">Tomar foto</translation>
-<translation id="6681964764822470072">Se desinstalará "<ph name="APP_NAME" />".</translation>
 <translation id="668599234725812620">Abrir Google Play</translation>
 <translation id="6686490380836145850">Cerrar pestañas a la derecha</translation>
 <translation id="6686817083349815241">Guardar la contraseña</translation>
@@ -4641,7 +4637,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7493386493263658176">Es posible que la extensión <ph name="EXTENSION_NAME" /> recopile todo el texto que escribas, lo que incluye datos personales como contraseñas y número de tarjetas de crédito. ¿Deseas usar esta extensión?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> × <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">¿Olvidaste la contraseña anterior?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> y los datos asociados se quitarán de este dispositivo.</translation>
 <translation id="7496732379142025470">Para ahorrar batería, "Ok Google" solo se activa cuando tu dispositivo está conectado a una fuente de energía. Para hacer cambios, ve a la configuración.</translation>
 <translation id="7497215489070763236">Certificado de CA del servidor</translation>
 <translation id="7497981768003291373">No capturaste ningún registro de texto de WebRTC recientemente.</translation>
@@ -4649,7 +4644,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7503191893372251637">Tipo de certificado Netscape</translation>
 <translation id="7503821294401948377">No se pudo cargar el ícono '<ph name="ICON" />' para las acciones del navegador.</translation>
 <translation id="7503985202154027481">En tu llave de seguridad, se guardará un registro de tu visita a este sitio.</translation>
-<translation id="7504293978434250212">Tu organización puede analizar archivos con un tamaño máximo de 50 MB. Intenta subir un archivo más pequeño.</translation>
+<translation id="7504293978434250212">Tu organización puede escanear archivos con un tamaño máximo de 50 MB. Intenta subir un archivo más pequeño.</translation>
 <translation id="750509436279396091">Abrir carpeta de descargas</translation>
 <translation id="7506541170099744506">Tu dispositivo <ph name="DEVICE_TYPE" /> se inscribió correctamente para la administración empresarial.</translation>
 <translation id="7507930499305566459">Certificado del respondedor de estado</translation>

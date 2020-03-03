@@ -17,7 +17,7 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1190609913194133056">Центар за известување</translation>
 <translation id="1195412055398077112">прескенирање</translation>
-<translation id="119944043368869598">Исчисти ги сите</translation>
+<translation id="119944043368869598">Избриши ги сите</translation>
 <translation id="1247372569136754018">Микрофон (внатрешен)</translation>
 <translation id="1252999807265626933">Се полни од <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво е времето?</translation>
@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Полнач со ниско напојување</translation>
 <translation id="2135456203358955318">Закотвена лупа</translation>
 <translation id="2144487987174258011">Рестартирајте за да се ажурира Adobe Flash Player</translation>
-<translation id="2148902151539191989">НАЗАД</translation>
 <translation id="2208323208084708176">Режим на единствена работна површина</translation>
 <translation id="2220572644011485463">PIN или лозинка</translation>
 <translation id="2222338659135520253">Потребно е најавување</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> е управувана сесија од <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Лев клик</translation>
 <translation id="2429753432712299108">Уредот со Bluetooth „<ph name="DEVICE_NAME" />“ бара дозвола за спарување. Пред да прифатите, потврдете дека оваа шифра се покажува на уредот: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Прикажи ја лозинката</translation>
 <translation id="2473177541599297363">Потврдете ја резолуцијата</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="2484513351006226581">Притиснете <ph name="KEYBOARD_SHORTCUT" /> за да го префрлите распоредот на тастатурата.</translation>
@@ -256,7 +256,6 @@
 <translation id="4195877955194704651">Копче за автоматско кликнување</translation>
 <translation id="4215497585250573029">Поставки за VPN</translation>
 <translation id="4217571870635786043">Диктат</translation>
-<translation id="421885205185866088">PIN-код на паметна картичка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Прикажи ги поставките за известувања. Известувањата се исклучени</translation>
 <translation id="4269883910223712419">Администраторот на уредов има способност да:</translation>
@@ -286,6 +285,7 @@
 <translation id="4527045527269911712">Уредот Bluetooth „<ph name="DEVICE_NAME" />“ бара дозвола за спарување.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> додека да се наполни</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Сокриј ја лозинката</translation>
 <translation id="4570957409596482333">Копче за „Изберете за говор“</translation>
 <translation id="4585337515783392668">Престани со емитување на непознат приемник</translation>
 <translation id="4628757576491864469">Уреди</translation>
@@ -337,6 +337,7 @@
 <translation id="5430931332414098647">Инстант врзување</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Сите достапни корисници веќе се додадени на оваа сесија.</translation>
+<translation id="54609108002486618">Управуван</translation>
 <translation id="5465662442746197494">Потребна ви е помош?</translation>
 <translation id="5496819745535887422">Администраторот го враќа вашиот уред на фабричките поставки. Сите податоци ќе се избришат кога уредот ќе се рестартира.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -406,7 +407,7 @@
 <translation id="639644700271529076">CAPS LOCK е исклучено</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="642644398083277086">Исчисти ги сите известувања</translation>
+<translation id="642644398083277086">Избриши ги сите известувања</translation>
 <translation id="643147933154517414">Готово</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> се емитува на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6452181791372256707">Отфрли</translation>
@@ -631,7 +632,7 @@
 <translation id="921989828232331238">Вашиот родител го заклучи уредот за денес</translation>
 <translation id="923686485342484400">Притиснете Control Shift Q двапати за да се одјавите.</translation>
 <translation id="938963181863597773">Што има во мојот календар?</translation>
-<translation id="945522503751344254">Испрати повратни информации</translation>
+<translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="98515147261107953">Пејзаж</translation>
 <translation id="990277280839877440">Прозорецот <ph name="WINDOW_TITILE" /> е затворен.</translation>
 </translationbundle>

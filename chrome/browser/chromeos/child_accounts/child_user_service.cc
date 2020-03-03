@@ -47,8 +47,13 @@ void ChildUserService::PauseWebActivity(const std::string& app_id) {
       app_time_controller_->web_time_enforcer();
   DCHECK(web_time_enforcer);
 
-  // TODO(agawronska): Pass the time limit to |web_time_enforcer|.
-  web_time_enforcer->OnWebTimeLimitReached();
+  const base::Optional<app_time::AppLimit>& time_limit =
+      app_time_controller_->app_registry()->GetWebTimeLimit();
+  DCHECK(time_limit.has_value());
+  DCHECK_EQ(time_limit->restriction(), app_time::AppRestriction::kTimeLimit);
+  DCHECK(time_limit->daily_limit().has_value());
+
+  web_time_enforcer->OnWebTimeLimitReached(time_limit->daily_limit().value());
 }
 
 void ChildUserService::ResumeWebActivity(const std::string& app_id) {
@@ -58,7 +63,6 @@ void ChildUserService::ResumeWebActivity(const std::string& app_id) {
       app_time_controller_->web_time_enforcer();
   DCHECK(web_time_enforcer);
 
-  web_time_enforcer->set_time_limit(base::TimeDelta());
   web_time_enforcer->OnWebTimeLimitEnded();
 }
 

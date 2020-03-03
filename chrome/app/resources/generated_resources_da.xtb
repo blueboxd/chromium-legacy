@@ -869,7 +869,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2190069059097339078">Hentning af Wi-Fi-loginoplysninger</translation>
 <translation id="219008588003277019">Native Client-modul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(tom)</translation>
-<translation id="2191223688506386601">En sidste ting</translation>
 <translation id="2191754378957563929">Til</translation>
 <translation id="2192505247865591433">Fra:</translation>
 <translation id="2193365732679659387">Tillidsindstillinger</translation>
@@ -1040,7 +1039,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2431027948063157455">Google Assistent kunne ikke indlæses. Tjek din netværksforbindelse, og prøv igen.</translation>
 <translation id="2432753757290432042">Linux (beta) skal opdateres</translation>
 <translation id="2433452467737464329">Tilføj et forespørgselsparameter i webadressen for at opdatere siden automatisk: chrome://network/?refresh=&lt;sec&gt;</translation>
-<translation id="2433490881840073798"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /> <ph name="RECENT_PERMISSIONS_CHANGE" /></translation>
+<translation id="2433490881840073798"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE" /></translation>
 <translation id="2433507940547922241">Udseende</translation>
 <translation id="2433836460518180625">Lås kun denne enhed op</translation>
 <translation id="2434449159125086437">Printeren kunne ikke konfigureres. Tjek konfigurationen, og prøv igen.</translation>
@@ -2568,7 +2567,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4555769855065597957">Skygge</translation>
 <translation id="4555863373929230635">Du skal logge på og aktivere synkronisering for at gemme adgangskoder på din Google-konto.</translation>
 <translation id="4558426062282641716">Der er anmodet om tilladelse til automatisk start</translation>
-<translation id="4558491878126948419">Få tips til <ph name="DEVICE_TYPE" /> og opdateringer om Google-produkter, og del feedback. Du kan til enhver tid ophæve abonnementet.</translation>
 <translation id="4559617833001311418">Dette website har adgang til dine bevægelses- og lyssensorer.</translation>
 <translation id="4561893854334016293">Ingen tilladelser blev ændret for nylig</translation>
 <translation id="4562155214028662640">Tilføj fingeraftryk</translation>
@@ -2838,7 +2836,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" anmoder om at oprette forbindelse til en seriel port</translation>
 <translation id="4944310289250773232">Denne godkendelsestjeneste hostes af <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Handlinger</translation>
-<translation id="4952981627953231344">Plugin VM er ikke tilladt på denne enhed. Kontakt din organisations enhedsadministrator.</translation>
 <translation id="4953808748584563296">Orange standardavatar</translation>
 <translation id="4955710816792587366">Vælg din pinkode</translation>
 <translation id="4959262764292427323">Adgangskoder gemmes på din Google-konto, så du kan bruge dem på enhver enhed</translation>
@@ -3021,6 +3018,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5233736638227740678">&amp;Indsæt</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="5235050375939235066">Vil du afinstallere appen?</translation>
+<translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="5235750401727657667">Skift den side, du får vist, når du åbner en ny fane</translation>
 <translation id="5238278114306905396">Appen "<ph name="EXTENSION_NAME" />" blev automatisk fjernet.</translation>
 <translation id="5241128660650683457">Læs alle dine data på de websites, du besøger</translation>
@@ -3441,7 +3439,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
 <translation id="5805697420284793859">Vinduesadministrator</translation>
 <translation id="5806773519584576205">0° (standard)</translation>
-<translation id="5811750797187914944">Udført</translation>
 <translation id="5812674658566766066">Udvid alle</translation>
 <translation id="5814126672212206791">Forbindelsestype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -4063,7 +4060,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6680442031740878064">Tilgængelig: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Talehastighed</translation>
 <translation id="6681668084120808868">Tag billede</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" afinstalleres.</translation>
 <translation id="668599234725812620">Åbn Google Play</translation>
 <translation id="6686490380836145850">Luk fanerne til højre</translation>
 <translation id="6686817083349815241">Gem din adgangskode</translation>
@@ -4645,7 +4641,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7493386493263658176">Udvidelsen <ph name="EXTENSION_NAME" /> indsamler muligvis al den tekst, du indtaster, herunder personlige oplysninger såsom adgangskoder og kreditkortnumre. Vil du bruge denne udvidelse?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Har du glemt din gamle adgangskode?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> og de tilknyttede data fjernes fra denne enhed.</translation>
 <translation id="7496732379142025470">For at spare på batteriet er “Ok Google” kun aktiveret, når din enhed er sluttet til en strømkilde. Gå til Indstillinger for at foretage ændringer.</translation>
 <translation id="7497215489070763236">Serverens CA-certifikat</translation>
 <translation id="7497981768003291373">Du har ingen nyligt registrerede WebRTC-tekstlogfiler.</translation>
@@ -5778,7 +5773,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="899676909165543803">Fingeraftrykslæseren sidder nederst til højre på dit tastatur. Tryk let på den med en finger.</translation>
 <translation id="8998315123278494053">Skift til åbne apps</translation>
 <translation id="8999560016882908256">Fejl i sektionens syntaks: <ph name="ERROR_LINE" /></translation>
-<translation id="9002878223019487115"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" /> <ph name="RECENT_PERMISSIONS_CHANGE_2" /></translation>
+<translation id="9002878223019487115"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /></translation>
 <translation id="9003647077635673607">Tillad på alle websites</translation>
 <translation id="9003677638446136377">Kontrollér igen</translation>
 <translation id="9003704114456258138">Frekvens</translation>

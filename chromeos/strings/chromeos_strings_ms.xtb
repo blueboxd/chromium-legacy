@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1195447618553298278">Ralat tidak diketahui.</translation>
+<translation id="1468664791493211953">Tawaran</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> mengurus peranti ini dan mungkin dapat memantau aktiviti anda.</translation>
 <translation id="150962533380566081">PUK tidak sah.</translation>
 <translation id="1510238584712386396">Pelancar</translation>
@@ -42,6 +43,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7690294790491645610">Sahkan kata laluan baharu</translation>
 <translation id="808894953321890993">Tukar kata laluan</translation>
+<translation id="8208861521865154048">Manfaat</translation>
 <translation id="8747900814994928677">Sahkan penukaran</translation>
 <translation id="910415269708673980">Muat semula tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>

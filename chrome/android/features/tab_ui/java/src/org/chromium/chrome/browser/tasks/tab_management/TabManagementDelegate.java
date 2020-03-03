@@ -38,10 +38,11 @@ public interface TabManagementDelegate {
      *         communicate with this surface.
      * @param fakeboxDelegate The delegate of the fake search box.
      * @param isTabCarousel Whether show the Tabs in carousel mode.
+     * @param hasMVTiles whether has MV tiles on the surface.
      * @return The {@link TasksSurface}.
      */
     TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel);
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel, boolean hasMVTiles);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

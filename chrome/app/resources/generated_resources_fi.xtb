@@ -869,7 +869,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2190069059097339078">Wi-Fi-tunnuksien hakija</translation>
 <translation id="219008588003277019">Asiakasmoduuli: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(tyhjä)</translation>
-<translation id="2191223688506386601">Lopuksi</translation>
 <translation id="2191754378957563929">Päällä</translation>
 <translation id="2192505247865591433">Lähettäjä:</translation>
 <translation id="2193365732679659387">Luottamusasetukset</translation>
@@ -2565,7 +2564,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4555769855065597957">Varjo</translation>
 <translation id="4555863373929230635">Jos haluat tallentaa salasanoja Google-tilillesi, kirjaudu sisään ja ota synkronointi käyttöön.</translation>
 <translation id="4558426062282641716">Automaattisen käynnistyksen lupaa pyydetty</translation>
-<translation id="4558491878126948419">Vastaanota vinkkejä (<ph name="DEVICE_TYPE" />) ja Google-tuotteiden päivityksiä ja anna palautetta. Voit lopettaa tilauksen milloin vain.</translation>
 <translation id="4559617833001311418">Tämä sivusto käyttää liikkeen- ja valontunnistimiasi.</translation>
 <translation id="4561893854334016293">Ei äskettäin muutettuja lupia</translation>
 <translation id="4562155214028662640">Lisää sormenjälki</translation>
@@ -2835,7 +2833,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4943691134276646401"><ph name="CHROME_EXTENSION_NAME" /> haluaa yhdistää sarjaporttiin</translation>
 <translation id="4944310289250773232">Todennuspalvelun tarjoaa <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Toiminnot</translation>
-<translation id="4952981627953231344">Plugin VM ei ole sallittu tällä laitteella. Ota yhteyttä organisaatiosi laitevalvojaan.</translation>
 <translation id="4953808748584563296">Oranssi oletusavatar</translation>
 <translation id="4955710816792587366">Valitse PIN-koodi</translation>
 <translation id="4959262764292427323">Salasanat tallennetaan Google-tilillesi, jotta voit käyttää niitä kaikilla laitteilla</translation>
@@ -3018,6 +3015,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5233736638227740678">&amp;Liitä</translation>
 <translation id="5234764350956374838">Piilota</translation>
 <translation id="5235050375939235066">Poistetaanko sovellus?</translation>
+<translation id="523505283826916779">Esteettömyysasetukset</translation>
 <translation id="5235750401727657667">Korvaa sivu, joka näkyy uuden välilehden avaamisen yhteydessä</translation>
 <translation id="5238278114306905396">Sovellus <ph name="EXTENSION_NAME" /> poistettiin automaattisesti.</translation>
 <translation id="5241128660650683457">Lukea kaikkia tietojasi vierailemissasi sivustoissa</translation>
@@ -3438,7 +3436,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5804241973901381774">Käyttöoikeudet</translation>
 <translation id="5805697420284793859">Ikkunat</translation>
 <translation id="5806773519584576205">0° (oletus)</translation>
-<translation id="5811750797187914944">Valmis</translation>
 <translation id="5812674658566766066">Laajenna kaikki</translation>
 <translation id="5814126672212206791">Yhteyden tyyppi</translation>
 <translation id="5815645614496570556">X.400-osoite</translation>
@@ -4061,7 +4058,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6680442031740878064">Käytettävissä: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Nopeus</translation>
 <translation id="6681668084120808868">Ota valokuva</translation>
-<translation id="6681964764822470072"><ph name="APP_NAME" /> poistetaan</translation>
 <translation id="668599234725812620">Avaa Google Play</translation>
 <translation id="6686490380836145850">Sulje välilehdet oikealle</translation>
 <translation id="6686817083349815241">Tallenna salasanasi</translation>
@@ -4643,7 +4639,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> voi kerätä kaiken kirjoittamasi tekstin, myös henkilökohtaiset tiedot, kuten salasanat ja luottokorttien numerot. Haluatko käyttää tätä laajennusta?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Unohtuiko vanha salasana?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> ja siihen yhdistetyt tiedot poistetaan tältä laitteelta.</translation>
 <translation id="7496732379142025470">Jos haluat säästää virtaa, Ok Google on käytössä vain, kun laitteesi on yhdistetty virtalähteeseen. Jos haluat tehdä muutoksia, avaa Asetukset.</translation>
 <translation id="7497215489070763236">Palvelimen CA-varmenne</translation>
 <translation id="7497981768003291373">Sinulla ei ole äskettäin tallennettuja WebRTC-tekstilokeja.</translation>

@@ -2059,7 +2059,6 @@ crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/* [ Skip ]
 
 # We don't plan to support this use-case in the near future.
 crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
-crbug.com/940797 virtual/sxg-with-network-service/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 crbug.com/940797 virtual/sxg-subresource/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 crbug.com/940797 virtual/split-http-cache/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 

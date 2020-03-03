@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
-<translation id="2148902151539191989">TILBAGE</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
 <translation id="2220572644011485463">Pin- eller adgangskode</translation>
 <translation id="2222338659135520253">Login er påkrævet</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en session, der administreres af <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Venstreklik</translation>
 <translation id="2429753432712299108">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Vis adgangskode</translation>
 <translation id="2473177541599297363">Bekræft opløsningen</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2484513351006226581">Tryk på <ph name="KEYBOARD_SHORTCUT" /> for at skifte tastaturlayout.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Knap til automatisk klik</translation>
 <translation id="4215497585250573029">VPN-indstillinger</translation>
 <translation id="4217571870635786043">Diktering</translation>
-<translation id="421885205185866088">Pinkode til chipkort for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Vis indstillinger for notifikationer. Notifikationer er slået fra</translation>
 <translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse.</translation>
 <translation id="453661520163887813">Fuldt opladet om <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Skjul adgangskode</translation>
 <translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
 <translation id="4585337515783392668">Stop cast på en ukendt modtager</translation>
 <translation id="4628757576491864469">Enheder</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
+<translation id="54609108002486618">Administreret</translation>
 <translation id="5465662442746197494">Har du brug for hjælp?</translation>
 <translation id="5496819745535887422">Din administrator gendanner en tidligere version på din enhed. Alle data slettes, når enheden genstartes.</translation>
 <translation id="5519195206574732858">LTE</translation>

@@ -22,7 +22,6 @@ public class TailSuggestionView extends TextView {
 
     public TailSuggestionView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setMinimumHeight(getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_height));
         setGravity(Gravity.CENTER_VERTICAL);
         setMaxLines(1);
         ApiCompatibilityUtils.setTextAppearance(this, R.style.TextAppearance_TextLarge_Primary);

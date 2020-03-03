@@ -157,6 +157,11 @@ struct XRInputSourceDescription {
 };
 
 struct XRInputSourceState {
+  // Uniquely identifies input source. The IDs are *not* guaranteed to be unique
+  // within a session - they can potentially be reused by the device. The IDs
+  // will be unique per frame data delivered, and the device must not reuse an
+  // ID for at least one frame after the corresponding source is no longer
+  // present.
   uint32 source_id;
 
   // Description of this input source's behavior. Should be mostly static, only
@@ -170,6 +175,16 @@ struct XRInputSourceState {
   // True when position is estimated by something like a neck or arm model.
   // False when position is based on sensors tracking a 6DoF pose.
   bool emulated_position;
+
+  // True if the input source should be considered auxiliary, as opposed to
+  // primary. See https://immersive-web.github.io/webxr/#auxiliary-input-source.
+  // Auxiliary input sources do not cause the select events to fire.
+  // Note: some of subsequent fields are named "primary_*" - this does not imply
+  // that the input source needs to have is_auxiliary set to false for those
+  // fields to be present / valid. Input sources (even auxiliary) can have
+  // multiple buttons - those fields are used to signify the state of those of
+  // them that are considered primary for the specified input source.
+  bool is_auxiliary;
 
   // Describes the current state of the primary input.
   bool primary_input_pressed;

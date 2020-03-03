@@ -13,6 +13,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="1524282610922162960">Share a Chromium tab</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Your administrator requires that you relaunch Chromium to apply an update}=1{Your administrator requires that you relaunch Chromium to apply an update. Your Incognito window won't reopen.}other{Your administrator requires that you relaunch Chromium to apply an update. Your # Incognito windows won't reopen.}}</translation>
+<translation id="1663739491876737434">Chromium can't check your passwords. Try again tomorrow.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -63,6 +64,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{A new update for Chromium is available and will be applied as soon as you relaunch.}=1{A new update for Chromium is available and will be applied as soon as you relaunch. Your Incognito window won't reopen.}other{A new update for Chromium is available and will be applied as soon as you relaunch. Your # Incognito windows won't reopen.}}</translation>
+<translation id="3685209450716071127">Chromium can't check your passwords. Try checking your Internet connection.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Your administrator asks that you relaunch Chromium to apply this update}=1{Your administrator asks that you relaunch Chromium to apply this update. Your Incognito window won't reopen.}other{Your administrator asks that you relaunch Chromium to apply this update. Your # Incognito windows won't reopen.}}</translation>
 <translation id="3713809861844741608">Open link in new Chromium &amp;tab</translation>
 <translation id="3728336900324680424">Chromium will access your Drive to make suggestions in the address bar</translation>
@@ -94,7 +96,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4943838377383847465">Chromium is in background mode.</translation>
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="4994636714258228724">Add yourself to Chromium</translation>
+<translation id="5093066630040073147">No saved passwords. Chromium can check your passwords when you save them in your Google Account.</translation>
 <translation id="5277894862589591112">To apply your changes, relaunch Chromium</translation>
+<translation id="5310059007469274549">Chromium can't check your passwords because there are too many</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Updating Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Allow Chromium sign-in</translation>
@@ -104,12 +108,14 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="5480860683791598150">Chromium needs access to your location to share your location with this site</translation>
+<translation id="5488573303232097702">Chromium didn't update. Something went wrong. Fix Chrome update problems and failed updates.</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
 <translation id="5623402015214259806">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="5631814766731275228">Chromium name and picture</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5653831366781983928">Please restart Chromium now</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
+<translation id="5814748786105822016">Chromium can't check your passwords</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5895138241574237353">Restart</translation>
@@ -125,6 +131,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium will relaunch now}=1{Chromium will relaunch in 1 second}other{Chromium will relaunch in # seconds}}</translation>
 <translation id="6248213926982192922">Make Chromium the default browser</translation>
+<translation id="6266342355635466082">Chromium can't check for updates. Try checking your Internet connection.</translation>
 <translation id="6268381023930128611">Sign out of Chromium?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> may be dangerous, so Chromium has blocked it.</translation>
 <translation id="6309712487085796862">Chromium is using your camera.</translation>
@@ -200,6 +207,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relaunch Chromium within a day}other{Relaunch Chromium within # days}}</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
+<translation id="8568283329061645092">Chromium can check your passwords when you sign in with your Google Account</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
@@ -207,6 +215,7 @@ Google Chrome is unable to recover your settings.</translation>
       Chromium browser settings<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
+<translation id="8774315820480073720">Your administrator manages Chromium updates</translation>
 <translation id="8796602469536043152">Chromium needs permission to access your camera and microphone for this site</translation>
 <translation id="8803635938069941624">Chromium OS terms</translation>
 <translation id="8821041990367117597">Chromium could not sync your data because your account sign-in details are out of date.</translation>

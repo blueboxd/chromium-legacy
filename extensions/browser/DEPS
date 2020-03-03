@@ -23,6 +23,10 @@ include_rules = [
   "+grit/extensions_strings.h",
   "+net",
   "-net/url_request",
+  "+net/url_request/redirect_info.h",
+  "+net/url_request/redirect_util.h",
+  # Needed for a flag.
+  "+net/url_request/url_request.h",
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/buildflags",
   "+services/data_decoder/public",

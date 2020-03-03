@@ -27,9 +27,7 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {
-  capabilities_.output_surface_origin = gl_surface_->FlipsVertically()
-                                            ? SurfaceOrigin::kTopLeft
-                                            : SurfaceOrigin::kBottomLeft;
+  capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
 
   DCHECK(context_state_->gr_context());
@@ -112,8 +110,9 @@ void SkiaOutputDeviceWebView::InitSkiaSurface(unsigned int fbo) {
 
   GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
                                       framebuffer_info);
-  auto origin = gl_surface_->FlipsVertically() ? kTopLeft_GrSurfaceOrigin
-                                               : kBottomLeft_GrSurfaceOrigin;
+  auto origin = (gl_surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft)
+                    ? kTopLeft_GrSurfaceOrigin
+                    : kBottomLeft_GrSurfaceOrigin;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_state_->gr_context(), render_target, origin, color_type,
       color_space_.ToSkColorSpace(), &surface_props);

@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">কম শক্তিৰ চ্চাৰ্জাৰ</translation>
 <translation id="2135456203358955318">ড’ক কৰা বিৱৰ্ধক</translation>
 <translation id="2144487987174258011">Adobe Flash Player আপডে’ট কৰিবলৈ ৰিষ্টাৰ্ট কৰক</translation>
-<translation id="2148902151539191989">উভতি যাওক</translation>
 <translation id="2208323208084708176">সমন্বিত ডেস্কটপ ম'ড</translation>
 <translation id="2220572644011485463">পিন বা পাছৱৰ্ড</translation>
 <translation id="2222338659135520253">ছাইন ইন কৰাৰ আৱশ্যক</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DOMAIN" />এ পৰিচালনা কৰা এটা পৰিচালিত ছেশ্বন হৈছে <ph name="DISPLAY_NAME" /></translation>
 <translation id="2427507373259914951">বাওঁফালে ক্লিক কৰা কার্য</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে। গ্ৰহণ কৰাৰ আগতে অনুগ্ৰহ কৰি এই পাছকীটো যে সেই ডিভাইচটোত দেখুওৱা হৈছে সেইয়া নিশ্চিত কৰক: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">পাছৱৰ্ড দেখুৱাওক</translation>
 <translation id="2473177541599297363">ৰিজ’লিউশ্বন নিশ্চিত কৰক</translation>
 <translation id="2482878487686419369">জাননী</translation>
 <translation id="2484513351006226581">কীব'র্ডৰ লেইআউট সলনি কৰিবলৈ <ph name="KEYBOARD_SHORTCUT" /> টিপক।</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">স্বয়ংক্ৰিয়ভাৱে ক্লিকৰ বুটাম</translation>
 <translation id="4215497585250573029">ভিপিএনৰ ছেটিংসমূহ</translation>
 <translation id="4217571870635786043">শ্ৰুতলিপি</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" />ৰ বাবে স্মাৰ্ট কাৰ্ডৰ পিন</translation>
 <translation id="4239069858505860023">জিপিআৰএছ</translation>
 <translation id="4261870227682513959">জাননীৰ ছেটিং দেখুৱাওক। জাননী অফ আছে</translation>
 <translation id="4269883910223712419">এই ডিভাইচটোৰ প্ৰশাসকে এইকেইটা কাৰ্য কৰিব পাৰে:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হ'বলৈ <ph name="TIME" /> বাকী</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">পাছৱৰ্ড লুকুৱাওক</translation>
 <translation id="4570957409596482333">কথা ক’বলৈ বাছনি কৰক বুটাম</translation>
 <translation id="4585337515783392668">কোনো অজ্ঞাত প্ৰাপকলৈ কাষ্ট কৰাটো বন্ধ কৰক</translation>
 <translation id="4628757576491864469">ডিভাইচ</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">তাৎক্ষণিক টেথাৰিং কৰাৰ সুবিধা</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">সকলো ব্যৱহাৰকাৰীকে ইতিমধ্যে এই ছেশ্বনত অন্তৰ্ভুক্ত কৰা হৈছে।</translation>
+<translation id="54609108002486618">পৰিচালিত</translation>
 <translation id="5465662442746197494">সহায় লাগিবনে?</translation>
 <translation id="5496819745535887422">আপোনাৰ প্ৰশাসকে আপোনাৰ ডিভাইচ ৰ’ল বেক কৰিছে। আপোনাৰ ডিভাইচটো ৰিষ্টাৰ্ট কৰিলে সকলো ডেটা মচা হ’ব।</translation>
 <translation id="5519195206574732858">এলটিই</translation>
@@ -480,6 +481,7 @@
 <translation id="7405710164030118432">ডিভাইচটো আনলক কৰিবলৈ আপোনাৰ Family Linkৰ অভিভাৱকৰ প্ৰৱেশ ক'ডটো দিয়ক</translation>
 <translation id="742594950370306541">কেমেৰা ব্যৱহাৰ কৰি থকা হৈছে।</translation>
 <translation id="743058460480092004">কেমেৰা আৰু মাইক্ৰ’ফন ব্যৱহাৰ হৈ আছে।</translation>
+<translation id="7466449121337984263">অনুগ্ৰহ কৰি ছেন্সৰটো স্পৰ্শ কৰক</translation>
 <translation id="7497767806359279797">ভাষা আৰু কীব'র্ড বাছনি কৰক</translation>
 <translation id="7536035074519304529">আইপি ঠিকনা: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">শুবৰ সময় হ’ল</translation>

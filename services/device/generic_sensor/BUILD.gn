@@ -55,6 +55,8 @@ source_set("generic_sensor") {
     "platform_sensor_reader_win.cc",
     "platform_sensor_reader_win.h",
     "platform_sensor_reader_win_base.h",
+    "platform_sensor_util.cc",
+    "platform_sensor_util.h",
     "platform_sensor_win.cc",
     "platform_sensor_win.h",
     "relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.cc",

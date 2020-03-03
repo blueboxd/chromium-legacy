@@ -83,15 +83,13 @@ class FakeUrlRequestRewriteRulesProvider
   bool rules_sent_ = false;
 };
 
-class FakeApplicationControllerReceiver
-    : public chromium::cast::ApplicationControllerReceiver {
+class FakeApplicationContext : public chromium::cast::ApplicationContext {
  public:
-  FakeApplicationControllerReceiver() = default;
-  ~FakeApplicationControllerReceiver() final = default;
-  FakeApplicationControllerReceiver(const FakeApplicationControllerReceiver&) =
-      delete;
-  FakeApplicationControllerReceiver& operator=(
-      const FakeApplicationControllerReceiver&) = delete;
+  FakeApplicationContext() = default;
+  ~FakeApplicationContext() final = default;
+
+  FakeApplicationContext(const FakeApplicationContext&) = delete;
+  FakeApplicationContext& operator=(const FakeApplicationContext&) = delete;
 
   chromium::cast::ApplicationController* controller() {
     if (!controller_)
@@ -101,7 +99,10 @@ class FakeApplicationControllerReceiver
   }
 
  private:
-  // chromium::cast::ApplicationControllerReceiver implementation.
+  // chromium::cast::ApplicationContext implementation.
+  void GetMediaSessionId(GetMediaSessionIdCallback callback) final {
+    callback(0);
+  }
   void SetApplicationController(
       fidl::InterfaceHandle<chromium::cast::ApplicationController> controller)
       final {
@@ -122,8 +123,7 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       : ComponentStateBase(component_url),
         app_config_binding_(outgoing_directory(), app_config_manager),
         bindings_manager_binding_(outgoing_directory(), bindings_manager),
-        controller_receiver_binding_(outgoing_directory(),
-                                     &controller_receiver_) {
+        context_binding_(outgoing_directory(), &application_context_) {
     if (url_request_rules_provider) {
       url_request_rules_provider_binding_.emplace(outgoing_directory(),
                                                   url_request_rules_provider);
@@ -137,8 +137,8 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   FakeComponentState(const FakeComponentState&) = delete;
   FakeComponentState& operator=(const FakeComponentState&) = delete;
 
-  FakeApplicationControllerReceiver* controller_receiver() {
-    return &controller_receiver_;
+  FakeApplicationContext* application_context() {
+    return &application_context_;
   }
 
   void set_on_delete(base::OnceClosure on_delete) {
@@ -167,10 +167,9 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   base::Optional<base::fuchsia::ScopedServiceBinding<
       chromium::cast::UrlRequestRewriteRulesProvider>>
       url_request_rules_provider_binding_;
-  FakeApplicationControllerReceiver controller_receiver_;
-  const base::fuchsia::ScopedServiceBinding<
-      chromium::cast::ApplicationControllerReceiver>
-      controller_receiver_binding_;
+  FakeApplicationContext application_context_;
+  const base::fuchsia::ScopedServiceBinding<chromium::cast::ApplicationContext>
+      context_binding_;
   base::OnceClosure on_delete_;
 };
 
@@ -494,7 +493,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationControllerBound) {
   // Spin the message loop to handle creation of the component state.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(component_state_);
-  EXPECT_TRUE(component_state_->controller_receiver()->controller());
+  EXPECT_TRUE(component_state_->application_context()->controller());
 }
 
 // Verify an App launched with remote debugging enabled is properly reachable.

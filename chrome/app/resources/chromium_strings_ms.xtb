@@ -11,6 +11,7 @@
 <translation id="151962892725702025">OS Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="1524282610922162960">Kongsi tab Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Pentadbir anda menghendaki anda melancarkan semula Chromium untuk menggunakan kemas kini}=1{Pentadbir anda menghendaki anda melancarkan semula Chromium untuk menggunakan kemas kini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda menghendaki anda melancarkan semula Chromium untuk menggunakan kemas kini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
+<translation id="1663739491876737434">Chromium tidak dapat menyemak kata laluan anda. Cuba lagi esok.</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
 <translation id="1774152462503052664">Benarkan Chromium dijalankan dalam latar belakang</translation>
 <translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
@@ -61,6 +62,7 @@
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3639635944603682591">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium.}=1{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
+<translation id="3685209450716071127">Chromium tidak dapat menyemak kata laluan anda. Cuba periksa sambungan Internet anda.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini}=1{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="3713809861844741608">Buka pautan dalam &amp;tab Chromium baharu</translation>
 <translation id="3728336900324680424">Chromium akan mengakses Drive anda untuk membuat cadangan dalam bar alamat</translation>
@@ -92,7 +94,9 @@
 <translation id="4943838377383847465">Chromium dalam mod latar belakang.</translation>
 <translation id="4987820182225656817">Tetamu boleh menggunakan Chromium tanpa meninggalkan apa-apa.</translation>
 <translation id="4994636714258228724">Tambahkan diri anda kepada Chromium</translation>
+<translation id="5093066630040073147">Tiada kata laluan yang disimpan. Chromium boleh menyemak kata laluan anda apabila anda menyimpan kata laluan tersebut dalam Akaun Google anda.</translation>
 <translation id="5277894862589591112">Untuk menggunakan perubahan anda, mulakan semula Chromium</translation>
+<translation id="5310059007469274549">Chromium tidak dapat menyemak kata laluan anda kerana terdapat terlalu banyak kata laluan</translation>
 <translation id="5358375970380395591">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Mengemas kini Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Benarkan log masuk Chromium</translation>
@@ -102,12 +106,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5479196819031988440">OS Chromium tidak boleh membuka halaman ini.</translation>
 <translation id="5480860683791598150">Chromium memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini</translation>
+<translation id="5488573303232097702">Chromium tidak dikemas kini, kesilapan telah berlaku. Selesaikan masalah kemas kini dan kegagalan kemas kini Chrome.</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Kemas kini Chromium tersedia}=1{Kemas kini Chromium tersedia}other{Kemas kini Chromium telah tersedia selama # hari}}</translation>
 <translation id="5631814766731275228">Nama dan gambar Chromium</translation>
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5653831366781983928">Sila mulakan semula Chromium sekarang</translation>
 <translation id="5698481217667032250">Paparkan Chromium dalam bahasa ini</translation>
+<translation id="5814748786105822016">Chromium tidak dapat menyemak kata laluan anda</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
@@ -123,6 +129,7 @@
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium akan dilancarkan semula sekarang}=1{Chromium akan dilancarkan semula dalam masa sesaat}other{Chromium akan dilancarkan semula dalam masa # saat}}</translation>
 <translation id="6248213926982192922">Jadikan Chromium penyemak imbas lalai</translation>
+<translation id="6266342355635466082">Chromium tidak dapat menyemak kemas kini. Cuba periksa sambungan Internet anda.</translation>
 <translation id="6268381023930128611">Log keluar daripada Chromium?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> mungkin berbahaya, jadi Chromium telah menyekat fail itu.</translation>
 <translation id="6309712487085796862">Chromium menggunakan kamera anda.</translation>
@@ -198,6 +205,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Lancarkan semula Chromium dalam masa sehari}other{Lancarkan semula Chromium dalam masa # hari}}</translation>
 <translation id="8453117565092476964">Arkib pemasang rosak atau tidak sah. Sila muat turun Chromium sekali lagi.</translation>
 <translation id="8493179195440786826">Chromium sudah usang</translation>
+<translation id="8568283329061645092">Chromium boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="8619360774459241877">Melancarkan Chromium...</translation>
 <translation id="8621669128220841554">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Chromium.</translation>
@@ -205,6 +213,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
       tetapan penyemak imbas Chromium anda<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chromium atau membuat carian dari Kotak Omni.</translation>
 <translation id="8704119203788522458">Ini Chromium anda</translation>
+<translation id="8774315820480073720">Pentadbir anda mengurus kemas kini Chromium</translation>
 <translation id="8796602469536043152">Chromium memerlukan kebenaran untuk mengakses kamera dan mikrofon anda bagi tapak ini</translation>
 <translation id="8803635938069941624">Syarat Chromium OS</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>

@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Ezin dira zure hobespenak irakurri.
 
 Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak ez dira aldatuko.</translation>
+<translation id="1098170124587656448">Datuen isilpekotasunaren urratzeen, luzapen gaiztoen eta abarren aurrean babes zaitzake Chromium-ek</translation>
 <translation id="1104942323762546749">Chromium-ek pasahitzak esportatu nahi ditu. Hori baimentzeko, idatzi Windows pasahitza.</translation>
 <translation id="113122355610423240">Chromium da arakatzaile lehenetsia</translation>
 <translation id="1185134272377778587">Chromium arakatzaileari buruz</translation>
@@ -69,6 +70,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Pertsonalizatu eta kontrolatu Chromium. Zure arreta behar duen zerbait dago. Sakatu informazio gehiago ikusteko.</translation>
 <translation id="3889543394854987837">Chromium irekitzeko eta arakatzen hasteko, egin klik zure izenean.</translation>
+<translation id="3945058413678539331">Pasahitzak kopiatzen saiatzen ari da Chromium. Hori baimentzeko, idatzi Windows-eko pasahitza.</translation>
 <translation id="4036079820698952681">Lagundu Chromium hobetzen <ph name="BEGIN_LINK" />uneko ezarpenen<ph name="END_LINK" /> berri emanda</translation>
 <translation id="4050175100176540509">Segurtasun-hobekuntza garrantzitsuak eta eginbide berriak dituzu erabilgarri azken bertsioan.</translation>
 <translation id="421369550622382712">Ezagutu Chromium-erako aplikazio, joko, luzapen eta gai bikainak.</translation>
@@ -191,6 +193,7 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="8013436988911883588">Chromium-ek sarbidea duenean, webguneek sarbidea eskatuko dizute.</translation>
 <translation id="81770708095080097">Fitxategia arriskutsua da; horregatik, blokeatu egin du Chromium-ek.</translation>
 <translation id="8248265253516264921">Irudiren batek ez badu azalpen lagungarririk, halako bat lortzen ahaleginduko da Chromium. Azalpen horiek sortzeko, irudiak Google-ri bidaltzen zaizkio. Aukera hori desaktibatu nahi baduzu, joan ezarpenetara.</translation>
+<translation id="8276522524898344151">Pasahitzak kopiatzen saiatzen ari da Chromium.</translation>
 <translation id="8290862415967981663">Baliteke fitxategia arriskutsua izatea; horregatik, blokeatu egin du Chromium-ek.</translation>
 <translation id="8330519371938183845">Hasi saioa Chromium gailu guztietan sinkronizatu eta pertsonalizatzeko</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> Chromium erabiltzen ari da lehendik ere</translation>

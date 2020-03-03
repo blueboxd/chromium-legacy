@@ -39,6 +39,8 @@ export class DebugSources {
     document.body.insertBefore(div, document.body.firstChild);
 
     document.body.addEventListener('beforexrselect', showEvent);
+
+    this.sourceCounter = 0;
   }
 
   startSession(session) {
@@ -61,6 +63,12 @@ export class DebugSources {
     let sourceDebug = [];
     for (let i = 0; i < inputSources.length; ++i) {
       let source = inputSources[i];
+
+      if(source.number == null) {
+        source.number = this.sourceCounter;
+        this.sourceCounter++;
+      }
+
       let ray_debug = 'n/a';
       if (source.targetRaySpace) {
         let rayPose = frame.getPose(source.targetRaySpace, xrSpace);
@@ -73,8 +81,8 @@ export class DebugSources {
         let m = gripPose.transform.matrix;
         grip_debug = m[12].toFixed(3) + ',' + m[13].toFixed(3) + ',' + m[14].toFixed(3);
       }
-      sourceDebug.push('#' + i +
-                       ' ray:' + ray_debug +
+      sourceDebug.push('#' + source.number +
+                       '(index: ' + i +') ray:' + ray_debug +
                        ' grip:' + grip_debug);
     }
     document.getElementById('debug-sources-list').innerText =

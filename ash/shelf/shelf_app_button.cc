@@ -704,17 +704,6 @@ void ShelfAppButton::ChildPreferredSizeChanged(views::View* child) {
   Layout();
 }
 
-void ShelfAppButton::InkDropAnimationStarted() {
-  shelf_view_->shelf()->SetRoundedCornersForInkDrop(/*show=*/true,
-                                                    /*ink_drop_host=*/this);
-}
-
-void ShelfAppButton::InkDropRippleAnimationEnded(views::InkDropState state) {
-  if (state == views::InkDropState::HIDDEN)
-    shelf_view_->shelf()->SetRoundedCornersForInkDrop(/*show=*/false,
-                                                      /*ink_drop_host=*/this);
-}
-
 void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -814,6 +803,17 @@ bool ShelfAppButton::HandleAccessibleAction(
   return views::View::HandleAccessibleAction(action_data);
 }
 
+void ShelfAppButton::InkDropAnimationStarted() {
+  SetInkDropAnimationStarted(/*started=*/true);
+}
+
+void ShelfAppButton::InkDropRippleAnimationEnded(views::InkDropState state) {
+  // Notify the host view of the ink drop to be hidden at the end of ink drop
+  // animation.
+  if (state == views::InkDropState::HIDDEN)
+    SetInkDropAnimationStarted(/*started=*/false);
+}
+
 void ShelfAppButton::UpdateState() {
   indicator_->SetVisible(!(state_ & STATE_HIDDEN) &&
                          (state_ & STATE_ATTENTION || state_ & STATE_RUNNING ||
@@ -875,6 +875,14 @@ void ShelfAppButton::OnImplicitAnimationsCompleted() {
   icon_scale_ = 1.0f;
   SetImage(icon_image_);
   icon_view_->layer()->SetTransform(gfx::Transform());
+}
+
+void ShelfAppButton::SetInkDropAnimationStarted(bool started) {
+  if (ink_drop_animation_started_ == started)
+    return;
+
+  ink_drop_animation_started_ = started;
+  shelf_button_delegate()->NotifyInkDropActivity(started, /*sender=*/this);
 }
 
 }  // namespace ash

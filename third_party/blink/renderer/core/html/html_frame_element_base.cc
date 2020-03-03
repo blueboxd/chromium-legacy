@@ -134,13 +134,18 @@ void HTMLFrameElementBase::ParseAttribute(
   } else if (name == html_names::kMarginheightAttr) {
     SetMarginHeight(value.ToInt());
   } else if (name == html_names::kScrollingAttr) {
-    // Auto and yes both simply mean "allow scrolling." No means "don't allow
-    // scrolling."
-    if (EqualIgnoringASCIICase(value, "auto") ||
-        DeprecatedEqualIgnoringCase(value, "yes"))
-      SetScrollbarMode(mojom::blink::ScrollbarMode::kAuto);
-    else if (EqualIgnoringASCIICase(value, "no"))
+    // https://html.spec.whatwg.org/multipage/rendering.html#the-page:
+    // If [the scrolling] attribute's value is an ASCII
+    // case-insensitive match for the string "off", "noscroll", or "no", then
+    // the user agent is expected to prevent any scrollbars from being shown for
+    // the viewport of the Document's browsing context, regardless of the
+    // 'overflow' property that applies to that viewport.
+    if (EqualIgnoringASCIICase(value, "off") ||
+        EqualIgnoringASCIICase(value, "noscroll") ||
+        EqualIgnoringASCIICase(value, "no"))
       SetScrollbarMode(mojom::blink::ScrollbarMode::kAlwaysOff);
+    else
+      SetScrollbarMode(mojom::blink::ScrollbarMode::kAuto);
   } else if (name == html_names::kOnbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?
     SetAttributeEventListener(

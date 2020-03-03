@@ -2855,7 +2855,7 @@ bool GLRenderer::FlippedFramebuffer() const {
 bool GLRenderer::FlippedRootFramebuffer() const {
   // GL is normally flipped, so a flipped output results in an unflipping.
   return output_surface_->capabilities().output_surface_origin ==
-         SurfaceOrigin::kBottomLeft;
+         gfx::SurfaceOrigin::kBottomLeft;
 }
 
 void GLRenderer::EnsureScissorTestEnabled() {

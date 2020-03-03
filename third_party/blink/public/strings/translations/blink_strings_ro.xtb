@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="8346634859695247203">secțiune</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
+<translation id="839593075537728968">Valoarea trebuie să fie cuprinsă între <ph name="MINIMUM_TIME" /> și <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">timp scurs: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">parte</translation>
 <translation id="8433900881053900389">bară de instrumente</translation>

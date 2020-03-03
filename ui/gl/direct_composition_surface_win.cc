@@ -603,8 +603,8 @@ bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
   return root_surface_->SetEnableDCLayers(enable);
 }
 
-bool DirectCompositionSurfaceWin::FlipsVertically() const {
-  return true;
+gfx::SurfaceOrigin DirectCompositionSurfaceWin::GetOrigin() const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 bool DirectCompositionSurfaceWin::SupportsPostSubBuffer() {

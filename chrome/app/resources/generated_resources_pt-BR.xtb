@@ -869,7 +869,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2190069059097339078">Getter de credenciais de Wi-Fi</translation>
 <translation id="219008588003277019">Módulo do cliente nativo: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(vazio)</translation>
-<translation id="2191223688506386601">Um último detalhe</translation>
 <translation id="2191754378957563929">Ativado</translation>
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configurações de confiança</translation>
@@ -2568,7 +2567,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4555769855065597957">Shadow</translation>
 <translation id="4555863373929230635">Para salvar senhas na Conta do Google, faça login e ative a sincronização.</translation>
 <translation id="4558426062282641716">Permissão de inicialização automática solicitada</translation>
-<translation id="4558491878126948419">Receba dicas sobre o <ph name="DEVICE_TYPE" /> e atualizações relacionadas a produtos do Google e compartilhe seu feedback. Você pode cancelar a inscrição a qualquer momento.</translation>
 <translation id="4559617833001311418">Este site está acessando os sensores de luz ou movimento.</translation>
 <translation id="4561893854334016293">Não há permissões com mudanças recentes</translation>
 <translation id="4562155214028662640">Adicionar impressão digital</translation>
@@ -2838,7 +2836,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" quer se conectar a uma porta serial</translation>
 <translation id="4944310289250773232">Este serviço de autenticação é hospedado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Ações</translation>
-<translation id="4952981627953231344">O Plugin VM não é permitido neste dispositivo. Entre em contato com o administrador de dispositivos da sua organização.</translation>
 <translation id="4953808748584563296">Avatar laranja padrão</translation>
 <translation id="4955710816792587366">Escolher o PIN</translation>
 <translation id="4959262764292427323">As senhas são salvas na sua Conta do Google para que você possa usá-las em qualquer dispositivo</translation>
@@ -3021,6 +3018,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5233736638227740678">&amp;Colar</translation>
 <translation id="5234764350956374838">Dispensar</translation>
 <translation id="5235050375939235066">Desinstalar app?</translation>
+<translation id="523505283826916779">Configurações de acessibilidade</translation>
 <translation id="5235750401727657667">Substituir a página que você vê ao abrir uma nova guia</translation>
 <translation id="5238278114306905396">O aplicativo "<ph name="EXTENSION_NAME" />" foi removido automaticamente.</translation>
 <translation id="5241128660650683457">Ler todos os dados sobre os websites que você visita</translation>
@@ -3442,7 +3440,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5805697420284793859">Gerenciador de janelas</translation>
 <translation id="5806773519584576205">0° (Padrão)</translation>
-<translation id="5811750797187914944">Tudo pronto</translation>
 <translation id="5812674658566766066">Expandir tudo</translation>
 <translation id="5814126672212206791">Tipo de conexão</translation>
 <translation id="5815645614496570556">Endereço X.400</translation>
@@ -4064,7 +4061,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6680442031740878064">Disponível: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidade</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
-<translation id="6681964764822470072">O app "<ph name="APP_NAME" />" será desinstalado.</translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
 <translation id="6686490380836145850">Fechar guias à direita</translation>
 <translation id="6686817083349815241">Salvar sua senha</translation>
@@ -4646,7 +4642,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7493386493263658176">A extensão <ph name="EXTENSION_NAME" /> pode coletar todo o texto que você digita, incluindo dados pessoais, como senhas e números de cartão de crédito. Quer usar essa extensão?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Esqueceu sua senha antiga?</translation>
-<translation id="7496511874649569424">O app <ph name="LINUX_APP_NAME" /> e os dados associados serão removidos deste dispositivo.</translation>
 <translation id="7496732379142025470">Para economizar bateria, a hotword "Ok Google" só é ativada quando o dispositivo está conectado a uma fonte de energia. Se quiser alterar isso, acesse as configurações.</translation>
 <translation id="7497215489070763236">Certificado de CA do servidor</translation>
 <translation id="7497981768003291373">Você não tem nenhum registro de texto WebRTC capturado recentemente.</translation>
@@ -5808,7 +5803,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9033857511263905942">&amp;Colar</translation>
 <translation id="9037965129289936994">Mostrar original</translation>
 <translation id="903797871439633902">Esta é a última atualização automática de software e segurança deste <ph name="DEVICE_TYPE" />. Para receber atualizações futuras, faça upgrade para um modelo mais novo. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
-<translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Você tem 1 tentativa restante.}one{Você tem # tentativa restante.}other{Você tem # tentativas restantes.}}</translation>
+<translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{Você só tem mais 1 tentativa.}one{Você só tem mais # tentativa.}other{Você só tem mais # tentativas.}}</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Atualizar senha para <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">O acesso a arquivos locais no seu computador foi desativado pelo administrador</translation>

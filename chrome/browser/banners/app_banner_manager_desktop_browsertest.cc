@@ -12,12 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -35,78 +35,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
 
-namespace {
+namespace banners {
 
-class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
- public:
-  explicit FakeAppBannerManagerDesktop(content::WebContents* web_contents)
-      : AppBannerManagerDesktop(web_contents) {
-    MigrateObserverListForTesting(web_contents);
-  }
-
-  static FakeAppBannerManagerDesktop* CreateForWebContents(
-      content::WebContents* web_contents) {
-    auto banner_manager =
-        std::make_unique<FakeAppBannerManagerDesktop>(web_contents);
-    banner_manager->MigrateObserverListForTesting(web_contents);
-
-    FakeAppBannerManagerDesktop* result = banner_manager.get();
-    web_contents->SetUserData(FakeAppBannerManagerDesktop::UserDataKey(),
-                              std::move(banner_manager));
-    return result;
-  }
-
-  // Configures a callback to be invoked when the app banner flow finishes.
-  void PrepareDone(base::OnceClosure on_done) { on_done_ = std::move(on_done); }
-
-  State state() { return AppBannerManager::state(); }
-
-  void AwaitAppInstall() {
-    base::RunLoop loop;
-    on_install_ = loop.QuitClosure();
-    loop.Run();
-  }
-
- protected:
-  void OnInstall(blink::mojom::DisplayMode display) override {
-    AppBannerManager::OnInstall(display);
-    if (on_install_)
-      std::move(on_install_).Run();
-  }
-
-  void OnFinished() {
-    if (on_done_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(on_done_));
-    }
-  }
-
-  void DidFinishCreatingWebApp(const web_app::AppId& app_id,
-                               web_app::InstallResultCode code) override {
-    AppBannerManagerDesktop::DidFinishCreatingWebApp(app_id, code);
-    OnFinished();
-  }
-
-  void UpdateState(AppBannerManager::State state) override {
-    AppBannerManager::UpdateState(state);
-
-    if (state == AppBannerManager::State::PENDING_ENGAGEMENT ||
-        state == AppBannerManager::State::PENDING_PROMPT ||
-        state == AppBannerManager::State::COMPLETE) {
-      OnFinished();
-    }
-  }
-
- private:
-  base::OnceClosure on_done_;
-  base::OnceClosure on_install_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAppBannerManagerDesktop);
-};
-
-}  // anonymous namespace
-
-using State = banners::AppBannerManager::State;
+using State = AppBannerManager::State;
 
 class AppBannerManagerDesktopBrowserTest
     : public AppBannerManagerBrowserTestBase {
@@ -135,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(web_contents);
+      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -161,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   content::TitleWatcher watcher(web_contents, title);
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
-  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+  tester.ExpectUniqueSample(kInstallDisplayModeHistogram,
                             blink::mojom::DisplayMode::kStandalone, 1);
 }
 
@@ -171,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(web_contents);
+      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -218,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest, DestroyWebContents) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(web_contents);
+      TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
 
   {
     base::RunLoop run_loop;
@@ -260,8 +191,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        InstallPromptAfterUserMenuInstall) {
   base::HistogramTester tester;
 
-  FakeAppBannerManagerDesktop* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(
+  TestAppBannerManagerDesktop* manager =
+      TestAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   {
@@ -283,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 
-  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+  tester.ExpectUniqueSample(kInstallDisplayModeHistogram,
                             blink::mojom::DisplayMode::kMinimalUi, 1);
 }
 
@@ -291,8 +222,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        InstallPromptAfterUserOmniboxInstall) {
   base::HistogramTester tester;
 
-  FakeAppBannerManagerDesktop* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(
+  TestAppBannerManagerDesktop* manager =
+      TestAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   {
@@ -316,14 +247,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 
-  tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
+  tester.ExpectUniqueSample(kInstallDisplayModeHistogram,
                             blink::mojom::DisplayMode::kFullscreen, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
                        PolicyAppInstalled_NoPrompt) {
-  FakeAppBannerManagerDesktop* manager =
-      FakeAppBannerManagerDesktop::CreateForWebContents(
+  TestAppBannerManagerDesktop* manager =
+      TestAppBannerManagerDesktop::CreateForWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
   web_app::ExternalInstallOptions options =
@@ -341,7 +272,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     EXPECT_EQ(State::COMPLETE, manager->state());
   }
 
-  EXPECT_EQ(banners::AppBannerManager::InstallableWebAppCheckResult::kNo,
+  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNo,
             manager->GetInstallableWebAppCheckResultForTesting());
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 }
+
+}  // namespace banners

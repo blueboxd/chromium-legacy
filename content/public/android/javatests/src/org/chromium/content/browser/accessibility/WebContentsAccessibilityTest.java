@@ -32,12 +32,16 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.InterstitialPageDelegateAndroid;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -73,6 +77,44 @@ public class WebContentsAccessibilityTest {
 
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
+    private static class TestWebContentsObserver extends WebContentsObserver {
+        private boolean mInterstitialShowing;
+
+        public TestWebContentsObserver(WebContents webContents) {
+            super(webContents);
+        }
+
+        public boolean isInterstitialShowing() throws ExecutionException {
+            return TestThreadUtils
+                    .runOnUiThreadBlocking(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() {
+                            return mInterstitialShowing;
+                        }
+                    })
+                    .booleanValue();
+        }
+
+        @Override
+        public void didAttachInterstitialPage() {
+            mInterstitialShowing = true;
+        }
+
+        @Override
+        public void didDetachInterstitialPage() {
+            mInterstitialShowing = false;
+        }
+    }
+
+    private void waitForInterstitial(final boolean shouldBeShown) {
+        CriteriaHelper.pollUiThread(Criteria.equals(shouldBeShown, new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return mActivityTestRule.getWebContents().isShowingInterstitialPage();
+            }
+        }));
+    }
 
     /*
      * Enable accessibility and wait until WebContentsAccessibility.getAccessibilityNodeProvider()
@@ -822,5 +864,51 @@ public class WebContentsAccessibilityTest {
         Assert.assertTrue(result[0].left < result[1].left);
         Assert.assertTrue(result[1].left < result[2].left);
         Assert.assertTrue(result[2].left < result[3].left);
+    }
+
+    /*
+     * Run this Test under asan to check if the references to the native
+     * WebContentsAccessibility had been cleared after the native
+     * WebContentsAccessibility is destroyed.
+     */
+    @Test
+    @MediumTest
+    public void testReferencesWithInterstitialPage() throws ExecutionException {
+        final String url =
+                UrlUtils.encodeHtmlDataUri("<html><head></head><body>test</body></html>");
+        mActivityTestRule.launchContentShellWithUrl(url);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        enableAccessibilityAndWaitForNodeProvider();
+        final String htmlContent = "<html>"
+                + "<head>"
+                + "</head>"
+                + "<body>"
+                + "  <h1>This is a interstitial page</h1>"
+                + "</body>"
+                + "</html>";
+        final InterstitialPageDelegateAndroid delegate =
+                new InterstitialPageDelegateAndroid(htmlContent);
+        WebContentsAccessibilityTest.TestWebContentsObserver observer =
+                TestThreadUtils.runOnUiThreadBlocking(
+                        new Callable<WebContentsAccessibilityTest.TestWebContentsObserver>() {
+                            @Override
+                            public WebContentsAccessibilityTest.TestWebContentsObserver call() {
+                                delegate.showInterstitialPage(
+                                        url, mActivityTestRule.getWebContents());
+                                return new WebContentsAccessibilityTest.TestWebContentsObserver(
+                                        mActivityTestRule.getWebContents());
+                            }
+                        });
+
+        waitForInterstitial(true);
+        Assert.assertTrue("WebContentsObserver not notified of interstitial showing",
+                observer.isInterstitialShowing());
+        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Test passes if destory doesn't crash.
+                mActivityTestRule.getWebContents().destroy();
+            }
+        });
     }
 }

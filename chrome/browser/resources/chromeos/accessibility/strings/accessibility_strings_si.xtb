@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">ඊළඟ</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">මීළඟ 4 වෙනි මට්ටමේ ශීර්ෂ නැත</translation>
+<translation id="1212770441379271564">මීළඟ කෙටිමං කිහිපය ChromeVox විධාන නොවේ, නමුත් ඒවා Chrome වෙතින් උපරිමය ලබා ගැනීමට තවම ඉතා ප්‍රයෝජනවත් වේ.
+බොත්තම් සහ සබැඳි වැනි ක්‍රියා කළ හැකි අයිතම හරහා ඉදිරියට සංචලන කිරීමට, පටිති යතුර ඔබන්න. පසුපසට සංචලන කිරීමට, Shift+Tab ඔබන්න.
+Omnibox යැයි ද පැවෙසෙන, Chrome බ්‍රවුසර ලිපින කොටුවට ඇතුළු වීමට, Control + L ඔබන්න.
+නව පටිත්තක් ස්වයංක්‍රීයව විවෘත කර එය වෙත යාමට, Control+T ඔබන්න. ඔබේ කර්සරය omnibox තුළ තිබෙයි.
+පටිත්තක් වැසීමට, Control+W ඔබන්න.
+විවෘත පටිති අතර ඉදිරියට යාමට, Control+Tab භාවිත කරන්න.
+Chrome බ්‍රවුසර මෙනුව විවෘත කිරීමට, Alt+F ඔබන්න.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome වෙත හඬ දීම</translation>
 <translation id="1225969361094801578">තද පතුරු පාෂාණ අළු</translation>
 <translation id="1229276918471378188">ආපස්සට පැනීම</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">වර්ණ අසුලනය</translation>
 <translation id="4221012616705981690">පෙර ලැයිස්තුවක් නැත</translation>
 <translation id="4221071177874897997">තදකුර සඳහන් කරන්න:</translation>
+<translation id="4225355998815256469">පෝරම පාලන</translation>
 <translation id="4229646983878045487">දිනය කාලය</translation>
 <translation id="4230834257931120629">ළා පතුරු පාෂාණ අළු</translation>
 <translation id="4231102694147661229">සංවර්ධක විකල්ප සබල කරන්න</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">වාක්‍යය</translation>
 <translation id="4623097797855662355">ග්‍රන්ථවිස්තරය</translation>
 <translation id="463135993322337640">අලුත් දේ සොයා ගැනීමට ChromeVox o, n ඔබන්න</translation>
+<translation id="4646606380313237501">{"ar": "අරාබි",
+    "as": "අසාමි",
+    "aw": "අවාධි",
+    "be": "බංගාලි",
+    "bg": "බල්ගේරියානු",
+    "bh": "බීහාරි",
+    "bo": "ටිබේට",
+    "br": "බ්‍රජ්",
+    "ca": "කාතලාන්",
+    "ckb": "සොරානි",
+    "cs": "චෙක්",
+    "cy": "වේල්ස්",
+    "da": "ඩෙන්මාර්ක",
+    "de": "ජර්මානු",
+    "de_CH": "ජර්මානු (ස්විට්සර්ලන්තය)",
+    "de_DE": "ජර්මානු (ජර්මනිය)",
+    "dra": "ද්‍රවිඩ",
+    "el": "ග්‍රීක",
+    "en": "ඉංග්‍රීසි",
+    "en_CA": "ඉංග්‍රීසි (කැනඩාව)",
+    "en_GB": "ඉංග්‍රීසි (එක්සත් රාජධානිය)",
+    "en_US": "ඉංග්‍රීසි (එක්සත් ජනපදය)",
+    "eo": "එස්පෙරාන්ටෝ",
+    "es": "ස්පාඤ්ඤ",
+    "et": "එස්තෝනියානු",
+    "fa": "ෆාර්සි",
+    "fr": "ප්‍රංශ",
+    "fr_CA": "ප්‍රංශ (කැනඩාව)",
+    "fr_FR": "ප්‍රංශ (ප්‍රංශය)",
+    "fi": "ෆින්ලන්ත",
+    "ga": "අයර්ලන්ත",
+    "gd": "ගයෙලිය",
+    "gon": "ගොණ්ඩි",
+    "gu": "ගුජරාති",
+    "he": "හීබෲ",
+    "hi": "හින්දි",
+    "hr": "ක්‍රොඒෂියානු",
+    "hu": "හංගේරියානු",
+    "hy": "අර්මේනියානු",
+    "is": "අයිස්ලන්ත",
+    "it": "ඉතාලි",
+    "iu": "ඉනුක්ටිටුට්",
+    "ka": "කන්නඩ",
+    "kh": "ඛසි",
+    "ko": "කොරියානු",
+    "kok": "කොන්කණි",
+    "kru": "කුරුඛ්",
+    "ks": "කශ්මීරි",
+    "lt": "ලිතුවේනියානු",
+    "lv": "ලැට්වියානු",
+    "mao": "මාඔරි",
+    "ml": "මලයාළම්",
+    "mt": "මෝල්ටා",
+    "mwr": "මාර්වාරි",
+    "mn": "මොන්ගෝලියානු",
+    "mun": "මුණ්ඩා",
+    "nb": "නෝර්වේ බොක්මාල්",
+    "ne": "නේපාළ",
+    "nl": "ලන්දේසි",
+    "no": "නෝර්වේ",
+    "or": "ඔරියා",
+    "pi": "පාලි",
+    "pl": "පෝලන්ත",
+    "pt": "පෘතුගීසි",
+    "pu": "පංජාබි",
+    "ro": "රොමේනියානු",
+    "ru": "රුසියානු",
+    "sa": "සංස්කෘත",
+    "si": "සින්ධි",
+    "sin": "සිංහල",
+    "sk": "ස්ලොවැක්",
+    "sl": "ස්ලොවේනියානු",
+    "sr": "සර්බියානු",
+    "sv": "ස්වීඩන",
+    "ta": "‌ෙදමළ",
+    "te": "තෙලිඟු",
+    "tr": "තුර්කි",
+    "tsn": "අෆ්‍රිකාන්ස්",
+    "uk": "උක්‍රෛන",
+    "ur": "උර්දු",
+    "vi": "වියට්නාම",
+    "zh": "චීන",
+    "zh_TW": "චීන (සම්ප්‍රදායික හාන්)"}</translation>
 <translation id="4647836961514597010">වර්ණ අසුලනය</translation>
 <translation id="4660783501463101648">පැරණි ඉවත් කෙරිණි. නැවතත් ChromeVox පැරණි වෙතට මාරු වීමට යතුරු පුවරුව ටොගලය ඉවත් කර ඇත.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">ඇළවුම් ප්‍රකාරය සක්‍රීයයි</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{කොමාව}one{# කොමා}other{# කොමා}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, පෙළ කොටුව</translation>
+<translation id="532485153932049746">පාඨ හැඩ ගැන්වීම
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, සබැඳිය</translation>
 <translation id="5331522683003474486">1 ස්විචයක් හෝ ස්විච 2 ක් සමඟ උපාංගය පාලන කරන්න.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">බ්‍රේල්</translation>
 <translation id="5402791055281059602">ශ්‍රව්‍ය පසුරු ඉඟියක්</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{තිත් කෝමාව}one{# තිත් කෝමා}other{# තිත් කෝමා}}</translation>
+<translation id="5420259671171615858">මෙනු සොයන්න</translation>
 <translation id="5435274640623994081">Earcon ඇතුළු වීම සබල කරන්න</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{වඩා අඩු}one{# වඩා අඩු ලකුණු}other{# වඩා අඩු ලකුණු}}</translation>
 <translation id="5444587279251314700">(සක්‍රිය)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">සොයා ගන්නා ලද වැරදි</translation>
 <translation id="7408482676469142474">වගු</translation>
 <translation id="7425395583360211003">ආපසු යන්න</translation>
+<translation id="7429415133937917139">නැවුම් කළ හැකි බ්‍රේල් සංදර්ශකයක ආදානය
+        තිරයෙහි ඉහළින්ම ඇති ChromeVox පුවරුව තුළ අනුකරණ කරයි</translation>
 <translation id="7434509671034404296">සංවර්ධක</translation>
 <translation id="743783356331413498">උදාහරණය</translation>
 <translation id="7439060726180460871">නාමාවලිය</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">පෙර රේඩියෝ බොත්තම</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">මීළඟ සංයුක්ත කොටුවක් නැත</translation>
+<translation id="772146615414628379">සුබ පැතුම්! ඔබ ChromeVox භාවිත කිරීමට අත්‍යවශ්‍ය දේ සාර්ථකව ඉගෙන ගෙන ඇත. ඔබට ඕනෑම වේලාවක සෙවීම+තිත ඔබා ChromeVox විධානය විවෘත කළ හැකි බව මතක තබා ගන්න. ChromeVox සහ Chrome OS ගැන තවත් දැන ගැනීමට, පහත ලිපි වෙත පැමිණෙන්න.
+    ඔබ නිබන්ධනය නිම කර ඇති නම්, වැසීමේ බොත්තම වෙත සංචලන කිරීමට ChromeVox භාවිත කර එය ක්ලික් කරන්න.</translation>
 <translation id="7724603315864178912">කැපීම</translation>
 <translation id="7731785449856576010">මීළඟ මාධ්‍ය විජට්ටු නැත</translation>
 <translation id="773906353055481349">කොටුව මගින් සංචලනයට ඊතල සමඟ සෙවීම+Ctrl+Alt ඔබන්න.</translation>

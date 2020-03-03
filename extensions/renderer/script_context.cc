@@ -67,7 +67,37 @@ static std::string ToStringOrDefault(v8::Isolate* isolate,
   return ascii_value.empty() ? dflt : ascii_value;
 }
 
+using FrameToDocumentLoader =
+    base::flat_map<blink::WebLocalFrame*, blink::WebDocumentLoader*>;
+
+FrameToDocumentLoader& FrameDocumentLoaderMap() {
+  static base::NoDestructor<FrameToDocumentLoader> map;
+  return *map;
+}
+
+blink::WebDocumentLoader* CurrentDocumentLoader(
+    const blink::WebLocalFrame* frame) {
+  auto& map = FrameDocumentLoaderMap();
+  auto it = map.find(frame);
+  return it == map.end() ? frame->GetDocumentLoader() : it->second;
+}
+
 }  // namespace
+
+ScriptContext::ScopedFrameDocumentLoader::ScopedFrameDocumentLoader(
+    blink::WebLocalFrame* frame,
+    blink::WebDocumentLoader* document_loader)
+    : frame_(frame), document_loader_(document_loader) {
+  auto& map = FrameDocumentLoaderMap();
+  DCHECK(map.find(frame_) == map.end());
+  map[frame_] = document_loader_;
+}
+
+ScriptContext::ScopedFrameDocumentLoader::~ScopedFrameDocumentLoader() {
+  auto& map = FrameDocumentLoaderMap();
+  DCHECK_EQ(document_loader_, map.find(frame_)->second);
+  map.erase(frame_);
+}
 
 ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
                              blink::WebLocalFrame* web_frame,
@@ -269,7 +299,7 @@ GURL ScriptContext::GetDocumentLoaderURLForFrame(
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  blink::WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+  blink::WebDocumentLoader* document_loader = CurrentDocumentLoader(frame);
   return document_loader ? GURL(document_loader->GetUrl()) : GURL();
 }
 
@@ -278,7 +308,7 @@ GURL ScriptContext::GetAccessCheckedFrameURL(
     const blink::WebLocalFrame* frame) {
   const blink::WebURL& weburl = frame->GetDocument().Url();
   if (weburl.IsEmpty()) {
-    blink::WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+    blink::WebDocumentLoader* document_loader = CurrentDocumentLoader(frame);
     if (document_loader &&
         frame->GetSecurityOrigin().CanAccess(
             blink::WebSecurityOrigin::Create(document_loader->GetUrl()))) {

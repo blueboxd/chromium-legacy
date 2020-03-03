@@ -1214,10 +1214,12 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     EGLint attrib;
     eglGetConfigAttrib(GetDisplay(), GetConfig(),
                        EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE, &attrib);
-    flips_vertically_ = (attrib == EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
+    surface_origin_ = (attrib == EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE)
+                          ? gfx::SurfaceOrigin::kTopLeft
+                          : gfx::SurfaceOrigin::kBottomLeft;
   }
 
-  if (flips_vertically_) {
+  if (surface_origin_ == gfx::SurfaceOrigin::kTopLeft) {
     egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_ANGLE);
     egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
   }
@@ -1660,8 +1662,8 @@ bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
   return supports_post_sub_buffer_;
 }
 
-bool NativeViewGLSurfaceEGL::FlipsVertically() const {
-  return flips_vertically_;
+gfx::SurfaceOrigin NativeViewGLSurfaceEGL::GetOrigin() const {
+  return surface_origin_;
 }
 
 EGLTimestampClient* NativeViewGLSurfaceEGL::GetEGLTimestampClient() {
@@ -1797,7 +1799,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
   }
-  if (flips_vertically_) {
+  if (surface_origin_ == gfx::SurfaceOrigin::kTopLeft) {
     // With EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE the contents are rendered
     // inverted, but the PostSubBuffer rectangle is still measured from the
     // bottom left.

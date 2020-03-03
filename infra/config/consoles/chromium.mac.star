@@ -29,6 +29,11 @@ luci.console_view(
             short_name = '13',
         ),
         luci.console_view_entry(
+            builder = 'ci/Mac10.14 Tests',
+            category = 'release',
+            short_name = '14',
+        ),
+        luci.console_view_entry(
             builder = 'ci/WebKit Mac10.13 (retina)',
             category = 'release',
             short_name = 'ret',

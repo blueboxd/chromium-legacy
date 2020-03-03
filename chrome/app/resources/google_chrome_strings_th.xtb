@@ -101,6 +101,7 @@
 <translation id="4293420128516039005">ลงชื่อเข้าใช้เพื่อซิงค์และปรับเปลี่ยน Chrome ในอุปกรณ์ต่างๆ</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">Chrome ช่วยให้คุณปลอดภัยจากการละเมิดข้อมูล ส่วนขยายที่ไม่ปลอดภัย และอื่นๆ ได้</translation>
 <translation id="4343195214584226067">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chrome แล้ว</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="4458462641685292929">Google Chrome กำลังดำเนินการอย่างอื่นอยู่ โปรดลองอีกครั้งในภายหลัง</translation>
@@ -193,12 +194,14 @@
 <translation id="7777080907402804672">หากรูปภาพไม่มีคำอธิบายที่เป็นประโยชน์ Chrome จะพยายามใส่คำอธิบายให้คุณ รูปภาพจะส่งมายัง Google เพื่อสร้างคำอธิบาย คุณปิดการดำเนินการนี้ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="7781002470561365167">Google Chrome เวอร์ชันใหม่มีให้ได้ลองใช้กันแล้ว</translation>
 <translation id="7787950393032327779">ดูเหมือนว่าโปรไฟล์กำลังถูกใช้งานโดยกระบวนการอื่นของ Google Chrome (<ph name="PROCESS_ID" />) บนคอมพิวเตอร์อีกเครื่อง (<ph name="HOST_NAME" />)  Chrome ล็อกโปรไฟล์ไว้เพื่อไม่ให้โปรไฟล์เกิดความเสียหาย  หากคุณมั่นใจว่าไม่มีกระบวนการอื่นใดกำลังใช้โปรไฟล์นี้อยู่ คุณสามารถปลดล็อกโปรไฟล์และเปิด Chrome ใหม่</translation>
+<translation id="7801699035218095297">Google Chrome กำลังพยายามคัดลอกรหัสผ่าน โปรดพิมพ์รหัสผ่าน Windows ของคุณเพื่ออนุญาต</translation>
 <translation id="7808348361785373670">นำออกจาก Chrome...</translation>
 <translation id="7825851276765848807">การติดตั้งล้มเหลวเนื่องจากเกิดข้อผิดพลาดที่ไม่ระบุ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="7855730255114109580">Google Chrome อัปเดตแล้ว</translation>
 <translation id="7890208801193284374">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chrome ได้ตามที่พวกเขาต้องการ</translation>
 <translation id="7896673875602241923">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chrome ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chrome ใหม่เพื่อเก็บข้อมูลแยก</translation>
 <translation id="7916016681687251387">Chrome OS ซิงค์ข้อมูลของคุณไม่ได้ แก้ไขเลย</translation>
+<translation id="7930071585467473040">Google Chrome กำลังพยายามคัดลอกรหัสผ่าน</translation>
 <translation id="7962410387636238736">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Windows XP และ Windows Vista แล้ว</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="8013993649590906847">หากรูปภาพไม่มีคำอธิบายที่เป็นประโยชน์ Chrome จะพยายามใส่คำอธิบายให้คุณ รูปภาพจะส่งมายัง Google เพื่อสร้างคำอธิบาย</translation>

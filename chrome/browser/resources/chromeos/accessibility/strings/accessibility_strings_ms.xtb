@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1206619573307042055">marki</translation>
 <translation id="1207086294218137981">Tiada tajuk tahap 4 seterusnya</translation>
+<translation id="1212770441379271564">Beberapa pintasan yang berikut ini bukan perintah ChromeVox, tetapi pintasan ini sangat berguna untuk memanfaatkan sepenuhnya Chrome.
+    Untuk menavigasi ke hadapan daripada satu item yang boleh diambil tindakan kepada satu item yang lain seperti butang dan pautan, tekan kekunci Tab. Untuk menavigasi ke belakang, tekan Shift+Tab. 
+    Untuk memasuki kotak alamat penyemak imbas Chrome, yang juga dikenali sebagai kotak omni, tekan Control+L. 
+    Untuk membuka dan mencapai tab baharu secara automatik, tekan Control+T. Kursor anda akan berada dalam kotak omni. 
+    Untuk menutup tab, tekan Control+W. 
+    Untuk bergerak ke hadapan daripada satu tab terbuka kepada satu tab terbuka yang lain, gunakan Control+Tab. 
+    Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara kepada Chrome</translation>
 <translation id="1225969361094801578">Kelabu Loh Gelap</translation>
 <translation id="1229276918471378188">Langkauan sebelumnya</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">pemilih warna</translation>
 <translation id="4221012616705981690">Tiada senarai sebelumnya</translation>
 <translation id="4221071177874897997">Tunjukkan huruf tebal:</translation>
+<translation id="4225355998815256469">Kawalan Borang</translation>
 <translation id="4229646983878045487">tarikh masa</translation>
 <translation id="4230834257931120629">Kelabu Loh Cerah</translation>
 <translation id="4231102694147661229">Dayakan Pilihan Pembangun</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Ayat</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Tekan o, n ChromeVox untuk mengetahui perkara baharu</translation>
+<translation id="4646606380313237501">{"ar": "Arab",
+    "as": "Assam",
+    "aw": "Awadhi",
+    "be": "Bengali",
+    "bg": "Bulgaria",
+    "bh": "Bihari",
+    "bo": "Tibet",
+    "br": "Braj",
+    "ca": "Catalonia",
+    "ckb": "Sorani",
+    "cs": "Czech",
+    "cy": "Wales",
+    "da": "Denmark",
+    "de": "Jerman",
+    "de_CH": "Jerman (Switzerland)",
+    "de_DE": "Jerman (Jerman)",
+    "dra": "Dravidia",
+    "el": "Greece",
+    "en": "Inggeris",
+    "en_CA": "Inggeris (Kanada)",
+    "en_GB": "Inggeris (United Kingdom)",
+    "en_US": "Inggeris (Amerika Syarikat)",
+    "eo": "Esperanto",
+    "es": "Sepanyol",
+    "et": "Estonia",
+    "fa": "Parsi",
+    "fr": "Perancis",
+    "fr_CA": "Perancis (Kanada)",
+    "fr_FR": "Perancis (Perancis)",
+    "fi": "Finland",
+    "ga": "Ireland",
+    "gd": "Gaelic",
+    "gon": "Gondi",
+    "gu": "Gujarat",
+    "he": "Ibarani",
+    "hi": "Hindi",
+    "hr": "Croatia",
+    "hu": "Hungary",
+    "hy": "Armenia",
+    "is": "Iceland",
+    "it": "Itali",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Korea",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmir",
+    "lt": "Lithuania",
+    "lv": "Latvia",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Malta",
+    "mwr": "Marwar",
+    "mn": "Mongolia",
+    "mun": "Munda",
+    "nb": "Bokmål Norway",
+    "ne": "Nepal",
+    "nl": "Belanda",
+    "no": "Norway",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Poland",
+    "pt": "Portugis",
+    "pu": "Punjabi",
+    "ro": "Romania",
+    "ru": "Rusia",
+    "sa": "Sanskrit",
+    "si": "Sindh",
+    "sin": "Sinhala",
+    "sk": "Slovakia",
+    "sl": "Slovenia",
+    "sr": "Serbia",
+    "sv": "Sweden",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Turki",
+    "tsn": "Afrikaans",
+    "uk": "Ukraine",
+    "ur": "Urdu",
+    "vi": "Vietnam",
+    "zh": "Cina",
+    "zh_TW": "Cina (Han Tradisional)"}</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
 <translation id="4660783501463101648">Klasik dialih keluar. Togol papan kekunci untuk menukar kembali kepada ChromeVox Klasik telah dialih keluar.</translation>
 <translation id="4661075872484491155">pohon</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Mod lekit didayakan</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547">Kotak teks, <ph name="VALUE" /></translation>
+<translation id="532485153932049746">Pemformatan teks
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590">Pautan, <ph name="NAME" /></translation>
 <translation id="5331522683003474486">Kawal peranti dengan hanya 1 atau 2 suis.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Makluman mod</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{koma bertitik}other{# koma bertitik}}</translation>
+<translation id="5420259671171615858">Cari dalam menu</translation>
 <translation id="5435274640623994081">Dayakan pengelogan ikon audio</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang daripada}other{# tanda kurang daripada}}</translation>
 <translation id="5444587279251314700">(aktif)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Kesilapan ejaan dikesan</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">pulangan</translation>
+<translation id="7429415133937917139">Menyerupai output paparan braille yang boleh dimuat semula
+    dalam panel ChromeVox di bahagian atas skrin</translation>
 <translation id="7434509671034404296">Pembangun</translation>
 <translation id="743783356331413498">Contoh</translation>
 <translation id="7439060726180460871">Direktori</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Butang radio sebelumnya</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Tiada kotak kombo seterusnya</translation>
+<translation id="772146615414628379">Tahniah! Anda telah berjaya mempelajari langkah asas untuk menggunakan ChromeVox. Ingat bahawa anda boleh membuka menu perintah ChromeVox pada bila-bila masa dengan menekan Search+Noktah. Untuk mengetahui lebih lanjut tentang ChromeVox dan OS Chrome, lawati artikel berikut.
+    Jika anda sudah selesai menggunakan tutorial, gunakan ChromeVox untuk mendapatkan butang Tutup dan klik butang itu.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tiada widget media seterusnya</translation>
 <translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan anak panah untuk menavigasi mengikut sel</translation>

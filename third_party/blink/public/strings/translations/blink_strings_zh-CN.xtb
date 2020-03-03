@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">字幕</translation>
 <translation id="8346634859695247203">部分</translation>
 <translation id="835897206747267392">值无效。</translation>
+<translation id="839593075537728968">数值必须介于<ph name="MINIMUM_TIME" /> 和<ph name="MAXIMUM_TIME" /> 之间。</translation>
 <translation id="8403857369060869934">已播放时间：<ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">部分</translation>
 <translation id="8433900881053900389">工具栏</translation>

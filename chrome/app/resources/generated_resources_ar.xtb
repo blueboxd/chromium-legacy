@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">‏أداة الحصول على بيانات اعتماد WiFi</translation>
 <translation id="219008588003277019">وحدة البرنامج العميل الأصلي: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(فارغ)</translation>
-<translation id="2191223688506386601">تتبقى خطوة أخيرة</translation>
 <translation id="2191754378957563929">مفعّل</translation>
 <translation id="2192505247865591433">من:</translation>
 <translation id="2193365732679659387">إعدادات الثقة</translation>
@@ -2565,7 +2564,6 @@
 <translation id="4555769855065597957">ظل</translation>
 <translation id="4555863373929230635">‏لحفظ كلمات المرور في حسابك على Google، عليك تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="4558426062282641716">تمّ طلب إذن للتشغيل التلقائي</translation>
-<translation id="4558491878126948419">‏يمكنك الحصول على نصائح وتحديثات حول <ph name="DEVICE_TYPE" /> بخصوص منتجات Google ومشاركة التعليقات. ويمكنك إلغاء الاشتراك في أي وقت.</translation>
 <translation id="4559617833001311418">تم السماح لهذا الموقع بالوصول إلى أجهزة استشعار الإضاءة أو الحركة.</translation>
 <translation id="4561893854334016293">لم يتم تغيير أذونات مؤخرًا.</translation>
 <translation id="4562155214028662640">إضافة بصمة إصبع</translation>
@@ -2835,7 +2833,6 @@
 <translation id="4943691134276646401">يجب ربط "<ph name="CHROME_EXTENSION_NAME" />" بمنفذ تسلسلي</translation>
 <translation id="4944310289250773232">تتم استضافة خدمة المصادقة هذه من قِبل <ph name="SAML_DOMAIN" />.</translation>
 <translation id="495170559598752135">إجراءات</translation>
-<translation id="4952981627953231344">‏لا يُسمح باستخدام Plugin VM على هذا الجهاز. يُرجى التواصل مع مشرف أجهزة مؤسستك.</translation>
 <translation id="4953808748584563296">الصورة الرمزية التلقائية البرتقالية</translation>
 <translation id="4955710816792587366">اختيار رقم التعريف الشخصي</translation>
 <translation id="4959262764292427323">‏يتم حفظ كلمات المرور في حسابك على Google حتى تتمكَّن من استخدامها على أي جهاز.</translation>
@@ -3018,6 +3015,7 @@
 <translation id="5233736638227740678">ل&amp;صق</translation>
 <translation id="5234764350956374838">رفض</translation>
 <translation id="5235050375939235066">هل تريد إلغاء تثبيت التطبيق؟</translation>
+<translation id="523505283826916779">إعدادات إمكانية الدخول</translation>
 <translation id="5235750401727657667">استبدال الصفحة التي تشاهدها عند فتح علامة تبويب جديدة</translation>
 <translation id="5238278114306905396">تمت إزالة التطبيق "<ph name="EXTENSION_NAME" />" تلقائيًا.</translation>
 <translation id="5241128660650683457">مراجعة كل بياناتك على مواقع الويب التي تزورها</translation>
@@ -3439,7 +3437,6 @@
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5805697420284793859">مدير النوافذ</translation>
 <translation id="5806773519584576205">0 درجة (تلقائي)</translation>
-<translation id="5811750797187914944">اكتمل الإعداد</translation>
 <translation id="5812674658566766066">توسيع الكل</translation>
 <translation id="5814126672212206791">نوع الاتصال</translation>
 <translation id="5815645614496570556">‏عنوان X.400</translation>
@@ -4061,7 +4058,6 @@
 <translation id="6680442031740878064">المساحة المتاحة: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">تقييم</translation>
 <translation id="6681668084120808868">التقاط صورة</translation>
-<translation id="6681964764822470072">سيتم إلغاء تثبيت "<ph name="APP_NAME" />".</translation>
 <translation id="668599234725812620">‏فتح Google Play</translation>
 <translation id="6686490380836145850">إغلاق علامات  التبويب في الجهة  اليسرى.</translation>
 <translation id="6686817083349815241">حفظ كلمة المرور</translation>
@@ -4643,7 +4639,6 @@
 <translation id="7493386493263658176">يمكن أن تجمع إضافة <ph name="EXTENSION_NAME" /> كل النصوص التي تكتبها، بما في ذلك المعلومات الشخصية مثل كلمات المرور وأرقام بطاقات الائتمان. هل تريد استخدام هذه الإضافة؟</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> × <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">هل نسيت كلمة المرور القديمة؟</translation>
-<translation id="7496511874649569424">سيتم إزالة <ph name="LINUX_APP_NAME" /> والبيانات المرتبطة به من هذا الجهاز.</translation>
 <translation id="7496732379142025470">‏لتوفير طاقة البطارية، يتم تفعيل “Ok Google” فقط عند اتِّصال جهازك بمصدر طاقة. لإجراء التغييرات، يُرجى الانتقال إلى "الإعدادات".</translation>
 <translation id="7497215489070763236">‏شهادة CA للخادم</translation>
 <translation id="7497981768003291373">‏ليست لديك أي سجلَّات نصية WebRTC تم التقاطها مؤخرًا.</translation>

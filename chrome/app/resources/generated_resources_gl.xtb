@@ -868,7 +868,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2190069059097339078">Utilidade de obtención de credenciais de wifi</translation>
 <translation id="219008588003277019">Módulo de cliente nativo: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(baleiro)</translation>
-<translation id="2191223688506386601">Un último detalle</translation>
 <translation id="2191754378957563929">Activado</translation>
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configuración de confianza</translation>
@@ -2567,7 +2566,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4555769855065597957">Sombra</translation>
 <translation id="4555863373929230635">Para gardar os contrasinais na túa Conta de Google, inicia sesión e activa a sincronización.</translation>
 <translation id="4558426062282641716">Solicitouse permiso de inicio automático</translation>
-<translation id="4558491878126948419">Recibe consellos sobre o dispositivo <ph name="DEVICE_TYPE" />, novidades acerca dos produtos de Google e envíanos comentarios. Podes cancelar a subscrición en calquera momento.</translation>
 <translation id="4559617833001311418">Este sitio está accedendo aos teus sensores de movemento ou luz.</translation>
 <translation id="4561893854334016293">Non cambiaches ningún permiso recentemente</translation>
 <translation id="4562155214028662640">Engadir impresión dixital</translation>
@@ -2837,7 +2835,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" quere conectarse a un porto en serie</translation>
 <translation id="4944310289250773232">Este servizo de autenticación está aloxado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Accións</translation>
-<translation id="4952981627953231344">Non se admite Plugin VM neste dispositivo. Ponte en contacto co administrador de dispositivos da túa administración.</translation>
 <translation id="4953808748584563296">Avatar laranxa predeterminado</translation>
 <translation id="4955710816792587366">Escolle o PIN</translation>
 <translation id="4959262764292427323">Os contrasinais gárdanse na túa Conta de Google para que poidas usalos en calquera dispositivo</translation>
@@ -3020,6 +3017,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5233736638227740678">&amp;Pegar</translation>
 <translation id="5234764350956374838">Rexeitar</translation>
 <translation id="5235050375939235066">Queres desinstalar a aplicación?</translation>
+<translation id="523505283826916779">Configuración de accesibilidade</translation>
 <translation id="5235750401727657667">Substituír a páxina que ves ao abrir unha nova pestana</translation>
 <translation id="5238278114306905396">A aplicación "<ph name="EXTENSION_NAME" />" eliminouse automaticamente.</translation>
 <translation id="5241128660650683457">Ler todos os teus datos dos sitios web que visitas</translation>
@@ -3440,7 +3438,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Xestor de ventás</translation>
 <translation id="5806773519584576205">0° (predeterminado)</translation>
-<translation id="5811750797187914944">Todo listo</translation>
 <translation id="5812674658566766066">Despregar todo</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Enderezo X.400</translation>
@@ -4061,7 +4058,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6680442031740878064">Espazo dispoñible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocidade</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
-<translation id="6681964764822470072">Desinstalarase "<ph name="APP_NAME" />".</translation>
 <translation id="668599234725812620">Abrir Google Play</translation>
 <translation id="6686490380836145850">Pechar as pestanas situadas á dereita</translation>
 <translation id="6686817083349815241">Gardar o teu contrasinal</translation>
@@ -4643,7 +4639,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7493386493263658176">A extensión <ph name="EXTENSION_NAME" /> pode recompilar todo o texto que escribas, incluídos os datos persoais, como contrasinais e números de tarxetas de crédito. Queres utilizala?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Esqueciches o teu contrasinal anterior?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> e os datos asociados con esta aplicación eliminaranse deste dispositivo.</translation>
 <translation id="7496732379142025470">Para aforrar batería, "Ok Google" só funciona cando o dispositivo está conectado á corrente. Para facer cambios, vai a Configuración.</translation>
 <translation id="7497215489070763236">Certificado de CA do servidor</translation>
 <translation id="7497981768003291373">Non se capturou ningún rexistro WebRTC recentemente.</translation>

@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
@@ -86,6 +88,8 @@ class MediaHistoryStoreInternal
 
   std::set<GURL> GetURLsInTableForTest(const std::string& table);
 
+  void SaveMediaFeed(const GURL& url);
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   const base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
@@ -95,6 +99,7 @@ class MediaHistoryStoreInternal
   scoped_refptr<MediaHistorySessionTable> session_table_;
   scoped_refptr<MediaHistorySessionImagesTable> session_images_table_;
   scoped_refptr<MediaHistoryImagesTable> images_table_;
+  scoped_refptr<MediaHistoryFeedsTable> feeds_table_;
   bool initialization_successful_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryStoreInternal);
@@ -111,6 +116,9 @@ MediaHistoryStoreInternal::MediaHistoryStoreInternal(
       session_images_table_(
           new MediaHistorySessionImagesTable(db_task_runner_)),
       images_table_(new MediaHistoryImagesTable(db_task_runner_)),
+      feeds_table_(media_feeds::MediaFeedsService::IsEnabled()
+                       ? new MediaHistoryFeedsTable(db_task_runner_)
+                       : nullptr),
       initialization_successful_(false) {}
 
 MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
@@ -119,6 +127,7 @@ MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_images_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(images_table_));
+  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(feeds_table_));
   db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
 }
 
@@ -220,6 +229,8 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
     status = session_images_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)
     status = images_table_->Initialize(db_.get());
+  if (feeds_table_ && status == sql::INIT_OK)
+    status = feeds_table_->Initialize(db_.get());
 
   return status;
 }
@@ -435,6 +446,28 @@ std::set<GURL> MediaHistoryStoreInternal::GetURLsInTableForTest(
   return urls;
 }
 
+void MediaHistoryStoreInternal::SaveMediaFeed(const GURL& url) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (!feeds_table_)
+    return;
+
+  if (!(CreateOriginId(url::Origin::Create(url)) &&
+        feeds_table_->SaveFeed(url))) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  DB()->CommitTransaction();
+}
+
 MediaHistoryStore::MediaHistoryStore(
     Profile* profile,
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
@@ -549,6 +582,12 @@ void MediaHistoryStore::GetURLsInTableForTest(
       base::BindOnce(&MediaHistoryStoreInternal::GetURLsInTableForTest, db_,
                      table),
       std::move(callback));
+}
+
+void MediaHistoryStore::SaveMediaFeed(const GURL& url) {
+  db_->db_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::SaveMediaFeed, db_, url));
 }
 
 }  // namespace media_history

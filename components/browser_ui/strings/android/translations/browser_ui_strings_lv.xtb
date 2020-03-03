@@ -9,6 +9,7 @@
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Bloķēts 1 sīkfails.}zero{Bloķēti # sīkfaili.}one{Bloķēts # sīkfails.}other{Bloķēti # sīkfaili.}}</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>

@@ -869,7 +869,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Modulo Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(vuoto)</translation>
-<translation id="2191223688506386601">Un'ultima cosa</translation>
 <translation id="2191754378957563929">On</translation>
 <translation id="2192505247865591433">Da:</translation>
 <translation id="2193365732679659387">Impostazioni di attendibilità</translation>
@@ -2567,7 +2566,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4555769855065597957">Ombra</translation>
 <translation id="4555863373929230635">Per salvare le password nel tuo Account Google, accedi e attiva la sincronizzazione.</translation>
 <translation id="4558426062282641716">Autorizzazione di avvio automatico richiesta</translation>
-<translation id="4558491878126948419">Ricevi suggerimenti per <ph name="DEVICE_TYPE" />, aggiornamenti sui prodotti Google e condividi il tuo feedback. Puoi annullare l'iscrizione in qualsiasi momento.</translation>
 <translation id="4559617833001311418">Questo sito ha accesso ai sensori di movimento o della luce.</translation>
 <translation id="4561893854334016293">Nessuna autorizzazione modificata di recente</translation>
 <translation id="4562155214028662640">Aggiungi impronta digitale</translation>
@@ -2837,7 +2835,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" vuole collegarsi a una porta seriale</translation>
 <translation id="4944310289250773232">Questo servizio di autenticazione è in hosting su <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Azioni</translation>
-<translation id="4952981627953231344">Plugin VM non consentito su questo dispositivo. Contatta l'amministratore del dispositivo dell'organizzazione.</translation>
 <translation id="4953808748584563296">Avatar arancione predefinito</translation>
 <translation id="4955710816792587366">Scegli il PIN</translation>
 <translation id="4959262764292427323">Le password vengono salvate nel tuo Account Google affinché tu possa usarle su qualsiasi dispositivo</translation>
@@ -3020,6 +3017,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5233736638227740678">&amp;Incolla</translation>
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="5235050375939235066">Disinstallare l'app?</translation>
+<translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5235750401727657667">Sostituzione della pagina visualizzata quando viene aperta una nuova scheda</translation>
 <translation id="5238278114306905396">L'applicazione "<ph name="EXTENSION_NAME" />" è stata rimossa automaticamente.</translation>
 <translation id="5241128660650683457">Lettura di tutti i dati sui siti web visitati</translation>
@@ -3440,7 +3438,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5805697420284793859">Gestione finestre</translation>
 <translation id="5806773519584576205">0° (valore predefinito)</translation>
-<translation id="5811750797187914944">Fatto</translation>
 <translation id="5812674658566766066">Espandi tutto</translation>
 <translation id="5814126672212206791">Tipo di connessione</translation>
 <translation id="5815645614496570556">Indirizzo X.400</translation>
@@ -4061,7 +4058,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6680442031740878064">Disponibile: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocità</translation>
 <translation id="6681668084120808868">Scatta foto</translation>
-<translation id="6681964764822470072">L'app "<ph name="APP_NAME" />" verrà disinstallata.</translation>
 <translation id="668599234725812620">Apri Google Play</translation>
 <translation id="6686490380836145850">Chiudi schede a destra</translation>
 <translation id="6686817083349815241">Salva la password</translation>
@@ -4643,7 +4639,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7493386493263658176">L'estensione <ph name="EXTENSION_NAME" /> potrebbe memorizzare tutto il testo digitato, inclusi dati personali quali password e numeri di carte di credito. Vuoi utilizzare l'estensione?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Hai dimenticato la vecchia password?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> e i dati associati saranno rimossi da questo dispositivo.</translation>
 <translation id="7496732379142025470">Per consumare meno batteria, la hotword "Ok Google" è attiva solo quando il dispositivo è collegato a una fonte di alimentazione. Per apportare modifiche, usa le Impostazioni.</translation>
 <translation id="7497215489070763236">Certificato CA del server</translation>
 <translation id="7497981768003291373">Nessun log di testo WebRTC acquisito di recente.</translation>

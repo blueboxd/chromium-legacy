@@ -110,7 +110,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     gpu::ContextResult result = display_context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
-    viz::SurfaceOrigin surface_origin = viz::SurfaceOrigin::kBottomLeft;
+    gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::move(display_context_provider), surface_origin);
   } else {

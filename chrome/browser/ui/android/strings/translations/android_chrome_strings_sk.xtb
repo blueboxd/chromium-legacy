@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Vymazať históriu, súbory cookie, dáta webov, vyrovnávaciu pamäť…</translation>
 <translation id="129382876167171263">Tu sa zobrazia súbory uložené webmi</translation>
 <translation id="129553762522093515">Nedávno zatvorené</translation>
+<translation id="1303339473099049190">Dané heslo sa nepodarilo nájsť. Skontrolujte pravopis a skúste to znova.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – odoslané zo zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Zoskupiť karty</translation>
 <translation id="1327257854815634930">História navigácie je otvorená</translation>
@@ -323,6 +324,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3350687908700087792">Zavrieť všetky karty inkognito</translation>
 <translation id="3353615205017136254">Zjednodušenú verziu stránky poskytol Google. Ak chcete načítať pôvodnú verziu, klepnite na tlačidlo Načítať pôvodnú stránku.</translation>
 <translation id="3367813778245106622">Ak chcete spustiť synchronizáciu, znova sa prihláste</translation>
+<translation id="3373979091428520308">Ak chcete zdieľať túto stránku do iného zariadenia, zapnite synchronizáciu v nastaveniach Chromu druhého zariadenia</translation>
 <translation id="3374023511497244703">Vaše záložky, história, heslá a ďalšie údaje Chromu nebudú viac synchronizované s účtom Google</translation>
 <translation id="3384347053049321195">Zdieľať obrázok</translation>
 <translation id="3386292677130313581">Pýtať sa, či chcete povoliť webu zisťovať vašu polohu (odporúčané)</translation>
@@ -672,6 +674,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5956665950594638604">Otvorenie Centra pomoci prehliadača Chrome na novej karte</translation>
 <translation id="5958275228015807058">Nájdite stiahnuté súbory a stránky</translation>
 <translation id="5962718611393537961">Klepnutím zbaliť</translation>
+<translation id="5964805880140440652">Ak chcete zdieľať túto stránku do iného zariadenia, zapnite synchronizáciu v nastaveniach Chromu</translation>
 <translation id="6000066717592683814">Ponechať Google</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6036057147555329831">Dodatočný modul ICU</translation>

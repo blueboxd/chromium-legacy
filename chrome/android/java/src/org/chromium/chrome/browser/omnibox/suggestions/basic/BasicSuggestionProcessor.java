@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
@@ -85,12 +84,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     protected boolean canRefine(OmniboxSuggestion suggestion) {
         final @OmniboxSuggestionType int suggestionType = suggestion.getType();
 
-        if (suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT
-                || suggestionType == OmniboxSuggestionType.CLIPBOARD_URL
-                || suggestionType == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
-            return false;
-        }
-
         return !mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
                 suggestion.getDisplayText());
     }
@@ -104,10 +97,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
      */
     private @SuggestionIcon int getSuggestionIconType(OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
-            if (suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_TEXT
-                    || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
-                return SuggestionIcon.MAGNIFIER;
-            } else if (suggestion.isStarred()) {
+            if (suggestion.isStarred()) {
                 return SuggestionIcon.BOOKMARK;
             } else {
                 return SuggestionIcon.GLOBE;
@@ -188,44 +178,12 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                 getSuggestedQuery(suggestion, suggestion.isUrlSuggestion(), !urlHighlighted);
 
         updateSuggestionIcon(suggestion, model);
-        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION,
-                !suggestion.isUrlSuggestion()
-                        || suggestionType == OmniboxSuggestionType.CLIPBOARD_IMAGE
-                        || suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT);
+        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION, !suggestion.isUrlSuggestion());
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
-        fetchSuggestionFavicon(model, suggestion.getUrl(), suggestion.getType());
-    }
-
-    /**
-     * Fetch suggestion favicon, if one is available.
-     * Updates icon decoration in supplied |model| if |url| is not null and points to an already
-     * visited website.
-     *
-     * @param model Model representing current suggestion.
-     * @param url Target URL the suggestion points to.
-     * @param type Suggestion type.
-     */
-    private void fetchSuggestionFavicon(
-            PropertyModel model, String url, @OmniboxSuggestionType int type) {
-        if (url == null || type == OmniboxSuggestionType.CLIPBOARD_TEXT) {
-            return;
-        }
-
-        // Include site favicon if we are presenting URL and have favicon available.
-        // TODO(gangwu): Create a separate processor for clipboard suggestions.
-        final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
-        if (iconBridge == null) return;
-
-        iconBridge.getLargeIconForStringUrl(url, mDesiredFaviconWidthPx,
-                (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) -> {
-                    if (icon == null) return;
-
-                    setSuggestionDrawableState(model,
-                            SuggestionDrawableState.Builder.forBitmap(mContext, icon).build());
-                    model.set(
-                            SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.FAVICON);
-                });
+        fetchSuggestionFavicon(model, suggestion.getUrl(), mIconBridgeSupplier.get(), () -> {
+            model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.FAVICON);
+        });
     }
 
     /**

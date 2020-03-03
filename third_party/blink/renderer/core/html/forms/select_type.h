@@ -28,7 +28,7 @@ class SelectType : public GarbageCollected<SelectType> {
                                HTMLSelectElement::SelectOptionFlags flags,
                                bool should_update_popup);
 
-  virtual void DispatchEventsIfSelectedOptionChanged();
+  virtual void DidBlur();
 
   // Update style of text in the CSS box on style or selected OPTION change.
   virtual void UpdateTextStyle();

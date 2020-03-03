@@ -19,6 +19,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/surface_origin.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
@@ -253,7 +254,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool IsSurfaceless() const;
 
-  virtual bool FlipsVertically() const;
+  virtual gfx::SurfaceOrigin GetOrigin() const;
 
   // Returns true if SwapBuffers or PostSubBuffers causes a flip, such that
   // the next buffer may be 2 frames old.
@@ -380,7 +381,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
   bool SetEnableDCLayers(bool enable) override;
   bool IsSurfaceless() const override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   bool BuffersFlipped() const override;
   bool SupportsDCLayers() const override;
   bool UseOverlaysForVideo() const override;

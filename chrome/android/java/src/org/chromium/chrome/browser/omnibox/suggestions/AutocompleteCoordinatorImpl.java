@@ -149,6 +149,12 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                                 new TailSuggestionView(parent.getContext())),
                         new BaseSuggestionViewBinder<TailSuggestionView>(
                                 TailSuggestionViewBinder::bind));
+
+                adapter.registerType(
+                        OmniboxSuggestionUiType.CLIPBOARD_SUGGESTION,
+                        parent -> new BaseSuggestionView<View>(
+                                parent.getContext(), R.layout.omnibox_basic_suggestion),
+                        new BaseSuggestionViewBinder<View>(SuggestionViewViewBinder::bind));
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, list);

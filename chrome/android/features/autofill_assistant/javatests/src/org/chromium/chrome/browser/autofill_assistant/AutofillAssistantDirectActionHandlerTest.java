@@ -29,6 +29,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -101,6 +102,7 @@ public class AutofillAssistantDirectActionHandlerTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/1057806")
     @MediumTest
     public void testReportAvailableDirectActions() throws Exception {
         mModuleEntryProvider.setInstalled();

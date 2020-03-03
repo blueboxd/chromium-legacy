@@ -870,7 +870,6 @@
 <translation id="2190069059097339078">WiFi հավատարմագրերի կորզիչ</translation>
 <translation id="219008588003277019">Native Client մոդուլ` <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(դատարկ)</translation>
-<translation id="2191223688506386601">Գրեթե պատրաստ է</translation>
 <translation id="2191754378957563929">Միաց</translation>
 <translation id="2192505247865591433">Ուղարկող`</translation>
 <translation id="2193365732679659387">Վստահության կարգավորումներ</translation>
@@ -2569,7 +2568,6 @@
 <translation id="4555769855065597957">Ստվեր</translation>
 <translation id="4555863373929230635">Գաղտնաբառերը ձեր Google հաշվում պահելու համար մտեք հաշիվ և միացրեք համաժամացումը։</translation>
 <translation id="4558426062282641716">Հարկավոր է ինքնագործարկման թույլտվություն</translation>
-<translation id="4558491878126948419">Ստացեք <ph name="DEVICE_TYPE" /> սարքերի հետ կապված խորհուրդներ և նորություններ Google-ի արտադրանքների վերաբերյալ, ինչպես նաև գրեք ձեր կարծիքները։ Դուք ցանկացած պահի կարող եք չեղարկել բաժանորդագրությունը։</translation>
 <translation id="4559617833001311418">Այս կայքին հասանելի են շարժման և լուսավորության ձեր տվիչները:</translation>
 <translation id="4561893854334016293">Թույլտվություններում վերջերս փոփոխություններ չեն արվել</translation>
 <translation id="4562155214028662640">Ավելացնել մատնահետք</translation>
@@ -2840,7 +2838,6 @@
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» ընդլայնումն ուզում է միանալ հերթական միացքին</translation>
 <translation id="4944310289250773232">Նույնականացման ծառայությունը տրամադրվում է <ph name="SAML_DOMAIN" />-ի կողմից</translation>
 <translation id="495170559598752135">Գործողություններ</translation>
-<translation id="4952981627953231344">Plugin VM-ը թույլատրված չէ այս սարքում: Կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։</translation>
 <translation id="4953808748584563296">Կանխադրված նարնջագույն ավատար</translation>
 <translation id="4955710816792587366">Ընտրեք ձեր PIN-ը</translation>
 <translation id="4959262764292427323">Գաղտնաբառերը պահվում են ձեր Google հաշվում, որպեսզի կարողանաք օգտագործել դրանք ցանկացած սարքում</translation>
@@ -3023,6 +3020,7 @@
 <translation id="5233736638227740678">&amp;Տեղադրել</translation>
 <translation id="5234764350956374838">Փակել</translation>
 <translation id="5235050375939235066">Ապատեղադրե՞լ հավելվածը</translation>
+<translation id="523505283826916779">Հատուկ գործառույթների կարգավորումներ</translation>
 <translation id="5235750401727657667">Փոխել նոր ներդիր բացելիս ցուցադրվող էջը</translation>
 <translation id="5238278114306905396">«<ph name="EXTENSION_NAME" />» հավելվածն ավտոմատ հեռացվել է:</translation>
 <translation id="5241128660650683457">Կարդալ ձեր այցելած կայքերի բոլոր տվյալները</translation>
@@ -3445,7 +3443,6 @@
 <translation id="5804241973901381774">Թույլտվություններ</translation>
 <translation id="5805697420284793859">Պատուհանների կառավարիչ</translation>
 <translation id="5806773519584576205">0° (կանխադրված)</translation>
-<translation id="5811750797187914944">Պատրաստ է</translation>
 <translation id="5812674658566766066">Ծավալել բոլորը</translation>
 <translation id="5814126672212206791">Կապի տեսակը</translation>
 <translation id="5815645614496570556">X.400 հասցե</translation>
@@ -4066,7 +4063,6 @@
 <translation id="6680442031740878064">Հասանելի է <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Խոսքի արագությունը</translation>
 <translation id="6681668084120808868">Լուսանկարել</translation>
-<translation id="6681964764822470072">«<ph name="APP_NAME" />» հավելվածը կհեռացվի:</translation>
 <translation id="668599234725812620">Բացել Google Play-ը</translation>
 <translation id="6686490380836145850">Փակել աջ կողմի ներդիրները</translation>
 <translation id="6686817083349815241">Պահել գաղտնաբառը</translation>
@@ -4648,7 +4644,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> ընդլայնումը կարող է հավաքել ձեր մուտքագրած ողջ տեքստը, այդ թվում անձնական տվյալները՝ գաղտնաբառերը և վարկային քարտերի համարները: Ուզո՞ւմ եք օգտագործել այս ընդլայնումը:</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Չե՞ք հիշում հին գաղտնաբառը:</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> հավելվածն ու դրա հետ առնչվող տվյալները կհեռացվեն այս սարքից։</translation>
 <translation id="7496732379142025470">Մարտկոցի լիցքը տնտեսելու համար «Ok Google» գործառույթն ակտիվ է, միայն երբ սարքը միացված է սնուցման աղբյուրին: Փոփոխություններ անելու համար անցեք կարգավորումներ:</translation>
 <translation id="7497215489070763236">Սերվերի CA հավաստագիր</translation>
 <translation id="7497981768003291373">Վերջերս ստեղծված WebRTC տեքստային մատյաններ չկան:</translation>

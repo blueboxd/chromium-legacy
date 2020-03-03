@@ -866,7 +866,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Native Client-modul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(tom)</translation>
-<translation id="2191223688506386601">Bare én ting til …</translation>
 <translation id="2191754378957563929">På</translation>
 <translation id="2192505247865591433">Fra:</translation>
 <translation id="2193365732679659387">Klareringsinnstillinger</translation>
@@ -2143,7 +2142,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
 <translation id="3926002189479431949">Smart Lock-telefon endret</translation>
-<translation id="3927787410750478258">Denne <ph name="DEVICE_TYPE" /> kommer til å bli administrert av <ph name="DOMAIN" />.</translation>
+<translation id="3927787410750478258">Denne <ph name="DEVICE_TYPE" />-enheten kommer til å bli administrert av <ph name="DOMAIN" />.</translation>
 <translation id="3927932062596804919">Ikke tillat</translation>
 <translation id="3928570707778085600">Vil du lagre endringene i <ph name="FILE_OR_FOLDER_NAME" />?</translation>
 <translation id="3929426037718431833">Disse utvidelsene kan se og endre informasjonen på dette nettstedet.</translation>
@@ -2563,7 +2562,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4555769855065597957">Skygge</translation>
 <translation id="4555863373929230635">For å lagre passord i Google-kontoen, logg på og slå på synkronisering.</translation>
 <translation id="4558426062282641716">Tillatelse om autostart er forespurt</translation>
-<translation id="4558491878126948419">Få tips og oppdateringer for <ph name="DEVICE_TYPE" /> om Google-produkter, og del tilbakemeldinger. Du kan avslutte abonnementet når som helst.</translation>
 <translation id="4559617833001311418">Dette nettstedet bruker bevegelses- eller lyssensorene dine.</translation>
 <translation id="4561893854334016293">Ingen nylig endrede tillatelser</translation>
 <translation id="4562155214028662640">Legg til fingeravtrykk</translation>
@@ -2833,7 +2831,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» vil koble til en seriell port</translation>
 <translation id="4944310289250773232">Verten for denne autentiseringstjenesten er <ph name="SAML_DOMAIN" />.</translation>
 <translation id="495170559598752135">Handlinger</translation>
-<translation id="4952981627953231344">Plugin VM tillates ikke på denne enheten. Kontakt enhetsadministratoren for organisasjonen din.</translation>
 <translation id="4953808748584563296">Oransje standardbrukerbilde</translation>
 <translation id="4955710816792587366">Velg PIN-koden din</translation>
 <translation id="4959262764292427323">Passordene er lagret i Google-kontoen din, slik at du kan bruke dem på alle enheter</translation>
@@ -3016,6 +3013,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5233736638227740678">&amp;Lim inn</translation>
 <translation id="5234764350956374838">Lukk</translation>
 <translation id="5235050375939235066">Vil du avinstallere appen?</translation>
+<translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
 <translation id="5235750401727657667">Erstatt siden du ser når du åpner nye faner</translation>
 <translation id="5238278114306905396">Programmet «<ph name="EXTENSION_NAME" />» ble automatisk fjernet.</translation>
 <translation id="5241128660650683457">Les alle dataene på nettstedene du besøker</translation>
@@ -3436,7 +3434,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5805697420284793859">Window Manager</translation>
 <translation id="5806773519584576205">0° (standard)</translation>
-<translation id="5811750797187914944">Ferdig</translation>
 <translation id="5812674658566766066">Vis alle</translation>
 <translation id="5814126672212206791">Tilkoblingstype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -4057,7 +4054,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6680442031740878064">Tilgjengelig: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hastighet</translation>
 <translation id="6681668084120808868">Ta et bilde</translation>
-<translation id="6681964764822470072">«<ph name="APP_NAME" />» blir avinstallert.</translation>
 <translation id="668599234725812620">Åpne Google Play</translation>
 <translation id="6686490380836145850">Lukk fanene til høyre</translation>
 <translation id="6686817083349815241">Lagre passordet ditt</translation>
@@ -4639,7 +4635,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7493386493263658176">Det kan hende at utvidelsen <ph name="EXTENSION_NAME" /> registrerer all tekst du skriver inn, deriblant personlige data som passord og kredittkortnumre. Vil du bruke denne utvidelsen?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Har du glemt det gamle passordet?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> og alle tilknyttede data blir fjernet fra denne enheten.</translation>
 <translation id="7496732379142025470">For å spare batteri er «Ok Google» bare på når enheten er koblet til en strømkilde. For å gjøre endringer, gå til Innstillinger.</translation>
 <translation id="7497215489070763236">Tjenerens CA-sertifikat</translation>
 <translation id="7497981768003291373">Du har ingen nylig lagrede WebRTC-tekstlogger.</translation>

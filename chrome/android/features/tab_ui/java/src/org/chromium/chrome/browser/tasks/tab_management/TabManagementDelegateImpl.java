@@ -39,8 +39,9 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
-        return new TasksSurfaceCoordinator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel, boolean hasMVTiles) {
+        return new TasksSurfaceCoordinator(
+                activity, propertyModel, fakeboxDelegate, isTabCarousel, hasMVTiles);
     }
 
     @Override

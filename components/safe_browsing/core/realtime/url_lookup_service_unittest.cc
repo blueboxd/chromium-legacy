@@ -9,6 +9,7 @@
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -39,8 +40,8 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
     signin::IdentityTestEnvironment identity_test_env;
     rt_service_ = std::make_unique<RealTimeUrlLookupService>(
         test_shared_loader_factory_, cache_manager_.get(),
-        identity_test_env.identity_manager(), &test_pref_service_,
-        /* is_off_the_record */ false);
+        identity_test_env.identity_manager(), &test_sync_service_,
+        &test_pref_service_, /* is_off_the_record */ false);
   }
 
   void TearDown() override {
@@ -86,6 +87,7 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
+  syncer::TestSyncService test_sync_service_;
 };
 
 TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {

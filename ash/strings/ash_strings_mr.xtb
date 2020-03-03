@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="2135456203358955318">डॉक केलेले भिंग</translation>
 <translation id="2144487987174258011">Adobe Flash Player अपडेट करण्यासाठी पुन्हा सुरू करा</translation>
-<translation id="2148902151539191989">मागे जा</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
 <translation id="2220572644011485463">पिन किंवा पासवर्ड</translation>
 <translation id="2222338659135520253">साइन इन करणे आवश्यक आहे</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेले एक सेशन आहे</translation>
 <translation id="2427507373259914951">लेफ्ट क्लिक करा</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शवली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
 <translation id="2473177541599297363">रेझोल्यूशनची खात्री करा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2484513351006226581">कीबोर्डचा लेआउट स्विच करण्यासाठी <ph name="KEYBOARD_SHORTCUT" /> दाबा.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">आपोआप क्लिक बटण</translation>
 <translation id="4215497585250573029">VPN सेटिंग्ज</translation>
 <translation id="4217571870635786043">डिक्टेशन</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> साठीचा स्‍मार्ट कार्ड पिन</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">सूचना सेटिंग्ज दाखवा. सूचना बंद आहेत</translation>
 <translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="453661520163887813">पूर्ण होण्यात <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">पासवर्ड लपवा</translation>
 <translation id="4570957409596482333">बोलण्यासाठी निवडा बटण</translation>
 <translation id="4585337515783392668">एखाद्या अज्ञात मिळवणाऱ्यावर कास्ट करणे थांबवा</translation>
 <translation id="4628757576491864469">डिव्हाइसेस</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">झटपट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सर्व उपलब्‍ध वापरकर्ते आधीपासून या सेशनवर जोडले गेले आहेत.</translation>
+<translation id="54609108002486618">व्यवस्‍थापित</translation>
 <translation id="5465662442746197494">मदत हवी आहे?</translation>
 <translation id="5496819745535887422">तुमचा व्यवस्थापक तुमचे डिव्हाइस रोल बॅक करत आहे. सर्व डेटा हटवला जाईल आणि डिव्हाइस रीस्टार्ट केले जाईल.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">डिव्हाइस अनलॉक करण्यासाठी, तुमचा Family Link पालक ॲक्सेस कोड एंटर करा</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
+<translation id="7466449121337984263">कृपया सेन्सरला स्पर्श करा</translation>
 <translation id="7497767806359279797">भाषा आणि कीबोर्ड निवडा</translation>
 <translation id="7526573455193969409">नेटवर्कचे परीक्षण केले जाऊ शकते</translation>
 <translation id="7536035074519304529">IP पत्ता: <ph name="ADDRESS" /></translation>

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
@@ -26,18 +27,6 @@ using optimization_guide::proto::PerformanceClass;
 using optimization_guide::proto::PerformanceHint;
 
 namespace {
-
-// These values are logged to UMA. Entries should not be renumbered and numeric
-// values should never be reused. Please keep in sync with
-// "PerformanceHintsObserverHintForURLResult" in
-// src/tools/metrics/histograms/enums.xml.
-enum class HintForURLResult {
-  kHintNotFound = 0,
-  kHintNotReady = 1,
-  kInvalidURL = 2,
-  kHintFound = 3,
-  kMaxValue = kHintFound,
-};
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with:
@@ -115,22 +104,44 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
     content::WebContents* web_contents,
     const GURL& url,
     bool record_metrics) {
-  PerformanceClass performance_class = [&]() {
-    if (!url.is_valid() || web_contents == nullptr) {
-      return PerformanceClass::PERFORMANCE_UNKNOWN;
-    }
+  if (web_contents == nullptr) {
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
 
-    PerformanceHintsObserver* performance_hints_observer =
-        PerformanceHintsObserver::FromWebContents(web_contents);
-    if (performance_hints_observer == nullptr) {
-      return PerformanceClass::PERFORMANCE_UNKNOWN;
-    }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile || !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile)) {
+    // We can't get performance hints if OptimizationGuide can't fetch them.
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
 
-    base::Optional<optimization_guide::proto::PerformanceHint> hint =
-        performance_hints_observer->HintForURL(record_metrics, url);
-    return hint ? hint->performance_class()
-                : PerformanceClass::PERFORMANCE_UNKNOWN;
-  }();
+  PerformanceHintsObserver* performance_hints_observer =
+      PerformanceHintsObserver::FromWebContents(web_contents);
+  if (performance_hints_observer == nullptr) {
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
+
+  HintForURLResult hint_result;
+  base::Optional<PerformanceHint> hint;
+  std::tie(hint_result, hint) = performance_hints_observer->HintForURL(url);
+  if (record_metrics) {
+    base::UmaHistogramEnumeration("PerformanceHints.Observer.HintForURLResult",
+                                  hint_result);
+  }
+
+  PerformanceClass performance_class;
+  switch (hint_result) {
+    case HintForURLResult::kHintFound:
+    case HintForURLResult::kHintNotFound:
+    case HintForURLResult::kHintNotReady:
+      performance_class = hint ? hint->performance_class()
+                               : PerformanceClass::PERFORMANCE_UNKNOWN;
+      break;
+    case HintForURLResult::kInvalidURL:
+    default:
+      // Error or unknown case. Don't allow the override.
+      return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
 
   if (record_metrics) {
     // Log to UMA before the override logic so we can determine how often the
@@ -140,8 +151,10 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
         ToUmaPerformanceClass(performance_class));
   }
 
-  if (base::FeatureList::IsEnabled(kPerformanceHintsTreatUnknownAsFast) &&
-      performance_class == PerformanceClass::PERFORMANCE_UNKNOWN) {
+  if (performance_class == PerformanceClass::PERFORMANCE_UNKNOWN &&
+      base::FeatureList::IsEnabled(kPerformanceHintsTreatUnknownAsFast)) {
+    // If we couldn't get the hint or we didn't expect it on this page, give it
+    // the benefit of the doubt.
     return PerformanceClass::PERFORMANCE_FAST;
   }
 
@@ -156,9 +169,9 @@ void PerformanceHintsObserver::RecordPerformanceUMAForURL(
                                  /*record_metrics=*/true);
 }
 
-base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
-    bool record_metrics,
-    const GURL& url) const {
+std::tuple<PerformanceHintsObserver::HintForURLResult,
+           base::Optional<PerformanceHint>>
+PerformanceHintsObserver::HintForURL(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::Optional<PerformanceHint> hint;
@@ -178,12 +191,7 @@ base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
     }
   }
 
-  if (record_metrics) {
-    base::UmaHistogramEnumeration("PerformanceHints.Observer.HintForURLResult",
-                                  hint_result);
-  }
-
-  return hint;
+  return {hint_result, hint};
 }
 
 void PerformanceHintsObserver::DidFinishNavigation(
@@ -200,6 +208,7 @@ void PerformanceHintsObserver::DidFinishNavigation(
   // We've navigated to a new page, so clear out any hints from the previous
   // page.
   hints_.clear();
+  hint_processed_ = false;
 
   if (!optimization_guide_decider_) {
     return;

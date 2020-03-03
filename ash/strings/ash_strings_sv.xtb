@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
 <translation id="2135456203358955318">Dockad skärmförstoring</translation>
 <translation id="2144487987174258011">Starta om för att uppdatera Adobe Flash Player</translation>
-<translation id="2148902151539191989">TILLBAKA</translation>
 <translation id="2208323208084708176">Enhetligt skrivbordsläge</translation>
 <translation id="2220572644011485463">Pinkod eller lösenord</translation>
 <translation id="2222338659135520253">Inloggning krävs</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> är en hanterad session som hanteras av <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Vänsterklicka</translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="2473177541599297363">Bekräfta upplösningen</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2484513351006226581">Tryck på <ph name="KEYBOARD_SHORTCUT" /> om du vill byta tangentbordslayout.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Knapp för Automatiska klick</translation>
 <translation id="4215497585250573029">VPN-inställningar</translation>
 <translation id="4217571870635786043">Diktering</translation>
-<translation id="421885205185866088">Pinkod till smartkort för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Visa aviseringsinställningar. Aviseringar har inaktiverats</translation>
 <translation id="4269883910223712419">Enhetens administratör kan</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Dölj lösenord</translation>
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
 <translation id="4585337515783392668">Sluta casta till en okänd mottagare</translation>
 <translation id="4628757576491864469">Enheter</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
+<translation id="54609108002486618">Hanterade</translation>
 <translation id="5465662442746197494">Behöver du hjälp?</translation>
 <translation id="5496819745535887422">Enheten återställs av administratören. All data raderas när enheten startas om.</translation>
 <translation id="5519195206574732858">LTE</translation>

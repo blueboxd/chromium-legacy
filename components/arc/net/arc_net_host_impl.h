@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -152,11 +153,17 @@ class ArcNetHostImpl : public KeyedService,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
 
+  // Request properties of the Service corresponding to |service_path|.
+  void RequestUpdateForNetwork(const std::string& service_path);
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // True if the chrome::NetworkStateHandler is currently being observed for
   // state changes.
   bool observing_network_state_ = false;
+  // Contains all service paths for which a property update request is
+  // currently scheduled.
+  std::set<std::string> pending_service_property_requests_;
 
   std::string cached_service_path_;
   std::string cached_guid_;

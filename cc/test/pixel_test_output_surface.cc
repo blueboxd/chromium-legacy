@@ -21,7 +21,7 @@ namespace cc {
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
-    viz::SurfaceOrigin origin)
+    gfx::SurfaceOrigin origin)
     : OutputSurface(std::move(context_provider)) {
   capabilities_.output_surface_origin = origin;
   capabilities_.supports_stencil = true;

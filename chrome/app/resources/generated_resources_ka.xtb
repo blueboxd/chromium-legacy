@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">WiFi-ს ავტორიზაციის მონაცემების მიმღები</translation>
 <translation id="219008588003277019">საკუთარი კლიენტის მოდული: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(ცარიელი)</translation>
-<translation id="2191223688506386601">დაბოლოს</translation>
 <translation id="2191754378957563929">ჩართული</translation>
 <translation id="2192505247865591433">საიდან:</translation>
 <translation id="2193365732679659387">ნდობის პარამეტრები</translation>
@@ -2567,7 +2566,6 @@
 <translation id="4555769855065597957">ჩრდილი</translation>
 <translation id="4555863373929230635">პაროლების თქვენს Google ანგარიშში შესანახად შედით სისტემაში და ჩართეთ სინქრონიზაცია.</translation>
 <translation id="4558426062282641716">მოთხოვნილია ავტომატური გაშვების ნებართვა</translation>
-<translation id="4558491878126948419">მიიღეთ რჩევები <ph name="DEVICE_TYPE" />-ის შესახებ, Google-ის პროდუქტების განახლებები და გაგვიზიარეთ გამოხმაურება. გამოწერის გაუქმება ნებისმიერ დროს შეგიძლიათ.</translation>
 <translation id="4559617833001311418">ამ საიტს აქვს წვდომა მოძრაობისა თუ განათების სენსორებზე.</translation>
 <translation id="4561893854334016293">ბოლო დროს შეცვლილი ნებართვები არ არის</translation>
 <translation id="4562155214028662640">თითის ანაბეჭდის დამატება</translation>
@@ -2837,7 +2835,6 @@
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />“ ითხოვს დაკავშირებას თანმიმდევრულ პორტთან</translation>
 <translation id="4944310289250773232">ავტორიზაციის ამ სერვისის ჰოსტინგს უზრუნველყოფს <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">ქმედებები</translation>
-<translation id="4952981627953231344">Plugin VM-ის ამ მოწყობილობაზე გამოყენება დაუშვებელია. დაუკავშირდით თქვენი ორგანიზაციის მოწყობილობის ადმინისტრატორს.</translation>
 <translation id="4953808748584563296">ნაგულისხმევი სტაფილოსფერი ავატარი</translation>
 <translation id="4955710816792587366">აირჩიეთ PIN-კოდი</translation>
 <translation id="4959262764292427323">პაროლები ინახება თქვენს Google ანგარიშში, რაც ნიშნავს, რომ მათი გამოყენება ნებისმიერ მოწყობილობაზე შეგიძლიათ</translation>
@@ -3020,6 +3017,7 @@
 <translation id="5233736638227740678">ჩ&amp;ასმა</translation>
 <translation id="5234764350956374838">გაუქმება</translation>
 <translation id="5235050375939235066">გსურთ აპის დეინსტალაცია?</translation>
+<translation id="523505283826916779">მარტივი წვდომის პარამეტრები</translation>
 <translation id="5235750401727657667">თქვენთვის ხილული გვერდის ჩანაცვლება ახალი ჩანართის გახსნისას</translation>
 <translation id="5238278114306905396">პროგრამა „<ph name="EXTENSION_NAME" />“ ავტომატურად წაიშალა.</translation>
 <translation id="5241128660650683457">წაიკითხეთ თქვენი მთლიანი მონაცემები მონახულებულ ვებსაიტებზე</translation>
@@ -3440,7 +3438,6 @@
 <translation id="5804241973901381774">ნებართვები</translation>
 <translation id="5805697420284793859">ფანჯრების მმართველი</translation>
 <translation id="5806773519584576205">0° (ნაგულისხმევი)</translation>
-<translation id="5811750797187914944">ყველაფერი მზად არის</translation>
 <translation id="5812674658566766066">ყველას გაშლა</translation>
 <translation id="5814126672212206791">კავშირის ტიპი</translation>
 <translation id="5815645614496570556">X.400 მისამართი</translation>
@@ -4061,7 +4058,6 @@
 <translation id="6680442031740878064">ხელმისაწვდომია: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">სიხშირე</translation>
 <translation id="6681668084120808868">ფოტოს გადაღება</translation>
-<translation id="6681964764822470072">მოხდება „<ph name="APP_NAME" />“-ის დეინსტალაცია.</translation>
 <translation id="668599234725812620">Google Play-ს გახსნა</translation>
 <translation id="6686490380836145850">ჩანართების დახურვა მარჯვნივ</translation>
 <translation id="6686817083349815241">შეინახეთ თქვენი პაროლი</translation>
@@ -4643,7 +4639,6 @@
 <translation id="7493386493263658176">გაფართოება „<ph name="EXTENSION_NAME" />“ თქვენ მიერ აკრეფილი ნებისმიერი ტექსტის შეგროვებას შეძლებს, მათ შორის, ისეთი პირადი ინფორმაციის, როგორიც არის პაროლები და საკრედიტო ბარათების ნომრები. გსურთ ამ გაფართოების გამოყენება?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">დაგავიწყდათ ძველი პაროლი?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> და მასთან დაკავშირებული მონაცემები ამოიშლება ამ მოწყობილობიდან.</translation>
 <translation id="7496732379142025470">ბატარეის დაზოგვის მიზნით, „Ok Google“ ჩართულია მხოლოდ მაშინ, როცა თქვენი მოწყობილობა მიერთებულია ელკვების წყაროსთან. ცვლილებების შეტანად გადადით პარამეტრებზე.</translation>
 <translation id="7497215489070763236">სერვერის CA სერტიფიკატი</translation>
 <translation id="7497981768003291373">ახლახან აღბეჭდილი WebRTC-ის ტექსტური ჟურნალები არ არის.</translation>

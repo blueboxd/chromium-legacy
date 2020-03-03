@@ -634,6 +634,12 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_texture_format_astc = true;
     AddExtensionString("GL_KHR_texture_compression_astc_ldr");
 
+    bool have_astc_hdr =
+        gfx::HasExtension(extensions, "GL_KHR_texture_compression_astc_hdr");
+    if (have_astc_hdr) {
+      AddExtensionString("GL_KHR_texture_compression_astc_hdr");
+    }
+
     // GL_COMPRESSED_RGBA_ASTC(0x93B0 ~ 0x93BD)
     GLint astc_format_it = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
     GLint astc_format_max = GL_COMPRESSED_RGBA_ASTC_12x12_KHR;

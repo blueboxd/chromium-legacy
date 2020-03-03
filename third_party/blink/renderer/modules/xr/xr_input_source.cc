@@ -385,6 +385,12 @@ void XRInputSource::UpdateButtonStates(
   if (!new_state)
     return;
 
+  DVLOG(3) << __func__ << ": state_.is_visible=" << state_.is_visible
+           << ", state_.xr_select_events_suppressed="
+           << state_.xr_select_events_suppressed
+           << ", new_state->primary_input_clicked="
+           << new_state->primary_input_clicked;
+
   if (!state_.is_visible) {
     DVLOG(3) << __func__ << ": input NOT VISIBLE";
     if (new_state->primary_input_clicked) {
@@ -438,6 +444,9 @@ void XRInputSource::UpdateButtonStates(
 void XRInputSource::ProcessOverlayHitTest(
     Element* overlay_element,
     const device::mojom::blink::XRInputSourceStatePtr& new_state) {
+  DVLOG(3) << __func__ << ": state_.xr_select_events_suppressed="
+           << state_.xr_select_events_suppressed;
+
   DCHECK(overlay_element);
   DCHECK(new_state->overlay_pointer_position);
 
@@ -484,6 +493,11 @@ void XRInputSource::ProcessOverlayHitTest(
           state_.xr_select_events_suppressed = true;
         }
 
+        DVLOG(3)
+            << __func__
+            << ": input source overlaps with cross origin content, is_visible="
+            << state_.is_visible << ", xr_select_events_suppressed="
+            << state_.xr_select_events_suppressed;
         return;
       }
     }
@@ -492,6 +506,12 @@ void XRInputSource::ProcessOverlayHitTest(
   // If we get here, the touch didn't hit a cross origin frame. Set the
   // controller spaces visible.
   state_.is_visible = true;
+
+  // Now that the visibility check has finished, mark non-primary input sources
+  // as suppressed.
+  if (new_state->is_auxiliary) {
+    state_.xr_select_events_suppressed = true;
+  }
 
   // Now check if this is a new primary button press. If yes, send a
   // beforexrselect event to give the application an opportunity to cancel the
@@ -527,6 +547,8 @@ void XRInputSource::ProcessOverlayHitTest(
   // Keep the input source visible, so it's exposed in the input sources array,
   // but don't generate XR select events for the current button sequence.
   state_.xr_select_events_suppressed = default_prevented;
+  DVLOG(3) << __func__ << ": state_.xr_select_events_suppressed="
+           << state_.xr_select_events_suppressed;
 }
 
 void XRInputSource::OnRemoved() {

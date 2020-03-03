@@ -1011,7 +1011,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
 
   if (frame.sub_buffer_rect) {
     if (capabilities().supports_post_sub_buffer) {
-      if (capabilities().output_surface_origin == SurfaceOrigin::kBottomLeft) {
+      if (capabilities().output_surface_origin ==
+          gfx::SurfaceOrigin::kBottomLeft) {
         frame.sub_buffer_rect->set_y(size_.height() -
                                      frame.sub_buffer_rect->y() -
                                      frame.sub_buffer_rect->height());
@@ -1229,7 +1230,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
     bool flipped = from_fbo0 && capabilities().output_surface_origin ==
-                                    SurfaceOrigin::kBottomLeft;
+                                    gfx::SurfaceOrigin::kBottomLeft;
     // readback_offset is in window co-ordinate space and must take into account
     // flipping.
     if (flipped) {
@@ -1500,7 +1501,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       return false;
 
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, SurfaceOrigin::kTopLeft,
+        context_state_, gfx::SurfaceOrigin::kTopLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1555,7 +1556,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, SurfaceOrigin::kBottomLeft,
+        context_state_, gfx::SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1595,7 +1596,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        context_state_, SurfaceOrigin::kBottomLeft,
+        context_state_, gfx::SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;

@@ -257,12 +257,6 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
   // their symbolic names.
   constants_dict->SetKey("logSourceType", NetLog::GetSourceTypesAsValue());
 
-  // TODO(eroman): This is here for compatibility in loading new log files with
-  // older builds of Chrome. Safe to remove this once M45 is on the stable
-  // channel.
-  constants_dict->Set("logLevelType",
-                      std::make_unique<base::DictionaryValue>());
-
   // Information about the relationship between address family enums and
   // their symbolic names.
   {

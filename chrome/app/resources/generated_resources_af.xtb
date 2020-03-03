@@ -869,7 +869,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2190069059097339078">Wi-Fi-eiebewyshaler</translation>
 <translation id="219008588003277019">Plaaslike kliënt-module: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(leeg)</translation>
-<translation id="2191223688506386601">Nog net een ding</translation>
 <translation id="2191754378957563929">Aan</translation>
 <translation id="2192505247865591433">Van:</translation>
 <translation id="2193365732679659387">Vertrou instellings</translation>
@@ -2568,7 +2567,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4555769855065597957">Skadu</translation>
 <translation id="4555863373929230635">Meld aan en skakel sinkronisering aan om wagwoorde in jou Google-rekening te stoor.</translation>
 <translation id="4558426062282641716">Het toestemming versoek om outomaties te begin</translation>
-<translation id="4558491878126948419">Kry <ph name="DEVICE_TYPE" />-wenke en kennisgewings oor Google-produkte en deel terugvoer. Teken enige tyd uit.</translation>
 <translation id="4559617833001311418">Hierdie werf het tans toegang tot jou beweging- of ligsensors.</translation>
 <translation id="4561893854334016293">Geen toestemmings wat onlangs verander is nie</translation>
 <translation id="4562155214028662640">Voeg vingerafdruk by</translation>
@@ -2838,7 +2836,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" wil aan 'n seriepoort koppel</translation>
 <translation id="4944310289250773232">Hierdie stawingdiens word gehou deur <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Handelinge</translation>
-<translation id="4952981627953231344">Plugin VM word nie op hierdie toestel toegelaat nie. Kontak jou organisasie se toesteladministrateur.</translation>
 <translation id="4953808748584563296">Verstek- oranje avatar</translation>
 <translation id="4955710816792587366">Kies jou PIN</translation>
 <translation id="4959262764292427323">Wagwoorde word in jou Google-rekening gestoor sodat jy hulle op enige toestel kan gebruik</translation>
@@ -3021,6 +3018,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5233736638227740678">Plak</translation>
 <translation id="5234764350956374838">Verwerp</translation>
 <translation id="5235050375939235066">Deïnstalleer program?</translation>
+<translation id="523505283826916779">Toeganklikheidsinstellings</translation>
 <translation id="5235750401727657667">Vervang die bladsy wat jy sien wanneer jy 'n nuwe oortjie oopmaak</translation>
 <translation id="5238278114306905396">Die program "<ph name="EXTENSION_NAME" />" is outomaties verwyder.</translation>
 <translation id="5241128660650683457">Lees al jou data op die webwerwe wat jy besoek</translation>
@@ -3442,7 +3440,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
 <translation id="5805697420284793859">Vensterbestuurder</translation>
 <translation id="5806773519584576205">0° (Verstek)</translation>
-<translation id="5811750797187914944">Gereed</translation>
 <translation id="5812674658566766066">Vou alles uit</translation>
 <translation id="5814126672212206791">Verbindingtipe</translation>
 <translation id="5815645614496570556">X.400-adres</translation>
@@ -4063,7 +4060,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6680442031740878064">Beskikbaar: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Gradeer</translation>
 <translation id="6681668084120808868">Neem foto</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" sal gedeïnstalleer word</translation>
 <translation id="668599234725812620">Maak Google Play oop</translation>
 <translation id="6686490380836145850">Maak oortjies aan die regterkant toe</translation>
 <translation id="6686817083349815241">Stoor jou wagwoord</translation>
@@ -4645,7 +4641,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" />-uitbreiding kan al die teks wat jy tik, insluitend persoonlike data soos wagwoorde en kredietkaartnommers, insamel. Wil jy hierdie uitbreiding gebruik?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Het jy jou ou wagwoord vergeet?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> en die data wat met hierdie program geassosieer word, sal van hierdie toestel af verwyder word.</translation>
 <translation id="7496732379142025470">Om batterykrag te bespaar is “Ok Google” net aan wanneer jou toestel aan 'n kragbron gekoppel is. Gaan na Instellings toe om veranderinge te maak.</translation>
 <translation id="7497215489070763236">Bediener se CA-sertifikaat</translation>
 <translation id="7497981768003291373">Jy het geen onlangs vasgevangde WebRTC-teksloglêers nie.</translation>

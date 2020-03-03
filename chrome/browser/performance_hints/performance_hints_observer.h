@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_HINTS_PERFORMANCE_HINTS_OBSERVER_H_
 #define CHROME_BROWSER_PERFORMANCE_HINTS_PERFORMANCE_HINTS_OBSERVER_H_
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -83,10 +84,30 @@ class PerformanceHintsObserver
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& optimization_metadata);
 
-  // Returns a PerformanceHint for a link to |url|, if one exists.
-  base::Optional<optimization_guide::proto::PerformanceHint> HintForURL(
-      bool record_metrics,
-      const GURL& url) const;
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "PerformanceHintsObserverHintForURLResult" in
+  // src/tools/metrics/histograms/enums.xml.
+  enum class HintForURLResult {
+    // Hints for the current page have been processed and no hint for the URL
+    // was found.
+    kHintNotFound = 0,
+    // Hints have not yet been processed. The call may be attempted again.
+    kHintNotReady = 1,
+    // An invalid URL was passed.
+    kInvalidURL = 2,
+    // A matching hint was found and has been returned.
+    kHintFound = 3,
+    kMaxValue = kHintFound,
+  };
+
+  // Fetches a PerformanceHint for the given |url|.
+  //
+  // Returns an enum describing the fetch outcome and, if that outcome is
+  // kHintFound, the matching PerformanceHint. See HintForURLResult, above.
+  std::tuple<HintForURLResult,
+             base::Optional<optimization_guide::proto::PerformanceHint>>
+  HintForURL(const GURL& url) const;
 
   // Initialized in constructor. It may be null if !IsOptimizationHintsEnabled.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =

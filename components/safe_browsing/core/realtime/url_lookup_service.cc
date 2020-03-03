@@ -16,6 +16,7 @@
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -55,11 +56,13 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     VerdictCacheManager* cache_manager,
     signin::IdentityManager* identity_manager,
+    syncer::SyncService* sync_service,
     PrefService* pref_service,
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
       cache_manager_(cache_manager),
       identity_manager_(identity_manager),
+      sync_service_(sync_service),
       pref_service_(pref_service),
       is_off_the_record_(is_off_the_record) {
   DCHECK(cache_manager_);
@@ -334,6 +337,11 @@ void RealTimeUrlLookupService::ResetFailures() {
 bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformFullURLLookup(pref_service_,
                                                        is_off_the_record_);
+}
+
+bool RealTimeUrlLookupService::CanPerformFullURLLookupWithToken() const {
+  return RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
+      pref_service_, is_off_the_record_, sync_service_);
 }
 
 // static

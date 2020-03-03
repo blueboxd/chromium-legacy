@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 /** The different types of view that a suggestion can be. */
 @IntDef({OmniboxSuggestionUiType.DEFAULT, OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,
         OmniboxSuggestionUiType.ANSWER_SUGGESTION, OmniboxSuggestionUiType.ENTITY_SUGGESTION,
-        OmniboxSuggestionUiType.TAIL_SUGGESTION})
+        OmniboxSuggestionUiType.TAIL_SUGGESTION, OmniboxSuggestionUiType.CLIPBOARD_SUGGESTION})
 @Retention(RetentionPolicy.SOURCE)
 public @interface OmniboxSuggestionUiType {
     int DEFAULT = 0;
@@ -20,4 +20,5 @@ public @interface OmniboxSuggestionUiType {
     int ANSWER_SUGGESTION = 2;
     int ENTITY_SUGGESTION = 3;
     int TAIL_SUGGESTION = 4;
+    int CLIPBOARD_SUGGESTION = 5;
 }

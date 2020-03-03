@@ -17,7 +17,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/hotseat_widget.h"
-#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -527,15 +526,6 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   work_area_insets->OnKeyboardDisplacingBoundsChanged(
       state.displaced_bounds_in_screen);
   work_area_insets->OnKeyboardAppearanceChanged(state);
-}
-
-void Shelf::SetRoundedCornersForInkDrop(bool show, views::View* ink_drop_host) {
-  if (!shelf_widget_->hotseat_widget() ||
-      !shelf_widget_->hotseat_widget()->scrollable_shelf_view())
-    return;
-  shelf_widget_->hotseat_widget()
-      ->scrollable_shelf_view()
-      ->SetRoundedCornersForShelf(show, ink_drop_host);
 }
 
 ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {

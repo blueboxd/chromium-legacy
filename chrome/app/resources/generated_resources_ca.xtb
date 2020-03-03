@@ -869,7 +869,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2190069059097339078">Obtenidor de credencials de la Wi-Fi</translation>
 <translation id="219008588003277019">Mòdul de client nadiu: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(buit)</translation>
-<translation id="2191223688506386601">Una última cosa</translation>
 <translation id="2191754378957563929">Activat</translation>
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configuració de confiança</translation>
@@ -2565,7 +2564,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4555769855065597957">Ombra</translation>
 <translation id="4555863373929230635">Per desar les contrasenyes al teu Compte de Google, inicia-hi la sessió i activa la sincronització.</translation>
 <translation id="4558426062282641716">S'ha sol·licitat permís per iniciar-se automàticament</translation>
-<translation id="4558491878126948419">Obtén consells sobre el dispositiu <ph name="DEVICE_TYPE" /> i informació sobre productes de Google, i comparteix suggeriments. Pots cancel·lar la subscripció en qualsevol moment.</translation>
 <translation id="4559617833001311418">Aquest lloc web està accedint als teus sensors de llum i moviment.</translation>
 <translation id="4561893854334016293">No s'ha canviat cap permís recentment</translation>
 <translation id="4562155214028662640">Afegeix una empremta digital</translation>
@@ -2835,7 +2833,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" vol connectar-se a un port en sèrie</translation>
 <translation id="4944310289250773232">Aquest servei d'autenticació s'allotja a <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Accions</translation>
-<translation id="4952981627953231344">No es permet el connector Plugin VM en aquest dispositiu. Contacta amb l'administrador del dispositiu de la teva organització.</translation>
 <translation id="4953808748584563296">Avatar taronja predeterminat</translation>
 <translation id="4955710816792587366">Tria un PIN</translation>
 <translation id="4959262764292427323">Les contrasenyes es desen al Compte de Google perquè les puguis utilitzar en tots els dispositius</translation>
@@ -3019,6 +3016,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5233736638227740678">&amp;Enganxa</translation>
 <translation id="5234764350956374838">Omet</translation>
 <translation id="5235050375939235066">Vols desinstal·lar l'aplicació?</translation>
+<translation id="523505283826916779">Configuració d'accessibilitat</translation>
 <translation id="5235750401727657667">Substituir la pàgina que veus en obrir una pestanya nova</translation>
 <translation id="5238278114306905396">L'aplicació "<ph name="EXTENSION_NAME" />" s'ha eliminat automàticament.</translation>
 <translation id="5241128660650683457">Llegir totes les dades dels llocs web que es visitin</translation>
@@ -3440,7 +3438,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Gestor de finestres</translation>
 <translation id="5806773519584576205">0° (valor predeterminat)</translation>
-<translation id="5811750797187914944">Tot a punt</translation>
 <translation id="5812674658566766066">Desplega-ho tot</translation>
 <translation id="5814126672212206791">Tipus de connexió</translation>
 <translation id="5815645614496570556">Adreça X.400</translation>
@@ -4061,7 +4058,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6680442031740878064">Disponible: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Velocitat</translation>
 <translation id="6681668084120808868">Fes una foto</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" es desinstal·larà.</translation>
 <translation id="668599234725812620">Obre Google Play</translation>
 <translation id="6686490380836145850">Tanca les pestanyes de la dreta</translation>
 <translation id="6686817083349815241">Desa la contrasenya</translation>
@@ -4643,7 +4639,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7493386493263658176">És possible que l'extensió <ph name="EXTENSION_NAME" /> recopili tot el que escriviu, incloses les dades personals, com ara les contrasenyes i els números de targetes de crèdit. Voleu fer-la servir?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Heu oblidat la contrasenya antiga?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> i les dades associades a l'aplicació se suprimiran del dispositiu.</translation>
 <translation id="7496732379142025470">Per estalviar bateria, la funció "Ok Google" només estarà activada quan el dispositiu estigui connectat a una font d'alimentació. Per fer canvis, ves a Configuració.</translation>
 <translation id="7497215489070763236">Certificat de CA del servidor</translation>
 <translation id="7497981768003291373">No s'ha capturat cap registre de text de WebRTC recentment.</translation>

@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Ishaja yamandla aphansi</translation>
 <translation id="2135456203358955318">Isikhulisi esidokhiwe</translation>
 <translation id="2144487987174258011">Qalisa kabusha ukuze ubuyekeze isidlali se-Adobe Flash</translation>
-<translation id="2148902151539191989">EMUVA</translation>
 <translation id="2208323208084708176">Imodi ehlanganisiwe yedeskithophu</translation>
 <translation id="2220572644011485463">Iphinikhodi noma iphasiwedi</translation>
 <translation id="2222338659135520253">Ukungena ngemvume kuyadingeka</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> iseshini ephethwe ngu-<ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Ukuchofoza kwesokunxele</translation>
 <translation id="2429753432712299108">Idivayisi ye-Bluetooth device i-"<ph name="DEVICE_NAME" />" ingathanda imvume ukuze ibhanqe. Ngaphambi kokwamukela, sicela uqinisekise ukuthi lo khiye wokudlula uboniswa kuleyo divayisi: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Bonisa iphasiwedi</translation>
 <translation id="2473177541599297363">Qinisekisa Ukulungiswa</translation>
 <translation id="2482878487686419369">Izaziso</translation>
 <translation id="2484513351006226581">Shaya u-<ph name="KEYBOARD_SHORTCUT" /> ukuze ushintshe isendlalelo sekhibhodi.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Inkinobho yokuchofoza okuzenzakalelayo</translation>
 <translation id="4215497585250573029">Izilungiselelo ze-VPN</translation>
 <translation id="4217571870635786043">Ukuthola</translation>
-<translation id="421885205185866088">Iphinikhodi ye-smart card ye-<ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">I-GPRS</translation>
 <translation id="4261870227682513959">Bonisa izilungiselelo zesaziso. Izaziso zivaliwe</translation>
 <translation id="4269883910223712419">Umphathi wale divayisi unekhono lokwazi ukuthi:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Idivayisi ye-Bluetooth eyi-"<ph name="DEVICE_NAME" />" ingathanda imvume yokubhanqa.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ize igcwale</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Fihla iphasiwedi</translation>
 <translation id="4570957409596482333">Inkinobho yokukhekha ukuze ukhulume</translation>
 <translation id="4585337515783392668">Misa ukusakaza kumamukeli ongaziwa</translation>
 <translation id="4628757576491864469">Amadivayisi</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">I-Tethering esheshayo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Bonke abasebenzisi abatholakalayo sebavele bangeziwe kule seshini.</translation>
+<translation id="54609108002486618">Kuphethwe</translation>
 <translation id="5465662442746197494">Udinga usizo?</translation>
 <translation id="5496819745535887422">Umlawuli wakho ubuyisela emuva idivayisi yakho. Yonke idatha izosuswa uma idivayisi iqaliswa kabusha.</translation>
 <translation id="5519195206574732858">I-LTE</translation>

@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">Засіб отримання облікових даних Wi-Fi</translation>
 <translation id="219008588003277019">Модуль Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(пусто)</translation>
-<translation id="2191223688506386601">І наостанок</translation>
 <translation id="2191754378957563929">Увімкнено</translation>
 <translation id="2192505247865591433">Від:</translation>
 <translation id="2193365732679659387">Налаштування довіри</translation>
@@ -2568,7 +2567,6 @@
 <translation id="4555769855065597957">Shadow</translation>
 <translation id="4555863373929230635">Щоб зберігати паролі в обліковому записі Google, увійдіть у нього й увімкніть синхронізацію.</translation>
 <translation id="4558426062282641716">Потрібен дозвіл на автозапуск</translation>
-<translation id="4558491878126948419">Отримуйте поради для <ph name="DEVICE_TYPE" /> і оновлення щодо продуктів Google, а також надсилайте відгуки. Ви можете будь-коли скасувати підписку.</translation>
 <translation id="4559617833001311418">Цей сайт має доступ до датчиків руху чи світла.</translation>
 <translation id="4561893854334016293">Немає нещодавно змінених дозволів</translation>
 <translation id="4562155214028662640">Додати відбиток пальця</translation>
@@ -2838,7 +2836,6 @@
 <translation id="4943691134276646401"><ph name="CHROME_EXTENSION_NAME" /> хоче під’єднатися до послідовного порту</translation>
 <translation id="4944310289250773232">Цей сервіс автентифікації розміщує <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Дії</translation>
-<translation id="4952981627953231344">На пристрої заборонено використовувати Plugin VM. Зв'яжіться з адміністратором пристрою у своїй організації.</translation>
 <translation id="4953808748584563296">Стандартний оранжевий аватар</translation>
 <translation id="4955710816792587366">Придумайте PIN-код</translation>
 <translation id="4959262764292427323">Паролі зберігаються в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої</translation>
@@ -3021,6 +3018,7 @@
 <translation id="5233736638227740678">&amp;Вставити</translation>
 <translation id="5234764350956374838">Відхилити</translation>
 <translation id="5235050375939235066">Видалити додаток?</translation>
+<translation id="523505283826916779">Налаштування доступності</translation>
 <translation id="5235750401727657667">Відкривати нову вкладку на місці поточної сторінки</translation>
 <translation id="5238278114306905396">Програму "<ph name="EXTENSION_NAME" />" автоматично вилучено.</translation>
 <translation id="5241128660650683457">Переглядати всі ваші дані на веб-сайтах, які ви відвідуєте</translation>
@@ -3441,7 +3439,6 @@
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5805697420284793859">Диспетчер вікон</translation>
 <translation id="5806773519584576205">0° (за умовчанням)</translation>
-<translation id="5811750797187914944">Готово</translation>
 <translation id="5812674658566766066">Розгорнути всі</translation>
 <translation id="5814126672212206791">Тип з’єднання</translation>
 <translation id="5815645614496570556">Адреса каталогу X.400</translation>
@@ -4062,7 +4059,6 @@
 <translation id="6680442031740878064">Доступно: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Оцінити</translation>
 <translation id="6681668084120808868">Зробити фото</translation>
-<translation id="6681964764822470072"><ph name="APP_NAME" /> буде видалено.</translation>
 <translation id="668599234725812620">Відкрити Google Play</translation>
 <translation id="6686490380836145850">Закрити вкладки праворуч</translation>
 <translation id="6686817083349815241">Зберегти пароль</translation>
@@ -4644,7 +4640,6 @@
 <translation id="7493386493263658176">Розширення <ph name="EXTENSION_NAME" /> може запам’ятовувати весь текст, який ви вводите, зокрема паролі та номери кредитних карток. Використовувати це розширення?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Забули старий пароль?</translation>
-<translation id="7496511874649569424">Додаток <ph name="LINUX_APP_NAME" /> і пов’язані з ним дані буде видалено з цього пристрою.</translation>
 <translation id="7496732379142025470">Щоб заощадити заряд акумулятора, команда "Ok Google" працюватиме, лише коли пристрій підключено до джерела живлення. Зміни можна внести в меню "Налаштування".</translation>
 <translation id="7497215489070763236">Сертифікат ЦС для сервера</translation>
 <translation id="7497981768003291373">Немає нещодавно створених текстових журналів WebRTC.</translation>

@@ -436,6 +436,8 @@ const char kSwitchAccessSubPage[] = "manageAccessibility/switchAccess";
 const char kTetherSettingsSubPage[] = "networks?type=Tether";
 const char kVPNSettingsSubPage[] = "networks?type=VPN";
 const char kWiFiSettingsSubPage[] = "networks?type=WiFi";
+const char kEthernetSettingsSubPage[] = "networks?type=Ethernet";
+const char kCellularSettingsSubPage[] = "networks?type=Cellular";
 
 // Any changes here need to be kept in sync with chrome_new_window_client.cc
 bool IsOSSettingsSubPage(const std::string& sub_page) {
@@ -449,6 +451,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kAppManagementSubPage,
       kAssistantSubPage,
       kBluetoothSubPage,
+      kCellularSettingsSubPage,
       kChangePictureSubPage,
       kConnectedDevicesSubPage,
       kCrostiniSharedPathsSubPage,
@@ -457,6 +460,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kCrostiniExportImportSubPage,
       kDateTimeSubPage,
       kDisplaySubPage,
+      kEthernetSettingsSubPage,
       kExternalStorageSubPage,
       kHelpSubPage,
       kInternetSubPage,

@@ -24,6 +24,9 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
+#include "net/url_request/redirect_util.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -55,6 +58,25 @@ class ShutdownNotifierFactory
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
 };
+
+// Creates simulated net::RedirectInfo when an extension redirects a request,
+// behaving like a redirect response was actually returned by the remote server.
+net::RedirectInfo CreateRedirectInfo(
+    const network::ResourceRequest& original_request,
+    const GURL& new_url,
+    int response_code,
+    const base::Optional<std::string>& referrer_policy_header) {
+  return net::RedirectInfo::ComputeRedirectInfo(
+      original_request.method, original_request.url,
+      original_request.site_for_cookies,
+      original_request.update_first_party_url_on_redirect
+          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL,
+      original_request.referrer_policy, original_request.referrer.spec(),
+      response_code, new_url, referrer_policy_header,
+      false /* insecure_scheme_was_upgraded */, false /* copy_fragment */,
+      false /* is_signed_exchange_fallback_redirect */);
+}
 
 }  // namespace
 
@@ -464,12 +486,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   constexpr int kInternalRedirectStatusCode = 307;
 
-  net::RedirectInfo redirect_info;
-  redirect_info.status_code = kInternalRedirectStatusCode;
-  redirect_info.new_method = request_.method;
-  redirect_info.new_url = redirect_url_;
-  redirect_info.new_site_for_cookies =
-      net::SiteForCookies::FromUrl(redirect_url_);
+  net::RedirectInfo redirect_info =
+      CreateRedirectInfo(request_, redirect_url_, kInternalRedirectStatusCode,
+                         base::nullopt /* referrer_policy_header */);
 
   auto head = network::mojom::URLResponseHead::New();
   std::string headers = base::StringPrintf(
@@ -814,11 +833,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     // request to the Network Service. Our client shouldn't know the difference.
     GURL new_url(redirect_location);
 
-    net::RedirectInfo redirect_info;
-    redirect_info.status_code = override_headers_->response_code();
-    redirect_info.new_method = request_.method;
-    redirect_info.new_url = new_url;
-    redirect_info.new_site_for_cookies = net::SiteForCookies::FromUrl(new_url);
+    net::RedirectInfo redirect_info = CreateRedirectInfo(
+        request_, new_url, override_headers_->response_code(),
+        net::RedirectUtil::GetReferrerPolicyHeader(override_headers_.get()));
 
     // These will get re-bound if a new request is initiated by
     // |FollowRedirect()|.
@@ -860,6 +877,24 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   request_.site_for_cookies = redirect_info.new_site_for_cookies;
   request_.referrer = GURL(redirect_info.new_referrer);
   request_.referrer_policy = redirect_info.new_referrer_policy;
+  if (request_.trusted_params) {
+    url::Origin new_origin = url::Origin::Create(redirect_info.new_url);
+    switch (request_.trusted_params->update_network_isolation_key_on_redirect) {
+      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+          kUpdateTopFrameAndFrameOrigin:
+        request_.trusted_params->network_isolation_key =
+            net::NetworkIsolationKey(new_origin, new_origin);
+        break;
+      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+          kUpdateFrameOrigin:
+        request_.trusted_params->network_isolation_key =
+            request_.trusted_params->network_isolation_key
+                .CreateWithNewFrameOrigin(new_origin);
+        break;
+      case network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate:
+        break;
+    }
+  }
 
   // The request method can be changed to "GET". In this case we need to
   // reset the request body manually.

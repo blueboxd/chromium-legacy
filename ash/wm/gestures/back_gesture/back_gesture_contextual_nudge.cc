@@ -46,7 +46,7 @@ constexpr int kPaddingBetweenCircleAndLabel = 8;
 constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
 
 // Width and height of the label.
-constexpr int kLabelWidth = 80;
+constexpr int kLabelWidth = 70;
 constexpr int kLabelHeight = 80;
 
 // Duration of the pause before sliding in to show the nudge.
@@ -174,6 +174,7 @@ class BackGestureContextualNudge::ContextualNudgeView
       label_->SetText(
           l10n_util::GetStringUTF16(IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE));
       label_->SetMultiLine(true);
+      label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
       label_->SetFontList(
           gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
       AddChildView(label_);

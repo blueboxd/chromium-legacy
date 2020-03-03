@@ -316,6 +316,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2289385804009217824">Pangkas</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
 <translation id="2297722699537546652">B5 (Sampul Surat)</translation>
+<translation id="2300306941146563769">Tidak dimuat naik</translation>
 <translation id="2310021320168182093">Chou2 (Sampul Surat)</translation>
 <translation id="2315864634253056100">Nama tapak ini kelihatan serupa dengan <ph name="LOOKALIKE_DOMAIN" />. Kadangkala penyerang meniru tapak dengan membuat perubahan yang sukar dilihat pada alamat web.</translation>
 <translation id="2316887270356262533">Mengosongkan kurang daripada 1 MB. Sesetengah tapak mungkin dimuatkan dengan lebih perlahan pada lawatan anda yang seterusnya.</translation>
@@ -444,6 +445,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2909946352844186028">Perubahan rangkaian dikesan.</translation>
 <translation id="2910133103376701357">Peranti dan akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID pengguna perakaunan tugas</translation>
+<translation id="2915068235268646559">Ranap sistem dari <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Tutup atur cara lain</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
 <translation id="2925673989565098301">Kaedah Penghantaran</translation>
@@ -452,6 +454,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2930577230479659665">Pangkas selepas setiap salinan</translation>
 <translation id="2934466151127459956">Surat-Kerajaan</translation>
 <translation id="2941952326391522266">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya adalah dari <ph name="DOMAIN2" />. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
+<translation id="2943895734390379394">Masa Muat Naik:</translation>
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
 <translation id="2951588413176968965">Peti mel saya</translation>
 <translation id="295526156371527179">Amaran: Dasar ini tidak digabungkan sebagai kamus seperti yang dinyatakan oleh dasar kerana dasar ini bukan kamus.</translation>
@@ -1086,6 +1089,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="563324245173044180">Kandungan mengelirukan disekat.</translation>
 <translation id="5644090287519800334">Anjakan X sisi 1 imej</translation>
 <translation id="5645854190134202180">Syif kedua</translation>
+<translation id="5654927323611874862">ID Laporan Ranap Sistem yang Dimuat Naik</translation>
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5663614846592581799">9x11 (Sampul Surat)</translation>
 <translation id="5663955426505430495">Pentadbir peranti ini telah memasang sambungan bagi fungsi tambahan. Sambungan mempunyai akses kepada sesetengah data anda.</translation>
@@ -1393,6 +1397,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="7079718277001814089">Tapak ini mengandungi perisian hasad</translation>
 <translation id="7081308185095828845">Ciri ini tidak tersedia pada peranti anda</translation>
 <translation id="7083258188081898530">Dulang 9</translation>
+<translation id="7086090958708083563">Muat naik diminta oleh pengguna</translation>
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7090678807593890770">Cari <ph name="LINK" /> di Google</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
@@ -1555,6 +1560,7 @@ Butiran tambahan:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Teruskan ke <ph name="SITE" /> (tidak selamat)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sijil</translation>
 <translation id="7716147886133743102">Disekat oleh pentadbir anda</translation>
+<translation id="7716375162095500223">Belum dimuat naik, atau diabaikan</translation>
 <translation id="7716424297397655342">Tapak ini tidak dapat dimuatkan daripada cache</translation>
 <translation id="7723047071702270851">Edit Kad</translation>
 <translation id="7740996059027112821">Standard</translation>
@@ -1699,6 +1705,7 @@ Butiran tambahan:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />lawati tapak ini<ph name="END_LINK" /> sebelum atur cara berbahaya dialih keluar.</translation>
 <translation id="8349305172487531364">Bar penanda halaman</translation>
+<translation id="8355270400102541638">Konteks Ranap Sistem Setempat:</translation>
 <translation id="8363502534493474904">Matikan mod pesawat</translation>
 <translation id="8364627913115013041">Tidak ditetapkan.</translation>
 <translation id="8368476060205742148">Perkhidmatan Google Play</translation>
@@ -1719,6 +1726,7 @@ Butiran tambahan:
 <translation id="8461694314515752532">Sulitkan data yang disegerakkan dengan ungkapan laluan penyegerakan anda sendiri</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kad kredit}other{# kad kredit}}</translation>
 <translation id="8473863474539038330">Alamat dan pelbagai lagi</translation>
+<translation id="8474910779563686872">Tunjukkan butiran pembangun</translation>
 <translation id="8479754468255770962">Kokot bawah sebelah kiri</translation>
 <translation id="8483780878231876732">Log masuk ke Chrome untuk menggunakan kad daripada Akaun Google anda</translation>
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
@@ -1845,6 +1853,7 @@ Butiran tambahan:
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Pengebilan</translation>
 <translation id="9114524666733003316">Mengesahkan kad...</translation>
+<translation id="9119042192571987207">Dimuat naik</translation>
 <translation id="9128870381267983090">Sambung ke rangkaian</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9141013498910525015">Urus alamat</translation>

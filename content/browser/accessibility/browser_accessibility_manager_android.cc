@@ -24,14 +24,14 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     const ui::AXTreeUpdate& initial_tree,
-    WebContentsAccessibilityAndroid* web_contents_accessibility,
+    base::WeakPtr<WebContentsAccessibilityAndroid> web_contents_accessibility,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      web_contents_accessibility_(web_contents_accessibility),
+      web_contents_accessibility_(std::move(web_contents_accessibility)),
       prune_tree_for_screen_reader_(true) {
-  if (web_contents_accessibility)
-    web_contents_accessibility->set_root_manager(this);
+  if (web_contents_accessibility_)
+    web_contents_accessibility_->set_root_manager(this);
   Initialize(initial_tree);
 }
 
@@ -438,7 +438,7 @@ WebContentsAccessibilityAndroid*
 BrowserAccessibilityManagerAndroid::GetWebContentsAXFromRootManager() {
   BrowserAccessibility* parent_node = GetParentNodeFromParentTree();
   if (!parent_node)
-    return web_contents_accessibility_;
+    return web_contents_accessibility_.get();
 
   auto* parent_manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(parent_node->manager());

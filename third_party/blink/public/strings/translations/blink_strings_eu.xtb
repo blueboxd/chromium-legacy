@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Azpitituluak</translation>
 <translation id="8346634859695247203">atala</translation>
 <translation id="835897206747267392">Balioa ez da egokia.</translation>
+<translation id="839593075537728968">Balioak <ph name="MINIMUM_TIME" /> eta <ph name="MAXIMUM_TIME" /> artekoa izan behar du.</translation>
 <translation id="8403857369060869934">igarotako denbora: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">zatia</translation>
 <translation id="8433900881053900389">tresna-barra</translation>

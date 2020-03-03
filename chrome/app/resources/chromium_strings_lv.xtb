@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
+<translation id="1098170124587656448">Chromium var palīdzēt aizsargāt jūs pret datu noplūdi, ļaunprātīgiem paplašinājumiem un citiem apdraudējumiem.</translation>
 <translation id="1104942323762546749">Pārlūkā Chromium tiek mēģināts eksportēt jūsu paroles. Lai to atļautu, ievadiet savu Windows paroli.</translation>
 <translation id="113122355610423240">Jūsu noklusējuma pārlūks ir Chromium.</translation>
 <translation id="1185134272377778587">Par Chromium</translation>
@@ -67,6 +68,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> — Chromium</translation>
 <translation id="388648406173476553">Pielāgojiet un kontrolējiet pārlūkprogrammu Chromium. Ir nepieciešama jūsu uzmanība. Noklikšķiniet, lai skatītu plašāku informāciju.</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>
+<translation id="3945058413678539331">Chromium mēģina nokopēt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="4036079820698952681">Palīdziet uzlabot pārlūku Chromium, ziņojot par <ph name="BEGIN_LINK" />pašreizējiem iestatījumiem<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="421369550622382712">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Chromium.</translation>
@@ -187,6 +189,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="8013436988911883588">Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.</translation>
 <translation id="81770708095080097">Šis fails ir bīstams, tāpēc Chromium to bloķēja.</translation>
 <translation id="8248265253516264921">Ja attēlam nav vērtīga apraksta, pārlūks Chromium mēģinās jums tādu nodrošināt. Lai izveidotu aprakstus, attēli tiek nosūtīti uzņēmumam Google. Jebkurā brīdī iestatījumos varat izslēgt šo iespēju.</translation>
+<translation id="8276522524898344151">Chromium mēģina nokopēt paroles.</translation>
 <translation id="8290862415967981663">Šis fails var būt bīstams, tāpēc Chromium to bloķēja.</translation>
 <translation id="8330519371938183845">Pierakstieties, lai sinhronizētu un personalizētu pārlūku Chromium visās savās ierīcēs.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> iepriekš izmantoja Chromium</translation>

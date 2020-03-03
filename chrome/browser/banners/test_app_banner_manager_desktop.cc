@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "content/public/browser/web_contents.h"
 
@@ -45,6 +46,20 @@ bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
   return *installable_;
 }
 
+void TestAppBannerManagerDesktop::PrepareDone(base::OnceClosure on_done) {
+  on_done_ = std::move(on_done);
+}
+
+AppBannerManager::State TestAppBannerManagerDesktop::state() {
+  return AppBannerManager::state();
+}
+
+void TestAppBannerManagerDesktop::AwaitAppInstall() {
+  base::RunLoop loop;
+  on_install_ = loop.QuitClosure();
+  loop.Run();
+}
+
 void TestAppBannerManagerDesktop::OnDidGetManifest(
     const InstallableData& result) {
   AppBannerManagerDesktop::OnDidGetManifest(result);
@@ -68,11 +83,41 @@ void TestAppBannerManagerDesktop::ResetCurrentPageData() {
     std::move(tear_down_quit_closure_).Run();
 }
 
+void TestAppBannerManagerDesktop::OnInstall(blink::mojom::DisplayMode display) {
+  AppBannerManager::OnInstall(display);
+  if (on_install_)
+    std::move(on_install_).Run();
+}
+
+void TestAppBannerManagerDesktop::DidFinishCreatingWebApp(
+    const web_app::AppId& app_id,
+    web_app::InstallResultCode code) {
+  AppBannerManagerDesktop::DidFinishCreatingWebApp(app_id, code);
+  OnFinished();
+}
+
+void TestAppBannerManagerDesktop::UpdateState(AppBannerManager::State state) {
+  AppBannerManager::UpdateState(state);
+
+  if (state == AppBannerManager::State::PENDING_ENGAGEMENT ||
+      state == AppBannerManager::State::PENDING_PROMPT ||
+      state == AppBannerManager::State::COMPLETE) {
+    OnFinished();
+  }
+}
+
 void TestAppBannerManagerDesktop::SetInstallable(bool installable) {
   DCHECK(!installable_.has_value());
   installable_ = installable;
   if (installable_quit_closure_)
     std::move(installable_quit_closure_).Run();
+}
+
+void TestAppBannerManagerDesktop::OnFinished() {
+  if (on_done_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(on_done_));
+  }
 }
 
 }  // namespace banners

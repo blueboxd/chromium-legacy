@@ -143,14 +143,21 @@ class StructuredHeaderParser {
       case '"':
         return ReadString();
       case '*':
-        return ReadByteSequence();
+        if (version_ == kDraft09)
+          return ReadByteSequence();
+        return ReadToken();
+      case ':':
+        if (version_ == kDraft15)
+          return ReadByteSequence();
+        return base::nullopt;
       case '?':
         return ReadBoolean();
       default:
         if (input_.front() == '-' || base::IsAsciiDigit(input_.front()))
           return ReadNumber();
-        else
+        if (base::IsAsciiAlpha(input_.front()))
           return ReadToken();
+        return base::nullopt;
     }
   }
 
@@ -416,13 +423,14 @@ class StructuredHeaderParser {
 
   // Parses a Byte Sequence ([SH09] 4.2.11, [SH15] 4.2.7).
   base::Optional<Item> ReadByteSequence() {
-    if (!ConsumeChar('*')) {
-      LogParseError("ReadByteSequence", "'*'");
+    char delimiter = (version_ == kDraft09 ? '*' : ':');
+    if (!ConsumeChar(delimiter)) {
+      LogParseError("ReadByteSequence", "delimiter");
       return base::nullopt;
     }
-    size_t len = input_.find('*');
+    size_t len = input_.find(delimiter);
     if (len == base::StringPiece::npos) {
-      DVLOG(1) << "ReadByteSequence: missing closing '*'";
+      DVLOG(1) << "ReadByteSequence: missing closing delimiter";
       return base::nullopt;
     }
     std::string base64(input_.substr(0, len));
@@ -435,7 +443,7 @@ class StructuredHeaderParser {
       return base::nullopt;
     }
     input_.remove_prefix(len);
-    ConsumeChar('*');
+    ConsumeChar(delimiter);
     return Item(std::move(binary), Item::kByteSequenceType);
   }
 
@@ -470,8 +478,8 @@ class StructuredHeaderParser {
 
   void LogParseError(const char* func, const char* expected) {
     DVLOG(1) << func << ": " << expected << " expected, got "
-             << (input_.empty() ? "'" + input_.substr(0, 1).as_string() + "'"
-                                : "EOS");
+             << (input_.empty() ? "EOS"
+                                : "'" + input_.substr(0, 1).as_string() + "'");
   }
 
   base::StringPiece input_;
@@ -540,10 +548,10 @@ class StructuredHeaderSerializer {
     }
     if (value.is_byte_sequence()) {
       // Serializes a Byte Sequence ([SH15] 4.1.8).
-      output_ << "*";
+      output_ << ":";
       output_ << base::Base64Encode(
           base::as_bytes(base::make_span(value.GetString())));
-      output_ << "*";
+      output_ << ":";
       return true;
     }
     if (value.is_integer()) {

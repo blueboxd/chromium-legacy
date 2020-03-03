@@ -9,6 +9,7 @@
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2501278716633472235">Grįžti</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Užblokuotas 1 slapukas}one{Užblokuotas # slapukas}few{Užblokuoti # slapukai}many{Užblokuota # slapuko}other{Užblokuota # slapukų}}</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2968755619301702150">Sertifikato peržiūros priemonė</translation>

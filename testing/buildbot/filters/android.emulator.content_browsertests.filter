@@ -1,5 +1,5 @@
 # crbug.com/1056325
-WebRtcAudioBrowserTest.EstablishAudioVideoCallAndVerifyLocalMutingWorks
+-WebRtcAudioBrowserTest.EstablishAudioVideoCallAndVerifyLocalMutingWorks
 
 # crbug.com/1056878
-BackForwardCacheBrowserTest.VideoSuspendAndResume
+-BackForwardCacheBrowserTest.VideoSuspendAndResume

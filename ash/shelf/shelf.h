@@ -29,10 +29,6 @@ class MouseEvent;
 class ScrollEvent;
 }  // namespace ui
 
-namespace views {
-class View;
-}
-
 namespace ash {
 
 enum class AnimationChangeType;
@@ -200,7 +196,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   bool ShouldHideOnSecondaryDisplay(session_manager::SessionState state);
 
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
-  void SetRoundedCornersForInkDrop(bool show, views::View* ink_drop_host);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();
 

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
+<translation id="1098170124587656448">Chromium te protejează împotriva încălcării securității datelor, a extensiilor necorespunzătoare și nu numai</translation>
 <translation id="1104942323762546749">Chromium vrea să îți exporte parolele. Pentru a permite asta, introdu parola pentru Windows.</translation>
 <translation id="113122355610423240">Chromium este browserul prestabilit</translation>
 <translation id="1185134272377778587">Despre Chromium</translation>
@@ -67,6 +68,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Personalizează și controlează Chromium. Ceva are nevoie de atenția ta – dă clic pentru detalii.</translation>
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
+<translation id="3945058413678539331">Chromium încearcă să copieze parolele. Pentru a permite acest lucru, introdu parola pentru Windows.</translation>
 <translation id="4036079820698952681">Contribuie la îmbunătățirea browserului Chromium raportând <ph name="BEGIN_LINK" />setările actuale<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="421369550622382712">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Chromium.</translation>
@@ -189,6 +191,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8013436988911883588">Odată ce Chromium are acces, site-urile web îți vor putea solicita accesul.</translation>
 <translation id="81770708095080097">Fișierul este periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8248265253516264921">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google. Poți dezactiva această opțiune oricând din setări.</translation>
+<translation id="8276522524898344151">Chromium încearcă să copieze parolele.</translation>
 <translation id="8290862415967981663">Este posibil ca fișierul să fie periculos, așadar Chromium l-a blocat.</translation>
 <translation id="8330519371938183845">Conectează-te pentru a sincroniza și a personaliza Chromium pe toate dispozitivele</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> a folosit Chromium anterior</translation>

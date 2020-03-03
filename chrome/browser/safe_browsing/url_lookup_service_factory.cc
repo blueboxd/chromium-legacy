@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
@@ -34,6 +35,7 @@ RealTimeUrlLookupServiceFactory::RealTimeUrlLookupServiceFactory()
           "RealTimeUrlLookupService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
@@ -56,7 +58,8 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   return new RealTimeUrlLookupService(
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
       cache_manager, IdentityManagerFactory::GetForProfile(profile),
-      profile->GetPrefs(), profile->IsOffTheRecord());
+      ProfileSyncServiceFactory::GetForProfile(profile), profile->GetPrefs(),
+      profile->IsOffTheRecord());
 }
 
 }  // namespace safe_browsing

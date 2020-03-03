@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2135456203358955318">停靠的放大镜</translation>
 <translation id="2144487987174258011">请重新启动以更新 Adobe Flash Player</translation>
-<translation id="2148902151539191989">返回</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
 <translation id="2220572644011485463">PIN 码或密码</translation>
 <translation id="2222338659135520253">必须登录</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528">“<ph name="DISPLAY_NAME" />”是一个由 <ph name="DOMAIN" /> 管理的受管理自助服务终端</translation>
 <translation id="2427507373259914951">点击鼠标左键</translation>
 <translation id="2429753432712299108">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。在接受之前，请确保该设备上显示以下配对密钥：<ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">显示密码</translation>
 <translation id="2473177541599297363">确认分辨率</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">按 <ph name="KEYBOARD_SHORTCUT" />键可切换键盘布局。</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">“自动点击”按钮</translation>
 <translation id="4215497585250573029">VPN 设置</translation>
 <translation id="4217571870635786043">语音输入</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> 的智能卡 PIN 码</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 后充满</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">隐藏密码</translation>
 <translation id="4570957409596482333">随选朗读按钮</translation>
 <translation id="4585337515783392668">停止投射至不明接收器</translation>
 <translation id="4628757576491864469">设备</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">即时网络共享</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
+<translation id="54609108002486618">托管</translation>
 <translation id="5465662442746197494">需要帮助？</translation>
 <translation id="5496819745535887422">您的管理员正在回滚您的设备。设备重启后，所有数据都会被删除。</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">要解锁此设备，请输入您的 Family Link 家长访问码</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
+<translation id="7466449121337984263">请轻触传感器</translation>
 <translation id="7497767806359279797">选择语言和键盘布局</translation>
 <translation id="7526573455193969409">网络可能受到了监控</translation>
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>

@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Cargador de baixa potencia</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
-<translation id="2148902151539191989">ATRÁS</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2220572644011485463">PIN ou contrasinal</translation>
 <translation id="2222338659135520253">É obrigatorio iniciar sesión</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é unha sesión xestionada por <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic co botón esquerdo do rato</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere recibir permiso para sincronizarse. Antes de aceptalo, confirma que se mostra esta clave de paso nese dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Mostrar contrasinal</translation>
 <translation id="2473177541599297363">Confirmar resolución</translation>
 <translation id="2482878487686419369">Notificacións</translation>
 <translation id="2484513351006226581">Para cambiar o deseño de teclado, preme <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -256,7 +256,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4215497585250573029">Configuración de VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
-<translation id="421885205185866088">PIN da tarxeta intelixente para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostrar a configuración de notificacións. Están desactivadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode facer o seguinte:</translation>
@@ -286,6 +285,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere obter permiso para sincronizarse.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> para completar a carga</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Ocultar contrasinal</translation>
 <translation id="4570957409596482333">Botón Escoitar selección</translation>
 <translation id="4585337515783392668">Deter emisión nun receptor descoñecido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
@@ -337,6 +337,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Xa se engadiron todos os usuarios dispoñibles a esta sesión.</translation>
+<translation id="54609108002486618">Dispositivo xestionado</translation>
 <translation id="5465662442746197494">Precisas axuda?</translation>
 <translation id="5496819745535887422">O administrador está instalando unha versión anterior no teu dispositivo. Ao reinicialo, eliminaranse todos os datos.</translation>
 <translation id="5519195206574732858">LTE</translation>

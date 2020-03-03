@@ -869,7 +869,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Native Client-module: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(leeg)</translation>
-<translation id="2191223688506386601">Nog één ding</translation>
 <translation id="2191754378957563929">Aan</translation>
 <translation id="2192505247865591433">Van:</translation>
 <translation id="2193365732679659387">Vertrouwensinstellingen</translation>
@@ -2568,7 +2567,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4555769855065597957">Schaduw</translation>
 <translation id="4555863373929230635">Log in en schakel synchronisatie in om wachtwoorden op te slaan in je Google-account.</translation>
 <translation id="4558426062282641716">Toestemming voor automatisch starten gevraagd</translation>
-<translation id="4558491878126948419">Ontvang <ph name="DEVICE_TYPE" />-tips en updates voor Google-producten en deel feedback. Je kunt je op elk gewenst moment afmelden.</translation>
 <translation id="4559617833001311418">Deze site heeft toegang tot je bewegings- of lichtsensoren.</translation>
 <translation id="4561893854334016293">Geen onlangs gewijzigde rechten</translation>
 <translation id="4562155214028662640">Vingerafdruk toevoegen</translation>
@@ -2838,7 +2836,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />' wil verbinden met een seriële poort</translation>
 <translation id="4944310289250773232">Deze verificatieservice wordt gehost door <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Acties</translation>
-<translation id="4952981627953231344">Plugin VM is niet toegestaan op dit apparaat. Neem contact op met de apparaatbeheerder van je organisatie.</translation>
 <translation id="4953808748584563296">Standaard oranje avatar</translation>
 <translation id="4955710816792587366">Je pincode kiezen</translation>
 <translation id="4959262764292427323">Wachtwoorden worden in je Google-account opgeslagen, zodat je deze op elk apparaat kunt gebruiken</translation>
@@ -3021,6 +3018,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5233736638227740678">&amp;Plakken</translation>
 <translation id="5234764350956374838">Sluiten</translation>
 <translation id="5235050375939235066">App verwijderen?</translation>
+<translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
 <translation id="5235750401727657667">De pagina vervangen die wordt weergegeven wanneer je een nieuw tabblad opent</translation>
 <translation id="5238278114306905396">De app '<ph name="EXTENSION_NAME" />' is automatisch verwijderd.</translation>
 <translation id="5241128660650683457">Al je gegevens lezen voor de websites die je bezoekt</translation>
@@ -3441,7 +3439,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5805697420284793859">Vensterbeheer</translation>
 <translation id="5806773519584576205">0° (standaard)</translation>
-<translation id="5811750797187914944">Klaar</translation>
 <translation id="5812674658566766066">Alles uitvouwen</translation>
 <translation id="5814126672212206791">Verbindingstype</translation>
 <translation id="5815645614496570556">X.400-adres</translation>
@@ -4062,7 +4059,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6680442031740878064">Beschikbaar: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Snelheid</translation>
 <translation id="6681668084120808868">Foto nemen</translation>
-<translation id="6681964764822470072"><ph name="APP_NAME" /> wordt verwijderd</translation>
 <translation id="668599234725812620">Google Play openen</translation>
 <translation id="6686490380836145850">Tabbladen aan de rechterkant sluiten</translation>
 <translation id="6686817083349815241">Je wachtwoord opslaan</translation>
@@ -4644,7 +4640,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7493386493263658176">De extensie <ph name="EXTENSION_NAME" /> kan alle tekst verzamelen die je typt, waaronder persoonsgegevens zoals wachtwoorden en creditcardnummers. Wil je deze extensie gebruiken?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Je oude wachtwoord vergeten?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> en de gegevens die aan deze app gekoppeld zijn, worden verwijderd van dit apparaat.</translation>
 <translation id="7496732379142025470">'Oké Google' is alleen ingeschakeld wanneer je apparaat op een voedingsbron is aangesloten om de batterij te sparen. Als je wijzigingen wilt aanbrengen, ga je naar Instellingen.</translation>
 <translation id="7497215489070763236">CA-certificaat van server</translation>
 <translation id="7497981768003291373">Je hebt geen onlangs vastgelegde WebRTC-tekstlogboeken.</translation>

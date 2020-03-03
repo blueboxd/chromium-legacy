@@ -782,6 +782,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // True if is handling mouse WM_INPUT messages.
   bool using_wm_input_ = false;
 
+  // True if we're displaying the system menu on the title bar. If we are,
+  // then we want to ignore right mouse clicks instead of bringing up a
+  // context menu.
+  bool handling_mouse_menu_ = false;
+
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.

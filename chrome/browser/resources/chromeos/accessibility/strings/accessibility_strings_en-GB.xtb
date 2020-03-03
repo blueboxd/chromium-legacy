@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Next</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">No next level 4 heading</translation>
+<translation id="1212770441379271564">The next few shortcuts aren’t ChromeVox commands, but they’re still very useful for getting the most out of Chrome.
+    To navigate forward through actionable items like buttons and links, press the Tab key. To navigate backwards, press Shift + Tab.
+    To enter the Chrome browser address box, also called the omnibox, press Control + L.
+    To open and go to a new tab automatically, press Control + T. Your cursor will be in the omnibox.
+    To close a tab, press Control + W.
+    To move forward between open tabs, use Control + Tab.
+    To open the Chrome browser menu, press Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – Giving Voice to Chrome</translation>
 <translation id="1225969361094801578">Dark Slate Grey</translation>
 <translation id="1229276918471378188">Previous jump</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">colour picker</translation>
 <translation id="4221012616705981690">No previous list</translation>
 <translation id="4221071177874897997">Indicate bold:</translation>
+<translation id="4225355998815256469">Form controls</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Light Slate Grey</translation>
 <translation id="4231102694147661229">Enable developer options</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Sentence</translation>
 <translation id="4623097797855662355">Colophon</translation>
 <translation id="463135993322337640">Press ChromeVox o, n to find out what's new</translation>
+<translation id="4646606380313237501">{'ar': 'Arabic',
+    'as': 'Assamese',
+    'aw': 'Awadhi',
+    'be': 'Bengali',
+    'bg': 'Bulgarian',
+    'bh': 'Bihari',
+    'bo': 'Tibetan',
+    'br': 'Braj',
+    'ca': 'Catalan',
+    'ckb': 'Sorani',
+    'cs': 'Czech',
+    'cy': 'Welsh',
+    'da': 'Danish',
+    'de': 'German',
+    'de_CH': 'German (Switzerland)',
+    'de_DE': 'German (Germany)',
+    'dra': 'Dravidian',
+    'el': 'Greek',
+    'en': 'English',
+    'en_CA': 'English (Canada)',
+    'en_GB': 'English (United Kingdom)',
+    'en_US': 'English (United States)',
+    'eo': 'Esperanto',
+    'es': 'Spanish',
+    'et': 'Estonian',
+    'fa': 'Persian',
+    'fr': 'French',
+    'fr_CA': 'French (Canada)',
+    'fr_FR': 'French (France)',
+    'fi': 'Finnish',
+    'ga': 'Irish',
+    'gd': 'Gaelic',
+    'gon': 'Gondi',
+    'gu': 'Gujarati',
+    'he': 'Hebrew',
+    'hi': 'Hindi',
+    'hr': 'Croatian',
+    'hu': 'Hungarian',
+    'hy': 'Armenian',
+    'is': 'Icelandic',
+    'it': 'Italian',
+    'iu': 'Inuktitut',
+    'ka': 'Kannada',
+    'kh': 'Khasi',
+    'ko': 'Korean',
+    'kok': 'Konkani',
+    'kru': 'Kurukh',
+    'ks': 'Kashmiri',
+    'lt': 'Lithuanian',
+    'lv': 'Latvian',
+    'mao': 'Maori',
+    'ml': 'Malayalam',
+    'mt': 'Maltese',
+    'mwr': 'Marwari',
+    'mn': 'Mongolian',
+    'mun': 'Munda',
+    'nb': 'Norwegian Bokmål',
+    'ne': 'Nepali',
+    'nl': 'Dutch',
+    'no': 'Norwegian',
+    'or': 'Oriya',
+    'pi': 'Pali',
+    'pl': 'Polish',
+    'pt': 'Portuguese',
+    'pu': 'Punjabi',
+    'ro': 'Romanian',
+    'ru': 'Russian',
+    'sa': 'Sanskrit',
+    'si': 'Sindhi',
+    'sin': 'Sinhala',
+    'sk': 'Slovak',
+    'sl': 'Slovenian',
+    'sr': 'Serbian',
+    'sv': 'Swedish',
+    'ta': 'Tamil',
+    'te': 'Telugu',
+    'tr': 'Turkish',
+    'tsn': 'Afrikaans',
+    'uk': 'Ukrainian',
+    'ur': 'Urdu',
+    'vi': 'Vietnamese',
+    'zh': 'Chinese',
+    'zh_TW': 'Chinese (Traditional Han)'}</translation>
 <translation id="4647836961514597010">Colour picker</translation>
 <translation id="4660783501463101648">Classic removed. The keyboard toggle to switch back into ChromeVox Classic has been removed.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Sticky mode enabled</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{comma}other{# commas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, text box</translation>
+<translation id="532485153932049746">Text formatting
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Control the device with just 1 or 2 switches.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">A modal alert</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}other{# semicolons}}</translation>
+<translation id="5420259671171615858">Search the menus</translation>
 <translation id="5435274640623994081">Enable earcon logging</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(active)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Spelling mistake detected</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">return</translation>
+<translation id="7429415133937917139">Simulates the output of a refreshable braille display
+    in the ChromeVox panel at the top of the screen</translation>
 <translation id="7434509671034404296">Developer</translation>
 <translation id="743783356331413498">Example</translation>
 <translation id="7439060726180460871">Directory</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Previous radio button</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">No next combo box</translation>
+<translation id="772146615414628379">Congratulations! You’ve learned the essentials to use ChromeVox successfully. Remember that you can open the ChromeVox command menu at any time by pressing Search &amp; Full Stop To learn even more about ChromeVox and Chrome OS, visit the following articles.
+    If you've finished the tutorial, use ChromeVox to navigate to the Close button and click it.</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7731785449856576010">No next media widget</translation>
 <translation id="773906353055481349">Press Search+Ctrl+Alt with arrows to navigate by cell</translation>

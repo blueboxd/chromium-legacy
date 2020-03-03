@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
 <translation id="2135456203358955318">ડૉક કરેલ મૅગ્નિફાયર</translation>
 <translation id="2144487987174258011">Adobe Flash Player અપડેટ કરવા પુનઃપ્રારંભ કરો</translation>
-<translation id="2148902151539191989">પાછળ</translation>
 <translation id="2208323208084708176">એકીકૃત ડેસ્કટૉપ મોડ</translation>
 <translation id="2220572644011485463">PIN અથવા પાસવર્ડ</translation>
 <translation id="2222338659135520253">સાઇન ઇન આવશ્યક</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528">મેનેજ કરાયેલ સત્ર <ph name="DISPLAY_NAME" />ને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="2427507373259914951">લેફ્ટ ક્લિક કરો</translation>
 <translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="2473177541599297363">રિઝોલ્યુશન કન્ફર્મ કરો</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2484513351006226581">કીબોર્ડ લેઆઉટ સ્વિચ કરવા માટે <ph name="KEYBOARD_SHORTCUT" />ને દબાવો.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">ઑટોમૅટિક ક્લિક બટન</translation>
 <translation id="4215497585250573029">VPN સેટિંગ</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> માટે સ્માર્ટ કાર્ડ પિન</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન બંધ છે</translation>
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
 <translation id="4570957409596482333">સાંભળવા માટે પસંદ કરો બટન</translation>
 <translation id="4585337515783392668">અજાણ્યા પ્રાપ્તકર્તા પર કાસ્ટ કરવાનું રોકો</translation>
 <translation id="4628757576491864469">ઉપકરણો</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">ફટાફટ ટિથરિંગ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
+<translation id="54609108002486618">મેનેજ કરેલું</translation>
 <translation id="5465662442746197494">સહાયની જરૂર છે?</translation>
 <translation id="5496819745535887422">તમારા વ્યવસ્થાપક તમારા ઉપકરણને રોલ બૅક કરી રહ્યા છે. ઉપકરણ ફરી શરૂ કરવામાં આવશે, ત્યારે બધો ડેટા ડિલીટ થઈ જશે.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">ડિવાઇસને અનલૉક કરવા માટે, તમારી Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો</translation>
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
+<translation id="7466449121337984263">કૃપા કરીને સેન્સરને સ્પર્શ કરો</translation>
 <translation id="7497767806359279797">ભાષા અને કીબોર્ડ પસંદ કરો</translation>
 <translation id="7526573455193969409">નેટવર્કને મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>

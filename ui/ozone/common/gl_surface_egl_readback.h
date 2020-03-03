@@ -32,7 +32,7 @@ class GLSurfaceEglReadback : public gl::PbufferGLSurfaceEGL {
               bool has_alpha) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
 
   // TODO(kylechar): Implement SupportsPostSubBuffer() and PostSubBuffer().
 

@@ -1283,7 +1283,7 @@ CommandHandler.onEditCommand_ = function(command) {
   }
 
   const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (!textEditHandler) {
+  if (!textEditHandler || current.start.node !== textEditHandler.node) {
     return true;
   }
 

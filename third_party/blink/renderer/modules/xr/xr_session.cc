@@ -1569,6 +1569,9 @@ void XRSession::OnInputStateChangeInternal(
     XRInputSource* input_source = XRInputSource::CreateOrUpdateFrom(
         stored_input_source, this, input_state);
 
+    // Input sources should use DOM overlay hit test to check if they intersect
+    // cross-origin content. If that's the case, the input source is set as
+    // invisible, and must not return poses or hit test results.
     bool hide_input_source = false;
     if (overlay_element_ && input_state->overlay_pointer_position) {
       input_source->ProcessOverlayHitTest(overlay_element_, input_state);

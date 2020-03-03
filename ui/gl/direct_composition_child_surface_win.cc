@@ -199,8 +199,8 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
              : gfx::SwapResult::SWAP_FAILED;
 }
 
-bool DirectCompositionChildSurfaceWin::FlipsVertically() const {
-  return true;
+gfx::SurfaceOrigin DirectCompositionChildSurfaceWin::GetOrigin() const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 bool DirectCompositionChildSurfaceWin::SupportsPostSubBuffer() {

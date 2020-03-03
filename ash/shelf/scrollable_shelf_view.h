@@ -96,10 +96,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   void SetTestObserver(TestObserver* test_observer);
 
-  void SetRoundedCornersForShelf(bool show, views::View* ink_drop_host);
-  // Returns whether the ink drop for the |ink_drop_host| needs to be clipped.
-  bool InkDropNeedsClipping(views::View* ink_drop_host);
-
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   const ShelfContainerView* shelf_container_view() const {
@@ -214,6 +210,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
   void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
+  void NotifyInkDropActivity(bool activated, views::Button* sender) override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -433,6 +430,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns the scroll offset assuming view bounds being the target bounds.
   int CalculateScrollOffsetForTargetAvailableSpace(
       const gfx::Rect& target_space) const;
+
+  // Returns whether the ink drop for the |sender| needs to be clipped.
+  bool InkDropNeedsClipping(views::Button* sender) const;
+
+  // Enable/disable the rounded corners of the shelf container.
+  void EnableShelfRoundedCorners(bool enable);
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

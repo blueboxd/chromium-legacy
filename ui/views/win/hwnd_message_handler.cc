@@ -2568,9 +2568,16 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
   if (delegate_->HandleCommand(notification_code))
     return;
 
+  bool is_mouse_menu = (notification_code & sc_mask) == SC_MOUSEMENU;
+  if (is_mouse_menu)
+    handling_mouse_menu_ = true;
+
+  base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   // If the delegate can't handle it, the system implementation will be called.
   DefWindowProc(hwnd(), WM_SYSCOMMAND, notification_code,
                 MAKELPARAM(point.x(), point.y()));
+  if (is_mouse_menu && ref)
+    handling_mouse_menu_ = false;
 }
 
 void HWNDMessageHandler::OnThemeChanged() {
@@ -3001,9 +3008,16 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   // There are cases where the code handling the message destroys the window,
-  // so use the weak ptr to check if destruction occured or not.
+  // so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
-  bool handled = delegate_->HandleMouseEvent(&event);
+  bool handled = false;
+
+  // Don't send right mouse button up to the delegate when displaying system
+  // command menu. This prevents left clicking in the upper left hand corner of
+  // an app window and then right clicking from sending the right click to the
+  // renderer and bringing up a web contents context menu.
+  if (!handling_mouse_menu_ || message != WM_RBUTTONUP)
+    handled = delegate_->HandleMouseEvent(&event);
 
   if (!ref.get())
     return 0;
@@ -3164,7 +3178,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
       message, pointer_id, pointer_pen_info, point);
 
   // There are cases where the code handling the message destroys the
-  // window, so use the weak ptr to check if destruction occured or not.
+  // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   if (event) {
     if (event->IsTouchEvent())

@@ -869,7 +869,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2190069059097339078">Hämtningsfunktion för Wi-Fi-användaruppgifter</translation>
 <translation id="219008588003277019">Native Client-modul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(tom)</translation>
-<translation id="2191223688506386601">En sista sak</translation>
 <translation id="2191754378957563929">På</translation>
 <translation id="2192505247865591433">Från:</translation>
 <translation id="2193365732679659387">Inställningar för tillförlitlighet</translation>
@@ -2568,7 +2567,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4555769855065597957">Skugga</translation>
 <translation id="4555863373929230635">Logga in och aktivera synkronisering om du vill spara lösenord i Google-kontot.</translation>
 <translation id="4558426062282641716">Autostartbehörighet har begärts</translation>
-<translation id="4558491878126948419">Få tips om <ph name="DEVICE_TYPE" /> och uppdateringar om Google-produkter samt dela feedback. Sluta prenumerera när du vill.</translation>
 <translation id="4559617833001311418">Den här webbplatsen använder enhetens rörelse- eller ljussensor.</translation>
 <translation id="4561893854334016293">Inga behörigheter har ändrats nyligen</translation>
 <translation id="4562155214028662640">Lägg till fingeravtryck</translation>
@@ -2838,7 +2836,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4943691134276646401"><ph name="CHROME_EXTENSION_NAME" /> vill ansluta till en serieport</translation>
 <translation id="4944310289250773232">Den här autentiseringstjänsten tillhandahålls av <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Åtgärder</translation>
-<translation id="4952981627953231344">Plugin VM är inte tillåtet på den här enheten. Kontakta organisationens enhetsadministratör.</translation>
 <translation id="4953808748584563296">Orange standardavatar</translation>
 <translation id="4955710816792587366">Välj en pinkod</translation>
 <translation id="4959262764292427323">Lösenorden sparas i Google-kontot så att du kan använda dem på vilken enhet som helst</translation>
@@ -3021,6 +3018,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5233736638227740678">K&amp;listra in</translation>
 <translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="5235050375939235066">Vill du avinstallera appen?</translation>
+<translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5235750401727657667">Ersätt den aktuella sidan när du öppnar en ny flik</translation>
 <translation id="5238278114306905396">Appen <ph name="EXTENSION_NAME" /> togs bort automatiskt.</translation>
 <translation id="5241128660650683457">Läsa all din data på webbplatserna som du besöker</translation>
@@ -3441,7 +3439,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5805697420284793859">Fönsterhanterare</translation>
 <translation id="5806773519584576205">0° (standard)</translation>
-<translation id="5811750797187914944">Klart</translation>
 <translation id="5812674658566766066">Utöka alla</translation>
 <translation id="5814126672212206791">Anslutningstyp</translation>
 <translation id="5815645614496570556">X.400-adress</translation>
@@ -4062,7 +4059,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6680442031740878064">Tillgängligt: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hastighet</translation>
 <translation id="6681668084120808868">Ta foto</translation>
-<translation id="6681964764822470072"><ph name="APP_NAME" /> avinstalleras.</translation>
 <translation id="668599234725812620">Öppna Google Play</translation>
 <translation id="6686490380836145850">Stäng flikar till höger</translation>
 <translation id="6686817083349815241">Spara lösenordet</translation>
@@ -4644,7 +4640,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7493386493263658176">Tillägget <ph name="EXTENSION_NAME" /> kan samla in all text du skriver, inklusive personlig information som lösenord och kreditkortsnummer. Vill du fortsätta att använda tillägget?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Har du glömt ditt gamla lösenord?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> och tillhörande data tas bort från den här enheten.</translation>
 <translation id="7496732379142025470">För att spara batteri är ”Ok Google” bara aktiverat när enheten är ansluten till en strömkälla. Öppna Inställningar om du vill ändra något.</translation>
 <translation id="7497215489070763236">Serverns CA-certifikat</translation>
 <translation id="7497981768003291373">Du har inga nyligen registrerade WebRTC-textloggar.</translation>

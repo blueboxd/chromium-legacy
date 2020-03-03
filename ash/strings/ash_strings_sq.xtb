@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Ngarkues me fuqi të ulët</translation>
 <translation id="2135456203358955318">Zmadhuesi i stacionuar</translation>
 <translation id="2144487987174258011">Rinise për të përditësuar Adobe Flash Player</translation>
-<translation id="2148902151539191989">PRAPA</translation>
 <translation id="2208323208084708176">Modaliteti i desktopit të unifikuar</translation>
 <translation id="2220572644011485463">Kodi PIN ose fjalëkalimi</translation>
 <translation id="2222338659135520253">Kërkohet identifikimi</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> është sesion i menaxhuar që menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Klikimi me butonin majtas</translation>
 <translation id="2429753432712299108">Pajisja me Bluetooth, "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Përpara se të pranosh, konfirmo që ky kod shfaqet në atë pajisje: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Shfaq fjalëkalimin</translation>
 <translation id="2473177541599297363">Konfirmo rezolucionin</translation>
 <translation id="2482878487686419369">Njoftimet</translation>
 <translation id="2484513351006226581">Shtyp <ph name="KEYBOARD_SHORTCUT" /> për të ndryshuar planin e tastierës.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Butoni i klikimeve automatike</translation>
 <translation id="4215497585250573029">Cilësimet e VPN-së</translation>
 <translation id="4217571870635786043">Diktimi</translation>
-<translation id="421885205185866088">Kodi PIN i kartës inteligjente për <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Shfaq cilësimet e njoftimeve. Njoftimet janë joaktive</translation>
 <translation id="4269883910223712419">Administratori i kësaj pajisjeje ka aftësinë që:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Pajisja me Bluetooth "<ph name="DEVICE_NAME" />" kërkon leje për çiftim.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> derisa të mbushet</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Fshih fjalëkalimin</translation>
 <translation id="4570957409596482333">Butoni i "Zgjidh që të thuhet"</translation>
 <translation id="4585337515783392668">Ndalo transmetimin në një marrës të panjohur</translation>
 <translation id="4628757576491864469">Pajisjet</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Ndarja e internetit në çast</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Të gjithë përdoruesit e gatshëm janë shtuar tashmë te ky sesion.</translation>
+<translation id="54609108002486618">E menaxhuar</translation>
 <translation id="5465662442746197494">Ke nevojë për ndihmë?</translation>
 <translation id="5496819745535887422">Administratori po e kthen prapa pajisjen tënde. Të gjitha të dhënat do të fshihen kur të riniset pajisja.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">Për të shkyçur pajisjen, fut kodin e qasjes së prindit për Family Link</translation>
 <translation id="742594950370306541">Kamera është në përdorim.</translation>
 <translation id="743058460480092004">Kamera dhe mikrofoni janë në përdorim</translation>
+<translation id="7466449121337984263">Prek sensorin</translation>
 <translation id="7497767806359279797">Zgjidh gjuhën dhe tastierën</translation>
 <translation id="7526573455193969409">Rrjeti mund të jetë i monitoruar</translation>
 <translation id="7536035074519304529">Adresa IP: <ph name="ADDRESS" /></translation>

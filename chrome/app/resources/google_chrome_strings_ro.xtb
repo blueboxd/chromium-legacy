@@ -102,6 +102,7 @@
 <translation id="4293420128516039005">Conectează-te pentru a sincroniza și a personaliza Chrome pe toate dispozitivele</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
+<translation id="4335235004908507846">Chrome te protejează împotriva încălcării securității datelor, a extensiilor necorespunzătoare și nu numai</translation>
 <translation id="4343195214584226067">Extensia <ph name="EXTENSION_NAME" /> a fost adăugată la Chrome</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
 <translation id="4458462641685292929">O altă operație din Google Chrome este în curs de desfășurare. Încearcă din nou mai târziu.</translation>
@@ -195,12 +196,14 @@
 <translation id="7777080907402804672">Dacă o imagine nu are o descriere utilă, Chrome va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google. Poți dezactiva această opțiune oricând din setări.</translation>
 <translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
 <translation id="7787950393032327779">Profilul pare să fie utilizat de alt proces Google Chrome (<ph name="PROCESS_ID" />), pe alt computer (<ph name="HOST_NAME" />). Chrome a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chrome.</translation>
+<translation id="7801699035218095297">Google Chrome încearcă să copieze parolele. Pentru a permite acest lucru, introdu parola pentru Windows.</translation>
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7855730255114109580">Google Chrome este actualizat</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7896673875602241923">Un alt utilizator s-a conectat anterior la Chrome pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chrome pentru a-ți păstra separat informațiile.</translation>
 <translation id="7916016681687251387">Sistemul de operare Chrome nu a putut sincroniza datele. Remediază acum.</translation>
+<translation id="7930071585467473040">Google Chrome încearcă să copieze parolele.</translation>
 <translation id="7962410387636238736">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>
 <translation id="8013993649590906847">Dacă o imagine nu are o descriere utilă, Chrome va încerca să o completeze. Pentru a crea descrieri, imaginile sunt trimise la Google.</translation>

@@ -15,8 +15,7 @@ class ApplicationControllerImpl : public chromium::cast::ApplicationController {
  public:
   ApplicationControllerImpl(
       fuchsia::web::Frame* frame,
-      fidl::InterfaceHandle<chromium::cast::ApplicationControllerReceiver>
-          receiver);
+      fidl::InterfaceHandle<chromium::cast::ApplicationContext> context);
   ~ApplicationControllerImpl() final;
 
  protected:

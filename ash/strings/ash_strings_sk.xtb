@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2135456203358955318">Ukotvená lupa</translation>
 <translation id="2144487987174258011">Reštartujte a aktualizujte tak Adobe Flash Player</translation>
-<translation id="2148902151539191989">SPÄŤ</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
 <translation id="2220572644011485463">PIN alebo heslo</translation>
 <translation id="2222338659135520253">Vyžaduje sa prihlásenie</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je spravovaná relácia riadená doménou <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Kliknutie ľavým tlačidlom myši</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Zobraziť heslo</translation>
 <translation id="2473177541599297363">Potvrdenie rozlíšenia</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2484513351006226581">Stlačením klávesov <ph name="KEYBOARD_SHORTCUT" /> zmeníte rozloženie klávesnice.</translation>
@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3576141592585647168">Zmena časového pásma</translation>
+<translation id="3593646411856133110">Otvorené aplikácie zobrazíte potiahnutím nahor a pridržaním</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="3604801046548457007">Bola vytvorená plocha <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
@@ -255,7 +256,6 @@
 <translation id="4195877955194704651">Tlačidlo automatického kliknutia</translation>
 <translation id="4215497585250573029">Nastavenia VPN</translation>
 <translation id="4217571870635786043">Diktovanie</translation>
-<translation id="421885205185866088">PIN inteligentnej karty pre <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Zobraziť nastavenia upozornení. Upozornenia sú vypnuté</translation>
 <translation id="4269883910223712419">Správca tohto zariadenia môže:</translation>
@@ -285,6 +285,7 @@
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do úplného nabitia</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Skryť heslo</translation>
 <translation id="4570957409596482333">Tlačidlo počúvania vybraného textu</translation>
 <translation id="4585337515783392668">Zastaviť prenos do neznámeho zariadenia</translation>
 <translation id="4628757576491864469">Zariadenia</translation>
@@ -336,6 +337,7 @@
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
+<translation id="54609108002486618">Spravovaný</translation>
 <translation id="5465662442746197494">Potrebujete pomoc?</translation>
 <translation id="5496819745535887422">Správca obnovuje vaše zariadenie. Pri reštartovaní zariadenia sa odstránia všetky dáta.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -361,6 +363,7 @@
 <translation id="5745612484876805746">Nočný režim sa automaticky zapína pri západe slnka</translation>
 <translation id="5750765938512549687">Rozhranie Bluetooth je vypnuté</translation>
 <translation id="576453121877257266">Nočný režim je zapnutý.</translation>
+<translation id="5769373120130404283">Obrazovka ochrany súkromia</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Zastaviť prenos obsahu <ph name="ROUTE_TITLE" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
@@ -402,6 +405,7 @@
 <translation id="6297287540776456956">Pomocou dotykového pera vyberte oblasť</translation>
 <translation id="6310121235600822547">Obrazovka <ph name="DISPLAY_NAME" /> bola otočená o <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Rozhranie Bluetooth je zapnuté</translation>
+<translation id="6381109794406942707">Ak chcete odomknúť zariadenie, zadajte PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
@@ -612,6 +616,7 @@
 <translation id="9072519059834302790">Zostávajúci čas do vybitia batérie: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi‑Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Potiahnutím nahor prejdete na plochu</translation>
 <translation id="9080206825613744995">Mikrofón sa používa.</translation>
 <translation id="9084606467167974638">Prepnúť pozíciu ponuky</translation>
 <translation id="9089416786594320554">Metódy vstupu</translation>

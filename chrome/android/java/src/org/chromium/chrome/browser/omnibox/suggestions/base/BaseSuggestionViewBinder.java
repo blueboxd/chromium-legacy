@@ -130,6 +130,11 @@ public final class BaseSuggestionViewBinder<T extends View>
                         ? R.dimen.omnibox_suggestion_compact_padding
                         : R.dimen.omnibox_suggestion_comfortable_padding);
         view.getContentView().setPaddingRelative(0, verticalPad, 0, verticalPad);
+
+        final int minimumHeight = view.getResources().getDimensionPixelSize(isCompact
+                        ? R.dimen.omnibox_suggestion_compact_height
+                        : R.dimen.omnibox_suggestion_comfortable_height);
+        view.getContentView().setMinimumHeight(minimumHeight);
     }
 
     /** Update image view using supplied drawable state object. */

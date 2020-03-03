@@ -869,7 +869,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Özgün İstemci modülü: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(boş)</translation>
-<translation id="2191223688506386601">Son bir şey daha</translation>
 <translation id="2191754378957563929">Açık</translation>
 <translation id="2192505247865591433">Nereden:</translation>
 <translation id="2193365732679659387">Güven ayarları</translation>
@@ -2568,7 +2567,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4555769855065597957">Gölge</translation>
 <translation id="4555863373929230635">Şifreleri Google Hesabınıza kaydetmek için oturum açın ve senkronizasyonu etkinleştirin.</translation>
 <translation id="4558426062282641716">Otomatik başlatma izni istendi</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> ile ilgili ipuçları ve Google ürünleriyle ilgili güncellemeler alın ve geri bildirimlerinizi paylaşın. İstediğiniz zaman aboneliğinizi iptal edebilirsiniz.</translation>
 <translation id="4559617833001311418">Bu site hareket veya ışık sensörlerinize erişiyor.</translation>
 <translation id="4561893854334016293">Yakın zamanda değiştirilmiş izin yok</translation>
 <translation id="4562155214028662640">Parmak İzi Ekle</translation>
@@ -2838,7 +2836,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" bir seri bağlantı noktasına bağlanmak istiyor</translation>
 <translation id="4944310289250773232">Bu kimlik doğrulama hizmeti <ph name="SAML_DOMAIN" /> tarafından barındırılıyor.</translation>
 <translation id="495170559598752135">İşlemler</translation>
-<translation id="4952981627953231344">Plugin VM'e bu cihazda izin verilmiyor. Kuruluşunuzun cihaz yöneticisiyle iletişime geçin.</translation>
 <translation id="4953808748584563296">Varsayılan turuncu avatar</translation>
 <translation id="4955710816792587366">PIN'inizi seçin</translation>
 <translation id="4959262764292427323">Şifreler Google Hesabınıza kaydedildiğinden bunları herhangi bir cihazda kullanabilirsiniz</translation>
@@ -2961,7 +2958,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5127881134400491887">Ağ bağlantılarını yönetme</translation>
 <translation id="512903556749061217">eklendi</translation>
 <translation id="5133483819862530305">Güneşin Batışından Doğuşuna</translation>
-<translation id="5134113140145104829">İstediğiniz zaman Ana ekrana dönmek için ekrandan yukarı kaydırın.</translation>
+<translation id="5134113140145104829">İstediğiniz zaman Ana ekrana dönmek için ekranın altından yukarı kaydırın.</translation>
 <translation id="5135085122826131075">Asistanınıza "Ok Google" diyerek erişin.</translation>
 <translation id="5135533361271311778">Yer işareti öğesi oluşturulamadı.</translation>
 <translation id="5137501176474113045">Bu öğeyi sil</translation>
@@ -3021,6 +3018,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5233736638227740678">&amp;Yapıştır</translation>
 <translation id="5234764350956374838">Kapat</translation>
 <translation id="5235050375939235066">Uygulamanın yüklemesi kaldırılsın mı?</translation>
+<translation id="523505283826916779">Erişilebilirlik ayarları</translation>
 <translation id="5235750401727657667">Yeni bir sekme açarken gördüğünüz sayfayı değiştirme</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" uygulaması otomatik olarak kaldırıldı.</translation>
 <translation id="5241128660650683457">Ziyaret ettiğiniz web sitelerindeki tüm verilerinizi okuma</translation>
@@ -3442,7 +3440,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5805697420284793859">Pencere yöneticisi</translation>
 <translation id="5806773519584576205">0° (Varsayılan)</translation>
-<translation id="5811750797187914944">Hazır</translation>
 <translation id="5812674658566766066">Tümünü genişlet</translation>
 <translation id="5814126672212206791">Bağlantı türü</translation>
 <translation id="5815645614496570556">X.400 Adresi</translation>
@@ -4063,7 +4060,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6680442031740878064">Kullanılabilir alan: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hız</translation>
 <translation id="6681668084120808868">Fotoğraf çek</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" uygulaması kaldırılacak.</translation>
 <translation id="668599234725812620">Google Play'i aç</translation>
 <translation id="6686490380836145850">Sağdaki sekmeleri kapat</translation>
 <translation id="6686817083349815241">Şifrenizi kaydedin</translation>
@@ -4645,7 +4641,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> uzantısı; şifreler ve kredi kartı numaraları gibi kişisel veriler de dahil olmak üzere yazdığınız tüm metinleri toplayabilir. Bu uzantıyı kullanmak istiyor musunuz?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Eski şifrenizi unuttunuz mu?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> ve onunla ilişkili veriler bu cihazdan kaldırılacak.</translation>
 <translation id="7496732379142025470">Pilden tasarruf etmek için, "Ok Google" özelliği yalnızca cihazınız güç kaynağına bağlıyken etkin olur. Değişiklik yapmak için Ayarlar'a gidin.</translation>
 <translation id="7497215489070763236">Sunucu CA sertifikası</translation>
 <translation id="7497981768003291373">Yakın zamanda yakalanmış herhangi bir WebRTC metin günlüğünüz yok.</translation>

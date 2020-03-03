@@ -83,9 +83,9 @@ void CastComponent::StartComponent() {
   }
 
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
-      frame(), agent_manager_->ConnectToAgentService<
-                   chromium::cast::ApplicationControllerReceiver>(
-                   CastRunner::kAgentComponentUrl));
+      frame(),
+      agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
+          CastRunner::kAgentComponentUrl));
 }
 
 void CastComponent::DestroyComponent(int termination_exit_code,

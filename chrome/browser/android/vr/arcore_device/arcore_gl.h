@@ -289,8 +289,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // Map from pointer ID to input source ID currently assigned to that pointer.
   std::unordered_map<int32_t, uint32_t> pointer_id_to_input_source_id_;
 
-  // TODO(https://crbug.com/1048329): change to a data type that will wrap
-  // around faster to exercise blink's handling of this case.
   uint32_t next_input_source_id_ = 1;
 
   // Must be last.

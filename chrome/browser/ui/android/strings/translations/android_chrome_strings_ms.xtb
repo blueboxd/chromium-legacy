@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Hapuskan sejarah, kuki, data tapak, cache...</translation>
 <translation id="129382876167171263">Fail yang disimpan oleh tapak web akan dipaparkan di sini</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
+<translation id="1303339473099049190">Tidak menemukan kata laluan itu. Semak ejaan anda dan cuba lagi.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Dihantar daripada <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Himpunkan tab.</translation>
 <translation id="1327257854815634930">Sejarah navigasi dibuka</translation>
@@ -323,6 +324,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3350687908700087792">Tutup semua tab inkognito</translation>
 <translation id="3353615205017136254">Halaman Lite disediakan oleh Google. Ketik butang muatkan halaman asal untuk memuatkan halaman asal.</translation>
 <translation id="3367813778245106622">Log masuk semula untuk memulakan penyegerakan</translation>
+<translation id="3373979091428520308">Untuk berkongsi halaman ini dengan peranti lain, hidupkan penyegerakan dalam tetapan Chrome pada peranti lain itu</translation>
 <translation id="3374023511497244703">Penanda halaman, sejarah, kata laluan dan data Chrome yang lain tidak akan disegerakkan ke Akaun Google anda lagi</translation>
 <translation id="3384347053049321195">Kongsi imej</translation>
 <translation id="3386292677130313581">Tanya sebelum membenarkan tapak mengetahui lokasi anda (disyorkan)</translation>
@@ -672,6 +674,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5956665950594638604">Buka Pusat Bantuan Chrome dalam tab baharu</translation>
 <translation id="5958275228015807058">Cari fail dan halaman anda dalam Muat Turun</translation>
 <translation id="5962718611393537961">Ketik untuk runtuhkan</translation>
+<translation id="5964805880140440652">Untuk berkongsi halaman ini dengan peranti lain, hidupkan penyegerakan dalam tetapan Chrome</translation>
 <translation id="6000066717592683814">Kekalkan Google</translation>
 <translation id="6005538289190791541">Kata laluan yang disyorkan</translation>
 <translation id="6036057147555329831">ICU tambahan</translation>

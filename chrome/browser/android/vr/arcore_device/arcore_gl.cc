@@ -830,17 +830,6 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
     bool screen_touch_active = id_and_touch_event.second.screen_touch_active;
     gfx::PointF screen_last_touch = id_and_touch_event.second.screen_last_touch;
 
-    // TODO(https://crbug.com/1048329): For now, we are ignoring non-primary
-    // pointers to maintain previous behavior. Once mojo changes, send out the
-    // non-primary pointer information as well.
-    if (!is_primary) {
-      DVLOG(3) << __func__
-               << " : pointer for input source id=" << id_and_touch_event.first
-               << " not considered primary, ignoring. pointer_id="
-               << id_and_touch_event.second.pointer_id;
-      continue;
-    }
-
     DVLOG(3) << __func__
              << " : pointer for input source id=" << id_and_touch_event.first
              << ", pointer_id=" << id_and_touch_event.second.pointer_id
@@ -857,6 +846,8 @@ std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
         device::mojom::XRInputSourceState::New();
 
     state->source_id = id_and_touch_event.first;
+
+    state->is_auxiliary = !is_primary;
 
     state->primary_input_pressed = screen_touch_active;
 

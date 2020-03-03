@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="2135456203358955318">المكبّر الذي تم إرساؤه</translation>
 <translation id="2144487987174258011">‏إعادة التشغيل لتحديث Adobe Flash Player</translation>
-<translation id="2148902151539191989">رجوع</translation>
 <translation id="2208323208084708176">وضع سطح المكتب الموحد</translation>
 <translation id="2220572644011485463">رقم التعريف الشخصي أو كلمة المرور</translation>
 <translation id="2222338659135520253">تسجيل الدخول مطلوب.</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> هي جلسة مُدارة بواسطة <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2473177541599297363">تأكيد درجة الدقة</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2484513351006226581">انقر على <ph name="KEYBOARD_SHORTCUT" /> لتبديل تنسيق لوحة المفاتيح.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">زر النقرات التلقائية</translation>
 <translation id="4215497585250573029">‏إعدادات الشبكة الافتراضية الخاصة (VPN)</translation>
 <translation id="4217571870635786043">إملاء</translation>
-<translation id="421885205185866088">رقم التعريف الشخصي للبطاقة الذكية لعنوان المستخدم <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">‏شبكة GPRS</translation>
 <translation id="4261870227682513959">عرض إعدادات الإشعارات. تم إيقاف الإشعارات</translation>
 <translation id="4269883910223712419">يمتلك مشرف هذا الجهاز القدرة على ما يلي:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> حتى اكتمال الشحن</translation>
 <translation id="4561267230861221837">شبكة الجيل الثالث</translation>
+<translation id="4565377596337484307">إخفاء كلمة المرور</translation>
 <translation id="4570957409596482333">زر "الاختيار والاستماع"</translation>
 <translation id="4585337515783392668">إيقاف الإرسال إلى مستلم غير معروف</translation>
 <translation id="4628757576491864469">الأجهزة</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">التوصيل الفوري</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
+<translation id="54609108002486618">تتم إدارته</translation>
 <translation id="5465662442746197494">هل تريد المساعدة؟</translation>
 <translation id="5496819745535887422">‏يعمل المشرف على إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك. وسيتم حذف جميع البيانات عند إعادة تشغيل الجهاز.</translation>
 <translation id="5519195206574732858">LTE</translation>

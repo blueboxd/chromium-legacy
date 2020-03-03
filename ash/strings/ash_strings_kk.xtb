@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Төмен қуатты зарядтағыш</translation>
 <translation id="2135456203358955318">Бекітілген ұлғайтқыш</translation>
 <translation id="2144487987174258011">Adobe Flash Player қолданбасын жаңарту үшін қайта іске қосыңыз</translation>
-<translation id="2148902151539191989">АРТҚА</translation>
 <translation id="2208323208084708176">Бірыңғай жұмыс үстелі режимі</translation>
 <translation id="2220572644011485463">PIN коды немесе құпия сөз</translation>
 <translation id="2222338659135520253">Есептік жазбаға кіру керек</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> – <ph name="DOMAIN" /> басқаратын сеанс</translation>
 <translation id="2427507373259914951">Тінтуірдің сол жақ түймесін басу</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптау рұқсатын сұрайды. Қабылдаудан бұрын бұл кіру кілті аталмыш құрылғыда көрсетілетінін растаңыз: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Құпия сөзді көрсету</translation>
 <translation id="2473177541599297363">Ажыратымдылықты растаңыз</translation>
 <translation id="2482878487686419369">Хабарламалар</translation>
 <translation id="2484513351006226581">Пернетақтаны ауыстыру үшін <ph name="KEYBOARD_SHORTCUT" /> пернелерін басыңыз.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Автоматты басу түймесі</translation>
 <translation id="4215497585250573029">VPN параметрлері</translation>
 <translation id="4217571870635786043">Мәтінді дауыспен енгізу</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> мекенжайына арналған смарт картаның PIN коды</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Хабарландыру параметрлерін көрсету. Хабарландырулар өшірулі</translation>
 <translation id="4269883910223712419">Құрылғының әкімшісі мына әрекеттерді орындай алады:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды.</translation>
 <translation id="453661520163887813">Зарядтау аяқталғанға дейін <ph name="TIME" /> қалды</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Құпия сөзді жасыру</translation>
 <translation id="4570957409596482333">Select-to-Speak түймесі</translation>
 <translation id="4585337515783392668">Белгісіз қабылдағышқа трансляциялауды тоқтату</translation>
 <translation id="4628757576491864469">Құрылғылар</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Жылдам тетеринг</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Барлық қолжетімді пайдаланушылар әлдеқашан осы сеансқа қосылған.</translation>
+<translation id="54609108002486618">Басқарылады</translation>
 <translation id="5465662442746197494">Көмек керек пе?</translation>
 <translation id="5496819745535887422">Әкімші құрылғыны алдыңғы нұсқаға қайтаруда. Құрылғы қайта қосылған кезде, барлық деректер жойылады.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">Құрылғының құлпын ашу үшін Family Link ата-анаға арналған кіру кодын енгізіңіз.</translation>
 <translation id="742594950370306541">Камера пайдаланылуда.</translation>
 <translation id="743058460480092004">Камера және микрофон пайдаланылуда.</translation>
+<translation id="7466449121337984263">Саусақ ізін оқу сканерін түртіңіз.</translation>
 <translation id="7497767806359279797">Тілді және пернетақтаны таңдау</translation>
 <translation id="7526573455193969409">Желі бақылануы мүмкін</translation>
 <translation id="7536035074519304529">IP мекенжайы: <ph name="ADDRESS" /></translation>

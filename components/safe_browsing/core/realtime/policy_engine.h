@@ -9,6 +9,10 @@
 
 class PrefService;
 
+namespace syncer {
+class SyncService;
+}
+
 namespace safe_browsing {
 
 enum class ResourceType;
@@ -43,8 +47,10 @@ class RealTimePolicyEngine {
 
   // Return true if the OAuth token should be associated with the URL lookup
   // pings.
-  static bool CanPerformFullURLLookupWithToken(PrefService* pref_service,
-                                               bool is_off_the_record);
+  static bool CanPerformFullURLLookupWithToken(
+      PrefService* pref_service,
+      bool is_off_the_record,
+      syncer::SyncService* sync_service);
 
   friend class SafeBrowsingService;
   friend class SafeBrowsingUIHandler;

@@ -47,6 +47,9 @@ class ShelfButtonDelegate {
   // focus.
   virtual void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) {}
 
+  // Notify the host view of the change in |sender|'s ink drop view.
+  virtual void NotifyInkDropActivity(bool activated, views::Button* sender) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfButtonDelegate);
 };

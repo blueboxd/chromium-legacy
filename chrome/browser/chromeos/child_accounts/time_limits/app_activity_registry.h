@@ -113,6 +113,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // reset.
   base::TimeDelta GetActiveTime(const AppId& app_id) const;
 
+  // Web time limit is the time limit set for Chrome browser. It is shared
+  // between Chrome and Web apps.
+  const base::Optional<AppLimit>& GetWebTimeLimit() const;
+
   AppState GetAppState(const AppId& app_id) const;
 
   // Returns the vector of paused applications.

@@ -866,7 +866,6 @@
 <translation id="2190069059097339078">WiFi ਕ੍ਰੈਡੈਂਸ਼ੀਅਲ ਗੈਟਰ</translation>
 <translation id="219008588003277019">ਨੇਟਿਵ ਕਲਾਇੰਟ ਮਾਡਿਊਲ: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(ਖਾਲੀ)</translation>
-<translation id="2191223688506386601">ਇੱਕ ਆਖਰੀ ਗੱਲ</translation>
 <translation id="2191754378957563929">ਚਾਲੂ</translation>
 <translation id="2192505247865591433">ਤੋਂ:</translation>
 <translation id="2193365732679659387">ਭਰੋਸਾ ਸੈਟਿੰਗਾਂ</translation>
@@ -2554,7 +2553,6 @@
 <translation id="4555769855065597957">ਸ਼ੈਡੋ</translation>
 <translation id="4555863373929230635">ਪਾਸਵਰਡਾਂ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕਰਨ ਲਈ, ਸਾਈਨ-ਇਨ ਕਰੋ ਅਤੇ ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="4558426062282641716">ਆਟੋ-ਲਾਂਚ ਇਜਾਜ਼ਤ ਦੀ ਬੇਨਤੀ ਕੀਤੀ</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> ਨੁਕਤੇ ਅਤੇ Google ਉਤਪਾਦਾਂ ਬਾਰੇ ਨਵੀਆਂ ਜਾਣਕਾਰੀਆਂ ਪ੍ਰਾਪਤ ਕਰੋ ਅਤੇ ਵਿਚਾਰ ਸਾਂਝਾ ਕਰੋ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਗਾਹਕੀ ਹਟਾਓ।</translation>
 <translation id="4559617833001311418">ਇਹ ਸਾਈਟ ਤੁਹਾਡੇ ਮੋਸ਼ਨ ਜਾਂ ਲਾਈਟ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰ ਰਹੀ ਹੈ।</translation>
 <translation id="4562155214028662640">ਫਿੰਗਰਪ੍ਰਿੰਟ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="4562494484721939086">ਕੋਈ ਸੇਵਾ ਨਹੀਂ</translation>
@@ -2821,7 +2819,6 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ਸੀਰੀਅਲ ਪੋਰਟ ਨਾਲ ਕਨੈਕਟ ਹੋਣਾ ਚਾਹੁੰਦੀ ਹੈ</translation>
 <translation id="4944310289250773232">ਇਹ ਪ੍ਰਮਾਣੀਕਰਨ ਸੇਵਾ <ph name="SAML_DOMAIN" /> ਵੱਲੋਂ ਹੋਸਟ ਕੀਤੀ ਜਾਂਦੀ ਹੈ</translation>
 <translation id="495170559598752135">ਕਿਰਿਆਵਾਂ</translation>
-<translation id="4952981627953231344">ਇਸ ਡੀਵਾਈਸ 'ਤੇ Plugin VM ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ। ਆਪਣੀ ਸੰਸਥਾ ਦੇ ਡੀਵਾਈਸ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="4953808748584563296">ਪੂਰਵ-ਨਿਰਧਾਰਤ ਸੰਤਰੀ ਅਵਤਾਰ</translation>
 <translation id="4955710816792587366">ਆਪਣਾ ਪਿੰਨ ਚੁਣੋ</translation>
 <translation id="4959262764292427323">ਪਾਸਵਰਡ ਤੁਹਾਡੇ 'Google ਖਾਤੇ' ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਂਦੇ ਹਨ ਤਾਂ ਕਿ ਤੁਸੀਂ ਉਹਨਾਂ ਨੂੰ ਕਿਸੇ ਡੀਵਾਈਸ 'ਤੇ ਵਰਤ ਸਕੋ</translation>
@@ -3002,6 +2999,7 @@
 <translation id="5233736638227740678">&amp;ਪੇਸਟ ਕਰੋ</translation>
 <translation id="5234764350956374838">ਬਰਖ਼ਾਸਤ ਕਰੋ</translation>
 <translation id="5235050375939235066">ਐਪ ਨੂੰ ਅਣਸਥਾਪਤ ਕਰਨਾ ਹੈ?</translation>
+<translation id="523505283826916779">ਪਹੁੰਚਯੋਗਤਾ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="5235750401727657667">ਇੱਕ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹਣ ਸਮੇਂ ਤੁਹਾਨੂੰ ਦਿਖਾਈ ਦੇਣ ਵਾਲੇ ਪੰਨੇ ਨੂੰ ਬਦਲੋ</translation>
 <translation id="5238278114306905396">ਐਪ "<ph name="EXTENSION_NAME" />" ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਹਟਾਇਆ ਗਿਆ ਸੀ।</translation>
 <translation id="5241128660650683457">ਉਨ੍ਹਾਂ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਆਪਣਾ ਸਾਰਾ ਡਾਟਾ ਪੜ੍ਹੋ ਜਿਨ੍ਹਾਂ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਤੁਸੀਂ ਜਾਂਦੇ ਹੋ</translation>
@@ -3420,7 +3418,6 @@
 <translation id="5804241973901381774">ਅਨੁਮਤੀਆਂ</translation>
 <translation id="5805697420284793859">Window ਪ੍ਰਬੰਧਕ</translation>
 <translation id="5806773519584576205">0° (ਪੂਰਵ-ਨਿਰਧਾਰਤ)</translation>
-<translation id="5811750797187914944">ਪੂਰੀ ਤਰ੍ਹਾਂ ਤਿਆਰ ਹੋ</translation>
 <translation id="5812674658566766066">ਸਭ ਦਾ ਵਿਸਤਾਰ ਕਰੋ</translation>
 <translation id="5814126672212206791">ਕਨੈਕਸ਼ਨ ਕਿਸਮ</translation>
 <translation id="5815645614496570556">X.400 ਪਤਾ</translation>
@@ -4033,7 +4030,6 @@
 <translation id="6680442031740878064">ਉਪਲਬਧ: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ਦਰ</translation>
 <translation id="6681668084120808868">ਫ਼ੋਟੋ ਲਓ</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" ਅਣਸਥਾਪਤ ਕੀਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="668599234725812620">Google Play ਖੋਲ੍ਹੋ</translation>
 <translation id="6686490380836145850">ਟੈਬਸ ਨੂੰ ਸੱਜੇ ਪਾਸੇ ਬੰਦ ਕਰੋ</translation>
 <translation id="6686817083349815241">ਆਪਣਾ ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>
@@ -4612,7 +4608,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> ਐਕਸਟੈਂਸ਼ਨ ਤੁਹਾਡੇ ਵੱਲੋਂ ਟਾਈਪ ਕੀਤੇ ਜਾਣ ਵਾਲੀ ਸਾਰੀ ਲਿਖਤ ਨੂੰ ਇਕੱਤਰ ਕਰ ਸਕਦੀ ਹੈ, ਜਿਸ ਵਿੱਚ ਪਾਸਵਰਡ ਅਤੇ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਨਬੰਰ ਵਰਗਾ ਨਿੱਜੀ ਡਾਟਾ ਵੀ ਸ਼ਾਮਲ ਹੈ। ਕੀ ਤੁਸੀਂ ਇਸ ਐਕਸਟੈਂਸ਼ਨ ਦੀ ਵਰਤੋਂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">ਕੀ ਆਪਣਾ ਪੁਰਾਣਾ ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> ਅਤੇ ਇਸ ਨਾਲ ਜੁੜੇ ਡਾਟੇ ਨੂੰ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="7496732379142025470">ਬੈਟਰੀ ਬਚਾਉਣ ਲਈ, “Ok Google” ਵਿਕਲਪ ਸਿਰਫ਼ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੇ ਕਿਸੇ ਬਿਜਲੀ ਸਰੋਤ ਨਾਲ ਕਨੈਕਟ ਹੋਣ 'ਤੇ ਕੰਮ ਕਰਦਾ ਹੈ। ਤਬਦੀਲੀਆਂ ਕਰਨ ਲਈ, ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ।</translation>
 <translation id="7497215489070763236">ਸਰਵਰ CA ਪ੍ਰਮਾਣ-ਪੱਤਰ</translation>
 <translation id="7497981768003291373">ਤੁਹਾਡੇ ਕੋਲ ਕੋਈ ਵੀ ਹਾਲੀਆ ਕੈਪਚਰ ਕੀਤੇ WebRTC ਲਿਖਤ ਲੌਗ ਨਹੀਂ ਹਨ।</translation>

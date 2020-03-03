@@ -152,7 +152,7 @@ public class FindInPageTest {
     @Test
     @SmallTest
     public void testHideOnNewTab() throws InterruptedException {
-        setUp("new_tab.html");
+        setUp("new_browser.html");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getBrowser().getActiveTab().setNewTabCallback(new NewTabCallbackImpl());

@@ -232,12 +232,14 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
   if (ShouldShowDisplayDensityMenuItem(app_id, menu_type, display_id)) {
     base::Optional<crostini::CrostiniRegistryService::Registration>
         registration = registry_->GetRegistration(app_id);
-    if (registration->IsScaled()) {
-      AddCommandItem(ash::CROSTINI_USE_HIGH_DENSITY,
-                     IDS_CROSTINI_USE_HIGH_DENSITY, &menu_items);
-    } else {
-      AddCommandItem(ash::CROSTINI_USE_LOW_DENSITY,
-                     IDS_CROSTINI_USE_LOW_DENSITY, &menu_items);
+    if (registration) {
+      if (registration->IsScaled()) {
+        AddCommandItem(ash::CROSTINI_USE_HIGH_DENSITY,
+                       IDS_CROSTINI_USE_HIGH_DENSITY, &menu_items);
+      } else {
+        AddCommandItem(ash::CROSTINI_USE_LOW_DENSITY,
+                       IDS_CROSTINI_USE_LOW_DENSITY, &menu_items);
+      }
     }
   }
 

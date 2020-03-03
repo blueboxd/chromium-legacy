@@ -106,6 +106,7 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="4293420128516039005">Hasi saioa Chrome gailu guztietan sinkronizatu eta pertsonalizatzeko</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">Datuen isilpekotasunaren urratzeen, luzapen gaiztoen eta abarren aurrean babes zaitzake Chrome-k</translation>
 <translation id="4343195214584226067">Gehitu da <ph name="EXTENSION_NAME" /> Chrome-n</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Beste eragiketa bat ari da egiten Google Chrome. Saiatu berriro geroago.</translation>
@@ -203,12 +204,14 @@ Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
 <translation id="7777080907402804672">Irudiren batek ez badu azalpen lagungarririk, halako bat lortzen ahaleginduko da Chrome. Azalpen horiek sortzeko, irudiak Google-ri bidaltzen zaizkio. Aukera hori desaktibatu nahi baduzu, joan ezarpenetara.</translation>
 <translation id="7781002470561365167">Google Chrome-ren bertsio berri bat erabilgarri dago.</translation>
 <translation id="7787950393032327779">Google Chrome prozesu bat (<ph name="PROCESS_ID" />) profila beste ordenagailu batean (<ph name="HOST_NAME" />) erabiltzen ari dela dirudi. Chrome-k profila blokeatu du, honda ez dadin. Profila beste inongo prozesuk erabiltzen ari ez dela ziur badakizu, profila desblokeatu eta Chrome berrabiarazi egin dezakezu.</translation>
+<translation id="7801699035218095297">Pasahitzak kopiatzen saiatzen ari da Google Chrome. Hori baimentzeko, idatzi Windows-eko pasahitza.</translation>
 <translation id="7808348361785373670">Kendu Chrome-tik…</translation>
 <translation id="7825851276765848807">Instalazioak huts egin du zehaztu gabeko errore batengatik. Deskargatu Google Chrome berriro.</translation>
 <translation id="7855730255114109580">Eguneratuta dago Google Chrome</translation>
 <translation id="7890208801193284374">Ordenagailua partekatzen baduzu, lagunek eta familiako kideek euren kontuak erabilita ibil daitezke Interneten, nahi duten moduan.</translation>
 <translation id="7896673875602241923">Norbaitek <ph name="ACCOUNT_EMAIL_LAST" /> gisa hasi du saioa Chrome-n ordenagailu hau erabilita. Zure informazioa bereizita izateko, sortu beste Chrome erabiltzaile bat.</translation>
 <translation id="7916016681687251387">Chrome OS sistema eragileak ezin izan ditu sinkronizatu datuak. Konpondu arazoa.</translation>
+<translation id="7930071585467473040">Pasahitzak kopiatzen saiatzen ari da Google Chrome.</translation>
 <translation id="7962410387636238736">Ordenagailuak ez du jasoko beste Google Chrome eguneratzerik, jada ez baita bateragarria Windows XP eta Windows Vista-rekin</translation>
 <translation id="8008534537613507642">Berrinstalatu Chrome</translation>
 <translation id="8013993649590906847">Irudiren batek ez badu azalpen lagungarririk, halako bat lortzen ahaleginduko da Chrome. Azalpen horiek sortzeko, irudiak Google-ri bidaltzen zaizkio.</translation>

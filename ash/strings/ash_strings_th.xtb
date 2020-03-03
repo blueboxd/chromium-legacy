@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="2135456203358955318">แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="2144487987174258011">รีสตาร์ทเพื่ออัปเดต Adobe Flash Player</translation>
-<translation id="2148902151539191989">กลับ</translation>
 <translation id="2208323208084708176">โหมดเดสก์ท็อปแบบรวม</translation>
 <translation id="2220572644011485463">PIN หรือรหัสผ่าน</translation>
 <translation id="2222338659135520253">ต้องลงชื่อเข้าใช้</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> เป็นเซสชันที่มีการจัดการซึ่งจัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">คลิกซ้าย</translation>
 <translation id="2429753432712299108">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ ก่อนที่จะยอมรับ โปรดยืนยันว่ารหัสผ่านนี้ปรากฏบนอุปกรณ์นั้น: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2473177541599297363">ยืนยันความละเอียด</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2484513351006226581">กด <ph name="KEYBOARD_SHORTCUT" /> เพื่อสลับรูปแบบแป้นพิมพ์</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">ปุ่มคลิกอัตโนมัติ</translation>
 <translation id="4215497585250573029">การตั้งค่า VPN</translation>
 <translation id="4217571870635786043">การพิมพ์ตามคำบอก</translation>
-<translation id="421885205185866088">PIN สมาร์ทการ์ดของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนปิดอยู่</translation>
 <translation id="4269883910223712419">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้ทำสิ่งต่อไปนี้ได้</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่</translation>
 <translation id="453661520163887813">อีก <ph name="TIME" /> จะเต็ม</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">ซ่อนรหัสผ่าน</translation>
 <translation id="4570957409596482333">ปุ่มเลือกเพื่อให้อ่าน</translation>
 <translation id="4585337515783392668">หยุดแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="4628757576491864469">อุปกรณ์</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">การเชื่อมต่อ Wi-Fi ฮอตสปอตจากมือถือโดยอัตโนมัติ</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
+<translation id="54609108002486618">มีการจัดการ</translation>
 <translation id="5465662442746197494">หากต้องการความช่วยเหลือ</translation>
 <translation id="5496819745535887422">ผู้ดูแลระบบกำลังคืนค่าสถานะของอุปกรณ์ ระบบจะลบข้อมูลทั้งหมดเมื่อรีสตาร์ทอุปกรณ์</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">ป้อนรหัสการเข้าถึง Family Link ของผู้ปกครองเพื่อปลดล็อกอุปกรณ์</translation>
 <translation id="742594950370306541">ใช้กล้องถ่ายรูปอยู่</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
+<translation id="7466449121337984263">โปรดแตะเซ็นเซอร์</translation>
 <translation id="7497767806359279797">เลือกภาษาและแป้นพิมพ์</translation>
 <translation id="7526573455193969409">อาจมีการตรวจสอบเครือข่าย</translation>
 <translation id="7536035074519304529">ที่อยู่ IP: <ph name="ADDRESS" /></translation>

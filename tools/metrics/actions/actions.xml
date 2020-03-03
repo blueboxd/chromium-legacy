@@ -19265,35 +19265,36 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromAppsPageLink">
+<action name="Signin_Impression_FromAppsPageLink" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the chrome://apps page.
   </description>
 </action>
 
-<action name="Signin_Impression_FromAutofillDropdown">
+<action name="Signin_Impression_FromAutofillDropdown" not_user_triggered="true">
   <owner>mathp@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the Autofill dropdown.
   </description>
 </action>
 
-<action name="Signin_Impression_FromAvatarBubbleSignin">
+<action name="Signin_Impression_FromAvatarBubbleSignin"
+    not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the avatar sign in bubble.
   </description>
 </action>
 
-<action name="Signin_Impression_FromBookmarkBubble">
+<action name="Signin_Impression_FromBookmarkBubble" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the bookmark bubble.
   </description>
 </action>
 
-<action name="Signin_Impression_FromBookmarkManager">
+<action name="Signin_Impression_FromBookmarkManager" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the bookmark manager.
@@ -19308,21 +19309,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromDevicesPage">
+<action name="Signin_Impression_FromDevicesPage" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the chrome://devices page.
   </description>
 </action>
 
-<action name="Signin_Impression_FromExtensionInstallBubble">
+<action name="Signin_Impression_FromExtensionInstallBubble"
+    not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the extension installed bubble.
   </description>
 </action>
 
-<action name="Signin_Impression_FromGoogleServicesSettings">
+<action name="Signin_Impression_FromGoogleServicesSettings"
+    not_user_triggered="true">
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -19330,7 +19333,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromManageCardsBubble">
+<action name="Signin_Impression_FromManageCardsBubble"
+    not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19339,47 +19343,48 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromMenu">
+<action name="Signin_Impression_FromMenu" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when showing sign in entry in the menu.</description>
 </action>
 
-<action name="Signin_Impression_FromNTP">
+<action name="Signin_Impression_FromNTP" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the new tab page.
   </description>
 </action>
 
-<action name="Signin_Impression_FromNTPContentSuggestions">
+<action name="Signin_Impression_FromNTPContentSuggestions"
+    not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in card in the snippets new tab page.
   </description>
 </action>
 
-<action name="Signin_Impression_FromPasswordBubble">
+<action name="Signin_Impression_FromPasswordBubble" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the saving password bubble.
   </description>
 </action>
 
-<action name="Signin_Impression_FromRecentTabs">
+<action name="Signin_Impression_FromRecentTabs" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the recent tabs page.
   </description>
 </action>
 
-<action name="Signin_Impression_FromReSigninInfobar">
+<action name="Signin_Impression_FromReSigninInfobar" not_user_triggered="true">
   <owner>bzanotti@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the re-signin infobar.
   </description>
 </action>
 
-<action name="Signin_Impression_FromSaveCardBubble">
+<action name="Signin_Impression_FromSaveCardBubble" not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19388,7 +19393,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromSettings">
+<action name="Signin_Impression_FromSettings" not_user_triggered="true">
   <owner>bzanotti@chromium.org</owner>
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -19396,28 +19401,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_Impression_FromSigninPromo">
+<action name="Signin_Impression_FromSigninPromo" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the sign in promo.
   </description>
 </action>
 
-<action name="Signin_Impression_FromStartPage">
+<action name="Signin_Impression_FromStartPage" not_user_triggered="true">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the first run experience.
   </description>
 </action>
 
-<action name="Signin_Impression_FromTabSwitcher">
+<action name="Signin_Impression_FromTabSwitcher" not_user_triggered="true">
   <owner>bzanotti@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the tab switcher.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromAvatarBubbleSignin">
+<action name="Signin_ImpressionWithAccount_FromAvatarBubbleSignin"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -19426,7 +19432,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromBookmarkBubble">
+<action name="Signin_ImpressionWithAccount_FromBookmarkBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -19435,7 +19442,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromBookmarkManager">
+<action name="Signin_ImpressionWithAccount_FromBookmarkManager"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -19444,7 +19452,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromExtensionInstallBubble">
+<action name="Signin_ImpressionWithAccount_FromExtensionInstallBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -19453,7 +19462,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromManageCardsBubble">
+<action name="Signin_ImpressionWithAccount_FromManageCardsBubble"
+    not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19464,7 +19474,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromNTPContentSuggestions">
+<action name="Signin_ImpressionWithAccount_FromNTPContentSuggestions"
+    not_user_triggered="true">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -19473,7 +19484,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromPasswordBubble">
+<action name="Signin_ImpressionWithAccount_FromPasswordBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -19482,7 +19494,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromRecentTabs">
+<action name="Signin_ImpressionWithAccount_FromRecentTabs"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -19490,7 +19503,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromSaveCardBubble">
+<action name="Signin_ImpressionWithAccount_FromSaveCardBubble"
+    not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19501,7 +19515,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromSettings">
+<action name="Signin_ImpressionWithAccount_FromSettings"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -19509,7 +19524,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithAccount_FromTabSwitcher">
+<action name="Signin_ImpressionWithAccount_FromTabSwitcher"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with a default account,
@@ -19517,7 +19533,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromAvatarBubbleSignin">
+<action name="Signin_ImpressionWithNoAccount_FromAvatarBubbleSignin"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -19526,7 +19543,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromBookmarkBubble">
+<action name="Signin_ImpressionWithNoAccount_FromBookmarkBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -19535,7 +19553,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromBookmarkManager">
+<action name="Signin_ImpressionWithNoAccount_FromBookmarkManager"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -19544,7 +19563,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromExtensionInstallBubble">
+<action name="Signin_ImpressionWithNoAccount_FromExtensionInstallBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -19553,7 +19573,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromManageCardsBubble">
+<action name="Signin_ImpressionWithNoAccount_FromManageCardsBubble"
+    not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19564,7 +19585,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromNTPContentSuggestions">
+<action name="Signin_ImpressionWithNoAccount_FromNTPContentSuggestions"
+    not_user_triggered="true">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -19573,7 +19595,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromPasswordBubble">
+<action name="Signin_ImpressionWithNoAccount_FromPasswordBubble"
+    not_user_triggered="true">
   <owner>msarda@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -19582,7 +19605,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromRecentTabs">
+<action name="Signin_ImpressionWithNoAccount_FromRecentTabs"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -19591,7 +19615,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromSaveCardBubble">
+<action name="Signin_ImpressionWithNoAccount_FromSaveCardBubble"
+    not_user_triggered="true">
   <owner>manasverma@google.com</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
@@ -19602,7 +19627,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromSettings">
+<action name="Signin_ImpressionWithNoAccount_FromSettings"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
@@ -19610,7 +19636,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_ImpressionWithNoAccount_FromTabSwitcher">
+<action name="Signin_ImpressionWithNoAccount_FromTabSwitcher"
+    not_user_triggered="true">
   <owner>jlebel@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default

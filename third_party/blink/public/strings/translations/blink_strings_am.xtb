@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">መግለጫ ጽሑፎች</translation>
 <translation id="8346634859695247203">ክፍል</translation>
 <translation id="835897206747267392">ልክ ያልሆነ እሴት።</translation>
+<translation id="839593075537728968">እሴት በ<ph name="MINIMUM_TIME" /> እና <ph name="MAXIMUM_TIME" /> መካከል መሆን አለበት።</translation>
 <translation id="8403857369060869934">ያለፈው ጊዜ፦ <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">ክፍለ አካል</translation>
 <translation id="8433900881053900389">የመሣሪያ አሞሌ</translation>

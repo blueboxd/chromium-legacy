@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">WiFi 사용자 인증 정보 Getter</translation>
 <translation id="219008588003277019">네이티브 클라이언트 모듈: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(비어있음)</translation>
-<translation id="2191223688506386601">마지막 단계</translation>
 <translation id="2191754378957563929">사용</translation>
 <translation id="2192505247865591433">웹 브라우저</translation>
 <translation id="2193365732679659387">신뢰 설정</translation>
@@ -2566,7 +2565,6 @@
 <translation id="4555769855065597957">그림자</translation>
 <translation id="4555863373929230635">Google 계정에 비밀번호를 저장하려면 로그인한 다음 동기화를 사용 설정하세요.</translation>
 <translation id="4558426062282641716">자동 실행 권한 요청됨</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> 도움말 및 Google 제품 소식을 받아 보고 의견을 공유하세요. 구독은 언제든지 취소할 수 있습니다.</translation>
 <translation id="4559617833001311418">사이트가 모션 센서 또는 조도 센서에 액세스 중입니다.</translation>
 <translation id="4561893854334016293">최근 변경된 권한 없음</translation>
 <translation id="4562155214028662640">지문 추가</translation>
@@ -2836,7 +2834,6 @@
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />'에서 시리얼 포트에 연결하려고 합니다.</translation>
 <translation id="4944310289250773232">이 인증 서비스는 <ph name="SAML_DOMAIN" />에서 호스팅합니다</translation>
 <translation id="495170559598752135">작업</translation>
-<translation id="4952981627953231344">이 기기에서는 Plugin VM이 허용되지 않습니다. 조직의 기기 관리자에게 문의하세요.</translation>
 <translation id="4953808748584563296">기본 주황색 아바타</translation>
 <translation id="4955710816792587366">PIN 선택</translation>
 <translation id="4959262764292427323">어느 기기에서나 사용할 수 있도록 비밀번호가 Google 계정에 저장됩니다.</translation>
@@ -3019,6 +3016,7 @@
 <translation id="5233736638227740678">붙여넣기(&amp;P)</translation>
 <translation id="5234764350956374838">숨기기</translation>
 <translation id="5235050375939235066">앱을 제거하시겠습니까?</translation>
+<translation id="523505283826916779">접근성 설정</translation>
 <translation id="5235750401727657667">새 탭을 열 때 표시되는 페이지 변경</translation>
 <translation id="5238278114306905396">'<ph name="EXTENSION_NAME" />' 앱이 자동으로 삭제되었습니다.</translation>
 <translation id="5241128660650683457">방문하는 웹사이트의 모든 데이터 읽기</translation>
@@ -3439,7 +3437,6 @@
 <translation id="5804241973901381774">권한</translation>
 <translation id="5805697420284793859">창 관리자</translation>
 <translation id="5806773519584576205">0°(기본값)</translation>
-<translation id="5811750797187914944">설정 완료</translation>
 <translation id="5812674658566766066">모두 펼치기</translation>
 <translation id="5814126672212206791">연결 유형</translation>
 <translation id="5815645614496570556">X.400 주소</translation>
@@ -4060,7 +4057,6 @@
 <translation id="6680442031740878064">사용 가능한 저장용량: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">속도</translation>
 <translation id="6681668084120808868">사진 찍기</translation>
-<translation id="6681964764822470072">'<ph name="APP_NAME" />'이(가) 제거됩니다.</translation>
 <translation id="668599234725812620">Google Play 열기</translation>
 <translation id="6686490380836145850">우측 탭 닫기</translation>
 <translation id="6686817083349815241">비밀번호 저장</translation>
@@ -4642,7 +4638,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 확장 프로그램에서 비밀번호와 신용카드 번호 등의 개인정보를 포함해 입력하는 모든 텍스트를 수집할 수 있습니다. 이 확장 프로그램을 사용하시겠어요?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">이전 암호를 잊으셨나요?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> 및 관련 데이터가 이 기기에서 삭제됩니다.</translation>
 <translation id="7496732379142025470">배터리를 절약하기 위하여 기기가 전원에 연결된 경우에만 “Ok Google” 기능이 켜집니다. 변경하려면 설정으로 이동하세요.</translation>
 <translation id="7497215489070763236">서버 CA 인증서</translation>
 <translation id="7497981768003291373">최근 캡처한 WebRTC 텍스트 로그가 없습니다.</translation>

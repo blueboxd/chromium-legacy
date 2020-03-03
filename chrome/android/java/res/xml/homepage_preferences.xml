@@ -22,6 +22,7 @@
         android:key="homepage_radio_group"
         android:visibility="gone"
         android:selectable="false"
+        app:allowDividerAbove="true"
         app:allowDividerBelow="false" />
 
     <org.chromium.chrome.browser.settings.TextMessagePreference

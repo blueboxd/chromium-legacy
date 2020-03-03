@@ -869,7 +869,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2190069059097339078">Acquéreur d'authentifiant Wi-Fi</translation>
 <translation id="219008588003277019">Module de client natif : <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(vide)</translation>
-<translation id="2191223688506386601">Une dernière chose</translation>
 <translation id="2191754378957563929">Activé</translation>
 <translation id="2192505247865591433">De :</translation>
 <translation id="2193365732679659387">Paramètres de confiance</translation>
@@ -2569,7 +2568,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4555769855065597957">Ombre</translation>
 <translation id="4555863373929230635">Pour enregistrer des mots de passe dans votre compte Google, connectez-vous et activez la synchronisation.</translation>
 <translation id="4558426062282641716">Autorisation de lancement automatique demandée</translation>
-<translation id="4558491878126948419">Obtenez des conseils sur <ph name="DEVICE_TYPE" /> et des mises à jour sur les produits Google, et partagez vos commentaires. Vous pouvez vous désabonner à tout moment.</translation>
 <translation id="4559617833001311418">Ce site accède à vos capteurs de mouvement et de luminosité.</translation>
 <translation id="4561893854334016293">Aucune autorisation n'a récemment été modifiée</translation>
 <translation id="4562155214028662640">Ajouter une empreinte digitale</translation>
@@ -2839,7 +2837,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4943691134276646401">« <ph name="CHROME_EXTENSION_NAME" /> » veut se connecter à un port de série</translation>
 <translation id="4944310289250773232">Ce service d'authentification est hébergé par <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Actions</translation>
-<translation id="4952981627953231344">L'utilisation de Plugin VM n'est pas permise sur cet appareil. Communiquez avec l'administrateur des appareils de votre organisation.</translation>
 <translation id="4953808748584563296">Avatar orange par défaut</translation>
 <translation id="4955710816792587366">Choisir votre NIP</translation>
 <translation id="4959262764292427323">Les mots de passe sont enregistrés dans votre compte Google afin que vous puissiez les utiliser sur n'importe quel appareil</translation>
@@ -3022,6 +3019,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5233736638227740678">C&amp;oller</translation>
 <translation id="5234764350956374838">Fermer</translation>
 <translation id="5235050375939235066">Désinstaller l'application?</translation>
+<translation id="523505283826916779">Paramètres d'accessibilité</translation>
 <translation id="5235750401727657667">Remplacer la page qui s'affiche lors de l'ouverture d'un nouvel onglet</translation>
 <translation id="5238278114306905396">L'application « <ph name="EXTENSION_NAME" /> » a été automatiquement supprimée.</translation>
 <translation id="5241128660650683457">Lire toutes vos données sur les sites Web que vous consultez</translation>
@@ -3442,7 +3440,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5805697420284793859">Gestionnaire de fenêtres</translation>
 <translation id="5806773519584576205">0° (par défaut)</translation>
-<translation id="5811750797187914944">Terminé</translation>
 <translation id="5812674658566766066">Tout développer</translation>
 <translation id="5814126672212206791">Type de connexion</translation>
 <translation id="5815645614496570556">Adresse X.400</translation>
@@ -4063,7 +4060,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6680442031740878064">Disponible : <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Vitesse</translation>
 <translation id="6681668084120808868">Prendre une photo</translation>
-<translation id="6681964764822470072">« <ph name="APP_NAME" /> » sera désinstallée.</translation>
 <translation id="668599234725812620">Ouvrir Google Play</translation>
 <translation id="6686490380836145850">Fermer les onglets à la droite</translation>
 <translation id="6686817083349815241">Enregistrer votre mot de passe</translation>
@@ -4645,7 +4641,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7493386493263658176">L'extension <ph name="EXTENSION_NAME" /> peut recueillir tout le texte que vous entrez, y compris des données personnelles comme des mots de passe et des numéros de carte de crédit. Voulez-vous utiliser cette extension?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Vous avez oublié votre ancien mot de passe?</translation>
-<translation id="7496511874649569424">L'application<ph name="LINUX_APP_NAME" /> et les données associées seront supprimées de cet appareil.</translation>
 <translation id="7496732379142025470">Pour économiser la pile, « Ok Google » est activé seulement quand votre appareil est connecté à une source d'alimentation. Pour apporter des modifications, accédez au menu Paramètres.</translation>
 <translation id="7497215489070763236">Certificat de l'autorité de certification du serveur</translation>
 <translation id="7497981768003291373">Aucun journal de texte WebRTC n'a été créé récemment.</translation>

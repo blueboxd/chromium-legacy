@@ -130,7 +130,8 @@ void TopIconAnimationView::Layout() {
     return;
 
   icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
-      grid_->GetAppListConfig(), rect, icon_->GetImage().size()));
+      grid_->GetAppListConfig(), rect, icon_->GetImage().size(),
+      /*icon_scale=*/1.0f));
   title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
       grid_->GetAppListConfig(), rect, title_->GetPreferredSize()));
 }

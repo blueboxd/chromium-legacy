@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129382876167171263">Files saved by websites appear here</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="1303339473099049190">Can’t find that password. Check your spelling and try again.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Sent from <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Group tabs</translation>
 <translation id="1327257854815634930">Navigation history is opened</translation>
@@ -323,6 +324,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3350687908700087792">Close all incognito tabs</translation>
 <translation id="3353615205017136254">Lite page provided by Google. Tap the load original button to load the original page.</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
+<translation id="3373979091428520308">To share this page to another device, turn on sync in Chrome settings on the other device</translation>
 <translation id="3374023511497244703">Your bookmarks, history, passwords and other Chrome data will no longer be synced to your Google account</translation>
 <translation id="3384347053049321195">Share image</translation>
 <translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
@@ -672,6 +674,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
+<translation id="5964805880140440652">To share this page to another device, turn on sync in Chrome settings</translation>
 <translation id="6000066717592683814">Keep Google</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6036057147555329831">Extra ICU</translation>

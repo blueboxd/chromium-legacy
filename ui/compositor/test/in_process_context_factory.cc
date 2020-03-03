@@ -68,7 +68,7 @@ class DirectOutputSurface : public viz::OutputSurface {
   explicit DirectOutputSurface(
       scoped_refptr<InProcessContextProvider> context_provider)
       : viz::OutputSurface(context_provider) {
-    capabilities_.output_surface_origin = viz::SurfaceOrigin::kTopLeft;
+    capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
   }
 
   ~DirectOutputSurface() override {}
@@ -323,7 +323,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
             gpu::kNullSurfaceHandle),
         renderer_settings_);
   } else if (use_test_surface_) {
-    viz::SurfaceOrigin surface_origin = viz::SurfaceOrigin::kBottomLeft;
+    gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
         context_provider, surface_origin);
   } else {

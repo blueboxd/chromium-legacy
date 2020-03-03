@@ -265,7 +265,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 #endif
   // GL is origin is at bottom left normally, all Surfaceless implementations
   // are flipped.
-  DCHECK(gl_surface_->FlipsVertically());
+  DCHECK_EQ(gl_surface_->GetOrigin(), gfx::SurfaceOrigin::kTopLeft);
 
   capabilities_.android_surface_control_feature_enabled = true;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
@@ -286,7 +286,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.supports_surfaceless = true;
   capabilities_.preserve_buffer_content = true;
   // We expect origin of buffers is at top left.
-  capabilities_.output_surface_origin = SurfaceOrigin::kTopLeft;
+  capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(

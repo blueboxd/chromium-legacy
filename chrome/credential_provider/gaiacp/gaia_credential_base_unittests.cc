@@ -1440,7 +1440,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   // Invalid configuration in admin sdk. Don't set the username.
   std::string admin_sdk_response = base::StringPrintf(
       "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
-      " \"%ls\\\\\"}}}",
+      "[{ \"value\": \"%ls\\\\\" }]}}}",
       domain_name);
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
@@ -1495,7 +1495,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   // Set valid response from admin sdk.
   std::string admin_sdk_response = base::StringPrintf(
       "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
-      " \"%ls\\\\%ls\"}}}",
+      "[{ \"value\": \"%ls\\\\%ls\" }]}}}",
       domain_name, user_name);
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),

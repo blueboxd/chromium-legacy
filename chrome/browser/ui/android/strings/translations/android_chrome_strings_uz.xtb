@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Brauzer tarixi, cookie-fayllar, kesh va boshqa sayt ma’lumotlarini tozalash...</translation>
 <translation id="129382876167171263">Saytlardan saqlangan fayllar shu yerda chiqadi</translation>
 <translation id="129553762522093515">Yaqinda yopilganlar</translation>
+<translation id="1303339473099049190">Bu parol topilmadi. Xatosiz kiritilganini tekshiring va qayta urining.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> orqali <ph name="DEVICE_NAME" /> qurilmasidan yuborildi</translation>
 <translation id="1310482092992808703">Varaqlarni guruhlash</translation>
 <translation id="1327257854815634930">Sahifalar tarixi ochildi</translation>
@@ -323,6 +324,7 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3350687908700087792">Barcha inkognito ichki oynalarini yopish</translation>
 <translation id="3353615205017136254">Sahifaning Lite versiyasi Google tomonidan taqdim etildi. Uning aslini yuklash uchun “To‘liq versiya” tugmasini bosing.</translation>
 <translation id="3367813778245106622">Yana sinxronlashni boshlash uchun hisobingizga kiring</translation>
+<translation id="3373979091428520308">Bu sahifani boshqa qurilmaga ulashish uchun oʻsha qurilmadagi Chrome sozlamalarida sinxronizatsiyani yoqing</translation>
 <translation id="3374023511497244703">Bukmarklar, tarix, parollar va boshqa Chrome maʼlumotlaringiz bilan Google hisobingiz sinxronizatsiyasi uziladi</translation>
 <translation id="3384347053049321195">Tasvirni ulashish</translation>
 <translation id="3386292677130313581">Joylashuv ma’lumotini ko‘rishiga ruxsat so‘ralsin (tavsiya etiladi)</translation>
@@ -672,6 +674,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5956665950594638604">Chrome yordam markazini yangi varaqda ochish</translation>
 <translation id="5958275228015807058">Fayl va sahiflarni “Yuklanmalar” jildidan topish mumkin</translation>
 <translation id="5962718611393537961">Bosib yig‘ish</translation>
+<translation id="5964805880140440652">Bu sahifani boshqa qurilmaga ulashish uchun Chrome sozlamalarida sinxronizatsiyani yoqing</translation>
 <translation id="6000066717592683814">Google qolaversin</translation>
 <translation id="6005538289190791541">Taklif qilingan parol</translation>
 <translation id="6036057147555329831">Extra ICU</translation>

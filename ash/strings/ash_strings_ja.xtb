@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2135456203358955318">ドッキング拡大鏡</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
-<translation id="2148902151539191989">戻る</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
 <translation id="2220572644011485463">PIN またはパスワード</translation>
 <translation id="2222338659135520253">ログインしてください</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する管理対象セッションです</translation>
 <translation id="2427507373259914951">左クリック</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2473177541599297363">解像度の確定</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">キーボード レイアウトを切り替えるには <ph name="KEYBOARD_SHORTCUT" /> キーを押します。</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">自動クリックボタン</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
 <translation id="4217571870635786043">音声入力</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> のスマートカードの PIN</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
 <translation id="4269883910223712419">このデバイスの管理者は以下を行うことができます。</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
 <translation id="453661520163887813">あと <ph name="TIME" /> で充電完了</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">パスワードを表示しない</translation>
 <translation id="4570957409596482333">[選択して読み上げ] ボタン</translation>
 <translation id="4585337515783392668">不明な受信デバイスへのキャストを停止します</translation>
 <translation id="4628757576491864469">デバイス</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">インスタント テザリング</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
+<translation id="54609108002486618">管理対象</translation>
 <translation id="5465662442746197494">不明点がある場合</translation>
 <translation id="5496819745535887422">管理者がお使いのデバイスをロールバックしています。デバイスの再起動時にデータはすべて削除されます。</translation>
 <translation id="5519195206574732858">LTE</translation>

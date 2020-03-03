@@ -869,7 +869,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2190069059097339078">Nástroj na získávání identifikačních údajů sítí Wi-Fi</translation>
 <translation id="219008588003277019">Modul nativního klienta: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(prázdné)</translation>
-<translation id="2191223688506386601">Ještě poslední věc</translation>
 <translation id="2191754378957563929">Zapnuto</translation>
 <translation id="2192505247865591433">Zdroj:</translation>
 <translation id="2193365732679659387">Nastavení důvěryhodnosti</translation>
@@ -2566,7 +2565,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4555769855065597957">Stín</translation>
 <translation id="4555863373929230635">Chcete-li hesla ukládat do účtu Google, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="4558426062282641716">Jsou požadována oprávnění k automatickému spuštění</translation>
-<translation id="4558491878126948419">Dostávejte tipy k zařízení <ph name="DEVICE_TYPE" /> a aktuality o službách Google a sdílejte s námi zpětnou vazbu. Odběr můžete kdykoli zrušit.</translation>
 <translation id="4559617833001311418">Tento web používá vaše senzory pohybu nebo osvětlení.</translation>
 <translation id="4561893854334016293">Žádná nedávno změněná oprávnění</translation>
 <translation id="4562155214028662640">Přidat otisk prstu</translation>
@@ -2836,7 +2834,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4943691134276646401">Rozšíření <ph name="CHROME_EXTENSION_NAME" /> se chce připojit k sériovému portu</translation>
 <translation id="4944310289250773232">Tato ověřovací služba je hostována v doméně <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Akce</translation>
-<translation id="4952981627953231344">Plugin VM na tomto zařízení není povolen. Kontaktujte administrátora zařízení ve své organizaci.</translation>
 <translation id="4953808748584563296">Výchozí oranžový avatar</translation>
 <translation id="4955710816792587366">Zvolte kód PIN</translation>
 <translation id="4959262764292427323">Hesla se ukládají do vašeho účtu Google, abyste je mohli používat na všech zařízeních</translation>
@@ -3019,6 +3016,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5233736638227740678">&amp;Vložit</translation>
 <translation id="5234764350956374838">Zavřít</translation>
 <translation id="5235050375939235066">Odinstalovat aplikaci?</translation>
+<translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
 <translation id="5235750401727657667">Nahradit stránku, která se zobrazí po otevření nové karty</translation>
 <translation id="5238278114306905396">Aplikace <ph name="EXTENSION_NAME" /> byla automaticky odebrána.</translation>
 <translation id="5241128660650683457">Čtení veškerých dat na navštívených webových stránkách</translation>
@@ -3439,7 +3437,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="5805697420284793859">Správce oken</translation>
 <translation id="5806773519584576205">0° (výchozí)</translation>
-<translation id="5811750797187914944">Vše je nastaveno</translation>
 <translation id="5812674658566766066">Rozbalit vše</translation>
 <translation id="5814126672212206791">Typ připojení</translation>
 <translation id="5815645614496570556">Adresa X.400</translation>
@@ -4060,7 +4057,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6680442031740878064">Volné místo: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Ohodnotit</translation>
 <translation id="6681668084120808868">Vyfotit</translation>
-<translation id="6681964764822470072">Aplikace <ph name="APP_NAME" /> bude odinstalována.</translation>
 <translation id="668599234725812620">Otevřít Google Play</translation>
 <translation id="6686490380836145850">Zavřít karty napravo</translation>
 <translation id="6686817083349815241">Uložte si heslo</translation>
@@ -4642,7 +4638,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7493386493263658176">Rozšíření <ph name="EXTENSION_NAME" /> může shromažďovat veškerý text, který napíšete, včetně osobních údajů, jako jsou hesla nebo čísla platebních karet. Chcete toto rozšíření použít?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> × <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Zapomněli jste své staré heslo?</translation>
-<translation id="7496511874649569424">Aplikace <ph name="LINUX_APP_NAME" /> a k ní přidružená data budou z tohoto zařízení odstraněna.</translation>
 <translation id="7496732379142025470">Kvůli úspoře baterie je příkaz „Ok Google“ zapnutý, jen když je zařízení připojené ke zdroji napájení. Toto chování můžete změnit v Nastavení.</translation>
 <translation id="7497215489070763236">Certifikát CA serveru</translation>
 <translation id="7497981768003291373">Nemáte žádné nedávno zaznamenané textové protokoly WebRTC.</translation>

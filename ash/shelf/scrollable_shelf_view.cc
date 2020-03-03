@@ -669,33 +669,6 @@ views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
 
-void ScrollableShelfView::SetRoundedCornersForShelf(
-    bool show,
-    views::View* ink_drop_host) {
-  shelf_container_view_->layer()->SetRoundedCornerRadius(
-      show && InkDropNeedsClipping(ink_drop_host)
-          ? CalculateShelfContainerRoundedCorners()
-          : gfx::RoundedCornersF());
-  shelf_container_view_->layer()->SetIsFastRoundedCorner(true);
-}
-
-bool ScrollableShelfView::InkDropNeedsClipping(views::View* ink_drop_host) {
-  // The ink drop needs to be clipped only if the host is the app at one of the
-  // corners of the shelf. This happens if it is either the first or the last
-  // tappable app and no arrow is showing on its side.
-  if (shelf_view_->view_model()->view_at(first_tappable_app_index_) ==
-      ink_drop_host) {
-    return !(layout_strategy_ == kShowButtons ||
-             layout_strategy_ == kShowLeftArrowButton);
-  }
-  if (shelf_view_->view_model()->view_at(last_tappable_app_index_) ==
-      ink_drop_host) {
-    return !(layout_strategy_ == kShowButtons ||
-             layout_strategy_ == kShowRightArrowButton);
-  }
-  return false;
-}
-
 bool ScrollableShelfView::ShouldAdjustForTest() const {
   return CalculateAdjustmentOffset(CalculateMainAxisScrollDistance(),
                                    layout_strategy_, GetSpaceForIcons());
@@ -746,6 +719,15 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
 
   during_scroll_animation_ = true;
   MaybeUpdateGradientZone();
+
+  // In tablet mode, if the target layout only has one arrow button, enable the
+  // rounded corners of the shelf container layer in order to cut off the icons
+  // outside of the hotseat background.
+  const bool one_arrow_in_target_state =
+      (layout_strategy_ == LayoutStrategy::kShowLeftArrowButton ||
+       layout_strategy_ == LayoutStrategy::kShowRightArrowButton);
+  if (one_arrow_in_target_state && Shell::Get()->IsInTabletMode())
+    EnableShelfRoundedCorners(/*enable=*/true);
 
   ui::ScopedLayerAnimationSettings animation_settings(
       shelf_view_->layer()->GetAnimator());
@@ -1091,6 +1073,16 @@ void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
   }
 }
 
+void ScrollableShelfView::NotifyInkDropActivity(bool activated,
+                                                views::Button* sender) {
+  // When scrolling shelf by gestures, the shelf icon's ink drop ripple may be
+  // activated accidentally. So ignore the ink drop activity during animation.
+  if (during_scroll_animation_)
+    return;
+
+  EnableShelfRoundedCorners(activated && InkDropNeedsClipping(sender));
+}
+
 void ScrollableShelfView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
@@ -1290,6 +1282,8 @@ bool ScrollableShelfView::Drag(
 void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   during_scroll_animation_ = false;
   Layout();
+
+  EnableShelfRoundedCorners(/*enable=*/false);
 
   if (scroll_status_ != kAlongMainAxisScroll)
     UpdateTappableIconIndices();
@@ -2095,21 +2089,21 @@ ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   const float radius = (is_horizontal_alignment ? height() : width()) / 2.f;
 
-  int upper_left = left_arrow_->GetVisible() ? 0 : radius;
+  int upper_left = ShouldShowLeftArrow() ? 0 : radius;
 
   int upper_right;
   if (is_horizontal_alignment)
-    upper_right = right_arrow_->GetVisible() ? 0 : radius;
+    upper_right = ShouldShowRightArrow() ? 0 : radius;
   else
-    upper_right = left_arrow_->GetVisible() ? 0 : radius;
+    upper_right = ShouldShowLeftArrow() ? 0 : radius;
 
-  int lower_right = right_arrow_->GetVisible() ? 0 : radius;
+  int lower_right = ShouldShowRightArrow() ? 0 : radius;
 
   int lower_left;
   if (is_horizontal_alignment)
-    lower_left = left_arrow_->GetVisible() ? 0 : radius;
+    lower_left = ShouldShowLeftArrow() ? 0 : radius;
   else
-    lower_left = right_arrow_->GetVisible() ? 0 : radius;
+    lower_left = ShouldShowRightArrow() ? 0 : radius;
 
   if (ShouldAdaptToRTL()) {
     std::swap(upper_left, upper_right);
@@ -2250,6 +2244,35 @@ int ScrollableShelfView::CalculateScrollOffsetForTargetAvailableSpace(
       target_scroll_offset, new_strategy, available_space_for_icons);
 
   return target_scroll_offset;
+}
+
+bool ScrollableShelfView::InkDropNeedsClipping(views::Button* sender) const {
+  // The ink drop needs to be clipped only if |sender| is the app at one of the
+  // corners of the shelf. This happens if it is either the first or the last
+  // tappable app and no arrow is showing on its side.
+  if (shelf_view_->view_model()->view_at(first_tappable_app_index_) == sender) {
+    return !(layout_strategy_ == kShowButtons ||
+             layout_strategy_ == kShowLeftArrowButton);
+  }
+  if (shelf_view_->view_model()->view_at(last_tappable_app_index_) == sender) {
+    return !(layout_strategy_ == kShowButtons ||
+             layout_strategy_ == kShowRightArrowButton);
+  }
+  return false;
+}
+
+void ScrollableShelfView::EnableShelfRoundedCorners(bool enable) {
+  ui::Layer* layer = shelf_container_view_->layer();
+
+  const bool has_rounded_corners = !(layer->rounded_corner_radii().IsEmpty());
+  if (enable == has_rounded_corners)
+    return;
+
+  layer->SetRoundedCornerRadius(enable ? CalculateShelfContainerRoundedCorners()
+                                       : gfx::RoundedCornersF());
+
+  if (!layer->is_fast_rounded_corner())
+    layer->SetIsFastRoundedCorner(/*enable=*/true);
 }
 
 }  // namespace ash

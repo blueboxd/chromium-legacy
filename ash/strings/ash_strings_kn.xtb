@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
 <translation id="2135456203358955318">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕ</translation>
 <translation id="2144487987174258011">Adobe Flash Player ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
-<translation id="2148902151539191989">ಹಿಂದೆ</translation>
 <translation id="2208323208084708176">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್</translation>
 <translation id="2220572644011485463">ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="2222338659135520253">ಸೈನ್ ಇನ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ಎಂಬುದು <ph name="DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಒಂದು ನಿರ್ವಹಿಸಿದ ಸೆಶನ್ ಆಗಿದೆ</translation>
 <translation id="2427507373259914951">ಎಡ-ಕ್ಲಿಕ್</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತೋರಿಸಿ</translation>
 <translation id="2473177541599297363">ರೆಸಲ್ಯೂಷನ್ ಖಚಿತಪಡಿಸಿ</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2484513351006226581">ಕೀಬೋರ್ಡ್ ಲೇಔಟ್ ಬದಲಾಯಿಸಲು <ph name="KEYBOARD_SHORTCUT" /> ಒತ್ತಿರಿ.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳ ಬಟನ್</translation>
 <translation id="4215497585250573029">VPN ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4217571870635786043">ಉಕ್ತಲೇಖನ</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಸ್ಮಾರ್ಟ್ ಕಾರ್ಡ್ ಪಿನ್‌‌</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. ಅಧಿಸೂಚನೆಗಳು ಆಫ್ ಆಗಿವೆ</translation>
 <translation id="4269883910223712419">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಈ ಕೆಳಗಿನ ಸಾಮರ್ಥ್ಯಗಳನ್ನು ಹೊಂದಿದ್ದಾರೆ:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="4570957409596482333">'ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಆಲಿಸಿ' ಬಟನ್‌</translation>
 <translation id="4585337515783392668">"ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು" ನಲ್ಲಿ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="4628757576491864469">ಸಾಧನಗಳು</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">ತತ್‌ಕ್ಷಣದ ಟೆಥರಿಂಗ್‌</translation>
 <translation id="5431825016875453137">VPN / L2TP ತೆರೆಯಿರಿ</translation>
 <translation id="544691375626129091">ಈ ಸೆಷನ್‌ಗೆ ಎಲ್ಲಾ ಲಭ್ಯವಿರುವ ಬಳಕೆದಾರರನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ.</translation>
+<translation id="54609108002486618">ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="5465662442746197494">ಸಹಾಯ ಬೇಕೇ?</translation>
 <translation id="5496819745535887422">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮುಂಚಿನ ನಿರ್ದಿಷ್ಟ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸುತ್ತಿದ್ದಾರೆ. ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -482,6 +483,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7405710164030118432">ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು, ನಿಮ್ಮ Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
+<translation id="7466449121337984263">ಸೆನ್ಸರ್ ಅನ್ನು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="7497767806359279797">ಭಾಷೆ ಮತ್ತು ಕೀಬೋರ್ಡ್ ಆರಿಸಿ</translation>
 <translation id="7526573455193969409">ನೆಟ್‌ವರ್ಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದಾಗಿದೆ</translation>
 <translation id="7536035074519304529">ಐಪಿ ವಿಳಾಸ: <ph name="ADDRESS" /></translation>

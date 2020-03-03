@@ -544,6 +544,9 @@ Status ParseChromeOptions(
   // sent if not parsed correctly.
   parser_map["w3c"] = base::Bind(&IgnoreCapability);
 
+  parser_map["useUnsupportedLaunchAppDeprecationWorkaround"] =
+      base::BindRepeating(&ParseBoolean, &capabilities->enable_launch_app);
+
   if (is_android) {
     parser_map["androidActivity"] =
         base::Bind(&ParseString, &capabilities->android_activity);
@@ -752,7 +755,8 @@ Capabilities::Capabilities()
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
       network_emulation_enabled(false),
-      use_automation_extension(true) {}
+      use_automation_extension(true),
+      enable_launch_app(false) {}
 
 Capabilities::~Capabilities() {}
 

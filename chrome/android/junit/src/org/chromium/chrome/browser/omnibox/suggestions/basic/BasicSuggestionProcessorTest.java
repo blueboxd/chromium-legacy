@@ -91,12 +91,9 @@ public class BasicSuggestionProcessorTest {
                     put(OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, "SEARCH_SUGGEST_PROFILE");
                     put(OmniboxSuggestionType.SEARCH_OTHER_ENGINE, "SEARCH_OTHER_ENGINE");
                     put(OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, "NAVSUGGEST_PERSONALIZED");
-                    put(OmniboxSuggestionType.CLIPBOARD_URL, "CLIPBOARD_URL");
                     put(OmniboxSuggestionType.VOICE_SUGGEST, "VOICE_SUGGEST");
                     put(OmniboxSuggestionType.DOCUMENT_SUGGESTION, "DOCUMENT_SUGGESTION");
                     put(OmniboxSuggestionType.PEDAL, "PEDAL");
-                    put(OmniboxSuggestionType.CLIPBOARD_TEXT, "CLIPBOARD_TEXT");
-                    put(OmniboxSuggestionType.CLIPBOARD_IMAGE, "CLIPBOARD_IMAGE");
                     // Note: CALCULATOR suggestions are not handled by basic suggestion processor.
                     // These suggestions are now processed by AnswerSuggestionProcessor instead.
                 }
@@ -188,12 +185,9 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.VOICE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.PEDAL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.MAGNIFIER},
         };
 
         mProcessor.onNativeInitialized();
@@ -223,7 +217,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.PEDAL, SuggestionIcon.GLOBE},
@@ -256,7 +249,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.PEDAL, SuggestionIcon.BOOKMARK},

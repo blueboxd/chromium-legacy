@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">កម្មវិធីទទួលព័ត៌មានសម្គាល់អត្តសញ្ញាណ WiFi</translation>
 <translation id="219008588003277019">ម៉ូឌុលអតិថិជនដើម៖ <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(ទទេ)</translation>
-<translation id="2191223688506386601">ចំណុចចុងក្រោយ</translation>
 <translation id="2191754378957563929">បើក</translation>
 <translation id="2192505247865591433">ពី៖</translation>
 <translation id="2193365732679659387">ការកំណត់ការជឿទុកចិត្ត</translation>
@@ -2568,7 +2567,6 @@
 <translation id="4555769855065597957">ស្រមោល</translation>
 <translation id="4555863373929230635">ដើម្បី​រក្សាទុកពាក្យសម្ងាត់​ទៅក្នុងគណនី Google របស់អ្នក សូមចូលគណនី រួចបើក "សមកាលកម្ម"។</translation>
 <translation id="4558426062282641716">ការអនុញ្ញាតបើកដំណើរការដោយស្វ័យប្រវត្តិត្រូវបានស្នើសុំ</translation>
-<translation id="4558491878126948419">ទទួល​​បាន​​គន្លឹះ និងព័ត៌មានថ្មីៗ​អំពី <ph name="DEVICE_TYPE" />​ នៅលើផលិតផល Google ព្រម​ទាំង​ចែក​រំលែក​មតិ​កែលម្អ។ អាចឈប់​ជាវ​បាន​គ្រប់​ពេល។</translation>
 <translation id="4559617833001311418">គេហទំព័រ​នេះ​កំពុង​ចូលប្រើ​ឧបករណ៍​ចាប់ពន្លឺ ឬឧបករណ៍​ចាប់ចលនារបស់អ្នក។</translation>
 <translation id="4561893854334016293">មិនមាន​ការអនុញ្ញាត​ដែលបាន​ផ្លាស់ប្ដូរ​ថ្មីៗ​ទេ</translation>
 <translation id="4562155214028662640">បញ្ចូល​ស្នាមម្រាមដៃ</translation>
@@ -2838,7 +2836,6 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ចង់ភ្ជាប់​ទៅរន្ធស៊េរី</translation>
 <translation id="4944310289250773232">សេវាកម្មផ្ទៀងផ្ទាត់នេះត្រូវបានបង្ហោះ​ដោយ <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">សកម្មភាព</translation>
-<translation id="4952981627953231344">មិន​អនុញ្ញាតឱ្យប្រើ Plugin VM ​នៅលើ​ឧបករណ៍​នេះ​ទេ​។ សូមទាក់ទង​អ្នកគ្រប់គ្រង​ឧបករណ៍​របស់​ស្ថាប័ន​អ្នក​។</translation>
 <translation id="4953808748584563296">រូបតំណាងពណ៌ទឹកក្រូចលំនាំដើម</translation>
 <translation id="4955710816792587366">ជ្រើសរើសកូដ PIN របស់អ្នក</translation>
 <translation id="4959262764292427323">ពាក្យសម្ងាត់​ត្រូវបាន​រក្សាទុក​នៅក្នុង​គណនី Google របស់អ្នក ដើម្បី​អាចឱ្យអ្នក​ប្រើវានៅ​លើឧបករណ៍​ទាំងឡាយ</translation>
@@ -3021,6 +3018,7 @@
 <translation id="5233736638227740678">បិទភ្ជាប់</translation>
 <translation id="5234764350956374838">ច្រានចោល</translation>
 <translation id="5235050375939235066">លុបកម្មវិធី?</translation>
+<translation id="523505283826916779">ការកំណត់លទ្ធភាពប្រើប្រាស់</translation>
 <translation id="5235750401727657667">ជំនួសទំព័រ​ដែលអ្នកឃើញ នៅពេលបើកផ្ទាំងថ្មី</translation>
 <translation id="5238278114306905396">កម្មវិធី "<ph name="EXTENSION_NAME" />" ត្រូវបានដកចេញដោយស្វ័យប្រវត្តិ។</translation>
 <translation id="5241128660650683457">អានទិន្នន័យរបស់អ្នកទាំងអស់នៅលើគេហទំព័រដែលអ្នកបានទៅកាន់។</translation>
@@ -3442,7 +3440,6 @@
 <translation id="5804241973901381774">ការអនុញ្ញាត</translation>
 <translation id="5805697420284793859">កម្មវិធី​គ្រប់គ្រង​វិនដូ</translation>
 <translation id="5806773519584576205">0° (លំនាំដើម)</translation>
-<translation id="5811750797187914944">រួចហើយ</translation>
 <translation id="5812674658566766066">ពង្រីក​ទាំងអស់</translation>
 <translation id="5814126672212206791">ប្រភេទនៃការតភ្ជាប់</translation>
 <translation id="5815645614496570556">អាសយដ្ឋាន X.400</translation>
@@ -4063,7 +4060,6 @@
 <translation id="6680442031740878064">ទំនេរ៖ <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">អត្រា</translation>
 <translation id="6681668084120808868">ថតរូបភាព</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" នឹងត្រូវបានលុប។</translation>
 <translation id="668599234725812620">បើក Google Play</translation>
 <translation id="6686490380836145850">បិទផ្ទាំងទៅខាងស្តាំ</translation>
 <translation id="6686817083349815241">រក្សាទុកពាក្យសម្ងាត់របស់អ្នក</translation>
@@ -4645,7 +4641,6 @@
 <translation id="7493386493263658176">ផ្នែកបន្ថែម <ph name="EXTENSION_NAME" /> អាចនឹងប្រមូលអត្ថបទទាំងអស់ដែលអ្នកវាយបញ្ចូល ដោយរាប់បញ្ចូលទាំងទិន្នន័យផ្ទាល់ខ្លួនដូចជាពាក្យសម្ងាត់ លេខកាតឥណទានជាដើម។ តើអ្នកចង់ប្រើផ្នែកបន្ថែមនេះឬទេ?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">ភ្លេចពាក្យសម្ងាត់ចាស់របស់អ្នក?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> និងទិន្នន័យពាក់ព័ន្ធនឹងវា​នឹងត្រូវបានលុបចេញពី​ឧបករណ៍នេះ។</translation>
 <translation id="7496732379142025470">ដើម្បីសន្សំសំចៃថ្ម “Ok Google” បើកតែនៅពេល​ឧបករណ៍របស់អ្នក​ភ្ជាប់ទៅប្រភព​ថាមពលប៉ុណ្ណោះ។ ដើម្បីធ្វើការផ្លាស់ប្ដូរ សូមចូលទៅ​កាន់ការកំណត់។</translation>
 <translation id="7497215489070763236">វិញ្ញាបនបត្រ CA ម៉ាស៊ីនមេ</translation>
 <translation id="7497981768003291373">អ្នកមិនមានកំណត់ហេតុអត្ថបទ WebRTC ដែលបាន​ថតថ្មីៗ​នេះទេ។</translation>

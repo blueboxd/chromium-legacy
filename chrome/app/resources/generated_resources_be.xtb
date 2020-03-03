@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">Сродак атрымання ўліковых даных Wi-Fi</translation>
 <translation id="219008588003277019">Модуль Native Client: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(пуста)</translation>
-<translation id="2191223688506386601">І апошняе</translation>
 <translation id="2191754378957563929">Уключана</translation>
 <translation id="2192505247865591433">Адкуль:</translation>
 <translation id="2193365732679659387">Налады надзейнасці</translation>
@@ -2568,7 +2567,6 @@
 <translation id="4555769855065597957">Цень</translation>
 <translation id="4555863373929230635">Каб захоўваць паролі ва Уліковым запісе Google, увайдзіце ў яго і ўключыце сінхранізацыю.</translation>
 <translation id="4558426062282641716">Запытаны дазвол на аўтаматычны запуск</translation>
-<translation id="4558491878126948419">Атрымлівайце парады па прыладах <ph name="DEVICE_TYPE" />, абнаўленні прадуктаў Google і абагульвайце водгукі. Адпісацца можна ў любы час.</translation>
 <translation id="4559617833001311418">Гэты сайт мае доступ да датчыкаў руху або святла.</translation>
 <translation id="4561893854334016293">Нядаўна змененых дазволаў няма</translation>
 <translation id="4562155214028662640">Дадаць адбітак пальца</translation>
@@ -2838,7 +2836,6 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" запытвае дазвол на падключэнне да серыйнага порта</translation>
 <translation id="4944310289250773232">Гэты сэрвіс аўтэнтыфікацыі размешчаны на дамене <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Дзеянні</translation>
-<translation id="4952981627953231344">На жаль, на гэтай прыладзе нельга выкарыстоўваць Plugin VM. Звярніцеся да адміністратара прылад вашай арганізацыі.</translation>
 <translation id="4953808748584563296">Стандартны аранжавы аватар</translation>
 <translation id="4955710816792587366">Набярыце PIN-код</translation>
 <translation id="4959262764292427323">Паролі захоўваюцца ў вашым Уліковым запісе Google, і вы зможаце карыстацца імі з любой прылады</translation>
@@ -3021,6 +3018,7 @@
 <translation id="5233736638227740678">&amp;Уставіць</translation>
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="5235050375939235066">Выдаліць праграму?</translation>
+<translation id="523505283826916779">Налады спецыяльных магчымасцей</translation>
 <translation id="5235750401727657667">Замяніць старонку, якую вы бачыце пры адкрыцці новай укладкі</translation>
 <translation id="5238278114306905396">Праграма "<ph name="EXTENSION_NAME" />" была аўтаматычна выдалена.</translation>
 <translation id="5241128660650683457">Чытаць усе даныя з вэб-сайтаў, якія вы наведваеце</translation>
@@ -3441,7 +3439,6 @@
 <translation id="5804241973901381774">Дазволы</translation>
 <translation id="5805697420284793859">Менеджар вокнаў</translation>
 <translation id="5806773519584576205">0° (стандартна)</translation>
-<translation id="5811750797187914944">Гатова</translation>
 <translation id="5812674658566766066">Разгарнуць усе</translation>
 <translation id="5814126672212206791">Тып падключэння</translation>
 <translation id="5815645614496570556">Адрас X.400</translation>
@@ -4062,7 +4059,6 @@
 <translation id="6680442031740878064">Даступна: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Хуткасць</translation>
 <translation id="6681668084120808868">Зрабіць фота</translation>
-<translation id="6681964764822470072">Праграма "<ph name="APP_NAME" />" будзе выдалена.</translation>
 <translation id="668599234725812620">Адкрыць Google Play</translation>
 <translation id="6686490380836145850">Закрыць укладкі справа</translation>
 <translation id="6686817083349815241">Захаваць пароль</translation>
@@ -4644,7 +4640,6 @@
 <translation id="7493386493263658176">Пашырэнне "<ph name="EXTENSION_NAME" />" можа збіраць увесь уведзены вамі тэкст, у тым ліку асабістыя даныя, такія як паролі і нумары крэдытных карт. Сапраўды выкарыстоўваць гэта пашырэнне?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> × <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Забылі стары пароль?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> і звязаныя з гэтай праграмай даныя будуць выдалены з гэтай прылады.</translation>
 <translation id="7496732379142025470">У мэтах эканоміі зараду акумулятара каманда "Ok Google" працуе, толькі калі прылада падключана да крыніцы сілкавання. Каб зрабіць патрэбныя змены, перайдзіце ў налады.</translation>
 <translation id="7497215489070763236">Сертыфікат ЦС сервера</translation>
 <translation id="7497981768003291373">У вас няма апошніх тэкставых журналаў WebRTC.</translation>

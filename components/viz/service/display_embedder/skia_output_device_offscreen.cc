@@ -21,7 +21,7 @@ constexpr SkColorType kSurfaceColorType = kRGBA_8888_SkColorType;
 
 SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     scoped_refptr<gpu::SharedContextState> context_state,
-    SurfaceOrigin origin,
+    gfx::SurfaceOrigin origin,
     bool has_alpha,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
@@ -119,7 +119,7 @@ SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
   if (!sk_surface_) {
     sk_surface_ = SkSurface::MakeFromBackendTexture(
         context_state_->gr_context(), backend_texture_,
-        capabilities_.output_surface_origin == SurfaceOrigin::kTopLeft
+        capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
             ? kTopLeft_GrSurfaceOrigin
             : kBottomLeft_GrSurfaceOrigin,
         0 /* sampleCount */, kSurfaceColorType, sk_color_space_,

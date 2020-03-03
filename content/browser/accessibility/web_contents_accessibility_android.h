@@ -9,6 +9,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/weak_ptr.h"
 
 namespace ui {
 class MotionEventAndroid;
@@ -257,6 +258,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleHover(int32_t unique_id);
   void HandleNavigate();
 
+  base::WeakPtr<WebContentsAccessibilityAndroid> GetWeakPtr();
+
  private:
   BrowserAccessibilityAndroid* GetAXFromUniqueID(int32_t unique_id);
 
@@ -280,6 +283,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Owns itself, and destroyed upon WebContentsObserver::WebContentsDestroyed.
   class Connector;
   Connector* connector_;
+
+  base::WeakPtrFactory<WebContentsAccessibilityAndroid> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsAccessibilityAndroid);
 };

@@ -514,10 +514,10 @@ void GLSurfaceEGLSurfaceControl::SetDisplayTransform(
   display_transform_ = transform;
 }
 
-bool GLSurfaceEGLSurfaceControl::FlipsVertically() const {
+gfx::SurfaceOrigin GLSurfaceEGLSurfaceControl::GetOrigin() const {
   // GLSurfaceEGLSurfaceControl's y-axis is flipped compare to GL - (0,0) is at
   // top left corner.
-  return true;
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(

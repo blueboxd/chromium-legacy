@@ -6405,8 +6405,6 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
 }
 
 void Element::Trace(Visitor* visitor) {
-  if (HasRareData())
-    visitor->Trace(GetElementRareData());
   visitor->Trace(element_data_);
   ContainerNode::Trace(visitor);
 }

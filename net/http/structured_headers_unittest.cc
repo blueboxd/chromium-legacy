@@ -362,18 +362,18 @@ const struct ItemTestCase {
     {"spelled-out True boolean", "?True", base::nullopt},
     {"spelled-out False boolean", "?False", base::nullopt},
     // Byte Sequence
-    {"basic binary", "*aGVsbG8=*", Item("hello", Item::kByteSequenceType)},
-    {"empty binary", "**", Item("", Item::kByteSequenceType)},
-    {"bad paddding", "*aGVsbG8*", Item("hello", Item::kByteSequenceType),
-     "*aGVsbG8=*"},
-    {"bad end delimiter", "*aGVsbG8=", base::nullopt},
-    {"extra whitespace", "*aGVsb G8=*", base::nullopt},
-    {"extra chars", "*aGVsbG!8=*", base::nullopt},
-    {"suffix chars", "*aGVsbG8=!*", base::nullopt},
-    {"non-zero pad bits", "*iZ==*", Item("\x89", Item::kByteSequenceType),
-     "*iQ==*"},
-    {"non-ASCII binary", "*/+Ah*", Item("\xFF\xE0!", Item::kByteSequenceType)},
-    {"base64url binary", "*_-Ah*", base::nullopt},
+    {"basic binary", ":aGVsbG8=:", Item("hello", Item::kByteSequenceType)},
+    {"empty binary", "::", Item("", Item::kByteSequenceType)},
+    {"bad paddding", ":aGVsbG8:", Item("hello", Item::kByteSequenceType),
+     ":aGVsbG8=:"},
+    {"bad end delimiter", ":aGVsbG8=", base::nullopt},
+    {"extra whitespace", ":aGVsb G8=:", base::nullopt},
+    {"extra chars", ":aGVsbG!8=:", base::nullopt},
+    {"suffix chars", ":aGVsbG8=!:", base::nullopt},
+    {"non-zero pad bits", ":iZ==:", Item("\x89", Item::kByteSequenceType),
+     ":iQ==:"},
+    {"non-ASCII binary", ":/+Ah:", Item("\xFF\xE0!", Item::kByteSequenceType)},
+    {"base64url binary", ":_-Ah:", base::nullopt},
     // String
     {"basic string", "\"foo\"", Item("foo")},
     {"empty string", "\"\"", Item("")},
@@ -405,6 +405,28 @@ const struct ItemTestCase {
     {"c-style hex escape in string", "\"\\x61\"", base::nullopt},
     {"valid quoting containing \\u", "\"\\\\u0061\"", Item("\\u0061")},
     {"c-style unicode escape in string", "\"\\u0061\"", base::nullopt},
+};
+
+const ItemTestCase sh09_item_test_cases[] = {
+    // Integer
+    {"large integer", "9223372036854775807", Integer(9223372036854775807L)},
+    {"large negative integer", "-9223372036854775807",
+     Integer(-9223372036854775807L)},
+    {"too large integer", "9223372036854775808", base::nullopt},
+    {"too large negative integer", "-9223372036854775808", base::nullopt},
+    // Byte Sequence
+    {"basic binary", "*aGVsbG8=*", Item("hello", Item::kByteSequenceType)},
+    {"empty binary", "**", Item("", Item::kByteSequenceType)},
+    {"bad paddding", "*aGVsbG8*", Item("hello", Item::kByteSequenceType),
+     "*aGVsbG8=*"},
+    {"bad end delimiter", "*aGVsbG8=", base::nullopt},
+    {"extra whitespace", "*aGVsb G8=*", base::nullopt},
+    {"extra chars", "*aGVsbG!8=*", base::nullopt},
+    {"suffix chars", "*aGVsbG8=!*", base::nullopt},
+    {"non-zero pad bits", "*iZ==*", Item("\x89", Item::kByteSequenceType),
+     "*iQ==*"},
+    {"non-ASCII binary", "*/+Ah*", Item("\xFF\xE0!", Item::kByteSequenceType)},
+    {"base64url binary", "*_-Ah*", base::nullopt},
 };
 
 // For Structured Headers Draft 15
@@ -546,21 +568,23 @@ TEST(StructuredHeaderTest, ParseItem) {
   }
 }
 
-// In Structured Headers Draft 9, integers can be larger than 1e15. This
-// behaviour is exposed in the parser for SH09-specific lists, so test it
-// through that interface.
-TEST(StructuredHeaderTest, SH09LargeInteger) {
-  base::Optional<ListOfLists> result =
-      ParseListOfLists("9223372036854775807;-9223372036854775807");
-  ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(*result, (ListOfLists{{Integer(9223372036854775807L),
-                                   Integer(-9223372036854775807L)}}));
-
-  result = ParseListOfLists("9223372036854775808");
-  EXPECT_FALSE(result.has_value());
-
-  result = ParseListOfLists("-9223372036854775808");
-  EXPECT_FALSE(result.has_value());
+// Structured Headers Draft 9 parsing rules are different than Draft 15, and
+// some strings which are considered invalid in SH15 should parse in SH09.
+// The SH09 Item parser is not directly exposed, but can be used indirectly by
+// calling the parser for SH09-specific lists.
+TEST(StructuredHeaderTest, ParseSH09Item) {
+  for (const auto& c : sh09_item_test_cases) {
+    SCOPED_TRACE(c.name);
+    base::Optional<ListOfLists> result = ParseListOfLists(c.raw);
+    if (c.expected.has_value()) {
+      EXPECT_TRUE(result.has_value());
+      EXPECT_EQ(result->size(), 1UL);
+      EXPECT_EQ((*result)[0].size(), 1UL);
+      EXPECT_EQ((*result)[0][0], c.expected);
+    } else {
+      EXPECT_FALSE(result.has_value());
+    }
+  }
 }
 
 // In Structured Headers Draft 9, floats can have more than three fractional

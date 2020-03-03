@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Kam quvvatli zaryadlovchi vosita</translation>
 <translation id="2135456203358955318">Mahkamlangan lupa</translation>
 <translation id="2144487987174258011">Adobe Flash Player’ni yangilash uchun qayta ishga tushiring</translation>
-<translation id="2148902151539191989">ORQAGA</translation>
 <translation id="2208323208084708176">Birlashgan ish stoli rejimi</translation>
 <translation id="2220572644011485463">PIN kod yoki parol</translation>
 <translation id="2222338659135520253">Hisob bilan kirish zarur</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> seansi <ph name="DOMAIN" /> domenida boshqariladi</translation>
 <translation id="2427507373259914951">Chap klik</translation>
 <translation id="2429753432712299108">“<ph name="DEVICE_NAME" />” qurilmasi Bluetooth orqali ulanishga ruxsat so‘ramoqda. Uning ekranida quyidagi kod ko‘rinaytganligini tekshiring: <ph name="PASSKEY" />.</translation>
+<translation id="2435457462613246316">Parolni ko‘rsatish</translation>
 <translation id="2473177541599297363">Ekran hajmini tasdiqlash</translation>
 <translation id="2482878487686419369">Bildirishnomalar</translation>
 <translation id="2484513351006226581">Klaviatura terilmasini almashtirish uchun <ph name="KEYBOARD_SHORTCUT" /> tugmalarini bosing.</translation>
@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Hisobni <ph name="MANAGER_EMAIL" /> boshqaradi</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" tiliga qaytarish (qayta yuklash kerak bo‘ladi)</translation>
 <translation id="3576141592585647168">Vaqt mintaqasini almashtirish</translation>
+<translation id="3593646411856133110">Ochiq ilovalarni chiqarish uchun tepaga suring va bosib turing.</translation>
 <translation id="3595596368722241419">Batareya to‘ldi</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ish stoli yaratildi</translation>
 <translation id="3606978283550408104">Brayl displeyi ulandi.</translation>
@@ -255,7 +256,6 @@
 <translation id="4195877955194704651">Avtomatik bosish menyusi</translation>
 <translation id="4215497585250573029">VPN sozlamalari</translation>
 <translation id="4217571870635786043">Ovoz bilan yozish</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> smart kartasi uchun PIN kod</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Bildirishnoma sozlamalarini ochish. Bildirishnomalar yoqilmagan</translation>
 <translation id="4269883910223712419">Bu qurilma administratorining vakolatlari:</translation>
@@ -285,6 +285,7 @@
 <translation id="4527045527269911712">“<ph name="DEVICE_NAME" />” qurilmasi Bluetooth orqali bog‘lanishga ruxsat so‘ramoqda.</translation>
 <translation id="453661520163887813">To‘liq quvvatlanishiga <ph name="TIME" /> qoldi</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Parolni berkitish</translation>
 <translation id="4570957409596482333">Teginib tinglash tugmasi</translation>
 <translation id="4585337515783392668">Ekranni notanish qurilmaga translatsiya qilinishi to‘xtatilsin</translation>
 <translation id="4628757576491864469">Qurilmalar</translation>
@@ -336,6 +337,7 @@
 <translation id="5430931332414098647">Tezkor modem rejimi</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Bu seansga barcha mavjud foydalanuvchilar qo‘shildi.</translation>
+<translation id="54609108002486618">Boshqariladigan</translation>
 <translation id="5465662442746197494">Yordam kerakmi?</translation>
 <translation id="5496819745535887422">Administrator qurilmani rejadagi versiyaga qaytarmoqda. Qurilma qayta ishga tushirilganda barcha ma’lumotlar tozalanadi.</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -361,6 +363,7 @@
 <translation id="5745612484876805746">Tungi rejim quyosh botishi bilan avtomatik yoqiladi</translation>
 <translation id="5750765938512549687">Bluetooth yoqilmagan</translation>
 <translation id="576453121877257266">Tungi rejim yoniq.</translation>
+<translation id="5769373120130404283">Maxfiylik ekrani</translation>
 <translation id="5777841717266010279">Ekrandan foydalanish ruxsati to‘xtatilsinmi?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="ROUTE_TITLE" /> <ph name="RECEIVER_NAME" /> qurilmasiga translatsiya qilinishi to‘xtatilsin</translation>
@@ -402,6 +405,7 @@
 <translation id="6297287540776456956">Ekran qismini belgilash uchun stilusdan foydalaning</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: joylashuv <ph name="ROTATION" /> ga o‘zgartirildi</translation>
 <translation id="6376931439017688372">Bluetooth yoniq</translation>
+<translation id="6381109794406942707">Qurilmani qulfdan chiqarish uchun PIN kodingizni kiriting.</translation>
 <translation id="639644700271529076">CAPS LOCK o‘chiq</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617">Himoya: <ph name="SECURITY_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" /></translation>
@@ -481,7 +485,7 @@
 <translation id="7405710164030118432">Bu qurilma qulfini ochish uchun Family Link ota-ona kodini kiriting</translation>
 <translation id="742594950370306541">Kamera ish faoliyatida.</translation>
 <translation id="743058460480092004">Kamera va mikrofon ishlatilmoqda.</translation>
-<translation id="7466449121337984263">Sensorni bosing</translation>
+<translation id="7466449121337984263">Sensorga tegining</translation>
 <translation id="7497767806359279797">Til va klaviaturani tanlang</translation>
 <translation id="7526573455193969409">Tarmoq kuzatilishi mumkin</translation>
 <translation id="7536035074519304529">IP manzil: <ph name="ADDRESS" /></translation>
@@ -612,6 +616,7 @@
 <translation id="9072519059834302790">Batareya quvvati tugashigacha qolgan vaqt: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Boshiga qaytish uchun tepaga suring</translation>
 <translation id="9080206825613744995">Mikrofon ishlatilmoqda.</translation>
 <translation id="9084606467167974638">Menyu holatini almashtirish</translation>
 <translation id="9089416786594320554">Kiritish usullari</translation>

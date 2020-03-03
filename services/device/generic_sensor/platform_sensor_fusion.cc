@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
+#include "services/device/generic_sensor/platform_sensor_util.h"
 
 namespace device {
 
@@ -195,6 +196,9 @@ void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {
   if (!fusion_algorithm_->GetFusedData(type, &reading))
     return;
 
+  // Round the reading to guard user privacy. See https://crbug.com/1018180.
+  RoundSensorReading(&reading, type);
+
   if (GetReportingMode() == mojom::ReportingMode::ON_CHANGE &&
       !fusion_algorithm_->IsReadingSignificantlyDifferent(reading_, reading)) {
     return;
@@ -220,7 +224,7 @@ bool PlatformSensorFusion::GetSourceReading(mojom::SensorType type,
                                             SensorReading* result) {
   auto it = source_sensors_.find(type);
   if (it != source_sensors_.end())
-    return it->second->GetLatestReading(result);
+    return it->second->GetLatestRawReading(result);
   NOTREACHED();
   return false;
 }

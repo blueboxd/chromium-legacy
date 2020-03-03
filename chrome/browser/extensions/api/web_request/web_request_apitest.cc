@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,11 +14,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
@@ -94,6 +98,8 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/network_isolation_key.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -112,6 +118,7 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_features.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -278,6 +285,62 @@ bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
       ExecuteScriptAndExtractBool(host->host_contents(), script, &seen));
   return seen;
 }
+
+// Class that monitors ResourceRequests sent to the network service during its
+// lifetime, and allows the caller to access information about them.
+class URLLoaderMonitor {
+ public:
+  struct RequestInfo {
+    net::SiteForCookies site_for_cookies;
+    base::Optional<net::NetworkIsolationKey> network_isolation_key;
+  };
+
+  URLLoaderMonitor()
+      : interceptor_(std::make_unique<content::URLLoaderInterceptor>(
+            base::BindRepeating(&URLLoaderMonitor::OnRequest,
+                                base::Unretained(this)))) {}
+
+  URLLoaderMonitor(const URLLoaderMonitor&) = delete;
+  URLLoaderMonitor& operator=(const URLLoaderMonitor&) = delete;
+
+  ~URLLoaderMonitor() {
+    // This is needed because |interceptor_| is a cross-thread object that may
+    // invoke the callback passed to it on the IO thread at any time until it's
+    // destroyed. Therefore, it must be destroyed before |this| is.
+    interceptor_.reset();
+  }
+
+  base::Optional<RequestInfo> GetRequestInfo(const GURL& url) {
+    base::AutoLock autolock(lock_);
+    const auto request_info = request_info_map_.find(url);
+    if (request_info == request_info_map_.end())
+      return base::nullopt;
+    return request_info->second;
+  }
+
+ private:
+  bool OnRequest(content::URLLoaderInterceptor::RequestParams* params) {
+    RequestInfo request_info;
+    request_info.site_for_cookies = params->url_request.site_for_cookies;
+    if (params->url_request.trusted_params) {
+      request_info.network_isolation_key =
+          params->url_request.trusted_params->network_isolation_key;
+    }
+
+    base::AutoLock autolock(lock_);
+    request_info_map_[params->url_request.url] = request_info;
+
+    // Don't override default handling of the request.
+    return false;
+  }
+
+  // This is needed to guard access to |request_info_map_|, as
+  // content::URLLoaderInterceptor can invoke its callback on the IO thread.
+  base::Lock lock_;
+  std::map<GURL, RequestInfo> GUARDED_BY(lock_) request_info_map_;
+
+  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
+};
 
 }  // namespace
 
@@ -3189,6 +3252,138 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HSTSUpgradeAfterRedirect) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(final_url, web_contents->GetLastCommittedURL());
+}
+
+enum class RedirectType {
+  kOnBeforeRequest,
+  kOnHeadersReceived,
+};
+
+class RedirectInfoWebRequestApiTest
+    : public testing::WithParamInterface<RedirectType>,
+      public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+
+  void InstallRequestRedirectingExtension(const std::string& resource_type) {
+    TestExtensionDir test_dir;
+    test_dir.WriteManifest(R"({
+          "name": "Simple Redirect",
+          "manifest_version": 2,
+          "version": "0.1",
+          "background": { "scripts": ["background.js"] },
+          "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+        })");
+    test_dir.WriteFile(
+        FILE_PATH_LITERAL("background.js"),
+        base::StringPrintf(R"(
+          chrome.webRequest.%s.addListener(function(details) {
+            if (details.type == '%s' &&
+                details.url.includes('hello.html')) {
+              var redirectUrl =
+                  details.url.replace('original.test', 'redirected.test');
+              return {redirectUrl: redirectUrl};
+            }
+          }, {urls: ['*://original.test/*']}, ['blocking']);
+          chrome.test.sendMessage('ready');
+        )",
+                           GetParam() == RedirectType::kOnBeforeRequest
+                               ? "onBeforeRequest"
+                               : "onHeadersReceived",
+                           resource_type.c_str()));
+    ExtensionTestMessageListener listener("ready", false);
+    const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+ private:
+  TestExtensionDir test_dir_;
+};
+
+INSTANTIATE_TEST_SUITE_P(RedirectMode,
+                         RedirectInfoWebRequestApiTest,
+                         ::testing::Values(RedirectType::kOnBeforeRequest,
+                                           RedirectType::kOnHeadersReceived));
+
+// Test that a main frame request redirected by an extension has the correct
+// site_for_cookies and network_isolation_key parameters.
+IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
+                       VerifyRedirectInfoMainFrame) {
+  InstallRequestRedirectingExtension("main_frame");
+
+  URLLoaderMonitor monitor;
+
+  // Navigate to the URL that should be redirected, and check that the extension
+  // redirects it.
+  GURL url = embedded_test_server()->GetURL("original.test", "/hello.html");
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  GURL redirected_url =
+      embedded_test_server()->GetURL("redirected.test", "/hello.html");
+  EXPECT_EQ(redirected_url, web_contents->GetLastCommittedURL());
+
+  // Check the parameters passed to the URLLoaderFactory.
+  base::Optional<URLLoaderMonitor::RequestInfo> request_info =
+      monitor.GetRequestInfo(redirected_url);
+  ASSERT_TRUE(request_info.has_value());
+  EXPECT_TRUE(request_info->site_for_cookies.IsFirstParty(redirected_url));
+  url::Origin redirected_origin = url::Origin::Create(redirected_url);
+  EXPECT_EQ(request_info->network_isolation_key,
+            net::NetworkIsolationKey(redirected_origin, redirected_origin));
+}
+
+// Test that a sub frame request redirected by an extension has the correct
+// site_for_cookies and network_isolation_key parameters.
+IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
+                       VerifyBeforeRequestRedirectInfoSubFrame) {
+  InstallRequestRedirectingExtension("sub_frame");
+
+  URLLoaderMonitor monitor;
+
+  // Navigate to page with an iframe that should be redirected, and check that
+  // the extension redirects it.
+  GURL original_iframed_url =
+      embedded_test_server()->GetURL("original.test", "/hello.html");
+  GURL page_with_iframe_url = embedded_test_server()->GetURL(
+      "somewhere-else.test",
+      net::test_server::GetFilePathWithReplacements(
+          "/page_with_iframe.html",
+          base::StringPairs{
+              {"title1.html", original_iframed_url.spec().c_str()}}));
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), page_with_iframe_url));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  EXPECT_EQ(page_with_iframe_url, web_contents->GetLastCommittedURL());
+
+  // Since frames are returned in breadth first order, and there's only one
+  // iframe, the iframe should be the second frame in this vector.
+  std::vector<content::RenderFrameHost*> all_frames =
+      web_contents->GetAllFrames();
+  ASSERT_EQ(2u, all_frames.size());
+  GURL redirected_url =
+      embedded_test_server()->GetURL("redirected.test", "/hello.html");
+  ASSERT_EQ(redirected_url, all_frames[1]->GetLastCommittedURL());
+
+  // Check the parameters passed to the URLLoaderFactory.
+  base::Optional<URLLoaderMonitor::RequestInfo> request_info =
+      monitor.GetRequestInfo(redirected_url);
+  ASSERT_TRUE(request_info.has_value());
+  EXPECT_TRUE(
+      request_info->site_for_cookies.IsFirstParty(page_with_iframe_url));
+  EXPECT_FALSE(request_info->site_for_cookies.IsFirstParty(redirected_url));
+  url::Origin top_level_origin = url::Origin::Create(page_with_iframe_url);
+  url::Origin redirected_origin = url::Origin::Create(redirected_url);
+  EXPECT_EQ(request_info->network_isolation_key,
+            net::NetworkIsolationKey(top_level_origin, redirected_origin));
 }
 
 }  // namespace extensions

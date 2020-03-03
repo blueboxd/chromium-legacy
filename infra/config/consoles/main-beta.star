@@ -93,6 +93,11 @@ luci.console_view(
             short_name = '13',
         ),
         luci.console_view_entry(
+            builder = 'ci-beta/Mac10.14 Tests',
+            category = 'chromium.mac|release',
+            short_name = '14',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/WebKit Mac10.13 (retina)',
             category = 'chromium.mac|release',
             short_name = 'ret',

@@ -101,6 +101,7 @@
 <translation id="4293420128516039005">Wenn Sie sich anmelden, wird Chrome auf allen Ihren Geräten synchronisiert und personalisiert</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4335235004908507846">Chrome kann dazu beitragen, Sie beispielsweise vor Datenpannen und schädlichen Erweiterungen zu schützen</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> wurde zu Chrome hinzugefügt</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">In Google Chrome wird eine andere Aktion durchgeführt. Bitte versuchen Sie es später noch einmal.</translation>
@@ -193,12 +194,14 @@
 <translation id="7777080907402804672">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="7781002470561365167">Eine neue Version von Google Chrome ist verfügbar.</translation>
 <translation id="7787950393032327779">Das Profil wird offenbar gerade von einem Google Chrome-Prozess (<ph name="PROCESS_ID" />) auf einem anderen Computer (<ph name="HOST_NAME" />) verwendet. Das Profil wurde von Chrome gesperrt, damit es nicht beschädigt wird. Wenn Sie sicher sind, dass das Profil nicht von anderen Prozessen verwendet wird, können Sie das Profil entsperren und Chrome neu starten.</translation>
+<translation id="7801699035218095297">Google Chrome versucht, Passwörter zu kopieren. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="7808348361785373670">Aus Chrome entfernen...</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="7855730255114109580">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="7896673875602241923">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chrome angemeldet. Erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.</translation>
 <translation id="7916016681687251387">Chrome OS konnte Ihre Daten nicht synchronisieren. Jetzt beheben.</translation>
+<translation id="7930071585467473040">Google Chrome versucht, Passwörter zu kopieren.</translation>
 <translation id="7962410387636238736">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8013993649590906847">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet.</translation>

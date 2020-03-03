@@ -48,7 +48,7 @@ class HomescreenTest : public UIPerformanceTest {
       cmd->RemoveSwitch(wm::switches::kWindowAnimationsDisabled);
   }
   std::vector<std::string> GetUMAHistogramNames() const override {
-      return {"Ash.Homescreen.AnimationSmoothness"};
+    return {"Ash.Homescreen.AnimationSmoothness"};
   }
 };
 
@@ -108,7 +108,8 @@ class HomescreenDragTest : public HomescreenTest {
   base::test::ScopedFeatureList scoped_features_;
 };
 
-IN_PROC_BROWSER_TEST_F(HomescreenDragTest, DraggingPerformance) {
+// TODO(http://crbug.com/1057864): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(HomescreenDragTest, DISABLED_DraggingPerformance) {
   // First show the launcher so we can do drags.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();

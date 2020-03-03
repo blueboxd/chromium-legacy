@@ -11,6 +11,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,6 +39,16 @@ class ChildUserServiceTest : public testing::Test {
     service_ = std::make_unique<ChildUserService>(&profile_);
     service_test_api_ =
         std::make_unique<ChildUserService::TestApi>(service_.get());
+
+    // Install Chrome browser and set its app limit.
+    app_time::AppActivityRegistry* registry =
+        service_test_api_->app_time_controller()->app_registry();
+    registry->OnAppInstalled(app_time::GetChromeAppId());
+    registry->OnAppAvailable(app_time::GetChromeAppId());
+    registry->SetAppLimit(
+        app_time::GetChromeAppId(),
+        app_time::AppLimit(app_time::AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromHours(1), base::Time::Now()));
   }
 
   // Enables per-app time limits feature. Recreates ChildUserService object.

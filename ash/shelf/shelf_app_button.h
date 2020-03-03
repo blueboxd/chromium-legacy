@@ -94,10 +94,6 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // views::InkDropListener:
-  void InkDropAnimationStarted() override;
-  void InkDropRippleAnimationEnded(views::InkDropState state) override;
-
   // Update button state from ShelfItem.
   void ReflectItemStatus(const ShelfItem& item);
 
@@ -131,6 +127,10 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // views::View:
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
+  // views::InkDropObserver:
+  void InkDropAnimationStarted() override;
+  void InkDropRippleAnimationEnded(views::InkDropState state) override;
+
   // Updates the parts of the button to reflect the current |state_| and
   // alignment. This may add or remove views, layout and paint.
   void UpdateState();
@@ -151,6 +151,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Calculates the transform between the icon scaled by |icon_scale| and the
   // normal size icon.
   gfx::Transform GetScaleTransform(float icon_scale);
+
+  // Marks whether the ink drop animation has started or not.
+  void SetInkDropAnimationStarted(bool started);
 
   // The icon part of a button can be animated independently of the rest.
   views::ImageView* icon_view_;
@@ -183,6 +186,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // The scaling factor for displaying the app icon.
   float icon_scale_ = 1.0f;
+
+  // Indicates whether the ink drop animation starts.
+  bool ink_drop_animation_started_ = false;
 
   // A timer to defer showing drag UI when the shelf button is pressed.
   base::OneShotTimer drag_timer_;

@@ -16,9 +16,8 @@
 
 #import "Service/Sources/EDOHostNamingService.h"
 #import "Service/Sources/EDOHostService.h"
-#include "client/crashpad_client.h"
-#import "test/ios/host/cptest_shared_object.h"
 #import "test/ios/host/crash_view_controller.h"
+#import "test/ios/host/edo_placeholder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,10 +28,6 @@
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  // Start up crashpad.
-  crashpad::CrashpadClient client;
-  client.StartCrashpadInProcessHandler();
-
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   [self.window makeKeyAndVisible];
   self.window.backgroundColor = UIColor.greenColor;
@@ -42,37 +37,17 @@
 
   // Start up EDO.
   [EDOHostService serviceWithPort:12345
-                       rootObject:[[CPTestSharedObject alloc] init]
+                       rootObject:[[EDOPlaceholder alloc] init]
                             queue:dispatch_get_main_queue()];
+  [EDOHostNamingService.sharedService start];
+
   return YES;
 }
 
 @end
 
-@implementation CPTestSharedObject
+@implementation EDOPlaceholder
 - (NSString*)testEDO {
   return @"crashpad";
 }
-
-- (void)crashBadAccess {
-  strcpy(0, "bla");
-}
-
-- (void)crashKillAbort {
-  kill(getpid(), SIGABRT);
-}
-
-- (void)crashSegv {
-  long zero = 0;
-  *(long*)zero = 0xC045004d;
-}
-
-- (void)crashTrap {
-  __builtin_trap();
-}
-
-- (void)crashAbort {
-  abort();
-}
-
 @end

@@ -106,6 +106,7 @@
 <translation id="4293420128516039005">Chromeን በመላ መሣሪያዎችዎ ላይ ለማሳመር እና ግላዊነት ለማላበስ</translation>
 <translation id="4328355335528187361">Google Chrome ገንቢ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
+<translation id="4335235004908507846">Chrome ደህንነትዎ ከውሂብ ጥሰቶች፣ ከመጥፎ ቅጥያዎች እና ተጨማሪ ነገሮች እንደተጠበቀ እንዲቆይ ሊያግዝ ይችላል</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> ወደ Chrome ታክሏል</translation>
 <translation id="4407807842708586359">Google Chrome ስርዓተ ክወና</translation>
 <translation id="4458462641685292929">በGoogle Chrome ላይ ሌላ ሥርዓተ ክወና በሂደት ላይ ነው። እባክዎ በኋላ ላይ እንደገና ይሞክሩ።</translation>
@@ -203,12 +204,14 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7777080907402804672">አንድ ምስል ጠቃሚ መግለጫ ከሌለው Chrome ለእርስዎ አንድ ለማቅረብ ይሞክራል። ዝርዝር መግለጫዎችን ለመፍጠር፣ ምስሎች ወደ Google ይላካሉ። ይህን በማንኛውም ጊዜ በቅንብሮች ውስጥ ሊያጠፉት ይችላሉ።</translation>
 <translation id="7781002470561365167">የGoogle Chrome አዲስ ስሪት አለ።</translation>
 <translation id="7787950393032327779">መገለጫው በሌላ ኮምፒውተር (<ph name="HOST_NAME" />) ላይ በሌላ የGoogle Chrome ሂደት (<ph name="PROCESS_ID" />) የተያዘ ይመስላል። Chrome መገለጫው እንዳይበላሽ ቆልፎታል።  ሌሎች ሂደቶች ይህን መገለጫ እየተጠቀሙበት እንዳልሆኑ እርግጠኛ ከሆኑ መገለጫውን አስከፍተው Chromeን ዳግም ማስጀመር ይችላሉ።</translation>
+<translation id="7801699035218095297">Google Chrome የይለፍ ቃላትን ለመቅዳት እየሞከረ ነው። ይህንን ለመፍቀድ የእርስዎን Windows የይለፍ ቃል ይተይቡ።</translation>
 <translation id="7808348361785373670">ከChrome አስወግድ...</translation>
 <translation id="7825851276765848807">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="7855730255114109580">Google Chrome የተዘመነ ነው</translation>
 <translation id="7890208801193284374">ኮምፒውተር የሚጋሩ ከሆኑ ጓደኛዎች እና ቤተሰብ ተለይተው ሊያስሱ እና Chromeን በሚፈልጉበት መንገድ ማዋቀር ይችላሉ።</translation>
 <translation id="7896673875602241923">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST" /> ሆነው ወደ Chrome ገብተዋል። የእርስዎን መረጃ ለይተው ለማስቀመጥ እባክዎ አዲስ የChrome ተጠቃሚ ይፍጠሩ።</translation>
 <translation id="7916016681687251387">Chrome OS የእርስዎን ውሂብ ማስመር አልቻለም። አሁኑኑ ያስተካክሉ።</translation>
+<translation id="7930071585467473040">Google Chrome የይለፍ ቃላትን ለመቅዳት እየሞከረ ነው።</translation>
 <translation id="7962410387636238736">Windows XP እና Windows Vista ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
 <translation id="8008534537613507642">Chromeን ዳግም ጫነው</translation>
 <translation id="8013993649590906847">አንድ ምስል ጠቃሚ መግለጫ ከሌለው Chrome ለእርስዎ አንድ ለማቅረብ ይሞክራል። ዝርዝር መግለጫዎችን ለመፍጠር፣ ምስሎች ወደ Google ይላካሉ።</translation>

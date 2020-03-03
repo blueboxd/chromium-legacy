@@ -154,7 +154,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   EGLTimestampClient* GetEGLTimestampClient() override;
 
   // EGLTimestampClient implementation.
@@ -199,7 +199,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   EGLSurface surface_ = nullptr;
   bool supports_post_sub_buffer_ = false;
   bool supports_swap_buffer_with_damage_ = false;
-  bool flips_vertically_ = false;
+  gfx::SurfaceOrigin surface_origin_ = gfx::SurfaceOrigin::kBottomLeft;
 
 #if defined(USE_X11)
   bool has_swapped_buffers_ = false;

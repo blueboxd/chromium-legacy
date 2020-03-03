@@ -1072,6 +1072,7 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果未設定這項政策，系統預設會停用插入點醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
+<translation id="2509919237512982967">使用舊版表單控制項，直到 M84 版為止。</translation>
 <translation id="2514328368635166290">指定預設搜尋引擎的最愛圖示網址。這項政策是選擇性的，如果未設定，系統就不會顯示搜尋引擎的圖示。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2516600974234263142">啟用 <ph name="PRODUCT_NAME" /> 的列印功能，並且禁止使用者變更這項設定。
 
@@ -1346,7 +1347,7 @@
       不設定這項政策等同於設為啟用，詳情請參閱上述說明。</translation>
 <translation id="2854607717796010700">回報有關裝置記憶體的資訊。
 
-      如果將這項政策設為 False 或不予設定，系統將不會回報這項資訊。
+      如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置記憶體的資訊。</translation>
 <translation id="285480231336205327">啟用高反差模式</translation>
 <translation id="2854919890879212089">讓 <ph name="PRODUCT_NAME" /> 使用系統預設印表機做為預覽列印中的預設選擇，取代最近使用的印表機。
@@ -3492,7 +3493,7 @@
 <translation id="631081324835911099">強制登出主要帳戶驗證憑證失效的使用者。
         這項政策可以避免使用者存取 Google 網路資源上的受限制內容。
         如果將這項政策設為 True，當使用者的驗證憑證失效，且嘗試復原這項憑證失敗時，系統會將使用者登出。
-        如果將這項政策設為 False 或不予設定，使用者可以在未經驗證的狀態下繼續執行作業。</translation>
+        如果將這項政策設為 False 或未設定，使用者可以在未經驗證的狀態下繼續執行作業。</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
 <translation id="6319198883324703402">設定第一次通知使用者重新啟動的時間</translation>
@@ -4937,7 +4938,7 @@
 <translation id="8757552286070680084">設定 Wilco DTC</translation>
 <translation id="8758831693895931466">啟用雲端管理強制註冊設定</translation>
 <translation id="8759829385824155666">允許的 Kerberos 加密類型</translation>
-<translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
+<translation id="8764119899999036911">指定是否要根據正規 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
 <translation id="8764477907716150749">這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
 <translation id="8777369558049831576">在外部通訊協定對話方塊中顯示「一律開啟」核取方塊。</translation>
 <translation id="877773134585155834">列出 <ph name="PRODUCT_OS_NAME" />在啟動器列中顯示為固定應用程式的應用程式 ID。
@@ -5048,6 +5049,13 @@
 
       如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
+<translation id="8937282917198525844"> 自 M81 版起，我們為標準表單控制項元素 (例如 &lt;select&gt;、&lt;button&gt; 和 &lt;input type=date&gt;) 提供煥然一新的外觀和風格，並改善無障礙功能及提升平台的一致性。這項政策會復原「舊版」的表單控制項元素，直到 M84 版為止。
+
+      如果將這項政策設為 True，系統會針對所有網站使用「舊版」表單控制項元素。
+
+      如果將這項政策設為 False 或不設定，系統會在 M81、M82 和 M83 版推出時啟用其中的表單控制項元素。
+
+      這項政策將在 Chrome 第 84 版後移除。</translation>
 <translation id="8938932171964587769">這項政策自 M69 起已淘汰，請改用 OverrideSecurityRestrictionsOnInsecureOrigin。
 
 這項政策可指定要視為安全內容的來源 (網址) 或主機名稱模式 (例如「*.example.com」)，清單中的內容來源將不會套用針對不安全來源所設的安全性限制。

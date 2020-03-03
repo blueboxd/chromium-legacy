@@ -38,7 +38,10 @@ void SystemSnapshotFuchsia::Initialize(const timeval* snapshot_time) {
   // garnet/bin/uname/uname.c, however, this information isn't provided by
   // uname(). Additionally, uname() seems to hang if the network is in a bad
   // state when attempting to retrieve the nodename, so avoid it for now.
-  std::string kernel_version = zx_system_get_version_string();
+  char kernel_version[256] = {};
+  zx_status_t status =
+      zx_system_get_version(kernel_version, sizeof(kernel_version));
+  ZX_LOG_IF(ERROR, status != ZX_OK, status) << "zx_system_get_version";
 
 #if defined(ARCH_CPU_X86_64)
   static constexpr const char kArch[] = "x86_64";
@@ -47,8 +50,8 @@ void SystemSnapshotFuchsia::Initialize(const timeval* snapshot_time) {
 #else
   static constexpr const char kArch[] = "unknown";
 #endif
-  os_version_full_ = base::StringPrintf(
-      "Zircon prerelease %s %s", kernel_version.c_str(), kArch);
+  os_version_full_ =
+      base::StringPrintf("Zircon prerelease %s %s", kernel_version, kArch);
 
   INITIALIZATION_STATE_SET_VALID(initialized_);
 }

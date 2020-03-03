@@ -869,7 +869,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2190069059097339078">Wi-Fi hitelesítési adatok lekérője</translation>
 <translation id="219008588003277019">Natív kliensmodul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(üres)</translation>
-<translation id="2191223688506386601">Az utolsó dolog</translation>
 <translation id="2191754378957563929">Be</translation>
 <translation id="2192505247865591433">Innen:</translation>
 <translation id="2193365732679659387">Bizalmi beállítások</translation>
@@ -1708,7 +1707,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3341703758641437857">Fájl URL-ekhez való hozzáférés engedélyezése</translation>
 <translation id="3342361181740736773">A(z) „<ph name="TRIGGERING_EXTENSION_NAME" />” szeretné eltávolítani ezt a bővítményt.</translation>
 <translation id="3345135638360864351">A webhelyhez való hozzáférésre irányuló kérelme nem jutott el <ph name="NAME" /> felhasználóhoz. Kérjük, próbálkozzon újra.</translation>
-<translation id="3345634917232014253">Az imént lefuttatta a biztonsági ellenőrzést</translation>
+<translation id="3345634917232014253">A biztonsági ellenőrzés az imént lefutott</translation>
 <translation id="3345886924813989455">Nem található támogatott böngésző</translation>
 <translation id="3347086966102161372">Képcím más&amp;olása</translation>
 <translation id="3348038390189153836">A rendszer cserélhető eszközt észlelt</translation>
@@ -2567,7 +2566,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4555769855065597957">Árnyék</translation>
 <translation id="4555863373929230635">A jelszavak Google-fiókba való mentéséhez jelentkezzen be, és kapcsolja be a szinkronizálást.</translation>
 <translation id="4558426062282641716">Automatikus indítási engedély kérelmezve</translation>
-<translation id="4558491878126948419">Tippeket kaphat a(z) <ph name="DEVICE_TYPE" /> eszközről, és friss híreket olvashat a Google-termékekkel kapcsolatban, emellett visszajelzést is küldhet. Bármikor leiratkozhat.</translation>
 <translation id="4559617833001311418">Ez a webhely hozzáfér az Ön mozgás- vagy fényérzékelőihez.</translation>
 <translation id="4561893854334016293">Nincsenek nemrégiben módosított engedélyek</translation>
 <translation id="4562155214028662640">Ujjlenyomat hozzáadása</translation>
@@ -2837,7 +2835,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4943691134276646401">A(z) „<ph name="CHROME_EXTENSION_NAME" />” soros porthoz szeretne csatlakozni</translation>
 <translation id="4944310289250773232">Ezt a hitelesítési szolgáltatást a(z) <ph name="SAML_DOMAIN" /> biztosítja</translation>
 <translation id="495170559598752135">Műveletek</translation>
-<translation id="4952981627953231344">A Plugin VM nem engedélyezett ezen az eszközön. Forduljon a szervezet eszközadminisztrátorához.</translation>
 <translation id="4953808748584563296">Alapértelmezett narancssárga avatar</translation>
 <translation id="4955710816792587366">PIN-kód kiválasztása</translation>
 <translation id="4959262764292427323">A jelszavakat Google-fiókjába mentjük, hogy bármelyik eszközén használhassa őket</translation>
@@ -3020,6 +3017,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5233736638227740678">&amp;Beillesztés</translation>
 <translation id="5234764350956374838">Elvetés</translation>
 <translation id="5235050375939235066">Eltávolítja az alkalmazást?</translation>
+<translation id="523505283826916779">Kisegítő beállítások</translation>
 <translation id="5235750401727657667">Új lap megnyitásakor látható oldal cseréje</translation>
 <translation id="5238278114306905396">A(z) „<ph name="EXTENSION_NAME" />” alkalmazás automatikusan törölve.</translation>
 <translation id="5241128660650683457">Az összes adat beolvasása a felkeresett webhelyekről</translation>
@@ -3442,7 +3440,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5804241973901381774">Engedélyek</translation>
 <translation id="5805697420284793859">Ablakkezelő</translation>
 <translation id="5806773519584576205">0° (alapértelmezett)</translation>
-<translation id="5811750797187914944">Minden kész</translation>
 <translation id="5812674658566766066">Az összes kibontása</translation>
 <translation id="5814126672212206791">Csatlakozás típusa</translation>
 <translation id="5815645614496570556">X.400 cím</translation>
@@ -4063,7 +4060,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6680442031740878064">Rendelkezésre álló tárhely: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Értékelés</translation>
 <translation id="6681668084120808868">Fényképkészítés</translation>
-<translation id="6681964764822470072">A(z) „<ph name="APP_NAME" />” el lesz távolítva.</translation>
 <translation id="668599234725812620">A Google Play megnyitása</translation>
 <translation id="6686490380836145850">Jobbra lévő lapok bezárása</translation>
 <translation id="6686817083349815241">Jelszó mentése</translation>
@@ -4645,7 +4641,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7493386493263658176">A(z) <ph name="EXTENSION_NAME" /> bővítmény begyűjtheti az összes Ön által beírt szöveget, így például a személyes adatokat (jelszavakat, hitelkártyaszámokat stb.). Biztosan használni szeretné ezt a bővítményt?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Elfelejtette régi jelszavát?</translation>
-<translation id="7496511874649569424">A(z) <ph name="LINUX_APP_NAME" /> és a hozzá tartozó adatok törlődnek erről az eszközről.</translation>
 <translation id="7496732379142025470">Az akkumulátor üzemidejének növelése érdekében az „Ok Google” csak akkor van bekapcsolva, amikor az eszköz áramforrásra csatlakozik. Ezt a viselkedést a Beállítások menüben módosíthatja.</translation>
 <translation id="7497215489070763236">Szerver CA tanúsítványa</translation>
 <translation id="7497981768003291373">Nincsenek mostanában rögzített szöveges WebRTC-naplói.</translation>

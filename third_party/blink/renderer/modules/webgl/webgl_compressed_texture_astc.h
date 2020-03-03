@@ -12,6 +12,8 @@ namespace blink {
 class WebGLCompressedTextureASTC final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
+  bool supports_hdr;
+
  public:
   typedef struct {
     int compress_type;

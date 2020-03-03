@@ -87,6 +87,9 @@ class MediaHistoryStore {
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
 
+  // Saves a newly discovered media feed in the media history store.
+  void SaveMediaFeed(const GURL& url);
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
 
  protected:

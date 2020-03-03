@@ -109,7 +109,9 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     @Override
     public void setSelected(boolean selected) {
         mDecoratedView.setSelected(selected);
-        mDelegate.onSetUrlToSuggestion();
+        if (selected) {
+            mDelegate.onSetUrlToSuggestion();
+        }
     }
 
     /**

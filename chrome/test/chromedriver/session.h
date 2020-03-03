@@ -125,6 +125,12 @@ struct Session {
   // |DevToolsEventListener|s owned by |chrome|.
   std::vector<std::unique_ptr<CommandListener>> command_listeners;
   bool strict_file_interactability;
+
+  // Temporary capability to enable LaunchApp command
+  // TODO remove with all LaunchApp code in m84.
+  // see https://crbug.com/chromedriver/1778
+  bool enable_launch_app;
+
   std::string unhandled_prompt_behavior;
   int click_count;
   base::TimeTicks mouse_click_timestamp;

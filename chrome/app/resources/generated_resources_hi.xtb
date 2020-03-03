@@ -866,7 +866,6 @@
 <translation id="2190069059097339078">वाई-फ़ाई क्रेडेंशियल प्राप्‍तकर्ता</translation>
 <translation id="219008588003277019">नेटिव क्लाइंट मॉड्यूल: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(खाली)</translation>
-<translation id="2191223688506386601">एक अंतिम बात</translation>
 <translation id="2191754378957563929">चालू है</translation>
 <translation id="2192505247865591433">द्वारा:</translation>
 <translation id="2193365732679659387">विश्‍वास सेटिंग</translation>
@@ -2555,7 +2554,6 @@
 <translation id="4555769855065597957">परछाई</translation>
 <translation id="4555863373929230635">अपने Google खाते में पासवर्ड सेव करने के लिए, साइन इन करें और सिंक करना चालू करें.</translation>
 <translation id="4558426062282641716">अपने-आपलॉन्च अनुमति का अनुरोध किया गया</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> इस्तेमाल करने से जुड़ी सलाह और Google के उत्पादों से जुड़े अपडेट पाएं. साथ ही, अपने सुझाव शेयर करें. जब चाहें सूचनाएं पाना बंद करें.</translation>
 <translation id="4559617833001311418">यह साइट आपके डिवाइस के गति या रोशनी के सेंसर ऐक्सेस कर रही है.</translation>
 <translation id="4562155214028662640">फ़िंगरप्रिंट जोड़ें</translation>
 <translation id="4562494484721939086">कोई सेवा नहीं</translation>
@@ -2822,7 +2820,6 @@
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" किसी सीरियल पोर्ट से कनेक्ट करना चाहता है</translation>
 <translation id="4944310289250773232">यह प्रमाणीकरण सेवा <ph name="SAML_DOMAIN" /> की मदद से होस्ट की गई है</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
-<translation id="4952981627953231344">इस डिवाइस पर Plugin VM को अनुमति नहीं दी गई है. अपने संगठन के डिवाइस एडमिन से संपर्क करें.</translation>
 <translation id="4953808748584563296">डिफ़ॉल्ट नारंगी अवतार</translation>
 <translation id="4955710816792587366">अनलॉक करने के लिए अपना पिन चुनें</translation>
 <translation id="4959262764292427323">पासवर्ड आपके Google खाते में सेव किए जाते हैं ताकि आप किसी भी डिवाइस पर उनका इस्तेमाल कर सकें</translation>
@@ -3003,6 +3000,7 @@
 <translation id="5233736638227740678">&amp;चिपकाएं</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5235050375939235066">ऐप्लिकेशन अनइंस्टॉल करें?</translation>
+<translation id="523505283826916779">सुलभता सेटिंग</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
 <translation id="5241128660650683457">जिन वेबसाइट पर आप जाते हैं, उन पर मौजूद अपना सारा डेटा पढ़ें</translation>
@@ -3421,7 +3419,6 @@
 <translation id="5804241973901381774">अनुमतियां</translation>
 <translation id="5805697420284793859">विंडो मैनेजर</translation>
 <translation id="5806773519584576205">0° (डिफ़ॉल्ट)</translation>
-<translation id="5811750797187914944">पूरी तरह तैयार है</translation>
 <translation id="5812674658566766066">सभी दिखाएं</translation>
 <translation id="5814126672212206791">कनेक्शन का प्रकार</translation>
 <translation id="5815645614496570556">X.400 पता</translation>
@@ -4034,7 +4031,6 @@
 <translation id="6680442031740878064">उपलब्ध: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">दर</translation>
 <translation id="6681668084120808868">फ़ोटो लें</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" अनइंस्टॉल कर दिया जाएगा.</translation>
 <translation id="668599234725812620">Google Play खोलें</translation>
 <translation id="6686490380836145850">दाईं ओर के टैब बंद करें</translation>
 <translation id="6686817083349815241">अपना पासवर्ड सेव करें</translation>
@@ -4613,7 +4609,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> एक्सटेंशन,   लिखे जाने वाले सभी लेख को एकत्र कर सकता है, जिसमें पासवर्ड और क्रेडिट कार्ड नंबर जैसा व्यक्तिगत डेटा भी शामिल है. क्या आप इस एक्सटेंशन का उपयोग करना चाहते हैं?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">क्या आप अपना पुराना पासवर्ड भूल गए हैं?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> और उससे जुड़े डेटा को इस डिवाइस से हटा दिया जाएगा.</translation>
 <translation id="7496732379142025470">बैटरी बचाने के लिए, “Ok Google” सिर्फ़ तब चालू होता है जब आपका डिवाइस चार्जिंग पर लगा होता है. बदलाव करने के लिए, सेटिंग पर जाएं.</translation>
 <translation id="7497215489070763236">सर्वर CA प्रमाणपत्र</translation>
 <translation id="7497981768003291373">आपके पास हाल ही में कैप्चर किया गया कोई WebRTC लेख लॉग नहीं है.</translation>

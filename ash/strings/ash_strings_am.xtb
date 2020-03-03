@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
 <translation id="2135456203358955318">የተተከለ ማጉያ</translation>
 <translation id="2144487987174258011">Adobe Flash Playerን ለማዘመን ዳግም ያስጀምሩ</translation>
-<translation id="2148902151539191989">ይመለሱ</translation>
 <translation id="2208323208084708176">የተዋሃደ የዴስክቶፕ ሁነታ</translation>
 <translation id="2220572644011485463">ፒን ወይም የይለፍ ቃል</translation>
 <translation id="2222338659135520253">በመለያ መግባት ያስፈልጋል</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> በ<ph name="DOMAIN" /> የሚተዳደር ክፍለ-ጊዜ ነው</translation>
 <translation id="2427507373259914951">የግራ ጠቅታ</translation>
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">የይለፍ ቃል አሳይ</translation>
 <translation id="2473177541599297363">ጥራትን ያረጋግጡ</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2484513351006226581">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር <ph name="KEYBOARD_SHORTCUT" />ን ይጫኑ</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">ራስሰር ጠቅታዎች አዝራር</translation>
 <translation id="4215497585250573029">የቪፒኤን ቅንብሮች</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
-<translation id="421885205185866088">ለ <ph name="USER_EMAIL_ADDRESS" /> የዘመናዊ ካርድ ፒን</translation>
 <translation id="4239069858505860023">ጂፒአርኤስ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል።</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ሙሉ እስከሚሆን ድረስ</translation>
 <translation id="4561267230861221837">3ጂ</translation>
+<translation id="4565377596337484307">የይለፍ ቃል ደብቅ</translation>
 <translation id="4570957409596482333">ለመናገር-ይምረጡ አዝራር</translation>
 <translation id="4585337515783392668">ወደ ያልታወቀ ተቀባይ cast ማድረግን አስቁም</translation>
 <translation id="4628757576491864469">መሣሪያዎች</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">ቅጽበታዊ እንደ ሞደም መሰካት</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
+<translation id="54609108002486618">የተቀናበረ</translation>
 <translation id="5465662442746197494">እገዛ አስፈለገዎት?</translation>
 <translation id="5496819745535887422">የእርስዎ አስተዳዳሪ የእርስዎን መሣሪያ እየቀነሰው ነው። መሣሪያው ዳግም እንዲጀምር ሲደረግ ሁሉም ውሂብ ይሰረዛል።</translation>
 <translation id="5519195206574732858">LTE</translation>
@@ -481,6 +482,7 @@
 <translation id="7405710164030118432">መሣሪያውን ለመክፈት የእርስዎን የ Family Link የወላጅ መዳረሻ ኮድ ያስገቡ</translation>
 <translation id="742594950370306541">ካሜራ ስራ ላይ ነው።</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
+<translation id="7466449121337984263">እባክዎ ዳሳሹን ይንኩ</translation>
 <translation id="7497767806359279797">ቋንቋ እና ቁልፍ ሰሌዳን ይምረጡ</translation>
 <translation id="7526573455193969409">አውታረ መረብ ክትትል የሚደረግበት ሊሆን ይችላል</translation>
 <translation id="7536035074519304529">የአይፒ አድራሻ፦ <ph name="ADDRESS" /></translation>

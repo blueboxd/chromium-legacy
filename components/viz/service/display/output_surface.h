@@ -25,6 +25,7 @@
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/surface_origin.h"
 #include "ui/latency/latency_info.h"
 
 namespace gfx {
@@ -38,11 +39,6 @@ namespace viz {
 class OutputSurfaceClient;
 class OutputSurfaceFrame;
 class SkiaOutputSurface;
-
-enum class SurfaceOrigin {
-  kTopLeft,
-  kBottomLeft,
-};
 
 // This class represents a platform-independent API for presenting
 // buffers to display via GPU or software compositing. Implementations
@@ -63,7 +59,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // framebuffer or to an offscreen framebuffer.
     bool uses_default_gl_framebuffer = true;
     // Where (0,0) is on this OutputSurface.
-    SurfaceOrigin output_surface_origin = SurfaceOrigin::kBottomLeft;
+    gfx::SurfaceOrigin output_surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     // Whether this OutputSurface supports stencil operations or not.
     // Note: HasExternalStencilTest() must return false when an output surface
     // has been configured for stencil usage.

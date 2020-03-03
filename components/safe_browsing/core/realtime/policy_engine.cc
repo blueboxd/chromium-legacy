@@ -11,6 +11,10 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 
@@ -69,7 +73,8 @@ bool RealTimePolicyEngine::CanPerformFullURLLookup(PrefService* pref_service,
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
     PrefService* pref_service,
-    bool is_off_the_record) {
+    bool is_off_the_record,
+    syncer::SyncService* sync_service) {
   if (!CanPerformFullURLLookup(pref_service, is_off_the_record)) {
     return false;
   }
@@ -78,9 +83,18 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
     return false;
   }
 
-  // TODO(crbug.com/1041912): Check user sync status.
+  // |sync_service| can be null in Incognito, and also be set to null by a
+  // cmdline param.
+  if (!sync_service) {
+    return false;
+  }
 
-  return true;
+  // Full URL lookup with token is enabled when the user is syncing their
+  // browsing history without a custom passphrase.
+  return syncer::GetUploadToGoogleState(
+             sync_service, syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+             syncer::UploadState::ACTIVE &&
+         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
 }
 
 // static

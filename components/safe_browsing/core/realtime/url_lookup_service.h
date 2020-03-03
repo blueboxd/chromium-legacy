@@ -27,6 +27,10 @@ namespace signin {
 class IdentityManager;
 }
 
+namespace syncer {
+class SyncService;
+}
+
 class PrefService;
 
 namespace safe_browsing {
@@ -48,6 +52,7 @@ class RealTimeUrlLookupService : public KeyedService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       VerdictCacheManager* cache_manager,
       signin::IdentityManager* identity_manager,
+      syncer::SyncService* sync_service,
       PrefService* pref_service,
       bool is_off_the_record);
   ~RealTimeUrlLookupService() override;
@@ -59,6 +64,9 @@ class RealTimeUrlLookupService : public KeyedService {
   // pref settings of the associated profile, whether the profile is an off the
   // record profile and the finch flag.
   bool CanPerformFullURLLookup() const;
+
+  // Returns true if real time URL lookup with token is enabled.
+  bool CanPerformFullURLLookupWithToken() const;
 
   // Returns true if the real time lookups are currently in backoff mode due to
   // too many prior errors. If this happens, the checking falls back to
@@ -158,6 +166,9 @@ class RealTimeUrlLookupService : public KeyedService {
   // Unowned object used for getting access token when real time url check with
   // token is enabled.
   signin::IdentityManager* identity_manager_;
+
+  // Unowned object used for checking sync status of the profile.
+  syncer::SyncService* sync_service_;
 
   // Unowned object used for getting preference settings.
   PrefService* pref_service_;

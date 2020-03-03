@@ -166,10 +166,10 @@ void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
   use_egl_fence_sync_ = false;
 }
 
-bool GbmSurfacelessWayland::FlipsVertically() const {
+gfx::SurfaceOrigin GbmSurfacelessWayland::GetOrigin() const {
   // GbmSurfacelessWayland's y-axis is flipped compare to GL - (0,0) is at top
   // left corner.
-  return true;
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {

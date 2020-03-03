@@ -193,6 +193,7 @@ ci.linux_builder(
 
 ci.mac_builder(
     name = 'Mac Builder',
+    os = os.MAC_10_14,
 )
 
 ci.mac_builder(
@@ -221,6 +222,12 @@ ci.mac_builder(
 ci.mac_builder(
     name = 'Mac10.13 Tests',
     os = os.MAC_10_13,
+    triggered_by = [vars.bucket.builder('Mac Builder')],
+)
+
+ci.mac_builder(
+    name = 'Mac10.14 Tests',
+    os = os.MAC_10_14,
     triggered_by = [vars.bucket.builder('Mac Builder')],
 )
 

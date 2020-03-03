@@ -41,6 +41,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithEditText;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -542,8 +543,14 @@ public class HomepageSettingsFragmentTest {
         // Update the text box. To do this, request focus for customized radio button so that the
         // checked option will be changed.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCustomUriRadioButton.requestFocus();
+            mCustomUriRadioButton.getEditTextForTests().requestFocus();
             mCustomUriRadioButton.setPrimaryText(TEST_URL_FOO);
+        });
+        CriteriaHelper.pollUiThread(new Criteria("EditText never got the focus.") {
+            @Override
+            public boolean isSatisfied() {
+                return mCustomUriRadioButton.getEditTextForTests().isFocused();
+            }
         });
 
         // Radio Button should switched to customized homepage.

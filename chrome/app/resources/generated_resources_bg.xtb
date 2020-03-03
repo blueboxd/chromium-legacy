@@ -866,7 +866,6 @@
 <translation id="2190069059097339078">Получаване на идентификационни данни за Wi-Fi</translation>
 <translation id="219008588003277019">Модул в клиента за директно изпълнение: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(празно)</translation>
-<translation id="2191223688506386601">Само още едно нещо</translation>
 <translation id="2191754378957563929">Включено</translation>
 <translation id="2192505247865591433">От:</translation>
 <translation id="2193365732679659387">Настройки за доверие</translation>
@@ -2567,7 +2566,6 @@
 <translation id="4555769855065597957">Сянка</translation>
 <translation id="4555863373929230635">За да запазвате пароли в профила си в Google, влезте в него и включете синхронизирането.</translation>
 <translation id="4558426062282641716">Изисква се разрешение за автоматично стартиране</translation>
-<translation id="4558491878126948419">Получавайте съвети и актуална информация за <ph name="DEVICE_TYPE" /> и продуктите на Google и споделяйте отзиви. Можете да се отпишете по всяко време.</translation>
 <translation id="4559617833001311418">Този сайт осъществява достъп до сензорите ви за движение или светлина.</translation>
 <translation id="4561893854334016293">Няма наскоро променени разрешения</translation>
 <translation id="4562155214028662640">Добавяне на отпечатък</translation>
@@ -2837,7 +2835,6 @@
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />“ иска да се свърже със сериен порт</translation>
 <translation id="4944310289250773232">Тази услуга за удостоверяване се хоства от <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Действия</translation>
-<translation id="4952981627953231344">Приставката Plugin VM не е разрешена на това устройство. Свържете се с администратора на устройства за организацията си.</translation>
 <translation id="4953808748584563296">Стандартен оранжев аватар</translation>
 <translation id="4955710816792587366">Изберете ПИН код</translation>
 <translation id="4959262764292427323">Паролите се запазват в профила ви в Google, за да можете да ги използвате на всяко устройство</translation>
@@ -3020,6 +3017,7 @@
 <translation id="5233736638227740678">&amp;Поставяне</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5235050375939235066">Да се деинсталира ли приложението?</translation>
+<translation id="523505283826916779">Настройки за достъпност</translation>
 <translation id="5235750401727657667">Замяна на страницата, която виждате, при отваряне на нов раздел</translation>
 <translation id="5238278114306905396">Приложението <ph name="EXTENSION_NAME" /> бе премахнато автоматично.</translation>
 <translation id="5241128660650683457">Четене на всичките ви данни от посещаваните от вас уебсайтове</translation>
@@ -3441,7 +3439,6 @@
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5805697420284793859">Мениджър на прозорците</translation>
 <translation id="5806773519584576205">0° (по подразбиране)</translation>
-<translation id="5811750797187914944">Готово</translation>
 <translation id="5812674658566766066">Разгъване на всички</translation>
 <translation id="5814126672212206791">Тип на връзката</translation>
 <translation id="5815645614496570556">Адрес на X.400</translation>
@@ -4062,7 +4059,6 @@
 <translation id="6680442031740878064">Свободно място: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Скорост</translation>
 <translation id="6681668084120808868">Снимане</translation>
-<translation id="6681964764822470072"><ph name="APP_NAME" /> ще се деинсталира.</translation>
 <translation id="668599234725812620">Отваряне на Google Play</translation>
 <translation id="6686490380836145850">Затваряне на разделите отдясно</translation>
 <translation id="6686817083349815241">Запазване на паролата ви</translation>
@@ -4644,7 +4640,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> може да събира целия въведен от вас текст, включително лични данни, като пароли и номера на кредитни карти. Искате ли да използвате това разширение?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Забравили сте старата си парола?</translation>
-<translation id="7496511874649569424">Приложението <ph name="LINUX_APP_NAME" /> и свързаните с него данни ще бъдат премахнати от това устройство.</translation>
 <translation id="7496732379142025470">С цел икономия на батерия функцията „Ok Google“ е включена само когато устройството е свързано със захранващ източник. За да извършите промени, отворете настройките.</translation>
 <translation id="7497215489070763236">Сертификат от сертифициращ орган за сървъра</translation>
 <translation id="7497981768003291373">Нямате наскоро записани регистрационни файлове за предаване на текст с WebRTC.</translation>

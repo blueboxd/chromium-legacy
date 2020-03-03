@@ -1530,17 +1530,6 @@
           'all',
         ],
       },
-      'Mac10.14 Tests': {
-        'mixins': [
-          'mac_10.14',
-          'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-          'scripts': 'chromium_mac_scripts',
-        },
-      },
       'Mojo Android': {
         'swarming': {
           'dimension_sets': [
@@ -3913,6 +3902,17 @@
             'mac_10.13',
             'no_gpu',
             'code-coverage',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+          'scripts': 'chromium_mac_scripts',
+        },
+      },
+      'Mac10.14 Tests': {
+        'mixins': [
+            'mac_10.14',
+            'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',

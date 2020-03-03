@@ -389,6 +389,8 @@ extern const char kSwitchAccessSubPage[];
 extern const char kTetherSettingsSubPage[];
 extern const char kVPNSettingsSubPage[];
 extern const char kWiFiSettingsSubPage[];
+extern const char kEthernetSettingsSubPage[];
+extern const char kCellularSettingsSubPage[];
 
 // Returns true if the sub-page is one of the above.
 bool IsOSSettingsSubPage(const std::string& sub_page);

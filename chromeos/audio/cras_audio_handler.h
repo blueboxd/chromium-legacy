@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -49,7 +50,8 @@ using VoidCrasAudioHandlerCallback = base::OnceCallback<void(bool result)>;
 class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
     : public CrasAudioClient::Observer,
       public AudioPrefObserver,
-      public media::VideoCaptureObserver {
+      public media::VideoCaptureObserver,
+      public media_session::mojom::MediaControllerObserver {
  public:
   typedef std::
       priority_queue<AudioDevice, std::vector<AudioDevice>, AudioDeviceCompare>
@@ -132,6 +134,19 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // Overrides media::VideoCaptureObserver.
   void OnVideoCaptureStarted(media::VideoFacingMode facing) override;
   void OnVideoCaptureStopped(media::VideoFacingMode facing) override;
+
+  // Overrides media_session::mojom::MediaControllerObserver.
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& actions)
+      override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);
@@ -539,8 +554,16 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
 
+  void BindMediaControllerObserver();
+
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager_;
+
+  mojo::Remote<media_session::mojom::MediaController>
+      media_session_controller_remote_;
+
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver>::Unchecked observers_;

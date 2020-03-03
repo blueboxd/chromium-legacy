@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="2135456203358955318">Usidreno povećalo</translation>
 <translation id="2144487987174258011">Ponovno pokrenite da biste ažurirali Adobe Flash Player</translation>
-<translation id="2148902151539191989">NATRAG</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
 <translation id="2220572644011485463">PIN ili zaporka</translation>
 <translation id="2222338659135520253">Obavezna prijava</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> predstavlja upravljanu sesiju kojom upravlja <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Lijevi klik</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Pokaži zaporku</translation>
 <translation id="2473177541599297363">Potvrđivanje razlučivosti</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" /> da biste promijenili raspored tipkovnice.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Automatski klikovi na gumb</translation>
 <translation id="4215497585250573029">VPN postavke</translation>
 <translation id="4217571870635786043">Diktat</translation>
-<translation id="421885205185866088">PIN pametne kartice za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Prikaz postavki obavijesti. Obavijesti su isključene</translation>
 <translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do potpune napunjenosti</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Sakrij zaporku</translation>
 <translation id="4570957409596482333">Gumb Odabira za govor</translation>
 <translation id="4585337515783392668">Zaustavite emitiranje na nepoznatom prijamniku</translation>
 <translation id="4628757576491864469">Uređaji</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Automatsko modemsko povezivanje</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Svi dostupni korisnici već su dodani ovoj sesiji.</translation>
+<translation id="54609108002486618">Upravljani</translation>
 <translation id="5465662442746197494">Trebate pomoć?</translation>
 <translation id="5496819745535887422">Vaš administrator vraća uređaj na prethodnu verziju sustava. Svi će se podaci izbrisati kada se uređaj ponovo pokrene.</translation>
 <translation id="5519195206574732858">LTE</translation>

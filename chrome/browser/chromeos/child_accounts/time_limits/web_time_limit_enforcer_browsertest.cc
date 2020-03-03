@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
@@ -163,7 +164,8 @@ void WebTimeLimitEnforcerThrottleTest::WhitelistApp(
 }
 
 void WebTimeLimitEnforcerThrottleTest::BlockWeb() {
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached(
+      base::TimeDelta::FromHours(1));
 }
 
 chromeos::app_time::WebTimeLimitEnforcer*
@@ -224,7 +226,7 @@ void WebTimeLimitEnforcerThrottleTest::UpdatePolicy() {
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
                        WebBlockedBeforeBrowser) {
   // Alright let's block the browser.
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
 
@@ -255,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
 
   LoadFinishedWaiter waiter(web_contents, url);
 
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
 
   waiter.Wait();
 
@@ -268,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
                                             "/supervised_user/simple.html");
 
   // Alright let's block the browser.
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   NavigateParams params(browser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -294,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   WhitelistUrlRegx(kExampleHost);
 
   // Alright let's block the browser.
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   NavigateParams params(browser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -312,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
                                             "/supervised_user/simple.html");
 
   // Alright let's block the browser.
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   NavigateParams params(browser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -336,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
 
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   NavigateParams params(browser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -358,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
                        WhitelistedSchemesNotBlockedChrome) {
   GURL url = GURL("chrome://version");
 
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   NavigateParams params(browser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
@@ -401,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   LoadFinishedWaiter waiter1(web_contents1, web_app_url1);
   LoadFinishedWaiter waiter2(web_contents2, web_app_url2);
   LoadFinishedWaiter waiter3(web_contents3, normal_url);
-  GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
+  BlockWeb();
   waiter1.Wait();
   waiter2.Wait();
   waiter3.Wait();

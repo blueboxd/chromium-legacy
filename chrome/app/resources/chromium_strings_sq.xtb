@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Preferencat e tua nuk mund të lexohen.
 
 Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruhen.</translation>
+<translation id="1098170124587656448">Chromium mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, shtesat e papërshtatshme etj.</translation>
 <translation id="1104942323762546749">Chromium dëshiron të eksportojë fjalëkalimet e tua. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="113122355610423240">Chromium është shfletuesi yt i parazgjedhur</translation>
 <translation id="1185134272377778587">Rreth Chromium</translation>
@@ -69,6 +70,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Personalizo dhe kontrollo Chromium. Diçka ka nevojë për vëmendjen tënde - kliko për detaje.</translation>
 <translation id="3889543394854987837">Kliko emrin tënd për të hapur Chromium dhe fillo shfletimin.</translation>
+<translation id="3945058413678539331">Chromium po përpiqet të kopjojë fjalëkalimet. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="4036079820698952681">Ndihmo në përmirësimin e Chromium duke raportuar <ph name="BEGIN_LINK" />cilësimet aktuale<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Përmirësime të rëndësishme sigurie dhe funksione të reja ofrohen në versionin e fundit.</translation>
 <translation id="421369550622382712">Zbulo aplikacione, lojëra, shtesa dhe tema të mrekullueshme për Chromium.</translation>
@@ -191,6 +193,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8013436988911883588">Pasi Chromium të ketë qasje, sajtet e uebit do të jenë në gjendje të kërkojnë prej teje qasje.</translation>
 <translation id="81770708095080097">Ky skedar është i rrezikshëm, prandaj Chromium e ka bllokuar.</translation>
 <translation id="8248265253516264921">Nëse një imazh nuk ka një përshkrim të dobishëm, Chromium do të përpiqet të të japë një përshkrim. Për të krijuar përshkrime, imazhet dërgohen te Google. Këtë mund ta çaktivizosh te cilësimet në çdo moment.</translation>
+<translation id="8276522524898344151">Chromium po përpiqet të kopjojë fjalëkalimet.</translation>
 <translation id="8290862415967981663">Ky skedar mund të jetë i rrezikshëm, prandaj Chromium e ka bllokuar.</translation>
 <translation id="8330519371938183845">Identifikohu për të sinkronizuar dhe personalizuar Chromium nëpër pajisjet e tua</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> ka përdorur më parë Chromium</translation>

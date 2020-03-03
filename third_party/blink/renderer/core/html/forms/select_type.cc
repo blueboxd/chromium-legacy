@@ -68,7 +68,7 @@ class MenuListSelectType final : public SelectType {
   void DidSelectOption(HTMLOptionElement* element,
                        HTMLSelectElement::SelectOptionFlags flags,
                        bool should_update_popup) override;
-  void DispatchEventsIfSelectedOptionChanged() override;
+  void DidBlur() override;
 
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
@@ -81,7 +81,7 @@ class MenuListSelectType final : public SelectType {
   bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent& event);
   // Returns true if this function handled the event.
   bool HandlePopupOpenKeyboardEvent();
-
+  void DispatchEventsIfSelectedOptionChanged();
   String UpdateTextStyleInternal();
   void DidUpdateActiveOption(HTMLOptionElement* option);
 
@@ -293,6 +293,16 @@ void MenuListSelectType::DispatchEventsIfSelectedOptionChanged() {
     select_->DispatchInputEvent();
     select_->DispatchChangeEvent();
   }
+}
+
+void MenuListSelectType::DidBlur() {
+  // We only need to fire change events here for menu lists, because we fire
+  // change events for list boxes whenever the selection change is actually
+  // made.  This matches other browsers' behavior.
+  DispatchEventsIfSelectedOptionChanged();
+  if (select_->PopupIsVisible())
+    select_->HidePopup();
+  SelectType::DidBlur();
 }
 
 String MenuListSelectType::UpdateTextStyleInternal() {
@@ -723,7 +733,9 @@ void SelectType::DidSelectOption(HTMLOptionElement*,
   select_->SetNeedsValidityCheck();
 }
 
-void SelectType::DispatchEventsIfSelectedOptionChanged() {}
+void SelectType::DidBlur() {
+  select_->last_on_change_selection_.clear();
+}
 
 void SelectType::UpdateTextStyle() {}
 

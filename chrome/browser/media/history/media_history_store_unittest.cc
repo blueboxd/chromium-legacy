@@ -12,7 +12,9 @@
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
@@ -20,6 +22,7 @@
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/media_position.h"
@@ -131,6 +134,7 @@ TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
   ASSERT_TRUE(GetDB().DoesTableExist("sessionImage"));
   ASSERT_TRUE(GetDB().DoesTableExist("mediaImage"));
+  ASSERT_FALSE(GetDB().DoesTableExist("mediaFeed"));
 }
 
 TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
@@ -348,6 +352,59 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
   EXPECT_GE(url_alt_after, origins[1]->last_updated_time);
   EXPECT_EQ(origins[1]->cached_audio_video_watchtime,
             origins[1]->actual_audio_video_watchtime);
+}
+
+TEST_F(MediaHistoryStoreUnitTest, SaveMediaFeed_Noop) {
+  GetMediaHistoryStore()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  content::RunAllTasksUntilIdle();
+
+  {
+    // Check the feeds were not recorded.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_FALSE(base::Contains(stats->table_row_counts,
+                                MediaHistoryFeedsTable::kTableName));
+  }
+}
+
+// Runs the tests with the media feeds feature enabled.
+class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
+ public:
+  void SetUp() override {
+    features_.InitAndEnableFeature(media::kMediaFeeds);
+    MediaHistoryStoreUnitTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+TEST_F(MediaHistoryStoreFeedsTest, CreateDatabaseTables) {
+  ASSERT_TRUE(GetDB().DoesTableExist("mediaFeed"));
+}
+
+TEST_F(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
+  GURL url_a("https://www.google.com/feed");
+  GURL url_b("https://www.google.co.uk/feed");
+  GURL url_c("https://www.google.com/feed2");
+
+  GetMediaHistoryStore()->SaveMediaFeed(url_a);
+  GetMediaHistoryStore()->SaveMediaFeed(url_b);
+  content::RunAllTasksUntilIdle();
+
+  {
+    // Check the feeds were recorded.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+  }
+
+  GetMediaHistoryStore()->SaveMediaFeed(url_c);
+  content::RunAllTasksUntilIdle();
+
+  {
+    // Check the feeds were recorded.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
+  }
 }
 
 }  // namespace media_history

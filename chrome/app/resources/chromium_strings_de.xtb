@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
+<translation id="1098170124587656448">Chromium kann dazu beitragen, Sie beispielsweise vor Datenpannen und schädlichen Erweiterungen zu schützen</translation>
 <translation id="1104942323762546749">Chromium möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="113122355610423240">Chromium ist Ihr Standardbrowser</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
@@ -67,6 +68,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Sie können Chromium anpassen und Einstellungen festlegen. Etwas erfordert Ihre Aufmerksamkeit – klicken Sie, um mehr zu erfahren.</translation>
 <translation id="3889543394854987837">Klicken Sie auf Ihren Namen, um Chromium zu öffnen und im Web zu surfen.</translation>
+<translation id="3945058413678539331">Chromium versucht, Passwörter zu kopieren. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="4036079820698952681">Helfen Sie uns mit Ihrem Feedback zu den <ph name="BEGIN_LINK" />aktuellen Einstellungen<ph name="END_LINK" /> bei der Verbesserung von Chromium</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="421369550622382712">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Chromium.</translation>
@@ -188,6 +190,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8248265253516264921">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Damit entsprechende Beschreibungen erstellt werden können, werden die Bilder an Google gesendet. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
+<translation id="8276522524898344151">Chromium versucht, Passwörter zu kopieren.</translation>
 <translation id="8290862415967981663">Diese Datei ist eventuell schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8330519371938183845">Wenn Sie sich anmelden, wird Chromium auf allen Ihren Geräten synchronisiert und personalisiert</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> hat zuvor Chromium verwendet</translation>

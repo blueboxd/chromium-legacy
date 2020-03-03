@@ -36,9 +36,10 @@ WebTimeLimitEnforcer::WebTimeLimitEnforcer(
 
 WebTimeLimitEnforcer::~WebTimeLimitEnforcer() = default;
 
-void WebTimeLimitEnforcer::OnWebTimeLimitReached() {
+void WebTimeLimitEnforcer::OnWebTimeLimitReached(base::TimeDelta time_limit) {
   if (chrome_blocked_)
     return;
+  time_limit_ = time_limit;
 
   chrome_blocked_ = true;
   ReloadAllWebContents();
@@ -48,6 +49,7 @@ void WebTimeLimitEnforcer::OnWebTimeLimitEnded() {
   if (!chrome_blocked_)
     return;
 
+  time_limit_ = base::TimeDelta();
   chrome_blocked_ = false;
   ReloadAllWebContents();
 }

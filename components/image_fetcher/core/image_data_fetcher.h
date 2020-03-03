@@ -42,7 +42,8 @@ class ImageDataFetcher {
 
   // Fetches the raw image bytes from the given |image_url| and calls the given
   // |callback|. The callback is run even if fetching the URL fails. In case
-  // of an error an empty string is passed to the callback.
+  // of an error an empty string is passed to the callback. Won't return
+  // synchronously.
   void FetchImageData(const GURL& image_url,
                       ImageDataFetcherCallback callback,
                       ImageFetcherParams params,

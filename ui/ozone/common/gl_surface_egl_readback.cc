@@ -62,8 +62,8 @@ gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(
   return swap_result;
 }
 
-bool GLSurfaceEglReadback::FlipsVertically() const {
-  return true;
+gfx::SurfaceOrigin GLSurfaceEglReadback::GetOrigin() const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 GLSurfaceEglReadback::~GLSurfaceEglReadback() {

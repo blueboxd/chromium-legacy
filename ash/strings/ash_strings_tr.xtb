@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="2135456203358955318">Yerleştirilmiş büyüteç</translation>
 <translation id="2144487987174258011">Adobe Flash Player'ı güncellemek için yeniden başlatın</translation>
-<translation id="2148902151539191989">GERİ</translation>
 <translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
 <translation id="2220572644011485463">PIN veya şifre</translation>
 <translation id="2222338659135520253">Oturum açılması gerekiyor</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" />, <ph name="DOMAIN" /> tarafından yönetilen bir oturumdur</translation>
 <translation id="2427507373259914951">Sol tıklama</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="2473177541599297363">Çözünürlüğü Onayla</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2484513351006226581">Klavye düzenini değiştirmek için <ph name="KEYBOARD_SHORTCUT" /> tuşlarına basın.</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">Otomatik tıklamalar düğmesi</translation>
 <translation id="4215497585250573029">VPN Ayarları</translation>
 <translation id="4217571870635786043">Dikte</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> için akıllı kart PIN'i</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Bildirim ayarlarını göster. Bildirimler kapalı</translation>
 <translation id="4269883910223712419">Bu cihazın yöneticisi şunları yapabilir:</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor.</translation>
 <translation id="453661520163887813">Dolmasına <ph name="TIME" /> var</translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">Şifreyi gizle</translation>
 <translation id="4570957409596482333">Seç ve Dinle düğmesi</translation>
 <translation id="4585337515783392668">Bilinmeyen bir alıcıya yayını durdur</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">Anında Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
+<translation id="54609108002486618">Yönetilen</translation>
 <translation id="5465662442746197494">Yardıma mı ihtiyacınız var?</translation>
 <translation id="5496819745535887422">Yöneticiniz cihazınızı ilk haline döndürüyor. Cihaz yeniden başlatıldığında tüm veriler silinecektir.</translation>
 <translation id="5519195206574732858">LTE</translation>

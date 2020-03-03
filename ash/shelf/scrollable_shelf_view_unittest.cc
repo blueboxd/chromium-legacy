@@ -502,17 +502,25 @@ class HotseatScrollableShelfViewTest : public ScrollableShelfViewTest {
     scoped_feature_list_.Reset();
   }
 
-  bool HasRoundedCornersOnLongTapAtLocation(gfx::Point location) {
-    GetEventGenerator()->MoveTouch(location);
-    GetEventGenerator()->PressTouch();
+  bool HasRoundedCornersOnAppButtonAfterMouseRightClick(
+      ShelfAppButton* button) {
+    const gfx::Point location_within_button =
+        button->GetBoundsInScreen().CenterPoint();
+    GetEventGenerator()->MoveMouseTo(location_within_button);
+    GetEventGenerator()->ClickRightButton();
+
+    ui::Layer* layer = scrollable_shelf_view_->shelf_container_view()->layer();
 
     // The gfx::RoundedCornersF object is considered empty when all of the
     // corners are squared (no effective radius).
-    bool has_rounded_corners = !(scrollable_shelf_view_->shelf_container_view()
-                                     ->layer()
-                                     ->rounded_corner_radii()
-                                     .IsEmpty());
-    GetEventGenerator()->ReleaseTouch();
+    const bool has_rounded_corners = !(layer->rounded_corner_radii().IsEmpty());
+
+    // Click outside of |button|. Expects that the rounded corners should always
+    // be empty.
+    GetEventGenerator()->GestureTapAt(
+        button->GetBoundsInScreen().bottom_center());
+    EXPECT_TRUE(layer->rounded_corner_radii().IsEmpty());
+
     return has_rounded_corners;
   }
 
@@ -610,29 +618,20 @@ TEST_F(HotseatScrollableShelfViewTest, CheckRoundedCornersSetForInkDrop) {
                   ->rounded_corner_radii()
                   .IsEmpty());
 
-  views::ViewModel* view_model = shelf_view_->view_model();
-  gfx::Rect first_tappable_view_bounds =
-      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index())
-          ->GetBoundsInScreen();
-  gfx::Rect last_tappable_view_bounds =
-      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index())
-          ->GetBoundsInScreen();
+  ShelfViewTestAPI shelf_view_test_api(shelf_view_);
+
+  ShelfAppButton* first_icon = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->first_tappable_app_index());
+  ShelfAppButton* last_icon = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->last_tappable_app_index());
 
   // When the right arrow is showing, check rounded corners are set if the ink
   // drop is visible for the first visible app.
-  EXPECT_TRUE(HasRoundedCornersOnLongTapAtLocation(
-      first_tappable_view_bounds.CenterPoint()));
-  // Tap outside the app and verify that rounded corners are not set if the ink
-  // drop is hidden.
-  GetEventGenerator()->GestureTapAt(first_tappable_view_bounds.bottom_center());
-  EXPECT_TRUE(scrollable_shelf_view_->shelf_container_view()
-                  ->layer()
-                  ->rounded_corner_radii()
-                  .IsEmpty());
+  EXPECT_TRUE(HasRoundedCornersOnAppButtonAfterMouseRightClick(first_icon));
+
   // When the right arrow is showing, check rounded corners are not set if the
   // ink drop is visible for the last visible app
-  EXPECT_FALSE(HasRoundedCornersOnLongTapAtLocation(
-      last_tappable_view_bounds.CenterPoint()));
+  EXPECT_FALSE(HasRoundedCornersOnAppButtonAfterMouseRightClick(last_icon));
 
   // Tap right arrow. Hotseat layout must now show left arrow.
   gfx::Rect right_arrow =
@@ -641,29 +640,19 @@ TEST_F(HotseatScrollableShelfViewTest, CheckRoundedCornersSetForInkDrop) {
   ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
 
-  // Recalculate first and last view bounds.
-  first_tappable_view_bounds =
-      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index())
-          ->GetBoundsInScreen();
-  last_tappable_view_bounds =
-      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index())
-          ->GetBoundsInScreen();
+  // Recalculate first and last icons.
+  first_icon = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->first_tappable_app_index());
+  last_icon = shelf_view_test_api.GetButton(
+      scrollable_shelf_view_->last_tappable_app_index());
 
   // When the left arrow is showing, check rounded corners are set if the ink
   // drop is visible for the last visible app.
-  EXPECT_TRUE(HasRoundedCornersOnLongTapAtLocation(
-      last_tappable_view_bounds.CenterPoint()));
-  // Tap outside the app and verify that rounded corners are not set if the ink
-  // drop is hidden.
-  GetEventGenerator()->GestureTapAt(last_tappable_view_bounds.bottom_center());
-  EXPECT_TRUE(scrollable_shelf_view_->shelf_container_view()
-                  ->layer()
-                  ->rounded_corner_radii()
-                  .IsEmpty());
+  EXPECT_TRUE(HasRoundedCornersOnAppButtonAfterMouseRightClick(last_icon));
+
   // When the left arrow is showing, check rounded corners are not set if the
   // ink drop is visible for the first visible app
-  EXPECT_FALSE(HasRoundedCornersOnLongTapAtLocation(
-      first_tappable_view_bounds.CenterPoint()));
+  EXPECT_FALSE(HasRoundedCornersOnAppButtonAfterMouseRightClick(first_icon));
 }
 
 // Verifies that doing a mousewheel scroll on the scrollable shelf does scroll

@@ -9,6 +9,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
@@ -258,47 +259,52 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
-        ActivateUnderneathWindowInSplitViewMode(
-            back_start_location_, dragged_from_splitview_divider_);
-        auto* top_window_state =
-            WindowState::Get(TabletModeWindowManager::GetTopWindow());
-        if (top_window_state && top_window_state->IsFullscreen() &&
-            !Shell::Get()->overview_controller()->InOverviewSession()) {
-          // For fullscreen ARC apps, show the hotseat and shelf on the first
-          // back swipe, and send a back event on the second back swipe. For
-          // other fullscreen apps, exit fullscreen.
-          const bool arc_app =
-              top_window_state->window()->GetProperty(aura::client::kAppType) ==
-              static_cast<int>(AppType::ARC_APP);
-          if (arc_app) {
-            // Go back to the previous page if the shelf was already shown,
-            // otherwise record as showing shelf.
-            if (Shelf::ForWindow(top_window_state->window())->IsVisible()) {
-              SendBackEvent(screen_location);
-            } else {
-              Shelf::ForWindow(top_window_state->window())
-                  ->shelf_layout_manager()
-                  ->UpdateVisibilityStateForBackGesture();
-              RecordEndScenarioType(
-                  BackGestureEndScenarioType::kShowShelfAndHotseat);
-            }
-          } else {
-            // Complete as exiting the fullscreen mode of the underneath
-            // window.
-            const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-            top_window_state->OnWMEvent(&event);
-            RecordEndScenarioType(BackGestureEndScenarioType::kExitFullscreen);
-          }
-        } else if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
-          // Complete as minimizing the underneath window.
-          top_window_state->Minimize();
-          RecordEndScenarioType(
-              GetEndScenarioType(back_gesture_start_scenario_type_,
-                                 BackGestureEndType::kMinimize));
+        if (KeyboardController::Get()->IsKeyboardVisible()) {
+          KeyboardController::Get()->HideKeyboard(HideReason::kUser);
         } else {
-          // Complete as going back to the previous page of the underneath
-          // window.
-          SendBackEvent(screen_location);
+          ActivateUnderneathWindowInSplitViewMode(
+              back_start_location_, dragged_from_splitview_divider_);
+          auto* top_window_state =
+              WindowState::Get(TabletModeWindowManager::GetTopWindow());
+          if (top_window_state && top_window_state->IsFullscreen() &&
+              !Shell::Get()->overview_controller()->InOverviewSession()) {
+            // For fullscreen ARC apps, show the hotseat and shelf on the first
+            // back swipe, and send a back event on the second back swipe. For
+            // other fullscreen apps, exit fullscreen.
+            const bool arc_app = top_window_state->window()->GetProperty(
+                                     aura::client::kAppType) ==
+                                 static_cast<int>(AppType::ARC_APP);
+            if (arc_app) {
+              // Go back to the previous page if the shelf was already shown,
+              // otherwise record as showing shelf.
+              if (Shelf::ForWindow(top_window_state->window())->IsVisible()) {
+                SendBackEvent(screen_location);
+              } else {
+                Shelf::ForWindow(top_window_state->window())
+                    ->shelf_layout_manager()
+                    ->UpdateVisibilityStateForBackGesture();
+                RecordEndScenarioType(
+                    BackGestureEndScenarioType::kShowShelfAndHotseat);
+              }
+            } else {
+              // Complete as exiting the fullscreen mode of the underneath
+              // window.
+              const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
+              top_window_state->OnWMEvent(&event);
+              RecordEndScenarioType(
+                  BackGestureEndScenarioType::kExitFullscreen);
+            }
+          } else if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+            // Complete as minimizing the underneath window.
+            top_window_state->Minimize();
+            RecordEndScenarioType(
+                GetEndScenarioType(back_gesture_start_scenario_type_,
+                                   BackGestureEndType::kMinimize));
+          } else {
+            // Complete as going back to the previous page of the underneath
+            // window.
+            SendBackEvent(screen_location);
+          }
         }
         back_gesture_affordance_->Complete();
         if (features::AreContextualNudgesEnabled()) {

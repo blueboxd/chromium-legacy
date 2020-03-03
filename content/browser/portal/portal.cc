@@ -271,15 +271,9 @@ void TakeHistoryForActivation(WebContentsImpl* activated_contents,
   NavigationControllerImpl& predecessor_controller =
       predecessor_contents->GetController();
 
+  DCHECK(predecessor_controller.GetLastCommittedEntry());
   // Activation would have discarded any pending entry in the host contents.
   DCHECK(!predecessor_controller.GetPendingEntry());
-
-  // If the predecessor has no committed entries (e.g. by using window.open()
-  // and then activating a portal from about:blank), there's nothing to do here.
-  // TODO(mcnee): This should also be disallowed.
-  if (!predecessor_controller.GetLastCommittedEntry()) {
-    return;
-  }
 
   // TODO(mcnee): Determine how to deal with a transient entry.
   if (predecessor_controller.GetTransientEntry() ||

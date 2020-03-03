@@ -1265,8 +1265,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
 
 WebContentsAccessibilityAndroid*
 RenderWidgetHostViewAndroid::GetWebContentsAccessibilityAndroid() const {
-  return static_cast<WebContentsAccessibilityAndroid*>(
-      web_contents_accessibility_);
+  return web_contents_accessibility_;
 }
 
 void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
@@ -1646,9 +1645,10 @@ BrowserAccessibilityManager*
 RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate,
     bool for_root_frame) {
+  auto* wcax = GetWebContentsAccessibilityAndroid();
   return new BrowserAccessibilityManagerAndroid(
       BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
-      for_root_frame && host() ? GetWebContentsAccessibilityAndroid() : nullptr,
+      for_root_frame && host() && wcax ? wcax->GetWeakPtr() : nullptr,
       delegate);
 }
 

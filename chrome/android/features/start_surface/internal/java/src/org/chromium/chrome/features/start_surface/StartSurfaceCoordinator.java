@@ -195,9 +195,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         mPropertyModel.set(TOP_BAR_HEIGHT,
                 mActivity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow));
 
+        boolean hasMVTiles = mSurfaceMode == SurfaceMode.SINGLE_PANE
+                || mSurfaceMode == SurfaceMode.TWO_PANES || mSurfaceMode == SurfaceMode.TASKS_ONLY;
         mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                 mPropertyModel, mActivity.getToolbarManager().getFakeboxDelegate(),
-                mSurfaceMode == SurfaceMode.SINGLE_PANE);
+                mSurfaceMode == SurfaceMode.SINGLE_PANE, hasMVTiles);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
@@ -228,17 +230,10 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
-        mSecondaryTasksSurface =
-                TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
-                        propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false);
-
-        // Call mSecondaryTasksSurface.initialize because some components needed to wait until
-        // after native is initialized. However, the secondary tasks surface will never show MV
-        // tiles.
-        // TODO(crbug.com/1041047): Remove constructing of the MV tiles from the
-        // TasksSurfaceCoordinator.
+        mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
+                mActivity, propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false,
+                false);
         mSecondaryTasksSurface.initialize();
-
         mSecondaryTasksSurface.getView().setId(R.id.secondary_tasks_surface_view);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mPropertyModel,

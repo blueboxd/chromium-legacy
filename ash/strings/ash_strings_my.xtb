@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">ပါဝါနိမ့် အားသွင်းစက်</translation>
 <translation id="2135456203358955318">နေရာချထားသည့် မှန်ဘီလူး</translation>
 <translation id="2144487987174258011">Adobe Flash Player ကို အပ်ဒိတ်လုပ်ရန် ပြန်စပါ</translation>
-<translation id="2148902151539191989">နောက်သို့</translation>
 <translation id="2208323208084708176">တစ်စုတစ်စည်းတည်းပြ ဒက်စတော့ မုဒ်</translation>
 <translation id="2220572644011485463">ပင်နံပါတ် သို့မဟုတ် စကားဝှက်</translation>
 <translation id="2222338659135520253">လက်မှတ်ထိုးဝင်ရန် လိုအပ်သည်</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> သည် <ph name="DOMAIN" /> ကကြီးကြပ်ထားသည့် စက်ရှင်ဖြစ်သည်</translation>
 <translation id="2427507373259914951">ဘယ်ဘက်ခလုတ်ကို နှိပ်ရန်</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" ဘလူးတုရှ် စက်ပစ္စည်းသည် တွဲရန်ခွင့်ပြုချက် လိုသည်။ လက်မခံမှီ၊ ဤလျှို့ဝှက်ကီးသည် ၎င်း၏မျက်နှာပြင်ပေါ်တွင် ပေါ်မပေါ် ကျေးဇူးပြု၍ အတည်ပြုပါ: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">စကားဝှက်ကို ပြပါ</translation>
 <translation id="2473177541599297363">ပုံရိပ်ပြတ်သားကိန်း အတည်ပြုခြင်း</translation>
 <translation id="2482878487686419369">အကြောင်းကြားချက်များ</translation>
 <translation id="2484513351006226581">ကီးဘုတ်လက်ကွက် ပြောင်းရန် <ph name="KEYBOARD_SHORTCUT" /> ကို နှိပ်ပါ။</translation>
@@ -255,7 +255,6 @@
 <translation id="4195877955194704651">အလိုအလျောက် နှိပ်ခလုတ်</translation>
 <translation id="4215497585250573029">VPN ဆက်တင်များ</translation>
 <translation id="4217571870635786043">အသံထွက်၍ ဖတ်ပေးခြင်း</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> အတွက် အဆင့်မြင့်ကတ် ပင်နံပါတ်</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">အကြောင်းကြားချက်ဆက်တင်များကို ပြရန်။ အကြောင်းကြားချက်များကို ပိတ်ထားသည်</translation>
 <translation id="4269883910223712419">ဤစက်ပစ္စည်း၏ စီမံခန့်ခွဲသူသည် အောက်ပါတို့ကို လုပ်နိုင်သည်−</translation>
@@ -285,6 +284,7 @@
 <translation id="4527045527269911712">ဘလူးတုသ် ကိရိယာ "<ph name="DEVICE_NAME" />" က ချိတ်တွဲရန် ခွင့်ပြုချက် ရယူလိုသည်။</translation>
 <translation id="453661520163887813">ပြည့်သည်အထိ <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">စကားဝှက်ကို ဖျောက်ရန်</translation>
 <translation id="4570957409596482333">'စကားပြောရွေးရန်' ခလုတ်</translation>
 <translation id="4585337515783392668">အမည်မသိ လက်ခံစက်သို့ ကာ့စ်လုပ်ခြင်း ရပ်တန့်ရန်</translation>
 <translation id="4628757576491864469">စက်ပစ္စည်းများ</translation>
@@ -336,6 +336,7 @@
 <translation id="5430931332414098647">အမြန်ချိတ်ဆက်မျှဝေခြင်း</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">အသုံးပြုနိုင်သူ အားလုံးအား ဤ ကဏ္ဍသို့ ပေါင်းထည့်ပြီး ဖြစ်၏။</translation>
+<translation id="54609108002486618">ကြီးကြပ်ထားသည်</translation>
 <translation id="5465662442746197494">အကူအညီ လိုပါသလား?</translation>
 <translation id="5496819745535887422">စီမံခန့်ခွဲသူသည် သင့်စက်ပစ္စည်းကို ယခင်အခြေအနေသို့ရောက်အောင် ပြန်လည်သွင်းယူနေပါသည်။ စက်ပစ္စည်းကို ပြန်လည်စတင်လိုက်သည့်အခါ ဒေတာများအားလုံးကို ဖျက်လိုက်ပါမည်။</translation>
 <translation id="5519195206574732858">LTE</translation>

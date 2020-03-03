@@ -869,7 +869,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2190069059097339078">Pripomoček za pridobivanje poverilnic za WiFi</translation>
 <translation id="219008588003277019">Modul »Native Client«: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(prazno)</translation>
-<translation id="2191223688506386601">Še zadnja stvar</translation>
 <translation id="2191754378957563929">Vklopljeno</translation>
 <translation id="2192505247865591433">Iz:</translation>
 <translation id="2193365732679659387">Nastavitve zaupanja</translation>
@@ -2568,7 +2567,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4555769855065597957">Senca</translation>
 <translation id="4555863373929230635">Če želite shraniti gesla v račun Google, se prijavite in vklopite sinhronizacijo.</translation>
 <translation id="4558426062282641716">Zahtevano je dovoljenje za samodejni zagon</translation>
-<translation id="4558491878126948419">Prejemajte nasvete za <ph name="DEVICE_TYPE" />, novice o Googlovih izdelkih in pošiljajte povratne informacije. Odjavite se lahko kadar koli.</translation>
 <translation id="4559617833001311418">To spletno mesto dostopa do tipal gibanja ali svetlobe.</translation>
 <translation id="4561893854334016293">Ni nedavno spremenjenih dovoljenj</translation>
 <translation id="4562155214028662640">Dodaj prstni odtis</translation>
@@ -2838,7 +2836,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4943691134276646401">»<ph name="CHROME_EXTENSION_NAME" />« se želi povezati z zaporednimi vrati</translation>
 <translation id="4944310289250773232">Storitev preverjanja pristnosti gosti <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Dejanja</translation>
-<translation id="4952981627953231344">Plugin VM ni dovoljen v tej napravi. Obrnite se na skrbnika naprave v organizaciji.</translation>
 <translation id="4953808748584563296">Privzeti oranžni avatar</translation>
 <translation id="4955710816792587366">Izberite kodo PIN</translation>
 <translation id="4959262764292427323">Gesla so shranjena v Google Računu, da jih lahko uporabite v kateri koli napravi</translation>
@@ -3021,6 +3018,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5233736638227740678">&amp;Prilepi</translation>
 <translation id="5234764350956374838">Opusti</translation>
 <translation id="5235050375939235066">Želite odstraniti aplikacijo?</translation>
+<translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="5235750401727657667">Zamenjaj prikazano stran pri odpiranju novega zavihka</translation>
 <translation id="5238278114306905396">Aplikacija »<ph name="EXTENSION_NAME" />« je bila samodejno odstranjena.</translation>
 <translation id="5241128660650683457">Branje vseh vaših podatkov na spletnih mestih, ki jih obiščete</translation>
@@ -3443,7 +3441,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5805697420284793859">Upravitelj oken</translation>
 <translation id="5806773519584576205">0° (privzeto)</translation>
-<translation id="5811750797187914944">Vse je pripravljeno</translation>
 <translation id="5812674658566766066">Razširi vse</translation>
 <translation id="5814126672212206791">Vrsta povezave</translation>
 <translation id="5815645614496570556">Naslov X.400</translation>
@@ -4032,7 +4029,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6635956300022133031">Izbira in prilagajanje glasov za pretvorbo besedila v govor</translation>
 <translation id="6639554308659482635">Pomnilnik SQLite</translation>
 <translation id="6641138807883536517">Naključno ustvarjeno geslo za varni modul ni na voljo. To je običajno po izvedbi funkcije Powerwash.</translation>
-<translation id="6642720633335369752">Če si želite ogledati vsa odprta okna aplikacije, s prstom povlecite z dna zaslona navzgor in pridržite.</translation>
+<translation id="6642720633335369752">Če si želite ogledati okna vseh odprtih aplikacij, s prstom povlecite z dna zaslona navzgor in pridržite.</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6644512095122093795">Ponudi shranjevanje gesel</translation>
 <translation id="6644513150317163574">Neveljavna oblika URL-ja. Če se uporablja preverjanje pristnosti z enotno prijavo, mora biti strežnik naveden kot gostitelj.</translation>
@@ -4064,7 +4061,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6680442031740878064">Na voljo: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Hitrost</translation>
 <translation id="6681668084120808868">Posnemi fotografijo</translation>
-<translation id="6681964764822470072">Aplikacija »<ph name="APP_NAME" />« bo odstranjena.</translation>
 <translation id="668599234725812620">Odpiranje Googla Play</translation>
 <translation id="6686490380836145850">Zapri zavihke na desni</translation>
 <translation id="6686817083349815241">Shranite geslo</translation>
@@ -4646,7 +4642,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7493386493263658176">Razširitev <ph name="EXTENSION_NAME" /> bo morda lahko beležila vse besedilo, ki ga vnesete, vključno z osebnimi podatki, kot so gesla in številke kreditnih kartic. Ali jo želite uporabiti?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Ste pozabili staro geslo?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> in podatki, povezani s to aplikacijo, bodo odstranjeni iz te naprave.</translation>
 <translation id="7496732379142025470">Zaradi varčevanja z energijo akumulatorja je sprožilna beseda »Ok Google« vklopljena samo, ko je naprava priklopljena v vir napajanja. Če želite opraviti spremembe, odprite nastavitve.</translation>
 <translation id="7497215489070763236">Strežniško overjeno potrdilo</translation>
 <translation id="7497981768003291373">Nimate nedavno zajetih besedilnih dnevnikov za WebRTC.</translation>

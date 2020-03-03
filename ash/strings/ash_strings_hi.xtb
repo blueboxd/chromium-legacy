@@ -96,7 +96,6 @@
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
 <translation id="2144487987174258011">Adobe Flash Player को अपडेट करने के लिए रीस्टार्ट करें</translation>
-<translation id="2148902151539191989">वापस जाएं</translation>
 <translation id="2208323208084708176">संयुक्त डेस्कटॉप मोड</translation>
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
 <translation id="2222338659135520253">साइन इन करना ज़रूरी है</translation>
@@ -120,6 +119,7 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ऐसा प्रबंधित सत्र है जिसका प्रबंधन <ph name="DOMAIN" /> करते हैं</translation>
 <translation id="2427507373259914951">बायां क्लिक</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" जोड़ने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया पुष्टि करें कि यह पासकी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
+<translation id="2435457462613246316">पासवर्ड दिखाएं</translation>
 <translation id="2473177541599297363">रिज़ॉल्यूशन की पुष्टि करें</translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
@@ -256,7 +256,6 @@
 <translation id="4195877955194704651">अपने-आप क्लिक बटन</translation>
 <translation id="4215497585250573029">वीपीएन की सेटिंग</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
-<translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> के लिए स्मार्ट कार्ड पिन</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
@@ -286,6 +285,7 @@
 <translation id="4527045527269911712">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है.</translation>
 <translation id="453661520163887813">पूरी तरह चार्ज होने में <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
+<translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
 <translation id="4570957409596482333">चुनें और सुनें बटन</translation>
 <translation id="4585337515783392668">ऐसे रिसीवर पर कास्ट करना बंद करें जिसकी जानकारी नहीं है</translation>
 <translation id="4628757576491864469">डिवाइस</translation>
@@ -337,6 +337,7 @@
 <translation id="5430931332414098647">इंस्टैंट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>
+<translation id="54609108002486618">प्रबंधित</translation>
 <translation id="5465662442746197494">सहायता चाहिए?</translation>
 <translation id="5496819745535887422">आपका एडमिन आपके डिवाइस को बहाल कर रहा है. डिवाइस रीस्टार्ट होने पर उसका सारा डेटा मिटा दिया जाएगा.</translation>
 <translation id="5519195206574732858">LTE</translation>

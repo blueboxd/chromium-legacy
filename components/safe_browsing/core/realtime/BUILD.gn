@@ -17,6 +17,7 @@ static_library("url_lookup_service") {
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/signin/public/identity_manager",
+    "//components/sync",
     "//services/network/public/cpp:cpp",
     "//url:url",
   ]
@@ -35,6 +36,7 @@ static_library("policy_engine") {
     "//components/safe_browsing/core:realtimeapi_proto",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/sync",
     "//components/unified_consent",
     "//components/user_prefs",
   ]
@@ -57,6 +59,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/common:test_support",
     "//components/signin/public/identity_manager:test_support",
+    "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/unified_consent",
     "//components/user_prefs",

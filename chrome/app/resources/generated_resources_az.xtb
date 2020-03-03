@@ -865,7 +865,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2190069059097339078">WiFi Kredensial Alan</translation>
 <translation id="219008588003277019">Native Klient modulu: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(boş)</translation>
-<translation id="2191223688506386601">Bir şey daha</translation>
 <translation id="2191754378957563929">Aktiv</translation>
 <translation id="2192505247865591433">Kimdən:</translation>
 <translation id="2193365732679659387">Güvənlik ayarları</translation>
@@ -2561,7 +2560,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4555769855065597957">Kölgə</translation>
 <translation id="4555863373929230635">Parolları Google Hesabınızda saxlamaq üçün giriş edin və sinxronlaşdırmanı aktiv edin.</translation>
 <translation id="4558426062282641716">Avto başlatma icazəsi sorğusu göndərildi</translation>
-<translation id="4558491878126948419">Google məhsullarında <ph name="DEVICE_TYPE" /> məsləhət və yeniləmələri əldə edin və rəy paylaşın. İstədiyiniz vaxt abunəlikdən çıxın.</translation>
 <translation id="4559617833001311418">Sayt hərəkət və ya zəif sensorlarınıza daxil olur.</translation>
 <translation id="4561893854334016293">Son vaxtlarda dəyişən icazə yoxdur</translation>
 <translation id="4562155214028662640">Barmaq İzi əlavə edin</translation>
@@ -2831,7 +2829,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" silsilə porta qoşulmaq istəyir</translation>
 <translation id="4944310289250773232">Bu doğrulama xidməti <ph name="SAML_DOMAIN" /> tərəfindən təmin edilir</translation>
 <translation id="495170559598752135">Fəaliyyətlər</translation>
-<translation id="4952981627953231344">Plugin VM'ə bu cihazda icazə verilmir. Təşkilatın cihaz admini ilə əlaqə saxlayın.</translation>
 <translation id="4953808748584563296">Defolt narıncı avatar</translation>
 <translation id="4955710816792587366">PIN seçin</translation>
 <translation id="4959262764292427323">Parollar Google Hesabınızda yadda saxlanılıb, beləliklə, onları istənilən cihazda istifadə edə bilərsiniz</translation>
@@ -3014,6 +3011,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5233736638227740678">&amp;Yerləşdirin</translation>
 <translation id="5234764350956374838">Kənarlaşdırın</translation>
 <translation id="5235050375939235066">Tətbiq sistemdən silinsin?</translation>
+<translation id="523505283826916779">Əlçatımlılıq ayarları</translation>
 <translation id="5235750401727657667">Yeni tab açarkən baxdığınız səhifəni dəyişin</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" tətbiqi avtomatik silinib.</translation>
 <translation id="5241128660650683457">Daxil olduğunuz veb saytlarda bütün datanızı oxuyun</translation>
@@ -3434,7 +3432,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5804241973901381774">İcazələr</translation>
 <translation id="5805697420284793859">Pəncərə meneceri</translation>
 <translation id="5806773519584576205">0° (Defolt)</translation>
-<translation id="5811750797187914944">Tam hazır</translation>
 <translation id="5812674658566766066">Hamısını genişlədirin</translation>
 <translation id="5814126672212206791">Bağlantı növü</translation>
 <translation id="5815645614496570556">X.400 Ünvanı</translation>
@@ -4053,7 +4050,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6680442031740878064">Əlçatandır: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Qiymət</translation>
 <translation id="6681668084120808868">Fotoşəkil çəkin</translation>
-<translation id="6681964764822470072">"<ph name="APP_NAME" />" sistemdən silinəcək.</translation>
 <translation id="668599234725812620">Google Play'i açın</translation>
 <translation id="6686490380836145850">Sağ panelləri bağlayın</translation>
 <translation id="6686817083349815241">Parolunuzu yadda saxlayın</translation>
@@ -4635,7 +4631,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> artırması parol və kredit kart nömrələri kimi şəxsi data daxil olmaqla yazdığınız bütün mətni toplaya bilər. Bu artırmanı istifadə etmək istəyirsiniz?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Köhnə parolunuzu unutdunuz?</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> və əlaqədar data bu cihazdan silinəcək.</translation>
 <translation id="7496732379142025470">Enerjiyə qənaət üçün "OK Google" yalnız cihaz cərəyan mənbəyinə qoşulu olduqda aktiv olacaq. Dəyişiklik etmək üçün Ayarlara daxil olun.</translation>
 <translation id="7497215489070763236">Server CA sertifikatı</translation>
 <translation id="7497981768003291373">Son vaxtlar WebRTC mətn girişləri çəkməmisiniz.</translation>

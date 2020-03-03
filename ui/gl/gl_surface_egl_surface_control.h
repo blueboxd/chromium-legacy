@@ -82,7 +82,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
 
  private:
   ~GLSurfaceEGLSurfaceControl() override;

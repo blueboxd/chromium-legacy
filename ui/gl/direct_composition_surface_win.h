@@ -111,7 +111,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
   bool SetEnableDCLayers(bool enable) override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;

@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">Titrat</translation>
 <translation id="8346634859695247203">seksioni</translation>
 <translation id="835897206747267392">Vlerë e pavlefshme.</translation>
+<translation id="839593075537728968">Vlera duhet të jetë nga <ph name="MINIMUM_TIME" /> deri në <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">koha e kaluar: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">pjesë</translation>
 <translation id="8433900881053900389">shiriti i veglave</translation>

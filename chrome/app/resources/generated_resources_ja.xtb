@@ -869,7 +869,6 @@
 <translation id="2190069059097339078">WiFi 認証情報の取得機能</translation>
 <translation id="219008588003277019">ネイティブ クライアント モジュール: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(なし)</translation>
-<translation id="2191223688506386601">最後の手順</translation>
 <translation id="2191754378957563929">オン</translation>
 <translation id="2192505247865591433">取得先:</translation>
 <translation id="2193365732679659387">信頼の設定</translation>
@@ -2568,7 +2567,6 @@
 <translation id="4555769855065597957">シャドウ</translation>
 <translation id="4555863373929230635">パスワードを Google アカウントに保存するには、ログインして同期を有効にします。</translation>
 <translation id="4558426062282641716">自動起動の許可の要求</translation>
-<translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> のヒントや Google の各種サービスの最新情報をお届けします。また、フィードバックも送信できます。登録はいつでも解除できます。</translation>
 <translation id="4559617833001311418">このサイトはモーション センサーまたは光センサーにアクセスしています。</translation>
 <translation id="4561893854334016293">最近変更した権限はありません</translation>
 <translation id="4562155214028662640">指紋を追加</translation>
@@ -2838,7 +2836,6 @@
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」がシリアルポートへの接続を要求しています</translation>
 <translation id="4944310289250773232">この認証サービスは <ph name="SAML_DOMAIN" /> でホストされています</translation>
 <translation id="495170559598752135">操作</translation>
-<translation id="4952981627953231344">Plugin VM はこのデバイスで許可されていません。組織のデバイス管理者にお問い合わせください。</translation>
 <translation id="4953808748584563296">デフォルトのオレンジのアバター</translation>
 <translation id="4955710816792587366">PIN の選択</translation>
 <translation id="4959262764292427323">パスワードは Google アカウントに保存されるため、どのデバイスからでも使用できます</translation>
@@ -3021,6 +3018,7 @@
 <translation id="5233736638227740678">貼り付け(&amp;P)</translation>
 <translation id="5234764350956374838">閉じる</translation>
 <translation id="5235050375939235066">アプリをアンインストールしますか？</translation>
+<translation id="523505283826916779">ユーザー補助機能の設定</translation>
 <translation id="5235750401727657667">新しいタブを開いたときの表示ページを変更する</translation>
 <translation id="5238278114306905396">アプリ「<ph name="EXTENSION_NAME" />」は自動的に削除されました。</translation>
 <translation id="5241128660650683457">アクセスしたウェブサイトでのすべてのユーザーデータの読み取り</translation>
@@ -3441,7 +3439,6 @@
 <translation id="5804241973901381774">権限</translation>
 <translation id="5805697420284793859">ウィンドウ マネージャ</translation>
 <translation id="5806773519584576205">0°（デフォルト）</translation>
-<translation id="5811750797187914944">設定を完了</translation>
 <translation id="5812674658566766066">すべて展開</translation>
 <translation id="5814126672212206791">接続タイプ</translation>
 <translation id="5815645614496570556">X.400 アドレス</translation>
@@ -4062,7 +4059,6 @@
 <translation id="6680442031740878064">空き容量: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">速度</translation>
 <translation id="6681668084120808868">写真を撮る</translation>
-<translation id="6681964764822470072">「<ph name="APP_NAME" />」をアンインストールします。</translation>
 <translation id="668599234725812620">Google Play を開く</translation>
 <translation id="6686490380836145850">右側のタブを閉じる</translation>
 <translation id="6686817083349815241">パスワードを保存</translation>
@@ -4644,7 +4640,6 @@
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 拡張機能では、パスワードやクレジット カード番号などの個人データを含むすべての入力テキストが収集される可能性があります。この拡張機能を使用しますか？</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">パスワードを忘れた場合</translation>
-<translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> および関連付けられているデータはこのデバイスから削除されます。</translation>
 <translation id="7496732379142025470">バッテリー消費を抑えるため、ご使用のデバイスがコンセントに接続されている場合にのみ「OK Google」に反応します。設定を変更するには、[設定] に移動してください。</translation>
 <translation id="7497215489070763236">サーバーの CA 証明書</translation>
 <translation id="7497981768003291373">最近記録された WebRTC テキストログはありません。</translation>

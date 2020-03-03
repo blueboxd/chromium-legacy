@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"
 #include "url/url_constants.h"
@@ -61,6 +62,39 @@ bool DoesBeginSlashWindowsDriveSpec(const CHAR* spec, int start_offset,
 }
 
 #endif  // WIN32
+
+template <typename CHAR>
+bool IsValidScheme(const CHAR* url, const Component& scheme) {
+  // Caller should ensure that the |scheme| is not empty.
+  DCHECK_NE(0, scheme.len);
+
+  // From https://url.spec.whatwg.org/#scheme-start-state:
+  //   scheme start state:
+  //     1. If c is an ASCII alpha, append c, lowercased, to buffer, and set
+  //        state to scheme state.
+  //     2. Otherwise, if state override is not given, set state to no scheme
+  //        state, and decrease pointer by one.
+  //     3. Otherwise, validation error, return failure.
+  // Note that both step 2 and step 3 mean that the scheme was not valid.
+  if (!base::IsAsciiAlpha(url[scheme.begin]))
+    return false;
+
+  // From https://url.spec.whatwg.org/#scheme-state:
+  //   scheme state:
+  //     1. If c is an ASCII alphanumeric, U+002B (+), U+002D (-), or U+002E
+  //        (.), append c, lowercased, to buffer.
+  //     2. Otherwise, if c is U+003A (:), then [...]
+  //
+  // We begin at |scheme.begin + 1|, because the character at |scheme.begin| has
+  // already been checked by base::IsAsciiAlpha above.
+  int scheme_end = scheme.end();
+  for (int i = scheme.begin + 1; i < scheme_end; i++) {
+    if (!CanonicalSchemeChar(url[i]))
+      return false;
+  }
+
+  return true;
+}
 
 // See IsRelativeURL in the header file for usage.
 template<typename CHAR>
@@ -126,17 +160,14 @@ bool DoIsRelativeURL(const char* base,
   }
 
   // If the scheme isn't valid, then it's relative.
-  int scheme_end = scheme.end();
-  for (int i = scheme.begin; i < scheme_end; i++) {
-    if (!CanonicalSchemeChar(url[i])) {
-      if (!is_base_hierarchical) {
-        // Don't allow relative URLs if the base scheme doesn't support it.
-        return false;
-      }
-      *relative_component = MakeRange(begin, url_len);
-      *is_relative = true;
-      return true;
+  if (!IsValidScheme(url, scheme)) {
+    if (!is_base_hierarchical) {
+      // Don't allow relative URLs if the base scheme doesn't support it.
+      return false;
     }
+    *relative_component = MakeRange(begin, url_len);
+    *is_relative = true;
+    return true;
   }
 
   // If the scheme is not the same, then we can't count it as relative.

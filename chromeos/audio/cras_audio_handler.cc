@@ -234,6 +234,28 @@ void CrasAudioHandler::OnVideoCaptureStoppedOnMainThread(
   SwitchToDevice(*GetDeviceByType(AUDIO_TYPE_FRONT_MIC), true, activated_by);
 }
 
+void CrasAudioHandler::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  if (!session_info)
+    return;
+
+  std::string state;
+
+  switch (session_info->state) {
+    case media_session::mojom::MediaSessionInfo::SessionState::kActive:
+      state = "playing";
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kSuspended:
+      state = "paused";
+      break;
+    default:
+      state = "stopped";
+      break;
+  }
+
+  CrasAudioClient::Get()->SetPlayerPlaybackStatus(state);
+}
+
 void CrasAudioHandler::AddAudioObserver(AudioObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -662,6 +684,7 @@ CrasAudioHandler::CrasAudioHandler(
   DCHECK(CrasAudioClient::Get());
   CrasAudioClient::Get()->AddObserver(this);
   audio_pref_handler_->AddAudioPrefObserver(this);
+  BindMediaControllerObserver();
   InitializeAudioState();
   // Unittest may not have the task runner for the current thread.
   if (base::ThreadTaskRunnerHandle::IsSet())
@@ -679,6 +702,15 @@ CrasAudioHandler::~CrasAudioHandler() {
 
   DCHECK(g_cras_audio_handler);
   g_cras_audio_handler = nullptr;
+}
+
+void CrasAudioHandler::BindMediaControllerObserver() {
+  if (!media_controller_manager_)
+    return;
+  media_controller_manager_->CreateActiveMediaController(
+      media_session_controller_remote_.BindNewPipeAndPassReceiver());
+  media_session_controller_remote_->AddObserver(
+      media_controller_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void CrasAudioHandler::AudioClientRestarted() {

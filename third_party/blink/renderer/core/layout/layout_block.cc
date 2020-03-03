@@ -548,7 +548,7 @@ void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
     // Fixed positioned elements whose containing block is the LayoutView
     // don't contribute to layout overflow, since they don't scroll with the
     // content.
-    if (!IsLayoutView() ||
+    if (!IsA<LayoutView>(this) ||
         positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
       AddLayoutOverflowFromChild(*positioned_object,
                                  ToLayoutSize(positioned_object->Location()));
@@ -593,7 +593,8 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
       child.HasRelativeLogicalHeight() ||
       (child.IsAnonymous() && HasRelativeLogicalHeight()) ||
       child.StretchesToViewport();
-  if (relayout_children || (has_relative_logical_height && !IsLayoutView()) ||
+  if (relayout_children ||
+      (has_relative_logical_height && !IsA<LayoutView>(this)) ||
       (height_available_to_children_changed_ &&
        ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
       (child.IsListMarker() && IsListItem() &&
@@ -719,11 +720,11 @@ void LayoutBlock::MarkFixedPositionObjectForLayoutIfNeeded(
     return;
 
   LayoutObject* o = child->Parent();
-  while (!o->IsLayoutView() &&
-         o->StyleRef().GetPosition() != EPosition::kAbsolute)
+  bool is_layout_view = IsA<LayoutView>(o);
+  while (!is_layout_view && o->StyleRef().GetPosition() != EPosition::kAbsolute)
     o = o->Parent();
   // The LayoutView is absolute-positioned, but does not move.
-  if (o->IsLayoutView())
+  if (is_layout_view)
     return;
 
   // We must compute child's width and height, but not update them now.
@@ -1262,7 +1263,7 @@ static inline bool IsEditingBoundary(const LayoutObject* ancestor,
   DCHECK(child);
   DCHECK(child.NonPseudoNode());
   return !ancestor || !ancestor->Parent() ||
-         (ancestor->HasLayer() && ancestor->Parent()->IsLayoutView()) ||
+         (ancestor->HasLayer() && IsA<LayoutView>(ancestor->Parent())) ||
          HasEditableStyle(*ancestor->NonPseudoNode()) ==
              HasEditableStyle(*child.NonPseudoNode());
 }
@@ -2338,7 +2339,7 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
     available_height = computed_values.extent_ -
                        BorderAndPaddingLogicalHeight() -
                        ScrollbarLogicalHeight();
-  } else if (IsLayoutView()) {
+  } else if (IsA<LayoutView>(this)) {
     available_height = View()->ViewLogicalHeightForPercentages();
   }
 

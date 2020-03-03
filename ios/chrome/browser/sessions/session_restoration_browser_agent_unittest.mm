@@ -23,8 +23,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -75,16 +74,18 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
+    // This test requires that some TabHelpers are attached to the WebStates, so
+    // it needs to use a WebStateList with the full BrowserWebStateListDelegate,
+    // rather than the TestWebStateList delegate used in the default TestBrowser
+    // constructor.
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
                                              web_state_list_.get());
     // Web usage is disabled during these tests.
+    WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
     web_usage_enabler_ =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            chrome_browser_state_.get());
-    test_session_service_ = [[TestSessionService alloc] init];
+        WebUsageEnablerBrowserAgent::FromBrowser(browser_.get());
     web_usage_enabler_->SetWebUsageEnabled(false);
 
-    web_usage_enabler_->SetWebStateList(web_state_list_.get());
     SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
                                                      test_session_service_);
     session_restoration_agent_ =
@@ -94,7 +95,6 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   ~SessionRestorationBrowserAgentTest() override = default;
 
   void TearDown() override {
-    web_usage_enabler_->SetWebStateList(nullptr);
     @autoreleasepool {
       web_state_list_->CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
     }
@@ -144,10 +144,11 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  WebStateListWebUsageEnabler* web_usage_enabler_;
-  TestSessionService* test_session_service_;
-  SessionRestorationBrowserAgent* session_restoration_agent_;
   std::unique_ptr<Browser> browser_;
+
+  TestSessionService* test_session_service_;
+  WebUsageEnablerBrowserAgent* web_usage_enabler_;
+  SessionRestorationBrowserAgent* session_restoration_agent_;
 };
 
 // Tests that restoring a session works correctly on empty WebStateList.

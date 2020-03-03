@@ -360,7 +360,7 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 
     // Tell the storage system that this worker's script resources can now be
     // deleted.
-    std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
     script_cache_map_.GetResources(&resources);
     context_->storage()->PurgeResources(resources);
   }

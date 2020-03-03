@@ -297,6 +297,18 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
+// Tests that the plus icon updates its visibility when tab crashes
+IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
+                       IconVisibilityAfterTabCrashed) {
+  StartNavigateToUrl(GetInstallableAppURL());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+
+  web_contents_->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  ASSERT_TRUE(web_contents_->IsCrashed());
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+}
+
 // Tests that the plus icon updates its visibility once the installability check
 // completes.
 IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,

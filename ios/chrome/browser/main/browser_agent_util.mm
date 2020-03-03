@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,7 +28,9 @@ void AttachBrowserAgents(Browser* browser) {
   TabInsertionBrowserAgent::CreateForBrowser(browser);
   AttachInfobarOverlayBrowserAgent(browser);
   SyncedWindowDelegateBrowserAgent::CreateForBrowser(browser);
+  WebUsageEnablerBrowserAgent::CreateForBrowser(browser);
 
+  // SessionRestorartionAgent requires WebUsageEnablerBrowserAgent.
   SessionRestorationBrowserAgent::CreateForBrowser(
       browser, [SessionServiceIOS sharedService]);
 

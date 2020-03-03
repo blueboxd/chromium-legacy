@@ -35,6 +35,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   void SetMainView(blink::WebView* web_view);
   void SetDelegate(WebTestDelegate* delegate);
+  bool HasDelegate();
   void ResetAll();
   bool TestIsRunning();
   void SetTestIsRunning(bool running);

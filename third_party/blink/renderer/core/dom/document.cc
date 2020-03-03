@@ -4764,7 +4764,7 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
     const HitTestRequest& request,
     const PhysicalOffset& document_point,
     const WebMouseEvent& event) {
-  DCHECK(!GetLayoutView() || GetLayoutView()->IsLayoutView());
+  DCHECK(!GetLayoutView() || IsA<LayoutView>(GetLayoutView()));
 
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
   // the first layout because until then, there is nothing shown on the screen -

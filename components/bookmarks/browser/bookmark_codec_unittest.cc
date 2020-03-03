@@ -651,7 +651,7 @@ TEST_F(BookmarkCodecTest, ReassignInvalidGUID) {
   ASSERT_TRUE(Decode(&decoder, *value.get(), decoded_model.get(),
                      /*sync_metadata_str=*/nullptr));
 
-  EXPECT_TRUE(base::IsValidGUID(
+  EXPECT_TRUE(base::IsValidGUIDOutputString(
       decoded_model->bookmark_bar_node()->children()[0]->guid()));
 }
 

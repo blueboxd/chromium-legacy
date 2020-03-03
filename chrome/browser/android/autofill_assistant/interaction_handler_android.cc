@@ -13,141 +13,32 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewInteractions_jni.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
+#include "components/autofill_assistant/browser/basic_interactions.h"
+#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
 
 namespace {
 
-void SetValue(base::WeakPtr<UserModel> user_model,
-              const SetModelValueProto& proto) {
-  if (!user_model) {
+// Note regarding Try* methods: these are simple wrappers around basic
+// interactions. They are needed because it is impossible to directly bind to
+// non-void return methods with a weak ptr.
+void TrySetValue(base::WeakPtr<BasicInteractions> basic_interactions,
+                 const SetModelValueProto& proto) {
+  if (!basic_interactions) {
     return;
   }
-  user_model->SetValue(proto.model_identifier(), proto.value());
+  basic_interactions->SetValue(proto);
 }
 
-void ComputeValueBooleanAnd(base::WeakPtr<UserModel> user_model,
-                            const BooleanAndProto& proto,
-                            const std::string& result_model_identifier) {
-  if (!user_model) {
+void TryComputeValue(base::WeakPtr<BasicInteractions> basic_interactions,
+                     const ComputeValueProto& proto) {
+  if (!basic_interactions) {
     return;
   }
-
-  auto values = user_model->GetValues(proto.model_identifiers());
-  if (!values.has_value()) {
-    DVLOG(2) << "Failed to find values in user model";
-    return;
-  }
-
-  if (!AreAllValuesOfType(*values, ValueProto::kBooleans) ||
-      !AreAllValuesOfSize(*values, 1)) {
-    DVLOG(2) << "All values must be 'boolean' and contain exactly 1 value each";
-    return;
-  }
-
-  bool result = true;
-  for (const auto& value : *values) {
-    result &= value.booleans().values(0);
-  }
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
-}
-
-void ComputeValueBooleanOr(base::WeakPtr<UserModel> user_model,
-                           const BooleanOrProto& proto,
-                           const std::string& result_model_identifier) {
-  if (!user_model) {
-    return;
-  }
-
-  auto values = user_model->GetValues(proto.model_identifiers());
-  if (!values.has_value()) {
-    DVLOG(2) << "Failed to find values in user model";
-    return;
-  }
-
-  if (!AreAllValuesOfType(*values, ValueProto::kBooleans) ||
-      !AreAllValuesOfSize(*values, 1)) {
-    DVLOG(2) << "All values must be 'boolean' and contain exactly 1 value each";
-    return;
-  }
-
-  bool result = true;
-  for (const auto& value : *values) {
-    result |= value.booleans().values(0);
-  }
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
-}
-
-void ComputeValueBooleanNot(base::WeakPtr<UserModel> user_model,
-                            const BooleanNotProto& proto,
-                            const std::string& result_model_identifier) {
-  if (!user_model) {
-    return;
-  }
-
-  auto value = user_model->GetValue(proto.model_identifier());
-  if (!value.has_value()) {
-    DVLOG(2) << "Error evaluating " << __func__ << ": "
-             << proto.model_identifier() << " not found in model";
-    return;
-  }
-  if (value->booleans().values().size() != 1) {
-    DVLOG(2) << "Error evaluating " << __func__
-             << ": expected single boolean, but got " << *value;
-    return;
-  }
-
-  user_model->SetValue(result_model_identifier,
-                       SimpleValue(!value->booleans().values(0)));
-}
-
-base::Optional<InteractionHandlerAndroid::InteractionCallback>
-CreateComputeValueCallbackForProto(base::WeakPtr<UserModel> user_model,
-                                   const ComputeValueProto& proto) {
-  if (proto.result_model_identifier().empty()) {
-    DVLOG(1) << "Error creating ComputeValue interaction: "
-                "result_model_identifier empty";
-    return base::nullopt;
-  }
-
-  switch (proto.kind_case()) {
-    case ComputeValueProto::kBooleanAnd:
-      if (proto.boolean_and().model_identifiers().size() == 0) {
-        DVLOG(1) << "Error creating ComputeValue::BooleanAnd interaction: no "
-                    "model_identifiers specified";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&ComputeValueBooleanAnd, user_model,
-                              proto.boolean_and(),
-                              proto.result_model_identifier()));
-    case ComputeValueProto::kBooleanOr:
-      if (proto.boolean_or().model_identifiers().size() == 0) {
-        DVLOG(1) << "Error creating ComputeValue::BooleanOr interaction: no "
-                    "model_identifiers specified";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&ComputeValueBooleanOr, user_model,
-                              proto.boolean_or(),
-                              proto.result_model_identifier()));
-    case ComputeValueProto::kBooleanNot:
-      if (proto.boolean_not().model_identifier().empty()) {
-        DVLOG(1) << "Error creating ComputeValue::BooleanNot interaction: "
-                    "model_identifier not specified";
-        return base::nullopt;
-      }
-      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&ComputeValueBooleanNot, user_model,
-                              proto.boolean_not(),
-                              proto.result_model_identifier()));
-    case ComputeValueProto::KIND_NOT_SET:
-      DVLOG(1) << "Error creating ComputeValue interaction: kind not set";
-      return base::nullopt;
-  }
-
-  return base::nullopt;
+  basic_interactions->ComputeValue(proto);
 }
 
 void ShowInfoPopup(const InfoPopupProto& proto,
@@ -259,8 +150,8 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     case EventProto::kOnViewClicked: {
       auto jview = views.find(proto.on_view_clicked().view_identifier());
       if (jview == views.end()) {
-        LOG(ERROR) << "Invalid click event, no view with id='"
-                   << proto.on_view_clicked().view_identifier() << "' found";
+        VLOG(1) << "Invalid click event, no view with id='"
+                << proto.on_view_clicked().view_identifier() << "' found";
         return base::nullopt;
       }
       Java_AssistantViewInteractions_setOnClickListener(
@@ -272,6 +163,7 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
           {proto.kind_case(), proto.on_view_clicked().view_identifier()});
     }
     case EventProto::KIND_NOT_SET:
+      VLOG(1) << "Error creating event: kind not set";
       return base::nullopt;
   }
 }
@@ -280,17 +172,18 @@ base::Optional<InteractionHandlerAndroid::InteractionCallback>
 CreateInteractionCallbackFromProto(
     const CallbackProto& proto,
     UserModel* user_model,
+    BasicInteractions* basic_interactions,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case CallbackProto::kSetValue:
       if (proto.set_value().model_identifier().empty()) {
-        DVLOG(1)
+        VLOG(1)
             << "Error creating SetValue interaction: model_identifier not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
-          base::BindRepeating(&SetValue, user_model->GetWeakPtr(),
+          base::BindRepeating(&TrySetValue, basic_interactions->GetWeakPtr(),
                               proto.set_value()));
     case CallbackProto::kShowInfoPopup: {
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
@@ -299,25 +192,32 @@ CreateInteractionCallbackFromProto(
     }
     case CallbackProto::kShowListPopup:
       if (proto.show_list_popup().item_names_model_identifier().empty()) {
-        DVLOG(1) << "Error creating ShowListPopup interaction: "
-                    "items_list_model_identifier not set";
+        VLOG(1) << "Error creating ShowListPopup interaction: "
+                   "items_list_model_identifier not set";
         return base::nullopt;
       }
       if (proto.show_list_popup()
               .selected_item_indices_model_identifier()
               .empty()) {
-        DVLOG(1) << "Error creating ShowListPopup interaction: "
-                    "selected_item_indices_model_identifier not set";
+        VLOG(1) << "Error creating ShowListPopup interaction: "
+                   "selected_item_indices_model_identifier not set";
         return base::nullopt;
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&ShowListPopup, user_model->GetWeakPtr(),
                               proto.show_list_popup(), jcontext, jdelegate));
     case CallbackProto::kComputeValue:
-      return CreateComputeValueCallbackForProto(user_model->GetWeakPtr(),
-                                                proto.compute_value());
+      if (proto.compute_value().result_model_identifier().empty()) {
+        VLOG(1) << "Error creating ComputeValue interaction: "
+                   "result_model_identifier empty";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&TryComputeValue,
+                              basic_interactions->GetWeakPtr(),
+                              proto.compute_value()));
     case CallbackProto::KIND_NOT_SET:
-      DVLOG(1) << "Error creating interaction: kind not set";
+      VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
   }
 }
@@ -352,7 +252,8 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     const std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>&
         views,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
-    UserModel* user_model) {
+    UserModel* user_model,
+    BasicInteractions* basic_interactions) {
   if (is_listening_) {
     NOTREACHED() << "Interactions can not be added while listening to events!";
     return false;
@@ -361,15 +262,15 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     auto key = CreateEventKeyFromProto(interaction_proto.trigger_event(), env,
                                        views, jdelegate);
     if (!key) {
-      DVLOG(1) << "Invalid trigger event for interaction";
+      VLOG(1) << "Invalid trigger event for interaction";
       return false;
     }
 
     for (const auto& callback_proto : interaction_proto.callbacks()) {
       auto callback = CreateInteractionCallbackFromProto(
-          callback_proto, user_model, jcontext_, jdelegate);
+          callback_proto, user_model, basic_interactions, jcontext_, jdelegate);
       if (!callback) {
-        DVLOG(1) << "Invalid callback for interaction";
+        VLOG(1) << "Invalid callback for interaction";
         return false;
       }
       AddInteraction(*key, *callback);

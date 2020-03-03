@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -220,7 +221,7 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
   // TODO(layout-dev): We can probably abort before reaching LayoutView in many
   // cases. For example, if we find an object with contain:size, or even if we
   // find a regular block with fixed logical width.
-  while (!cb->IsLayoutView()) {
+  while (!IsA<LayoutView>(cb)) {
     // It doesn't matter if our table is auto or fixed: auto means we don't
     // scale. Fixed doesn't care if we do or not because it doesn't depend
     // on the cell contents' preferred widths.
@@ -262,7 +263,7 @@ static bool ShouldScaleColumnsForSelf(LayoutNGTableInterface* table) {
       return true;
     LayoutBlock* cb = layout_table->ContainingBlock();
 
-    while (!cb->IsLayoutView() && !cb->IsTableCell() &&
+    while (!IsA<LayoutView>(cb) && !cb->IsTableCell() &&
            cb->StyleRef().Width().IsAuto() && !cb->IsOutOfFlowPositioned())
       cb = cb->ContainingBlock();
 

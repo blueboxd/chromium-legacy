@@ -19,6 +19,8 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
+class BasicInteractions;
+class UserModel;
 
 // Receives incoming events and runs the corresponding set of callbacks.
 //
@@ -47,7 +49,8 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       const std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>&
           views,
       base::android::ScopedJavaGlobalRef<jobject> jdelegate,
-      UserModel* user_model);
+      UserModel* user_model,
+      BasicInteractions* basic_interactions);
 
   // Overrides autofill_assistant::EventHandler::Observer:
   void OnEvent(const EventHandler::EventKey& key) override;

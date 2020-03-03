@@ -181,6 +181,14 @@ void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
       base::BindOnce(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
 
+bool IsTPMTokenEnabledForNSS() {
+#if !defined(TPM_FALLBACK)
+  return crypto::IsTPMTokenEnabledForNSS();
+#else
+  return false;
+#endif
+}
+
 void StartNSSInitOnIOThread(const AccountId& account_id,
                             const std::string& username_hash,
                             const base::FilePath& path) {
@@ -199,7 +207,7 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
 
   crypto::WillInitializeTPMForChromeOSUser(username_hash);
 
-  if (crypto::IsTPMTokenEnabledForNSS()) {
+  if (IsTPMTokenEnabledForNSS()) {
     if (crypto::IsTPMTokenReady(
             base::Bind(&StartTPMSlotInitializationOnIOThread, account_id,
                        username_hash))) {

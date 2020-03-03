@@ -186,10 +186,8 @@ void SVGPatternElement::RemovedFrom(ContainerNode& root_parent) {
 void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
-    return;
-
-  InvalidatePattern(layout_invalidation_reason::kChildChanged);
+  if (!change.ByParser())
+    InvalidatePattern(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGPatternElement::InvalidatePattern(

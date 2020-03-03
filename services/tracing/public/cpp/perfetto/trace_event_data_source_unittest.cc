@@ -1477,9 +1477,7 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   // Start startup tracing registry with no timeout. This would cause startup
   // tracing to abort and flush as soon the current thread can run tasks.
   data_source->set_startup_tracing_timeout_for_testing(base::TimeDelta());
-  producer_client()->SetupStartupTracing();
-  data_source->SetupStartupTracing(producer_client(),
-                                   /*privacy_filtering_enabled=*/true);
+  data_source->SetupStartupTracing(true);
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig(),
       base::trace_event::TraceLog::RECORDING_MODE);

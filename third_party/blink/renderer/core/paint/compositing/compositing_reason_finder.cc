@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -198,7 +199,7 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   // into. These children (the controls) always need to be promoted into their
   // own layers to draw on top of the accelerated video.
   if (layer.CompositingContainer() &&
-      layer.CompositingContainer()->GetLayoutObject().IsVideo())
+      IsA<LayoutVideo>(layer.CompositingContainer()->GetLayoutObject()))
     direct_reasons |= CompositingReason::kVideoOverlay;
 
   // Special case for immersive-ar DOM overlay mode, see also

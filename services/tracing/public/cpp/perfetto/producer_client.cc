@@ -10,7 +10,6 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
-#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
@@ -37,23 +36,13 @@ ProducerClient::~ProducerClient() {
 
 void ProducerClient::Connect(
     mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
-  EnsureSharedMemoryBufferInitialized();
-
-  mojo::ScopedSharedBufferHandle shm;
-  {
-    base::AutoLock lock(shared_memory_lock_);
-    shm = shared_memory_->Clone();
-  }
-  CHECK(shm.is_valid());
-
   mojo::PendingRemote<mojom::ProducerClient> client;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ProducerHost> producer_host_remote;
   mojo::Remote<mojom::PerfettoService>(std::move(perfetto_service))
       ->ConnectToProducerHost(
           std::move(client),
-          producer_host_remote.InitWithNewPipeAndPassReceiver(), std::move(shm),
-          kSMBPageSizeBytes);
+          producer_host_remote.InitWithNewPipeAndPassReceiver());
   task_runner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
@@ -61,51 +50,9 @@ void ProducerClient::Connect(
                      std::move(producer_host_remote)));
 }
 
-void ProducerClient::BindInProcessSharedMemoryArbiter(
-    perfetto::TracingService::ProducerEndpoint* producer_endpoint,
-    PerfettoTaskRunner* task_runner) {
-  EnsureSharedMemoryBufferInitialized();
-
-  DCHECK(!in_process_arbiter_task_runner_);
-  in_process_arbiter_task_runner_ = task_runner;
-
-  perfetto::SharedMemoryArbiter* arbiter;
-  {
-    base::AutoLock lock(shared_memory_lock_);
-    // |shared_memory_arbiter_| is never destroyed, thus OK to call
-    // BindToProducerEndpoint() without holding the lock.
-    arbiter = shared_memory_arbiter_.get();
-  }
-  arbiter->BindToProducerEndpoint(producer_endpoint, task_runner);
-}
-
-void ProducerClient::SetupStartupTracing() {
-  EnsureSharedMemoryBufferInitialized();
-}
-
-void ProducerClient::BindStartupTargetBuffer(
-    uint32_t startup_session_id,
-    perfetto::BufferID startup_target_buffer) {
-  // While we should be called on the ProducerClient's task runner, it's
-  // possible that the SMA lives on a different sequence (when in process).
-  if (in_process_arbiter_task_runner_ &&
-      !in_process_arbiter_task_runner_->RunsTasksOnCurrentThread()) {
-    // |this| is never destroyed, except in tests.
-    in_process_arbiter_task_runner_->GetOrCreateTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProducerClient::BindStartupTargetBuffer,
-                                  base::Unretained(this), startup_session_id,
-                                  startup_target_buffer));
-    return;
-  }
-  PerfettoProducer::BindStartupTargetBuffer(startup_session_id,
-                                            startup_target_buffer);
-}
-
 perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
-  base::AutoLock lock(shared_memory_lock_);
-  // |shared_memory_arbiter_| is never destroyed, thus OK to return a
-  // reference here.
-  return shared_memory_arbiter_.get();
+  return in_process_arbiter_ ? in_process_arbiter_
+                             : shared_memory_arbiter_.get();
 }
 
 void ProducerClient::NewDataSourceAdded(
@@ -140,22 +87,25 @@ bool ProducerClient::IsTracingActive() {
   return data_sources_tracing_ > 0;
 }
 
-void ProducerClient::OnTracingStart() {
+void ProducerClient::OnTracingStart(
+    mojo::ScopedSharedBufferHandle shared_memory,
+    uint64_t shared_memory_buffer_page_size_bytes) {
+  // If we're using in-process mode, we don't need to set up our
+  // own SharedMemoryArbiter.
+  DCHECK(!in_process_arbiter_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(producer_host_);
+  if (!shared_memory_) {
+    shared_memory_ =
+        std::make_unique<MojoSharedMemory>(std::move(shared_memory));
 
-  // In-process ProducerClient's arbiter is bound via
-  // BindInProcessSharedMemoryArbiter() instead.
-  if (!in_process_arbiter_task_runner_) {
-    perfetto::SharedMemoryArbiter* arbiter;
-    {
-      base::AutoLock lock(shared_memory_lock_);
-      // |shared_memory_arbiter_| is never destroyed, thus OK to call
-      // BindToProducerEndpoint() without holding the lock.
-      arbiter = shared_memory_arbiter_.get();
-    }
-    DCHECK(arbiter);
-    arbiter->BindToProducerEndpoint(this, task_runner());
+    shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateInstance(
+        shared_memory_.get(), shared_memory_buffer_page_size_bytes, this,
+        PerfettoTracedProcess::GetTaskRunner());
+  } else {
+    // TODO(oysteine): This is assuming the SMB is the same, currently. Swapping
+    // out SharedMemoryBuffers would require more thread synchronization.
+    DCHECK_EQ(shared_memory_->shared_buffer()->value(), shared_memory->value());
   }
 }
 
@@ -341,25 +291,8 @@ void ProducerClient::ResetSequenceForTesting() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() {
-  base::AutoLock lock(shared_memory_lock_);
-  // |shared_memory_| is never destroyed except in tests, thus OK to return a
-  // reference here.
+perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() const {
   return shared_memory_.get();
-}
-
-void ProducerClient::EnsureSharedMemoryBufferInitialized() {
-  base::AutoLock lock(shared_memory_lock_);
-  if (shared_memory_) {
-    return;
-  }
-
-  // The shared memory buffer is always provided by the ProducerClient, but only
-  // created upon the first tracing request.
-  shared_memory_ = std::make_unique<MojoSharedMemory>(kSMBSizeBytes);
-  CHECK(shared_memory_->shared_buffer().is_valid());
-  shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateUnboundInstance(
-      shared_memory_.get(), kSMBPageSizeBytes);
 }
 
 // The Mojo binding should run on the same sequence as the one we get

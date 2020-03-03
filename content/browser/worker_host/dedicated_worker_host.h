@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
@@ -53,6 +54,7 @@ CONTENT_EXPORT void CreateDedicatedWorkerHostFactory(
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
 // A host for a single dedicated worker. It deletes itself upon Mojo
@@ -68,6 +70,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& origin,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host);
   ~DedicatedWorkerHost() final;
 
@@ -76,6 +79,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   RenderProcessHost* GetProcessHost() { return worker_process_host_; }
   const url::Origin& GetOrigin() { return origin_; }
+  const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
+      const {
+    return cross_origin_embedder_policy_;
+  }
 
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
@@ -190,6 +197,11 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // The network isolation key to be used for both the worker script and the
   // worker's subresources.
   net::NetworkIsolationKey network_isolation_key_;
+
+  // The DedicatedWorker's Cross-Origin-Embedder-Policy(COEP). It is equals to
+  // the nearest ancestor frame host's COEP:
+  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
+  const network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   // This is kept alive during the lifetime of the dedicated worker, since it's
   // associated with Mojo interfaces (ServiceWorkerContainer and

@@ -84,8 +84,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
                        base::SequencedTaskRunnerHandle::Get()),
       loader_factory_(std::move(loader_factory)),
       client_(std::move(client)) {
-  DCHECK_NE(cache_resource_id,
-            ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
+  DCHECK_NE(cache_resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
 
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()

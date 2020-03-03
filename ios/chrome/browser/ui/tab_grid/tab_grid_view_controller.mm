@@ -1078,7 +1078,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   BOOL incognitoContentVisible =
       (self.currentPage == TabGridPageIncognitoTabs &&
        !self.incognitoTabsViewController.gridEmpty);
-  [self.dispatcher setIncognitoContentVisible:incognitoContentVisible];
+  [self.handler setIncognitoContentVisible:incognitoContentVisible];
 }
 
 // Returns the approximate number of grid cells that will be visible on this

@@ -489,6 +489,10 @@ bool Controller::ShouldPromptActionExpandSheet() const {
   return expand_sheet_for_prompt_action_;
 }
 
+BasicInteractions* Controller::GetBasicInteractions() {
+  return &basic_interactions_;
+}
+
 void Controller::AddObserver(ControllerObserver* observer) {
   observers_.AddObserver(observer);
 }

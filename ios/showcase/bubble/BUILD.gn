@@ -24,7 +24,6 @@ source_set("eg2_tests") {
   testonly = true
   sources = [ "sc_bubble_egtest.mm" ]
   deps = [
-    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/showcase/test:eg2_test",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
@@ -38,7 +37,6 @@ source_set("eg_tests") {
   sources = [ "sc_bubble_egtest.mm" ]
   deps = [
     "//ios/chrome/browser/ui/bubble",
-    "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",

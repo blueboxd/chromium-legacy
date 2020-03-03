@@ -120,7 +120,7 @@ void TextTrackContainer::ObserveSizeChanges(Element& element) {
 
 void TextTrackContainer::UpdateDefaultFontSize(
     LayoutObject* media_layout_object) {
-  if (!media_layout_object || !media_layout_object->IsVideo())
+  if (!media_layout_object || !IsA<LayoutVideo>(media_layout_object))
     return;
   // FIXME: The video size is used to calculate the font size (a workaround
   // for lack of per-spec vh/vw support) but the whole media element is used

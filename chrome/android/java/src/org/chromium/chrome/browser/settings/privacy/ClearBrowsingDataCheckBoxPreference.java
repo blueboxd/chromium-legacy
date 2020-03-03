@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -67,8 +66,6 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
             CharSequence text = textView.getText();
             // TODO(crbug.com/783866): On some devices the SpannableString is not applied correctly.
             boolean isSpanned = text instanceof Spanned;
-            RecordHistogram.recordBooleanHistogram(
-                    "History.ClearBrowsingData.SpannableStringAppliedCorrectly", isSpanned);
             if (!isSpanned) {
                 return false;
             }

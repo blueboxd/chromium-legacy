@@ -608,7 +608,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   auto* frame_view = box->GetFrameView();
   frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(*box);
 
-  if (box->IsLayoutView() && frame_view->HasViewportConstrainedObjects() &&
+  if (IsA<LayoutView>(box) && frame_view->HasViewportConstrainedObjects() &&
       !frame_view->InvalidateViewportConstrainedObjects()) {
     box->SetShouldDoFullPaintInvalidation();
     box->SetSubtreeShouldCheckForPaintInvalidation();
@@ -878,7 +878,7 @@ bool PaintLayerScrollableArea::UserInputScrollable(
   if (GetLayoutBox()->IsIntrinsicallyScrollable(orientation))
     return true;
 
-  if (GetLayoutBox()->IsLayoutView()) {
+  if (IsA<LayoutView>(GetLayoutBox())) {
     Document& document = GetLayoutBox()->GetDocument();
     Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
     if (fullscreen_element && fullscreen_element != document.documentElement())
@@ -886,7 +886,7 @@ bool PaintLayerScrollableArea::UserInputScrollable(
 
     mojom::blink::ScrollbarMode h_mode;
     mojom::blink::ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    To<LayoutView>(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
     mojom::blink::ScrollbarMode mode =
         (orientation == kHorizontalScrollbar) ? h_mode : v_mode;
     return mode == mojom::blink::ScrollbarMode::kAuto ||
@@ -1451,7 +1451,7 @@ IntSize PaintLayerScrollableArea::ScrollbarOffset(
 
 static inline const LayoutObject& ScrollbarStyleSource(
     const LayoutBox& layout_box) {
-  if (layout_box.IsLayoutView()) {
+  if (IsA<LayoutView>(layout_box)) {
     Document& doc = layout_box.GetDocument();
     if (Settings* settings = doc.GetSettings()) {
       if (!settings->GetAllowCustomScrollbarInMainFrame() &&
@@ -1586,10 +1586,10 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
                                 VisibleContentRect(kIncludeScrollbars).Width();
   }
 
-  if (GetLayoutBox()->IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(GetLayoutBox())) {
     mojom::blink::ScrollbarMode h_mode;
     mojom::blink::ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    layout_view->CalculateScrollbarModes(h_mode, v_mode);
 
     // Look for the scrollbarModes and reset the needs Horizontal & vertical
     // Scrollbar values based on scrollbarModes, as during force style change
@@ -1618,10 +1618,10 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
   if (!needs_horizontal_scrollbar && !needs_vertical_scrollbar)
     return false;
 
-  if (GetLayoutBox()->IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(GetLayoutBox())) {
     mojom::blink::ScrollbarMode h_mode;
     mojom::blink::ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    layout_view->CalculateScrollbarModes(h_mode, v_mode);
     if (h_mode != mojom::blink::ScrollbarMode::kAuto ||
         v_mode != mojom::blink::ScrollbarMode::kAuto)
       return false;
@@ -2296,10 +2296,10 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   bool is_visible_to_hit_test =
       GetLayoutBox()->StyleRef().VisibleToHitTesting();
   bool did_scroll_overflow = scrolls_overflow_;
-  if (GetLayoutBox()->IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(GetLayoutBox())) {
     mojom::blink::ScrollbarMode h_mode;
     mojom::blink::ScrollbarMode v_mode;
-    ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
+    layout_view->CalculateScrollbarModes(h_mode, v_mode);
     if (h_mode == mojom::blink::ScrollbarMode::kAlwaysOff &&
         v_mode == mojom::blink::ScrollbarMode::kAlwaysOff)
       has_overflow = false;
@@ -2321,7 +2321,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
 
   if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() &&
       scrolls_overflow_) {
-    if (GetLayoutBox()->IsLayoutView()) {
+    if (IsA<LayoutView>(GetLayoutBox())) {
       if (Element* owner = GetLayoutBox()->GetDocument().LocalOwner()) {
         owner->GetDocument().GetRootScrollerController().ConsiderForImplicit(
             *owner);
@@ -2575,12 +2575,13 @@ PaintLayerScrollableArea::GetCompositorAnimationTimeline() const {
 }
 
 bool PaintLayerScrollableArea::HasTickmarks() const {
-  return layer_->IsRootLayer() && ToLayoutView(GetLayoutBox())->HasTickmarks();
+  return layer_->IsRootLayer() &&
+         To<LayoutView>(GetLayoutBox())->HasTickmarks();
 }
 
 Vector<IntRect> PaintLayerScrollableArea::GetTickmarks() const {
   if (layer_->IsRootLayer())
-    return ToLayoutView(GetLayoutBox())->GetTickmarks();
+    return To<LayoutView>(GetLayoutBox())->GetTickmarks();
   return Vector<IntRect>();
 }
 
@@ -3119,7 +3120,7 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
   // equal to the bounding box of the result. We need to add in that mapped rect
   // in such cases.
   const Document& document = box->GetDocument();
-  if (box->IsLayoutView() &&
+  if (IsA<LayoutView>(box) &&
       (document.IsXMLDocument() || document.IsHTMLDocument())) {
     if (const auto* document_element = document.documentElement()) {
       if (const auto* document_element_object =

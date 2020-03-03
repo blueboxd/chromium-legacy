@@ -16,13 +16,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class SharedMemoryArbiter;
@@ -45,15 +43,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   ~ProducerClient() override;
 
   void Connect(mojo::PendingRemote<mojom::PerfettoService> perfetto_service);
-  void BindInProcessSharedMemoryArbiter(
-      perfetto::TracingService::ProducerEndpoint*,
-      PerfettoTaskRunner*);
+
+  void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
+    DCHECK(!in_process_arbiter_);
+    in_process_arbiter_ = arbiter;
+  }
 
   // PerfettoProducer implementation.
-  void SetupStartupTracing() override;
-  void BindStartupTargetBuffer(
-      uint32_t startup_session_id,
-      perfetto::BufferID startup_target_buffer) override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
@@ -62,7 +58,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // mojom::ProducerClient implementation.
   // Called through Mojo by the ProducerHost on the service-side to control
   // tracing and toggle specific DataSources.
-  void OnTracingStart() override;
+  void OnTracingStart(mojo::ScopedSharedBufferHandle shared_memory,
+                      uint64_t shared_memory_buffer_page_size_bytes) override;
   void StartDataSource(uint64_t id,
                        const perfetto::DataSourceConfig& data_source_config,
                        StartDataSourceCallback callback) override;
@@ -105,11 +102,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
-  perfetto::SharedMemory* shared_memory_for_testing();
-
- protected:
-  // Protected for testing.
-  void EnsureSharedMemoryBufferInitialized();
+  perfetto::SharedMemory* shared_memory_for_testing() const;
 
  private:
   friend class base::NoDestructor<ProducerClient>;
@@ -124,19 +117,12 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
   mojo::Remote<mojom::ProducerHost> producer_host_;
-  PerfettoTaskRunner* in_process_arbiter_task_runner_ = nullptr;
+  std::unique_ptr<MojoSharedMemory> shared_memory_;
+  std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
+  perfetto::SharedMemoryArbiter* in_process_arbiter_ = nullptr;
   // First value is the flush ID, the second is the number of
   // replies we're still waiting for.
   std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;
-
-  // Guards initialization of |shared_memory_| and |shared_memory_arbiter_|.
-  // TODO(eseckler): Consider accessing these without locks after setup was
-  // completed, since we never destroy or unset them.
-  base::Lock shared_memory_lock_;
-  std::unique_ptr<MojoSharedMemory> shared_memory_
-      GUARDED_BY(shared_memory_lock_);
-  std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_
-      GUARDED_BY(shared_memory_lock_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

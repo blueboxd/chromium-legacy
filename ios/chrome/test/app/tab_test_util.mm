@@ -20,8 +20,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -227,13 +226,13 @@ void SaveSessionImmediately() {
 
 void EvictOtherTabModelTabs() {
   id<BrowserInterfaceProvider> provider = GetMainController().interfaceProvider;
-  ChromeBrowserState* otherBrowserState =
-      IsIncognitoMode() ? provider.mainInterface.browserState
-                        : provider.incognitoInterface.browserState;
+  Browser* otherBrowser = IsIncognitoMode()
+                              ? provider.mainInterface.browser
+                              : provider.incognitoInterface.browser;
   // Disabling and enabling web usage will evict all web views.
-  WebStateListWebUsageEnabler* enabler =
-      WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-          otherBrowserState);
+  WebUsageEnablerBrowserAgent* enabler =
+      WebUsageEnablerBrowserAgent::FromBrowser(otherBrowser);
+  DCHECK(enabler);
   enabler->SetWebUsageEnabled(false);
   enabler->SetWebUsageEnabled(true);
 }

@@ -1502,8 +1502,6 @@ void RenderFrameImpl::CreateFrame(
     // main frame, as in the case where a navigation to the current process'
     // origin replaces a remote main frame (the proxy's web_frame()) with a
     // local one.
-    const bool proxy_is_main_frame = !proxy->web_frame()->Parent();
-
     render_view = proxy->render_view();
     render_frame = RenderFrameImpl::Create(
         render_view, routing_id, std::move(interface_provider),
@@ -1516,7 +1514,7 @@ void RenderFrameImpl::CreateFrame(
         proxy->web_frame(), replicated_state.frame_policy,
         WebString::FromUTF8(replicated_state.name));
     // The new |web_frame| is a main frame iff the proxy's frame was.
-    DCHECK_EQ(proxy_is_main_frame, !web_frame->Parent());
+    DCHECK_EQ(!proxy->web_frame()->Parent(), !web_frame->Parent());
   }
 
   CHECK(render_view);

@@ -222,8 +222,9 @@ void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
 
   if (change.IsChildElementChange()) {
     CheckForSiblingStyleChanges(
-        change.type == kElementRemoved ? kSiblingElementRemoved
-                                       : kSiblingElementInserted,
+        change.type == ChildrenChangeType::kElementRemoved
+            ? kSiblingElementRemoved
+            : kSiblingElementInserted,
         To<Element>(change.sibling_changed), change.sibling_before_change,
         change.sibling_after_change);
   }

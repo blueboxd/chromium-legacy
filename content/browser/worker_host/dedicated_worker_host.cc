@@ -45,6 +45,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host)
     : service_(service),
       id_(id),
@@ -53,6 +54,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       creator_render_frame_host_id_(creator_render_frame_host_id),
       ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
       origin_(origin),
+      cross_origin_embedder_policy_(cross_origin_embedder_policy),
       host_receiver_(this, std::move(host)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(worker_process_host_);
@@ -379,7 +381,8 @@ void DedicatedWorkerHost::CreateNestedDedicatedWorker(
   CreateDedicatedWorkerHostFactory(
       worker_process_host_->GetID(),
       /*creator_render_frame_host_id_=*/base::nullopt,
-      ancestor_render_frame_host_id_, origin_, std::move(receiver));
+      ancestor_render_frame_host_id_, origin_, cross_origin_embedder_policy_,
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateIdleManager(
@@ -506,11 +509,13 @@ class DedicatedWorkerHostFactoryImpl final
       int worker_process_id,
       base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
-      const url::Origin& parent_context_origin)
+      const url::Origin& parent_context_origin,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy)
       : worker_process_id_(worker_process_id),
         creator_render_frame_host_id_(creator_render_frame_host_id),
         ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
-        parent_context_origin_(parent_context_origin) {
+        parent_context_origin_(parent_context_origin),
+        cross_origin_embedder_policy_(cross_origin_embedder_policy) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
@@ -550,7 +555,7 @@ class DedicatedWorkerHostFactoryImpl final
     auto* host = new DedicatedWorkerHost(
         service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
         creator_render_frame_host_id_, ancestor_render_frame_host_id_, origin,
-        std::move(host_receiver));
+        cross_origin_embedder_policy_, std::move(host_receiver));
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
   }
 
@@ -595,7 +600,8 @@ class DedicatedWorkerHostFactoryImpl final
     auto* host = new DedicatedWorkerHost(
         service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
         creator_render_frame_host_id_, ancestor_render_frame_host_id_,
-        request_initiator_origin, std::move(host_receiver));
+        request_initiator_origin, cross_origin_embedder_policy_,
+        std::move(host_receiver));
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());
@@ -617,6 +623,7 @@ class DedicatedWorkerHostFactoryImpl final
   const GlobalFrameRoutingId ancestor_render_frame_host_id_;
 
   const url::Origin parent_context_origin_;
+  const network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerHostFactoryImpl);
 };
@@ -628,12 +635,13 @@ void CreateDedicatedWorkerHostFactory(
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<DedicatedWorkerHostFactoryImpl>(
           worker_process_id, creator_render_frame_host_id,
-          ancestor_render_frame_host_id, origin),
+          ancestor_render_frame_host_id, origin, cross_origin_embedder_policy),
       std::move(receiver));
 }
 

@@ -10,7 +10,7 @@
 #include "chrome/browser/android/autofill_assistant/interaction_handler_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/event_handler.h"
-#include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/ui_delegate.h"
 
 namespace autofill_assistant {
 
@@ -217,8 +217,9 @@ GenericUiControllerAndroid::CreateFromProto(
     const GenericUserInterfaceProto& proto,
     base::android::ScopedJavaLocalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
+    EventHandler* event_handler,
     UserModel* user_model,
-    EventHandler* event_handler) {
+    BasicInteractions* basic_interactions) {
   // Create view layout.
   JNIEnv* env = base::android::AttachCurrentThread();
   auto views = std::make_unique<
@@ -233,13 +234,15 @@ GenericUiControllerAndroid::CreateFromProto(
   auto interaction_handler =
       std::make_unique<InteractionHandlerAndroid>(event_handler, jcontext);
   if (!interaction_handler->AddInteractionsFromProto(
-          proto.interactions(), env, *views, jdelegate, user_model)) {
+          proto.interactions(), env, *views, jdelegate, user_model,
+          basic_interactions)) {
     return nullptr;
   }
 
   // Set initial state.
   interaction_handler->StartListening();
-  user_model->MergeWithProto(proto.model(), /*force_notifications=*/true);
+  user_model->MergeWithProto(proto.model(),
+                             /*force_notifications=*/true);
 
   return std::make_unique<GenericUiControllerAndroid>(
       jroot_view, std::move(views), std::move(interaction_handler));

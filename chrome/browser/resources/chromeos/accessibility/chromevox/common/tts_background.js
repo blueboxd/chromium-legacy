@@ -17,6 +17,7 @@ goog.require('ChromeTtsBase');
 goog.require('ChromeVox');
 goog.require('goog.i18n.MessageFormat');
 
+goog.require('constants');
 
 const Utterance = class {
   /**
@@ -194,6 +195,13 @@ TtsBackground = class extends ChromeTtsBase {
       properties = {};
     }
 
+    if (textString.length > constants.OBJECT_MAX_CHARCOUNT) {
+      // The text is too long. Try to split the text into multiple chunks based
+      // on line breaks.
+      this.speakSplittingText_(textString, queueMode, properties);
+      return this;
+    }
+
     textString = this.preprocess(textString, properties);
 
     // This pref on localStorage gets set by the options page.
@@ -241,6 +249,27 @@ TtsBackground = class extends ChromeTtsBase {
     // that phonetic hints are delayed when we process them.
     this.pronouncePhonetically_(originalTextString, properties);
     return this;
+  }
+
+  /**
+   * Split the given textString into smaller chunks and call this.speak() for
+   * each chunks.
+   * @param {string} textString The string of text to be spoken.
+   * @param {QueueMode} queueMode The queue mode to use for speaking.
+   * @param {Object=} properties Speech properties to use for this utterance.
+   * @private
+   */
+  speakSplittingText_(textString, queueMode, properties) {
+    const lines = textString.split(/\r\n|\r|\n/);
+    for (const line of lines) {
+      if (line.length > constants.OBJECT_MAX_CHARCOUNT) {
+        // Skip the paragraph when it's really a large paragraph.
+        // TODO(1057904): Try splitting based on spaces.
+        continue;
+      }
+      this.speak(line, queueMode, properties);
+      queueMode = QueueMode.QUEUE;
+    }
   }
 
   /**

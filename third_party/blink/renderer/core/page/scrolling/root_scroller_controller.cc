@@ -312,7 +312,7 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
     // The LayoutView is allowed to have a clip (since its clip is resized by
     // the URL bar movement). Test it for scrolling so that we only promote if
     // we know we won't block scrolling the main document.
-    if (ancestor->IsLayoutView()) {
+    if (IsA<LayoutView>(ancestor)) {
       const ComputedStyle* ancestor_style = ancestor->Style();
       DCHECK(ancestor_style);
 

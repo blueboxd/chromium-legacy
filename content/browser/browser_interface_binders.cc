@@ -791,11 +791,9 @@ void PopulateBinderMapWithContext(
 
   // render process host binders taking a Cross-Origin-Embedder-Policy and an
   // origin.
-  // TODO(https://crbug.com/1031542): Add support enforcing CORP in
-  // cache.match() for DedicatedWorker.
   map->Add<blink::mojom::CacheStorage>(BindWorkerReceiverForOriginAndCOEP(
       &RenderProcessHost::BindCacheStorage, host,
-      network::CrossOriginEmbedderPolicy()));
+      host->cross_origin_embedder_policy()));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host,

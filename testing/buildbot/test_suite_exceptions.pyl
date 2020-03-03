@@ -1603,10 +1603,23 @@
     ],
     'modifications': {
       'android-pie-x86-fyi-rel': {
-        # https://crbug.com/1046059
         'args': [
+          '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
+          # https://crbug.com/1046059
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.chrome_public_test_apk.filter',
         ],
+        'swarming': {
+          'named_caches': [
+            {
+              'name': 'avd_generic_playstore_android28',
+              'path': '.android',
+            },
+            {
+              'name': 'system_images_android_28_google_apis_playstore_x86',
+              'path': '.emulator_sdk',
+            },
+          ]
+        },
       },
     },
   },

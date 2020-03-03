@@ -126,6 +126,7 @@ class TileTaskManagerImpl;
 }
 namespace chromeos {
 class BlockingMethodCaller;
+class MojoUtils;
 namespace system {
 class StatisticsProviderImpl;
 }
@@ -359,6 +360,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   // in unit tests to avoid the friend requirement.
   friend class AdjustOOMScoreHelper;
   friend class android_webview::ScopedAllowInitGLBindings;
+  friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
   friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917
   friend class content::WebContentsViewMac;

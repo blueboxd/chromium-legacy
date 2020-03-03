@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
@@ -204,6 +205,7 @@ class Controller : public ScriptExecutorDelegate,
   UserModel* GetUserModel() override;
   EventHandler* GetEventHandler() override;
   bool ShouldPromptActionExpandSheet() const override;
+  BasicInteractions* GetBasicInteractions() override;
 
  private:
   friend ControllerTest;
@@ -435,6 +437,7 @@ class Controller : public ScriptExecutorDelegate,
 
   EventHandler event_handler_;
   UserModel user_model_;
+  BasicInteractions basic_interactions_{this};
 
   bool expand_sheet_for_prompt_action_ = true;
 

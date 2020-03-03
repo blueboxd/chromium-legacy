@@ -8,6 +8,12 @@ namespace gfx {
 
 namespace {
 
+const ContentColorUsage kAllColorUsages[] = {
+    ContentColorUsage::kSRGB,
+    ContentColorUsage::kWideColorGamut,
+    ContentColorUsage::kHDR,
+};
+
 size_t GetIndex(ContentColorUsage color_usage, bool needs_alpha) {
   switch (color_usage) {
     case ContentColorUsage::kSRGB:
@@ -41,6 +47,17 @@ DisplayColorSpaces::DisplayColorSpaces(const ColorSpace& c, BufferFormat f) {
     color_space = c.IsValid() ? c : gfx::ColorSpace::CreateSRGB();
   for (auto& buffer_format : buffer_formats_)
     buffer_format = f;
+}
+
+void DisplayColorSpaces::SetOutputBufferFormats(
+    gfx::BufferFormat buffer_format_no_alpha,
+    gfx::BufferFormat buffer_format_needs_alpha) {
+  for (const auto& color_usage : kAllColorUsages) {
+    size_t i_no_alpha = GetIndex(color_usage, false);
+    size_t i_needs_alpha = GetIndex(color_usage, true);
+    buffer_formats_[i_no_alpha] = buffer_format_no_alpha;
+    buffer_formats_[i_needs_alpha] = buffer_format_needs_alpha;
+  }
 }
 
 void DisplayColorSpaces::SetOutputColorSpaceAndBufferFormat(

@@ -169,8 +169,7 @@
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
@@ -973,16 +972,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (BOOL)isWebUsageEnabled {
   return self.browserState && !_isShutdown &&
-         WebStateListWebUsageEnablerFactory::GetInstance()
-             ->GetForBrowserState(self.browserState)
+         WebUsageEnablerBrowserAgent::FromBrowser(self.browser)
              ->IsWebUsageEnabled();
 }
 
 - (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
   if (!self.browserState || _isShutdown)
     return;
-  WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
+  WebUsageEnablerBrowserAgent::FromBrowser(self.browser)
       ->SetWebUsageEnabled(webUsageEnabled);
 }
 
@@ -1359,12 +1356,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             ->GetForBrowserState(self.browserState);
     if (controller)
       controller->SetWebStateList(nullptr);
-
-    WebStateListWebUsageEnabler* webUsageEnabler =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            self.browserState);
-    if (webUsageEnabler)
-      webUsageEnabler->SetWebStateList(nullptr);
 
     UrlLoadingNotifier* urlLoadingNotifier =
         UrlLoadingNotifierFactory::GetForBrowserState(self.browserState);
@@ -1870,9 +1861,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(!self.browser);
   self.browser = browser;
   _isOffTheRecord = self.browserState->IsOffTheRecord();
-  WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(self.browserState)
-      ->SetWebStateList(self.browser->GetWebStateList());
 
   _webStateObserverBridge = std::make_unique<web::WebStateObserverBridge>(self);
   _allWebStateObservationForwarder =

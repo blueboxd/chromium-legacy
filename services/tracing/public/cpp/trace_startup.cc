@@ -11,7 +11,6 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
@@ -22,25 +21,8 @@
 
 namespace tracing {
 namespace {
-
 using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
-
-void SetupStartupTracing(PerfettoProducer* producer,
-                         bool privacy_filtering_enabled,
-                         bool enable_sampler_profiler) {
-  // TODO(eseckler): This should really go through PerfettoTracedProcess
-  // somehow, so that the "correct" producer gets to take over the session.
-
-  producer->SetupStartupTracing();
-
-  TraceEventDataSource::GetInstance()->SetupStartupTracing(
-      producer, privacy_filtering_enabled);
-
-  if (enable_sampler_profiler)
-    TracingSamplerProfiler::SetupStartupTracing();
-}
-
 }  // namespace
 
 bool g_tracing_initialized_after_threadpool_and_featurelist = false;
@@ -58,7 +40,8 @@ void EnableStartupTracingIfNeeded() {
   perfetto::internal::TrackRegistry::InitializeInstance();
 
   // TODO(oysteine): Support startup tracing to a perfetto protobuf trace. This
-  // should also enable TraceLog and call SetupStartupTracing().
+  // should also enable TraceLog and call
+  // TraceEventDataSource::SetupStartupTracing().
   if (command_line.HasSwitch(switches::kPerfettoOutputFile))
     return;
 
@@ -88,35 +71,30 @@ void EnableStartupTracingIfNeeded() {
     trace_config.SetTraceBufferSizeInKb(0);
     trace_config.SetTraceBufferSizeInEvents(0);
 
-    PerfettoProducer* producer =
-        PerfettoTracedProcess::Get()->producer_client();
-    if (startup_config->GetSessionOwner() ==
-        TraceStartupConfig::SessionOwner::kSystemTracing) {
-      producer = PerfettoTracedProcess::Get()->system_producer();
+    if (trace_config.IsCategoryGroupEnabled(
+            TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
+      TracingSamplerProfiler::SetupStartupTracing();
     }
-
-    bool privacy_filtering_enabled =
+    TraceEventDataSource::GetInstance()->SetupStartupTracing(
         startup_config->GetSessionOwner() ==
             TraceStartupConfig::SessionOwner::kBackgroundTracing ||
-        command_line.HasSwitch(switches::kTraceStartupEnablePrivacyFiltering);
-
-    bool enable_sampler_profiler = trace_config.IsCategoryGroupEnabled(
-        TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
-
-    SetupStartupTracing(producer, privacy_filtering_enabled,
-                        enable_sampler_profiler);
+        command_line.HasSwitch(switches::kTraceStartupEnablePrivacyFiltering));
 
     uint8_t modes = TraceLog::RECORDING_MODE;
     if (!trace_config.event_filters().empty())
       modes |= TraceLog::FILTERING_MODE;
     trace_log->SetEnabled(trace_config, modes);
+  } else if (command_line.HasSwitch(switches::kTraceToConsole)) {
+    // TODO(eseckler): Remove ability to trace to the console, perfetto doesn't
+    // support this and noone seems to use it.
+    TraceConfig trace_config = GetConfigForTraceToConsole();
+    LOG(ERROR) << "Start " << switches::kTraceToConsole
+               << " with CategoryFilter '"
+               << trace_config.ToCategoryFilterString() << "'.";
+    TraceEventDataSource::GetInstance()->SetupStartupTracing(
+        /*privacy_filtering_enabled=*/false);
+    trace_log->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   }
-}
-
-void SetupStartupTracingForProcess(bool privacy_filtering_enabled,
-                                   bool enable_sampler_profiler) {
-  SetupStartupTracing(PerfettoTracedProcess::Get()->producer_client(),
-                      privacy_filtering_enabled, enable_sampler_profiler);
 }
 
 void InitTracingPostThreadPoolStartAndFeatureList() {

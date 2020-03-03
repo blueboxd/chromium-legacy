@@ -153,7 +153,7 @@ void OnWriteMetadataToDiskCache(
     WriteToDiskCacheCallback callback,
     int result) {
   EXPECT_EQ(result, meta_data_size);
-  std::move(callback).Run(ServiceWorkerDatabase::ResourceRecord(
+  std::move(callback).Run(storage::mojom::ServiceWorkerResourceRecord::New(
       metadata_writer->response_id(), script_url, body_size));
 }
 
@@ -224,22 +224,22 @@ void WriteToDiskCacheAsyncInternal(
                      std::move(callback)));
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSyncInternal(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSyncInternal(
     const GURL& script_url,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data,
     std::unique_ptr<ServiceWorkerResponseWriter> body_writer,
     std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer) {
-  ServiceWorkerDatabase::ResourceRecord record;
+  storage::mojom::ServiceWorkerResourceRecordPtr record;
 
   base::RunLoop loop;
   WriteToDiskCacheAsyncInternal(
       script_url, headers, body, meta_data, std::move(body_writer),
       std::move(metadata_writer),
       base::BindLambdaForTesting(
-          [&](ServiceWorkerDatabase::ResourceRecord result) {
-            record = result;
+          [&](storage::mojom::ServiceWorkerResourceRecordPtr result) {
+            record = std::move(result);
             loop.Quit();
           }));
   loop.Run();
@@ -446,9 +446,10 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
   scoped_refptr<ServiceWorkerVersion> version =
       CreateNewServiceWorkerVersion(context->registry(), registration.get(),
                                     script, blink::mojom::ScriptType::kClassic);
-  ServiceWorkerDatabase::ResourceRecord record(resource_id, script,
-                                               /*size_bytes=*/100);
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {record};
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
+  records.push_back(
+      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, script,
+                                                       /*size_bytes=*/100));
   version->script_cache_map()->SetResources(records);
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -457,7 +458,7 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
   return registration;
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheWithIdSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
@@ -473,7 +474,7 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
                                       std::move(metadata_writer));
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     const std::vector<std::pair<std::string, std::string>>& headers,
@@ -518,7 +519,7 @@ int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {
   storage->GetNewResourceId(
       base::BindLambdaForTesting([&](int64_t new_resource_id) {
         DCHECK_NE(new_resource_id,
-                  ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
+                  blink::mojom::kInvalidServiceWorkerResourceId);
         resource_id = new_resource_id;
         run_loop.Quit();
       }));
@@ -827,7 +828,7 @@ bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
     ServiceWorkerStorage* storage,
     const std::string& expected_body) {
   DCHECK(storage);
-  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId)
+  if (resource_id == blink::mojom::kInvalidServiceWorkerResourceId)
     return false;
 
   // Verify the response status.

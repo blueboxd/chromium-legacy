@@ -209,12 +209,21 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
   display.set_display_frequency(display_info.display_frequency());
-  if (!Display::HasForceDisplayColorProfile()) {
+
+  // Compute the DisplayColorSpace for this configuration. Note that it is
+  // important to specify that there is no alpha channel when it is not needed,
+  // so that DXGI_ALPHA_MODE_IGNORE is specified. Not doing so regresses power
+  // usage substantially.
+  // https://crbug.com/1057163
+  gfx::DisplayColorSpaces color_spaces = display.color_spaces();
+  if (Display::HasForceDisplayColorProfile()) {
+    color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
+                                        gfx::BufferFormat::BGRA_8888);
+  } else {
     if (hdr_enabled) {
       // This will map to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 with
       // DXGI_FORMAT_B8G8R8A8_UNORM.
-      gfx::DisplayColorSpaces color_spaces(gfx::ColorSpace::CreateSRGB(),
-                                           gfx::BufferFormat::BGRA_8888);
+      const auto srgb = gfx::ColorSpace::CreateSRGB();
 
       // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that
       // space, the brightness of (1,1,1) is 80 nits. That's where the magic
@@ -226,6 +235,14 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
       // sRGB's (1,1,1) mapping to the specified number of nits.
       const auto hdr10 =
           gfx::ColorSpace::CreateHDR10(display_info.sdr_white_level());
+
+      // For sRGB content, use 8-bit formats.
+      color_spaces.SetOutputColorSpaceAndBufferFormat(
+          gfx::ContentColorUsage::kSRGB, /*needs_alpha=*/false, srgb,
+          gfx::BufferFormat::BGRX_8888);
+      color_spaces.SetOutputColorSpaceAndBufferFormat(
+          gfx::ContentColorUsage::kSRGB, /*needs_alpha=*/true, srgb,
+          gfx::BufferFormat::BGRA_8888);
 
       // Use HDR color spaces only when there is WCG or HDR content on the
       // screen.
@@ -251,20 +268,21 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
             usage, /*needs_alpha=*/true, scrgb_linear,
             gfx::BufferFormat::RGBA_F16);
       }
-
       color_spaces.SetSDRWhiteLevel(display_info.sdr_white_level());
-      display.set_color_spaces(color_spaces);
+
       // We set these to 10 bpp because these are (ab)used by pages via media
       // query APIs to detect HDR support.
       display.set_color_depth(Display::kHDR10BitsPerPixel);
       display.set_depth_per_component(Display::kHDR10BitsPerComponent);
     } else {
-      gfx::DisplayColorSpaces display_color_spaces(
-          color_profile_reader->GetDisplayColorSpace(display_info.id()),
-          gfx::BufferFormat::BGRA_8888);
-      display.set_color_spaces(display_color_spaces);
+      color_spaces = gfx::DisplayColorSpaces(
+          color_profile_reader->GetDisplayColorSpace(display_info.id()));
+      color_spaces.SetOutputBufferFormats(gfx::BufferFormat::BGRX_8888,
+                                          gfx::BufferFormat::BGRA_8888);
     }
   }
+  display.set_color_spaces(color_spaces);
+
   return display;
 }
 

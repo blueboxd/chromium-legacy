@@ -5432,6 +5432,10 @@ jumbo_static_library("browser") {
   if (is_android && notouch_build) {
     configs += [ ":notouch_config" ]
   }
+
+  if (tpm_fallback) {
+    defines += [ "TPM_FALLBACK" ]
+  }
 }
 
 config("notouch_config") {

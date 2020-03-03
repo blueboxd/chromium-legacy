@@ -81,7 +81,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
       provider_host_->running_hosted_version();
   int64_t resource_id =
       version->script_cache_map()->LookupResourceId(resource_request.url);
-  if (resource_id != ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+  if (resource_id != blink::mojom::kInvalidServiceWorkerResourceId) {
     std::unique_ptr<ServiceWorkerResponseReader> response_reader =
         context_->storage()->CreateResponseReader(resource_id);
     mojo::MakeSelfOwnedReceiver(
@@ -263,7 +263,7 @@ void ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     int64_t resource_id) {
-  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+  if (resource_id == blink::mojom::kInvalidServiceWorkerResourceId) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;

@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -228,6 +229,7 @@ class TabGridMediatorTest : public PlatformTest {
     NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
     browser_ = std::make_unique<TestBrowser>(browser_state_.get(),
                                              web_state_list_.get());
+    WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {

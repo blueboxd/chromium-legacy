@@ -1253,7 +1253,7 @@ bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
   DCHECK(!object->BackgroundTransfersToView());
   // If the background is viewport background and it paints onto the main
   // graphics layer only, then it doesn't need main thread scrolling.
-  if (object->IsLayoutView() &&
+  if (IsA<LayoutView>(object) &&
       object->GetBackgroundPaintLocation() == kBackgroundPaintInGraphicsLayer)
     return false;
   return true;

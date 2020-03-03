@@ -69,7 +69,7 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, SkipInProductHelpUserActions) {
 
 // Tests that memory pressure events are logged by ApplicationBreadcrumbsLogger.
 // TODO(crbug.com/1046588): This test is flaky.
-TEST_F(ApplicationBreadcrumbsLoggerTest, FLAKY_MemoryPressure) {
+TEST_F(ApplicationBreadcrumbsLoggerTest, DISABLED_MemoryPressure) {
   base::MemoryPressureListener::SimulatePressureNotification(
       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
   base::MemoryPressureListener::SimulatePressureNotification(

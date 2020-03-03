@@ -355,12 +355,11 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheck(
   ServiceWorkerVersion* version_to_update = registration()->GetNewestVersion();
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration()->last_update_check();
-  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
   version_to_update->script_cache_map()->GetResources(&resources);
   int64_t script_resource_id =
       version_to_update->script_cache_map()->LookupResourceId(script_url_);
-  DCHECK_NE(script_resource_id,
-            ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
+  DCHECK_NE(script_resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,

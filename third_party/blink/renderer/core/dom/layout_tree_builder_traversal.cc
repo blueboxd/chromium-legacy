@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 
@@ -344,7 +345,7 @@ LayoutObject* LayoutTreeBuilderTraversal::NextInTopLayer(
     // If top_layer_elements[i] is not a LayoutView child, its LayoutObject is
     // not re-attached and not in the top layer yet, thus we can not use it as a
     // sibling LayoutObject.
-    if (layout_object && layout_object->Parent()->IsLayoutView())
+    if (layout_object && IsA<LayoutView>(layout_object->Parent()))
       return layout_object;
   }
   return nullptr;

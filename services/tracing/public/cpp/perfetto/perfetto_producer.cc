@@ -10,12 +10,6 @@
 
 namespace tracing {
 
-// static
-constexpr size_t PerfettoProducer::kSMBPageSizeBytes;
-
-// static
-constexpr size_t PerfettoProducer::kSMBSizeBytes;
-
 PerfettoProducer::PerfettoProducer(PerfettoTaskRunner* task_runner)
     : task_runner_(task_runner) {
   DCHECK(task_runner_);
@@ -23,19 +17,12 @@ PerfettoProducer::PerfettoProducer(PerfettoTaskRunner* task_runner)
 
 PerfettoProducer::~PerfettoProducer() = default;
 
-std::unique_ptr<perfetto::TraceWriter>
-PerfettoProducer::CreateStartupTraceWriter(uint32_t startup_session_id) {
+void PerfettoProducer::BindStartupTraceWriterRegistry(
+    std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
+    perfetto::BufferID target_buffer) {
   DCHECK(MaybeSharedMemoryArbiter());
-  return MaybeSharedMemoryArbiter()->CreateStartupTraceWriter(
-      startup_session_id);
-}
-
-void PerfettoProducer::BindStartupTargetBuffer(
-    uint32_t startup_session_id,
-    perfetto::BufferID startup_target_buffer) {
-  DCHECK(MaybeSharedMemoryArbiter());
-  MaybeSharedMemoryArbiter()->BindStartupTargetBuffer(startup_session_id,
-                                                      startup_target_buffer);
+  return MaybeSharedMemoryArbiter()->BindStartupTraceWriterRegistry(
+      std::move(registry), target_buffer);
 }
 
 std::unique_ptr<perfetto::TraceWriter> PerfettoProducer::CreateTraceWriter(

@@ -181,7 +181,7 @@ bool FakeScriptExecutorDelegate::SetForm(
 }
 
 UserModel* FakeScriptExecutorDelegate::GetUserModel() {
-  return nullptr;
+  return user_model_;
 }
 
 EventHandler* FakeScriptExecutorDelegate::GetEventHandler() {

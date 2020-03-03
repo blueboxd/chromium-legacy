@@ -167,7 +167,7 @@ bool HasBlockingTouchEventHandler(const LocalFrame& frame,
 }
 
 bool HasBlockingTouchEventHandler(const LayoutObject& object) {
-  if (object.IsLayoutView()) {
+  if (IsA<LayoutView>(object)) {
     auto* frame = object.GetFrame();
     if (HasBlockingTouchEventHandler(*frame, *frame->DomWindow()))
       return true;

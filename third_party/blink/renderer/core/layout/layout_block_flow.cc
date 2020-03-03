@@ -389,7 +389,7 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
       !GetDocument().InQuirksMode()) {
     has_auto_height = true;
     if (LayoutBlock* cb = ContainingBlock()) {
-      if (!cb->IsLayoutView() &&
+      if (!IsA<LayoutView>(cb) &&
           (cb->StyleRef().LogicalHeight().IsFixed() || cb->IsTableCell()))
         has_auto_height = false;
     }
@@ -1359,8 +1359,9 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
 
   // Inline blocks are covered by the isAtomicInlineLevel() check in the
   // avoidFloats method.
-  if (CreatesNewFormattingContext() || IsDocumentElement() || IsLayoutView() ||
-      IsFloatingOrOutOfFlowPositioned() || IsTableCell()) {
+  if (CreatesNewFormattingContext() || IsDocumentElement() ||
+      IsA<LayoutView>(this) || IsFloatingOrOutOfFlowPositioned() ||
+      IsTableCell()) {
     if (floating_objects_) {
       floating_objects_->Clear();
     }
@@ -1605,10 +1606,10 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
       determined_margin_before_quirk_(false),
       last_child_is_self_collapsing_block_with_clearance_(false) {
   const ComputedStyle& block_style = block_flow->StyleRef();
-  DCHECK(block_flow->IsLayoutView() || block_flow->Parent());
+  DCHECK(IsA<LayoutView>(block_flow) || block_flow->Parent());
   can_collapse_with_children_ = !block_flow->CreatesNewFormattingContext() &&
                                 !block_flow->IsLayoutFlowThread() &&
-                                !block_flow->IsLayoutView();
+                                !IsA<LayoutView>(block_flow);
 
   can_collapse_margin_before_with_children_ =
       can_collapse_with_children_ && !before_border_padding;
@@ -2803,7 +2804,7 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
     const FloatingObjectSet& floating_object_set = floating_objects_->Set();
     FloatingObjectSetIterator end = floating_object_set.end();
 
-    for (LayoutObject* curr = Parent(); curr && !curr->IsLayoutView();
+    for (LayoutObject* curr = Parent(); !IsA<LayoutView>(curr);
          curr = curr->Parent()) {
       auto* curr_block = DynamicTo<LayoutBlockFlow>(curr);
       if (curr_block) {

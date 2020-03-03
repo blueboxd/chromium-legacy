@@ -53,7 +53,7 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
         return;
       }
       base::ReadOnlySharedMemoryMapping shared_memory;
-      response_body = std::string(GetStringPieceFromMojoHandle(
+      response_body = std::string(MojoUtils::GetStringPieceFromMojoHandle(
           std::move(response_body_handle), &shared_memory));
       if (!shared_memory.IsValid()) {
         response_body = "";

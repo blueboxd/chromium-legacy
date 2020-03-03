@@ -105,7 +105,7 @@ LayoutState::LayoutState(LayoutObject& root)
       next_(root.View()->GetLayoutState()),
       layout_object_(root) {
   DCHECK(!next_);
-  DCHECK(!root.IsLayoutView());
+  DCHECK(!IsA<LayoutView>(root));
   root.View()->PushLayoutState(*this);
 }
 

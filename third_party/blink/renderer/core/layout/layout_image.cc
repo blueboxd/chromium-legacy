@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -396,7 +397,8 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
   // we're painting alt text and/or a broken image.
   // Video is excluded from this behavior because video elements have a default
   // aspect ratio that a failed poster image load should not override.
-  if (image_resource_ && image_resource_->ErrorOccurred() && !IsVideo()) {
+  if (image_resource_ && image_resource_->ErrorOccurred() &&
+      !IsA<LayoutVideo>(this)) {
     intrinsic_sizing_info.aspect_ratio = FloatSize(1, 1);
     return;
   }

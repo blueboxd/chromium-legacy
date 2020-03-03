@@ -168,7 +168,7 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
 // base::RunLoop since base::RunLoop is used internally to wait for completing
 // all of tasks. If it's in another base::RunLoop, consider to use
 // WriteToDiskCacheAsync().
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheWithIdSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
@@ -178,15 +178,15 @@ ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheWithIdSync(
 
 // Similar to WriteToDiskCacheWithIdSync() but instead of taking a resource id,
 // this assigns a new resource ID internally.
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data);
 
-using WriteToDiskCacheCallback =
-    base::OnceCallback<void(ServiceWorkerDatabase::ResourceRecord record)>;
+using WriteToDiskCacheCallback = base::OnceCallback<void(
+    storage::mojom::ServiceWorkerResourceRecordPtr record)>;
 
 // Writes the script down to |storage| asynchronously. When completing tasks,
 // |callback| will be called. You must wait for |callback| instead of

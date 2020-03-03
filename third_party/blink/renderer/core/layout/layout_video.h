@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIDEO_H_
 
 #include "third_party/blink/renderer/core/layout/layout_media.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -85,7 +86,10 @@ class LayoutVideo final : public LayoutMedia {
   LayoutSize cached_image_size_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutVideo, IsVideo());
+template <>
+struct DowncastTraits<LayoutVideo> {
+  static bool AllowFrom(const LayoutObject& object) { return object.IsVideo(); }
+};
 
 }  // namespace blink
 

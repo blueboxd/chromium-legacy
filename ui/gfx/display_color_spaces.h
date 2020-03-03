@@ -53,6 +53,13 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
                                           bool needs_alpha,
                                           const gfx::ColorSpace& color_space,
                                           gfx::BufferFormat buffer_format);
+
+  // Set the buffer format for all color usages to |buffer_format_no_alpha| when
+  // alpha is not needed and |buffer_format_with_alpha| when alpha is needed.
+  void SetOutputBufferFormats(gfx::BufferFormat buffer_format_no_alpha,
+                              gfx::BufferFormat buffer_format_with_alpha);
+
+  // Retrieve parameters for a specific usage and alpha.
   ColorSpace GetOutputColorSpace(ContentColorUsage color_usage,
                                  bool needs_alpha) const;
   BufferFormat GetOutputBufferFormat(ContentColorUsage color_usage,

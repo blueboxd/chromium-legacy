@@ -122,7 +122,8 @@ PhysicalRect InitializeRootRect(const LayoutObject* root,
                                 const Vector<Length>& margin) {
   DCHECK(margin.IsEmpty() || margin.size() == 4);
   PhysicalRect result;
-  if (root->IsLayoutView() && root->GetDocument().IsInMainFrame()) {
+  auto* layout_view = DynamicTo<LayoutView>(root);
+  if (layout_view && root->GetDocument().IsInMainFrame()) {
     // The main frame is a bit special as the scrolling viewport can differ in
     // size from the LayoutView itself. There's two situations this occurs in:
     // 1) The ForceZeroLayoutHeight quirk setting is used in Android WebView for
@@ -131,7 +132,7 @@ PhysicalRect InitializeRootRect(const LayoutObject* root,
     // testing. Use the FrameView geometry instead.
     // 2) An element wider than the ICB can cause us to resize the FrameView so
     // we can zoom out to fit the entire element width.
-    result = ToLayoutView(root)->OverflowClipRect(PhysicalOffset());
+    result = layout_view->OverflowClipRect(PhysicalOffset());
   } else if (root->IsBox() && root->HasOverflowClip()) {
     result = ToLayoutBox(root)->PhysicalContentBoxRect();
   } else {

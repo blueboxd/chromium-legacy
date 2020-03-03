@@ -46,6 +46,7 @@ DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {
 
 void RTCEncodedVideoFrame::setData(DOMArrayBuffer* data) {
   frame_data_ = data;
+  replaced_frame_data_ = true;
 }
 
 String RTCEncodedVideoFrame::toString() const {
@@ -65,12 +66,14 @@ String RTCEncodedVideoFrame::toString() const {
 
 std::unique_ptr<webrtc::video_coding::EncodedFrame>
 RTCEncodedVideoFrame::PassDelegate() {
-  // Sync the delegate data with |frame_data_|.
-  rtc::scoped_refptr<webrtc::EncodedImageBuffer> webrtc_image =
-      webrtc::EncodedImageBuffer::Create(
-          static_cast<const uint8_t*>(frame_data_->Data()),
-          frame_data_->ByteLengthAsSizeT());
-  delegate_->SetEncodedData(std::move(webrtc_image));
+  // Sync the delegate data with |frame_data_| if necessary.
+  if (replaced_frame_data_) {
+    rtc::scoped_refptr<webrtc::EncodedImageBuffer> webrtc_image =
+        webrtc::EncodedImageBuffer::Create(
+            static_cast<const uint8_t*>(frame_data_->Data()),
+            frame_data_->ByteLengthAsSizeT());
+    delegate_->SetEncodedData(std::move(webrtc_image));
+  }
   return std::move(delegate_);
 }
 

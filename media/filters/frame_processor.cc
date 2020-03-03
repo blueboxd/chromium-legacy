@@ -336,13 +336,13 @@ void MseTrackBuffer::NotifyStartOfCodedFrameGroup(DecodeTimestamp start_dts,
   stream_->OnStartOfCodedFrameGroup(start_dts, start_pts);
 }
 
-FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
+FrameProcessor::FrameProcessor(UpdateDurationCB update_duration_cb,
                                MediaLog* media_log)
     : group_start_timestamp_(kNoTimestamp),
-      update_duration_cb_(update_duration_cb),
+      update_duration_cb_(std::move(update_duration_cb)),
       media_log_(media_log) {
   DVLOG(2) << __func__ << "()";
-  DCHECK(update_duration_cb);
+  DCHECK(update_duration_cb_);
 }
 
 FrameProcessor::~FrameProcessor() {

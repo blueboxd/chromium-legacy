@@ -16,6 +16,21 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
+namespace {
+
+// Represents an error state. Each enum instance should be a negative
+// value.  This is just temporary for debugging.
+// TODO(crbug.com/946719): Remove this once we fix the bug.
+enum class ResourceRecordErrorState : int64_t {
+  // We don't use -1 here to catch an untracked usage of -1 as an error
+  // code.
+  kStartedCaching = -2,
+  kFinishedCachingNoBytesWritten = -3,
+  kFinishedCachingNoContext = -4,
+};
+
+}  // namespace
+
 namespace content {
 
 ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
@@ -29,22 +44,22 @@ ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 int64_t ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
-    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
-  return found->second.resource_id;
+    return blink::mojom::kInvalidServiceWorkerResourceId;
+  return found->second->resource_id;
 }
 
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
                                                        int64_t resource_id) {
-  DCHECK_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  DCHECK_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING)
       << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  resource_map_[url] = ServiceWorkerDatabase::ResourceRecord(
+  resource_map_[url] = storage::mojom::ServiceWorkerResourceRecord::New(
       resource_id, url,
-      ServiceWorkerDatabase::ResourceRecord::ErrorState::kStartedCaching);
+      static_cast<int64_t>(ResourceRecordErrorState::kStartedCaching));
   context_->registry()->StoreUncommittedResourceId(resource_id,
                                                    owner_->scope().GetOrigin());
 }
@@ -54,7 +69,7 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     int64_t size_bytes,
     net::Error net_error,
     const std::string& status_message) {
-  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(url));
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
@@ -63,13 +78,11 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
   if (!context_) {
     // For debugging. See https://crbug.com/946719.
     DCHECK(resource_map_.find(url) != resource_map_.end());
-    ServiceWorkerDatabase::ResourceRecord& record = resource_map_[url];
-    if (record.size_bytes ==
-        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
-                                 kStartedCaching)) {
-      record.size_bytes =
-          static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::
-                                   ErrorState::kFinishedCachingNoContext);
+    storage::mojom::ServiceWorkerResourceRecordPtr& record = resource_map_[url];
+    if (record->size_bytes ==
+        static_cast<int64_t>(ResourceRecordErrorState::kStartedCaching)) {
+      record->size_bytes = static_cast<int64_t>(
+          ResourceRecordErrorState::kFinishedCachingNoContext);
     }
     return;  // Our storage has been wiped via DeleteAndStartOver.
   }
@@ -81,29 +94,29 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
       main_script_status_message_ = status_message;
     }
   } else if (size_bytes >= 0) {
-    resource_map_[url].size_bytes = size_bytes;
+    resource_map_[url]->size_bytes = size_bytes;
   } else {
-    resource_map_[url].size_bytes =
-        static_cast<int64_t>(ServiceWorkerDatabase::ResourceRecord::ErrorState::
-                                 kFinishedCachingNoBytesWritten);
+    resource_map_[url]->size_bytes = static_cast<int64_t>(
+        ResourceRecordErrorState::kFinishedCachingNoBytesWritten);
   }
 }
 
 void ServiceWorkerScriptCacheMap::GetResources(
-    std::vector<ServiceWorkerDatabase::ResourceRecord>* resources) {
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>* resources) {
   DCHECK(resources->empty());
   for (ResourceMap::const_iterator it = resource_map_.begin();
        it != resource_map_.end();
        ++it) {
-    resources->push_back(it->second);
+    resources->push_back(it->second->Clone());
   }
 }
 
 void ServiceWorkerScriptCacheMap::SetResources(
-    const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+    const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
+        resources) {
   DCHECK(resource_map_.empty());
   for (auto it = resources.begin(); it != resources.end(); ++it) {
-    resource_map_[it->url] = *it;
+    resource_map_[(*it)->url] = (*it)->Clone();
   }
 }
 
@@ -118,8 +131,8 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
 
   auto found = resource_map_.find(url);
   if (found == resource_map_.end() ||
-      found->second.resource_id ==
-          ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
+      found->second->resource_id ==
+          blink::mojom::kInvalidServiceWorkerResourceId) {
     std::move(callback).Run(net::ERR_FILE_NOT_FOUND);
     return;
   }
@@ -130,7 +143,7 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     memmove(buffer->data(), &data[0], data.size());
   std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer;
   writer = context_->storage()->CreateResponseMetadataWriter(
-      found->second.resource_id);
+      found->second->resource_id);
   ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
   raw_writer->WriteMetadata(
       buffer.get(), data.size(),

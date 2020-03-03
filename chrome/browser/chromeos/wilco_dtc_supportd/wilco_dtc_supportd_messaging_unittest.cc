@@ -54,7 +54,7 @@ std::string AssertGetStringFromMojoHandle(mojo::ScopedHandle handle) {
     return std::string();
   base::ReadOnlySharedMemoryMapping shared_memory;
   std::string contents =
-      GetStringPieceFromMojoHandle(std::move(handle), &shared_memory)
+      MojoUtils::GetStringPieceFromMojoHandle(std::move(handle), &shared_memory)
           .as_string();
   CHECK(!contents.empty());
   return contents;
@@ -65,7 +65,7 @@ mojo::ScopedHandle AssertCreateReadOnlySharedMemoryMojoHandle(
   if (content.empty())
     return mojo::ScopedHandle();
   mojo::ScopedHandle shared_memory_handle =
-      CreateReadOnlySharedMemoryMojoHandle(content);
+      MojoUtils::CreateReadOnlySharedMemoryMojoHandle(content);
   CHECK(shared_memory_handle);
   return shared_memory_handle;
 }

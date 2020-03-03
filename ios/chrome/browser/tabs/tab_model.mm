@@ -45,8 +45,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #include "ios/web/public/navigation/navigation_item.h"
@@ -210,6 +209,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // Weak reference to the underlying shared model implementation.
   WebStateList* _webStateList;
 
+  // Enabler for |_webStateList|
+  WebUsageEnablerBrowserAgent* _webEnabler;
+
   // WebStateListObservers reacting to modifications of the model (may send
   // notification, translate and forward events, update metrics, ...).
   std::vector<std::unique_ptr<WebStateListObserver>> _webStateListObservers;
@@ -233,9 +235,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // Used to observe owned Tabs' WebStates.
   std::unique_ptr<web::WebStateObserver> _webStateObserver;
 }
-
-// Whether the underlying WebStateList's web usage is enabled.
-@property(nonatomic, readonly, getter=isWebUsageEnabled) BOOL webUsageEnabled;
 
 @end
 
@@ -281,6 +280,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _sessionRestorationBrowserAgent =
         SessionRestorationBrowserAgent::FromBrowser(browser);
     _tabUsageRecorder = TabUsageRecorderBrowserAgent::FromBrowser(browser);
+    _webEnabler = WebUsageEnablerBrowserAgent::FromBrowser(browser);
     _syncedWindowDelegate =
         SyncedWindowDelegateBrowserAgent::FromBrowser(browser);
 
@@ -390,19 +390,11 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateObserver.reset();
 }
 
-
-- (BOOL)isWebUsageEnabled {
-  DCHECK(_browserState);
-  return WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->IsWebUsageEnabled();
-}
-
 #pragma mark - Notification Handlers
 
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
-  if (self.webUsageEnabled && _webStateList->GetActiveWebState()) {
+  if (_webEnabler->IsWebUsageEnabled() && _webStateList->GetActiveWebState()) {
     NSString* tabId =
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();
@@ -429,7 +421,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _sessionRestorationBrowserAgent->SaveSession(/*immediately=*/true);
 
   // Write out a grey version of the current website to disk.
-  if (self.webUsageEnabled && _webStateList->GetActiveWebState()) {
+  if (_webEnabler->IsWebUsageEnabled() && _webStateList->GetActiveWebState()) {
     NSString* tabId =
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();

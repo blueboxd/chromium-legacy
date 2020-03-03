@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -133,8 +134,8 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   const PaintLayer& squashing_layer =
       squashing_state.most_recent_mapping->OwningLayer();
 
-  if (layer->GetLayoutObject().IsVideo() ||
-      squashing_layer.GetLayoutObject().IsVideo())
+  if (IsA<LayoutVideo>(layer->GetLayoutObject()) ||
+      IsA<LayoutVideo>(squashing_layer.GetLayoutObject()))
     return SquashingDisallowedReason::kSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.

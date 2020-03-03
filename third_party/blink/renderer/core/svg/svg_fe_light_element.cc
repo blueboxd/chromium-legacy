@@ -145,7 +145,7 @@ void SVGFELightElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGFELightElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (!change.by_parser) {
+  if (!change.ByParser()) {
     if (ContainerNode* parent = parentNode()) {
       LayoutObject* layout_object = parent->GetLayoutObject();
       if (layout_object && layout_object->IsSVGResourceFilterPrimitive())

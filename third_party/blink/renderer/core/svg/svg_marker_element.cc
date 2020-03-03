@@ -129,7 +129,7 @@ void SVGMarkerElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGMarkerElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

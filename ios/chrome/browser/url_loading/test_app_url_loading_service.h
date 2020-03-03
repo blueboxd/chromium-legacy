@@ -14,6 +14,7 @@ class ChromeBrowserState;
 class TestAppUrlLoadingService : public AppUrlLoadingService {
  public:
   TestAppUrlLoadingService();
+  ~TestAppUrlLoadingService() override {}
 
   // Opens a url based on |command| in a new tab.
   void LoadUrlInNewTab(const UrlLoadParams& params) override;

@@ -91,7 +91,7 @@ class ExpectedScriptInfo {
         body_(body),
         meta_data_(meta_data) {}
 
-  ServiceWorkerDatabase::ResourceRecord WriteToDiskCache(
+  storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCache(
       ServiceWorkerStorage* storage) const {
     return ::content::WriteToDiskCacheWithIdSync(
         storage, script_url_, resource_id_, headers_, body_, meta_data_);
@@ -249,7 +249,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -305,7 +305,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -364,7 +364,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -435,7 +435,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -515,7 +515,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -602,7 +602,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
   };
 
   {
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
       records.push_back(info.second.WriteToDiskCache(context()->storage()));
     version()->script_cache_map()->SetResources(records);
@@ -669,7 +669,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, NoContext) {
         "utf-8",
         "I'm script body for the main script",
         "I'm meta data for the main script"}}};
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
   for (const auto& info : kExpectedScriptInfoMap)
     records.push_back(info.second.WriteToDiskCache(context()->storage()));
   version()->script_cache_map()->SetResources(records);

@@ -71,7 +71,6 @@ source_set("eg_tests") {
     ":constants",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/modals:public",
-    "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/infobars",
     "//ios/showcase/test",
     "//ios/testing/earl_grey:earl_grey_support",

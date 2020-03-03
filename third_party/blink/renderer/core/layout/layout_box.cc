@@ -797,7 +797,7 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     parent_box = ContainingBlock();
 
   PhysicalRect absolute_rect_for_parent;
-  if (!IsLayoutView() && HasOverflowClip()) {
+  if (!IsA<LayoutView>(this) && HasOverflowClip()) {
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
@@ -1458,7 +1458,7 @@ bool LayoutBox::MapContentsRectToBoxSpace(
 }
 
 bool LayoutBox::ContainedContentsScroll(const LayoutObject& contents) const {
-  if (IsLayoutView() &&
+  if (IsA<LayoutView>(this) &&
       contents.StyleRef().GetPosition() == EPosition::kFixed) {
     return false;
   }
@@ -1893,7 +1893,7 @@ bool LayoutBox::GetBackgroundPaintedExtent(PhysicalRect& painted_extent) const {
 
   // LayoutView is special in the sense that it expands to the whole canvas,
   // thus can't be handled by this function.
-  DCHECK(!IsLayoutView());
+  DCHECK(!IsA<LayoutView>(this));
 
   PhysicalRect background_rect(PhysicalBorderBoxRect());
 
@@ -2023,7 +2023,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
   if (!StyleRef().HasBackground())
     return false;
   // Root background painting is special.
-  if (IsLayoutView())
+  if (IsA<LayoutView>(this))
     return false;
   // FIXME: box-shadow is painted while background painting.
   if (StyleRef().BoxShadow())
@@ -3086,10 +3086,10 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     return true;
   }
 
-  if (container->IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(container)) {
     bool use_fixed_position_adjustment =
         position == EPosition::kFixed && container == ancestor;
-    return ToLayoutView(container)->MapToVisualRectInAncestorSpaceInternal(
+    return layout_view->MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, use_fixed_position_adjustment ? kIsFixed : 0,
         visual_rect_flags);
   } else {
@@ -3966,7 +3966,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
   const LayoutBox* containing_block_child = this;
   bool skipped_auto_height_containing_block = false;
   LayoutUnit root_margin_border_padding_height;
-  while (!cb->IsLayoutView() &&
+  while (!IsA<LayoutView>(cb) &&
          (IsHorizontalWritingMode() == cb->IsHorizontalWritingMode() &&
           SkipContainingBlockForPercentHeightCalculation(cb))) {
     if ((cb->IsBody() || cb->IsDocumentElement()) &&
@@ -4287,7 +4287,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         // FIXME: This needs to be made writing-mode-aware. If the cell and
         // image are perpendicular writing-modes, this isn't right.
         // https://bugs.webkit.org/show_bug.cgi?id=46997
-        while (cb && !cb->IsLayoutView() &&
+        while (!IsA<LayoutView>(cb) &&
                (cb->StyleRef().LogicalHeight().IsAuto() ||
                 cb->StyleRef().LogicalHeight().IsPercentOrCalc())) {
           if (cb->IsTableCell()) {
@@ -4346,10 +4346,10 @@ LayoutUnit LayoutBox::AvailableLogicalHeight(
 LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
     const Length& h,
     AvailableLogicalHeightType height_type) const {
-  if (IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(this)) {
     return LayoutUnit(IsHorizontalWritingMode()
-                          ? ToLayoutView(this)->GetFrameView()->Size().Height()
-                          : ToLayoutView(this)->GetFrameView()->Size().Width());
+                          ? layout_view->GetFrameView()->Size().Height()
+                          : layout_view->GetFrameView()->Size().Width());
   }
 
   // We need to stop here, since we don't want to increase the height of the
@@ -4444,9 +4444,9 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
     return ContainingBlockLogicalHeightForPositioned(containing_block, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (StyleRef().GetPosition() == EPosition::kFixed &&
-      containing_block->IsLayoutView() && !GetDocument().Printing()) {
-    const LayoutView* view = ToLayoutView(containing_block);
+  const auto* view = DynamicTo<LayoutView>(containing_block);
+  if (StyleRef().GetPosition() == EPosition::kFixed && view &&
+      !GetDocument().Printing()) {
     if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
@@ -4515,9 +4515,9 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     return ContainingBlockLogicalWidthForPositioned(containing_block, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (StyleRef().GetPosition() == EPosition::kFixed &&
-      containing_block->IsLayoutView() && !GetDocument().Printing()) {
-    const LayoutView* view = ToLayoutView(containing_block);
+  const auto* view = DynamicTo<LayoutView>(containing_block);
+  if (StyleRef().GetPosition() == EPosition::kFixed && view &&
+      !GetDocument().Printing()) {
     if (LocalFrameView* frame_view = view->GetFrameView()) {
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
@@ -5867,7 +5867,7 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
   // For overflow clip objects, we don't want to propagate overflow into
   // unreachable areas.
   LayoutRect overflow_rect(rect);
-  if (HasOverflowClip() || IsLayoutView()) {
+  if (HasOverflowClip() || IsA<LayoutView>(this)) {
     // Overflow is in the block's coordinate space and thus is flipped for
     // vertical-rl writing
     // mode.  At this stage that is actually a simplification, since we can

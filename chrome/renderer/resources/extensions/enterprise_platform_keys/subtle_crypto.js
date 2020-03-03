@@ -51,6 +51,21 @@ function catchInvalidTokenError(reject) {
   return false;
 }
 
+// Returns true if the |normalizedAlgorithm| returned by normalizeAlgorithm() is
+// supported by platform keys subtle crypto internal API.
+function isSupportedGenerateKeyAlgorithm(normalizedAlgorithm) {
+  if (normalizedAlgorithm.name === 'RSASSA-PKCS1-v1_5') {
+    return equalsStandardPublicExponent(normalizedAlgorithm.publicExponent);
+  }
+
+  if (normalizedAlgorithm.name === 'ECDSA') {
+    // Only NIST P-256 curve is supported.
+    return normalizedAlgorithm.namedCurve === 'P-256';
+  }
+
+  return false;
+}
+
 // Returns true if |array| is a BigInteger describing the standard public
 // exponent 65537. In particular, it ignores leading zeros as required by the
 // BigInteger definition in WebCrypto.
@@ -106,29 +121,28 @@ EnterpriseSubtleCryptoImpl.prototype.generateKey =
       throw CreateSyntaxError();
     }
 
-    // normalizeAlgorithm returns an array, but publicExponent should be a
-    // Uint8Array.
-    normalizedAlgorithmParameters.publicExponent =
-        new Uint8Array(normalizedAlgorithmParameters.publicExponent);
-
-    if (normalizedAlgorithmParameters.name !== 'RSASSA-PKCS1-v1_5' ||
-        !equalsStandardPublicExponent(
-            normalizedAlgorithmParameters.publicExponent)) {
+    if (!isSupportedGenerateKeyAlgorithm(normalizedAlgorithmParameters)) {
       // Note: This deviates from WebCrypto.SubtleCrypto.
       throw CreateNotSupportedError();
     }
 
-    internalAPI.generateKey(subtleCrypto.tokenId,
-                            normalizedAlgorithmParameters.modulusLength,
-                            function(spki) {
-      if (catchInvalidTokenError(reject))
-        return;
-      if (chrome.runtime.lastError) {
-        reject(CreateOperationError());
-        return;
-      }
-      resolve(new KeyPair(spki, normalizedAlgorithmParameters, keyUsages));
-    });
+    if (normalizedAlgorithmParameters.name === 'RSASSA-PKCS1-v1_5') {
+      // normalizeAlgorithm returns an array, but publicExponent should be a
+      // Uint8Array.
+      normalizedAlgorithmParameters.publicExponent =
+          new Uint8Array(normalizedAlgorithmParameters.publicExponent);
+    }
+
+    internalAPI.generateKey(
+        subtleCrypto.tokenId, normalizedAlgorithmParameters, function(spki) {
+          if (catchInvalidTokenError(reject))
+            return;
+          if (chrome.runtime.lastError) {
+            reject(CreateOperationError());
+            return;
+          }
+          resolve(new KeyPair(spki, normalizedAlgorithmParameters, keyUsages));
+        });
   });
 };
 

@@ -30,7 +30,7 @@
 @interface TabGridViewController
     : UIViewController <TabGridPaging, GridTransitionAnimationLayoutProviding>
 
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;

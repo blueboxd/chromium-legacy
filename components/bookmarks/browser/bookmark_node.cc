@@ -151,7 +151,7 @@ BookmarkNode::BookmarkNode(int64_t id,
       favicon_type_(favicon_base::IconType::kInvalid),
       is_permanent_node_(is_permanent_node) {
   DCHECK((type == URL) != url.is_empty());
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
 }
 
 void BookmarkNode::InvalidateFavicon() {

@@ -405,7 +405,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     version_1->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
     // Store the registration.
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records_1;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records_1;
     records_1.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_1->script_url(),
         {} /* headers */, "I'm the body", "I'm the meta data"));
@@ -447,7 +447,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         CreateNewServiceWorkerVersion(context()->registry(),
                                       registration_.get(), kScript,
                                       blink::mojom::ScriptType::kClassic);
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records_2;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records_2;
     records_2.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_2->script_url(),
         {} /* headers */, "I'm the body", "I'm the meta data"));
@@ -892,7 +892,7 @@ class ServiceWorkerRegistrationObjectHostTest
     scoped_refptr<ServiceWorkerVersion> version = CreateNewServiceWorkerVersion(
         context()->registry(), registration, script_url,
         blink::mojom::ScriptType::kClassic);
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheSync(storage(), version->script_url(),
                                            {} /* headers */, "I'm the body",
                                            "I'm the meta data"));

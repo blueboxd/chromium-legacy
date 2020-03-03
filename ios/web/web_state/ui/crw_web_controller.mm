@@ -720,6 +720,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
+- (void)setVisible:(BOOL)visible {
+  _visible = visible;
+}
+
 - (void)wasShown {
   self.visible = YES;
 }

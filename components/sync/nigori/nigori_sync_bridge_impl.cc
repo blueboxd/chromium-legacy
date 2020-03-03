@@ -735,9 +735,14 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     // Newly arrived keystore keys could resolve pending encryption state in
     // keystore mode.
     DCHECK_EQ(state_.passphrase_type, NigoriSpecifics::KEYSTORE_PASSPHRASE);
-    UpdateCryptographerFromKeystoreNigori(
+    const base::Optional<sync_pb::NigoriKey> keystore_decryptor_key =
+        TryDecryptPendingKeystoreDecryptorToken(
+            sync_pb::EncryptedData(*state_.pending_keystore_decryptor_token));
+    // TODO(crbug.com/1057655): capture ModelError.
+    UpdateCryptographer(
         sync_pb::EncryptedData(*state_.pending_keys),
-        sync_pb::EncryptedData(*state_.pending_keystore_decryptor_token));
+        BuildDecryptionKeyBagForRemoteKeybag(keystore_decryptor_key));
+
     broadcasting_observer_->OnCryptographerStateChanged(
         state_.cryptographer.get(), state_.pending_keys.has_value());
   }
@@ -828,11 +833,6 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
 
   const bool passphrase_type_changed =
       UpdatePassphraseType(new_passphrase_type, &state_.passphrase_type);
-  if (passphrase_type_changed) {
-    // Keystore decryptor token is relevant only for keystore nigori, so it's
-    // safe to clear its pending state now.
-    state_.pending_keystore_decryptor_token.reset();
-  }
   DCHECK_NE(state_.passphrase_type, NigoriSpecifics::UNKNOWN);
 
   const bool encrypted_types_changed =
@@ -847,29 +847,22 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
         ProtoTimeToTime(specifics.keystore_migration_time());
   }
 
-  const sync_pb::EncryptedData& encryption_keybag =
-      specifics.encryption_keybag();
-  base::Optional<ModelError> error;
-  switch (state_.passphrase_type) {
-    case NigoriSpecifics::UNKNOWN:
-      // NigoriSpecifics with UNKNOWN type is not valid and shouldn't reach
-      // this codepath. We just updated |passphrase_type_| from specifics, so
-      // it can't be in this state as well.
-      NOTREACHED();
-      break;
-    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      error = UpdateCryptographerFromKeystoreNigori(
-          encryption_keybag, specifics.keystore_decryptor_token());
-      break;
-    case NigoriSpecifics::CUSTOM_PASSPHRASE:
-      state_.custom_passphrase_key_derivation_params =
-          GetKeyDerivationParamsFromSpecifics(specifics);
-      FALLTHROUGH;
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      error = UpdateCryptographerFromNonKeystoreNigori(encryption_keybag);
+  base::Optional<sync_pb::NigoriKey> keystore_decryptor_key;
+  if (state_.passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    keystore_decryptor_key = TryDecryptPendingKeystoreDecryptorToken(
+        specifics.keystore_decryptor_token());
+  } else {
+    state_.pending_keystore_decryptor_token.reset();
   }
+
+  if (state_.passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE) {
+    state_.custom_passphrase_key_derivation_params =
+        GetKeyDerivationParamsFromSpecifics(specifics);
+  }
+
+  base::Optional<ModelError> error = UpdateCryptographer(
+      specifics.encryption_keybag(),
+      BuildDecryptionKeyBagForRemoteKeybag(keystore_decryptor_key));
   if (error) {
     return error;
   }
@@ -900,74 +893,79 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   return base::nullopt;
 }
 
-base::Optional<ModelError>
-NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
+base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateCryptographer(
     const sync_pb::EncryptedData& encryption_keybag,
-    const sync_pb::EncryptedData& keystore_decryptor_token) {
+    const NigoriKeyBag& decryption_key_bag) {
   DCHECK(!encryption_keybag.blob().empty());
-  DCHECK(!keystore_decryptor_token.blob().empty());
 
   const bool had_pending_keys_before_update = state_.pending_keys.has_value();
 
-  // Decryption of |keystore_decryptor_token|.
-  NigoriKeyBag keystore_decryptor_key_bag = NigoriKeyBag::CreateEmpty();
-  sync_pb::NigoriKey keystore_decryptor_key;
-  if (state_.keystore_keys_cryptographer->DecryptKeystoreDecryptorToken(
-          keystore_decryptor_token, &keystore_decryptor_key)) {
-    keystore_decryptor_key_bag.AddKeyFromProto(keystore_decryptor_key);
-    state_.pending_keystore_decryptor_token.reset();
-  } else {
-    state_.pending_keystore_decryptor_token = keystore_decryptor_token;
-  }
-
-  // In order to decrypt |encryption_keybag|, temporarily set pending keys
-  // before calling TryDecryptPendingKeysWith().
   state_.pending_keys = encryption_keybag;
   state_.cryptographer->ClearDefaultEncryptionKey();
 
   base::Optional<ModelError> error =
-      TryDecryptPendingKeysWith(keystore_decryptor_key_bag);
+      TryDecryptPendingKeysWith(decryption_key_bag);
   if (error.has_value()) {
     return error;
   }
 
-  if (state_.pending_keys.has_value()) {
-    // TODO(crbug.com/922900): issue ModelError if
-    // |keystore_decryptor_keybag| is not empty?
-    return base::nullopt;
-  }
-
-  if (had_pending_keys_before_update) {
+  // TODO(crbug.com/1057655): issuing OnPassphraseAccepted() should be allowed
+  // for all passphrase types, but going out from |pending_keys| state might
+  // be disallowed for some circumstances (such as CUSTOM_PASSPHRASE ->
+  // CUSTOM_PASSPHRASE updates). Keep temporarily as is to avoid behavioral
+  // changes.
+  if (!state_.pending_keys.has_value() && had_pending_keys_before_update &&
+      state_.passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     broadcasting_observer_->OnPassphraseAccepted();
   }
 
   return base::nullopt;
 }
 
-base::Optional<ModelError>
-NigoriSyncBridgeImpl::UpdateCryptographerFromNonKeystoreNigori(
-    const sync_pb::EncryptedData& encryption_keybag) {
-  DCHECK(!encryption_keybag.blob().empty());
+base::Optional<sync_pb::NigoriKey>
+NigoriSyncBridgeImpl::TryDecryptPendingKeystoreDecryptorToken(
+    const sync_pb::EncryptedData& keystore_decryptor_token) {
+  DCHECK(!keystore_decryptor_token.blob().empty());
+  sync_pb::NigoriKey keystore_decryptor_key;
+  if (state_.keystore_keys_cryptographer->DecryptKeystoreDecryptorToken(
+          keystore_decryptor_token, &keystore_decryptor_key)) {
+    state_.pending_keystore_decryptor_token.reset();
+    return keystore_decryptor_key;
+  }
+  state_.pending_keystore_decryptor_token = keystore_decryptor_token;
+  return base::nullopt;
+}
 
-  // Attempt to decrypt |encryption_keybag| with current default key and
-  // restored |explicit_passphrase_key_|. Note: key derived from explicit
-  // passphrase was stored in prefs prior to USS, and using
-  // |explicit_passphrase_key_| here effectively does migration.
+NigoriKeyBag NigoriSyncBridgeImpl::BuildDecryptionKeyBagForRemoteKeybag(
+    const base::Optional<sync_pb::NigoriKey>& keystore_decryptor_key) const {
   NigoriKeyBag decryption_key_bag = NigoriKeyBag::CreateEmpty();
-  // If |explicit_passphrase_key_| is empty, following line is no-op.
-  // TODO(crbug.com/1020084): don't allow decryption with
-  // |explicit_passphrase_key_| for TRUSTED_VAULT_PASSPHRASE.
-  decryption_key_bag.AddKeyFromProto(explicit_passphrase_key_);
-  if (state_.cryptographer->CanEncrypt()) {
-    // TODO(crbug.com/922900): don't allow decryption with default key if
-    // |passphrase_type| was changed.
+
+  if (keystore_decryptor_key.has_value()) {
+    DCHECK_EQ(state_.passphrase_type, NigoriSpecifics::KEYSTORE_PASSPHRASE);
+    decryption_key_bag.AddKeyFromProto(*keystore_decryptor_key);
+  }
+
+  // TODO(crbug.com/1057655, crbug.com/1020084): This should be allowed for
+  // KEYSTORE_PASSPHRASE and disallowed for TRUSTED_VAULT_PASSPHRASE, keep
+  // temporarily as is to avoid behavioral changes.
+  if (state_.passphrase_type != NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    // Note: key derived from explicit passphrase was stored in prefs prior to
+    // USS, and using |explicit_passphrase_key_| here effectively does
+    // migration. If |explicit_passphrase_key_| is empty, following line is
+    // no-op.
+    decryption_key_bag.AddKeyFromProto(explicit_passphrase_key_);
+  }
+
+  // TODO(crbug.com/1057655): this should be allowed for KEYSTORE_PASSPHRASE,
+  // but should be disallowed if |passphrase_type| was changed in current
+  // update.
+  if (state_.passphrase_type != NigoriSpecifics::KEYSTORE_PASSPHRASE &&
+      state_.cryptographer->CanEncrypt()) {
     decryption_key_bag.AddKeyFromProto(
         state_.cryptographer->ExportDefaultKey());
   }
 
-  state_.pending_keys = encryption_keybag;
-  state_.cryptographer->ClearDefaultEncryptionKey();
-  return TryDecryptPendingKeysWith(decryption_key_bag);
+  return decryption_key_bag;
 }
 
 base::Optional<ModelError> NigoriSyncBridgeImpl::TryDecryptPendingKeysWith(

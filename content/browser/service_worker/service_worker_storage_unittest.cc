@@ -59,8 +59,18 @@ using net::WrappedIOBuffer;
 namespace content {
 namespace service_worker_storage_unittest {
 
-using RegistrationData = ServiceWorkerDatabase::RegistrationData;
-using ResourceRecord = ServiceWorkerDatabase::ResourceRecord;
+using RegistrationData = storage::mojom::ServiceWorkerRegistrationData;
+using ResourceRecord = storage::mojom::ServiceWorkerResourceRecordPtr;
+
+// TODO(crbug.com/946719): Change the type of |size_bytes| to uint64_t when
+// the bug is fixed.
+ResourceRecord CreateResourceRecord(int64_t resource_id,
+                                    const GURL& url,
+                                    int64_t size_bytes) {
+  EXPECT_TRUE(url.is_valid());
+  return storage::mojom::ServiceWorkerResourceRecord::New(resource_id, url,
+                                                          size_bytes);
+}
 
 // This is a sample public key for testing the API. The corresponding private
 // key (use this to generate new samples for this test file) is:
@@ -549,12 +559,10 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop loop;
     storage()->database_task_runner_->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          RegistrationData deleted_version;
-          std::vector<int64_t> newly_purgeable_resources;
+          ServiceWorkerDatabase::DeletedVersion deleted_version;
           ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
-                    database_raw->WriteRegistration(
-                        registration, resources, &deleted_version,
-                        &newly_purgeable_resources));
+                    database_raw->WriteRegistration(registration, resources,
+                                                    &deleted_version));
           loop.Quit();
         }));
     loop.Run();
@@ -679,7 +687,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             storage()->NewRegistrationId());
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
             storage()->NewVersionId());
-  EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
             storage()->NewRegistrationId());
 }
 
@@ -716,8 +724,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_FALSE(found_registration.get());
 
   std::vector<ResourceRecord> resources;
-  resources.push_back(ResourceRecord(1, kResource1, kResource1Size));
-  resources.push_back(ResourceRecord(2, kResource2, kResource2Size));
+  resources.push_back(CreateResourceRecord(1, kResource1, kResource1Size));
+  resources.push_back(CreateResourceRecord(2, kResource2, kResource2Size));
 
   // Store something.
   blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -1273,9 +1281,9 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
 
     std::vector<ResourceRecord> resources;
     resources.push_back(
-        ResourceRecord(resource_id1_, script_, resource_id1_size_));
+        CreateResourceRecord(resource_id1_, script_, resource_id1_size_));
     resources.push_back(
-        ResourceRecord(resource_id2_, import_, resource_id2_size_));
+        CreateResourceRecord(resource_id2_, import_, resource_id2_size_));
     version->script_cache_map()->SetResources(resources);
 
     registration_->SetWaitingVersion(version);
@@ -1623,7 +1631,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;
-  records.push_back(ResourceRecord(10, live_version->script_url(), 100));
+  records.push_back(CreateResourceRecord(10, live_version->script_url(), 100));
   live_version->script_cache_map()->SetResources(records);
   live_version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1670,7 +1678,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ResourceRecord> records;
-  records.push_back(ResourceRecord(10, live_version->script_url(), 100));
+  records.push_back(CreateResourceRecord(10, live_version->script_url(), 100));
   live_version->script_cache_map()->SetResources(records);
   live_version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1778,7 +1786,7 @@ TEST_F(ServiceWorkerStorageTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   data1.resources_total_size_bytes = 100;
   // Don't set origin_trial_tokens to simulate old database entry.
   std::vector<ResourceRecord> resources1;
-  resources1.push_back(ResourceRecord(1, data1.script, 100));
+  resources1.push_back(CreateResourceRecord(1, data1.script, 100));
   WriteRegistrationToDB(data1, resources1);
 
   const GURL origin2("http://www2.example.com");
@@ -1793,7 +1801,7 @@ TEST_F(ServiceWorkerStorageTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   // Set empty origin_trial_tokens.
   data2.origin_trial_tokens = blink::TrialTokenValidator::FeatureToTokensMap();
   std::vector<ResourceRecord> resources2;
-  resources2.push_back(ResourceRecord(2, data2.script, 200));
+  resources2.push_back(CreateResourceRecord(2, data2.script, 200));
   WriteRegistrationToDB(data2, resources2);
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
@@ -1920,7 +1928,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   EXPECT_EQ(kFeature2Token2, tokens.at("Feature2")[1]);
 
   std::vector<ResourceRecord> record;
-  record.push_back(ResourceRecord(1, kScript, 100));
+  record.push_back(CreateResourceRecord(1, kScript, 100));
   version->script_cache_map()->SetResources(record);
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1962,8 +1970,8 @@ TEST_F(ServiceWorkerStorageTest, AbsentNavigationPreloadState) {
   data1.resources_total_size_bytes = 100;
   // Don't set navigation preload state to simulate old database entry.
   std::vector<ResourceRecord> resources1;
-  resources1.push_back(ResourceRecord(1, data1.script, 100));
-  WriteRegistrationToDB(data1, resources1);
+  resources1.push_back(CreateResourceRecord(1, data1.script, 100));
+  WriteRegistrationToDB(data1, std::move(resources1));
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,

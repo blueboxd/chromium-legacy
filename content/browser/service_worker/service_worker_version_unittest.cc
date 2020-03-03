@@ -99,7 +99,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         GURL("https://www.example.com/test/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheWithIdSync(
         helper_->context()->storage(), version_->script_url(), 10,
         {} /* headers */, "I'm a body", "I'm a meta data"));

@@ -202,11 +202,6 @@ AutomationPredicate = class {
       return false;
     }
 
-    // Descend into large nodes.
-    if (node.name && node.name.length > constants.OBJECT_MAX_CHARCOUNT) {
-      return false;
-    }
-
     // Given no other information, ChromeVox wants to visit focusable
     // (e.g. tabindex=0) nodes only when it has a name or is a control.
     if (node.state.focusable &&

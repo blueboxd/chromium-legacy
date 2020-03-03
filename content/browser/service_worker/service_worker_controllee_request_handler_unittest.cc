@@ -107,7 +107,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
                                         context()->AsWeakPtr());
     context()->storage()->LazyInitializeForTest();
 
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheSync(
         context()->storage(), version_->script_url(), {} /* headers */,
         "I'm a body", "I'm a meta data"));

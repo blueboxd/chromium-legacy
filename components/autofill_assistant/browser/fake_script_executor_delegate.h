@@ -84,6 +84,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     trigger_context_ = std::move(trigger_context);
   }
 
+  void SetUserModel(UserModel* user_model) { user_model_ = user_model; }
+
   std::vector<AutofillAssistantState> GetStateHistory() {
     return state_history_;
   }
@@ -135,6 +137,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool expand_or_collapse_updated_ = false;
   bool expand_or_collapse_value_ = false;
   bool expand_sheet_for_prompt_ = true;
+  UserModel* user_model_ = nullptr;
 
   bool require_ui_ = false;
 

@@ -106,6 +106,7 @@ void DriveFsAuth::UpdateCachedToken(const std::string& token,
 
 void DriveFsAuth::AuthTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  access_token_fetcher_.reset();
   std::move(get_access_token_callback_)
       .Run(mojom::AccessTokenStatus::kAuthError, "");
 }

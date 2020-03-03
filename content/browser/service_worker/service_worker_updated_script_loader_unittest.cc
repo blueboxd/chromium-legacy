@@ -377,7 +377,7 @@ TEST_F(ServiceWorkerUpdatedScriptLoaderTest, CompleteFailed) {
   client_->RunUntilComplete();
 
   EXPECT_EQ(net::ERR_FAILED, client_->completion_status().error_code);
-  EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(kScriptURL));
 }
 

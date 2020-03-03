@@ -111,7 +111,7 @@ static bool IsPotentialClusterRoot(const LayoutObject* layout_object) {
   // - Must not be normal list items, as items in the same list should look
   //   consistent, unless they are floating or position:absolute/fixed.
   Node* node = layout_object->GeneratingNode();
-  if (node && !node->hasChildren() && !layout_object->IsLayoutView())
+  if (node && !node->hasChildren() && !IsA<LayoutView>(layout_object))
     return false;
   if (!layout_object->IsLayoutBlock())
     return false;
@@ -129,7 +129,7 @@ static bool IsIndependentDescendant(const LayoutBlock* layout_object) {
   DCHECK(IsPotentialClusterRoot(layout_object));
 
   LayoutBlock* containing_block = layout_object->ContainingBlock();
-  return layout_object->IsLayoutView() || layout_object->IsFloating() ||
+  return IsA<LayoutView>(layout_object) || layout_object->IsFloating() ||
          layout_object->IsOutOfFlowPositioned() ||
          layout_object->IsTableCell() || layout_object->IsTableCaption() ||
          layout_object->IsFlexibleBoxIncludingDeprecatedAndNG() ||
@@ -195,7 +195,7 @@ static bool BlockHeightConstrained(const LayoutBlock* block) {
       // height:100%, without intending to constrain the height of the content
       // within them.
       return !block->IsDocumentElement() && !block->IsBody() &&
-             !block->IsLayoutView();
+             !IsA<LayoutView>(block);
     }
     if (block->IsFloating())
       return false;
@@ -323,7 +323,7 @@ TextAutosizer::BeginLayoutBehavior TextAutosizer::PrepareForLayout(
   if (!first_block_to_begin_layout_) {
     first_block_to_begin_layout_ = block;
     PrepareClusterStack(block->Parent());
-    if (block->IsLayoutView())
+    if (IsA<LayoutView>(block))
       CheckSuperclusterConsistency();
   } else if (block == CurrentCluster()->root_) {
     // Ignore beginLayout on the same block twice.
@@ -358,7 +358,7 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
   if (block->IsRubyRun() || block->IsRubyBase() || block->IsRubyText())
     return;
 
-  DCHECK(!cluster_stack_.IsEmpty() || block->IsLayoutView());
+  DCHECK(!cluster_stack_.IsEmpty() || IsA<LayoutView>(block));
   if (cluster_stack_.IsEmpty())
     did_check_cross_site_use_count_ = false;
 
@@ -881,7 +881,7 @@ TextAutosizer::Cluster* TextAutosizer::MaybeCreateCluster(LayoutBlock* block) {
 
   Cluster* parent_cluster =
       cluster_stack_.IsEmpty() ? nullptr : CurrentCluster();
-  DCHECK(parent_cluster || block->IsLayoutView());
+  DCHECK(parent_cluster || IsA<LayoutView>(block));
 
   // If a non-independent block would not alter the SUPPRESSING flag, it doesn't
   // need to be a cluster.
@@ -1091,7 +1091,7 @@ const LayoutBlock* TextAutosizer::DeepestBlockContainingAllText(
     const LayoutBlock* root) const {
   // To avoid font-size shaking caused by the change of LayoutView's
   // DeepestBlockContainingAllText.
-  if (root->IsLayoutView())
+  if (IsA<LayoutView>(root))
     return root;
 
   size_t first_depth = 0;

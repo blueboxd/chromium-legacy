@@ -60,10 +60,11 @@ class SourceBufferStateTest : public ::testing::Test {
   SourceBufferStateTest() : mock_stream_parser_(nullptr) {}
 
   std::unique_ptr<SourceBufferState> CreateSourceBufferState() {
-    std::unique_ptr<FrameProcessor> frame_processor = base::WrapUnique(
-        new FrameProcessor(base::Bind(&SourceBufferStateTest::OnUpdateDuration,
-                                      base::Unretained(this)),
-                           &media_log_));
+    std::unique_ptr<FrameProcessor> frame_processor =
+        std::make_unique<FrameProcessor>(
+            base::BindRepeating(&SourceBufferStateTest::OnUpdateDuration,
+                                base::Unretained(this)),
+            &media_log_);
     mock_stream_parser_ = new testing::StrictMock<MockStreamParser>();
     return base::WrapUnique(new SourceBufferState(
         base::WrapUnique(mock_stream_parser_), std::move(frame_processor),

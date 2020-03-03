@@ -143,7 +143,7 @@ void SVGMaskElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGMaskElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

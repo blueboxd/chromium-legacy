@@ -182,8 +182,9 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
         base::BindOnce(
             [](scoped_refptr<ServiceWorkerVersion> version,
                base::OnceClosure callback,
-               ServiceWorkerDatabase::ResourceRecord record) {
-              std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+               storage::mojom::ServiceWorkerResourceRecordPtr record) {
+              std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+                  records;
               records.push_back(std::move(record));
               version->script_cache_map()->SetResources(records);
 

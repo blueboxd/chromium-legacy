@@ -51,8 +51,8 @@ ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
   std::unique_ptr<api_epki::GenerateKey::Params> params(
       api_epki::GenerateKey::Params::Create(*args_));
-  // TODO(pneubeck): Add support for unsigned integers to IDL.
-  EXTENSION_FUNCTION_VALIDATE(params && params->modulus_length >= 0);
+
+  EXTENSION_FUNCTION_VALIDATE(params);
   std::string platform_keys_token_id;
   if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
@@ -62,11 +62,28 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
           browser_context());
   DCHECK(service);
 
-  service->GenerateRSAKey(
-      platform_keys_token_id, params->modulus_length, extension_id(),
-      base::Bind(
-          &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
-          this));
+  if (params->algorithm.name == "RSASSA-PKCS1-v1_5") {
+    // TODO(pneubeck): Add support for unsigned integers to IDL.
+    EXTENSION_FUNCTION_VALIDATE(params->algorithm.modulus_length &&
+                                *(params->algorithm.modulus_length) >= 0);
+    service->GenerateRSAKey(
+        platform_keys_token_id, *(params->algorithm.modulus_length),
+        extension_id(),
+        base::Bind(
+            &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
+            this));
+  } else if (params->algorithm.name == "ECDSA") {
+    EXTENSION_FUNCTION_VALIDATE(params->algorithm.named_curve);
+    service->GenerateECKey(
+        platform_keys_token_id, *(params->algorithm.named_curve),
+        extension_id(),
+        base::Bind(
+            &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
+            this));
+  } else {
+    NOTREACHED();
+    EXTENSION_FUNCTION_VALIDATE(false);
+  }
   return RespondLater();
 }
 

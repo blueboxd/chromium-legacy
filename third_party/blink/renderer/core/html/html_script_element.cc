@@ -78,7 +78,7 @@ void HTMLScriptElement::ChildrenChanged(const ChildrenChange& change) {
 
   // We'll record whether the script element children were ever changed by
   // the API (as opposed to the parser).
-  children_changed_by_api_ |= (change.by_parser == kChildrenChangeSourceAPI);
+  children_changed_by_api_ |= !change.ByParser();
 }
 
 void HTMLScriptElement::DidMoveToNewDocument(Document& old_document) {

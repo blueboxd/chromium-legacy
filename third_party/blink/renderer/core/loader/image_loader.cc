@@ -855,8 +855,8 @@ LayoutImageResource* ImageLoader::GetLayoutImageResource() {
   if (layout_object->IsSVGImage())
     return ToLayoutSVGImage(layout_object)->ImageResource();
 
-  if (layout_object->IsVideo())
-    return ToLayoutVideo(layout_object)->ImageResource();
+  if (auto* layout_video = DynamicTo<LayoutVideo>(layout_object))
+    return layout_video->ImageResource();
 
   return nullptr;
 }

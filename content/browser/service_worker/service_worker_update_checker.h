@@ -80,7 +80,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
           failure_info)>;
 
   ServiceWorkerUpdateChecker(
-      std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+          scripts_to_compare,
       const GURL& main_script_url,
       int64_t main_script_resource_id,
       scoped_refptr<ServiceWorkerVersion> version_to_update,
@@ -127,7 +128,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   const GURL main_script_url_;
   const int64_t main_script_resource_id_;
 
-  std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+      scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
   std::map<GURL, ComparedScriptInfo> script_check_results_;
 

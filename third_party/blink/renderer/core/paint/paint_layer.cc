@@ -140,7 +140,7 @@ PaintLayerRareData::PaintLayerRareData()
 PaintLayerRareData::~PaintLayerRareData() = default;
 
 PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
-    : is_root_layer_(layout_object.IsLayoutView()),
+    : is_root_layer_(IsA<LayoutView>(layout_object)),
       has_visible_content_(false),
       needs_descendant_dependent_flags_update_(true),
       needs_visual_overflow_recalc_(true),
@@ -1489,7 +1489,7 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
   // and its descendants to change paint invalidation container.
   bool did_set_paint_invalidation = false;
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !GetLayoutObject().IsLayoutView() && GetLayoutObject().IsRooted() &&
+      !IsA<LayoutView>(GetLayoutObject()) && GetLayoutObject().IsRooted() &&
       GetLayoutObject().StyleRef().IsStacked()) {
     const LayoutBoxModelObject& previous_paint_invalidation_container =
         GetLayoutObject().Parent()->ContainerForPaintInvalidation();

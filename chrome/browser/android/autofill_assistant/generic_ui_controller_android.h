@@ -15,21 +15,23 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
-class EventHandler;
 class InteractionHandlerAndroid;
+class BasicInteractions;
+class EventHandler;
 class UserModel;
 
 class GenericUiControllerAndroid {
  public:
   // Attempts to creata a new instance. May fail if the proto is invalid.
-  // |jcontext|, |delegate|, |user_model| and |event_handler| must outlive this
-  // instance. Ownership of the arguments is not changed.
+  // |jcontext|, |delegate| and |ui_delegate| must outlive this instance.
+  // Ownership of the arguments is not changed.
   static std::unique_ptr<GenericUiControllerAndroid> CreateFromProto(
       const GenericUserInterfaceProto& proto,
       base::android::ScopedJavaLocalRef<jobject> jcontext,
       base::android::ScopedJavaGlobalRef<jobject> delegate,
+      EventHandler* event_handler,
       UserModel* user_model,
-      EventHandler* event_handler);
+      BasicInteractions* basic_interactions);
 
   base::android::ScopedJavaGlobalRef<jobject> GetRootView() {
     return jroot_view_;

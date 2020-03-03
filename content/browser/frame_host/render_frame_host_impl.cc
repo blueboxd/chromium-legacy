@@ -6801,7 +6801,8 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
       worker_process_id,
       /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
       /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
-      last_committed_origin_, std::move(receiver));
+      last_committed_origin_, cross_origin_embedder_policy_,
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

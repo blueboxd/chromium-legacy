@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -116,9 +117,9 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
 }  // namespace
 
 TestPlugin::TestPlugin(const blink::WebPluginParams& params,
-                       WebTestDelegate* delegate,
+                       TestInterfaces* test_interfaces,
                        blink::WebLocalFrame* frame)
-    : delegate_(delegate),
+    : test_interfaces_(test_interfaces),
       container_(nullptr),
       web_local_frame_(frame),
       gl_(nullptr),
@@ -577,21 +578,22 @@ blink::WebInputEventResult TestPlugin::HandleInputEvent(
   const char* event_name = blink::WebInputEvent::GetName(event.GetType());
   if (!strcmp(event_name, "") || !strcmp(event_name, "Undefined"))
     event_name = "unknown";
-  delegate_->PrintMessage(std::string("Plugin received event: ") + event_name +
-                          "\n");
+  test_interfaces_->GetDelegate()->PrintMessage(
+      std::string("Plugin received event: ") + event_name + "\n");
   if (print_event_details_)
-    PrintEventDetails(delegate_, event);
+    PrintEventDetails(test_interfaces_->GetDelegate(), event);
 
   if (print_user_gesture_status_) {
     bool has_transient_user_activation =
         web_local_frame_->HasTransientUserActivation();
-    delegate_->PrintMessage(std::string("* ") +
-                            (has_transient_user_activation ? "" : "not ") +
-                            "handling user gesture\n");
+    test_interfaces_->GetDelegate()->PrintMessage(
+        std::string("* ") + (has_transient_user_activation ? "" : "not ") +
+        "handling user gesture\n");
   }
 
   if (is_persistent_)
-    delegate_->PrintMessage(std::string("TestPlugin: isPersistent\n"));
+    test_interfaces_->GetDelegate()->PrintMessage(
+        std::string("TestPlugin: isPersistent\n"));
   return blink::WebInputEventResult::kNotHandled;
 }
 
@@ -617,15 +619,15 @@ bool TestPlugin::HandleDragStatusUpdate(blink::WebDragStatus drag_status,
     case blink::kWebDragStatusUnknown:
       NOTREACHED();
   }
-  delegate_->PrintMessage(std::string("Plugin received event: ") +
-                          drag_status_name + "\n");
+  test_interfaces_->GetDelegate()->PrintMessage(
+      std::string("Plugin received event: ") + drag_status_name + "\n");
   return false;
 }
 
 TestPlugin* TestPlugin::Create(const blink::WebPluginParams& params,
-                               WebTestDelegate* delegate,
+                               TestInterfaces* test_interfaces,
                                blink::WebLocalFrame* frame) {
-  return new TestPlugin(params, delegate, frame);
+  return new TestPlugin(params, test_interfaces, frame);
 }
 
 const blink::WebString& TestPlugin::MimeType() {

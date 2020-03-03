@@ -146,10 +146,8 @@ void SVGGradientElement::RemovedFrom(ContainerNode& root_parent) {
 void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
-    return;
-
-  InvalidateGradient(layout_invalidation_reason::kChildChanged);
+  if (!change.ByParser())
+    InvalidateGradient(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGGradientElement::InvalidateGradient(

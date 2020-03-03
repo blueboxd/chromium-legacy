@@ -64,10 +64,12 @@ FORWARD_DECLARE_TEST(ServiceWorkerStorageTest, DisabledStorage);
 // See the toplevel description of ServiceWorkerRegistry.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
-  using RegistrationList = std::vector<ServiceWorkerDatabase::RegistrationData>;
-  using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;
+  using RegistrationList =
+      std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>;
+  using ResourceList =
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>;
   using FindRegistrationDataCallback = base::OnceCallback<void(
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       ServiceWorkerDatabase::Status status)>;
   using GetRegistrationsDataCallback = base::OnceCallback<void(
@@ -140,8 +142,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Stores |registration_data| and |resources| on persistent storage.
   void StoreRegistrationData(
-      const ServiceWorkerDatabase::RegistrationData& registration_data,
-      const ResourceList& resources,
+      storage::mojom::ServiceWorkerRegistrationDataPtr registration_data,
+      std::unique_ptr<ResourceList> resources,
       StoreRegistrationDataCallback callback);
 
   // Updates the state of the registration's stored version to active.
@@ -268,7 +270,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void GetNewVersionId(base::OnceCallback<void(int64_t version_id)> callback);
 
   // Returns a new resource id which is guaranteed to be unique in the storage.
-  // Returns ServiceWorkerConsts::kInvalidServiceWorkerResourceId if the storage
+  // Returns blink::mojom::kInvalidServiceWorkerResourceId if the storage
   // is disabled.
   // NOTE: Currently this method can return a new resource id synchronously
   // and doesn't have to take a callback. Using a callback is a preparation
@@ -345,16 +347,14 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                               ServiceWorkerDatabase::Status status)>;
   using WriteRegistrationCallback = base::OnceCallback<void(
       const GURL& origin,
-      const ServiceWorkerDatabase::RegistrationData& deleted_version_data,
-      const std::vector<int64_t>& newly_purgeable_resources,
+      const ServiceWorkerDatabase::DeletedVersion& deleted_version_data,
       ServiceWorkerDatabase::Status status)>;
   using DeleteRegistrationInDBCallback = base::OnceCallback<void(
       OriginState origin_state,
-      const ServiceWorkerDatabase::RegistrationData& deleted_version_data,
-      const std::vector<int64_t>& newly_purgeable_resources,
+      const ServiceWorkerDatabase::DeletedVersion& deleted_version_data,
       ServiceWorkerDatabase::Status status)>;
   using FindInDBCallback = base::OnceCallback<void(
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       ServiceWorkerDatabase::Status status)>;
   using GetResourcesCallback =
@@ -384,10 +384,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerDatabase::Status status);
   void DidStoreRegistrationData(
       StoreRegistrationDataCallback callback,
-      const ServiceWorkerDatabase::RegistrationData& new_version,
+      uint64_t new_resources_total_size_bytes,
       const GURL& origin,
-      const ServiceWorkerDatabase::RegistrationData& deleted_version,
-      const std::vector<int64_t>& newly_purgeable_resources,
+      const ServiceWorkerDatabase::DeletedVersion& deleted_version,
       ServiceWorkerDatabase::Status status);
   void DidUpdateToActiveState(DatabaseStatusCallback callback,
                               const GURL& origin,
@@ -395,8 +394,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DidDeleteRegistration(
       std::unique_ptr<DidDeleteRegistrationParams> params,
       OriginState origin_state,
-      const ServiceWorkerDatabase::RegistrationData& deleted_version,
-      const std::vector<int64_t>& newly_purgeable_resources,
+      const ServiceWorkerDatabase::DeletedVersion& deleted_version,
       ServiceWorkerDatabase::Status status);
   void DidWriteUncommittedResourceIds(DatabaseStatusCallback callback,
                                       const GURL& origin,
@@ -450,8 +448,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   static void WriteRegistrationInDB(
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
-      const ServiceWorkerDatabase::RegistrationData& registration,
-      const ResourceList& resources,
+      storage::mojom::ServiceWorkerRegistrationDataPtr registration,
+      std::unique_ptr<ResourceList> resources,
       WriteRegistrationCallback callback);
   static void FindForClientUrlInDB(
       ServiceWorkerDatabase* database,

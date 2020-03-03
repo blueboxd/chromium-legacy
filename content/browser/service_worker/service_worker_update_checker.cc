@@ -81,7 +81,8 @@ void SetUpOnUI(
 }  // namespace
 
 ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
-    std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>
+        scripts_to_compare,
     const GURL& main_script_url,
     int64_t main_script_resource_id,
     scoped_refptr<ServiceWorkerVersion> version_to_update,
@@ -209,7 +210,7 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
   }
 
   // The main script should be skipped since it should be compared first.
-  if (scripts_to_compare_[next_script_index_to_compare_].url ==
+  if (scripts_to_compare_[next_script_index_to_compare_]->url ==
       main_script_url_) {
     next_script_index_to_compare_++;
     if (next_script_index_to_compare_ >= scripts_to_compare_.size()) {
@@ -227,9 +228,10 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
     }
   }
 
-  const GURL& next_url = scripts_to_compare_[next_script_index_to_compare_].url;
+  const GURL& next_url =
+      scripts_to_compare_[next_script_index_to_compare_]->url;
   int64_t next_resource_id =
-      scripts_to_compare_[next_script_index_to_compare_].resource_id;
+      scripts_to_compare_[next_script_index_to_compare_]->resource_id;
   next_script_index_to_compare_++;
   CheckOneScript(next_url, next_resource_id);
 }
@@ -245,7 +247,7 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
       "ServiceWorker", "ServiceWorkerUpdateChecker::CheckOneScript", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "url", url.spec());
 
-  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id)
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
   version_to_update_->context()->storage()->GetNewResourceId(base::BindOnce(

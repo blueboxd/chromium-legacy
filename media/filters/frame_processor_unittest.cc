@@ -87,7 +87,7 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
         video_id_(2) {
     use_sequence_mode_ = GetParam();
     frame_processor_ = std::make_unique<FrameProcessor>(
-        base::Bind(
+        base::BindRepeating(
             &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
             base::Unretained(&callbacks_)),
         &media_log_);

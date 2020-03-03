@@ -268,7 +268,8 @@ void WilcoDtcSupportdWebRequestService::OnRequestComplete(
 
   mojo::ScopedHandle response_body_handle;
   if (response_body)
-    response_body_handle = CreateReadOnlySharedMemoryMojoHandle(*response_body);
+    response_body_handle =
+        MojoUtils::CreateReadOnlySharedMemoryMojoHandle(*response_body);
 
   // Got an HTTP error.
   if (!IsHttpOkCode(response_code)) {

@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
@@ -36,8 +35,7 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -106,12 +104,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     dependencyFactory_ = factory;
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
-
-    WebStateListWebUsageEnabler* enabler =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            chrome_browser_state_.get());
-    enabler->SetWebStateList(browser_->GetWebStateList());
-    enabler->SetWebUsageEnabled(true);
+    WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
+    WebUsageEnablerBrowserAgent::FromBrowser(browser_.get())
+        ->SetWebUsageEnabled(true);
 
     SessionRestorationBrowserAgent::CreateForBrowser(
         browser_.get(), [[TestSessionService alloc] init]);

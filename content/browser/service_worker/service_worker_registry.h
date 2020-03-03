@@ -239,7 +239,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       int64_t registration_id);
 
   scoped_refptr<ServiceWorkerRegistration> GetOrCreateRegistration(
-      const ServiceWorkerDatabase::RegistrationData& data,
+      const storage::mojom::ServiceWorkerRegistrationData& data,
       const ResourceList& resources);
 
   // Looks up live registrations and returns an optional value which may contain
@@ -252,18 +252,18 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const GURL& client_url,
       int64_t trace_event_id,
       FindRegistrationCallback callback,
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       storage::mojom::ServiceWorkerDatabaseStatus database_status);
   void DidFindRegistrationForScope(
       FindRegistrationCallback callback,
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       storage::mojom::ServiceWorkerDatabaseStatus database_status);
   void DidFindRegistrationForId(
       int64_t registration_id,
       FindRegistrationCallback callback,
-      std::unique_ptr<ServiceWorkerDatabase::RegistrationData> data,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,
       storage::mojom::ServiceWorkerDatabaseStatus database_status);
 
@@ -279,7 +279,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       std::unique_ptr<RegistrationList> registration_data_list);
 
   void DidStoreRegistration(
-      const ServiceWorkerDatabase::RegistrationData& data,
+      int64_t stored_registration_id,
+      uint64_t stored_resources_total_size_bytes,
+      const GURL& stored_scope,
       StatusCallback callback,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,
       int64_t deleted_version_id,

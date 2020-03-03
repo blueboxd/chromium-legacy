@@ -39,22 +39,21 @@ inline LayoutUnit GetSpaceBetweenImageTiles(LayoutUnit area_size,
 bool FixedBackgroundPaintsInLocalCoordinates(
     const LayoutObject& obj,
     const GlobalPaintFlags global_paint_flags) {
-  if (!obj.IsLayoutView())
+  const auto* view = DynamicTo<LayoutView>(obj);
+  if (!view)
     return false;
-
-  const LayoutView& view = ToLayoutView(obj);
 
   // TODO(wangxianzhu): For CAP, inline this function into
   // FixedBackgroundPaintsInLocalCoordinates().
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    return view.GetBackgroundPaintLocation() !=
+    return view->GetBackgroundPaintLocation() !=
            kBackgroundPaintInScrollingContents;
   }
 
   if (global_paint_flags & kGlobalPaintFlattenCompositingLayers)
     return false;
 
-  PaintLayer* root_layer = view.Layer();
+  PaintLayer* root_layer = view->Layer();
   if (!root_layer || root_layer->GetCompositingState() == kNotComposited)
     return false;
 
@@ -402,15 +401,14 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
   // The LayoutView is the only object that can paint a fixed background into
   // its scrolling contents layer, so it gets a special adjustment here.
-  if (obj.IsLayoutView()) {
+  if (auto* layout_view = DynamicTo<LayoutView>(obj)) {
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       DCHECK_EQ(obj.GetBackgroundPaintLocation(),
                 kBackgroundPaintInScrollingContents);
-      rect.SetLocation(LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
+      rect.SetLocation(LayoutPoint(layout_view->ScrolledContentOffset()));
     } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
       if (mapping->BackgroundPaintsOntoScrollingContentsLayer()) {
-        rect.SetLocation(
-            LayoutPoint(ToLayoutView(obj).ScrolledContentOffset()));
+        rect.SetLocation(LayoutPoint(layout_view->ScrolledContentOffset()));
       }
     }
   }
@@ -459,7 +457,7 @@ BackgroundImageGeometry::BackgroundImageGeometry(
     const LayoutBoxModelObject& obj)
     : box_(obj), positioning_box_(obj) {
   // Specialized constructor should be used for LayoutView.
-  DCHECK(!obj.IsLayoutView());
+  DCHECK(!IsA<LayoutView>(obj));
 }
 
 BackgroundImageGeometry::BackgroundImageGeometry(

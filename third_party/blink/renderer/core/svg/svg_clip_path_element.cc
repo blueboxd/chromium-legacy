@@ -58,7 +58,7 @@ void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGClipPathElement::ChildrenChanged(const ChildrenChange& change) {
   SVGGraphicsElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

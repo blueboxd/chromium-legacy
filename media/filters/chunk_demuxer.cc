@@ -646,16 +646,18 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
     return ChunkDemuxer::kNotSupported;
   }
 
-  std::unique_ptr<FrameProcessor> frame_processor(new FrameProcessor(
-      base::BindRepeating(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                          base::Unretained(this)),
-      media_log_));
+  std::unique_ptr<FrameProcessor> frame_processor =
+      std::make_unique<FrameProcessor>(
+          base::BindRepeating(&ChunkDemuxer::IncreaseDurationIfNecessary,
+                              base::Unretained(this)),
+          media_log_);
 
-  std::unique_ptr<SourceBufferState> source_state(new SourceBufferState(
-      std::move(stream_parser), std::move(frame_processor),
-      base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this),
-                 id),
-      media_log_));
+  std::unique_ptr<SourceBufferState> source_state =
+      std::make_unique<SourceBufferState>(
+          std::move(stream_parser), std::move(frame_processor),
+          base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this),
+                     id),
+          media_log_);
 
   SourceBufferState::NewTextTrackCB new_text_track_cb;
 

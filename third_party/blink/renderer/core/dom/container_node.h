@@ -294,7 +294,7 @@ class CORE_EXPORT ContainerNode : public Node {
   // Notification of document structure changes (see core/dom/node.h for more
   // notification methods)
 
-  enum ChildrenChangeType {
+  enum class ChildrenChangeType : uint8_t {
     kElementInserted,
     kNonElementInserted,
     kElementRemoved,
@@ -302,10 +302,7 @@ class CORE_EXPORT ContainerNode : public Node {
     kAllChildrenRemoved,
     kTextChanged
   };
-  enum ChildrenChangeSource {
-    kChildrenChangeSourceAPI,
-    kChildrenChangeSourceParser
-  };
+  enum class ChildrenChangeSource : uint8_t { kAPI, kParser };
   struct ChildrenChange {
     STACK_ALLOCATED();
 
@@ -314,9 +311,14 @@ class CORE_EXPORT ContainerNode : public Node {
                                        Node* unchanged_previous,
                                        Node* unchanged_next,
                                        ChildrenChangeSource by_parser) {
-      ChildrenChange change = {
-          node.IsElementNode() ? kElementInserted : kNonElementInserted, &node,
-          unchanged_previous, unchanged_next, by_parser};
+      ChildrenChange change = {node.IsElementNode()
+                                   ? ChildrenChangeType::kElementInserted
+                                   : ChildrenChangeType::kNonElementInserted,
+                               by_parser,
+                               &node,
+                               unchanged_previous,
+                               unchanged_next,
+                               nullptr};
       return change;
     }
 
@@ -324,23 +326,34 @@ class CORE_EXPORT ContainerNode : public Node {
                                      Node* previous_sibling,
                                      Node* next_sibling,
                                      ChildrenChangeSource by_parser) {
-      ChildrenChange change = {
-          node.IsElementNode() ? kElementRemoved : kNonElementRemoved, &node,
-          previous_sibling, next_sibling, by_parser};
+      ChildrenChange change = {node.IsElementNode()
+                                   ? ChildrenChangeType::kElementRemoved
+                                   : ChildrenChangeType::kNonElementRemoved,
+                               by_parser,
+                               &node,
+                               previous_sibling,
+                               next_sibling,
+                               nullptr};
       return change;
     }
 
     bool IsChildInsertion() const {
-      return type == kElementInserted || type == kNonElementInserted;
+      return type == ChildrenChangeType::kElementInserted ||
+             type == ChildrenChangeType::kNonElementInserted;
     }
     bool IsChildRemoval() const {
-      return type == kElementRemoved || type == kNonElementRemoved;
+      return type == ChildrenChangeType::kElementRemoved ||
+             type == ChildrenChangeType::kNonElementRemoved;
     }
     bool IsChildElementChange() const {
-      return type == kElementInserted || type == kElementRemoved;
+      return type == ChildrenChangeType::kElementInserted ||
+             type == ChildrenChangeType::kElementRemoved;
     }
 
+    bool ByParser() const { return by_parser == ChildrenChangeSource::kParser; }
+
     ChildrenChangeType type;
+    ChildrenChangeSource by_parser;
     Node* sibling_changed = nullptr;
     // |siblingBeforeChange| is
     //  - siblingChanged.previousSibling before node removal
@@ -353,7 +366,8 @@ class CORE_EXPORT ContainerNode : public Node {
     //  - siblingChanged.nextSibling after single node insertion
     //  - nextSibling of the last inserted node after multiple node insertion.
     Node* sibling_after_change = nullptr;
-    ChildrenChangeSource by_parser;
+    // TODO(crbug.com/1056094): This field is not used yet.
+    HeapVector<Member<Node>>* removed_nodes;
   };
 
   // Notifies the node that it's list of children have changed (either by adding
@@ -427,7 +441,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void AddChildNodesToDeletionQueue(Node*&, Node*&, ContainerNode&);
 
   void NotifyNodeInserted(Node&,
-                          ChildrenChangeSource = kChildrenChangeSourceAPI);
+                          ChildrenChangeSource = ChildrenChangeSource::kAPI);
   void NotifyNodeInsertedInternal(
       Node&,
       NodeVector& post_insertion_notification_targets);

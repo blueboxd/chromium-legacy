@@ -191,3 +191,19 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
   assertEquals(
       'An unanswered call lasts for 3 0 seconds.', lastSpokenTextString);
 });
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitLongText', function() {
+  const tts = new TtsBackground();
+  const spokenTextStrings = [];
+  tts.speakUsingQueue_ = function(utterance, _) {
+    spokenTextStrings.push(utterance.textString);
+  };
+
+  const baseText = 'This is a very long text.\n';
+  const numRepeats =
+      Math.floor(constants.OBJECT_MAX_CHARCOUNT / baseText.length);
+  const text = baseText + baseText.repeat(numRepeats);
+
+  tts.speak(text);
+  assertEquals(1 + numRepeats, spokenTextStrings.length);
+});

@@ -26,6 +26,10 @@ void WebTestInterfaces::SetDelegate(WebTestDelegate* delegate) {
   interfaces_->SetDelegate(delegate);
 }
 
+bool WebTestInterfaces::HasDelegate() {
+  return interfaces_->GetDelegate();
+}
+
 void WebTestInterfaces::ResetAll() {
   interfaces_->ResetAll();
 }
@@ -54,10 +58,8 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
     WebViewTestProxy* web_view_test_proxy,
     WebFrameTestProxy* web_frame_test_proxy) {
-  // TODO(lukasza): Do not pass the WebTestDelegate below - it's lifetime can
-  // differ from the lifetime of WebFrameTestClient - https://crbug.com/606594.
-  return std::make_unique<WebFrameTestClient>(
-      interfaces_->GetDelegate(), web_view_test_proxy, web_frame_test_proxy);
+  return std::make_unique<WebFrameTestClient>(web_view_test_proxy,
+                                              web_frame_test_proxy);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

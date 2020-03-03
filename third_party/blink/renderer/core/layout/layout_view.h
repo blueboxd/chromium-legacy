@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -346,7 +347,12 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   mutable PhysicalRect previous_background_rect_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, IsLayoutView());
+template <>
+struct DowncastTraits<LayoutView> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutView();
+  }
+};
 
 }  // namespace blink
 

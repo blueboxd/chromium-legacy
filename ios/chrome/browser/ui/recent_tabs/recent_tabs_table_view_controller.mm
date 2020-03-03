@@ -16,6 +16,7 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
@@ -117,8 +118,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // Handles displaying the context menu for all form factors.
 @property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
+// The browser state used for many operations, derived from the one provided by
+// |self.browser|.
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 // YES if this ViewController is being presented on incognito mode.
-@property(nonatomic, assign, getter=isIncognito) BOOL incognito;
+@property(nonatomic, readonly, getter=isIncognito) BOOL incognito;
+// Convenience getter for |self.browser|'s WebStateList
+@property(nonatomic, readonly) WebStateList* webStateList;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -174,15 +180,20 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 #pragma mark - Setters & Getters
 
-// Some RecentTabs services depend on objects not present in the OffTheRecord
-// BrowserState, in order to prevent crashes set |_browserState| to
-// |browserState|->OriginalChromeBrowserState. While doing this check if
-// incognito or not so that pages are loaded accordingly.
-- (void)setBrowserState:(ChromeBrowserState*)browserState {
-  if (browserState) {
-    _browserState = browserState->GetOriginalChromeBrowserState();
-    _incognito = browserState->IsOffTheRecord();
-  }
+- (void)setBrowser:(Browser*)browser {
+  DCHECK(browser);
+  _browser = browser;
+  ChromeBrowserState* browserState = browser->GetBrowserState();
+  // Some RecentTabs services depend on objects not present in the OffTheRecord
+  // BrowserState, in order to prevent crashes set |_browserState| to
+  // |browserState|->OriginalChromeBrowserState. While doing this check if
+  // incognito or not so that pages are loaded accordingly.
+  _browserState = browserState->GetOriginalChromeBrowserState();
+  _incognito = browserState->IsOffTheRecord();
+}
+
+- (WebStateList*)webStateList {
+  return self.browser->GetWebStateList();
 }
 
 - (void)setPreventUpdates:(BOOL)preventUpdates {

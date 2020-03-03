@@ -170,9 +170,7 @@ static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
   if (!IsA<HTMLVideoElement>(fullscreen_element))
     return nullptr;
   LayoutObject* layout_object = fullscreen_element->GetLayoutObject();
-  if (!layout_object)
-    return nullptr;
-  return ToLayoutVideo(layout_object);
+  return To<LayoutVideo>(layout_object);
 }
 
 void PaintLayerCompositor::UpdateIfNeededRecursive(

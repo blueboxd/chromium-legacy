@@ -304,6 +304,10 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
   DCHECK(service);
 
   if (params->hash_algorithm_name == "none") {
+    // Signing without digesting is only supported for RSASSA-PKCS1-v1_5.
+    if (params->algorithm_name != "RSASSA-PKCS1-v1_5")
+      return RespondNow(Error(kErrorAlgorithmNotSupported));
+
     service->SignRSAPKCS1Raw(
         platform_keys_token_id,
         std::string(params->data.begin(), params->data.end()),
@@ -323,11 +327,21 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     } else {
       return RespondNow(Error(kErrorAlgorithmNotSupported));
     }
-    service->SignRSAPKCS1Digest(
+
+    chromeos::platform_keys::KeyType key_type;
+    if (params->algorithm_name == "RSASSA-PKCS1-v1_5") {
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+    } else if (params->algorithm_name == "ECDSA") {
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+    } else {
+      return RespondNow(Error(kErrorAlgorithmNotSupported));
+    }
+
+    service->SignDigest(
         platform_keys_token_id,
         std::string(params->data.begin(), params->data.end()),
         std::string(params->public_key.begin(), params->public_key.end()),
-        hash_algorithm, extension_id(),
+        key_type, hash_algorithm, extension_id(),
         base::Bind(&PlatformKeysInternalSignFunction::OnSigned, this));
   }
 

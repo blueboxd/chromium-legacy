@@ -126,7 +126,7 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
     }
 
     mojo::ScopedHandle json_message_mojo_handle =
-        CreateReadOnlySharedMemoryMojoHandle(request_string);
+        MojoUtils::CreateReadOnlySharedMemoryMojoHandle(request_string);
     if (!json_message_mojo_handle) {
       LOG(ERROR) << "Cannot create Mojo shared memory handle from string";
       DisposeSelf(kHostInputOutputError);
@@ -168,8 +168,9 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
     }
 
     base::ReadOnlySharedMemoryMapping response_json_shared_memory;
-    base::StringPiece response_json_string = GetStringPieceFromMojoHandle(
-        std::move(response_json_message), &response_json_shared_memory);
+    base::StringPiece response_json_string =
+        MojoUtils::GetStringPieceFromMojoHandle(
+            std::move(response_json_message), &response_json_shared_memory);
     if (response_json_string.empty()) {
       LOG(ERROR) << "Cannot read response from Mojo shared memory";
       DisposeSelf(kHostInputOutputError);

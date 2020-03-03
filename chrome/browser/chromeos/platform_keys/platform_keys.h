@@ -33,6 +33,9 @@ namespace platform_keys {
 extern const char kTokenIdUser[];
 extern const char kTokenIdSystem[];
 
+// Supported key types.
+enum class KeyType { kRsassaPkcs1V15, kEcdsa };
+
 // Supported hash algorithms.
 enum HashAlgorithm {
   HASH_ALGORITHM_NONE,  // The value if no hash function is selected.
@@ -66,7 +69,7 @@ typedef base::Callback<void(const std::string& public_key_spki_der,
     GenerateKeyCallback;
 
 // Generates a RSA key pair with |modulus_length_bits|. |token_id| specifies the
-// token to store the keypair on and can currently be |kTokenIdUser| or
+// token to store the key pair on and can currently be |kTokenIdUser| or
 // |kTokenIdSystem|. |callback| will be invoked with the resulting public key or
 // an error.
 void GenerateRSAKey(const std::string& token_id,
@@ -74,13 +77,22 @@ void GenerateRSAKey(const std::string& token_id,
                     const GenerateKeyCallback& callback,
                     content::BrowserContext* browser_context);
 
+// Generates a EC key pair with |named_curve|. |token_id| specifies the token to
+// store the key pair on and can currently be |kTokenIdUser| or
+// |kTokenIdSystem|. |callback| will be invoked with the resulting public key or
+// an error.
+void GenerateECKey(const std::string& token_id,
+                   const std::string& named_curve,
+                   const GenerateKeyCallback& callback,
+                   content::BrowserContext* browser_context);
+
 typedef base::Callback<void(const std::string& signature,
                             const std::string& error_message)> SignCallback;
 
 // Digests |data|, applies PKCS1 padding and afterwards signs the data with the
 // private key matching |public_key_spki_der|. If a non empty token id is
 // provided and the key is not found in that token, the operation aborts.
-// |callback| will be invoked with the signature or an error message.
+// |callback| will be invoked with the RSA signature or an error message.
 void SignRSAPKCS1Digest(const std::string& token_id,
                         const std::string& data,
                         const std::string& public_key_spki_der,
@@ -92,11 +104,22 @@ void SignRSAPKCS1Digest(const std::string& token_id,
 // matching |public_key_spki_der|. |data| is not digested. If a non empty token
 // id is provided and the key is not found in that token, the operation aborts.
 // The size of |data| (number of octets) must be smaller than k - 11, where k is
-// the key size in octets. |callback| will be invoked with the signature or an
-// error message.
+// the key size in octets. |callback| will be invoked with the RSA signature or
+// an error message.
 void SignRSAPKCS1Raw(const std::string& token_id,
                      const std::string& data,
                      const std::string& public_key_spki_der,
+                     const SignCallback& callback,
+                     content::BrowserContext* browser_context);
+
+// Digests |data| and afterwards signs the data with the private key matching
+// |public_key_spki_der|. If a non empty token id is provided and the key is not
+// found in that token, the operation aborts. |callback| will be invoked with
+// the ECDSA signature or an error message.
+void SignECDSADigest(const std::string& token_id,
+                     const std::string& data,
+                     const std::string& public_key_spki_der,
+                     HashAlgorithm hash_algorithm,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context);
 

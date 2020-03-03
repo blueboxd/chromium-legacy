@@ -31,6 +31,7 @@ class MockDedicatedWorker
                       GlobalFrameRoutingId render_frame_host_id) {
     CreateDedicatedWorkerHostFactory(worker_process_id, render_frame_host_id,
                                      render_frame_host_id, url::Origin(),
+                                     network::CrossOriginEmbedderPolicy(),
                                      factory_.BindNewPipeAndPassReceiver());
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {

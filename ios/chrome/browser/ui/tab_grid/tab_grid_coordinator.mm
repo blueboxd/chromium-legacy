@@ -146,8 +146,8 @@
 - (void)start {
   TabGridViewController* baseViewController =
       [[TabGridViewController alloc] init];
-  baseViewController.dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
+  baseViewController.handler =
+      HandlerForProtocol(self.dispatcher, ApplicationCommands);
   self.legacyTransitionHandler = [[LegacyTabGridTransitionHandler alloc] init];
   self.legacyTransitionHandler.provider = baseViewController;
   baseViewController.modalPresentationStyle = UIModalPresentationCustom;
@@ -182,8 +182,7 @@
 
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
-  baseViewController.remoteTabsViewController.browserState =
-      regularBrowserState;
+  baseViewController.remoteTabsViewController.browser = self.regularBrowser;
   self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
   self.remoteTabsMediator.browserState = regularBrowserState;
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
@@ -201,8 +200,6 @@
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.restoredTabDisposition =
       WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  baseViewController.remoteTabsViewController.webStateList =
-      regularWebStateList;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
   if (!base::FeatureList::IsEnabled(kContainedBVC)) {
@@ -237,6 +234,10 @@
 }
 
 - (void)stop {
+  // The TabGridViewController may still message its application commands
+  // handler after this coordinator has stopped; make this action a no-op by
+  // setting the handler to nil.
+  self.baseViewController.handler = nil;
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
   [self.dispatcher
       stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];

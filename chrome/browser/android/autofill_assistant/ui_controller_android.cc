@@ -1573,7 +1573,8 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
       Java_AutofillAssistantUiController_getContext(env, java_object_);
   return GenericUiControllerAndroid::CreateFromProto(
       proto, jcontext, generic_ui_delegate_.GetJavaObject(),
-      ui_delegate_->GetUserModel(), ui_delegate_->GetEventHandler());
+      ui_delegate_->GetEventHandler(), ui_delegate_->GetUserModel(),
+      ui_delegate_->GetBasicInteractions());
 }
 
 }  // namespace autofill_assistant

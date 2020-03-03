@@ -342,7 +342,7 @@ void ContainerNode::DidInsertNodeVector(
       targets.size() > 0 ? targets[0]->previousSibling() : nullptr;
   for (const auto& target_node : targets) {
     ChildrenChanged(ChildrenChange::ForInsertion(
-        *target_node, unchanged_previous, next, kChildrenChangeSourceAPI));
+        *target_node, unchanged_previous, next, ChildrenChangeSource::kAPI));
   }
   for (const auto& descendant : post_insertion_notification_targets) {
     if (descendant->isConnected())
@@ -517,7 +517,7 @@ void ContainerNode::ParserInsertBefore(Node* new_child, Node& next_child) {
     ChildListMutationScope(*this).ChildAdded(*new_child);
   }
 
-  NotifyNodeInserted(*new_child, kChildrenChangeSourceParser);
+  NotifyNodeInserted(*new_child, ChildrenChangeSource::kParser);
 }
 
 Node* ContainerNode::ReplaceChild(Node* new_child,
@@ -721,7 +721,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
       NotifyNodeRemoved(*child);
     }
     ChildrenChanged(ChildrenChange::ForRemoval(*child, prev, next,
-                                               kChildrenChangeSourceAPI));
+                                               ChildrenChangeSource::kAPI));
   }
   DispatchSubtreeModifiedEvent();
   return child;
@@ -782,7 +782,7 @@ void ContainerNode::ParserRemoveChild(Node& old_child) {
     NotifyNodeRemoved(old_child);
   }
   ChildrenChanged(ChildrenChange::ForRemoval(old_child, prev, next,
-                                             kChildrenChangeSourceParser));
+                                             ChildrenChangeSource::kParser));
 }
 
 // This differs from other remove functions because it forcibly removes all the
@@ -825,8 +825,12 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       }
     }
 
-    ChildrenChange change = {kAllChildrenRemoved, nullptr, nullptr, nullptr,
-                             kChildrenChangeSourceAPI};
+    ChildrenChange change = {ChildrenChangeType::kAllChildrenRemoved,
+                             ChildrenChangeSource::kAPI,
+                             nullptr,
+                             nullptr,
+                             nullptr,
+                             nullptr};
     ChildrenChanged(change);
   }
 
@@ -897,7 +901,7 @@ void ContainerNode::ParserAppendChild(Node* new_child) {
     ChildListMutationScope(*this).ChildAdded(*new_child);
   }
 
-  NotifyNodeInserted(*new_child, kChildrenChangeSourceParser);
+  NotifyNodeInserted(*new_child, ChildrenChangeSource::kParser);
 }
 
 DISABLE_CFI_PERF
@@ -1008,7 +1012,8 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-  if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
+  if (change.IsChildRemoval() ||
+      change.type == ChildrenChangeType::kAllChildrenRemoved) {
     GetDocument().GetStyleEngine().ChildrenRemoved(*this);
     return;
   }
@@ -1459,7 +1464,7 @@ void ContainerNode::InvalidateNodeListCachesInAncestors(
     const ChildrenChange* change) {
   // This is a performance optimization, NodeList cache invalidation is
   // not necessary for a text change.
-  if (change && change->type == kTextChanged)
+  if (change && change->type == ChildrenChangeType::kTextChanged)
     return;
 
   if (HasRareData() && (!attr_name || IsAttributeNode())) {

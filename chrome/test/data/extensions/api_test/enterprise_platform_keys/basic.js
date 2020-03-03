@@ -321,7 +321,7 @@ function beforeTests(callback) {
   });
 }
 
-function checkAlgorithmIsCopiedOnRead(key) {
+function checkRsaAlgorithmIsCopiedOnRead(key) {
   var algorithm = key.algorithm;
   var originalAlgorithm = {
     name: algorithm.name,
@@ -338,6 +338,17 @@ function checkAlgorithmIsCopiedOnRead(key) {
   assertEq(originalAlgorithm, key.algorithm);
 }
 
+function checkEcAlgorithmIsCopiedOnRead(key) {
+  var algorithm = key.algorithm;
+  var originalAlgorithm = {
+    name: algorithm.name,
+    namedCurve: algorithm.namedCurve,
+  };
+  algorithm.name = null;
+  algorithm.namedCurve = null;
+  assertEq(originalAlgorithm, key.algorithm);
+}
+
 function checkPropertyIsReadOnly(object, key) {
   var original = object[key];
   try {
@@ -348,27 +359,41 @@ function checkPropertyIsReadOnly(object, key) {
   }
 }
 
-function checkKeyPairCommonFormat(keyPair) {
+function checkRsaKeyPairCommonFormat(keyPair) {
   checkPropertyIsReadOnly(keyPair, 'privateKey');
   var privateKey = keyPair.privateKey;
   assertEq('private', privateKey.type);
   assertEq(false, privateKey.extractable);
   checkPropertyIsReadOnly(privateKey, 'algorithm');
-  checkAlgorithmIsCopiedOnRead(privateKey);
+  checkRsaAlgorithmIsCopiedOnRead(privateKey);
 
   checkPropertyIsReadOnly(keyPair, 'publicKey');
   var publicKey = keyPair.publicKey;
   assertEq('public', publicKey.type);
   assertEq(true, publicKey.extractable);
   checkPropertyIsReadOnly(publicKey, 'algorithm');
-  checkAlgorithmIsCopiedOnRead(publicKey);
+  checkRsaAlgorithmIsCopiedOnRead(publicKey);
 }
 
-// Generates a key with the |algorithm| parameters. Signs |data| using the new
-// key and verifies the signature using WebCrypto. Returns the generated key to
-// |callback| for further operations.
-// Also freezes |algorithm|.
-function generateKeyAndVerify(token, algorithm, data, callback) {
+function checkEcKeyPairCommonFormat(keyPair) {
+  checkPropertyIsReadOnly(keyPair, 'privateKey');
+  var privateKey = keyPair.privateKey;
+  assertEq('private', privateKey.type);
+  assertEq(false, privateKey.extractable);
+  checkPropertyIsReadOnly(privateKey, 'algorithm');
+  checkEcAlgorithmIsCopiedOnRead(privateKey);
+
+  checkPropertyIsReadOnly(keyPair, 'publicKey');
+  var publicKey = keyPair.publicKey;
+  assertEq('public', publicKey.type);
+  assertEq(true, publicKey.extractable);
+  checkPropertyIsReadOnly(publicKey, 'algorithm');
+  checkEcAlgorithmIsCopiedOnRead(publicKey);
+}
+// Generates an RSA key with the |algorithm| parameters. Signs |data| using the
+// new key and verifies the signature using WebCrypto. Returns the generated key
+// to |callback| for further operations. Also freezes |algorithm|.
+function generateRsaKeyAndVerify(token, algorithm, data, callback) {
   // Ensure that this algorithm object is not modified, so that later
   // comparisons really do the right thing.
   Object.freeze(algorithm.hash);
@@ -390,7 +415,7 @@ function generateKeyAndVerify(token, algorithm, data, callback) {
                 function(publicKeySpki) {
                   // Ensure that the returned key pair has the expected format.
                   // Some parameter independent checks:
-                  checkKeyPairCommonFormat(cachedKeyPair);
+                  checkRsaKeyPairCommonFormat(cachedKeyPair);
 
                   // Checks depending on the generateKey arguments:
                   var privateKey = cachedKeyPair.privateKey;
@@ -439,6 +464,70 @@ function generateKeyAndVerify(token, algorithm, data, callback) {
   }), function(error) { fail("Verification failed: " + error); });
 }
 
+function generateEcKeyAndVerify(token, params, data, callback) {
+  var cachedSignature;
+  var cachedKeyPair;
+  var cachedSpki;
+  token.subtleCrypto.generateKey(params.generateKey, false, ['sign'])
+      .then(
+          callbackPass(function(keyPair) {
+            assertTrue(!!keyPair, 'No key pair.');
+            cachedKeyPair = keyPair;
+            return token.subtleCrypto.exportKey('spki', keyPair.publicKey);
+          }),
+          function(error) {
+            fail('GenerateKey failed: ' + error);
+          })
+      .then(
+          callbackPass(function(publicKeySpki) {
+            // Ensure that the returned key pair has the expected format.
+            // Some parameter independent checks:
+            checkEcKeyPairCommonFormat(cachedKeyPair);
+
+            // Checks depending on the generateKey arguments:
+            var privateKey = cachedKeyPair.privateKey;
+            assertEq(['sign'], privateKey.usages);
+
+            var publicKey = cachedKeyPair.publicKey;
+            assertEq([], publicKey.usages);
+
+            cachedSpki = publicKeySpki;
+            return token.subtleCrypto.sign(params.sign, privateKey, data);
+          }),
+          function(error) {
+            fail('Export failed: ' + error);
+          })
+      .then(
+          callbackPass(function(signature) {
+            assertTrue(!!signature, 'No signature.');
+            assertTrue(signature.length != 0, 'Signature is empty.');
+            cachedSignature = signature;
+            return window.crypto.subtle.importKey(
+                'spki', cachedSpki, params.importKey, false, ['verify']);
+          }),
+          function(error) {
+            fail('Sign failed: ' + error);
+          })
+      .then(
+          callbackPass(function(webCryptoPublicKey) {
+            assertTrue(!!webCryptoPublicKey);
+            return window.crypto.subtle.verify(
+                params.verify, webCryptoPublicKey, cachedSignature, data);
+          }),
+          function(error) {
+            fail('Import failed: ' + error);
+          })
+      .then(
+          callbackPass(function(success) {
+            assertEq(true, success, 'Signature invalid.');
+            callback(cachedKeyPair);
+          }),
+          function(error) {
+            fail('Verification failed: ' + error);
+          });
+}
+
+
 function testInitiallyNoCerts(token) {
   assertCertsStored(token, []);
 }
@@ -452,9 +541,9 @@ function testHasSubtleCryptoMethods(token) {
   succeed();
 }
 
-// Generates a key and signs some data with it. Verifies the signature using
-// WebCrypto. Verifies also that a second sign operation fails.
-function testGenerateKeyAndSign(token) {
+// Generates an RSA key pair and signs some data with it. Verifies the signature
+// using WebCrypto. Verifies also that a second sign operation fails.
+function testGenerateRsaKeyAndSign(token) {
   var algorithm = {
     name: "RSASSA-PKCS1-v1_5",
     // RsaHashedKeyGenParams
@@ -468,21 +557,68 @@ function testGenerateKeyAndSign(token) {
 
   // Some random data to sign.
   var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
-  generateKeyAndVerify(token,
-                       algorithm,
-                       data,
-                       callbackPass(function(keyPair) {
-    // Try to sign data with the same key a second time, which
-    // must fail.
-    var signParams = {name: 'RSASSA-PKCS1-v1_5'};
-    token.subtleCrypto.sign(signParams, keyPair.privateKey, data).then(
-        function(signature) { fail("Second sign call was expected to fail."); },
-        callbackPass(function(error) {
-      assertTrue(error instanceof Error);
-      assertEq('The operation failed for an operation-specific reason',
-               error.message);
-    }));
-  }));
+  generateRsaKeyAndVerify(
+      token, algorithm, data, callbackPass(function(keyPair) {
+        // Try to sign data with the same key a second time, which
+        // must fail.
+        var signParams = {name: 'RSASSA-PKCS1-v1_5'};
+        token.subtleCrypto.sign(signParams, keyPair.privateKey, data)
+            .then(function(signature) {
+              fail('Second sign call was expected to fail.');
+            }, callbackPass(function(error) {
+                    assertTrue(error instanceof Error);
+                    assertEq(
+                        'The operation failed for an operation-specific reason',
+                        error.message);
+                  }));
+      }));
+}
+
+// Generates an elliptic curve (EC) key pair and signs some data with it.
+// Verifies the signature using WebCrypto. Verifies also that a second sign
+// operation fails.
+function testGenerateEcKeyAndSign(token) {
+  // Web Crypto ECDSA Operation Params.
+  // For more information about Web Crypto ECDSA parameters specification,
+  // please refer to: https://www.w3.org/TR/WebCryptoAPI/#ecdsa
+  var EcdsaParams = {
+    name: 'ECDSA',
+    hash: {name: 'SHA-256'},
+  };
+
+  var EcKeyGenParams = {
+    name: 'ECDSA',
+    namedCurve: 'P-256',
+  };
+
+  var EcKeyImportParams = {
+    name: 'ECDSA',
+    namedCurve: 'P-256',
+  };
+
+  var params = {
+    sign: EcdsaParams,
+    verify: EcdsaParams,
+    generateKey: EcKeyGenParams,
+    importKey: EcKeyImportParams,
+  };
+
+  // Some random data to sign.
+  var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
+  generateEcKeyAndVerify(
+      token, params, data, callbackPass(function(keyPair) {
+        // Try to sign data with the same key a second time, which
+        // must fail.
+        token.subtleCrypto.sign(params.sign, keyPair.privateKey, data)
+            .then(function(signature) {
+              fail('Second sign call was expected to fail.');
+            }, callbackPass(function(error) {
+                    assertTrue(error instanceof Error);
+                    assertEq(
+                        'The operation failed for an operation-specific reason',
+                        error.message);
+                  }));
+      }));
 }
 
 // Generates a key and signs some data with other parameters. Verifies the
@@ -501,7 +637,7 @@ function testGenerateKeyAndSignOtherParameters(token) {
 
   // Some random data to sign.
   var data = new Uint8Array([5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 0, 0, 254]);
-  generateKeyAndVerify(token, algorithm, data, callbackPass());
+  generateRsaKeyAndVerify(token, algorithm, data, callbackPass());
 }
 
 // Call generate key with invalid algorithm parameter, missing
@@ -593,7 +729,8 @@ function runTests(userToken, systemToken) {
     testInitiallyNoCerts,
     testHasSubtleCryptoMethods,
     testRemoveUnknownCert,
-    testGenerateKeyAndSign,
+    testGenerateRsaKeyAndSign,
+    testGenerateEcKeyAndSign,
     testGenerateKeyAndSignOtherParameters,
     testAlgorithmParameterMissingModulusLength,
     testAlgorithmParameterMissingHash,

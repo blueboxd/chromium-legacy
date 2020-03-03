@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
@@ -74,7 +75,7 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   // with a smaller cull rect, and the scrolling document contents are under the
   // layer of document element which will use infinite cull rect calculated in
   // PaintLayerPainter::AdjustForPaintProperties().
-  if (box.IsLayoutView() && input_paint_info_.GetCullRect().IsInfinite())
+  if (IsA<LayoutView>(box) && input_paint_info_.GetCullRect().IsInfinite())
     return;
 
   adjusted_paint_info_.emplace(input_paint_info_);

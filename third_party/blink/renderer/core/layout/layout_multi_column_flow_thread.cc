@@ -729,7 +729,7 @@ void LayoutMultiColumnFlowThread::CalculateColumnHeightAvailable() {
   // have a definite height when they in fact don't.
   LayoutBlockFlow* container = MultiColumnBlockFlow();
   LayoutUnit column_height;
-  if (container->HasDefiniteLogicalHeight() || container->IsLayoutView()) {
+  if (container->HasDefiniteLogicalHeight() || IsA<LayoutView>(container)) {
     LogicalExtentComputedValues computed_values;
     container->ComputeLogicalHeight(LayoutUnit(), container->LogicalTop(),
                                     computed_values);

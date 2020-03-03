@@ -152,7 +152,7 @@ static inline bool LayoutObjectHasAspectRatio(
     const LayoutObject* layout_object) {
   DCHECK(layout_object);
   return layout_object->IsImage() || layout_object->IsCanvas() ||
-         layout_object->IsVideo();
+         IsA<LayoutVideo>(layout_object);
 }
 
 void LayoutReplaced::RecalcVisualOverflow() {

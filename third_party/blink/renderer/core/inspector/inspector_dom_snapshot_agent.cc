@@ -104,7 +104,7 @@ PhysicalRect InspectorDOMSnapshotAgent::RectInDocument(
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
   // Don't do frame to document coordinate transformation for layout view,
   // whose bounding box is not affected by scroll offset.
-  if (local_frame_view && !layout_object->IsLayoutView())
+  if (local_frame_view && !IsA<LayoutView>(layout_object))
     return local_frame_view->FrameToDocument(rect_in_absolute);
   return rect_in_absolute;
 }

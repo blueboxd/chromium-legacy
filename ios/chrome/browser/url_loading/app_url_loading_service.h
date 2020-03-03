@@ -59,6 +59,7 @@ struct UrlLoadParams;
 class AppUrlLoadingService {
  public:
   AppUrlLoadingService();
+  virtual ~AppUrlLoadingService() = default;
 
   void SetDelegate(id<AppURLLoadingServiceDelegate> delegate);
 

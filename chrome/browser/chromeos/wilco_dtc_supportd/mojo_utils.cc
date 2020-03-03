@@ -17,7 +17,8 @@
 
 namespace chromeos {
 
-base::StringPiece GetStringPieceFromMojoHandle(
+// static
+base::StringPiece MojoUtils::GetStringPieceFromMojoHandle(
     mojo::ScopedHandle handle,
     base::ReadOnlySharedMemoryMapping* shared_memory) {
   DCHECK(shared_memory);
@@ -31,7 +32,7 @@ base::StringPiece GetStringPieceFromMojoHandle(
   size_t file_size = 0;
   {
     // TODO(b/146119375): Remove blocking operation from production code.
-    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ScopedAllowBlocking allow_blocking;
     file_size = file.GetLength();
   }
   if (file_size <= 0)
@@ -53,7 +54,8 @@ base::StringPiece GetStringPieceFromMojoHandle(
                            shared_memory->size());
 }
 
-mojo::ScopedHandle CreateReadOnlySharedMemoryMojoHandle(
+// static
+mojo::ScopedHandle MojoUtils::CreateReadOnlySharedMemoryMojoHandle(
     const std::string& content) {
   if (content.empty())
     return mojo::ScopedHandle();

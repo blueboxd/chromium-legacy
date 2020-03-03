@@ -295,13 +295,13 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
   // in the sense that they don't scroll along with its in-flow contents.
   // However LayoutView does clip them.
   if (layout_object.CanContainFixedPositionObjects() &&
-      !layout_object.IsLayoutView()) {
+      !IsA<LayoutView>(layout_object)) {
     info.clip_chain_parent_for_fixed = layer;
     info.escape_clip_to_for_fixed = info.escape_clip_to;
     info.scrolling_ancestor_for_fixed = info.scrolling_ancestor;
     info.needs_reparent_scroll_for_fixed = info.needs_reparent_scroll;
   }
-  if (layout_object.IsLayoutView())
+  if (IsA<LayoutView>(layout_object))
     info.clip_chain_parent_for_fixed = layer;
 
   // CSS clip affects all descendants, not just containing-block descendants.

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
@@ -1133,7 +1134,7 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
 
 bool NGBlockNode::HasAspectRatio() const {
   LayoutBox* layout_object = GetLayoutBox();
-  if (!layout_object->IsImage() && !layout_object->IsVideo() &&
+  if (!layout_object->IsImage() && !IsA<LayoutVideo>(layout_object) &&
       !layout_object->IsCanvas())
     return false;
   base::Optional<LayoutUnit> computed_inline_size;

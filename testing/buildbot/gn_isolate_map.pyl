@@ -483,7 +483,6 @@
     "args": [
       "--product=chrome_android",
       "--apk=apks/ChromePublic.apk",
-      "--webdriver-binary=clang_x64/chromedriver",
       "-vvv",
     ],
   },
@@ -1552,7 +1551,6 @@
       "--product=android_webview",
       "--apk=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
-      "--webdriver-binary=clang_x64/chromedriver",
       "-vvv",
     ],
   },
@@ -1786,7 +1784,6 @@
       "--product=android_weblayer",
       "--weblayer-shell=apks/WebLayerShell.apk",
       "--weblayer-support=apks/WebLayerSupport.apk",
-      "--webdriver-binary=clang_x64/chromedriver",
       "-vvv",
     ],
   },

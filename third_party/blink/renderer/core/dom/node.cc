@@ -561,7 +561,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   // behavior in CC.
   bool also_scroll_visual_viewport = GetDocument().GetFrame() &&
                                      GetDocument().GetFrame()->IsMainFrame() &&
-                                     box_to_scroll->IsLayoutView();
+                                     IsA<LayoutView>(box_to_scroll);
   DCHECK(!also_scroll_visual_viewport ||
          !box_to_scroll->IsGlobalRootScroller());
 
@@ -1677,7 +1677,7 @@ void Node::AttachLayoutTree(AttachContext& context) {
   LayoutObject* layout_object = GetLayoutObject();
   DCHECK(!layout_object ||
          (layout_object->Style() &&
-          (layout_object->Parent() || layout_object->IsLayoutView())));
+          (layout_object->Parent() || IsA<LayoutView>(layout_object))));
 
   ClearNeedsReattachLayoutTree();
 

@@ -179,8 +179,9 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position, ToLayoutInlineOrNull(css_container));
 
   base::Optional<LogicalSize> initial_containing_block_fixed_size;
-  if (container->IsLayoutView() && !Base::GetDocument().Printing()) {
-    if (LocalFrameView* frame_view = ToLayoutView(container)->GetFrameView()) {
+  auto* layout_view = DynamicTo<LayoutView>(container);
+  if (layout_view && !Base::GetDocument().Printing()) {
+    if (LocalFrameView* frame_view = layout_view->GetFrameView()) {
       IntSize size =
           frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size());
       PhysicalSize physical_size(size);

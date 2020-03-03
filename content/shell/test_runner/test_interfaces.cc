@@ -69,6 +69,18 @@ void TestInterfaces::ResetTestHelperControllers() {
     web_view_test_proxy->Reset();
 }
 
+void TestInterfaces::DelegateDestroyed(WebTestDelegate* delegate) {
+  if (delegate == delegate_) {
+    if (!window_list_.empty()) {
+      SetDelegate(window_list_[0]->delegate());
+      SetMainView(window_list_[0]->GetWebView());
+    } else {
+      SetDelegate(nullptr);
+      SetMainView(nullptr);
+    }
+  }
+}
+
 void TestInterfaces::ResetAll() {
   ResetTestHelperControllers();
   test_runner_->Reset();
@@ -137,6 +149,8 @@ void TestInterfaces::WindowClosed(WebViewTestProxy* proxy) {
     return;
   }
   window_list_.erase(pos);
+
+  DelegateDestroyed(proxy->delegate());
 }
 
 TestRunner* TestInterfaces::GetTestRunner() {

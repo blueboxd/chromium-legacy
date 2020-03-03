@@ -27,8 +27,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/test/fakes/fake_web_state_list_observing_delegate.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/common/features.h"
@@ -74,9 +73,9 @@ class TabModelTest : public PlatformTest {
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
                                              web_state_list_.get());
     // Web usage is disabled during these tests.
+    WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
     web_usage_enabler_ =
-        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-            chrome_browser_state_.get());
+        WebUsageEnablerBrowserAgent::FromBrowser(browser_.get());
     web_usage_enabler_->SetWebUsageEnabled(false);
 
     session_window_ = [[SessionWindowIOS alloc] init];
@@ -102,7 +101,6 @@ class TabModelTest : public PlatformTest {
 
   void SetTabModel(TabModel* tab_model) {
     if (tab_model_) {
-      web_usage_enabler_->SetWebStateList(nullptr);
       @autoreleasepool {
         [tab_model_ disconnect];
         tab_model_ = nil;
@@ -110,7 +108,6 @@ class TabModelTest : public PlatformTest {
     }
 
     tab_model_ = tab_model;
-    web_usage_enabler_->SetWebStateList(web_state_list_.get());
   }
 
   TabModel* CreateTabModel(SessionWindowIOS* session_window) {
@@ -143,7 +140,7 @@ class TabModelTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabInsertionBrowserAgent* agent_;
   TestSessionService* session_service_;
-  WebStateListWebUsageEnabler* web_usage_enabler_;
+  WebUsageEnablerBrowserAgent* web_usage_enabler_;
   TabModel* tab_model_;
 };
 

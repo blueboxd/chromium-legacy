@@ -56,9 +56,11 @@ source_set("eg_test_support+eg2") {
 
   deps = [
     "//base",
-    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ui/base",
+
+    # This is required to load the resources for the EG2 tests.
+    "//ios/chrome/test/earl_grey:chrome_egtest_bundle_main+eg2",
   ]
 }
 source_set("eg_app_support+eg2") {

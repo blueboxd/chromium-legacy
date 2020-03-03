@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
@@ -53,7 +54,7 @@
 namespace blink {
 
 static bool HasAspectRatio(const LayoutBox& child) {
-  return child.IsImage() || child.IsCanvas() || child.IsVideo();
+  return child.IsImage() || child.IsCanvas() || IsA<LayoutVideo>(child);
 }
 
 LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
@@ -881,7 +882,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     LayoutBox& child,
     LayoutUnit main_axis_border_and_padding,
     ChildLayoutType child_layout_type) {
-  if (child.IsImage() || child.IsVideo() || child.IsCanvas())
+  if (child.IsImage() || IsA<LayoutVideo>(child) || child.IsCanvas())
     UseCounter::Count(GetDocument(), WebFeature::kAspectRatioFlexItem);
 
   Length flex_basis = FlexBasisForChild(child);

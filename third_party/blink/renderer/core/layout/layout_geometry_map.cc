@@ -28,6 +28,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
@@ -105,7 +106,7 @@ void LayoutGeometryMap::MapToAncestor(
       }
     }
 
-    if (in_fixed && current_step.layout_object_->IsLayoutView()) {
+    if (in_fixed && IsA<LayoutView>(current_step.layout_object_)) {
       transform_state.Move(current_step.offset_for_fixed_position_);
       in_fixed = false;
     }
@@ -119,7 +120,7 @@ void LayoutGeometryMap::MapToAncestor(
       const LayoutGeometryMapStep& current_step = mapping_[i];
       if (current_step.flags_ & (kContainsFixedPosition | kIsFixedPosition))
         break;
-      if (current_step.layout_object_->IsLayoutView()) {
+      if (IsA<LayoutView>(current_step.layout_object_)) {
         transform_state.Move(current_step.offset_for_fixed_position_);
         break;
       }
@@ -282,7 +283,7 @@ void LayoutGeometryMap::PushMappingsToAncestor(
 
     // The LayoutView must be pushed first.
     if (!mapping_.size()) {
-      DCHECK(ancestor_layer->GetLayoutObject().IsLayoutView());
+      DCHECK(IsA<LayoutView>(ancestor_layer->GetLayoutObject()));
       PushMappingsToAncestor(&ancestor_layer->GetLayoutObject(), nullptr);
     }
 
@@ -311,9 +312,9 @@ void LayoutGeometryMap::Push(const LayoutObject* layout_object,
 #endif
 
   DCHECK_NE(insertion_position_, kNotFound);
-  DCHECK(!layout_object->IsLayoutView() || !insertion_position_ ||
+  DCHECK(!IsA<LayoutView>(layout_object) || !insertion_position_ ||
          map_coordinates_flags_ & kTraverseDocumentBoundaries);
-  DCHECK(offset_for_fixed_position.IsZero() || layout_object->IsLayoutView());
+  DCHECK(offset_for_fixed_position.IsZero() || IsA<LayoutView>(layout_object));
 
   mapping_.insert(insertion_position_,
                   LayoutGeometryMapStep(layout_object, flags));
@@ -330,9 +331,9 @@ void LayoutGeometryMap::Push(const LayoutObject* layout_object,
                              GeometryInfoFlags flags,
                              PhysicalOffset offset_for_fixed_position) {
   DCHECK_NE(insertion_position_, kNotFound);
-  DCHECK(!layout_object->IsLayoutView() || !insertion_position_ ||
+  DCHECK(!IsA<LayoutView>(layout_object) || !insertion_position_ ||
          map_coordinates_flags_ & kTraverseDocumentBoundaries);
-  DCHECK(offset_for_fixed_position.IsZero() || layout_object->IsLayoutView());
+  DCHECK(offset_for_fixed_position.IsZero() || IsA<LayoutView>(layout_object));
 
   mapping_.insert(insertion_position_,
                   LayoutGeometryMapStep(layout_object, flags));
@@ -411,7 +412,7 @@ void LayoutGeometryMap::StepRemoved(const LayoutGeometryMapStep& step) {
 #if DCHECK_IS_ON()
 bool LayoutGeometryMap::IsTopmostLayoutView(
     const LayoutObject* layout_object) const {
-  if (!layout_object->IsLayoutView())
+  if (!IsA<LayoutView>(layout_object))
     return false;
 
   // If we're not working with multiple LayoutViews, then any view is considered

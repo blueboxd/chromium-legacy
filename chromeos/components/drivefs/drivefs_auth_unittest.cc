@@ -160,6 +160,22 @@ TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Timeout) {
   run_loop.Run();
 }
 
+TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_TimeoutRace) {
+  base::RunLoop run_loop;
+  auto quit_closure = run_loop.QuitClosure();
+  auth_->GetAccessToken(
+      false, base::BindLambdaForTesting(
+                 [&](mojom::AccessTokenStatus status, const std::string&) {
+                   EXPECT_EQ(mojom::AccessTokenStatus::kAuthError, status);
+                   std::move(quit_closure).Run();
+                 }));
+  // Timer fires before access token becomes available.
+  timer_->Fire();
+  // Timer callback should stop access token retrieval.
+  RespondWithAccessToken("auth token");
+  run_loop.Run();
+}
+
 TEST_F(DriveFsAuthTest, GetAccessToken_ParallelRequests) {
   base::RunLoop run_loop;
   auto quit_closure = run_loop.QuitClosure();

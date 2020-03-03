@@ -61,7 +61,7 @@ class ExtensionPlatformKeysService::Task {
   DISALLOW_ASSIGN(Task);
 };
 
-class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
+class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
  public:
   enum class Step {
     GENERATE_KEY,
@@ -70,25 +70,20 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
     DONE,
   };
 
-  // This Task generates an RSA key with the parameters |token_id| and
-  // |modulus_length| and registers it for the extension with id |extension_id|.
-  // The generated key will be passed to |callback|.
-  GenerateRSAKeyTask(const std::string& token_id,
-                     unsigned int modulus_length,
-                     const std::string& extension_id,
-                     const GenerateKeyCallback& callback,
-                     KeyPermissions* key_permissions,
-                     ExtensionPlatformKeysService* service,
-                     content::BrowserContext* browser_context)
+  GenerateKeyTask(const std::string& token_id,
+                  const std::string& extension_id,
+                  const GenerateKeyCallback& callback,
+                  KeyPermissions* key_permissions,
+                  ExtensionPlatformKeysService* service,
+                  content::BrowserContext* browser_context)
       : token_id_(token_id),
-        modulus_length_(modulus_length),
         extension_id_(extension_id),
         callback_(callback),
         key_permissions_(key_permissions),
         service_(service),
         browser_context_(browser_context) {}
 
-  ~GenerateRSAKeyTask() override {}
+  ~GenerateKeyTask() override = default;
 
   void Start() override {
     CHECK(next_step_ == Step::GENERATE_KEY);
@@ -97,12 +92,26 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
 
   bool IsDone() override { return next_step_ == Step::DONE; }
 
+ protected:
+  virtual void GenerateKey(GenerateKeyCallback callback) = 0;
+
+  const std::string token_id_;
+  std::string public_key_spki_der_;
+  const std::string extension_id_;
+  GenerateKeyCallback callback_;
+  std::unique_ptr<KeyPermissions::PermissionsForExtension>
+      extension_permissions_;
+  KeyPermissions* const key_permissions_;
+  ExtensionPlatformKeysService* const service_;
+  content::BrowserContext* const browser_context_;
+
  private:
   void DoStep() {
     switch (next_step_) {
       case Step::GENERATE_KEY:
         next_step_ = Step::GET_EXTENSION_PERMISSIONS;
-        GenerateKey();
+        GenerateKey(base::Bind(&GenerateKeyTask::GeneratedKey,
+                               weak_factory_.GetWeakPtr()));
         return;
       case Step::GET_EXTENSION_PERMISSIONS:
         next_step_ = Step::UPDATE_PERMISSIONS_AND_CALLBACK;
@@ -117,15 +126,6 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
         // |this| might be invalid now.
         return;
     }
-  }
-
-  // Generates the RSA key.
-  void GenerateKey() {
-    platform_keys::subtle::GenerateRSAKey(
-        token_id_, modulus_length_,
-        base::Bind(&GenerateRSAKeyTask::GeneratedKey,
-                   weak_factory_.GetWeakPtr()),
-        browser_context_);
   }
 
   // Stores the generated key or in case of an error calls |callback_| with the
@@ -145,8 +145,8 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
   // Gets the permissions for the extension with id |extension_id|.
   void GetExtensionPermissions() {
     key_permissions_->GetPermissionsForExtension(
-        extension_id_, base::Bind(&GenerateRSAKeyTask::GotPermissions,
-                                  base::Unretained(this)));
+        extension_id_,
+        base::Bind(&GenerateKeyTask::GotPermissions, base::Unretained(this)));
   }
 
   void UpdatePermissionsAndCallBack() {
@@ -167,19 +167,74 @@ class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
 
   Step next_step_ = Step::GENERATE_KEY;
 
-  const std::string token_id_;
-  const unsigned int modulus_length_;
-  std::string public_key_spki_der_;
-  const std::string extension_id_;
-  GenerateKeyCallback callback_;
-  std::unique_ptr<KeyPermissions::PermissionsForExtension>
-      extension_permissions_;
-  KeyPermissions* const key_permissions_;
-  ExtensionPlatformKeysService* const service_;
-  content::BrowserContext* const browser_context_;
-  base::WeakPtrFactory<GenerateRSAKeyTask> weak_factory_{this};
+  base::WeakPtrFactory<GenerateKeyTask> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(GenerateRSAKeyTask);
+  DISALLOW_COPY_AND_ASSIGN(GenerateKeyTask);
+};
+
+class ExtensionPlatformKeysService::GenerateRSAKeyTask
+    : public GenerateKeyTask {
+ public:
+  // This key task generates an RSA key with the parameters |token_id| and
+  // |modulus_length| and registers it for the extension with id |extension_id|.
+  // The generated key will be passed to |callback|.
+  GenerateRSAKeyTask(const std::string& token_id,
+                     unsigned int modulus_length,
+                     const std::string& extension_id,
+                     const GenerateKeyCallback& callback,
+                     KeyPermissions* key_permissions,
+                     ExtensionPlatformKeysService* service,
+                     content::BrowserContext* browser_context)
+      : GenerateKeyTask(token_id,
+                        extension_id,
+                        callback,
+                        key_permissions,
+                        service,
+                        browser_context),
+        modulus_length_(modulus_length) {}
+
+  ~GenerateRSAKeyTask() override {}
+
+ private:
+  // Generates the RSA key.
+  void GenerateKey(GenerateKeyCallback callback) override {
+    platform_keys::subtle::GenerateRSAKey(token_id_, modulus_length_, callback,
+                                          browser_context_);
+  }
+
+  const unsigned int modulus_length_;
+};
+
+class ExtensionPlatformKeysService::GenerateECKeyTask : public GenerateKeyTask {
+ public:
+  // This Task generates an EC key with the parameters |token_id| and
+  // |named_curve| and registers it for the extension with id |extension_id|.
+  // The generated key will be passed to |callback|.
+  GenerateECKeyTask(const std::string& token_id,
+                    const std::string& named_curve,
+                    const std::string& extension_id,
+                    const GenerateKeyCallback& callback,
+                    KeyPermissions* key_permissions,
+                    ExtensionPlatformKeysService* service,
+                    content::BrowserContext* browser_context)
+      : GenerateKeyTask(token_id,
+                        extension_id,
+                        callback,
+                        key_permissions,
+                        service,
+                        browser_context),
+        named_curve_(named_curve) {}
+
+  ~GenerateECKeyTask() override {}
+
+ private:
+  // Generates the EC key.
+  void GenerateKey(GenerateKeyCallback callback) override {
+    platform_keys::subtle::GenerateECKey(token_id_, named_curve_, callback,
+                                         browser_context_);
+  }
+
+  const std::string named_curve_;
 };
 
 class ExtensionPlatformKeysService::SignTask : public Task {
@@ -192,16 +247,17 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   };
 
   // This Task will check the permissions of the extension with |extension_id|
-  // for the key identified by |public_key_spki_der|. If the permission check
-  // was positive, signs |data| with the key and passes the signature to
-  // |callback|. If the extension is not allowed to use the key multiple times,
-  // also updates the permission to prevent any future signing operation of that
-  // extension using that same key.
-  // If an error occurs, an error message is passed to |callback| instead.
+  // for the key of type |key_type| identified by |public_key_spki_der|. If the
+  // permission check was positive, signs |data| with the key and passes the
+  // signature to |callback|. If the extension is not allowed to use the key
+  // multiple times, also updates the permission to prevent any future signing
+  // operation of that extension using that same key. If an error occurs, an
+  // error message is passed to |callback| instead.
   SignTask(const std::string& token_id,
            const std::string& data,
            const std::string& public_key_spki_der,
-           bool sign_direct_pkcs_padded,
+           bool raw_pkcs1,
+           platform_keys::KeyType key_type,
            platform_keys::HashAlgorithm hash_algorithm,
            const std::string& extension_id,
            const SignCallback& callback,
@@ -210,7 +266,8 @@ class ExtensionPlatformKeysService::SignTask : public Task {
       : token_id_(token_id),
         data_(data),
         public_key_spki_der_(public_key_spki_der),
-        sign_direct_pkcs_padded_(sign_direct_pkcs_padded),
+        raw_pkcs1_(raw_pkcs1),
+        key_type_(key_type),
         hash_algorithm_(hash_algorithm),
         extension_id_(extension_id),
         callback_(callback),
@@ -296,16 +353,29 @@ class ExtensionPlatformKeysService::SignTask : public Task {
     extension_permissions_->SetKeyUsedForSigning(public_key_spki_der_,
                                                  key_locations_);
 
-    if (sign_direct_pkcs_padded_) {
-      platform_keys::subtle::SignRSAPKCS1Raw(
-          token_id_, data_, public_key_spki_der_,
-          base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
-          service_->browser_context_);
-    } else {
-      platform_keys::subtle::SignRSAPKCS1Digest(
-          token_id_, data_, public_key_spki_der_, hash_algorithm_,
-          base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
-          service_->browser_context_);
+    switch (key_type_) {
+      case platform_keys::KeyType::kRsassaPkcs1V15: {
+        if (raw_pkcs1_) {
+          platform_keys::subtle::SignRSAPKCS1Raw(
+              token_id_, data_, public_key_spki_der_,
+              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
+              service_->browser_context_);
+        } else {
+          platform_keys::subtle::SignRSAPKCS1Digest(
+              token_id_, data_, public_key_spki_der_, hash_algorithm_,
+
+              base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
+              service_->browser_context_);
+        }
+        break;
+      }
+      case platform_keys::KeyType::kEcdsa: {
+        platform_keys::subtle::SignECDSADigest(
+            token_id_, data_, public_key_spki_der_, hash_algorithm_,
+            base::Bind(&SignTask::DidSign, weak_factory_.GetWeakPtr()),
+            service_->browser_context_);
+        break;
+      }
     }
   }
 
@@ -323,7 +393,8 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   // If true, |data_| will not be hashed before signing. Only PKCS#1 v1.5
   // padding will be applied before signing.
   // If false, |hash_algorithm_| is set to a value != NONE.
-  const bool sign_direct_pkcs_padded_;
+  bool raw_pkcs1_;
+  const platform_keys::KeyType key_type_;
   const platform_keys::HashAlgorithm hash_algorithm_;
   const std::string extension_id_;
   const SignCallback callback_;
@@ -694,17 +765,30 @@ void ExtensionPlatformKeysService::GenerateRSAKey(
       browser_context_));
 }
 
-void ExtensionPlatformKeysService::SignRSAPKCS1Digest(
+void ExtensionPlatformKeysService::GenerateECKey(
+    const std::string& token_id,
+    const std::string& named_curve,
+    const std::string& extension_id,
+    const GenerateKeyCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  StartOrQueueTask(std::make_unique<GenerateECKeyTask>(
+      token_id, named_curve, extension_id, callback, &key_permissions_, this,
+      browser_context_));
+}
+
+void ExtensionPlatformKeysService::SignDigest(
     const std::string& token_id,
     const std::string& data,
     const std::string& public_key_spki_der,
+    platform_keys::KeyType key_type,
     platform_keys::HashAlgorithm hash_algorithm,
     const std::string& extension_id,
     const SignCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartOrQueueTask(base::WrapUnique(new SignTask(
-      token_id, data, public_key_spki_der, false /* digest before signing */,
-      hash_algorithm, extension_id, callback, &key_permissions_, this)));
+  StartOrQueueTask(std::make_unique<SignTask>(
+      token_id, data, public_key_spki_der,
+      /*raw_pkcs1=*/false, key_type, hash_algorithm, extension_id, callback,
+      &key_permissions_, this));
 }
 
 void ExtensionPlatformKeysService::SignRSAPKCS1Raw(
@@ -714,11 +798,11 @@ void ExtensionPlatformKeysService::SignRSAPKCS1Raw(
     const std::string& extension_id,
     const SignCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartOrQueueTask(base::WrapUnique(
-      new SignTask(token_id, data, public_key_spki_der,
-                   true /* sign directly without hashing */,
-                   platform_keys::HASH_ALGORITHM_NONE, extension_id, callback,
-                   &key_permissions_, this)));
+  StartOrQueueTask(std::make_unique<SignTask>(
+      token_id, data, public_key_spki_der,
+      /*raw_pkcs1=*/true, /*key_type=*/platform_keys::KeyType::kRsassaPkcs1V15,
+      platform_keys::HASH_ALGORITHM_NONE, extension_id, callback,
+      &key_permissions_, this));
 }
 
 void ExtensionPlatformKeysService::SelectClientCertificates(

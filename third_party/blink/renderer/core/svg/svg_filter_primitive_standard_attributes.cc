@@ -111,7 +111,7 @@ void SVGFilterPrimitiveStandardAttributes::ChildrenChanged(
     const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (!change.by_parser)
+  if (!change.ByParser())
     Invalidate();
 }
 

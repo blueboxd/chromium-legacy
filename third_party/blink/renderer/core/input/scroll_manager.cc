@@ -205,7 +205,7 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   // so ensure it gets added to the scroll chain. See LTHI::ApplyScroll for the
   // equivalent behavior in CC. Node::NativeApplyScroll contains a special
   // handler for this case.
-  if (current_node.GetLayoutBox()->IsLayoutView() &&
+  if (IsA<LayoutView>(current_node.GetLayoutBox()) &&
       current_node.GetDocument().GetFrame()->IsMainFrame()) {
     return true;
   }

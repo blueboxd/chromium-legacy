@@ -121,9 +121,9 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     version_ = CreateNewServiceWorkerVersion(
         helper_->context()->registry(), registration_.get(), script_url,
         blink::mojom::ScriptType::kClassic);
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(
-        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
+    records.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+        10, version_->script_url(), 100));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptHttpResponseInfo(net::HttpResponseInfo());
     version_->set_fetch_handler_existence(

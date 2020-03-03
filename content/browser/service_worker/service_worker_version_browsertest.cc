@@ -806,9 +806,11 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
 
   void SetResourcesOnCoreThread(
       ServiceWorkerVersion* version,
-      const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+      std::unique_ptr<
+          std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>
+          resources) {
     version->script_cache_map()->resource_map_.clear();
-    version->script_cache_map()->SetResources(resources);
+    version->script_cache_map()->SetResources(*resources);
   }
 
   // Starts the test server and navigates the renderer to an empty page. Call
@@ -973,11 +975,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
       base::Unretained(version_.get())));
 
   // Add a non-existent resource to the version.
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
-      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100)};
-  RunOnCoreThread(base::BindOnce(
-      &ServiceWorkerVersionBrowserTest::SetResourcesOnCoreThread,
-      base::Unretained(this), base::Unretained(version_.get()), records));
+  auto records = std::make_unique<
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>();
+  records->push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      30, version_->script_url(), 100));
+  RunOnCoreThread(
+      base::BindOnce(&ServiceWorkerVersionBrowserTest::SetResourcesOnCoreThread,
+                     base::Unretained(this), base::Unretained(version_.get()),
+                     std::move(records)));
 
   // Store the registration.
   StoreRegistration(version_->version_id(),
@@ -1007,22 +1012,27 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
       base::BindOnce(&self::AddControlleeOnCoreThread, base::Unretained(this)));
 
   // Set a non-existent resource to the version.
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
-      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100)};
-  RunOnCoreThread(base::BindOnce(
-      &ServiceWorkerVersionBrowserTest::SetResourcesOnCoreThread,
-      base::Unretained(this), base::Unretained(version_.get()), records));
+  auto records1 = std::make_unique<
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>();
+  records1->push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      30, version_->script_url(), 100));
+  RunOnCoreThread(
+      base::BindOnce(&ServiceWorkerVersionBrowserTest::SetResourcesOnCoreThread,
+                     base::Unretained(this), base::Unretained(version_.get()),
+                     std::move(records1)));
 
   // Make a waiting version and store it.
   RunOnCoreThread(base::BindOnce(&self::AddWaitingWorkerOnCoreThread,
                                  base::Unretained(this),
                                  "/service_worker/worker.js"));
-  records = {
-      ServiceWorkerDatabase::ResourceRecord(31, version_->script_url(), 100)};
+  auto records2 = std::make_unique<
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>();
+  records2->push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      31, version_->script_url(), 100));
   RunOnCoreThread(base::BindOnce(
       &ServiceWorkerVersionBrowserTest::SetResourcesOnCoreThread,
       base::Unretained(this),
-      base::Unretained(registration_->waiting_version()), records));
+      base::Unretained(registration_->waiting_version()), std::move(records2)));
   StoreRegistration(registration_->waiting_version()->version_id(),
                     blink::ServiceWorkerStatusCode::kOk);
 

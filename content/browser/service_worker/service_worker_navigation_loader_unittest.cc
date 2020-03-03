@@ -347,7 +347,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
         helper_->context()->registry(), registration_.get(),
         GURL("https://example.com/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheSync(storage(), version_->script_url(),
                                            {} /* headers */, "I'm the body",
                                            "I'm the meta data"));

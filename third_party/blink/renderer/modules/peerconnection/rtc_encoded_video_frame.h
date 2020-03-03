@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -23,7 +24,7 @@ namespace blink {
 
 class DOMArrayBuffer;
 
-class RTCEncodedVideoFrame final : public ScriptWrappable {
+class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -51,6 +52,7 @@ class RTCEncodedVideoFrame final : public ScriptWrappable {
  private:
   std::unique_ptr<webrtc::video_coding::EncodedFrame> delegate_;
   std::vector<uint8_t> additional_data_vector_;
+  bool replaced_frame_data_ = false;
   // Exposes encoded frame data from |delegate_|.
   mutable Member<DOMArrayBuffer> frame_data_;
   // Exposes data from |additional_data_vector_|.

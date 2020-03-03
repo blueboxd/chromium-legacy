@@ -37,17 +37,18 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
  public:
   PipelineControllerTest()
       : pipeline_(new StrictMock<MockPipeline>()),
-        pipeline_controller_(std::unique_ptr<Pipeline>(pipeline_),
-                             base::Bind(&PipelineControllerTest::OnSeeked,
-                                        base::Unretained(this)),
-                             base::Bind(&PipelineControllerTest::OnSuspended,
-                                        base::Unretained(this)),
-                             base::Bind(&PipelineControllerTest::OnBeforeResume,
-                                        base::Unretained(this)),
-                             base::Bind(&PipelineControllerTest::OnResumed,
-                                        base::Unretained(this)),
-                             base::Bind(&PipelineControllerTest::OnError,
-                                        base::Unretained(this))) {}
+        pipeline_controller_(
+            std::unique_ptr<Pipeline>(pipeline_),
+            base::BindRepeating(&PipelineControllerTest::OnSeeked,
+                                base::Unretained(this)),
+            base::BindRepeating(&PipelineControllerTest::OnSuspended,
+                                base::Unretained(this)),
+            base::BindRepeating(&PipelineControllerTest::OnBeforeResume,
+                                base::Unretained(this)),
+            base::BindRepeating(&PipelineControllerTest::OnResumed,
+                                base::Unretained(this)),
+            base::BindRepeating(&PipelineControllerTest::OnError,
+                                base::Unretained(this))) {}
 
   ~PipelineControllerTest() override = default;
 

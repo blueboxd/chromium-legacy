@@ -47,6 +47,13 @@ class TestInterfaces {
   const std::vector<WebViewTestProxy*>& GetWindowList();
 
  private:
+  // Called when a WebTestDelegate is destroyed, if it is the currently used
+  // delegate, switch to another delegate in window_list_ as there might be
+  // WebFrameTestClients that require it.
+  // If window_list_ is empty set delegate_ to nullptr, a new one will be
+  // assigned the next time a WebViewTestProxy is built.
+  void DelegateDestroyed(WebTestDelegate* delegate);
+
   std::unique_ptr<GamepadController> gamepad_controller_;
   std::unique_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;

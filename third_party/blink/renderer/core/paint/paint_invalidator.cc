@@ -177,7 +177,7 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     if (object.StyleRef().IsStackingContext() || object.IsSVGRoot())
       context.paint_invalidation_container_for_stacked_contents =
           ToLayoutBoxModelObject(&object);
-  } else if (object.IsLayoutView()) {
+  } else if (IsA<LayoutView>(object)) {
     // paint_invalidation_container_for_stacked_contents is only for stacked
     // descendants in its own frame, because it doesn't establish stacking
     // context for stacked contents in sub-frames.
@@ -259,7 +259,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
       // it has was inherited from the parent frame, and movements of a
       // frame relative to its parent are tracked in the parent frame's
       // LayoutShiftTracker, not the child frame's.
-      object.IsLayoutView()
+      IsA<LayoutView>(object)
           ? FloatSize()
           : context.tree_builder_context_->paint_offset_delta);
 }

@@ -62,8 +62,7 @@ void PerfettoTracedProcess::DataSourceBase::StartTracingWithID(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
   data_source_id_ = data_source_id;
-  // Producer may already be set if startup tracing in TraceEventDataSource.
-  DCHECK(!producer_ || producer_ == producer) << name_;
+  DCHECK(!producer_) << name_;
   producer_ = producer;
   StartTracing(producer_, data_source_config);
 }

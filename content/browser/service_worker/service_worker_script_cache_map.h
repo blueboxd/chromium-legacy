@@ -42,11 +42,12 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   // Used to retrieve the results of the initial run of a new version.
   void GetResources(
-      std::vector<ServiceWorkerDatabase::ResourceRecord>* resources);
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>* resources);
 
   // Used when loading an existing version.
   void SetResources(
-     const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources);
+      const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
+          resources);
 
   // Writes the metadata of the existing script.
   void WriteMetadata(const GURL& url,
@@ -65,7 +66,8 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   }
 
  private:
-  typedef std::map<GURL, ServiceWorkerDatabase::ResourceRecord> ResourceMap;
+  typedef std::map<GURL, storage::mojom::ServiceWorkerResourceRecordPtr>
+      ResourceMap;
 
   // The version objects owns its script cache and provides a rawptr to it.
   friend class ServiceWorkerVersion;

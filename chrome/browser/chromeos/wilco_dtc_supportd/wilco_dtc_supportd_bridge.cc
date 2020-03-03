@@ -260,7 +260,8 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
   GURL gurl;
   if (url.is_valid()) {
     base::ReadOnlySharedMemoryMapping shared_memory;
-    gurl = GURL(GetStringPieceFromMojoHandle(std::move(url), &shared_memory));
+    gurl = GURL(MojoUtils::GetStringPieceFromMojoHandle(std::move(url),
+                                                        &shared_memory));
     if (!shared_memory.IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
       std::move(callback).Run(
@@ -280,7 +281,7 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
       continue;
     }
     shared_memories.emplace_back();
-    header_contents.push_back(GetStringPieceFromMojoHandle(
+    header_contents.push_back(MojoUtils::GetStringPieceFromMojoHandle(
         std::move(header), &shared_memories.back()));
     if (!shared_memories.back().IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
@@ -296,8 +297,8 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
   std::string request_body_content;
   if (request_body.is_valid()) {
     base::ReadOnlySharedMemoryMapping shared_memory;
-    request_body_content = std::string(
-        GetStringPieceFromMojoHandle(std::move(request_body), &shared_memory));
+    request_body_content = std::string(MojoUtils::GetStringPieceFromMojoHandle(
+        std::move(request_body), &shared_memory));
     if (!shared_memory.IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
       std::move(callback).Run(
@@ -319,8 +320,9 @@ void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(
   // Extract the string value of the received message.
   DCHECK(json_message);
   base::ReadOnlySharedMemoryMapping json_message_shared_memory;
-  base::StringPiece json_message_string = GetStringPieceFromMojoHandle(
-      std::move(json_message), &json_message_shared_memory);
+  base::StringPiece json_message_string =
+      MojoUtils::GetStringPieceFromMojoHandle(std::move(json_message),
+                                              &json_message_shared_memory);
   if (json_message_string.empty()) {
     LOG(ERROR) << "Failed to read data from mojo handle";
     std::move(callback).Run(mojo::ScopedHandle() /* response_json_message */);
@@ -335,7 +337,7 @@ void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(
             mojo::ScopedHandle response_mojo_handle;
             if (!response.empty()) {
               response_mojo_handle =
-                  CreateReadOnlySharedMemoryMojoHandle(response);
+                  MojoUtils::CreateReadOnlySharedMemoryMojoHandle(response);
               if (!response_mojo_handle)
                 LOG(ERROR) << "Failed to create mojo handle for string";
             }

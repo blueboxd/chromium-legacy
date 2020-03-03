@@ -390,11 +390,6 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
   return cache_mode;
 }
 
-DocumentLoader* FrameFetchContext::GetDocumentLoader() const {
-  DCHECK(!GetResourceFetcherProperties().IsDetached());
-  return frame_or_imported_document_->GetDocumentLoader();
-}
-
 inline DocumentLoader* FrameFetchContext::MasterDocumentLoader() const {
   DCHECK(!GetResourceFetcherProperties().IsDetached());
   return &frame_or_imported_document_->GetMasterDocumentLoader();

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 
+#include "base/bind.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
@@ -122,4 +123,41 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
   std::string browser2_end = events.back().substr(
       browser2_split_pos, events.back().length() - browser2_split_pos);
   EXPECT_STRNE(browser1_end.c_str(), browser2_end.c_str());
+}
+
+// Tests WebStateList's batch insertion and closing.
+TEST_F(BreadcrumbManagerBrowserAgentTest, BatchOperations) {
+  WebStateList web_state_list(&web_state_list_delegate_);
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(browser_state_.get(), &web_state_list);
+  BreadcrumbManagerBrowserAgent::CreateForBrowser(browser.get());
+
+  // Insert multiple WebStates.
+  web_state_list.PerformBatchOperation(base::BindOnce(^(WebStateList* list) {
+    web::WebState::CreateParams create_params(browser_state_.get());
+    list->InsertWebState(
+        /*index=*/0, web::WebState::Create(create_params),
+        WebStateList::InsertionFlags::INSERT_NO_FLAGS, WebStateOpener());
+    list->InsertWebState(
+        /*index=*/1, web::WebState::Create(create_params),
+        WebStateList::InsertionFlags::INSERT_NO_FLAGS, WebStateOpener());
+  }));
+
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+  EXPECT_NE(std::string::npos, events.front().find("Inserted 2 tabs"))
+      << events.front();
+
+  // Close multiple WebStates.
+  web_state_list.PerformBatchOperation(base::BindOnce(^(WebStateList* list) {
+    list->CloseWebStateAt(
+        /*index=*/0, WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
+    list->CloseWebStateAt(
+        /*index=*/0, WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
+  }));
+
+  events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(2ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find("Closed 2 tabs"))
+      << events.back();
 }

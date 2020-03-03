@@ -118,7 +118,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   TakePendingWorkerTimingReceiver(int request_id) override;
 
  private:
-  class FrameConsoleLogger;
   friend class FrameFetchContextTest;
 
   struct FrozenState;
@@ -127,7 +126,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // relevant document loader or frame in either cases without null-checks.
   //
   // TODO(kinuko): Remove constness, these return non-const members.
-  DocumentLoader* GetDocumentLoader() const;
   DocumentLoader* MasterDocumentLoader() const;
   LocalFrame* GetFrame() const;
   LocalFrameClient* GetLocalFrameClient() const;

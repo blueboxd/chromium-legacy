@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
@@ -350,7 +351,7 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
 
   // Layout view establishes isolation with the exception of local roots (since
   // they are already essentially isolated).
-  if (object.IsLayoutView()) {
+  if (IsA<LayoutView>(object)) {
     const auto* parent_frame = object.GetFrame()->Tree().Parent();
     return IsA<LocalFrame>(parent_frame);
   }
@@ -382,7 +383,7 @@ static bool NeedsPaintOffsetTranslation(
 
   const LayoutBoxModelObject& box_model = ToLayoutBoxModelObject(object);
 
-  if (box_model.IsLayoutView()) {
+  if (IsA<LayoutView>(box_model)) {
     // A translation node for LayoutView is always created to ensure fixed and
     // absolute contexts use the correct transform space.
     return true;
@@ -481,7 +482,7 @@ bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
 
   // It's affected by viewport only if the container is the LayoutView.
   DCHECK_EQ(full_context_.container_for_fixed_position, object_.Container());
-  return full_context_.container_for_fixed_position->IsLayoutView();
+  return IsA<LayoutView>(full_context_.container_for_fixed_position);
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
@@ -507,7 +508,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         *context_.current.transform, std::move(state)));
     context_.current.transform = properties_->PaintOffsetTranslation();
-    if (object_.IsLayoutView()) {
+    if (IsA<LayoutView>(object_)) {
       context_.absolute_position.transform =
           properties_->PaintOffsetTranslation();
       context_.fixed_position.transform = properties_->PaintOffsetTranslation();
@@ -1363,7 +1364,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip(
 // issue artificial page clip for each page, and always print from the origin
 // of the contents for which no scroll offset should be applied.
 static bool IsPrintingRootLayoutView(const LayoutObject& object) {
-  if (!object.IsLayoutView())
+  if (!IsA<LayoutView>(object))
     return false;
 
   const auto& frame = *object.GetFrame();
@@ -1546,15 +1547,16 @@ static PhysicalRect OverflowClipRect(const LayoutBox& box,
   // here instead of LayoutBox::OverflowClipRect because the layout size of the
   // scrolling content is still affected by overlay scrollbar behavior, just not
   // the clip.
-  auto behavior = box.IsLayoutView() ? kIgnorePlatformAndCSSOverlayScrollbarSize
-                                     : kIgnorePlatformOverlayScrollbarSize;
+  auto behavior = IsA<LayoutView>(box)
+                      ? kIgnorePlatformAndCSSOverlayScrollbarSize
+                      : kIgnorePlatformOverlayScrollbarSize;
   return box.OverflowClipRect(offset, behavior);
 }
 
 static bool CanOmitOverflowClip(const LayoutObject& object) {
   DCHECK(NeedsOverflowClip(object));
 
-  if (object.IsLayoutView() && !object.GetFrame()->ClipsContent()) {
+  if (IsA<LayoutView>(object) && !object.GetFrame()->ClipsContent()) {
     return true;
   }
 
@@ -1612,7 +1614,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         // here, before applying padding and corner rounding.
         PhysicalRect content_rect(context_.current.paint_offset,
                                   replaced.Size());
-        if (replaced.IsVideo()) {
+        if (IsA<LayoutVideo>(replaced)) {
           content_rect =
               LayoutReplaced::PreSnappedRectForPersistentSizing(content_rect);
         }
@@ -1773,7 +1775,7 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
   if (!object.IsBox())
     return reasons;
 
-  if (object.IsLayoutView()) {
+  if (IsA<LayoutView>(object)) {
     if (object.GetFrameView()
             ->RequiresMainThreadScrollingForBackgroundAttachmentFixed()) {
       reasons |=
@@ -1983,7 +1985,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   if (object_.CanContainAbsolutePositionObjects())
     context_.absolute_position = context_.current;
 
-  if (object_.IsLayoutView()) {
+  if (IsA<LayoutView>(object_)) {
     const auto* initial_fixed_transform = context_.fixed_position.transform;
 
     context_.fixed_position = context_.current;

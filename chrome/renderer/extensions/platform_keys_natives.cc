@@ -54,29 +54,63 @@ std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
 
   const blink::WebCryptoAlgorithm* hash = nullptr;
 
-  const blink::WebCryptoRsaHashedKeyGenParams* rsaHashedKeyGen =
-      algorithm.RsaHashedKeyGenParams();
-  if (rsaHashedKeyGen) {
-    dict->SetKey(
-        "modulusLength",
-        base::Value(static_cast<int>(rsaHashedKeyGen->ModulusLengthBits())));
-    const blink::WebVector<unsigned char>& public_exponent =
-        rsaHashedKeyGen->PublicExponent();
-    dict->SetWithoutPathExpansion(
-        "publicExponent",
-        base::Value::CreateWithCopiedBuffer(
-            reinterpret_cast<const char*>(public_exponent.Data()),
-            public_exponent.size()));
+  switch (algorithm.Id()) {
+    case blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+      const blink::WebCryptoRsaHashedKeyGenParams* rsa_hashed_key_gen =
+          algorithm.RsaHashedKeyGenParams();
+      if (rsa_hashed_key_gen) {
+        dict->SetKey("modulusLength",
+                     base::Value(static_cast<int>(
+                         rsa_hashed_key_gen->ModulusLengthBits())));
+        const blink::WebVector<unsigned char>& public_exponent =
+            rsa_hashed_key_gen->PublicExponent();
+        dict->SetWithoutPathExpansion(
+            "publicExponent",
+            base::Value::CreateWithCopiedBuffer(
+                reinterpret_cast<const char*>(public_exponent.Data()),
+                public_exponent.size()));
 
-    hash = &rsaHashedKeyGen->GetHash();
-    DCHECK(!hash->IsNull());
-  }
+        hash = &rsa_hashed_key_gen->GetHash();
+        DCHECK(!hash->IsNull());
+      }
+      const blink::WebCryptoRsaHashedImportParams* rsa_hashed_import =
+          algorithm.RsaHashedImportParams();
+      if (rsa_hashed_import) {
+        hash = &rsa_hashed_import->GetHash();
+        DCHECK(!hash->IsNull());
+      }
+      break;
+    }
+    case blink::kWebCryptoAlgorithmIdEcdsa: {
+      const blink::WebCryptoEcKeyGenParams* ec_key_gen =
+          algorithm.EcKeyGenParams();
+      if (ec_key_gen) {
+        std::string named_curve;
+        switch (ec_key_gen->NamedCurve()) {
+          case blink::kWebCryptoNamedCurveP256:
+            named_curve = "P-256";
+            break;
+          case blink::kWebCryptoNamedCurveP384:
+            named_curve = "P-384";
+            break;
+          case blink::kWebCryptoNamedCurveP521:
+            named_curve = "P-521";
+            break;
+        }
+        DCHECK(!named_curve.empty());
+        dict->SetKey("namedCurve", base::Value(std::move(named_curve)));
+      }
 
-  const blink::WebCryptoRsaHashedImportParams* rsaHashedImport =
-      algorithm.RsaHashedImportParams();
-  if (rsaHashedImport) {
-    hash = &rsaHashedImport->GetHash();
-    DCHECK(!hash->IsNull());
+      const blink::WebCryptoEcdsaParams* ecdsa = algorithm.EcdsaParams();
+      if (ecdsa) {
+        hash = &ecdsa->GetHash();
+        DCHECK(!hash->IsNull());
+      }
+      break;
+    }
+    default: {
+      break;
+    }
   }
 
   if (hash) {

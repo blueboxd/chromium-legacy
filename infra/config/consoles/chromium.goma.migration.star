@@ -1154,15 +1154,5 @@ luci.console_view(
             category = 'cros|week3|kevin',
             short_name = 'hwtests',
         ),
-        luci.console_view_entry(
-            builder = 'webrtc.fyi/WebRTC Chromium FYI ios-device',
-            category = 'ios|week1a',
-            short_name = 'dev',
-        ),
-        luci.console_view_entry(
-            builder = 'webrtc.fyi/WebRTC Chromium FYI ios-simulator',
-            category = 'ios|week1a',
-            short_name = 'sim',
-        ),
     ],
 )

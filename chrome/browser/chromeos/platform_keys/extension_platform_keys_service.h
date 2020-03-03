@@ -99,7 +99,7 @@ class ExtensionPlatformKeysService : public KeyedService {
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id|
-  // specifies the token to store the keypair on. |callback| will be invoked
+  // specifies the token to store the key pair on. |callback| will be invoked
   // with the resulting public key or an error. Will only call back during the
   // lifetime of this object.
   void GenerateRSAKey(const std::string& token_id,
@@ -107,27 +107,38 @@ class ExtensionPlatformKeysService : public KeyedService {
                       const std::string& extension_id,
                       const GenerateKeyCallback& callback);
 
+  // Generates an EC key pair with |named_curve| and registers the key to allow
+  // a single sign operation by the given extension. |token_id| specifies the
+  // token to store the key pair on. |callback| will be invoked with the
+  // resulting public key or an error. Will only call back during the lifetime
+  // of this object.
+  void GenerateECKey(const std::string& token_id,
+                     const std::string& named_curve,
+                     const std::string& extension_id,
+                     const GenerateKeyCallback& callback);
+
   // If signing was successful, |signature| will be contain the signature and
   // |error_message| will be empty. If it failed, |signature| will be empty and
   // |error_message| contain an error message.
   using SignCallback = base::Callback<void(const std::string& signature,
                                            const std::string& error_message)>;
 
-  // Digests |data|, applies PKCS1 padding and afterwards signs the data with
-  // the private key matching |public_key_spki_der|. If a non empty token id is
-  // provided and the key is not found in that token, the operation aborts. If
-  // the extension does not have permissions for signing with this key, the
-  // operation aborts. In case of a one time permission (granted after
+  // Digests |data|, applies PKCS1 padding if specified by |hash_algorithm| and
+  // chooses the signature algorithm according to |key_type| and signs the data
+  // with the private key matching |public_key_spki_der|. If a non empty token
+  // id is provided and the key is not found in that token, the operation
+  // aborts. If the extension does not have permissions for signing with this
+  // key, the operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts.
-  // |callback| will be invoked with the signature or an error message.
-  // Will only call back during the lifetime of this object.
-  void SignRSAPKCS1Digest(const std::string& token_id,
-                          const std::string& data,
-                          const std::string& public_key_spki_der,
-                          platform_keys::HashAlgorithm hash_algorithm,
-                          const std::string& extension_id,
-                          const SignCallback& callback);
+  // future signing attempts. |callback| will be invoked with the signature or
+  // an error message. Will only call back during the lifetime of this object.
+  void SignDigest(const std::string& token_id,
+                  const std::string& data,
+                  const std::string& public_key_spki_der,
+                  platform_keys::KeyType key_type,
+                  platform_keys::HashAlgorithm hash_algorithm,
+                  const std::string& extension_id,
+                  const SignCallback& callback);
 
   // Applies PKCS1 padding and afterwards signs the data with the private key
   // matching |public_key_spki_der|. |data| is not digested. If a non empty
@@ -178,6 +189,8 @@ class ExtensionPlatformKeysService : public KeyedService {
 
  private:
   class GenerateRSAKeyTask;
+  class GenerateECKeyTask;
+  class GenerateKeyTask;
   class SelectTask;
   class SignTask;
   class Task;

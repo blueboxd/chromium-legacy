@@ -179,14 +179,40 @@ class GenerateRSAKeyState : public NSSOperationState {
   subtle::GenerateKeyCallback callback_;
 };
 
-class SignRSAState : public NSSOperationState {
+class GenerateECKeyState : public NSSOperationState {
  public:
-  SignRSAState(const std::string& data,
-               const std::string& public_key_spki_der,
-               bool sign_direct_pkcs_padded,
-               HashAlgorithm hash_algorithm,
-               const subtle::SignCallback& callback);
-  ~SignRSAState() override {}
+  GenerateECKeyState(const std::string& named_curve,
+                     const subtle::GenerateKeyCallback& callback);
+  ~GenerateECKeyState() override {}
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, std::string() /* no public key */, error_message);
+  }
+
+  void CallBack(const base::Location& from,
+                const std::string& public_key_spki_der,
+                const std::string& error_message) {
+    origin_task_runner_->PostTask(
+        from, base::Bind(callback_, public_key_spki_der, error_message));
+  }
+
+  const std::string named_curve_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  subtle::GenerateKeyCallback callback_;
+};
+
+class SignState : public NSSOperationState {
+ public:
+  SignState(const std::string& data,
+            const std::string& public_key_spki_der,
+            bool raw_pkcs1,
+            HashAlgorithm hash_algorithm,
+            const KeyType key_type,
+            const subtle::SignCallback& callback);
+  ~SignState() override {}
 
   void OnError(const base::Location& from,
                const std::string& error_message) override {
@@ -200,6 +226,16 @@ class SignRSAState : public NSSOperationState {
         from, base::Bind(callback_, signature, error_message));
   }
 
+  crypto::ScopedSECKEYPrivateKey GetPrivateKey() {
+    auto public_key_bytes =
+        base::as_bytes(base::make_span(public_key_spki_der_));
+    if (slot_) {
+      return crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_bytes,
+                                                       slot_.get());
+    }
+    return crypto::FindNSSKeyFromPublicKeyInfo(public_key_bytes);
+  }
+
   // The data that will be signed.
   const std::string data_;
 
@@ -208,12 +244,18 @@ class SignRSAState : public NSSOperationState {
 
   // If true, |data_| will not be hashed before signing. Only PKCS#1 v1.5
   // padding will be applied before signing.
-  // If false, |hash_algorithm_| must be set to a value != NONE.
-  const bool sign_direct_pkcs_padded_;
+  // If false, |hash_algorithm_| is set to a value != NONE.
+  const bool raw_pkcs1_;
 
   // Determines the hash algorithm that is used to digest |data| before signing.
-  // Ignored if |sign_direct_pkcs_padded_| is true.
+  // Ignored if |raw_pkcs1_| is true.
   const HashAlgorithm hash_algorithm_;
+
+  // Determines the type of the key that should be used for signing. This is
+  // specified by the state creator.
+  // Note: This can be different from the type of |public_key_spki_der|. In such
+  // case, a runtime error should be thrown.
+  const KeyType key_type_;
 
  private:
   // Must be called on origin thread, therefore use CallBack().
@@ -369,24 +411,29 @@ class GetKeyLocationsState : public NSSOperationState {
 };
 
 NSSOperationState::NSSOperationState()
-    : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-}
+    : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 GenerateRSAKeyState::GenerateRSAKeyState(
     unsigned int modulus_length_bits,
     const subtle::GenerateKeyCallback& callback)
-    : modulus_length_bits_(modulus_length_bits), callback_(callback) {
-}
+    : modulus_length_bits_(modulus_length_bits), callback_(callback) {}
 
-SignRSAState::SignRSAState(const std::string& data,
-                           const std::string& public_key_spki_der,
-                           bool sign_direct_pkcs_padded,
-                           HashAlgorithm hash_algorithm,
-                           const subtle::SignCallback& callback)
+GenerateECKeyState::GenerateECKeyState(
+    const std::string& named_curve,
+    const subtle::GenerateKeyCallback& callback)
+    : named_curve_(named_curve), callback_(callback) {}
+
+SignState::SignState(const std::string& data,
+                     const std::string& public_key_spki_der,
+                     bool raw_pkcs1,
+                     HashAlgorithm hash_algorithm,
+                     const KeyType key_type,
+                     const subtle::SignCallback& callback)
     : data_(data),
       public_key_spki_der_(public_key_spki_der),
-      sign_direct_pkcs_padded_(sign_direct_pkcs_padded),
+      raw_pkcs1_(raw_pkcs1),
       hash_algorithm_(hash_algorithm),
+      key_type_(key_type),
       callback_(callback) {}
 
 SelectCertificatesState::SelectCertificatesState(
@@ -420,7 +467,7 @@ GetKeyLocationsState::GetKeyLocationsState(
     const GetKeyLocationsCallback& callback)
     : public_key_spki_der_(public_key_spki_der), callback_(callback) {}
 
-// Does the actual key generation on a worker thread. Used by
+// Does the actual RSA key generation on a worker thread. Used by
 // GenerateRSAKeyWithDB().
 void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
   if (!state->slot_) {
@@ -442,7 +489,48 @@ void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
   crypto::ScopedSECItem public_key_der(
       SECKEY_EncodeDERSubjectPublicKeyInfo(public_key.get()));
   if (!public_key_der) {
-    // TODO(pneubeck): Remove private_key and public_key from storage.
+    // TODO(https://crbug.com/1044368): Remove private_key and public_key from
+    // storage.
+    LOG(ERROR) << "Couldn't export public key.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+  state->CallBack(
+      FROM_HERE,
+      std::string(reinterpret_cast<const char*>(public_key_der->data),
+                  public_key_der->len),
+      std::string() /* no error */);
+}
+
+// Does the actual EC key generation on a worker thread. Used by
+// GenerateECKeyWithDB().
+void GenerateECKeyOnWorkerThread(std::unique_ptr<GenerateECKeyState> state) {
+  if (!state->slot_) {
+    LOG(ERROR) << "No slot.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  if (state->named_curve_ != "P-256") {
+    LOG(ERROR) << "Only P-256 named curve is supported.";
+    state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
+  }
+
+  crypto::ScopedSECKEYPublicKey public_key;
+  crypto::ScopedSECKEYPrivateKey private_key;
+  if (!crypto::GenerateECKeyPairNSS(
+          state->slot_.get(), SEC_OID_ANSIX962_EC_PRIME256V1,
+          true /* permanent */, &public_key, &private_key)) {
+    LOG(ERROR) << "Couldn't create key.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  crypto::ScopedSECItem public_key_der(
+      SECKEY_EncodeDERSubjectPublicKeyInfo(public_key.get()));
+  if (!public_key_der) {
+    // TODO(https://crbug.com/1044368): Remove private_key and public_key from
+    // storage.
     LOG(ERROR) << "Couldn't export public key.";
     state->OnError(FROM_HERE, kErrorInternal);
     return;
@@ -468,20 +556,23 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
       base::BindOnce(&GenerateRSAKeyOnWorkerThread, std::move(state)));
 }
 
-// Does the actual signing on a worker thread. Used by SignRSAWithDB().
-void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
-  const uint8_t* public_key_uint8 =
-      reinterpret_cast<const uint8_t*>(state->public_key_spki_der_.data());
-  std::vector<uint8_t> public_key_vector(
-      public_key_uint8, public_key_uint8 + state->public_key_spki_der_.size());
+// Continues generating an EC key with the obtained NSSCertDatabase. Used by
+// GenerateECKey().
+void GenerateECKeyWithDB(std::unique_ptr<GenerateECKeyState> state,
+                         net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
+  // This task interacts with the TPM, hence MayBlock().
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&GenerateECKeyOnWorkerThread, std::move(state)));
+}
 
-  crypto::ScopedSECKEYPrivateKey rsa_key;
-  if (state->slot_) {
-    rsa_key = crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_vector,
-                                                        state->slot_.get());
-  } else {
-    rsa_key = crypto::FindNSSKeyFromPublicKeyInfo(public_key_vector);
-  }
+// Does the actual RSA signing on a worker thread.
+void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
+  crypto::ScopedSECKEYPrivateKey rsa_key = state->GetPrivateKey();
 
   // Fail if the key was not found or is of the wrong type.
   if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey) {
@@ -490,7 +581,7 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
   }
 
   std::string signature_str;
-  if (state->sign_direct_pkcs_padded_) {
+  if (state->raw_pkcs1_) {
     static_assert(
         sizeof(*state->data_.data()) == sizeof(char),
         "Can't reinterpret data if it's characters are not 8 bit large.");
@@ -549,9 +640,74 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignRSAState> state) {
   state->CallBack(FROM_HERE, signature_str, std::string() /* no error */);
 }
 
+// Does the actual EC Signing on a worker thread.
+void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
+  crypto::ScopedSECKEYPrivateKey ec_key = state->GetPrivateKey();
+
+  // Fail if the key was not found or is of the wrong type.
+  if (!ec_key || SECKEY_GetPrivateKeyType(ec_key.get()) != ecKey) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
+  DCHECK(!state->raw_pkcs1_);
+
+  // Only SHA-256 algorithm is supported for ECDSA.
+  if (state->hash_algorithm_ != HASH_ALGORITHM_SHA256) {
+    state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
+    return;
+  }
+
+  std::string signature_str;
+  SECOidTag sign_alg_tag = SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE;
+  crypto::ScopedSECItem sign_result(SECITEM_AllocItem(nullptr, nullptr, 0));
+  if (SEC_SignData(sign_result.get(),
+                   reinterpret_cast<const unsigned char*>(state->data_.data()),
+                   state->data_.size(), ec_key.get(),
+                   sign_alg_tag) != SECSuccess) {
+    LOG(ERROR) << "Couldn't sign using elliptic curve key.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  int signature_len = PK11_SignatureLen(ec_key.get());
+  crypto::ScopedSECItem web_crypto_signature(
+      DSAU_DecodeDerSigToLen(sign_result.get(), signature_len));
+
+  if (!web_crypto_signature || web_crypto_signature->len == 0) {
+    LOG(ERROR) << "Couldn't convert signature to WebCrypto format.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  signature_str.assign(web_crypto_signature->data,
+                       web_crypto_signature->data + web_crypto_signature->len);
+
+  state->CallBack(FROM_HERE, signature_str, std::string() /* no error */);
+}
+
+// Decides which signing algorithm will be used. Used by SignWithDB().
+void SignOnWorkerThread(std::unique_ptr<SignState> state) {
+  crypto::ScopedSECKEYPrivateKey key = state->GetPrivateKey();
+
+  if (!key) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
+  switch (state->key_type_) {
+    case KeyType::kRsassaPkcs1V15:
+      SignRSAOnWorkerThread(std::move(state));
+      break;
+    case KeyType::kEcdsa:
+      SignECOnWorkerThread(std::move(state));
+      break;
+  }
+}
+
 // Continues signing with the obtained NSSCertDatabase. Used by Sign().
-void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
-                   net::NSSCertDatabase* cert_db) {
+void SignWithDB(std::unique_ptr<SignState> state,
+                net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
@@ -559,7 +715,7 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&SignRSAOnWorkerThread, std::move(state)));
+      base::BindOnce(&SignOnWorkerThread, std::move(state)));
 }
 
 // Called when ClientCertStoreChromeOS::GetClientCerts is done. Builds the list
@@ -571,8 +727,7 @@ void DidSelectCertificates(std::unique_ptr<SelectCertificatesState> state,
   // ClientCertIdentities would require changing the platformKeys extension
   // api. This assumes that the necessary keys can be found later with
   // crypto::FindNSSKeyFromPublicKeyInfo.
-  std::unique_ptr<net::CertificateList> certs =
-      std::make_unique<net::CertificateList>();
+  auto certs = std::make_unique<net::CertificateList>();
   for (const std::unique_ptr<net::ClientCertIdentity>& identity : identities)
     certs->push_back(identity->certificate());
   // DidSelectCertificates() may be called synchronously, so run the callback on
@@ -787,8 +942,8 @@ void GenerateRSAKey(const std::string& token_id,
                     const GenerateKeyCallback& callback,
                     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<GenerateRSAKeyState> state(
-      new GenerateRSAKeyState(modulus_length_bits, callback));
+  auto state =
+      std::make_unique<GenerateRSAKeyState>(modulus_length_bits, callback);
 
   if (modulus_length_bits > kMaxRSAModulusLengthBits) {
     state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
@@ -799,8 +954,21 @@ void GenerateRSAKey(const std::string& token_id,
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
                   base::Bind(&GenerateRSAKeyWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+                  browser_context, state_ptr);
+}
+
+void GenerateECKey(const std::string& token_id,
+                   const std::string& named_curve,
+                   const GenerateKeyCallback& callback,
+                   BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto state = std::make_unique<GenerateECKeyState>(named_curve, callback);
+
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+  GetCertDatabase(token_id,
+                  base::Bind(&GenerateECKeyWithDB, base::Passed(&state)),
+                  browser_context, state_ptr);
 }
 
 void SignRSAPKCS1Digest(const std::string& token_id,
@@ -810,16 +978,18 @@ void SignRSAPKCS1Digest(const std::string& token_id,
                         const SignCallback& callback,
                         content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<SignRSAState> state(new SignRSAState(
-      data, public_key_spki_der, false /* digest before signing */,
-      hash_algorithm, callback));
+  auto state = std::make_unique<SignState>(
+      data, public_key_spki_der,
+      /*raw_pkcs1=*/false, hash_algorithm,
+      /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
+
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id, base::Bind(&SignRSAWithDB, base::Passed(&state)),
+  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
                   browser_context, state_ptr);
 }
 
@@ -829,16 +999,40 @@ void SignRSAPKCS1Raw(const std::string& token_id,
                      const SignCallback& callback,
                      content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<SignRSAState> state(new SignRSAState(
-      data, public_key_spki_der, true /* sign directly without hashing */,
-      HASH_ALGORITHM_NONE, callback));
+  auto state = std::make_unique<SignState>(
+      data, public_key_spki_der,
+      /*raw_pkcs1=*/true, HASH_ALGORITHM_NONE,
+      /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
+
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id, base::Bind(&SignRSAWithDB, base::Passed(&state)),
+  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
+                  browser_context, state_ptr);
+}
+
+void SignECDSADigest(const std::string& token_id,
+                     const std::string& data,
+                     const std::string& public_key_spki_der,
+                     HashAlgorithm hash_algorithm,
+                     const SignCallback& callback,
+                     content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto state =
+      std::make_unique<SignState>(data, public_key_spki_der,
+                                  /*raw_pkcs1=*/false, hash_algorithm,
+                                  /*key_type=*/KeyType::kEcdsa, callback);
+
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+
+  // The NSSCertDatabase object is not required. But in case it's not available
+  // we would get more informative error messages and we can double check that
+  // we use a key of the correct token.
+  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
                   browser_context, state_ptr);
 }
 
@@ -940,14 +1134,12 @@ void GetCertificates(const std::string& token_id,
                      const GetCertificatesCallback& callback,
                      BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<GetCertificatesState> state(
-      new GetCertificatesState(callback));
+  auto state = std::make_unique<GetCertificatesState>(callback);
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
                   base::Bind(&GetCertificatesWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+                  browser_context, state_ptr);
 }
 
 void ImportCertificate(const std::string& token_id,
@@ -955,8 +1147,7 @@ void ImportCertificate(const std::string& token_id,
                        const ImportCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<ImportCertificateState> state(
-      new ImportCertificateState(certificate, callback));
+  auto state = std::make_unique<ImportCertificateState>(certificate, callback);
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
@@ -965,8 +1156,7 @@ void ImportCertificate(const std::string& token_id,
   // we use a key of the correct token.
   GetCertDatabase(token_id,
                   base::Bind(&ImportCertificateWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+                  browser_context, state_ptr);
 }
 
 void RemoveCertificate(const std::string& token_id,
@@ -974,8 +1164,7 @@ void RemoveCertificate(const std::string& token_id,
                        const RemoveCertificateCallback& callback,
                        BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<RemoveCertificateState> state(
-      new RemoveCertificateState(certificate, callback));
+  auto state = std::make_unique<RemoveCertificateState>(certificate, callback);
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
@@ -983,20 +1172,18 @@ void RemoveCertificate(const std::string& token_id,
   // we would get more informative error messages.
   GetCertDatabase(token_id,
                   base::Bind(&RemoveCertificateWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+                  browser_context, state_ptr);
 }
 
 void GetTokens(const GetTokensCallback& callback,
                content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<GetTokensState> state(new GetTokensState(callback));
+  auto state = std::make_unique<GetTokensState>(callback);
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(std::string() /* don't get any specific slot */,
                   base::Bind(&GetTokensWithDB, base::Passed(&state)),
-                  browser_context,
-                  state_ptr);
+                  browser_context, state_ptr);
 }
 
 void GetKeyLocations(const std::string& public_key_spki_der,

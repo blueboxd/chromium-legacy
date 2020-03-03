@@ -17,7 +17,7 @@ namespace blink {
 
 bool BoxPaintInvalidator::HasEffectiveBackground() {
   // The view can paint background not from the style.
-  if (box_.IsLayoutView())
+  if (IsA<LayoutView>(box_))
     return true;
   return box_.StyleRef().HasBackground() && !box_.BackgroundTransfersToView();
 }
@@ -227,9 +227,9 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
 
 BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
-  DCHECK(box_.IsLayoutView());
+  DCHECK(IsA<LayoutView>(box_));
 
-  const auto& layout_view = ToLayoutView(box_);
+  const auto& layout_view = To<LayoutView>(box_);
   auto new_background_rect = layout_view.BackgroundRect();
   auto old_background_rect = layout_view.PreviousBackgroundRect();
   layout_view.SetPreviousBackgroundRect(new_background_rect);
@@ -345,7 +345,7 @@ void BoxPaintInvalidator::InvalidateBackground() {
   bool should_invalidate_all_layers = false;
   auto background_invalidation_type =
       ComputeBackgroundInvalidation(should_invalidate_all_layers);
-  if (box_.IsLayoutView()) {
+  if (IsA<LayoutView>(box_)) {
     background_invalidation_type = std::max(
         background_invalidation_type, ComputeViewBackgroundInvalidation());
   }

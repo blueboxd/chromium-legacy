@@ -132,6 +132,18 @@ class UserSessionManager
     kPolicyAndFlagsAndKioskControl
   };
 
+  // Parameters to use when initializing the RLZ library.  These fields need
+  // to be retrieved from a blocking task and this structure is used to pass
+  // the data.
+  struct RlzInitParams {
+    // Set to true if RLZ is disabled.
+    bool disabled;
+
+    // The elapsed time since the device went through the OOBE.  This can
+    // be a very long time.
+    base::TimeDelta time_since_oobe_completion;
+  };
+
   // To keep track of which systems need the login password to be stored in the
   // kernel keyring.
   enum class PasswordConsumingService {
@@ -206,6 +218,27 @@ class UserSessionManager
   // Returns true iff browser has been restarted after crash and
   // user sessions restoration is in progress.
   bool UserSessionsRestoreInProgress() const;
+
+  // Initialize RLZ.
+  void InitRlz(Profile* profile);
+
+  // Get the NSS cert database for the user represented with |profile|
+  // and start certificate loader with it.
+  void InitializeCerts(Profile* profile);
+
+  // Starts loading CRL set.
+  void InitializeCRLSetFetcher(const user_manager::User* user);
+
+  // Initializes Certificate Transparency-related components.
+  void InitializeCertificateTransparencyComponents(
+      const user_manager::User* user);
+
+  // Initialize child user profile services that depend on the policy.
+  void InitializeChildUserServices(Profile* profile);
+
+  // Initialize all services that need the primary profile.
+  void InitializePrimaryProfileServices(Profile* profile,
+                                        const user_manager::User* user);
 
   // Send the notification before creating the browser so additional objects
   // that need the profile (e.g. the launcher) can be created first.
@@ -447,6 +480,9 @@ class UserSessionManager
 
   // Restores GAIA auth cookies for the created user profile from OAuth2 token.
   void RestoreAuthSessionImpl(Profile* profile, bool restore_from_auth_cookies);
+
+  // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
+  void InitRlzImpl(Profile* profile, const RlzInitParams& params);
 
   // If |user| is not a kiosk app, sets session type as seen by extensions
   // feature system according to |user|'s type.

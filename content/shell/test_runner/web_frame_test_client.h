@@ -25,10 +25,9 @@ class WebViewTestProxy;
 // RenderFrameImpl).
 class WebFrameTestClient : public blink::WebLocalFrameClient {
  public:
-  // Caller has to ensure that all arguments (|delegate|,
-  // |web_view_test_proxy| and so forth) live longer than |this|.
-  WebFrameTestClient(WebTestDelegate* delegate,
-                     WebViewTestProxy* web_view_test_proxy,
+  // Caller has to ensure that all arguments (|web_view_test_proxy| and so
+  // forth) live longer than |this|.
+  WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
                      WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override;
@@ -64,11 +63,12 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
 
  private:
   TestRunner* test_runner();
+  WebTestDelegate* delegate();
+
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    const char* event_name);
 
   // Borrowed pointers to other parts of web tests state.
-  WebTestDelegate* delegate_;
   WebViewTestProxy* web_view_test_proxy_;
   WebFrameTestProxy* web_frame_test_proxy_;
 

@@ -9,19 +9,18 @@
 
 namespace media {
 
-PipelineController::PipelineController(
-    std::unique_ptr<Pipeline> pipeline,
-    const SeekedCB& seeked_cb,
-    const SuspendedCB& suspended_cb,
-    const BeforeResumeCB& before_resume_cb,
-    const ResumedCB& resumed_cb,
-    const PipelineStatusCB& error_cb)
+PipelineController::PipelineController(std::unique_ptr<Pipeline> pipeline,
+                                       SeekedCB seeked_cb,
+                                       SuspendedCB suspended_cb,
+                                       BeforeResumeCB before_resume_cb,
+                                       ResumedCB resumed_cb,
+                                       PipelineStatusCB error_cb)
     : pipeline_(std::move(pipeline)),
-      seeked_cb_(seeked_cb),
-      suspended_cb_(suspended_cb),
-      before_resume_cb_(before_resume_cb),
-      resumed_cb_(resumed_cb),
-      error_cb_(error_cb) {
+      seeked_cb_(std::move(seeked_cb)),
+      suspended_cb_(std::move(suspended_cb)),
+      before_resume_cb_(std::move(before_resume_cb)),
+      resumed_cb_(std::move(resumed_cb)),
+      error_cb_(std::move(error_cb)) {
   DCHECK(pipeline_);
   DCHECK(seeked_cb_);
   DCHECK(suspended_cb_);

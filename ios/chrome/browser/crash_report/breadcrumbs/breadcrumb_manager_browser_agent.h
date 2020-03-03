@@ -34,6 +34,8 @@ class BreadcrumbManagerBrowserAgent
   bool IsLoggingEnabled();
   void SetLoggingEnabled(bool enabled);
 
+  ~BreadcrumbManagerBrowserAgent() override;
+
  private:
   explicit BreadcrumbManagerBrowserAgent(Browser* browser);
   friend class BrowserUserData<BreadcrumbManagerBrowserAgent>;
@@ -64,9 +66,6 @@ class BreadcrumbManagerBrowserAgent
                           web::WebState* old_web_state,
                           web::WebState* new_web_state,
                           int index) override;
-  void WebStateDetachedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index) override;
   void WillCloseWebStateAt(WebStateList* web_state_list,
                            web::WebState* web_state,
                            int index,
@@ -76,6 +75,8 @@ class BreadcrumbManagerBrowserAgent
                            web::WebState* new_web_state,
                            int active_index,
                            int reason) override;
+  void WillBeginBatchOperation(WebStateList* web_state_list) override;
+  void BatchOperationEnded(WebStateList* web_state_list) override;
 
   // Unique (across this application run only) identifier for logs associated
   // with |browser_| instance. Used to differentiate logs associated with the
@@ -84,6 +85,19 @@ class BreadcrumbManagerBrowserAgent
   // Whether or not events will be logged.
   bool logging_enabled_ = true;
   Browser* browser_ = nullptr;
+
+  // Keeps track of WebState mutation count to avoid logging every event.
+  // Created in WillBeginBatchOperation and destroyed in BatchOperationEnded.
+  // Final mutation count is logged in BatchOperationEnded.
+  struct BatchOperation {
+    // Number of WebState objects inserted between WillBeginBatchOperation and
+    // BatchOperationEnded callbacks.
+    int insertion_count = 0;
+    // Number of WebState objects closed between WillBeginBatchOperation and
+    // BatchOperationEnded callbacks.
+    int close_count = 0;
+  };
+  std::unique_ptr<BatchOperation> batch_operation_;
 };
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_BROWSER_AGENT_H_

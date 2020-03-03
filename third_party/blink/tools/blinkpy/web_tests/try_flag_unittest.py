@@ -138,7 +138,7 @@ class TryFlagTest(unittest.TestCase):
                 'https://test-results.appspot.com/data/layout_results',
                 build.builder_name,
                 build.build_number,
-                'webkit_layout_tests%20%28with%20patch%29'
+                'blink_web_tests%20%28with%20patch%29'
             )
         self.assertEqual(host.stdout.getvalue(), '\n'.join([
             'Fetching results...',

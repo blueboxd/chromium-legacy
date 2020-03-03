@@ -324,9 +324,8 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
 
     // ... if the text track has a corresponding track element, to then fire a
     // simple event named cuechange at the track element as well.
-    if (track->TrackType() == TextTrack::kTrackElement) {
-      HTMLTrackElement* track_element =
-          ToLoadableTextTrack(track.Get())->TrackElement();
+    if (auto* loadable_text_track = DynamicTo<LoadableTextTrack>(track.Get())) {
+      HTMLTrackElement* track_element = loadable_text_track->TrackElement();
       DCHECK(track_element);
       media_element.ScheduleEvent(
           CreateEventWithTarget(event_type_names::kCuechange, track_element));

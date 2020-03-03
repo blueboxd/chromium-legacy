@@ -308,6 +308,11 @@ void ProxyMain::BeginMainFrame(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
+
+    // Since the BeginMainFrame has been aborted, handling of events on the main
+    // frame had no effect and no metrics should be reported for such events.
+    layer_tree_host_->ClearEventsMetrics();
+
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,

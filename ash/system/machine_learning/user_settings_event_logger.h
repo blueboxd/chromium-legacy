@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_MACHINE_LEARNING_USER_SETTINGS_EVENT_LOGGER_H_
 #define ASH_SYSTEM_MACHINE_LEARNING_USER_SETTINGS_EVENT_LOGGER_H_
 
+#include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/shell_observer.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/machine_learning/user_settings_event.pb.h"
@@ -78,8 +79,8 @@ class ASH_EXPORT UserSettingsEventLogger
   // Populates contextual information shared by all settings events.
   void PopulateSharedFeatures(UserSettingsEvent* event);
 
-  // Sends the given event to UKM.
-  void SendToUkm(const UserSettingsEvent& event);
+  // Sends the given event to UKM and AppListClient.
+  void SendToUkmAndAppList(const UserSettingsEvent& event);
 
   void OnVolumeTimerEnded();
   void OnBrightnessTimerEnded();

@@ -60,10 +60,10 @@ Most builds follow a similar pattern. The key *steps* are listed here.
   suites are affected by the patch.
 * **compile (with patch)** Builds test suites and associated artifacts.
 * **isolate tests** Archives test suite binaries and artifacts.
-* **test_pre_run.[trigger] webkit_layout_tests (with patch)** Triggers a test
+* **test_pre_run.[trigger] blink_web_tests (with patch)** Triggers a test
   suite on swarming [remote execution framework] -- in this case,
-  webkit_layout_tests.
-* **webkit_layout_tests (with patch)** Collects the results from swarming for a
+  blink_web_tests.
+* **blink_web_tests (with patch)** Collects the results from swarming for a
   test suite.
 
 If all test suites pass, then the *build* is marked as a success and no further
@@ -74,9 +74,9 @@ test failure is due to the CL or due to a problem with tip of tree.
 * **bot_update [without patch]** Deapplies the CL patch.
 * **compile [without patch]** Compiles test suites.
 * **isolate tests (2)** Archives test suite binaries and artifacts.
-* **test_pre_run.[trigger] webkit_layout_tests (without patch)** Triggers test
+* **test_pre_run.[trigger] blink_web_tests (without patch)** Triggers test
   suite on swarming. Only failing tests are rerun.
-* **webkit_layout_tests (without patch)** Collects results from swarming.
+* **blink_web_tests (without patch)** Collects results from swarming.
 
 **Important safety notice**. When test suites are run with the patch applied,
 each test is run up to N times -- any success will mark the test as a success.

@@ -41,7 +41,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
 
   cc::Layer* CcLayer();
   void Neuter();
-  WGPUTexture GetNewTexture(WGPUDevice device, const IntSize& size);
+  WGPUTexture GetNewTexture(uint64_t device_client_id, const IntSize& size);
 
   // cc::TextureLayerClient implementation.
   bool PrepareTransferableResource(

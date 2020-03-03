@@ -22,7 +22,8 @@ namespace gpu {
 class SharedImageInterface;
 class WebGPUInProcessContext;
 
-void OnRequestDeviceCallback(bool is_request_device_success);
+void OnRequestDeviceCallback(bool is_request_device_success,
+                             webgpu::DawnDeviceClientID device_client_id);
 
 namespace webgpu {
 
@@ -57,7 +58,8 @@ class WebGPUTest : public testing::Test {
   void WaitForCompletion(wgpu::Device device);
 
   const uint32_t kAdapterServiceID = 0u;
-  const webgpu::DawnDeviceClientID kDeviceClientID = 0u;
+  const webgpu::DawnDeviceClientID kDeviceClientID = 1u;
+  const WGPUDeviceProperties kDeviceProperties = {};
 
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;

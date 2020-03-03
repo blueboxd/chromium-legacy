@@ -425,8 +425,7 @@ static network::mojom::ReferrerPolicy ParsePolicyFromString(
   if (policy == Page::ReferrerPolicyEnum::StrictOrigin)
     return network::mojom::ReferrerPolicy::kStrictOrigin;
   if (policy == Page::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin) {
-    return network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    return network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
   }
   if (policy == Page::ReferrerPolicyEnum::UnsafeUrl)
     return network::mojom::ReferrerPolicy::kAlways;

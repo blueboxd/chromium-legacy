@@ -15,9 +15,7 @@ enum ReferrerPolicy {
     kNever,
     kOrigin,
     kOriginWhenCrossOrigin,
-    // This policy corresponds to strict-origin-when-cross-origin.
-    // TODO(estark): rename to match the spec.
-    kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    kStrictOriginWhenCrossOrigin,
     kSameOrigin,
     kStrictOrigin,
     kLast = kStrictOrigin,

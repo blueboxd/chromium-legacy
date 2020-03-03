@@ -82,7 +82,7 @@ void WebGPUSwapBufferProvider::Neuter() {
   neutered_ = true;
 }
 
-WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(WGPUDevice device,
+WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(uint64_t device_client_id,
                                                     const IntSize& size) {
   DCHECK(!current_swap_buffer_ && !dawn_control_client_->IsDestroyed());
 
@@ -109,13 +109,14 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(WGPUDevice device,
       current_swap_buffer_->access_finished_token.GetConstData());
 
   // Associate the mailbox to a dawn_wire client DawnTexture object
-  gpu::webgpu::ReservedTexture reservation = webgpu->ReserveTexture(device);
+  gpu::webgpu::ReservedTexture reservation =
+      webgpu->ReserveTexture(device_client_id);
   DCHECK(reservation.texture);
   wire_texture_id_ = reservation.id;
   wire_texture_generation_ = reservation.generation;
 
   webgpu->AssociateMailbox(
-      0, 0, reservation.id, reservation.generation, usage_,
+      device_client_id, 0, reservation.id, reservation.generation, usage_,
       reinterpret_cast<GLbyte*>(&current_swap_buffer_->mailbox));
 
   // When the page request a texture it means we'll need to present it on the

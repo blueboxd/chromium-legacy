@@ -45,9 +45,8 @@ void WebAppInstallDialogCallback(
                                  std::move(web_app_info),
                                  std::move(web_app_acceptance_callback));
   } else {
-    chrome::ShowBookmarkAppDialog(initiator_web_contents,
-                                  std::move(web_app_info),
-                                  std::move(web_app_acceptance_callback));
+    chrome::ShowWebAppDialog(initiator_web_contents, std::move(web_app_info),
+                             std::move(web_app_acceptance_callback));
   }
 }
 

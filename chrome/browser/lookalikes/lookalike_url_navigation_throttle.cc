@@ -17,8 +17,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -36,8 +36,8 @@ namespace {
 const base::FeatureParam<bool> kEnableInterstitialForTopSites{
     &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", true};
 
-using MatchType = LookalikeUrlInterstitialPage::MatchType;
-using UserAction = LookalikeUrlInterstitialPage::UserAction;
+using MatchType = LookalikeUrlBlockingPage::MatchType;
+using UserAction = LookalikeUrlBlockingPage::UserAction;
 using url_formatter::TopDomainEntry;
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
@@ -405,9 +405,9 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
   auto controller = std::make_unique<LookalikeUrlControllerClient>(
       web_contents, url, safe_url);
 
-  std::unique_ptr<LookalikeUrlInterstitialPage> blocking_page(
-      new LookalikeUrlInterstitialPage(web_contents, safe_url, source_id,
-                                       match_type, std::move(controller)));
+  std::unique_ptr<LookalikeUrlBlockingPage> blocking_page(
+      new LookalikeUrlBlockingPage(web_contents, safe_url, source_id,
+                                   match_type, std::move(controller)));
 
   base::Optional<std::string> error_page_contents =
       blocking_page->GetHTMLContents();
@@ -609,8 +609,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   }
 
   // Interstitial normally records UKM, but still record when it's not shown.
-  LookalikeUrlInterstitialPage::RecordUkmEvent(
-      source_id, match_type, UserAction::kInterstitialNotShown);
+  LookalikeUrlBlockingPage::RecordUkmEvent(source_id, match_type,
+                                           UserAction::kInterstitialNotShown);
 
   return content::NavigationThrottle::PROCEED;
 }

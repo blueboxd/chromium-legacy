@@ -167,6 +167,18 @@ TEST_F('CrSettingsPrefUtilV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsResetPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/reset_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsResetPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsSiteFaviconV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

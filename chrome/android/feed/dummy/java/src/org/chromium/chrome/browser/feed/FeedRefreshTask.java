@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
 /**

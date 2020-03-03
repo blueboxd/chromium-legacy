@@ -43,7 +43,7 @@ class FlakyTests(Command):
 
     FLAKINESS_DASHBOARD_URL = (
         'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
-        '#testType=webkit_layout_tests&tests=%s')
+        '#testType=blink_web_tests&tests=%s')
 
     BUG_TEMPLATE = (
         'https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&'

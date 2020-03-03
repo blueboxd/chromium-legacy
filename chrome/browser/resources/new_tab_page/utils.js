@@ -34,3 +34,40 @@ export function hexColorToSkColor(hexColor) {
   const b = parseInt(hexColor.substring(5, 7), 16);
   return {value: 0xff000000 + (r << 16) + (g << 8) + b};
 }
+
+/**
+ * Given a |container| that has scrollable content, <div>'s before and after the
+ * |container| are created with an attribute "scroll-border". These <div>'s are
+ * updated to have an attribute "show" when there is more content in the
+ * direction of the "scroll-border". Styling is left to the caller.
+ *
+ * Returns an |IntersectionObserver| so the caller can disconnect the observer
+ * when needed.
+ * @param {!HTMLElement} container
+ * @return {!IntersectionObserver}
+ */
+export function createScrollBorders(container) {
+  const topProbe = document.createElement('div');
+  container.prepend(topProbe);
+  const bottomProbe = document.createElement('div');
+  container.append(bottomProbe);
+  const topBorder = document.createElement('div');
+  topBorder.toggleAttribute('scroll-border', true);
+  container.parentNode.insertBefore(topBorder, container);
+  const bottomBorder = document.createElement('div');
+  bottomBorder.toggleAttribute('scroll-border', true);
+  container.parentNode.insertBefore(bottomBorder, container.nextSibling);
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(({target, intersectionRatio}) => {
+      const show = intersectionRatio === 0;
+      if (target === topProbe) {
+        topBorder.toggleAttribute('show', show);
+      } else if (target === bottomProbe) {
+        bottomBorder.toggleAttribute('show', show);
+      }
+    });
+  }, {root: container});
+  observer.observe(topProbe);
+  observer.observe(bottomProbe);
+  return observer;
+}

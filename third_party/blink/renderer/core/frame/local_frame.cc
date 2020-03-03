@@ -35,7 +35,9 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
@@ -88,6 +90,8 @@
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
+#include "third_party/blink/renderer/core/frame/frame_serializer.h"
+#include "third_party/blink/renderer/core/frame/frame_serializer_delegate_impl.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -147,6 +151,7 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -196,6 +201,72 @@ HitTestResult HitTestResultForRootFramePos(
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
+
+class WebBundleGenerationDelegate
+    : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
+  STACK_ALLOCATED();
+
+ public:
+  WebBundleGenerationDelegate() = default;
+  ~WebBundleGenerationDelegate() = default;
+
+  WebBundleGenerationDelegate(const WebBundleGenerationDelegate&) = delete;
+  WebBundleGenerationDelegate& operator=(const WebBundleGenerationDelegate&) =
+      delete;
+
+  bool ShouldSkipResource(const WebURL& url) override { return false; }
+  bool UseBinaryEncoding() override { return false; }
+  bool RemovePopupOverlay() override { return false; }
+  bool UsePageProblemDetectors() override { return false; }
+};
+
+class ResourceSnapshotForWebBundleImpl
+    : public data_decoder::mojom::blink::ResourceSnapshotForWebBundle {
+ public:
+  explicit ResourceSnapshotForWebBundleImpl(Deque<SerializedResource> resources)
+      : resources_(std::move(resources)) {}
+  ~ResourceSnapshotForWebBundleImpl() override = default;
+
+  ResourceSnapshotForWebBundleImpl(const ResourceSnapshotForWebBundleImpl&) =
+      delete;
+  ResourceSnapshotForWebBundleImpl& operator=(
+      const ResourceSnapshotForWebBundleImpl&) = delete;
+
+  // data_decoder::mojom::blink::ResourceSnapshotForWebBundle:
+  void GetResourceCount(GetResourceCountCallback callback) override {
+    std::move(callback).Run(resources_.size());
+  }
+  void GetResourceInfo(uint64_t index,
+                       GetResourceInfoCallback callback) override {
+    if (index >= resources_.size()) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
+    const auto& resource = resources_.at(SafeCast<WTF::wtf_size_t>(index));
+    auto info = data_decoder::mojom::blink::SerializedResourceInfo::New();
+    info->url = resource.url;
+    info->mime_type = resource.mime_type;
+    info->size = resource.data ? resource.data->size() : 0;
+    std::move(callback).Run(std::move(info));
+  }
+  void GetResourceBody(uint64_t index,
+                       GetResourceBodyCallback callback) override {
+    if (index >= resources_.size()) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    const auto& resource = resources_.at(SafeCast<WTF::wtf_size_t>(index));
+    if (!resource.data) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(
+        mojo_base::BigBuffer(resource.data->CopyAs<std::vector<uint8_t>>()));
+  }
+
+ private:
+  const Deque<SerializedResource> resources_;
+};
 
 }  // namespace
 
@@ -2154,6 +2225,23 @@ void LocalFrame::ClearFocusedElement() {
   if (HasEditableStyle(*old_focused_element) ||
       old_focused_element->IsTextControl())
     Selection().Clear();
+}
+
+void LocalFrame::GetResourceSnapshotForWebBundle(
+    mojo::PendingReceiver<
+        data_decoder::mojom::blink::ResourceSnapshotForWebBundle> receiver) {
+  Deque<SerializedResource> resources;
+
+  HeapHashSet<WeakMember<const Element>> shadow_template_elements;
+  WebBundleGenerationDelegate web_delegate;
+  FrameSerializerDelegateImpl core_delegate(web_delegate,
+                                            shadow_template_elements);
+  FrameSerializer serializer(resources, core_delegate);
+  serializer.SerializeFrame(*this);
+
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ResourceSnapshotForWebBundleImpl>(std::move(resources)),
+      std::move(receiver));
 }
 
 void LocalFrame::CopyImageAtViewportPoint(const IntPoint& viewport_point) {

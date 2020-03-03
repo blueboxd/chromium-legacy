@@ -34,11 +34,8 @@ Polymer({
     /** @private {string} */
     password_: String,
 
-    /** @private {number} */
-    mountId_: {
-      type: Number,
-      value: -1,
-    },
+    /** @private {string} */
+    mountId_: String,
   },
 
   /** @private {?SmbBrowserProxy} */
@@ -56,7 +53,7 @@ Polymer({
     var args = JSON.parse(dialogArgs);
     assert(args);
     assert(args.path);
-    assert(typeof args.mid === 'number');
+    assert(args.mid);
     this.sharePath_ = args.path;
     this.mountId_ = args.mid;
 

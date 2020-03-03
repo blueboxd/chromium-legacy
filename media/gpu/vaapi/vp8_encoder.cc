@@ -143,6 +143,8 @@ bool VP8Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
       current_params_.framerate == framerate) {
     return true;
   }
+  VLOGF(2) << "New bitrate: " << bitrate_allocation.GetSumBps()
+           << ", New framerate: " << framerate;
 
   current_params_.bitrate_allocation = bitrate_allocation;
   current_params_.framerate = framerate;

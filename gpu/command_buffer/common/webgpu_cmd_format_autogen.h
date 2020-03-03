@@ -25,39 +25,45 @@ struct DawnCommands {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _commands_shm_id,
+  void Init(uint64_t _device_client_id,
+            uint32_t _commands_shm_id,
             uint32_t _commands_shm_offset,
             uint32_t _size) {
     SetHeader();
+    device_client_id = _device_client_id;
     commands_shm_id = _commands_shm_id;
     commands_shm_offset = _commands_shm_offset;
     size = _size;
   }
 
   void* Set(void* cmd,
+            uint64_t _device_client_id,
             uint32_t _commands_shm_id,
             uint32_t _commands_shm_offset,
             uint32_t _size) {
-    static_cast<ValueType*>(cmd)->Init(_commands_shm_id, _commands_shm_offset,
-                                       _size);
+    static_cast<ValueType*>(cmd)->Init(_device_client_id, _commands_shm_id,
+                                       _commands_shm_offset, _size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t device_client_id;
   uint32_t commands_shm_id;
   uint32_t commands_shm_offset;
   uint32_t size;
 };
 
-static_assert(sizeof(DawnCommands) == 16, "size of DawnCommands should be 16");
+static_assert(sizeof(DawnCommands) == 20, "size of DawnCommands should be 20");
 static_assert(offsetof(DawnCommands, header) == 0,
               "offset of DawnCommands header should be 0");
-static_assert(offsetof(DawnCommands, commands_shm_id) == 4,
-              "offset of DawnCommands commands_shm_id should be 4");
-static_assert(offsetof(DawnCommands, commands_shm_offset) == 8,
-              "offset of DawnCommands commands_shm_offset should be 8");
-static_assert(offsetof(DawnCommands, size) == 12,
-              "offset of DawnCommands size should be 12");
+static_assert(offsetof(DawnCommands, device_client_id) == 4,
+              "offset of DawnCommands device_client_id should be 4");
+static_assert(offsetof(DawnCommands, commands_shm_id) == 8,
+              "offset of DawnCommands commands_shm_id should be 8");
+static_assert(offsetof(DawnCommands, commands_shm_offset) == 12,
+              "offset of DawnCommands commands_shm_offset should be 12");
+static_assert(offsetof(DawnCommands, size) == 16,
+              "offset of DawnCommands size should be 16");
 
 struct AssociateMailboxImmediate {
   typedef AssociateMailboxImmediate ValueType;

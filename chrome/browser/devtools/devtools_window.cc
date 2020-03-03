@@ -1607,18 +1607,17 @@ void DevToolsWindow::LoadCompleted() {
   Show(action_on_load_);
   action_on_load_ = DevToolsToggleAction::NoOp();
   if (!load_completed_callback_.is_null()) {
-    load_completed_callback_.Run();
-    load_completed_callback_ = base::Closure();
+    std::move(load_completed_callback_).Run();
   }
 }
 
-void DevToolsWindow::SetLoadCompletedCallback(const base::Closure& closure) {
+void DevToolsWindow::SetLoadCompletedCallback(base::OnceClosure closure) {
   if (life_stage_ == kLoadCompleted || life_stage_ == kClosing) {
     if (!closure.is_null())
-      closure.Run();
+      std::move(closure).Run();
     return;
   }
-  load_completed_callback_ = closure;
+  load_completed_callback_ = std::move(closure);
 }
 
 bool DevToolsWindow::ForwardKeyboardEvent(

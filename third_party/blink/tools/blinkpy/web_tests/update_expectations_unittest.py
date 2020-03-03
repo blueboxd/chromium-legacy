@@ -1361,7 +1361,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'This change was made by the update_expectations.py script.\n\n'
             'Recent test results history:\n'
             'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
-            '#testType=webkit_layout_tests&tests=test/a.html,test/b.html\n\n'
+            '#testType=blink_web_tests&tests=test/a.html,test/b.html\n\n'
             'Bug: 1111, 2222\n'
         ])
 
@@ -1402,7 +1402,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'This change was made by the update_expectations.py script.\n\n'
             'Recent test results history:\n'
             'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
-            '#testType=webkit_layout_tests&tests=test/b.html\n\n'
+            '#testType=blink_web_tests&tests=test/b.html\n\n'
             'Bug: 2222\n'
         ])
 
@@ -1452,6 +1452,6 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'This change was made by the update_expectations.py script.\n\n'
             'Recent test results history:\n'
             'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
-            '#testType=webkit_layout_tests&tests=test/a.html,test/b.html,test/d.html\n\n'
+            '#testType=blink_web_tests&tests=test/a.html,test/b.html,test/d.html\n\n'
             'Bug: 1111, 3333\n'
         ])

@@ -23,13 +23,21 @@ static_assert(
     sizeof(DawnReturnDataHeader) % GPU_DAWN_RETURN_DATA_ALIGNMENT == 0,
     "DawnReturnDataHeader must align to GPU_DAWN_RETURN_DATA_ALIGNMENT");
 
-struct DawnReturnCommandsInfo {
+struct DawnReturnCommandsInfoHeader {
   DawnReturnDataHeader return_data_header = {DawnReturnDataType::kDawnCommands};
+  DawnDeviceClientID device_client_id;
+};
+
+static_assert(offsetof(DawnReturnCommandsInfoHeader, return_data_header) == 0,
+              "The offset of return_data_header must be 0");
+
+struct DawnReturnCommandsInfo {
+  DawnReturnCommandsInfoHeader header;
   alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) char deserialized_buffer[];
 };
 
-static_assert(offsetof(DawnReturnCommandsInfo, return_data_header) == 0,
-              "The offset of return_data_header must be 0");
+static_assert(offsetof(DawnReturnCommandsInfo, header) == 0,
+              "The offset of header must be 0");
 
 struct DawnReturnAdapterInfoHeader {
   DawnReturnDataHeader return_data_header = {

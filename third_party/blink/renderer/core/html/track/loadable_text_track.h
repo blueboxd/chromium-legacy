@@ -55,11 +55,12 @@ class LoadableTextTrack final : public TextTrack {
   Member<HTMLTrackElement> track_element_;
 };
 
-DEFINE_TYPE_CASTS(LoadableTextTrack,
-                  TextTrack,
-                  track,
-                  track->TrackType() == TextTrack::kTrackElement,
-                  track.TrackType() == TextTrack::kTrackElement);
+template <>
+struct DowncastTraits<LoadableTextTrack> {
+  static bool AllowFrom(const TextTrack& track) {
+    return track.TrackType() == TextTrack::kTrackElement;
+  }
+};
 
 }  // namespace blink
 

@@ -81,6 +81,7 @@
 #include "third_party/blink/renderer/core/html/track/cue_timeline.h"
 #include "third_party/blink/renderer/core/html/track/html_track_element.h"
 #include "third_party/blink/renderer/core/html/track/inband_text_track.h"
+#include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_container.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track.h"
@@ -1459,7 +1460,7 @@ void HTMLMediaElement::TextTrackReadyStateChanged(TextTrack* track) {
 void HTMLMediaElement::TextTrackModeChanged(TextTrack* track) {
   // Mark this track as "configured" so configureTextTracks won't change the
   // mode again.
-  if (track->TrackType() == TextTrack::kTrackElement)
+  if (IsA<LoadableTextTrack>(track))
     track->SetHasBeenConfigured(true);
 
   if (track->IsRendered()) {

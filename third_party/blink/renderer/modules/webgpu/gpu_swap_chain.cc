@@ -67,7 +67,7 @@ GPUTexture* GPUSwapChain::getCurrentTexture() {
   }
 
   WGPUTexture dawn_client_texture = swap_buffers_->GetNewTexture(
-      device_->GetHandle(), context_->CanvasSize());
+      device_->GetClientID(), context_->CanvasSize());
   DCHECK(dawn_client_texture);
   texture_ = MakeGarbageCollected<GPUTexture>(device_, dawn_client_texture);
   return texture_;

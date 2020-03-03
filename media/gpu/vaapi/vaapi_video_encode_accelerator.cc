@@ -838,7 +838,6 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
-  VLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
   VideoBitrateAllocation allocation;
@@ -853,8 +852,6 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
     const VideoBitrateAllocation& bitrate_allocation,
     uint32_t framerate) {
-  VLOGF(2) << "bitrate: " << bitrate_allocation.GetSumBps()
-           << " framerate: " << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
   encoder_task_runner_->PostTask(
@@ -867,8 +864,6 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     VideoBitrateAllocation bitrate_allocation,
     uint32_t framerate) {
-  VLOGF(2) << "bitrate: " << bitrate_allocation.GetSumBps()
-           << " framerate: " << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(state_, kUninitialized);
 

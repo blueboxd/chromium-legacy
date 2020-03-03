@@ -19,6 +19,7 @@ import './on_startup_page/on_startup_page.m.js';
 import './on_startup_page/startup_urls_page.m.js';
 import './prefs/prefs.m.js';
 import './printing_page/printing_page.m.js';
+import './reset_page/reset_page.m.js';
 import './site_favicon.m.js';
 import './search_engines_page/omnibox_extension_entry.m.js';
 import './search_engines_page/search_engine_dialog.m.js';
@@ -70,5 +71,6 @@ export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on
 export {pageVisibility} from './page_visibility.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {routes} from './route.m.js';
+export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.m.js';
 export {Route, Router} from './router.m.js';
 export {SearchEnginesBrowserProxyImpl} from './search_engines_page/search_engines_browser_proxy.m.js';

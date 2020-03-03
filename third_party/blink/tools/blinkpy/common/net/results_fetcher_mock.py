@@ -40,7 +40,7 @@ class MockTestResultsFetcher(TestResultsFetcher):
         self._webdriver_results = {}
         self.fetched_builds = []
         self.fetched_webdriver_builds = []
-        self._layout_test_step_name = 'webkit_layout_tests (with patch)'
+        self._layout_test_step_name = 'blink_web_tests (with patch)'
 
     def set_results(self, build, results):
         self._canned_results[build] = results

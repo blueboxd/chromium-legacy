@@ -918,6 +918,9 @@
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TABLE_TITLE" desc="Title for the list display of current preferences.">
     Ports
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_MIC_TITLE" desc="Title for sharing mic with Crostini.">
+    Give access to microphone
   </message>  
   
   <!-- Android apps page (OS settings) -->

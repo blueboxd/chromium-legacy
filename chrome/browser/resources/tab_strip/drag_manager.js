@@ -14,6 +14,9 @@ import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 /** @const {number} */
 export const PLACEHOLDER_TAB_ID = -1;
 
+/** @const {string} */
+export const PLACEHOLDER_GROUP_ID = 'placeholder';
+
 /**
  * The data type key for pinned state of a tab. Since drag events only expose
  * whether or not a data type exists (not the actual value), presence of this
@@ -78,9 +81,6 @@ export class DragManagerDelegate {
    * @param {number} index
    */
   placeTabGroupElement(element, index) {}
-
-  /** @param {!Element} element */
-  showDropPlaceholder(element) {}
 }
 
 /** @typedef {!DragManagerDelegate|!HTMLElement} */
@@ -149,6 +149,15 @@ class DragSession {
       return DragSession.createFromElement(delegate, placeholderTabElement);
     }
 
+    if (event.dataTransfer.types.includes(getGroupIdDataType())) {
+      const placeholderGroupElement = /** @type {!TabGroupElement} */
+          (document.createElement('tabstrip-tab-group'));
+      placeholderGroupElement.dataset.groupId = PLACEHOLDER_GROUP_ID;
+      placeholderGroupElement.setDragging(true);
+      delegate.placeTabGroupElement(placeholderGroupElement, -1);
+      return DragSession.createFromElement(delegate, placeholderGroupElement);
+    }
+
     return null;
   }
 
@@ -167,6 +176,26 @@ class DragSession {
     if (isTabElement(this.element_)) {
       return this.delegate_.getIndexOfTab(
           /** @type {!TabElement} */ (this.element_));
+    }
+
+    if (this.element_.children.length === 0) {
+      // If this group element has no children, it was a placeholder element
+      // being dragged. Find out the destination index by finding the index of
+      // the tab closest to it and incrementing it by 1.
+      const previousElement = this.element_.previousElementSibling;
+      if (!previousElement) {
+        return 0;
+      }
+      if (isTabElement(previousElement)) {
+        return this.delegate_.getIndexOfTab(
+                   /** @private {!TabElement} */ (previousElement)) +
+            1;
+      }
+
+      assert(isTabGroupElement(previousElement));
+      return this.delegate_.getIndexOfTab(/** @private {!TabElement} */ (
+                 previousElement.lastElementChild)) +
+          1;
     }
 
     // If a tab group is moving backwards (to the front of the tab strip), the
@@ -201,15 +230,36 @@ class DragSession {
 
   /** @return {boolean} */
   isDraggingPlaceholder() {
+    return this.isDraggingPlaceholderTab_() ||
+        this.isDraggingPlaceholderGroup_();
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isDraggingPlaceholderTab_() {
     return isTabElement(this.element_) &&
-        this.element_.tab.id == PLACEHOLDER_TAB_ID;
+        this.element_.tab.id === PLACEHOLDER_TAB_ID;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isDraggingPlaceholderGroup_() {
+    return isTabGroupElement(this.element_) &&
+        this.element_.dataset.groupId === PLACEHOLDER_GROUP_ID;
   }
 
   /** @param {!DragEvent} event */
   finish(event) {
-    if (this.isDraggingPlaceholder()) {
+    if (this.isDraggingPlaceholderTab_()) {
       const id = Number(event.dataTransfer.getData(getTabIdDataType()));
       this.element_.tab = Object.assign({}, this.element_.tab, {id});
+    } else if (this.isDraggingPlaceholderGroup_()) {
+      this.element_.dataset.groupId =
+          event.dataTransfer.getData(getGroupIdDataType());
     }
 
     const dstIndex = this.dstIndex;
@@ -227,6 +277,19 @@ class DragSession {
     }
 
     this.element_.setDragging(false);
+  }
+
+  /**
+   * @param {!TabElement|!TabGroupElement} dragOverElement
+   * @return {boolean}
+   */
+  shouldOffsetIndexForGroup_(dragOverElement) {
+    // Since TabGroupElements do not have any TabElements, they need to offset
+    // the index for any elements that come after it as if there is at least
+    // one element inside of it.
+    return this.isDraggingPlaceholder() &&
+        !!(dragOverElement.compareDocumentPosition(this.element_) &
+           Node.DOCUMENT_POSITION_PRECEDING);
   }
 
   /** @param {!DragEvent} event */
@@ -278,15 +341,20 @@ class DragSession {
     const dragOverTabElement =
         /** @type {!TabElement|undefined} */ (composedPath.find(isTabElement));
     if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
-      const dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
+      let dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
+      dragOverIndex +=
+          this.shouldOffsetIndexForGroup_(dragOverTabElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
       return;
     }
 
-    const dragOverGroupElement = composedPath.find(isTabGroupElement);
+    const dragOverGroupElement = /** @type {!TabGroupElement|undefined} */ (
+        composedPath.find(isTabGroupElement));
     if (dragOverGroupElement) {
-      const dragOverIndex = this.delegate_.getIndexOfTab(
+      let dragOverIndex = this.delegate_.getIndexOfTab(
           /** @type {!TabElement} */ (dragOverGroupElement.firstElementChild));
+      dragOverIndex +=
+          this.shouldOffsetIndexForGroup_(dragOverGroupElement) ? 1 : 0;
       this.delegate_.placeTabGroupElement(tabGroupElement, dragOverIndex);
     }
   }
@@ -345,34 +413,24 @@ export class DragManager {
     /** @type {?DragSession} */
     this.dragSession_ = null;
 
-    /** @type {!Element} */
-    this.dropPlaceholder_ = document.createElement('div');
-    this.dropPlaceholder_.id = 'dropPlaceholder';
-
     /** @private {!TabsApiProxy} */
     this.tabsProxy_ = TabsApiProxy.getInstance();
   }
 
   /** @private */
   onDragLeave_() {
-    if (this.dragSession_ && this.dragSession_.isDraggingPlaceholder()) {
-      this.dragSession_.cancel();
-      this.dragSession_ = null;
+    if (this.dragSession_ && !this.dragSession_.isDraggingPlaceholder()) {
+      return;
     }
 
-    // TODO(johntlee): Handle drag and drop groups from other windows with
-    // DragSession.
-    this.dropPlaceholder_.remove();
+    this.dragSession_.cancel();
+    this.dragSession_ = null;
   }
 
   /** @param {!DragEvent} event */
   onDragOver_(event) {
     event.preventDefault();
-
     if (!this.dragSession_) {
-      // TODO(johntlee): Handle drag and drop groups from other windows with
-      // DragSession.
-      this.delegate_.showDropPlaceholder(this.dropPlaceholder_);
       return;
     }
 
@@ -418,19 +476,12 @@ export class DragManager {
    * @param {!DragEvent} event
    */
   onDrop_(event) {
-    if (this.dragSession_) {
-      this.dragSession_.finish(event);
-      this.dragSession_ = null;
+    if (!this.dragSession_) {
       return;
     }
 
-    // TODO(johntlee): Handle drag and drop groups from other windows with
-    // DragSession.
-    this.dropPlaceholder_.remove();
-    if (event.dataTransfer.types.includes(getGroupIdDataType())) {
-      const groupId = event.dataTransfer.getData(getGroupIdDataType());
-      this.tabsProxy_.moveGroup(groupId, -1);
-    }
+    this.dragSession_.finish(event);
+    this.dragSession_ = null;
   }
 
   startObserving() {

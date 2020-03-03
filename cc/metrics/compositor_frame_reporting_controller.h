@@ -13,6 +13,7 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/compositor_frame_reporter.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 
 namespace viz {
@@ -60,7 +61,8 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidSubmitCompositorFrame(
       uint32_t frame_token,
       const viz::BeginFrameId& current_frame_id,
-      const viz::BeginFrameId& last_activated_frame_id);
+      const viz::BeginFrameId& last_activated_frame_id,
+      std::vector<EventMetrics> events_metrics);
   virtual void DidNotProduceFrame(const viz::BeginFrameId& id);
   virtual void OnFinishImplFrame(const viz::BeginFrameId& id);
   virtual void DidPresentCompositorFrame(

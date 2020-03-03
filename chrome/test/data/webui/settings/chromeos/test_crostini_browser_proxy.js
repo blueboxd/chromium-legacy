@@ -90,7 +90,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** @override */
   requestCrostiniContainerUpgradeAvailable() {
     cr.webUIListenerCallback(
-        'crostini-container-upgrade-available-changed', false);
+        'crostini-container-upgrade-available-changed', true);
   }
 
   /** @override */

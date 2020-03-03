@@ -702,8 +702,7 @@ std::string ReferrerPolicyToString(
       return "always";
     case network::mojom::ReferrerPolicy::kNever:
       return "never";
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       return "strict-origin-when-cross-origin";
   }
   NOTREACHED();

@@ -118,7 +118,7 @@ class WebAppMigrationManagerBrowserTest : public InProcessBrowserTest {
 
   AppId InstallWebAppAsUserViaOmnibox() {
     chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(
+    chrome::SetAutoAcceptWebAppDialogForTesting(
         /*auto_accept=*/true,
         /*auto_open_in_window=*/true);
 

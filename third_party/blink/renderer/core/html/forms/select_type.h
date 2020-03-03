@@ -44,6 +44,9 @@ class SelectType : public GarbageCollected<SelectType> {
 
   virtual void SelectAll();
 
+  virtual void ShowPopup();
+  virtual void HidePopup();
+
   enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
   CORE_EXPORT HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;
   CORE_EXPORT HTMLOptionElement* PreviousSelectableOption(

@@ -6,9 +6,11 @@
 #define CC_METRICS_COMPOSITOR_TIMING_HISTORY_H_
 
 #include <memory>
+#include <vector>
 
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
@@ -98,7 +100,8 @@ class CC_EXPORT CompositorTimingHistory {
   void DidSubmitCompositorFrame(
       uint32_t frame_token,
       const viz::BeginFrameId& current_frame_id,
-      const viz::BeginFrameId& last_activated_frame_id);
+      const viz::BeginFrameId& last_activated_frame_id,
+      std::vector<EventMetrics> events_metrics);
   void DidNotProduceFrame(const viz::BeginFrameId& id);
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,

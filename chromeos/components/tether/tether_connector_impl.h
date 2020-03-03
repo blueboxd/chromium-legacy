@@ -63,7 +63,7 @@ class TetherConnectorImpl : public TetherConnector,
 
   void ConnectToNetwork(
       const std::string& tether_network_guid,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) override;
 
   // Returns whether the connection attempt was successfully canceled.
@@ -116,7 +116,7 @@ class TetherConnectorImpl : public TetherConnector,
 
   bool did_send_successful_request_ = false;
   std::string device_id_pending_connection_;
-  base::Closure success_callback_;
+  base::OnceClosure success_callback_;
   network_handler::StringResultCallback error_callback_;
   std::unique_ptr<ConnectTetheringOperation> connect_tethering_operation_;
   base::Time connect_to_host_start_time_;

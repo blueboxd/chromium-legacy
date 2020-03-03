@@ -67,8 +67,7 @@ def container_context(union_type, info_provider):
             if array_or_sequence_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             array_or_sequence_type = context
-        # "Dictionary" is an object, rather than an IDL dictionary.
-        elif member.base_type == 'Dictionary':
+        elif member.base_type == 'object':
             if object_type or record_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             object_type = context

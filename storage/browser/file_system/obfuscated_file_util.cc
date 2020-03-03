@@ -225,14 +225,16 @@ class ObfuscatedOriginEnumerator
   ~ObfuscatedOriginEnumerator() override = default;
 
   // Returns the next origin.  Returns empty if there are no more origins.
-  GURL Next() override {
+  base::Optional<url::Origin> Next() override {
     OriginRecord record;
-    if (!origins_.empty()) {
-      record = origins_.back();
-      origins_.pop_back();
+    if (origins_.empty()) {
+      current_ = record;
+      return base::nullopt;
     }
+    record = origins_.back();
+    origins_.pop_back();
     current_ = record;
-    return GetOriginURLFromIdentifier(record.origin);
+    return GetOriginFromIdentifier(record.origin);
   }
 
   // Returns the current origin's information.

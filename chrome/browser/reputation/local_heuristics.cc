@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/common/chrome_features.h"
@@ -16,7 +16,7 @@
 
 namespace {
 
-using MatchType = LookalikeUrlInterstitialPage::MatchType;
+using MatchType = LookalikeUrlBlockingPage::MatchType;
 
 const base::FeatureParam<bool> kEnableLookalikeTopSites{
     &security_state::features::kSafetyTipUI, "topsites", true};

@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -75,7 +75,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
   static bool ShouldDisplayInterstitial(
-      LookalikeUrlInterstitialPage::MatchType match_type,
+      LookalikeUrlBlockingPage::MatchType match_type,
       const DomainInfo& navigated_domain);
 
   // Returns true if a domain is visually similar to the hostname of |url|. The
@@ -87,7 +87,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
       const DomainInfo& navigated_domain,
       const std::vector<DomainInfo>& engaged_sites,
       std::string* matched_domain,
-      LookalikeUrlInterstitialPage::MatchType* match_type);
+      LookalikeUrlBlockingPage::MatchType* match_type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationThrottleTest,
@@ -116,7 +116,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
       const GURL& safe_domain,
       const GURL& url,
       ukm::SourceId source_id,
-      LookalikeUrlInterstitialPage::MatchType match_type);
+      LookalikeUrlBlockingPage::MatchType match_type);
 
   bool interstitials_enabled_;
 

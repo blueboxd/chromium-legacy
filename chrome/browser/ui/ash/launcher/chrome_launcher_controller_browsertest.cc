@@ -2149,11 +2149,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
       GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
       ui::PAGE_TRANSITION_LINK);
   // Install shortcut app.
-  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true, true);
+  chrome::SetAutoAcceptWebAppDialogForTesting(true, true);
   web_app::WebAppInstallObserver observer(profile());
   chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT);
   web_app::AppId app_id = observer.AwaitNextInstall();
-  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false, false);
+  chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
 
   ash::ShelfID shelf_id(app_id);
   EXPECT_FALSE(ChromeLauncherController::instance()->IsPinned(shelf_id));

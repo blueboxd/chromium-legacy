@@ -39,7 +39,7 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
       extensions::AppWindow* window,
       extensions::AppWindow::CreateParams* params) override;
   void OpenDevToolsWindow(content::WebContents* web_contents,
-                          const base::Closure& callback) override;
+                          base::OnceClosure callback) override;
   bool IsCurrentChannelOlderThanDev() override;
 
   // Implemented in platform specific code.

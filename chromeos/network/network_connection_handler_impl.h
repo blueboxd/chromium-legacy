@@ -27,13 +27,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
 
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
-                        const base::Closure& success_callback,
+                        base::OnceClosure success_callback,
                         const network_handler::ErrorCallback& error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override;
   void DisconnectNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::ErrorCallback& error_callback) override;
 
   // NetworkStateHandlerObserver
@@ -56,10 +56,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
     ConnectRequest(ConnectCallbackMode mode,
                    const std::string& service_path,
                    const std::string& profile_path,
-                   const base::Closure& success,
+                   base::OnceClosure success_callback,
                    const network_handler::ErrorCallback& error);
     ~ConnectRequest();
-    explicit ConnectRequest(const ConnectRequest& other);
+    ConnectRequest(ConnectRequest&&);
 
     enum ConnectState {
       CONNECT_REQUESTED = 0,
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
     std::string service_path;
     std::string profile_path;
     ConnectState connect_state;
-    base::Closure success_callback;
+    base::OnceClosure success_callback;
     network_handler::ErrorCallback error_callback;
   };
 
@@ -130,12 +130,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // Calls Shill.Manager.Disconnect asynchronously.
   void CallShillDisconnect(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::ErrorCallback& error_callback);
 
   // Handle success from Shill.Service.Disconnect.
   void HandleShillDisconnectSuccess(const std::string& service_path,
-                                    const base::Closure& success_callback);
+                                    base::OnceClosure success_callback);
 
   // Local references to the associated handler instances.
   NetworkCertLoader* network_cert_loader_;

@@ -334,6 +334,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(
           &monitored_latency_info);
+  auto scoped_event_metrics_monitor =
+      input_handler_->GetScopedEventMetricsMonitor(
+          {WebEventTypeToEventType(event_with_callback->event().GetType()),
+           event_with_callback->event().TimeStamp()});
 
   current_overscroll_params_.reset();
 

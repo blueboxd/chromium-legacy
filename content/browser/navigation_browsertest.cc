@@ -333,16 +333,16 @@ class NavigationBrowserTestReferrerPolicy
 INSTANTIATE_TEST_SUITE_P(
     All,
     NavigationBrowserTestReferrerPolicy,
-    ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
-                      network::mojom::ReferrerPolicy::kDefault,
-                      network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-                      network::mojom::ReferrerPolicy::kNever,
-                      network::mojom::ReferrerPolicy::kOrigin,
-                      network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::
-                          kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::kSameOrigin,
-                      network::mojom::ReferrerPolicy::kStrictOrigin));
+    ::testing::Values(
+        network::mojom::ReferrerPolicy::kAlways,
+        network::mojom::ReferrerPolicy::kDefault,
+        network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+        network::mojom::ReferrerPolicy::kNever,
+        network::mojom::ReferrerPolicy::kOrigin,
+        network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kSameOrigin,
+        network::mojom::ReferrerPolicy::kStrictOrigin));
 
 // Ensure that browser initiated basic navigations work.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
@@ -657,8 +657,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTestReferrerPolicy, ReferrerPolicy) {
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
       EXPECT_EQ(kReferrerURL, root->navigation_request()->GetReferrer().url);
       break;

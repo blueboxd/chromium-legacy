@@ -55,18 +55,28 @@ Polymer({
     },
 
     /**
-     * The currently selected profile icon URL. May be a data URL.
+     * The current profile icon URL. Usually a data:image/png URL.
      * @private
      */
     profileIconUrl_: String,
 
     /**
-     * The current profile name.
+     * The current profile name, e.g. "John Cena".
      * @private
      */
     profileName_: String,
 
-    /** @private */
+    /**
+     * The current profile email, e.g. "john.cena@gmail.com".
+     * @private
+     */
+    profileEmail_: String,
+
+    /**
+     * The label may contain additional text, for example:
+     * "john.cena@gmail, + 2 more accounts".
+     * @private
+     */
     profileLabel_: String,
 
     /** @private */
@@ -244,6 +254,7 @@ Polymer({
       return;
     }
     this.profileName_ = accounts[0].fullName;
+    this.profileEmail_ = accounts[0].email;
     this.profileIconUrl_ = accounts[0].pic;
 
     const moreAccounts = accounts.length - 1;

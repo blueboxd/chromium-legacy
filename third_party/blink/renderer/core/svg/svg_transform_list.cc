@@ -435,7 +435,7 @@ void SVGTransformList::Add(SVGPropertyBase* other,
   if (IsEmpty())
     return;
 
-  SVGTransformList* other_list = ToSVGTransformList(other);
+  auto* other_list = To<SVGTransformList>(other);
   if (length() != other_list->length())
     return;
 
@@ -462,10 +462,10 @@ void SVGTransformList::CalculateAnimatedValue(
   // post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations
   // for 'animateTransform' is undefined.
   // FIXME: This is not taken into account yet.
-  SVGTransformList* from_list = ToSVGTransformList(from_value);
-  SVGTransformList* to_list = ToSVGTransformList(to_value);
-  SVGTransformList* to_at_end_of_duration_list =
-      ToSVGTransformList(to_at_end_of_duration_value);
+  auto* from_list = To<SVGTransformList>(from_value);
+  auto* to_list = To<SVGTransformList>(to_value);
+  auto* to_at_end_of_duration_list =
+      To<SVGTransformList>(to_at_end_of_duration_value);
 
   size_t to_list_size = to_list->length();
   if (!to_list_size)
@@ -517,7 +517,7 @@ float SVGTransformList::CalculateDistance(SVGPropertyBase* to_value,
   // component (translate x and y for example) is paced separately. To implement
   // this we need to treat each component as individual animation everywhere.
 
-  SVGTransformList* to_list = ToSVGTransformList(to_value);
+  auto* to_list = To<SVGTransformList>(to_value);
   if (IsEmpty() || length() != to_list->length())
     return -1;
 

@@ -505,6 +505,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void EnableViewSourceMode() final;
   void Focus() final;
   void ClearFocusedElement() final;
+  void GetResourceSnapshotForWebBundle(
+      mojo::PendingReceiver<
+          data_decoder::mojom::blink::ResourceSnapshotForWebBundle> receiver)
+      final;
   void CopyImageAt(const gfx::Point& window_point) final;
   void SaveImageAt(const gfx::Point& window_point) final;
   void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;

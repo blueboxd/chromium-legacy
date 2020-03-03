@@ -115,8 +115,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        kInsecureURLA, kInsecureURLA},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
        kInsecureURLA, kInsecureOriginA},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kInsecureURLA, kInsecureURLA, kInsecureURLA},
 
       // HTTP -> HTTP: Cross Origin
@@ -136,8 +135,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        kInsecureURLB, nullptr},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
        kInsecureURLB, kInsecureOriginA},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kInsecureURLA, kInsecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTPS: Same Origin
@@ -157,8 +155,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        kSecureURLA},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA, kSecureURLA,
        kSecureOriginA},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kSecureURLA, kSecureURLA, kSecureURLA},
 
       // HTTPS -> HTTPS: Cross Origin
@@ -178,8 +175,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        nullptr},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA, kSecureURLB,
        kSecureOriginA},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kSecureURLA, kSecureURLB, kSecureOriginA},
 
       // HTTP -> HTTPS
@@ -199,8 +195,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        nullptr},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kInsecureURLA,
        kSecureURLB, kInsecureOriginA},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kInsecureURLA, kSecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTP
@@ -220,8 +215,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
        nullptr},
       {network::mojom::ReferrerPolicy::kStrictOrigin, kSecureURLA,
        kInsecureURLB, nullptr},
-      {network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kSecureURLA, kInsecureURLB, nullptr},
 
       // blob and filesystem URL handling

@@ -242,6 +242,16 @@ SwapPromiseManager* LayerTreeHost::GetSwapPromiseManager() {
   return &swap_promise_manager_;
 }
 
+std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+LayerTreeHost::GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) {
+  return events_metrics_manager_.GetScopedMonitor(event_metrics);
+}
+
+void LayerTreeHost::ClearEventsMetrics() {
+  // Take evens metrics and drop them.
+  events_metrics_manager_.TakeSavedEventsMetrics();
+}
+
 const LayerTreeSettings& LayerTreeHost::GetSettings() const {
   return settings_;
 }
@@ -348,6 +358,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     PushLayerTreeHostPropertiesTo(host_impl);
 
     sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
+    host_impl->AppendEventsMetrics(
+        events_metrics_manager_.TakeSavedEventsMetrics());
 
     sync_tree->set_ui_resource_request_queue(
         ui_resource_manager_->TakeUIResourcesRequests());
@@ -590,17 +602,20 @@ DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  events_metrics_manager_.SaveActiveEventsMetrics();
 }
 
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  events_metrics_manager_.SaveActiveEventsMetrics();
 }
 
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  events_metrics_manager_.SaveActiveEventsMetrics();
 }
 
 bool LayerTreeHost::RequestedMainFramePendingForTesting() {

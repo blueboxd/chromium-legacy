@@ -61,12 +61,7 @@ var MediaAppUIBrowserTest = class extends testing.Test {
   /** @override */
   setUp() {
     super.setUp();
-    driver = new GuestDriver(GUEST_ORIGIN);
-  }
-
-  /** @override */
-  tearDown() {
-    driver.tearDown();
+    driver = new GuestDriver();
   }
 };
 
@@ -142,5 +137,33 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
   assertEquals(result, 'hooray');
   assertEquals(tagName, '"VIDEO"');
 
+  testDone();
+});
+
+// Tests that we receive an error if our message is unhandled.
+TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
+  let errorMessage = '';
+  try {
+    await guestMessagePipe.sendMessage('unknown-message', null);
+  } catch (error) {
+    errorMessage = error.message;
+  }
+
+  assertEquals(
+      errorMessage,
+      'No handler registered for message type \'unknown-message\'');
+  testDone();
+});
+
+// Tests that we receive an error if the handler fails.
+TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
+  let errorMessage = '';
+  try {
+    await guestMessagePipe.sendMessage('bad-handler', null);
+  } catch (error) {
+    errorMessage = error.message;
+  }
+
+  assertEquals(errorMessage, 'This is an error');
   testDone();
 });

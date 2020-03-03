@@ -99,20 +99,20 @@ void ShowCreateChromeAppShortcutsDialog(
 using AppInstallationAcceptanceCallback =
     base::OnceCallback<void(bool, std::unique_ptr<WebApplicationInfo>)>;
 
-// Shows the Bookmark App bubble.
-// See Extension::InitFromValueFlags::FROM_BOOKMARK for a description of
-// bookmark apps.
+// Shows the Web App bubble.
 //
 // |web_app_info| is the WebApplicationInfo being converted into an app.
-void ShowBookmarkAppDialog(content::WebContents* web_contents,
-                           std::unique_ptr<WebApplicationInfo> web_app_info,
-                           AppInstallationAcceptanceCallback callback);
+// |web_app_info.app_url| should contain a start url from a web app manifest
+// (for a Desktop PWA), or the current url (when creating a shortcut app).
+void ShowWebAppDialog(content::WebContents* web_contents,
+                      std::unique_ptr<WebApplicationInfo> web_app_info,
+                      AppInstallationAcceptanceCallback callback);
 
-// Sets whether |ShowBookmarkAppDialog| should accept immediately without any
+// Sets whether |ShowWebAppDialog| should accept immediately without any
 // user interaction. |auto_open_in_window| sets whether the open in window
 // checkbox is checked.
-void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept,
-                                              bool auto_open_in_window);
+void SetAutoAcceptWebAppDialogForTesting(bool auto_accept,
+                                         bool auto_open_in_window);
 
 // Shows the PWA installation confirmation bubble anchored off the PWA install
 // icon in the omnibox.

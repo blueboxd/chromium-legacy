@@ -170,7 +170,10 @@
           <settings-subpage page-title="$i18n{osSyncPageTitle}"
               associated-control="[[$$('#sync-setup')]]"
               learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-            <os-sync-controls sync-status="[[syncStatus]]">
+            <os-sync-controls sync-status="[[syncStatus]]"
+                profile-icon-url="[[profileIconUrl_]]"
+                profile-name="[[profileName_]]"
+                profile-email="[[profileEmail_]]">
             </os-sync-controls>
           </settings-subpage>
         </template>

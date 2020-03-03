@@ -26,7 +26,8 @@ void OnRequestAdapterCallback(uint32_t adapter_service_id,
 
 }  // anonymous namespace
 
-void OnRequestDeviceCallback(bool is_request_device_success) {}
+void OnRequestDeviceCallback(bool is_request_device_success,
+                             webgpu::DawnDeviceClientID device_client_id) {}
 
 WebGPUTest::Options::Options() = default;
 

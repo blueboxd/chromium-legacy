@@ -4,7 +4,7 @@
   --tabstrip-tab-group-title-margin: var(--tabstrip-tab-spacing);
 }
 
-:host(:empty) {
+:host(:empty:not([dragging])) {
   /* A tab group can temporarily become empty as a tab is being dragged out. */
   display: none;
 }

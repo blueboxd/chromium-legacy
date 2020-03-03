@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -63,7 +63,7 @@ class DataRemovalConfirmationDialog : public views::DialogDelegateView,
   // UI hierarchy owned.
   views::ImageView* icon_view_ = nullptr;
 
-  std::unique_ptr<ArcAppIconLoader> icon_loader_;
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader_;
 
   Profile* const profile_;
 
@@ -112,8 +112,8 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 
-  icon_loader_ =
-      std::make_unique<ArcAppIconLoader>(profile_, kArcAppIconSize, this);
+  icon_loader_ = std::make_unique<AppServiceAppIconLoader>(
+      profile_, kArcAppIconSize, this);
   icon_loader_->FetchImage(kPlayStoreAppId);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::ARC_DATA_REMOVAL_CONFIRMATION);

@@ -194,6 +194,7 @@ mojom("mojom_platform") {
     "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",
+    "//services/data_decoder/public/mojom:mojom_resource_snapshot_for_web_bundle",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
     "//services/network/public/mojom:data_pipe_interfaces",

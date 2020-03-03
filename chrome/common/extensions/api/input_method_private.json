@@ -333,6 +333,19 @@
           }
         ]
       }, {
+        "name": "hideInputView",
+        "type": "function",
+        "description": "Shows the input view window. If the input view window is already hidden, this function will do nothing.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+          }
+        ]
+      }, {
         "name": "openOptionsPage",
         "type": "function",
         "description": "Opens the options page for the input method extension. If the input method does not have options, this function will do nothing.",

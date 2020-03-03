@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_barcode_detector_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_detected_barcode.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/shapedetection/barcode_detector_statics.h"
-#include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {

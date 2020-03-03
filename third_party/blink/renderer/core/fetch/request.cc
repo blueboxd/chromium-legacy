@@ -734,8 +734,7 @@ String Request::getReferrerPolicy() const {
       return "same-origin";
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       return "strict-origin";
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       return "strict-origin-when-cross-origin";
   }
   NOTREACHED();

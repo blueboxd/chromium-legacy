@@ -20,10 +20,13 @@ namespace webgpu {
 
 #if BUILDFLAG(USE_DAWN)
 WebGPUCommandSerializer::WebGPUCommandSerializer(
+    DawnDeviceClientID device_client_id,
     WebGPUCmdHelper* helper,
     DawnClientMemoryTransferService* memory_transfer_service)
-    : helper_(helper), memory_transfer_service_(memory_transfer_service) {
-  c2s_transfer_buffer_.reset(new TransferBuffer(helper_));
+    : device_client_id_(device_client_id),
+      helper_(helper),
+      memory_transfer_service_(memory_transfer_service) {
+  c2s_transfer_buffer_ = std::make_unique<TransferBuffer>(helper_);
 
   const SharedMemoryLimits& limits = SharedMemoryLimits::ForWebGPUContext();
   c2s_transfer_buffer_->Initialize(
@@ -31,8 +34,8 @@ WebGPUCommandSerializer::WebGPUCommandSerializer(
       limits.min_transfer_buffer_size, limits.max_transfer_buffer_size,
       ImplementationBase::kAlignment);
   DCHECK(helper_);
-  c2s_buffer_.reset(
-      new ScopedTransferBufferPtr(helper_, c2s_transfer_buffer_.get()));
+  c2s_buffer_ = std::make_unique<ScopedTransferBufferPtr>(
+      helper_, c2s_transfer_buffer_.get());
 
   c2s_buffer_default_size_ = limits.start_transfer_buffer_size;
   DCHECK_GT(c2s_buffer_default_size_, 0u);
@@ -41,10 +44,41 @@ WebGPUCommandSerializer::WebGPUCommandSerializer(
   dawn_wire::WireClientDescriptor descriptor = {};
   descriptor.serializer = this;
   descriptor.memoryTransferService = memory_transfer_service_;
-  wire_client_.reset(new dawn_wire::WireClient(descriptor));
+  wire_client_ = std::make_unique<dawn_wire::WireClient>(descriptor);
 }
 
 WebGPUCommandSerializer::~WebGPUCommandSerializer() {}
+
+// This function can only be called once for each WebGPUCommandSerializer
+// object (before any call of GetCmdSpace()).
+// TODO(jiawei.shao@intel.com): early return and directly call the callback
+// function when the connection to the GPU process has been lost.
+void WebGPUCommandSerializer::RequestDeviceCreation(
+    uint32_t requested_adapter_id,
+    const WGPUDeviceProperties& requested_device_properties) {
+  DCHECK(!c2s_buffer_->valid());
+  DCHECK_EQ(0u, c2s_put_offset_);
+
+  size_t serialized_device_properties_size =
+      dawn_wire::SerializedWGPUDevicePropertiesSize(
+          &requested_device_properties);
+  DCHECK_NE(0u, serialized_device_properties_size);
+
+  DCHECK_LE(serialized_device_properties_size,
+            c2s_transfer_buffer_->GetMaxSize());
+  c2s_buffer_->Reset(serialized_device_properties_size);
+
+  dawn_wire::SerializeWGPUDeviceProperties(
+      &requested_device_properties,
+      reinterpret_cast<char*>(c2s_buffer_->address()));
+
+  helper_->RequestDevice(device_client_id_, requested_adapter_id,
+                         c2s_buffer_->shm_id(), c2s_buffer_->offset(),
+                         serialized_device_properties_size);
+  c2s_buffer_->Release();
+
+  helper_->Flush();
+}
 
 void* WebGPUCommandSerializer::GetCmdSpace(size_t size) {
   // The buffer size must be initialized before any commands are serialized.
@@ -103,8 +137,8 @@ bool WebGPUCommandSerializer::Flush() {
             c2s_buffer_->offset());
 
     c2s_buffer_->Shrink(c2s_put_offset_);
-    helper_->DawnCommands(c2s_buffer_->shm_id(), c2s_buffer_->offset(),
-                          c2s_put_offset_);
+    helper_->DawnCommands(device_client_id_, c2s_buffer_->shm_id(),
+                          c2s_buffer_->offset(), c2s_put_offset_);
     c2s_put_offset_ = 0;
     c2s_buffer_->Release();
   }
@@ -117,8 +151,9 @@ WGPUDevice WebGPUCommandSerializer::GetDevice() const {
   return wire_client_->GetDevice();
 }
 
-ReservedTexture WebGPUCommandSerializer::ReserveTexture(WGPUDevice device) {
-  dawn_wire::ReservedTexture reservation = wire_client_->ReserveTexture(device);
+ReservedTexture WebGPUCommandSerializer::ReserveTexture() {
+  dawn_wire::ReservedTexture reservation =
+      wire_client_->ReserveTexture(GetDevice());
   return {reservation.texture, reservation.id, reservation.generation};
 }
 
@@ -144,16 +179,14 @@ WebGPUImplementation::~WebGPUImplementation() {
 #if BUILDFLAG(USE_DAWN)
   // Wait for all commands to finish or we may free shared memory while
   // commands are still in flight.
-  if (command_serializer_) {
-    command_serializer_->Flush();
-  }
+  FlushAllCommandSerializers();
 #endif
 
   helper_->Finish();
 
 #if BUILDFLAG(USE_DAWN)
   // Now that commands are finished, free the wire client.
-  command_serializer_.reset();
+  ClearAllCommandSerializers();
 
   // All client-side Dawn objects are now destroyed.
   // Shared memory allocations for buffers that were still mapped at the time
@@ -172,8 +205,8 @@ gpu::ContextResult WebGPUImplementation::Initialize(
   }
 
 #if BUILDFLAG(USE_DAWN)
-  memory_transfer_service_.reset(
-      new DawnClientMemoryTransferService(mapped_memory_.get()));
+  memory_transfer_service_ =
+      std::make_unique<DawnClientMemoryTransferService>(mapped_memory_.get());
 
   procs_ = dawn_wire::WireClient::GetProcs();
 #endif
@@ -353,11 +386,6 @@ void WebGPUImplementation::OnGpuControlReturnData(
 
   switch (dawnReturnDataHeader.return_data_type) {
     case DawnReturnDataType::kDawnCommands: {
-      if (!command_serializer_) {
-        // TODO(jiawei.shao@intel.com): Lose the context.
-        NOTREACHED();
-        break;
-      }
       if (data.size() < sizeof(cmds::DawnReturnCommandsInfo)) {
         // TODO(jiawei.shao@intel.com): Lose the context.
         NOTREACHED();
@@ -366,7 +394,16 @@ void WebGPUImplementation::OnGpuControlReturnData(
 
       const cmds::DawnReturnCommandsInfo* dawn_return_commands_info =
           reinterpret_cast<const cmds::DawnReturnCommandsInfo*>(data.data());
-      if (!command_serializer_->HandleCommands(
+      DawnDeviceClientID device_client_id =
+          dawn_return_commands_info->header.device_client_id;
+      WebGPUCommandSerializer* command_serializer =
+          GetCommandSerializerWithDeviceClientID(device_client_id);
+      if (!command_serializer) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+      if (!command_serializer->HandleCommands(
               reinterpret_cast<const char*>(
                   dawn_return_commands_info->deserialized_buffer),
               data.size() - offsetof(cmds::DawnReturnCommandsInfo,
@@ -429,7 +466,13 @@ void WebGPUImplementation::OnGpuControlReturnData(
       auto& request_callback = request_callback_iter->second;
       bool is_request_device_success =
           returned_request_device_info->is_request_device_success;
-      std::move(request_callback).Run(is_request_device_success);
+      if (!is_request_device_success) {
+        auto iter = command_serializers_.find(device_client_id);
+        DCHECK(iter != command_serializers_.end());
+        command_serializers_.erase(iter);
+      }
+      std::move(request_callback)
+          .Run(is_request_device_success, device_client_id);
       request_device_callback_map_.erase(request_callback_iter);
     } break;
     default:
@@ -447,28 +490,55 @@ const DawnProcTable& WebGPUImplementation::GetProcs() const {
   return procs_;
 }
 
+#if BUILDFLAG(USE_DAWN)
+WebGPUCommandSerializer*
+WebGPUImplementation::GetCommandSerializerWithDeviceClientID(
+    DawnDeviceClientID device_client_id) const {
+  auto command_serializer = command_serializers_.find(device_client_id);
+  if (command_serializer == command_serializers_.end()) {
+    return nullptr;
+  }
+  return command_serializer->second.get();
+}
+
+void WebGPUImplementation::FlushAllCommandSerializers() {
+  for (auto& iter : command_serializers_) {
+    iter.second->Flush();
+  }
+}
+
+void WebGPUImplementation::ClearAllCommandSerializers() {
+  command_serializers_.clear();
+}
+#endif
+
 void WebGPUImplementation::FlushCommands() {
 #if BUILDFLAG(USE_DAWN)
-  if (command_serializer_) {
-    command_serializer_->Flush();
-  }
+  FlushAllCommandSerializers();
 #endif
   helper_->Flush();
 }
 
-WGPUDevice WebGPUImplementation::GetDefaultDevice() {
+WGPUDevice WebGPUImplementation::GetDevice(
+    DawnDeviceClientID device_client_id) {
 #if BUILDFLAG(USE_DAWN)
-  DCHECK(command_serializer_);
-  return command_serializer_->GetDevice();
+  WebGPUCommandSerializer* command_serializer =
+      GetCommandSerializerWithDeviceClientID(device_client_id);
+  DCHECK(command_serializer);
+  return command_serializer->GetDevice();
 #else
   NOTREACHED();
   return {};
 #endif
 }
 
-ReservedTexture WebGPUImplementation::ReserveTexture(WGPUDevice device) {
+ReservedTexture WebGPUImplementation::ReserveTexture(
+    DawnDeviceClientID device_client_id) {
 #if BUILDFLAG(USE_DAWN)
-  return command_serializer_->ReserveTexture(device);
+  WebGPUCommandSerializer* command_serializer =
+      GetCommandSerializerWithDeviceClientID(device_client_id);
+  DCHECK(command_serializer);
+  return command_serializer->ReserveTexture();
 #else
   NOTREACHED();
   return {};
@@ -505,8 +575,9 @@ DawnDeviceClientID WebGPUImplementation::NextDeviceClientID() {
 
 bool WebGPUImplementation::RequestDeviceAsync(
     uint32_t requested_adapter_id,
-    const WGPUDeviceProperties* requested_device_properties,
-    base::OnceCallback<void(bool)> request_device_callback) {
+    const WGPUDeviceProperties& requested_device_properties,
+    base::OnceCallback<void(bool, DawnDeviceClientID)>
+        request_device_callback) {
 #if BUILDFLAG(USE_DAWN)
   // Now that we declare device_client_id as an uint64, it can't overflow
   // because we just increment an uint64 by one.
@@ -514,40 +585,16 @@ bool WebGPUImplementation::RequestDeviceAsync(
   DCHECK(request_device_callback_map_.find(device_client_id) ==
          request_device_callback_map_.end());
 
-  // TODO(jiawei.shao@intel.com): support multiple WebGPU devices. Each WebGPU
-  // device corresponds to a unique WebGPUCommandSerializer.
-  if (!command_serializer_) {
-    command_serializer_.reset(
-        new WebGPUCommandSerializer(helper_, memory_transfer_service_.get()));
-  }
-
+  DCHECK(command_serializers_.find(device_client_id) ==
+         command_serializers_.end());
+  command_serializers_[device_client_id] =
+      std::make_unique<WebGPUCommandSerializer>(device_client_id, helper_,
+                                                memory_transfer_service_.get());
   request_device_callback_map_[device_client_id] =
       std::move(request_device_callback);
 
-  if (!requested_device_properties) {
-    helper_->RequestDevice(device_client_id, requested_adapter_id, 0, 0, 0);
-    return true;
-  }
-
-  size_t serialized_device_properties_size =
-      dawn_wire::SerializedWGPUDevicePropertiesSize(
-          requested_device_properties);
-  DCHECK_NE(0u, serialized_device_properties_size);
-
-  // TODO(jiawei.shao@intel.com): transfer requested_device_properties with
-  // c2s_buffer_ in the WebGPUCommandSerializer directly when we support
-  // multiple WebGPU devices.
-  ScopedTransferBufferPtr transfer_buffer(serialized_device_properties_size,
-                                          helper_, transfer_buffer_);
-  dawn_wire::SerializeWGPUDeviceProperties(
-      requested_device_properties,
-      reinterpret_cast<char*>(transfer_buffer.address()));
-  helper_->RequestDevice(device_client_id, requested_adapter_id,
-                         transfer_buffer.shm_id(), transfer_buffer.offset(),
-                         serialized_device_properties_size);
-  transfer_buffer.Release();
-
-  helper_->Flush();
+  command_serializers_[device_client_id]->RequestDeviceCreation(
+      requested_adapter_id, requested_device_properties);
 
   return true;
 #else

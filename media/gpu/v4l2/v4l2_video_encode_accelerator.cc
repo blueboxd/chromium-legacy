@@ -352,15 +352,9 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(input_layout.format(), output_layout.format());
 
-  // Convert from |config.input_format| + |input_visible_rect| to
-  // |device_input_layout_->format()| + |output_visible_rect|.
-  // The storage type of VideoFrame given on Encode() must be
-  // STORAGE_GPU_MEMORY_BUFFER if |input_storage_type| is
-  // STORAGE_GPU_MEMORY_BUFFER, but any VideoFrame::IsMappable() storage_type is
-  // allowed if |input_storage_type| is STORAGE_OWNED_MEMORY.
   VideoFrame::StorageType input_storage_type =
       native_input_mode_ ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
-                         : VideoFrame::STORAGE_OWNED_MEMORY;
+                         : VideoFrame::STORAGE_MOJO_SHARED_BUFFER;
 
   auto input_config = VideoFrameLayoutToPortConfig(
       input_layout, input_visible_rect, {input_storage_type});

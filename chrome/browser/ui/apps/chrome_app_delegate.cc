@@ -340,8 +340,8 @@ bool ChromeAppDelegate::IsWebContentsVisible(
   return platform_util::IsVisible(web_contents->GetNativeView());
 }
 
-void ChromeAppDelegate::SetTerminatingCallback(const base::Closure& callback) {
-  terminating_callback_ = callback;
+void ChromeAppDelegate::SetTerminatingCallback(base::OnceClosure callback) {
+  terminating_callback_ = std::move(callback);
 }
 
 void ChromeAppDelegate::OnHide() {
@@ -396,5 +396,5 @@ void ChromeAppDelegate::Observe(int type,
                                 const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
   if (!terminating_callback_.is_null())
-    terminating_callback_.Run();
+    std::move(terminating_callback_).Run();
 }

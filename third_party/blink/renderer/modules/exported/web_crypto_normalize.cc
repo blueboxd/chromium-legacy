@@ -49,11 +49,8 @@ WebCryptoAlgorithm NormalizeCryptoAlgorithm(
   ExceptionState exception_state(isolate, ExceptionState::kQueryContext,
                                  "WebCryptoAlgorithm", "NormalizeAlgorithm");
 
-  Dictionary algorithm_dictionary(isolate, algorithm_object, exception_state);
-  if (exception_state.HadException())
-    return WebCryptoAlgorithm();
   AlgorithmIdentifier algorithm_identifier;
-  algorithm_identifier.SetDictionary(algorithm_dictionary);
+  algorithm_identifier.SetObject(ScriptValue(isolate, algorithm_object));
 
   WebCryptoAlgorithm algorithm;
   if (!NormalizeAlgorithm(isolate, algorithm_identifier, operation, algorithm,

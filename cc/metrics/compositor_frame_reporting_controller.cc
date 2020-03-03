@@ -4,6 +4,8 @@
 
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
+#include <utility>
+
 #include "cc/metrics/compositor_frame_reporter.h"
 #include "cc/metrics/latency_ukm_reporter.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -142,7 +144,8 @@ void CompositorFrameReportingController::DidActivate() {
 void CompositorFrameReportingController::DidSubmitCompositorFrame(
     uint32_t frame_token,
     const viz::BeginFrameId& current_frame_id,
-    const viz::BeginFrameId& last_activated_frame_id) {
+    const viz::BeginFrameId& last_activated_frame_id,
+    std::vector<EventMetrics> events_metrics) {
   // If the last_activated_frame_id from scheduler is the same as
   // last_submitted_frame_id_ in reporting controller, this means that we are
   // submitting the Impl frame. In this case the frame will be submitted if
@@ -179,6 +182,7 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
       std::move(reporters_[PipelineStage::kActivate]);
   submitted_reporter->StartStage(
       StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
+  submitted_reporter->SetEventsMetrics(std::move(events_metrics));
   submitted_compositor_frames_.emplace_back(frame_token,
                                             std::move(submitted_reporter));
 }

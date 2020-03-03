@@ -31,6 +31,7 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
   source->AddResourcePath("media_app.mojom-lite.js",
                           IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
+  source->AddResourcePath("message_pipe.js", IDR_MEDIA_APP_MESSAGE_PIPE_JS);
 
   // Add resources from chromeos_media_app_bundle_resources.pak.
   source->AddResourcePath("system_assets/app_icon_256.png",

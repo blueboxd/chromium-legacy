@@ -250,6 +250,8 @@ bool H264Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
       curr_params_.framerate == framerate) {
     return true;
   }
+  VLOGF(2) << "New bitrate: " << bitrate_allocation.GetSumBps()
+           << ", New framerate: " << framerate;
 
   curr_params_.bitrate_bps = bitrate;
   curr_params_.framerate = framerate;

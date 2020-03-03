@@ -14,7 +14,7 @@
           ],
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
-        "name": "webkit_layout_tests",
+        "name": "blink_web_tests",
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3100,6 +3100,33 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--target",
+          "Release_x64"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "shards": 28
+        },
+        "test_target": "//:blink_web_tests"
+      },
+      {
+        "args": [
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
@@ -3311,33 +3338,6 @@
           ]
         },
         "test_target": "//ui/views:views_perftests"
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--target",
-          "Release_x64"
-        ],
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 28
-        },
-        "test_target": "//:blink_web_tests"
       }
     ],
     "scripts": [
@@ -7086,6 +7086,34 @@
       },
       {
         "args": [
+          "--num-retries=3",
+          "--target",
+          "Release_x64"
+        ],
+        "isolate_coverage_data": true,
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ],
+          "shards": 28
+        },
+        "test_target": "//:blink_web_tests"
+      },
+      {
+        "args": [
           "--test-type=integration"
         ],
         "isolate_coverage_data": true,
@@ -7308,34 +7336,6 @@
           ]
         },
         "test_target": "//ui/views:views_perftests"
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--target",
-          "Release_x64"
-        ],
-        "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 28
-        },
-        "test_target": "//:blink_web_tests"
       }
     ],
     "scripts": [
@@ -8536,6 +8536,25 @@
       },
       {
         "args": [
+          "--num-retries=3"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 12
+        },
+        "test_target": "//:blink_web_tests"
+      },
+      {
+        "args": [
           "--test-type=integration"
         ],
         "isolate_name": "chromedriver_py_tests",
@@ -8717,25 +8736,6 @@
           "can_use_on_swarming_builders": true
         },
         "test_target": "//ui/views:views_perftests"
-      },
-      {
-        "args": [
-          "--num-retries=3"
-        ],
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 12
-        },
-        "test_target": "//:blink_web_tests"
       }
     ],
     "scripts": [
@@ -9855,6 +9855,34 @@
         "test_target": "//:blink_python_tests"
       },
       {
+        "args": [
+          "--num-retries=3",
+          "--debug",
+          "--time-out-ms",
+          "60000"
+        ],
+        "experiment_percentage": 100,
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-7-SP1"
+            }
+          ],
+          "shards": 12
+        },
+        "test_target": "//:blink_web_tests"
+      },
+      {
         "isolate_name": "content_shell_crash_test",
         "merge": {
           "args": [],
@@ -9988,34 +10016,6 @@
           "can_use_on_swarming_builders": true
         },
         "test_target": "//ui/views:views_perftests"
-      },
-      {
-        "args": [
-          "--num-retries=3",
-          "--debug",
-          "--time-out-ms",
-          "60000"
-        ],
-        "experiment_percentage": 100,
-        "isolate_name": "blink_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "shards": 12
-        },
-        "test_target": "//:blink_web_tests"
       }
     ]
   }

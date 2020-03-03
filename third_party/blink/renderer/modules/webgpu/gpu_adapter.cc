@@ -54,11 +54,13 @@ Vector<String> GPUAdapter::extensions(ScriptState* script_state) const {
 
 void GPUAdapter::OnRequestDeviceCallback(ScriptPromiseResolver* resolver,
                                          const GPUDeviceDescriptor* descriptor,
-                                         bool is_request_device_success) {
+                                         bool is_request_device_success,
+                                         uint64_t device_client_id) {
   if (is_request_device_success) {
     ExecutionContext* execution_context = resolver->GetExecutionContext();
     auto* device = MakeGarbageCollected<GPUDevice>(
-        execution_context, GetDawnControlClient(), this, descriptor);
+        execution_context, GetDawnControlClient(), this, device_client_id,
+        descriptor);
     resolver->Resolve(device);
   } else {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -82,7 +84,7 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
 
   if (!GetInterface()->RequestDeviceAsync(
-          adapter_service_id_, &requested_device_properties,
+          adapter_service_id_, requested_device_properties,
           WTF::Bind(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
                     WrapPersistent(resolver), WrapPersistent(descriptor)))) {
     resolver->Reject(MakeGarbageCollected<DOMException>(

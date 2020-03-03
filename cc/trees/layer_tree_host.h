@@ -34,6 +34,8 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
+#include "cc/metrics/event_metrics.h"
+#include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/node_id.h"
 #include "cc/trees/browser_controls_params.h"
@@ -175,6 +177,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Returns the SwapPromiseManager, used to insert SwapPromises dynamically
   // when a main frame is requested.
   SwapPromiseManager* GetSwapPromiseManager();
+
+  std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(const EventMetrics& event_metrics);
+  void ClearEventsMetrics();
 
   // Visibility and LayerTreeFrameSink -------------------------------
 
@@ -898,6 +904,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // sent from the main thread. Zero if the most recent BeginMainFrame did not
   // result in a commit (due to no change in content).
   base::TimeTicks impl_commit_start_time_;
+
+  EventsMetricsManager events_metrics_manager_;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

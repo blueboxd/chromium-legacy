@@ -34,7 +34,10 @@ base::Value BuildShareList(const std::vector<smb_client::SmbUrl>& shares) {
 
 }  // namespace
 
-SmbHandler::SmbHandler(Profile* profile) : profile_(profile) {}
+SmbHandler::SmbHandler(Profile* profile,
+                       UpdateCredentialsCallback update_cred_callback)
+    : profile_(profile),
+      update_cred_callback_(std::move(update_cred_callback)) {}
 
 SmbHandler::~SmbHandler() = default;
 
@@ -136,20 +139,16 @@ void SmbHandler::HandleGatherSharesResponse(
 void SmbHandler::HandleUpdateCredentials(const base::ListValue* args) {
   CHECK_EQ(3U, args->GetSize());
 
-  int32_t mount_id;
+  std::string mount_id;
   std::string username;
   std::string password;
 
-  CHECK(args->GetInteger(0, &mount_id));
+  CHECK(args->GetString(0, &mount_id));
   CHECK(args->GetString(1, &username));
   CHECK(args->GetString(2, &password));
 
-  smb_client::SmbService* const service = GetSmbService(profile_);
-  if (!service) {
-    return;
-  }
-
-  service->UpdateCredentials(mount_id, username, password);
+  DCHECK(update_cred_callback_);
+  std::move(update_cred_callback_).Run(username, password);
 }
 
 }  // namespace smb_dialog

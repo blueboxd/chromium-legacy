@@ -448,6 +448,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Guest OS
   (*s_whitelist)[crostini::prefs::kCrostiniEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[crostini::prefs::kCrostiniMicSharing] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniContainers] =

@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -163,7 +164,7 @@ class FakeSchedulerClient : public SchedulerClient,
         draw_will_happen_ && swap_will_happen_if_draw_happens_;
     if (swap_will_happen) {
       last_begin_frame_ack_ = scheduler_->CurrentBeginFrameAckForActiveTree();
-      scheduler_->DidSubmitCompositorFrame(0);
+      scheduler_->DidSubmitCompositorFrame(0, std::vector<EventMetrics>());
 
       if (automatic_ack_)
         scheduler_->DidReceiveCompositorFrameAck();

@@ -62,6 +62,9 @@ class TestAppListClient : public AppListClient {
       override {}
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override {}
+  void OnQuickSettingsChanged(
+      const std::string& setting_name,
+      const std::vector<std::pair<std::string, int>>& values) override {}
   void NotifySearchResultsForLogging(
       const base::string16& trimmed_query,
       const SearchResultIdWithPositionIndices& results,

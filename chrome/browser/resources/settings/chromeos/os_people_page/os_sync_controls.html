@@ -1,19 +1,43 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="../os_route.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../metrics_recorder.html">
+<link rel="import" href="../os_route.html">
 <link rel="import" href="os_sync_browser_proxy.html">
 
 <dom-module id="os-sync-controls">
   <template>
     <style include="settings-shared">
-      #sync-data-types .list-item:not([hidden]) ~ .list-item:not([hidden]) {
-        border-top: var(--cr-separator-line);
+      :host {
+        --shown-avatar-size: 40px;
+      }
+
+      #avatarContainer {
+        height: var(--shown-avatar-size);
+        position: relative;
+      }
+
+      #avatarIcon {
+        border-radius: 20px;
+        flex-shrink: 0;
+        height: var(--shown-avatar-size);
+        width: var(--shown-avatar-size);
+      }
+
+      .settings-box {
+        border-top: none;
+      }
+
+      .flex {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
       }
 
       .list-item {
@@ -28,28 +52,44 @@
         opacity: var(--cr-disabled-opacity);
       }
     </style>
-    <div class="settings-box first">
-      <!-- TODO(jamescook): Replace this section with the sync status component.
-           For now, just use placeholder strings.
-           TODO(jamescook): UI for sync error states.
-           TODO(jamescook): Passphrase support. -->
-      <div id="featureLabel" class="start">
-        Chrome OS sync PLACEHOLDER
+    <div class="settings-box first two-line">
+      <div id="avatarContainer">
+        <img id="avatarIcon" alt="" src="[[profileIconUrl]]">
+        <!-- TODO(jamescook): Sync status overlay icon. -->
       </div>
+      <div class="middle two-line no-min-width">
+        <div class="flex text-elide settings-box-text">
+          <span id="accountTitle" aria-hidden="true">
+            [[getAccountTitle_(profileName, syncStatus.hasError)]]
+          </span>
+          <div id="accountSubtitle" class="secondary" aria-hidden="true">
+            [[getAccountSubtitle_(profileEmail, syncStatus.hasError,
+                osSyncFeatureEnabled)]]
+          </div>
+        </div>
+      </div>
+
       <cr-button id="turnOnSyncButton"
           class="action-button"
           on-click="onTurnOnSyncButtonClick_"
+          aria-labelledby="turnOnSyncButton accountTitle accountSubtitle"
           aria-describedby="featureLabel"
           hidden="[[osSyncFeatureEnabled]]">
         $i18n{osSyncTurnOn}
       </cr-button>
       <cr-button id="turnOffSyncButton"
           on-click="onTurnOffSyncButtonClick_"
+          aria-labelledby="turnOffSyncButton accountTitle accountSubtitle"
           aria-describedby="featureLabel"
           hidden="[[!osSyncFeatureEnabled]]">
         $i18n{osSyncTurnOff}
       </cr-button>
     </div>
+
+    <div id="featureLabel" class="settings-box" aria-hidden="true">
+      Chrome OS sync feature description PLACEHOLDER
+    </div>
+
     <div class="settings-box">
       <div id="syncEverythingCheckboxLabel"
           class="start"

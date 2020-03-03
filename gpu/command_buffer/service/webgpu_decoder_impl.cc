@@ -40,7 +40,8 @@ constexpr size_t kMaxWireBufferSize =
 
 class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
  public:
-  explicit WireServerCommandSerializer(DecoderClient* client);
+  WireServerCommandSerializer(DecoderClient* client,
+                              DawnDeviceClientID device_client_id);
   ~WireServerCommandSerializer() override = default;
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
@@ -51,13 +52,19 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
   size_t put_offset_;
 };
 
-WireServerCommandSerializer::WireServerCommandSerializer(DecoderClient* client)
+WireServerCommandSerializer::WireServerCommandSerializer(
+    DecoderClient* client,
+    DawnDeviceClientID device_client_id)
     : client_(client),
       buffer_(kMaxWireBufferSize),
       put_offset_(offsetof(cmds::DawnReturnCommandsInfo, deserialized_buffer)) {
-  cmds::DawnReturnDataHeader* return_data_header =
-      reinterpret_cast<cmds::DawnReturnDataHeader*>(&buffer_[0]);
-  return_data_header->return_data_type = DawnReturnDataType::kDawnCommands;
+  // We prepopulate the message with the header and keep it between flushes so
+  // we never need to write it again.
+  cmds::DawnReturnCommandsInfoHeader* header =
+      reinterpret_cast<cmds::DawnReturnCommandsInfoHeader*>(&buffer_[0]);
+  header->return_data_header.return_data_type =
+      DawnReturnDataType::kDawnCommands;
+  header->device_client_id = device_client_id;
 }
 
 void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
@@ -135,6 +142,7 @@ class DawnDeviceAndWireServer {
   DawnDeviceAndWireServer(
       DecoderClient* client,
       WGPUDevice wgpu_device,
+      DawnDeviceClientID device_client_id,
       DawnServiceMemoryTransferService* memory_transfer_service);
   ~DawnDeviceAndWireServer();
 
@@ -154,9 +162,12 @@ class DawnDeviceAndWireServer {
 DawnDeviceAndWireServer::DawnDeviceAndWireServer(
     DecoderClient* client,
     WGPUDevice wgpu_device,
+    DawnDeviceClientID device_client_id,
     DawnServiceMemoryTransferService* memory_transfer_service)
     : wgpu_device_(wgpu_device),
-      wire_serializer_(std::make_unique<WireServerCommandSerializer>(client)),
+      wire_serializer_(
+          std::make_unique<WireServerCommandSerializer>(client,
+                                                        device_client_id)),
       dawn_procs_(dawn_native::GetProcs()) {
   DCHECK(client);
   DCHECK(wgpu_device);
@@ -288,9 +299,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   void PerformPollingWork() override {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WebGPUDecoderImpl::PerformPollingWork");
-    // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
-    if (dawn_device_and_wire_server_) {
-      dawn_device_and_wire_server_->PerformPollingWork();
+    for (auto& iter : dawn_device_and_wire_servers_) {
+      iter.second->PerformPollingWork();
     }
   }
 
@@ -439,6 +449,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   error::Error InitDawnDeviceAndSetWireServer(
       int32_t requested_adapter_index,
+      DawnDeviceClientID device_client_id,
       const WGPUDeviceProperties& requested_device_properties);
 
   void SendAdapterProperties(DawnRequestAdapterSerial request_adapter_serial,
@@ -463,7 +474,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                  std::unique_ptr<SharedImageRepresentationAndAccess>>
       associated_shared_image_map_;
 
-  std::unique_ptr<DawnDeviceAndWireServer> dawn_device_and_wire_server_;
+  base::flat_map<DawnDeviceClientID, std::unique_ptr<DawnDeviceAndWireServer>>
+      dawn_device_and_wire_servers_;
+
   std::unique_ptr<dawn_platform::Platform> dawn_platform_;
   std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
@@ -513,7 +526,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
   associated_shared_image_map_.clear();
-  dawn_device_and_wire_server_ = nullptr;
+  dawn_device_and_wire_servers_.clear();
 }
 
 ContextResult WebGPUDecoderImpl::Initialize() {
@@ -523,16 +536,17 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 
 error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
     int32_t requested_adapter_index,
+    DawnDeviceClientID device_client_id,
     const WGPUDeviceProperties& request_device_properties) {
   DCHECK_LE(0, requested_adapter_index);
 
-  // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
-  if (dawn_device_and_wire_server_ != nullptr) {
-    return error::kNoError;
-  }
-
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
+
+  if (dawn_device_and_wire_servers_.find(device_client_id) !=
+      dawn_device_and_wire_servers_.end()) {
+    return error::kLostContext;
+  }
 
   dawn_native::DeviceDescriptor device_descriptor;
   if (request_device_properties.textureCompressionBC) {
@@ -545,8 +559,10 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
     return error::kInvalidArguments;
   }
 
-  dawn_device_and_wire_server_ = std::make_unique<DawnDeviceAndWireServer>(
-      client(), wgpu_device, memory_transfer_service_.get());
+  dawn_device_and_wire_servers_[device_client_id] =
+      std::make_unique<DawnDeviceAndWireServer>(client(), wgpu_device,
+                                                device_client_id,
+                                                memory_transfer_service_.get());
 
   return error::kNoError;
 }
@@ -804,8 +820,8 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
                                                shm_device_properties);
   }
 
-  error::Error init_dawn_device_error =
-      InitDawnDeviceAndSetWireServer(adapter_service_id, device_properties);
+  error::Error init_dawn_device_error = InitDawnDeviceAndSetWireServer(
+      adapter_service_id, device_client_id, device_properties);
   SendRequestedDeviceInfo(device_client_id,
                           !error::IsError(init_dawn_device_error));
   return init_dawn_device_error;
@@ -820,6 +836,8 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
   uint32_t size = static_cast<uint32_t>(c.size);
   uint32_t commands_shm_id = static_cast<uint32_t>(c.commands_shm_id);
   uint32_t commands_shm_offset = static_cast<uint32_t>(c.commands_shm_offset);
+  DawnDeviceClientID device_client_id =
+      static_cast<DawnDeviceClientID>(c.device_client_id);
 
   const volatile char* shm_commands = GetSharedMemoryAs<const volatile char*>(
       commands_shm_id, commands_shm_offset, size);
@@ -833,7 +851,13 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                "WebGPUDecoderImpl::HandleDawnCommands", "bytes", size);
-  return dawn_device_and_wire_server_->HandleDawnCommands(shm_commands, size);
+
+  auto iter = dawn_device_and_wire_servers_.find(device_client_id);
+  if (iter == dawn_device_and_wire_servers_.end()) {
+    return error::kInvalidArguments;
+  }
+
+  return iter->second->HandleDawnCommands(shm_commands, size);
 }
 
 error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
@@ -865,13 +889,13 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   DLOG_IF(ERROR, !mailbox.Verify())
       << "AssociateMailbox was passed an invalid mailbox";
 
-  // TODO(cwallez@chromium.org): Use device_client_id/generation when the
-  // decoder supports multiple devices.
-  if (device_client_id != 0 || device_generation != 0) {
-    DLOG(ERROR) << "AssociateMailbox: Invalid device ID";
+  auto iter = dawn_device_and_wire_servers_.find(device_client_id);
+  if (iter == dawn_device_and_wire_servers_.end() || device_generation != 0) {
+    DLOG(ERROR) << "AssociateMailbox: Invalid device client ID";
     return error::kInvalidArguments;
   }
 
+  DawnDeviceAndWireServer* dawn_device_and_wire_server = iter->second.get();
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
       WGPUTextureUsage_CopySrc | WGPUTextureUsage_CopyDst |
       WGPUTextureUsage_Sampled | WGPUTextureUsage_OutputAttachment);
@@ -882,7 +906,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   WGPUTextureUsage wgpu_usage = static_cast<WGPUTextureUsage>(usage);
 
   // Create a WGPUTexture from the mailbox.
-  WGPUDevice wgpu_device = dawn_device_and_wire_server_->GetWGPUDevice();
+  WGPUDevice wgpu_device = dawn_device_and_wire_server->GetWGPUDevice();
   DCHECK(wgpu_device);
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =
       shared_image_representation_factory_->ProduceDawn(mailbox, wgpu_device);
@@ -904,7 +928,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
 
   // Inject the texture in the dawn_wire::Server and remember which shared image
   // it is associated with.
-  if (!dawn_device_and_wire_server_->InjectTexture(
+  if (!dawn_device_and_wire_server->InjectTexture(
           shared_image_access->texture(), id, generation)) {
     DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
     return error::kInvalidArguments;

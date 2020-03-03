@@ -15,7 +15,7 @@ class WebContents;
 void CreateDirectoryAccessConfirmationDialog(bool writable,
                                              const base::string16& app_name,
                                              content::WebContents* web_contents,
-                                             const base::Closure& on_accept,
-                                             const base::Closure& on_cancel);
+                                             base::OnceClosure on_accept,
+                                             base::OnceClosure on_cancel);
 
 #endif  // CHROME_BROWSER_UI_APPS_DIRECTORY_ACCESS_CONFIRMATION_DIALOG_H_

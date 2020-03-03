@@ -4,6 +4,8 @@
 
 #include "ash/system/machine_learning/user_settings_event_logger.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller_impl.h"
 #include "base/logging.h"
@@ -80,7 +82,7 @@ void UserSettingsEventLogger::LogNetworkUkmEvent(
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogBluetoothUkmEvent(
@@ -104,7 +106,7 @@ void UserSettingsEventLogger::LogBluetoothUkmEvent(
   }
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogNightLightUkmEvent(const bool enabled) {
@@ -130,7 +132,7 @@ void UserSettingsEventLogger::LogNightLightUkmEvent(const bool enabled) {
       night_light_controller->IsNowWithinSunsetSunrise());
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogQuietModeUkmEvent(const bool enabled) {
@@ -148,7 +150,7 @@ void UserSettingsEventLogger::LogQuietModeUkmEvent(const bool enabled) {
       is_recently_presenting_);
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogAccessibilityUkmEvent(
@@ -166,7 +168,7 @@ void UserSettingsEventLogger::LogAccessibilityUkmEvent(
   event->set_accessibility_id(id);
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogVolumeUkmEvent(const int previous_level,
@@ -191,7 +193,7 @@ void UserSettingsEventLogger::OnVolumeTimerEnded() {
   settings_event.mutable_features()->set_is_playing_audio(is_playing_audio_);
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::LogBrightnessUkmEvent(const int previous_level,
@@ -217,7 +219,7 @@ void UserSettingsEventLogger::OnBrightnessTimerEnded() {
       is_recently_fullscreen_);
 
   PopulateSharedFeatures(&settings_event);
-  SendToUkm(settings_event);
+  SendToUkmAndAppList(settings_event);
 }
 
 void UserSettingsEventLogger::OnCastingSessionStartedOrStopped(
@@ -272,7 +274,7 @@ void UserSettingsEventLogger::PopulateSharedFeatures(UserSettingsEvent* event) {
   // TODO(crbug/1014839): Populate the shared contextual features.
 }
 
-void UserSettingsEventLogger::SendToUkm(
+void UserSettingsEventLogger::SendToUkmAndAppList(
     const UserSettingsEvent& settings_event) {
   const ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::UserSettingsEvent ukm_event(source_id);
@@ -314,6 +316,18 @@ void UserSettingsEventLogger::SendToUkm(
 
   ukm::UkmRecorder* const ukm_recorder = ukm::UkmRecorder::Get();
   ukm_event.Record(ukm_recorder);
+
+  // Also log in browser side for other usage (CrOSActionRecorder for now).
+  AppListClient* app_list_client =
+      Shell::Get()->app_list_controller()->GetClient();
+  if (app_list_client) {
+    const std::string setting_name =
+        UserSettingsEvent_Event_SettingId_Name(event.setting_id());
+    app_list_client->OnQuickSettingsChanged(
+        setting_name, {{"SettingType", static_cast<int>(event.setting_type())},
+                       {"PreviousValue", event.previous_value()},
+                       {"CurrentValue", event.current_value()}});
+  }
 }
 
 }  // namespace ml

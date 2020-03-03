@@ -13,6 +13,7 @@ import './customize_themes.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
+import {createScrollBorders} from './utils.js';
 
 /**
  * Dialog that lets the user customize the NTP such as the background color or
@@ -61,33 +62,10 @@ class CustomizeDialogElement extends PolymerElement {
   /** @override */
   ready() {
     super.ready();
-
-    ['menu', 'pages'].forEach(id => {
-      const container = this.$[id];
-      const topProbe = document.createElement('div');
-      container.prepend(topProbe);
-      const bottomProbe = document.createElement('div');
-      container.append(bottomProbe);
-      const topBorder = document.createElement('div');
-      topBorder.toggleAttribute('scroll-border', true);
-      container.parentNode.insertBefore(topBorder, container);
-      const bottomBorder = document.createElement('div');
-      bottomBorder.toggleAttribute('scroll-border', true);
-      container.parentNode.insertBefore(bottomBorder, container.nextSibling);
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(({target, intersectionRatio}) => {
-          const show = intersectionRatio === 0;
-          if (target === topProbe) {
-            topBorder.toggleAttribute('show', show);
-          } else if (target === bottomProbe) {
-            bottomBorder.toggleAttribute('show', show);
-          }
-        });
-      }, {root: container});
-      observer.observe(topProbe);
-      observer.observe(bottomProbe);
-      this.intersectionObservers_.push(observer);
-    });
+    this.intersectionObservers_ = [
+      this.$.menu,
+      this.$.pages,
+    ].map(createScrollBorders);
   }
 
   /** @private */

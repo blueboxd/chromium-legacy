@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
@@ -78,7 +79,7 @@ extensions::NativeAppWindow* ChromeAppWindowClient::CreateNativeAppWindow(
 
 void ChromeAppWindowClient::OpenDevToolsWindow(
     content::WebContents* web_contents,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   scoped_refptr<content::DevToolsAgentHost> agent(
       content::DevToolsAgentHost::GetOrCreateFor(web_contents));
   DevToolsWindow::OpenDevToolsWindow(web_contents);
@@ -86,9 +87,9 @@ void ChromeAppWindowClient::OpenDevToolsWindow(
   DevToolsWindow* devtools_window =
       DevToolsWindow::FindDevToolsWindow(agent.get());
   if (devtools_window)
-    devtools_window->SetLoadCompletedCallback(callback);
+    devtools_window->SetLoadCompletedCallback(std::move(callback));
   else
-    callback.Run();
+    std::move(callback).Run();
 }
 
 bool ChromeAppWindowClient::IsCurrentChannelOlderThanDev() {

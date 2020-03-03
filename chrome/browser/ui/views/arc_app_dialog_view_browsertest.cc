@@ -10,6 +10,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -126,6 +128,12 @@ class ArcAppPermissionDialogViewBrowserTest
         base::StringPrintf("fake.package.%d", id) /* package_name */,
         id /* package_version */, id /* last_backup_android_id */,
         0 /* last_backup_time */, false /* sync */));
+
+    // AppService uses mojom, so flush mojom calls to add the app to AppService.
+    auto* app_service_proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
+    ASSERT_TRUE(app_service_proxy);
+    app_service_proxy->FlushMojoCallsForTesting();
   }
 
   void set_accepted(bool accepted) { accepted_ = accepted; }

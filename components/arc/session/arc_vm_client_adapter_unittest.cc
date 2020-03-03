@@ -155,7 +155,7 @@ class ArcVmClientAdapterTest : public testing::Test,
     GetTestConciergeClient()->set_start_vm_response(start_vm_response);
 
     // Reset to the original behavior.
-    RemoveUpstartStartJobFailure();
+    RemoveUpstartStartStopJobFailures();
   }
 
   void TearDown() override {
@@ -270,9 +270,21 @@ class ArcVmClientAdapterTest : public testing::Test,
         }));
   }
 
-  void RemoveUpstartStartJobFailure() {
+  void InjectUpstartStopJobFailure(const std::string& job_name_to_fail) {
+    auto* upstart_client = chromeos::FakeUpstartClient::Get();
+    upstart_client->set_stop_job_cb(base::BindLambdaForTesting(
+        [job_name_to_fail](const std::string& job_name,
+                           const std::vector<std::string>& env) {
+          // Return success unless |job_name| is |job_name_to_fail|.
+          return job_name != job_name_to_fail;
+        }));
+  }
+
+  void RemoveUpstartStartStopJobFailures() {
     auto* upstart_client = chromeos::FakeUpstartClient::Get();
     upstart_client->set_start_job_cb(
+        chromeos::FakeUpstartClient::StartStopJobCallback());
+    upstart_client->set_stop_job_cb(
         chromeos::FakeUpstartClient::StartStopJobCallback());
   }
 
@@ -332,6 +344,17 @@ TEST_F(ArcVmClientAdapterTest, SetUserInfo) {
 
 // Tests that StartMiniArc() succeeds by default.
 TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
+  StartMiniArc();
+  // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+}
+
+// Tests that StartMiniArc() still succeeds even when Upstart fails to stop
+// the job.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopJobFail) {
+  // Inject failure to FakeUpstartClient.
+  InjectUpstartStopJobFailure(kArcVmServerProxyJobName);
+
   StartMiniArc();
   // Confirm that no VM is started. ARCVM doesn't support mini ARC yet.
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());

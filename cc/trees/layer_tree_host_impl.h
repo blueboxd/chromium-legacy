@@ -28,6 +28,8 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/metrics/event_metrics.h"
+#include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
@@ -301,6 +303,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::Point& viewport_point) const override;
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
+  std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
   bool GetScrollOffsetForLayer(ElementId element_id,
                                gfx::ScrollOffset* offset) override;
@@ -324,6 +328,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // ImageAnimationController::Client implementation.
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
+
+  std::vector<EventMetrics> TakeEventsMetrics();
+  void AppendEventsMetrics(std::vector<EventMetrics> events_metrics);
 
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
@@ -1340,6 +1347,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Helper for de-jelly logic.
   DeJellyState de_jelly_state_;
+
+  EventsMetricsManager events_metrics_manager_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

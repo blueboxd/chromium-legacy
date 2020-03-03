@@ -735,6 +735,7 @@
       'desc': '''Configure Safe Browsing related policies.''',
       'policies': [
         'SafeBrowsingEnabled',
+        'SafeBrowsingEnhancedProtection',
         'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingExtendedReportingOptInAllowed',
         'SafeBrowsingWhitelistDomains',
@@ -2737,6 +2738,34 @@
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.
 
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
+    },
+    {
+      'name': 'SafeBrowsingEnhancedProtection',
+      'owners': ['bdea@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'future': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 684,
+      'caption': '''Enable Safe Browsing Enhanced Protection''',
+      'tags': ['system-security'],
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing Enhanced Protection feature and prevents users from changing this setting.
+
+      If you enable this setting, Safe Browsing Enhanced protection is always active.
+
+      If you disable this setting, Safe Browsing Enhanced Protection is never active.
+
+      If you set this policy as mandatory, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, Safe Browsing Enhanced protection will be disabled by default but the user can enable it.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
       'name': 'MetricsReportingEnabled',
@@ -21030,6 +21059,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 683,
+  'highest_id_currently_used': 684,
   'highest_atomic_group_id_currently_used': 38
 }

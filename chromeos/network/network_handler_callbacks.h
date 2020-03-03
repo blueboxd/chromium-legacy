@@ -28,8 +28,9 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorMessage[];
 
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
-typedef base::Callback<void(const std::string& error_name,
-                            std::unique_ptr<base::DictionaryValue> error_data)>
+typedef base::RepeatingCallback<void(
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data)>
     ErrorCallback;
 
 typedef base::Callback<

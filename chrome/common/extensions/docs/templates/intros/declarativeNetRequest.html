@@ -68,6 +68,7 @@ There are the following kinds of rules:
 <pre>
 {
   "id" : 1,
+  "priority": 1,
   "action" : { "type" : "block" },
   "condition" : {
     "urlFilter" : "abc",
@@ -172,47 +173,45 @@ chrome.declarativeNetRequest.updateDynamicRules</a> API method.
 
 <h3 id="matching-algorithm">Matching algorithm</h3>
 
+<p>
+Before the request is sent, each extension is queried for an action to take.
+The following actions are considered at this stage:
+</p>
+
 <ul>
-  <li>
-    If any extension ruleset wants to block a request<sup>1</sup>, the network
-    request is blocked.
-  </li>
-  <li>
-    If the request is not blocked, the request is redirected if any extension
-    ruleset wants to redirect the request<sup>2</sup>. The most recently
-    installed extension gets preference here. If multiple redirect rules from an
-    extension’s ruleset match, the rule with the greatest priority determines
-    the redirect URL.
-  </li>
-  <li>
-    If the request is not blocked or redirected, <code>removeHeaders</code>
-    rules are evaluated<sup>3</sup>. Rules from all extensions are evaluated
-    to determine the set of removed headers.
-  </li>
+  <li>Block actions with type <code>block</code></li>
+  <li>Redirect actions with type <code>redirect</code> or <code>upgradeScheme</code></li>
+  <li>Allow actions with type <code>allow</code><code>allowAllRequests</code></li>
 </ul>
 
-<ol type="1">
-  <li>
-    An extension wants to block a request, if the the extension has a matching
-    block rule. Note the priority order between the different block/allow actions:
-    <br/>dynamic allow > dynamic block > static allow > static block.
-  </li>
+<p>
+If more than one extension returns an action, the extension whose action type
+comes first in the list above gets priority. If more than one extension returns
+an action with the same priority (position in the list), the most recently
+installed extension gets priority.
+</p>
 
-  <li>
-    An extension wants to redirect a request, if the extension has a matching
-    redirect rule. Note the priority order between the different redirect/allow
-    actions:
-    <br/>dynamic allow > dynamic redirect > static allow > static redirect.
-  </li>
+<p>
+When an extension is queried for how to handle a request, the highest priority
+matching static or dynamic rule is returned. If more than one matching rule has
+the highest priority, the tie is broken based on the action type, in the
+following order:
+</p>
 
-  <li>
-    An extension wants to remove a header from a request, if the extension has
-    a matching removeHeaders rule. Note the priority order between the different
-    removeHeaders/allow actions:
-    <br/>dynamic allow > dynamic removeHeaders > static allow > static
-    removeHeaders.
-  </li>
-</ol>
+<ul>
+  <li><code>allow</code></li>
+  <li><code>allowAllRequests</code></li>
+  <li><code>block</code></li>
+  <li><code>upgradeScheme</code></li>
+  <li><code>redirect</code></li>
+</ul>
+
+<p>
+If the request was not blocked or redirected, <code>removeHeaders</code> rules
+are evaluated on the request and response headers. All matching
+<code>removeHeaders</code> rules from extensions that did not have a matching
+<code>allow</code> or <code>allowAllRequests</code> action are evaluated.
+</p>
 
 <h3 id="web-request-comparison">
   Comparison with the <a href="webRequest">webRequest</a> API
@@ -259,14 +258,14 @@ chrome.declarativeNetRequest.updateDynamicRules</a> API method.
 
 <p><b>manifest.json</b></p>
 <pre data-filename="manifest.json">
-{
-  "name" : "declarativeNetRequest extension",
-  "version" : "1",
-  "declarative_net_request" : {
-    "rule_resources" : ["rules.json"]
+
+  "name": "declarativeNetRequest extension",
+  "version": "1",
+  "declarative_net_request": {
+    "rule_resources": ["rules.json"]
   },
-  "permissions" : ["*://*.google.com/*", "*://*.abcd.com/*", "*://*.example.com/*", "declarativeNetRequest"],
-  "manifest_version" : 2
+  "permissions": ["*://*.google.com/*", "*://*.abcd.com/*", "*://*.example.com/*", "declarativeNetRequest"],
+  "manifest_version": 2
 }
 </pre>
 
@@ -274,37 +273,45 @@ chrome.declarativeNetRequest.updateDynamicRules</a> API method.
 <pre data-filename="rules.json">
 [
   {
-    "id" : 1,
-    "action": { "type" : "block" },
-    "condition" : {"urlFilter" : "google.com", "resourceTypes" : ["main_frame"] }
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {"urlFilter": "google.com", "resourceTypes": ["main_frame"] }
   },
   {
-    "id" : 2,
-    "action" : { "type" : "allow" },
-    "condition" : { "urlFilter" : "google.com/123", "resourceTypes" : ["main_frame"] }
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "allow" },
+    "condition": { "urlFilter": "google.com/123", "resourceTypes": ["main_frame"] }
   },
   {
-    "id" : 3,
-    "priority" : 1,
-    "action" : { "type" : "redirect", "redirect" : { "url" : "https://example.com" } },
-    "condition" : { "urlFilter" : "google.com", "resourceTypes" : ["main_frame"] }
+    "id": 3,
+    "priority": 2,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "google.com/12345", "resourceTypes": ["main_frame"] }
   },
   {
-    "id" : 4,
-    "priority" : 1,
-    "action" : { "type" : "redirect", "redirect" : { "extensionPath" : "/a.jpg" } },
-    "condition" : { "urlFilter" : "abcd.com", "resourceTypes" : ["main_frame"] }
+    "id": 4,
+    "priority": 1,
+    "action": { "type": "redirect", "redirect": { "url": "https://example.com" } },
+    "condition": { "urlFilter": "google.com", "resourceTypes": ["main_frame"] }
   },
   {
-    "id" : 5,
-    "priority" : 1,
-    "action" : {
-      "type" : "redirect",
-      "redirect" : {
-        "transform" : { "scheme" : "https", "host" : "new.example.com" }
+    "id": 5,
+    "priority": 1,
+    "action": { "type": "redirect", "redirect": { "extensionPath": "/a.jpg" } },
+    "condition": { "urlFilter": "abcd.com", "resourceTypes": ["main_frame"] }
+  },
+  {
+    "id": 6,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": { "scheme": "https", "host": "new.example.com" }
       }
     },
-    "condition" : { "urlFilter" : "||example.com", "resourceTypes" : ["main_frame"] }
+    "condition": { "urlFilter": "||example.com", "resourceTypes": ["main_frame"] }
   }
 ]
 </pre>
@@ -312,24 +319,31 @@ chrome.declarativeNetRequest.updateDynamicRules</a> API method.
 <ul>
   <!--TODO(crbug.com/1038831): Add examples for allowAllRequests rules. -->
   <li>
-    Consider a navigation to <code>"http://google.com"</code>. Rules with id (1)
-    and (3) match. The request will be blocked because blocking rules have
-    higher priority than redirect rules.
+    Consider a navigation to <code>"http://google.com"</code>. Rules with id
+    (1) and (4) match. The request will be blocked because blocking rules have
+    higher priority than redirect rules when the <code>"priority"</code> is the
+    same.
   </li>
   <li>
     Consider a navigation to <code>"http://google.com/1234"</code>. Rules with
-    id (1), (2), and (3) match. Because the request has a matching
-    <code>allow</code> rule, the request is not blocked nor redirected and
-    continues to <code>"http://google.com/1234"</code>.
+    id (1), (2), and (4) match. Because the request has a matching
+    <code>allow</code> rule and no higher priority rules, the request is not
+    blocked nor redirected and continues to
+    <code>"http://google.com/1234"</code>.
+  </li>
+  <li>
+    Consider a navigation to <code>"http://google.com/12345"</code> Rules with
+    id (1), (2), (3), and (4) match. The request will be blocked because rule
+    (3) has the highest priority, overriding all other matching rules.
   </li>
   <li>
     Consider a navigation to <code>"http://abcd.com"</code>. The rule with id
-    (4) matches. Since rule (4) specifies an extension path, the request is
+    (5) matches. Since rule (5) specifies an extension path, the request is
     redirected to <code>"chrome-extension://&lt;extension-id&gt;/a.jpg"</code>.
   </li>
   <li>
     Consider a navigation to <code>"http://example.com/path"</code>. The rule
-    with id (5) matches. Since rule (5) specifies a url transform, the request
+    with id (6) matches. Since rule (6) specifies a url transform, the request
     is redirected to <code>"https://new.example.com/path"</code>.
   </li>
 </ul>

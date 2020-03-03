@@ -12,8 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -258,14 +258,14 @@ std::unique_ptr<BadClockBlockingPage> CreateBadClockBlockingPage(
       clock_state, nullptr);
 }
 
-std::unique_ptr<LookalikeUrlInterstitialPage> CreateLookalikeInterstitialPage(
+std::unique_ptr<LookalikeUrlBlockingPage> CreateLookalikeInterstitialPage(
     content::WebContents* web_contents) {
   GURL request_url("https://example.net");
   GURL safe_url("https://example.com");
 
-  return std::make_unique<LookalikeUrlInterstitialPage>(
+  return std::make_unique<LookalikeUrlBlockingPage>(
       web_contents, safe_url, ukm::kInvalidSourceId,
-      LookalikeUrlInterstitialPage::MatchType::kNone,
+      LookalikeUrlBlockingPage::MatchType::kNone,
       std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
                                                      safe_url));
 }

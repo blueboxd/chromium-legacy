@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -213,33 +214,6 @@ void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
             std::move(shares_callback).Run(shares_gathered, true);
           },
           std::move(shares_callback)));
-}
-
-void SmbService::UpdateCredentials(int32_t mount_id,
-                                   const std::string& username,
-                                   const std::string& password) {
-  std::string parsed_username = username;
-  std::string workgroup;
-  ParseUserName(username, &parsed_username, &workgroup);
-
-  GetSmbProviderClient()->UpdateMountCredentials(
-      mount_id, workgroup, parsed_username, MakeFdWithContents(password),
-      base::BindOnce(&SmbService::OnUpdateCredentialsResponse, AsWeakPtr(),
-                     mount_id));
-}
-
-void SmbService::OnUpdateCredentialsResponse(int32_t mount_id,
-                                             smbprovider::ErrorType error) {
-  auto creds_reply_iter = update_credential_replies_.find(mount_id);
-  DCHECK(creds_reply_iter != update_credential_replies_.end());
-
-  if (error == smbprovider::ERROR_OK) {
-    std::move(creds_reply_iter->second).Run();
-  } else {
-    LOG(ERROR) << "Failed to update the credentials for mount id " << mount_id;
-  }
-
-  update_credential_replies_.erase(creds_reply_iter);
 }
 
 void SmbService::UpdateSharePath(int32_t mount_id,
@@ -874,13 +848,38 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
 void SmbService::RequestCredentials(const std::string& share_path,
                                     int32_t mount_id,
                                     base::OnceClosure reply) {
-  update_credential_replies_[mount_id] = std::move(reply);
-  OpenRequestCredentialsDialog(share_path, mount_id);
+  smb_dialog::SmbCredentialsDialog::Show(
+      base::NumberToString(mount_id), share_path,
+      base::BindOnce(&SmbService::OnSmbCredentialsDialogShown, AsWeakPtr(),
+                     mount_id, std::move(reply)));
 }
 
-void SmbService::OpenRequestCredentialsDialog(const std::string& share_path,
-                                              int32_t mount_id) {
-  smb_dialog::SmbCredentialsDialog::Show(mount_id, share_path);
+void SmbService::OnSmbCredentialsDialogShown(int32_t mount_id,
+                                             base::OnceClosure reply,
+                                             bool canceled,
+                                             const std::string& username,
+                                             const std::string& password) {
+  if (canceled) {
+    return;
+  }
+
+  std::string parsed_username = username;
+  std::string workgroup;
+  ParseUserName(username, &parsed_username, &workgroup);
+
+  GetSmbProviderClient()->UpdateMountCredentials(
+      mount_id, workgroup, parsed_username, MakeFdWithContents(password),
+      base::BindOnce(
+          [](int32_t mount_id, base::OnceClosure reply,
+             smbprovider::ErrorType error) {
+            if (error == smbprovider::ERROR_OK) {
+              std::move(reply).Run();
+            } else {
+              LOG(ERROR) << "Failed to update the credentials for mount id "
+                         << mount_id;
+            }
+          },
+          mount_id, std::move(reply)));
 }
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {

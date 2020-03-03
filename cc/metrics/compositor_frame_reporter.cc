@@ -4,7 +4,9 @@
 
 #include "cc/metrics/compositor_frame_reporter.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -13,6 +15,7 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/metrics/latency_ukm_reporter.h"
+#include "ui/events/types/event_type.h"
 
 namespace cc {
 namespace {
@@ -126,21 +129,28 @@ static_assert(base::size(kReportTypeNames) == kDroppedFrameReportTypeCount,
 // This value should be recalculated in case of changes to the number of values
 // in CompositorFrameReporter::DroppedFrameReportType or in
 // CompositorFrameReporter::StageType
-constexpr int kMaxHistogramIndex = kDroppedFrameReportTypeCount *
-                                   kFrameSequenceTrackerTypeCount *
-                                   (kStageTypeCount + kAllBreakdownCount);
-constexpr int kHistogramMin = 1;
-constexpr int kHistogramMax = 350000;
-constexpr int kHistogramBucketCount = 50;
+constexpr int kMaxCompositorLatencyHistogramIndex =
+    kDroppedFrameReportTypeCount * kFrameSequenceTrackerTypeCount *
+    (kStageTypeCount + kAllBreakdownCount);
+constexpr int kCompositorLatencyHistogramMin = 1;
+constexpr int kCompositorLatencyHistogramMax = 350000;
+constexpr int kCompositorLatencyHistogramBucketCount = 50;
+
+constexpr int kMaxEventLatencyHistogramIndex =
+    static_cast<int>(ui::EventType::ET_LAST);
+constexpr int kEventLatencyHistogramMin = 1;
+constexpr int kEventLatencyHistogramMax = 5000000;
+constexpr int kEventLatencyHistogramBucketCount = 100;
 
 bool ShouldReportLatencyMetricsForSequenceType(
     FrameSequenceTrackerType sequence_type) {
   return sequence_type != FrameSequenceTrackerType::kUniversal;
 }
 
-std::string HistogramName(const int report_type_index,
-                          FrameSequenceTrackerType frame_sequence_tracker_type,
-                          const int stage_type_index) {
+std::string GetCompositorLatencyHistogramName(
+    const int report_type_index,
+    FrameSequenceTrackerType frame_sequence_tracker_type,
+    const int stage_type_index) {
   DCHECK_LE(frame_sequence_tracker_type, FrameSequenceTrackerType::kMaxType);
   DCHECK(
       ShouldReportLatencyMetricsForSequenceType(frame_sequence_tracker_type));
@@ -152,6 +162,11 @@ std::string HistogramName(const int report_type_index,
                        kReportTypeNames[report_type_index], tracker_type_name,
                        *tracker_type_name ? "." : "",
                        GetStageName(stage_type_index)});
+}
+
+std::string GetEventLatencyHistogramName(const EventMetrics& event_metrics) {
+  return base::StrCat(
+      {"EventLatency.", event_metrics.GetTypeName(), ".TotalLatency"});
 }
 
 }  // namespace
@@ -257,6 +272,12 @@ void CompositorFrameReporter::SetVizBreakdown(
   viz_breakdown_ = viz_breakdown;
 }
 
+void CompositorFrameReporter::SetEventsMetrics(
+    std::vector<EventMetrics> events_metrics) {
+  DCHECK_EQ(0u, events_metrics_.size());
+  events_metrics_ = std::move(events_metrics);
+}
+
 void CompositorFrameReporter::DroppedFrame() {
   report_type_ = DroppedFrameReportType::kDroppedFrame;
 }
@@ -265,20 +286,22 @@ void CompositorFrameReporter::TerminateReporter() {
   if (frame_termination_status_ == FrameTerminationStatus::kUnknown)
     TerminateFrame(FrameTerminationStatus::kUnknown, base::TimeTicks::Now());
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
-  bool report_latency = false;
+  bool report_compositor_latency = false;
+  bool report_event_latency = false;
   const char* termination_status_str = nullptr;
   switch (frame_termination_status_) {
     case FrameTerminationStatus::kPresentedFrame:
-      report_latency = true;
+      report_compositor_latency = true;
+      report_event_latency = true;
       termination_status_str = "presented_frame";
       break;
     case FrameTerminationStatus::kDidNotPresentFrame:
-      report_latency = true;
+      report_compositor_latency = true;
       DroppedFrame();
       termination_status_str = "did_not_present_frame";
       break;
     case FrameTerminationStatus::kReplacedByNewReporter:
-      report_latency = true;
+      report_compositor_latency = true;
       DroppedFrame();
       termination_status_str = "replaced_by_new_reporter_at_same_stage";
       break;
@@ -303,17 +326,20 @@ void CompositorFrameReporter::TerminateReporter() {
         "compositor_frame_submission_status", submission_status_str);
   }
 
-  // Only report histograms if the frame was presented.
-  if (report_latency) {
+  // Only report compositor latency histograms if the frame was produced.
+  if (report_compositor_latency) {
     DCHECK(stage_history_.size());
     stage_history_.emplace_back(StageType::kTotalLatency,
                                 stage_history_.front().start_time,
                                 stage_history_.back().end_time);
-    ReportStageHistograms();
+    ReportCompositorLatencyHistograms();
   }
+  // Only report event latency histograms if the frame was presented.
+  if (report_event_latency)
+    ReportEventLatencyHistograms();
 }
 
-void CompositorFrameReporter::ReportStageHistograms() const {
+void CompositorFrameReporter::ReportCompositorLatencyHistograms() const {
   for (const StageData& stage : stage_history_) {
     ReportStageHistogramWithBreakdown(stage);
 
@@ -334,8 +360,9 @@ void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
   if (!ShouldReportLatencyMetricsForSequenceType(frame_sequence_tracker_type))
     return;
   base::TimeDelta stage_delta = stage.end_time - stage.start_time;
-  ReportHistogram(frame_sequence_tracker_type,
-                  static_cast<int>(stage.stage_type), stage_delta);
+  ReportCompositorLatencyHistogram(frame_sequence_tracker_type,
+                                   static_cast<int>(stage.stage_type),
+                                   stage_delta);
   switch (stage.stage_type) {
     case StageType::kSendBeginMainFrameToCommit:
       ReportBlinkBreakdowns(stage.start_time, frame_sequence_tracker_type);
@@ -368,9 +395,10 @@ void CompositorFrameReporter::ReportBlinkBreakdowns(
        begin_main_frame_start_ - start_time}};
 
   for (const auto& pair : breakdowns) {
-    ReportHistogram(frame_sequence_tracker_type,
-                    kBlinkBreakdownInitialIndex + static_cast<int>(pair.first),
-                    pair.second);
+    ReportCompositorLatencyHistogram(
+        frame_sequence_tracker_type,
+        kBlinkBreakdownInitialIndex + static_cast<int>(pair.first),
+        pair.second);
   }
 }
 
@@ -386,7 +414,7 @@ void CompositorFrameReporter::ReportVizBreakdowns(
   }
   base::TimeDelta submit_to_receive_compositor_frame_delta =
       viz_breakdown_.received_compositor_frame_timestamp - start_time;
-  ReportHistogram(
+  ReportCompositorLatencyHistogram(
       frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame),
@@ -397,7 +425,7 @@ void CompositorFrameReporter::ReportVizBreakdowns(
   base::TimeDelta received_compositor_frame_to_start_draw_delta =
       viz_breakdown_.draw_start_timestamp -
       viz_breakdown_.received_compositor_frame_timestamp;
-  ReportHistogram(
+  ReportCompositorLatencyHistogram(
       frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw),
@@ -409,32 +437,34 @@ void CompositorFrameReporter::ReportVizBreakdowns(
       viz_breakdown_.swap_timings.swap_start -
       viz_breakdown_.draw_start_timestamp;
 
-  ReportHistogram(frame_sequence_tracker_type,
-                  kVizBreakdownInitialIndex +
-                      static_cast<int>(VizBreakdown::kStartDrawToSwapStart),
-                  start_draw_to_swap_start_delta);
+  ReportCompositorLatencyHistogram(
+      frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex +
+          static_cast<int>(VizBreakdown::kStartDrawToSwapStart),
+      start_draw_to_swap_start_delta);
 
   base::TimeDelta swap_start_to_swap_end_delta =
       viz_breakdown_.swap_timings.swap_end -
       viz_breakdown_.swap_timings.swap_start;
 
-  ReportHistogram(frame_sequence_tracker_type,
-                  kVizBreakdownInitialIndex +
-                      static_cast<int>(VizBreakdown::kSwapStartToSwapEnd),
-                  swap_start_to_swap_end_delta);
+  ReportCompositorLatencyHistogram(
+      frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex +
+          static_cast<int>(VizBreakdown::kSwapStartToSwapEnd),
+      swap_start_to_swap_end_delta);
 
   base::TimeDelta swap_end_to_presentation_compositor_frame_delta =
       viz_breakdown_.presentation_feedback.timestamp -
       viz_breakdown_.swap_timings.swap_end;
 
-  ReportHistogram(
+  ReportCompositorLatencyHistogram(
       frame_sequence_tracker_type,
       kVizBreakdownInitialIndex +
           static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame),
       swap_end_to_presentation_compositor_frame_delta);
 }
 
-void CompositorFrameReporter::ReportHistogram(
+void CompositorFrameReporter::ReportCompositorLatencyHistogram(
     FrameSequenceTrackerType frame_sequence_tracker_type,
     const int stage_type_index,
     base::TimeDelta time_delta) const {
@@ -451,18 +481,37 @@ void CompositorFrameReporter::ReportHistogram(
   CHECK_GE(stage_type_index, 0);
   CHECK_LT(report_type_index, kDroppedFrameReportTypeCount);
   CHECK_GE(report_type_index, 0);
-  CHECK_LT(histogram_index, kMaxHistogramIndex);
+  CHECK_LT(histogram_index, kMaxCompositorLatencyHistogramIndex);
   CHECK_GE(histogram_index, 0);
 
   STATIC_HISTOGRAM_POINTER_GROUP(
-      HistogramName(report_type_index, frame_sequence_tracker_type,
-                    stage_type_index),
-      histogram_index, kMaxHistogramIndex,
+      GetCompositorLatencyHistogramName(
+          report_type_index, frame_sequence_tracker_type, stage_type_index),
+      histogram_index, kMaxCompositorLatencyHistogramIndex,
       AddTimeMicrosecondsGranularity(time_delta),
       base::Histogram::FactoryGet(
-          HistogramName(report_type_index, frame_sequence_tracker_type,
-                        stage_type_index),
-          kHistogramMin, kHistogramMax, kHistogramBucketCount,
+          GetCompositorLatencyHistogramName(
+              report_type_index, frame_sequence_tracker_type, stage_type_index),
+          kCompositorLatencyHistogramMin, kCompositorLatencyHistogramMax,
+          kCompositorLatencyHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
+
+void CompositorFrameReporter::ReportEventLatencyHistograms() const {
+  for (const EventMetrics& event_metrics : events_metrics_) {
+    base::TimeDelta total_latency =
+        frame_termination_time_ - event_metrics.time_stamp();
+    const int type_index = static_cast<int>(event_metrics.type());
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        GetEventLatencyHistogramName(event_metrics), type_index,
+        kMaxEventLatencyHistogramIndex,
+        AddTimeMicrosecondsGranularity(total_latency),
+        base::Histogram::FactoryGet(
+            GetEventLatencyHistogramName(event_metrics),
+            kEventLatencyHistogramMin, kEventLatencyHistogramMax,
+            kEventLatencyHistogramBucketCount,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
+}
+
 }  // namespace cc

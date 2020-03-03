@@ -484,6 +484,10 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
+  // Since we're doing a preflight, we won't reuse the original request. Cancel
+  // it now to free up the socket.
+  network_loader_.reset();
+
   preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),

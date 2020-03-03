@@ -628,6 +628,17 @@
     ]
   },
 
+  "SafeBrowsingEnhancedProtection": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SafeBrowsingEnhancedProtection": false },
+        "prefs": { "safebrowsing.enhanced": {} }
+      }
+    ]
+  },
+
   "ForceSafeSearch": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "policy_pref_mapping_test": [

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/apps/directory_access_confirmation_dialog.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -20,8 +21,8 @@ class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
   DirectoryAccessConfirmationDialog(bool writable,
                                     const base::string16& app_name,
                                     content::WebContents* web_contents,
-                                    const base::Closure& on_accept,
-                                    const base::Closure& on_cancel);
+                                    base::OnceClosure on_accept,
+                                    base::OnceClosure on_cancel);
 
   base::string16 GetTitle() override;
   base::string16 GetDialogMessage() override;
@@ -33,8 +34,8 @@ class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
   void OnCanceled() override;
   void OnClosed() override;
 
-  const base::Closure on_accept_;
-  const base::Closure on_cancel_;
+  base::OnceClosure on_accept_;
+  base::OnceClosure on_cancel_;
   const bool writable_;
   const base::string16 app_name_;
 };
@@ -43,11 +44,11 @@ DirectoryAccessConfirmationDialog::DirectoryAccessConfirmationDialog(
     bool writable,
     const base::string16& app_name,
     content::WebContents* web_contents,
-    const base::Closure& on_accept,
-    const base::Closure& on_cancel)
+    base::OnceClosure on_accept,
+    base::OnceClosure on_cancel)
     : TabModalConfirmDialogDelegate(web_contents),
-      on_accept_(on_accept),
-      on_cancel_(on_cancel),
+      on_accept_(std::move(on_accept)),
+      on_cancel_(std::move(on_cancel)),
       writable_(writable),
       app_name_(app_name) {}
 
@@ -76,15 +77,15 @@ base::string16 DirectoryAccessConfirmationDialog::GetCancelButtonTitle() {
 }
 
 void DirectoryAccessConfirmationDialog::OnAccepted() {
-  on_accept_.Run();
+  std::move(on_accept_).Run();
 }
 
 void DirectoryAccessConfirmationDialog::OnCanceled() {
-  on_cancel_.Run();
+  std::move(on_cancel_).Run();
 }
 
 void DirectoryAccessConfirmationDialog::OnClosed() {
-  on_cancel_.Run();
+  std::move(on_cancel_).Run();
 }
 
 }  // namespace
@@ -92,10 +93,11 @@ void DirectoryAccessConfirmationDialog::OnClosed() {
 void CreateDirectoryAccessConfirmationDialog(bool writable,
                                              const base::string16& app_name,
                                              content::WebContents* web_contents,
-                                             const base::Closure& on_accept,
-                                             const base::Closure& on_cancel) {
+                                             base::OnceClosure on_accept,
+                                             base::OnceClosure on_cancel) {
   TabModalConfirmDialog::Create(
       std::make_unique<DirectoryAccessConfirmationDialog>(
-          writable, app_name, web_contents, on_accept, on_cancel),
+          writable, app_name, web_contents, std::move(on_accept),
+          std::move(on_cancel)),
       web_contents);
 }

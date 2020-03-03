@@ -496,7 +496,8 @@ bool GetOptionalUint8(const Dictionary& raw,
   return true;
 }
 
-bool GetAlgorithmIdentifier(const Dictionary& raw,
+bool GetAlgorithmIdentifier(v8::Isolate* isolate,
+                            const Dictionary& raw,
                             const char* property_name,
                             AlgorithmIdentifier& value,
                             const ErrorContext& context,
@@ -507,9 +508,8 @@ bool GetAlgorithmIdentifier(const Dictionary& raw,
   //   (2) The value is stringified (whereas the spec says it should be an
   //       instance of DOMString).
   Dictionary dictionary;
-  if (DictionaryHelper::Get(raw, property_name, dictionary) &&
-      !dictionary.IsUndefinedOrNull()) {
-    value.SetDictionary(dictionary);
+  if (raw.Get(property_name, dictionary) && dictionary.IsObject()) {
+    value.SetObject(ScriptValue(isolate, dictionary.V8Value()));
     return true;
   }
 
@@ -572,7 +572,8 @@ bool ParseHash(v8::Isolate* isolate,
                ErrorContext context,
                ExceptionState& exception_state) {
   AlgorithmIdentifier raw_hash;
-  if (!GetAlgorithmIdentifier(raw, "hash", raw_hash, context, exception_state))
+  if (!GetAlgorithmIdentifier(isolate, raw, "hash", raw_hash, context,
+                              exception_state))
     return false;
 
   context.Add("hash");
@@ -1183,13 +1184,10 @@ bool ParseAlgorithmIdentifier(v8::Isolate* isolate,
                                     op, algorithm, context, exception_state);
   }
 
-  const Dictionary& params = raw.GetAsDictionary();
-
   // Get the name of the algorithm from the AlgorithmIdentifier.
-  if (!params.IsObject()) {
-    SetTypeError(context.ToString("Not an object"), exception_state);
+  Dictionary params(isolate, raw.GetAsObject().V8Value(), exception_state);
+  if (exception_state.HadException())
     return false;
-  }
 
   String algorithm_name;
   if (!DictionaryHelper::Get(params, "name", algorithm_name)) {

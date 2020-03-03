@@ -11,7 +11,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,8 +38,8 @@ using security_interstitials::MetricsHelper;
 using security_interstitials::SecurityInterstitialCommand;
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 
-using MatchType = LookalikeUrlInterstitialPage::MatchType;
-using UserAction = LookalikeUrlInterstitialPage::UserAction;
+using MatchType = LookalikeUrlBlockingPage::MatchType;
+using UserAction = LookalikeUrlBlockingPage::UserAction;
 
 enum class UIStatus {
   // Enabled for all heuristics.
@@ -127,7 +127,7 @@ void LoadAndCheckInterstitialAt(Browser* browser, const GURL& url) {
   EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
 
   NavigateToURLSync(browser, url);
-  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+  EXPECT_EQ(LookalikeUrlBlockingPage::kTypeForTesting,
             GetInterstitialType(web_contents));
   EXPECT_FALSE(IsUrlShowing(browser));
 }
@@ -143,7 +143,7 @@ void SendInterstitialCommandSync(Browser* browser,
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+  EXPECT_EQ(LookalikeUrlBlockingPage::kTypeForTesting,
             GetInterstitialType(web_contents));
 
   content::TestNavigationObserver navigation_observer(web_contents, 1);
@@ -384,7 +384,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
   base::SimpleTestClock test_clock_;
 };
 
-class LookalikeUrlInterstitialPageBrowserTest
+class LookalikeUrlBlockingPageBrowserTest
     : public LookalikeUrlNavigationThrottleBrowserTest {
  protected:
   UIStatus ui_status() const override { return UIStatus::kEnabled; }
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
 // Navigate to lookalike domains that redirect to benign domains and ensure that
 // we display an interstitial along the way.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        Interstitial_CapturesRedirects) {
   {
     // Verify it works when the lookalike domain is the first in the chain
@@ -961,7 +961,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
 // Verify that the user action in UKM is recorded even when we navigate away
 // from the interstitial without interacting with it.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        UkmRecordedAfterNavigateAway) {
   const GURL navigated_url = GetURL("googlé.com");
   const GURL subsequent_url = GetURL("example.com");
@@ -973,7 +973,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 
 // Verify that the user action in UKM is recorded properly when the user accepts
 // the navigation suggestion.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        UkmRecordedAfterSuggestionAccepted) {
   const GURL navigated_url = GetURL("googlé.com");
 
@@ -985,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 
 // Verify that the user action in UKM is recorded properly when the user ignores
 // the navigation suggestion.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        UkmRecordedAfterSuggestionIgnored) {
   const GURL navigated_url = GetURL("googlé.com");
 
@@ -996,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 }
 
 // Verify that the URL shows normally on pages after a lookalike interstitial.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        UrlShownAfterInterstitial) {
   LoadAndCheckInterstitialAt(browser(), GetURL("googlé.com"));
 
@@ -1006,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 }
 
 // Verify that bypassing warnings in the main profile does not affect incognito.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        MainProfileDoesNotAffectIncognito) {
   const GURL kNavigatedUrl = GetURL("googlé.com");
 
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 }
 
 // Verify that bypassing warnings in incognito does not affect the main profile.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        IncognitoDoesNotAffectMainProfile) {
   const GURL kNavigatedUrl = GetURL("sité1.com");
   const GURL kEngagedUrl = GetURL("site1.com");
@@ -1046,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 
 // Verify reloading the page does not result in dismissing an interstitial.
 // Regression test for crbug/941886.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+IN_PROC_BROWSER_TEST_F(LookalikeUrlBlockingPageBrowserTest,
                        RefreshDoesntDismiss) {
   // Verify it works when the lookalike domain is the first in the chain.
   const GURL kNavigatedUrl =
@@ -1064,7 +1064,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
     chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
     navigation_observer.Wait();
 
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+    EXPECT_EQ(LookalikeUrlBlockingPage::kTypeForTesting,
               GetInterstitialType(web_contents));
     EXPECT_FALSE(IsUrlShowing(browser()));
   }

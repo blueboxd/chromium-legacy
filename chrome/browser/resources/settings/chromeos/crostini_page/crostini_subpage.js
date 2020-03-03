@@ -90,6 +90,17 @@ Polymer({
       },
     },
 
+    /**
+     * Whether the toggle to share the mic with Crostini should be shown.
+     * @private {boolean}
+     */
+    showCrostiniMic_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showCrostiniMic');
+      },
+    },
+
     /*
      * Whether the installer is showing.
      * @private {boolean}

@@ -1557,33 +1557,11 @@ void HTMLSelectElement::ProvisionalSelectionChanged(unsigned list_index) {
 }
 
 void HTMLSelectElement::ShowPopup() {
-  if (PopupIsVisible())
-    return;
-  if (GetDocument().GetPage()->GetChromeClient().HasOpenedPopup())
-    return;
-  if (!GetLayoutObject() || !UsesMenuList())
-    return;
-  if (VisibleBoundsInVisualViewport().IsEmpty())
-    return;
-
-  if (!popup_) {
-    popup_ = GetDocument().GetPage()->GetChromeClient().OpenPopupMenu(
-        *GetDocument().GetFrame(), *this);
-  }
-  if (!popup_)
-    return;
-
-  SetPopupIsVisible(true);
-  ObserveTreeMutation();
-
-  popup_->Show();
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->DidShowMenuListPopup(GetLayoutObject());
+  select_type_->ShowPopup();
 }
 
 void HTMLSelectElement::HidePopup() {
-  if (popup_)
-    popup_->Hide();
+  select_type_->HidePopup();
 }
 
 void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {

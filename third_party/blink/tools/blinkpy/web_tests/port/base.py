@@ -1122,7 +1122,7 @@ class Port(object):
         return test_name
 
     def bot_test_times_path(self):
-        # TODO(crbug.com/1030434): For the not_site_per_process_webkit_layout_tests step on linux,
+        # TODO(crbug.com/1030434): For the not_site_per_process_blink_web_tests step on linux,
         # an exception is raised when merging the bot times json files. This happens  whenever they
         # are outputted into the results directory. Temporarily we will return the bot times json
         # file relative to the target directory.

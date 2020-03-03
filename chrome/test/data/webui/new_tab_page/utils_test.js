@@ -5,7 +5,8 @@
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
-import {hexColorToSkColor, skColorToRgb} from 'chrome://new-tab-page/utils.js';
+import {createScrollBorders, hexColorToSkColor, skColorToRgb} from 'chrome://new-tab-page/utils.js';
+import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageUtilsTest', () => {
   test('Can convert simple SkColors to rgb strings', () => {
@@ -44,5 +45,72 @@ suite('NewTabPageUtilsTest', () => {
     assertDeepEquals(hexColorToSkColor('#fffffr'), {value: 0});
     assertDeepEquals(hexColorToSkColor('#ffffff0'), {value: 0});
     assertDeepEquals(hexColorToSkColor('ffffff'), {value: 0});
+  });
+});
+
+suite('scroll borders', () => {
+  /** @type {!HTMLElement} */
+  let container;
+  /** @type {!HTMLElement} */
+  let content;
+  /** @type {!HTMLElement} */
+  let top;
+  /** @type {!HTMLElement} */
+  let bottom;
+  /** @type {!IntersectionObserver} */
+  let observer;
+
+  /** @param {!HTMLElement} el */
+  function assertHidden(el) {
+    assertTrue(el.matches('[scroll-border]:not([show])'));
+  }
+
+  /** @param {!HTMLElement} el */
+  function assertShown(el) {
+    assertTrue(el.matches('[scroll-border][show]'));
+  }
+
+  setup(async () => {
+    document.body.innerHTML =
+        '<div id="container"><div id="content"></div></div>';
+    container = document.querySelector('#container');
+    container.style.height = '100px';
+    container.style.overflow = 'auto';
+    content = document.querySelector('#content');
+    content.style.height = '200px';
+    observer = createScrollBorders(container);
+    top = document.body.firstElementChild;
+    bottom = document.body.lastElementChild;
+    await waitAfterNextRender();
+  });
+
+  teardown(() => {
+    observer.disconnect();
+  });
+
+  test('bottom border show when more content available below', () => {
+    assertHidden(top);
+    assertShown(bottom);
+  });
+
+  test('borders shown when content available above and below', async () => {
+    container.scrollTop = 10;
+    await waitAfterNextRender();
+    assertShown(top);
+    assertShown(bottom);
+  });
+
+  test('bottom border hidden when no content available below', async () => {
+    container.scrollTop = 200;
+    await waitAfterNextRender();
+    assertShown(top);
+    assertHidden(bottom);
+  });
+
+  test('borders hidden when all content is shown', async () => {
+    content.style.height = '100px';
+    await waitAfterNextRender();
+    assertHidden(top);
+    assertHidden(bottom);
   });
 });

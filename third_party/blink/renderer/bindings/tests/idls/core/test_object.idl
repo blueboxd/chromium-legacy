@@ -314,7 +314,6 @@ interface TestObject {
     void voidMethodDoubleOrDOMStringOrNullArg((double or DOMString)? arg);
     void voidMethodDoubleOrNullOrDOMStringArg((double? or DOMString) arg);
     void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg((DOMString or ArrayBuffer or ArrayBufferView) arg);
-    void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg((ArrayBuffer or ArrayBufferView or Dictionary) arg);
     // Unions with types that need extra includes/forward declarations in container types
     void voidMethodBooleanOrElementSequenceArg((BooleanType or sequence<Element>) arg);
     void voidMethodDoubleOrLongOrBooleanSequenceArg((double or sequence<(long or boolean)>) arg);

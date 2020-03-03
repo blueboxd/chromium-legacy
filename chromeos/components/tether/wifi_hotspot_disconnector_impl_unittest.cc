@@ -50,7 +50,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
     return last_disconnect_service_path_;
   }
 
-  base::Closure last_disconnect_success_callback() {
+  base::OnceClosure& last_disconnect_success_callback() {
     return last_disconnect_success_callback_;
   }
 
@@ -61,16 +61,16 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   // NetworkConnectionHandler:
   void DisconnectNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::ErrorCallback& error_callback) override {
     last_disconnect_service_path_ = service_path;
-    last_disconnect_success_callback_ = success_callback;
+    last_disconnect_success_callback_ = std::move(success_callback);
     last_disconnect_error_callback_ = error_callback;
 
     disconnect_callback_.Run();
   }
   void ConnectToNetwork(const std::string& service_path,
-                        const base::Closure& success_callback,
+                        base::OnceClosure success_callback,
                         const network_handler::ErrorCallback& error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}
@@ -83,7 +83,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   base::Closure disconnect_callback_;
 
   std::string last_disconnect_service_path_;
-  base::Closure last_disconnect_success_callback_;
+  base::OnceClosure last_disconnect_success_callback_;
   network_handler::ErrorCallback last_disconnect_error_callback_;
 };
 
@@ -163,7 +163,8 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
       EXPECT_FALSE(
           test_network_connection_handler_->last_disconnect_success_callback()
               .is_null());
-      test_network_connection_handler_->last_disconnect_success_callback()
+      std::move(
+          test_network_connection_handler_->last_disconnect_success_callback())
           .Run();
     } else {
       EXPECT_FALSE(

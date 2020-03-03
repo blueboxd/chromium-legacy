@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_INTERSTITIAL_PAGE_H_
-#define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_INTERSTITIAL_PAGE_H_
+#ifndef CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_BLOCKING_PAGE_H_
+#define CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_BLOCKING_PAGE_H_
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@ class GURL;
 // This class is responsible for showing/hiding the interstitial page that
 // occurs when a new domain is visited and it looks suspiciously like another
 // more popular domain.
-class LookalikeUrlInterstitialPage
+class LookalikeUrlBlockingPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
@@ -50,7 +50,7 @@ class LookalikeUrlInterstitialPage
     kMaxValue = kCloseOrBack,
   };
 
-  LookalikeUrlInterstitialPage(
+  LookalikeUrlBlockingPage(
       content::WebContents* web_contents,
       const GURL& request_url,
       ukm::SourceId source_id,
@@ -59,7 +59,7 @@ class LookalikeUrlInterstitialPage
           security_interstitials::SecurityInterstitialControllerClient>
           controller);
 
-  ~LookalikeUrlInterstitialPage() override;
+  ~LookalikeUrlBlockingPage() override;
 
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() override;
@@ -93,7 +93,7 @@ class LookalikeUrlInterstitialPage
   ukm::SourceId source_id_;
   MatchType match_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(LookalikeUrlInterstitialPage);
+  DISALLOW_COPY_AND_ASSIGN(LookalikeUrlBlockingPage);
 };
 
-#endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_INTERSTITIAL_PAGE_H_
+#endif  // CHROME_BROWSER_LOOKALIKES_LOOKALIKE_URL_BLOCKING_PAGE_H_

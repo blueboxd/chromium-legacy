@@ -221,7 +221,8 @@ check_targets = [
 
   "//chrome/common/*",
 
-  #"//chrome/elevation_service/*",  # 1 error on Windows
+  "//chrome/elevation_service/*",
+
   #"//chrome/gpu/*",  # 7 errors
   "//chrome/installer/*",
 

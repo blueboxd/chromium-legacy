@@ -49,7 +49,7 @@ class ShellAppDelegate : public AppDelegate {
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
-  void SetTerminatingCallback(const base::Closure& callback) override;
+  void SetTerminatingCallback(base::OnceClosure callback) override;
   void OnHide() override {}
   void OnShow() override {}
   bool TakeFocus(content::WebContents* web_contents, bool reverse) override;

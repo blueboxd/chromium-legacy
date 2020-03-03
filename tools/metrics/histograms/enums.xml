@@ -12887,6 +12887,80 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="26" label="Bug - Failed without capturing error code"/>
 </enum>
 
+<enum name="CrostiniTerminalSetting">
+  <int value="0" label="unknown"/>
+  <int value="1" label="alt-gr-mode"/>
+  <int value="2" label="alt-backspace-is-meta-backspace"/>
+  <int value="3" label="alt-is-meta"/>
+  <int value="4" label="alt-sends-what"/>
+  <int value="5" label="audible-bell-sound"/>
+  <int value="6" label="desktop-notification-bell"/>
+  <int value="7" label="background-color"/>
+  <int value="8" label="background-image"/>
+  <int value="9" label="background-size"/>
+  <int value="10" label="background-position"/>
+  <int value="11" label="backspace-sends-backspace"/>
+  <int value="12" label="character-map-overrides"/>
+  <int value="13" label="close-on-exit"/>
+  <int value="14" label="cursor-blink"/>
+  <int value="15" label="cursor-blink-cycle"/>
+  <int value="16" label="cursor-shape"/>
+  <int value="17" label="cursor-color"/>
+  <int value="18" label="color-palette-overrides"/>
+  <int value="19" label="copy-on-select"/>
+  <int value="20" label="use-default-window-copy"/>
+  <int value="21" label="clear-selection-after-copy"/>
+  <int value="22" label="ctrl-plus-minus-zero-zoom"/>
+  <int value="23" label="ctrl-c-copy"/>
+  <int value="24" label="ctrl-v-paste"/>
+  <int value="25" label="east-asian-ambiguous-as-two-column"/>
+  <int value="26" label="enable-8-bit-control"/>
+  <int value="27" label="enable-bold"/>
+  <int value="28" label="enable-bold-as-bright"/>
+  <int value="29" label="enable-blink"/>
+  <int value="30" label="enable-clipboard-notice"/>
+  <int value="31" label="enable-clipboard-write"/>
+  <int value="32" label="enable-dec12"/>
+  <int value="33" label="enable-csi-j-3"/>
+  <int value="34" label="environment"/>
+  <int value="35" label="font-family"/>
+  <int value="36" label="font-size"/>
+  <int value="37" label="font-smoothing"/>
+  <int value="38" label="foreground-color"/>
+  <int value="39" label="enable-resize-status"/>
+  <int value="40" label="hide-mouse-while-typing"/>
+  <int value="41" label="home-keys-scroll"/>
+  <int value="42" label="keybindings"/>
+  <int value="43" label="media-keys-are-fkeys"/>
+  <int value="44" label="meta-sends-escape"/>
+  <int value="45" label="mouse-right-click-paste"/>
+  <int value="46" label="mouse-paste-button"/>
+  <int value="47" label="word-break-match-left"/>
+  <int value="48" label="word-break-match-right"/>
+  <int value="49" label="word-break-match-middle"/>
+  <int value="50" label="page-keys-scroll"/>
+  <int value="51" label="pass-alt-number"/>
+  <int value="52" label="pass-ctrl-number"/>
+  <int value="53" label="pass-ctrl-n"/>
+  <int value="54" label="pass-ctrl-t"/>
+  <int value="55" label="pass-ctrl-tab"/>
+  <int value="56" label="pass-ctrl-w"/>
+  <int value="57" label="pass-meta-number"/>
+  <int value="58" label="pass-meta-v"/>
+  <int value="59" label="paste-on-drop"/>
+  <int value="60" label="receive-encoding"/>
+  <int value="61" label="scroll-on-keystroke"/>
+  <int value="62" label="scroll-on-output"/>
+  <int value="63" label="scrollbar-visible"/>
+  <int value="64" label="scroll-wheel-may-send-arrow-keys"/>
+  <int value="65" label="scroll-wheel-move-multiplier"/>
+  <int value="66" label="terminal-encoding"/>
+  <int value="67" label="shift-insert-paste"/>
+  <int value="68" label="user-css"/>
+  <int value="69" label="user-css-text"/>
+  <int value="70" label="allow-images-inline"/>
+</enum>
+
 <enum name="CrostiniUISurface">
   <int value="0" label="Settings"/>
   <int value="1" label="App List"/>
@@ -19726,6 +19800,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="681" label="RequiredClientCertificateForDevice"/>
   <int value="682" label="ReportDeviceMemoryInfo"/>
   <int value="683" label="UseLegacyFormControls"/>
+  <int value="684" label="SafeBrowsingEnhancedProtection"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22379,6 +22454,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1449" label="WEBCAMPRIVATE_RESTORE_CAMERA_PRESET"/>
   <int value="1450" label="WEBCAMPRIVATE_SET_CAMERA_PRESET"/>
   <int value="1451" label="PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO"/>
+  <int value="1452" label="INPUTMETHODPRIVATE_HIDEINPUTVIEW"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -64501,6 +64577,7 @@ Full version information for the fingerprint enum values:
 -->
 
   <int value="29785307" label="CROS Cr50 0.1.2"/>
+  <int value="67287287" label="CROS Cr50 0.4.26"/>
   <int value="91611772" label="CROS Cr50 0.4.21"/>
   <int value="91664959" label="CROS Cr50 0.0.16"/>
   <int value="113099773" label="CROS Cr50 0.0.23 Eve Flags 0x7f00(prod)"/>

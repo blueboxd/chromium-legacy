@@ -5423,24 +5423,6 @@ static void VoidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(const v8:
   impl->voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg(arg);
 }
 
-static void VoidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg");
-
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  ArrayBufferOrArrayBufferViewOrDictionary arg;
-  V8ArrayBufferOrArrayBufferViewOrDictionary::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exception_state);
-  if (exception_state.HadException())
-    return;
-
-  impl->voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg(arg);
-}
-
 static void VoidMethodBooleanOrElementSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodBooleanOrElementSequenceArg");
 
@@ -12040,13 +12022,6 @@ void V8TestObject::VoidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCal
   test_object_v8_internal::VoidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethod(info);
 }
 
-void V8TestObject::VoidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  BLINK_BINDINGS_TRACE_EVENT("TestObject.voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg");
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg");
-
-  test_object_v8_internal::VoidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(info);
-}
-
 void V8TestObject::VoidMethodBooleanOrElementSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   BLINK_BINDINGS_TRACE_EVENT("TestObject.voidMethodBooleanOrElementSequenceArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodBooleanOrElementSequenceArg");
@@ -13276,7 +13251,6 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"voidMethodDoubleOrDOMStringOrNullArg", V8TestObject::VoidMethodDoubleOrDOMStringOrNullArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodDoubleOrNullOrDOMStringArg", V8TestObject::VoidMethodDoubleOrNullOrDOMStringArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", V8TestObject::VoidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", V8TestObject::VoidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodBooleanOrElementSequenceArg", V8TestObject::VoidMethodBooleanOrElementSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodDoubleOrLongOrBooleanSequenceArg", V8TestObject::VoidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodElementSequenceOrByteStringDoubleOrStringRecord", V8TestObject::VoidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

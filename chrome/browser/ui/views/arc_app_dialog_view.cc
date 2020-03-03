@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
@@ -76,7 +76,7 @@ class ArcAppDialogView : public views::DialogDelegateView,
 
   views::ImageView* icon_view_ = nullptr;
 
-  std::unique_ptr<ArcAppIconLoader> icon_loader_;
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader_;
 
   Profile* const profile_;
 
@@ -137,12 +137,10 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   if (!subheading_text.empty())
     AddMultiLineLabel(text_container_ptr, subheading_text);
 
-  // The icon should be loaded synchronously (i.e. OnAppImageUpdated() will be
-  // directly called).
-  icon_loader_ = std::make_unique<ArcAppIconLoader>(
+  // The icon should be loaded asynchronously.
+  icon_loader_ = std::make_unique<AppServiceAppIconLoader>(
       profile_, kIconSourceSize, this);
   icon_loader_->FetchImage(app_id_);
-  DCHECK(!icon_view_->GetImage().isNull());
 
   g_current_arc_app_dialog_view = this;
   gfx::NativeWindow parent =

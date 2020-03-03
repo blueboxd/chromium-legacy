@@ -86,14 +86,14 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   // NetworkConnectionHandler:
   void DisconnectNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::ErrorCallback& error_callback) override {
     disconnect_handler_.Run(service_path);
-    success_callback.Run();
+    std::move(success_callback).Run();
   }
 
   void ConnectToNetwork(const std::string& service_path,
-                        const base::Closure& success_callback,
+                        base::OnceClosure success_callback,
                         const network_handler::ErrorCallback& error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}

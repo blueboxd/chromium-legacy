@@ -4,14 +4,24 @@
 
 #include "cc/metrics/compositor_frame_reporter.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/metrics/event_metrics.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-class CompositorFrameReporterTest;
+MATCHER(IsWhitelisted,
+        base::StrCat({negation ? "isn't" : "is", " whitelisted"})) {
+  return arg.IsWhitelisted();
+}
 
 class CompositorFrameReporterTest : public testing::Test {
  public:
@@ -177,5 +187,97 @@ TEST_F(CompositorFrameReporterTest, SubmittedDroppedFrameReportingTest) {
   histogram_tester.ExpectBucketCount(
       "CompositorLatency.DroppedFrame.TotalLatency", 5, 1);
 }
+
+// Tests that when a frame is presented to the user, event latency metrics are
+// reported properly.
+TEST_F(CompositorFrameReporterTest, EventLatencyForPresentedFrameReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_TOUCH_PRESSED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+  pipeline_reporter_->SetEventsMetrics(std::move(events_metrics));
+
+  AdvanceNowByMs(3);
+  const base::TimeTicks presentation_time = Now();
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kPresentedFrame,
+      presentation_time);
+
+  pipeline_reporter_ = nullptr;
+
+  const int latency_ms = (presentation_time - event_time).InMicroseconds();
+  histogram_tester.ExpectTotalCount("EventLatency.TouchPressed.TotalLatency",
+                                    1);
+  histogram_tester.ExpectTotalCount("EventLatency.TouchMoved.TotalLatency", 2);
+  histogram_tester.ExpectBucketCount("EventLatency.TouchPressed.TotalLatency",
+                                     latency_ms, 1);
+  histogram_tester.ExpectBucketCount("EventLatency.TouchMoved.TotalLatency",
+                                     latency_ms, 2);
+}
+
+// Tests that when the frame is not presented to the user, event latency metrics
+// are not reported.
+TEST_F(CompositorFrameReporterTest,
+       EventLatencyForDidNotPresentFrameNotReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_TOUCH_PRESSED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kBeginImplFrameToSendBeginMainFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::kEndActivateToSubmitCompositorFrame,
+      Now());
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->StartStage(
+      CompositorFrameReporter::StageType::
+          kSubmitCompositorFrameToPresentationCompositorFrame,
+      Now());
+  pipeline_reporter_->SetEventsMetrics(std::move(events_metrics));
+
+  AdvanceNowByMs(3);
+  pipeline_reporter_->TerminateFrame(
+      CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame,
+      Now());
+
+  pipeline_reporter_ = nullptr;
+
+  histogram_tester.ExpectTotalCount("EventLatency.TouchPressed.TotalLatency",
+                                    0);
+  histogram_tester.ExpectTotalCount("EventLatency.TouchMoved.TotalLatency", 0);
+}
+
 }  // namespace
 }  // namespace cc

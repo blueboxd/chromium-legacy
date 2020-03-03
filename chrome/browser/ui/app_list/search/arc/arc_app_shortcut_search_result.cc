@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/generated_resources.h"
@@ -48,7 +49,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
       icon_dimension);
   icon_decode_request_->StartWithOptions(data_->icon_png);
 
-  badge_icon_loader_ = std::make_unique<ArcAppIconLoader>(
+  badge_icon_loader_ = std::make_unique<AppServiceAppIconLoader>(
       profile_,
       ash::AppListConfig::instance().search_tile_badge_icon_dimension(), this);
   badge_icon_loader_->FetchImage(GetAppId());

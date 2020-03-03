@@ -96,27 +96,27 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
 
   void ConnectToNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) override {
     last_delegate_function_type_ = DelegateFunctionType::CONNECT;
     last_service_path_ = service_path;
-    last_success_callback_ = success_callback;
+    last_success_callback_ = std::move(success_callback);
     last_error_callback_ = error_callback;
   }
 
   void DisconnectFromNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) override {
     last_delegate_function_type_ = DelegateFunctionType::DISCONNECT;
     last_service_path_ = service_path;
-    last_success_callback_ = success_callback;
+    last_success_callback_ = std::move(success_callback);
     last_error_callback_ = error_callback;
   }
 
   std::string& last_service_path() { return last_service_path_; }
 
-  base::Closure& last_success_callback() { return last_success_callback_; }
+  base::OnceClosure& last_success_callback() { return last_success_callback_; }
 
   network_handler::StringResultCallback& last_error_callback() {
     return last_error_callback_;
@@ -124,7 +124,7 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
 
  private:
   std::string last_service_path_;
-  base::Closure last_success_callback_;
+  base::OnceClosure last_success_callback_;
   network_handler::StringResultCallback last_error_callback_;
   DelegateFunctionType last_delegate_function_type_;
 };
@@ -564,7 +564,7 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectToTetherNetwork_Success) {
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::CONNECT,
             fake_tether_delegate()->last_delegate_function_type());
   EXPECT_EQ(kTetherGuid, fake_tether_delegate()->last_service_path());
-  fake_tether_delegate()->last_success_callback().Run();
+  std::move(fake_tether_delegate()->last_success_callback()).Run();
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer()->GetRequested(kTetherGuid));
   EXPECT_EQ(kSuccessResult,
@@ -630,7 +630,7 @@ TEST_F(NetworkConnectionHandlerImplTest, DisconnectFromTetherNetwork_Success) {
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::DISCONNECT,
             fake_tether_delegate()->last_delegate_function_type());
   EXPECT_EQ(kTetherGuid, fake_tether_delegate()->last_service_path());
-  fake_tether_delegate()->last_success_callback().Run();
+  std::move(fake_tether_delegate()->last_success_callback()).Run();
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer()->GetRequested(kTetherGuid));
   EXPECT_EQ(kSuccessResult,

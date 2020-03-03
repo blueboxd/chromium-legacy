@@ -19,7 +19,8 @@ namespace {
 
 class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
  public:
-  MOCK_METHOD1(ReserveTexture, gpu::webgpu::ReservedTexture(WGPUDevice device));
+  MOCK_METHOD1(ReserveTexture,
+               gpu::webgpu::ReservedTexture(uint64_t device_client_id));
 
   // It is hard to use GMock with SyncTokens represented as GLByte*, instead we
   // remember which were the last sync tokens generated or waited upon.
@@ -87,6 +88,8 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
         WGPUTextureUsage_OutputAttachment, WGPUTextureFormat_RGBA8Unorm);
   }
 
+  const static uint64_t kDeviceClientID = 1;
+
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   MockWebGPUInterface* webgpu_;
   viz::TestSharedImageInterface* sii_;
@@ -116,17 +119,17 @@ TEST_F(WebGPUSwapBufferProviderTest,
 
   // Produce resources.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation1));
-  provider_->GetNewTexture(nullptr, kSize);
+  provider_->GetNewTexture(kDeviceClientID, kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource1,
                                                      &release_callback1));
 
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation2));
-  provider_->GetNewTexture(nullptr, kSize);
+  provider_->GetNewTexture(kDeviceClientID, kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource2,
                                                      &release_callback2));
 
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation3));
-  provider_->GetNewTexture(nullptr, kSize);
+  provider_->GetNewTexture(kDeviceClientID, kSize);
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource3,
                                                      &release_callback3));
 
@@ -154,7 +157,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(nullptr, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
@@ -162,7 +165,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kOtherSize.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(nullptr, static_cast<IntSize>(kOtherSize));
+  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kOtherSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kOtherSize), sii_->MostRecentSize());
@@ -170,7 +173,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource of size kSize again.
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(nullptr, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
   EXPECT_TRUE(provider_->PrepareTransferableResource(nullptr, &resource,
                                                      &release_callback));
   EXPECT_EQ(static_cast<gfx::Size>(kSize), sii_->MostRecentSize());
@@ -188,7 +191,7 @@ TEST_F(WebGPUSwapBufferProviderTest, VerifyInsertAndWaitSyncTokenCorrectly) {
   // Produce the first resource, check that WebGPU will wait for the creation of
   // the shared image
   EXPECT_CALL(*webgpu_, ReserveTexture(_)).WillOnce(Return(reservation));
-  provider_->GetNewTexture(nullptr, static_cast<IntSize>(kSize));
+  provider_->GetNewTexture(kDeviceClientID, static_cast<IntSize>(kSize));
   EXPECT_EQ(sii_->MostRecentGeneratedToken(),
             webgpu_->most_recent_waited_token);
 

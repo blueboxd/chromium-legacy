@@ -83,6 +83,10 @@ suite('OsSyncControlsTest', function() {
 
     PolymerTest.clearBody();
     syncControls = document.createElement('os-sync-controls');
+    syncControls.syncStatus = {hasError: false};
+    syncControls.profileName = 'John Cena';
+    syncControls.profileEmail = 'john.cena@gmail.com';
+    syncControls.profileIconUrl = 'data:image/png;base64,abc123';
     document.body.appendChild(syncControls);
   });
 
@@ -94,6 +98,37 @@ suite('OsSyncControlsTest', function() {
     assertTrue(syncControls.hidden);
     setupWithFeatureEnabled();
     assertFalse(syncControls.hidden);
+  });
+
+  test('Avatar icon', function() {
+    assertEquals('data:image/png;base64,abc123', syncControls.$.avatarIcon.src);
+  });
+
+  test('Account name and email with feature enabled', function() {
+    setupWithFeatureEnabled();
+    assertEquals('John Cena', syncControls.$.accountTitle.textContent.trim());
+    assertEquals(
+        'Syncing to john.cena@gmail.com',
+        syncControls.$.accountSubtitle.textContent.trim());
+  });
+
+  test('Account name and email with feature disabled', function() {
+    setupWithFeatureDisabled();
+    assertEquals('John Cena', syncControls.$.accountTitle.textContent.trim());
+    assertEquals(
+        'john.cena@gmail.com',
+        syncControls.$.accountSubtitle.textContent.trim());
+  });
+
+  test('Account name and email with sync error', function() {
+    setupWithFeatureEnabled();
+    syncControls.syncStatus = {hasError: true};
+    Polymer.dom.flush();
+    assertEquals(
+        `Sync isn't working`, syncControls.$.accountTitle.textContent.trim());
+    assertEquals(
+        'john.cena@gmail.com',
+        syncControls.$.accountSubtitle.textContent.trim());
   });
 
   test('FeatureDisabled', function() {

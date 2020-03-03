@@ -62,7 +62,7 @@ cr.define('smb_shares', function() {
 
     /**
      * Updates the credentials for a mounted share.
-     * @param {number} mountId
+     * @param {string} mountId
      * @param {string} username
      * @param {string} password
      */

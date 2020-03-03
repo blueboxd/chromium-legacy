@@ -16,6 +16,7 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
@@ -326,7 +327,8 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       std::make_unique<chromeos::settings::InternetHandler>(profile));
   web_ui()->AddMessageHandler(std::make_unique<::settings::TtsHandler>());
   web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::smb_dialog::SmbHandler>(profile));
+      std::make_unique<chromeos::smb_dialog::SmbHandler>(profile,
+                                                         base::DoNothing()));
 
   if (!profile->IsGuestSession()) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =

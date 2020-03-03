@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -493,6 +494,8 @@ TerminalPrivateGetSettingsFunction::~TerminalPrivateGetSettingsFunction() =
     default;
 
 ExtensionFunction::ResponseAction TerminalPrivateGetSettingsFunction::Run() {
+  crostini::RecordTerminalSettingsChangesUMAs(
+      Profile::FromBrowserContext(browser_context()));
   PrefService* service =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   const base::DictionaryValue* value =

@@ -28,9 +28,14 @@ var MediaAppGuestUIBrowserTest = class extends testing.Test {
   preLoad() {
     document.addEventListener('DOMContentLoaded', () => {
       const mojoBindingsLite = document.createElement('script');
-      mojoBindingsLite.src = 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+      mojoBindingsLite.src =
+          'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
       document.head.appendChild(mojoBindingsLite);
     });
+    // The guest will try and create a message pipe to its parent, since there
+    // is no containing frame here, window.parent === parent. This line mocks
+    // a wrapping iframe so the message pipe can still instantiate correctly.
+    window.parent = document.createElement('iframe');
   }
 };
 

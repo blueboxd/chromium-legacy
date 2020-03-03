@@ -5,6 +5,8 @@
 #ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 #define CC_TEST_FAKE_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 
+#include <vector>
+
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
 namespace viz {
@@ -36,7 +38,8 @@ class FakeCompositorFrameReportingController
   void DidSubmitCompositorFrame(
       uint32_t frame_token,
       const viz::BeginFrameId& current_frame_id,
-      const viz::BeginFrameId& last_activated_frame_id) override;
+      const viz::BeginFrameId& last_activated_frame_id,
+      std::vector<EventMetrics> events_metrics) override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const viz::FrameTimingDetails& details) override;

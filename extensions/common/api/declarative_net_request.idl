@@ -216,8 +216,8 @@ namespace declarativeNetRequest {
     // An id which uniquely identifies a rule. Mandatory and should be >= 1.
     long id;
 
-    // Rule priority. Mandatory for redirect and upgradeScheme rules and should
-    // be >= 1. This is used to break ties between multiple matching redirect
+    // Rule priority. Mandatory for all rules other than removeHeaders, and
+    // should be >= 1. This is used to break ties between multiple matching
     // rules.
     long? priority;
 

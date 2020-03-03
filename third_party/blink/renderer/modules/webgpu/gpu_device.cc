@@ -36,10 +36,11 @@ namespace blink {
 GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
+                     uint64_t client_id,
                      const GPUDeviceDescriptor* descriptor)
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client,
-                 dawn_control_client->GetInterface()->GetDefaultDevice()),
+                 dawn_control_client->GetInterface()->GetDevice(client_id)),
       adapter_(adapter),
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
@@ -48,7 +49,9 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
       error_callback_(
           BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                     WrapWeakPersistent(this),
-                                    WrapWeakPersistent(execution_context))) {
+                                    WrapWeakPersistent(execution_context))),
+      client_id_(client_id) {
+  DCHECK(dawn_control_client->GetInterface()->GetDevice(client_id));
   GetProcs().deviceSetUncapturedErrorCallback(
       GetHandle(), error_callback_->UnboundRepeatingCallback(),
       error_callback_->AsUserdata());
@@ -59,6 +62,10 @@ GPUDevice::~GPUDevice() {
     return;
   }
   GetProcs().deviceRelease(GetHandle());
+}
+
+uint64_t GPUDevice::GetClientID() const {
+  return client_id_;
 }
 
 void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,

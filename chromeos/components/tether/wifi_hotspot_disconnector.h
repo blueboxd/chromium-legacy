@@ -24,7 +24,7 @@ class WifiHotspotDisconnector {
   // network" from network settings).
   virtual void DisconnectFromWifiHotspot(
       const std::string& wifi_network_guid,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) = 0;
 
  private:

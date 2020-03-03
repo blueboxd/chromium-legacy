@@ -87,13 +87,6 @@ class SmbService : public KeyedService,
   void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                              GatherSharesResponse shares_callback);
 
-  // Updates the credentials for |mount_id|. If there is a stored callback in
-  // |update_credentials_replies_| for |mount_id|, it will be run upon once the
-  // credentials are successfully updated.
-  void UpdateCredentials(int32_t mount_id,
-                         const std::string& username,
-                         const std::string& password);
-
   // Updates the share path for |mount_id|.
   void UpdateSharePath(int32_t mount_id,
                        const std::string& share_path,
@@ -264,17 +257,15 @@ class SmbService : public KeyedService,
                           int32_t mount_id,
                           base::OnceClosure reply);
 
-  // Opens a request credential dialog for the share path |share_path|.
-  // When a user clicks "Update" in the dialog, UpdateCredentials is run.
-  void OpenRequestCredentialsDialog(const std::string& share_path,
-                                    int32_t mount_id);
-
-  // Handles the response from attempting to the update the credentials of an
-  // existing share. If |error| indicates success, the callback is run and
-  // removed from |update_credential_replies_|. Otherwise, the callback
-  // is removed from |update_credential_replies_| and the error is logged.
-  void OnUpdateCredentialsResponse(int32_t mount_id,
-                                   smbprovider::ErrorType error);
+  // Handles the response from showing the SMB credentials dialog. If |canceled|
+  // is true, the |reply| callback is dropped. Otherwise, |username| and
+  // |password| are passed to the smb service and |reply| is run if the service
+  // returns success.
+  void OnSmbCredentialsDialogShown(int32_t mount_id,
+                                   base::OnceClosure reply,
+                                   bool canceled,
+                                   const std::string& username,
+                                   const std::string& password);
 
   // Requests an updated share path via running
   // ShareFinder::DiscoverHostsInNetwork. |reply| is stored. Once the share path
@@ -308,8 +299,6 @@ class SmbService : public KeyedService,
   Profile* profile_;
   std::unique_ptr<base::TickClock> tick_clock_;
   std::unique_ptr<SmbShareFinder> share_finder_;
-  // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
-  std::map<int32_t, base::OnceClosure> update_credential_replies_;
   // |file_system_id| -> |mount_id|
   std::unordered_map<std::string, int32_t> mount_id_map_;
   // |smbfs_mount_id| -> SmbFsShare

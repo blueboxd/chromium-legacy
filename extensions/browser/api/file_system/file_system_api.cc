@@ -597,9 +597,10 @@ void FileSystemChooseEntryFunction::ConfirmSensitiveDirectoryAccess(
   delegate->ConfirmSensitiveDirectoryAccess(
       app_file_handler_util::HasFileSystemWritePermission(extension_.get()),
       base::UTF8ToUTF16(extension_->name()), web_contents,
-      base::Bind(&FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,
-                 this, paths),
-      base::Bind(&FileSystemChooseEntryFunction::FileSelectionCanceled, this));
+      base::BindOnce(&FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,
+                     this, paths),
+      base::BindOnce(&FileSystemChooseEntryFunction::FileSelectionCanceled,
+                     this));
 }
 
 void FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed(

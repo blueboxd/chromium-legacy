@@ -431,8 +431,7 @@ String GetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
       return protocol::Network::Request::ReferrerPolicyEnum::SameOrigin;
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           StrictOriginWhenCrossOrigin;
   }

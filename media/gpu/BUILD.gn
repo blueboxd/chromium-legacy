@@ -432,6 +432,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
       "//media:test_support",
       "//media/gpu",
       "//media/gpu/test:test_helpers",
+      "//media/mojo/common:mojo_shared_buffer_video_frame",
       "//media/parsers",
       "//mojo/core/embedder",
       "//testing/gtest",

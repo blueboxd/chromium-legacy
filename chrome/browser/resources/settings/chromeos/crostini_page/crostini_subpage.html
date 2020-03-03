@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="crostini_browser_proxy.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../os_route.html">
@@ -83,6 +84,12 @@
           on-click="onShowDiskResizeClick_"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+    </template>
+    <template is="dom-if" if="[[showCrostiniMic_]]">
+      <settings-toggle-button id="crostini-mic-sharing"
+        pref="{{prefs.crostini.mic_sharing}}"
+        label="$i18n{enableCrostiniMicTitle}">
+      </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">

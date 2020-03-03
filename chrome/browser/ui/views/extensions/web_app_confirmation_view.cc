@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/bookmark_app_confirmation_view.h"
+#include "chrome/browser/ui/views/extensions/web_app_confirmation_view.h"
 
 #include <memory>
 #include <utility>
@@ -32,14 +32,14 @@
 
 namespace {
 
-bool g_auto_accept_bookmark_app_for_testing = false;
+bool g_auto_accept_web_app_for_testing = false;
 bool g_auto_check_open_in_window_for_testing = false;
 
 }  // namespace
 
-BookmarkAppConfirmationView::~BookmarkAppConfirmationView() {}
+WebAppConfirmationView::~WebAppConfirmationView() {}
 
-BookmarkAppConfirmationView::BookmarkAppConfirmationView(
+WebAppConfirmationView::WebAppConfirmationView(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
     : web_app_info_(std::move(web_app_info)), callback_(std::move(callback)) {
@@ -105,30 +105,30 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
       chrome::DialogIdentifier::BOOKMARK_APP_CONFIRMATION);
 }
 
-views::View* BookmarkAppConfirmationView::GetInitiallyFocusedView() {
+views::View* WebAppConfirmationView::GetInitiallyFocusedView() {
   return title_tf_;
 }
 
-ui::ModalType BookmarkAppConfirmationView::GetModalType() const {
+ui::ModalType WebAppConfirmationView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-base::string16 BookmarkAppConfirmationView::GetWindowTitle() const {
+base::string16 WebAppConfirmationView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
 }
 
-bool BookmarkAppConfirmationView::ShouldShowCloseButton() const {
+bool WebAppConfirmationView::ShouldShowCloseButton() const {
   return false;
 }
 
-void BookmarkAppConfirmationView::WindowClosing() {
+void WebAppConfirmationView::WindowClosing() {
   if (callback_) {
     DCHECK(web_app_info_);
     std::move(callback_).Run(false, std::move(web_app_info_));
   }
 }
 
-bool BookmarkAppConfirmationView::Accept() {
+bool WebAppConfirmationView::Accept() {
   DCHECK(web_app_info_);
   web_app_info_->title = GetTrimmedTitle();
   web_app_info_->open_as_window =
@@ -137,19 +137,19 @@ bool BookmarkAppConfirmationView::Accept() {
   return true;
 }
 
-bool BookmarkAppConfirmationView::IsDialogButtonEnabled(
+bool WebAppConfirmationView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? !GetTrimmedTitle().empty() : true;
 }
 
-void BookmarkAppConfirmationView::ContentsChanged(
+void WebAppConfirmationView::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
   DCHECK_EQ(title_tf_, sender);
   DialogModelChanged();
 }
 
-base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {
+base::string16 WebAppConfirmationView::GetTrimmedTitle() const {
   base::string16 title(title_tf_->GetText());
   base::TrimWhitespace(title, base::TRIM_ALL, &title);
   return title;
@@ -157,21 +157,21 @@ base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {
 
 namespace chrome {
 
-void ShowBookmarkAppDialog(content::WebContents* web_contents,
-                           std::unique_ptr<WebApplicationInfo> web_app_info,
-                           AppInstallationAcceptanceCallback callback) {
-  auto* dialog = new BookmarkAppConfirmationView(std::move(web_app_info),
-                                                 std::move(callback));
+void ShowWebAppDialog(content::WebContents* web_contents,
+                      std::unique_ptr<WebApplicationInfo> web_app_info,
+                      AppInstallationAcceptanceCallback callback) {
+  auto* dialog =
+      new WebAppConfirmationView(std::move(web_app_info), std::move(callback));
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);
 
-  if (g_auto_accept_bookmark_app_for_testing) {
+  if (g_auto_accept_web_app_for_testing) {
     dialog->AcceptDialog();
   }
 }
 
-void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept,
-                                              bool auto_open_in_window) {
-  g_auto_accept_bookmark_app_for_testing = auto_accept;
+void SetAutoAcceptWebAppDialogForTesting(bool auto_accept,
+                                         bool auto_open_in_window) {
+  g_auto_accept_web_app_for_testing = auto_accept;
   g_auto_check_open_in_window_for_testing = auto_open_in_window;
 }
 

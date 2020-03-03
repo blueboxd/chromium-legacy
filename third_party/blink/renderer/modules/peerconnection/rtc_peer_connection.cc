@@ -1701,9 +1701,19 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires|
   // attribute.
   base::Optional<DOMTimeStamp> expires;
-  if (keygen_algorithm.IsDictionary()) {
-    Dictionary keygen_algorithm_dict = keygen_algorithm.GetAsDictionary();
-    if (keygen_algorithm_dict.HasProperty("expires", exception_state)) {
+  if (keygen_algorithm.IsObject()) {
+    Dictionary keygen_algorithm_dict(script_state->GetIsolate(),
+                                     keygen_algorithm.GetAsObject().V8Value(),
+                                     exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
+
+    bool has_expires =
+        keygen_algorithm_dict.HasProperty("expires", exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
+
+    if (has_expires) {
       v8::Local<v8::Value> expires_value;
       keygen_algorithm_dict.Get("expires", expires_value);
       if (expires_value->IsNumber()) {
@@ -1717,9 +1727,6 @@ ScriptPromise RTCPeerConnection::generateCertificate(
         }
       }
     }
-  }
-  if (exception_state.HadException()) {
-    return ScriptPromise();
   }
 
   // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC

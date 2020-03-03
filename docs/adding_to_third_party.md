@@ -123,6 +123,24 @@ into the product and does any of the following:
 * Collects new data
 * Influences or sets security-related policy (including the user experience)
 
+One of the fields is CPEPrefix. This is used by Chromium and Google systems to
+spot known upstream security vulnerabilities, and ensure we merge the fixes
+into our third-party copy. These systems are not foolproof, so as the OWNER,
+it's up to you to keep an eye out rather than solely relying on these
+automated systems. But, adding CPEs decreases the chances of us missing
+vulnerabilities, so they should always be added if possible.
+
+The CPE is a common format shared across the industry; you can look up the CPE
+for your package [here](https://nvd.nist.gov/products/cpe/search). Please use
+CPE format 2.2. When searching for a CPE, you may find that there is not yet
+a CPE for the specific upstream version you're using. This is normal, as CPEs
+are typically allocated only when a vulnerability is found. You should follow
+the version number convention such that, when that does occur in future, we'll
+be notified. If no CPE is available, please specify "unknown".
+
+You may sometimes find that your package lacks a CPE, in which case this line
+can be omitted. If it does have a CPE, though, you should specify it.
+
 ### Add a LICENSE file and run related checks
 
 You need a LICENSE file. Example:

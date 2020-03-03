@@ -96,7 +96,8 @@
     margin: 0;
     position: fixed;
     right: var(--tabstrip-new-tab-button-margin);
-    top: 50%;
+    top: calc((var(--tabstrip-tab-height) / 2)
+                  + var(--tabstrip-tab-list-vertical-padding));
     transform: translateY(-50%);
     width: var(--tabstrip-new-tab-button-width);
   }

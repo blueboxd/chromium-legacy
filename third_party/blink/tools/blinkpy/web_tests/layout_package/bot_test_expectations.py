@@ -109,7 +109,7 @@ class ResultsJSON(object):
 
 class BotTestExpectationsFactory(object):
     RESULTS_URL_FORMAT = (
-        'https://test-results.appspot.com/testfile?testtype=webkit_layout_tests'
+        'https://test-results.appspot.com/testfile?testtype=blink_web_tests'
         '&name=results-small.json&master=%s&builder=%s')
 
     def __init__(self, builders):

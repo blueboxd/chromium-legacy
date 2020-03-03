@@ -521,9 +521,7 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
       {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
       {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
       {"strict-origin-when-cross-origin",
-       network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-       false},
+       network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin, false},
       {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
   };
 

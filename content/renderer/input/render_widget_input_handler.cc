@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -365,6 +367,10 @@ void RenderWidgetInputHandler::HandleInputEvent(
   cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
       &swap_latency_info, widget_->layer_tree_host()->GetSwapPromiseManager(),
       nullptr);
+  auto scoped_event_metrics_monitor =
+      widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
+          {ui::WebEventTypeToEventType(input_event.GetType()),
+           input_event.TimeStamp()});
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -674,6 +680,10 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
           &scrollbar_latency_info,
           widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
+      auto scoped_event_metrics_monitor =
+          widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
+              {ui::WebEventTypeToEventType(input_event.GetType()),
+               input_event.TimeStamp()});
       widget_->GetWebWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(*gesture_event.get()));
     }

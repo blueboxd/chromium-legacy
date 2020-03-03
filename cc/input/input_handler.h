@@ -15,6 +15,8 @@
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/touch_action.h"
+#include "cc/metrics/event_metrics.h"
+#include "cc/metrics/events_metrics_manager.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -254,6 +256,13 @@ class CC_EXPORT InputHandler {
   // into a LatencyInfoSwapPromise.
   virtual std::unique_ptr<SwapPromiseMonitor>
   CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) = 0;
+
+  // During the lifetime of the returned EventsMetricsManager::ScopedMonitor, if
+  // SetNeedsOneBeginImplFrame() or SetNeedsRedraw() are called on
+  // LayerTreeHostImpl or a scroll animation is updated, |event_metrics| will be
+  // saved for reporting event latency metrics.
+  virtual std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(const EventMetrics& event_metrics) = 0;
 
   virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 

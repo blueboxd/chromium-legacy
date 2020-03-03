@@ -237,7 +237,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // such as in browser tests.
   task_tracker_.PostTask(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
-      base::Bind(nacl::NaClProcessHost::EarlyStartup));
+      base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif
 
   content::ShellDevToolsManagerDelegate::StartHttpHandler(

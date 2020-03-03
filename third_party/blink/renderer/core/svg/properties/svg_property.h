@@ -99,11 +99,6 @@ class SVGPropertyBase : public GarbageCollected<SVGPropertyBase> {
   DISALLOW_COPY_AND_ASSIGN(SVGPropertyBase);
 };
 
-#define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)               \
-  DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value,          \
-                    value->GetType() == thisType::ClassType(), \
-                    value.GetType() == thisType::ClassType())
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_H_

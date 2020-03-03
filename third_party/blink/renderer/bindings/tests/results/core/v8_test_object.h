@@ -11,7 +11,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_OBJECT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/boolean_or_element_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/boolean_or_string_or_unrestricted_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_long_or_boolean_sequence.h"
@@ -450,7 +449,6 @@ class V8TestObject {
   CORE_EXPORT static void VoidMethodDoubleOrDOMStringOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodDoubleOrNullOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void VoidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodBooleanOrElementSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

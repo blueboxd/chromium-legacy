@@ -66,8 +66,8 @@ class FileSystemDelegate {
       bool has_write_permission,
       const base::string16& app_name,
       content::WebContents* web_contents,
-      const base::Closure& on_accept,
-      const base::Closure& on_cancel) = 0;
+      base::OnceClosure on_accept,
+      base::OnceClosure on_cancel) = 0;
 
   // Finds a string describing the accept type. Returns 0 if no applicable
   // string ID is found.

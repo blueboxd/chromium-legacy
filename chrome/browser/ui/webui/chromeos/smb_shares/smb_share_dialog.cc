@@ -88,8 +88,8 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_SMB_SHARES_DIALOG_CONTAINER_HTML);
   source->AddResourcePath("smb_share_dialog.js", IDR_SMB_SHARES_DIALOG_JS);
 
-  web_ui->AddMessageHandler(
-      std::make_unique<SmbHandler>(Profile::FromWebUI(web_ui)));
+  web_ui->AddMessageHandler(std::make_unique<SmbHandler>(
+      Profile::FromWebUI(web_ui), base::DoNothing()));
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

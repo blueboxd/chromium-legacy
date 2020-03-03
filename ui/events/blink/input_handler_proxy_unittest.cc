@@ -126,8 +126,13 @@ class MockInputHandler : public cc::InputHandler {
     return nullptr;
   }
 
+  std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(const cc::EventMetrics& event_metrics) override {
+    return nullptr;
+  }
+
   cc::ScrollElasticityHelper* CreateScrollElasticityHelper() override {
-    return NULL;
+    return nullptr;
   }
   bool GetScrollOffsetForLayer(cc::ElementId element_id,
                                gfx::ScrollOffset* offset) override {

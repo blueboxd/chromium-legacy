@@ -6,32 +6,6 @@
       {
         "args": [
           "--num-retries=3",
-          "--layout-tests-directory=../../third_party/devtools-frontend/src/test/webtests/",
-          "http/tests/devtools"
-        ],
-        "isolate_name": "devtools_web_tests",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_from_devtools",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 4
-        },
-        "test_target": "//:devtools_web_tests"
-      },
-      {
-        "args": [
-          "--num-retries=3",
           "http/tests/devtools"
         ],
         "isolate_name": "blink_web_tests",
@@ -41,7 +15,7 @@
           ],
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
-        "name": "webkit_layout_tests",
+        "name": "blink_web_tests",
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -53,11 +27,7 @@
           "shards": 4
         },
         "test_target": "//:blink_web_tests"
-      }
-    ]
-  },
-  "devtools_frontend_linux_blink_rel": {
-    "isolated_scripts": [
+      },
       {
         "args": [
           "--num-retries=3",
@@ -83,7 +53,11 @@
           "shards": 4
         },
         "test_target": "//:devtools_web_tests"
-      },
+      }
+    ]
+  },
+  "devtools_frontend_linux_blink_rel": {
+    "isolated_scripts": [
       {
         "args": [
           "--num-retries=3"
@@ -95,7 +69,7 @@
           ],
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
-        "name": "webkit_layout_tests",
+        "name": "blink_web_tests",
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -107,6 +81,32 @@
           "shards": 12
         },
         "test_target": "//:blink_web_tests"
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--layout-tests-directory=../../third_party/devtools-frontend/src/test/webtests/",
+          "http/tests/devtools"
+        ],
+        "isolate_name": "devtools_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_from_devtools",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 4
+        },
+        "test_target": "//:devtools_web_tests"
       }
     ]
   }

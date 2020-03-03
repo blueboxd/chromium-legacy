@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
@@ -107,7 +108,7 @@ void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,
 
 void ArcAppWindow::SetDefaultAppIcon() {
   if (!app_icon_loader_) {
-    app_icon_loader_ = std::make_unique<ArcAppIconLoader>(
+    app_icon_loader_ = std::make_unique<AppServiceAppIconLoader>(
         profile_, kArcAppWindowIconSize, this);
   }
   DCHECK(!image_fetching_);

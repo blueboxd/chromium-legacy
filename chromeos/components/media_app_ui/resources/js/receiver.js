@@ -15,6 +15,16 @@ class SingleArrayBufferFileList {
   }
 }
 
+/** A pipe through which we can send messages to the parent frame. */
+const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
+
+parentMessagePipe.registerHandler('file', (message) => {
+  const fileMessage = /** @type mediaApp.MessageEventData */ (message);
+  if (fileMessage.file) {
+    loadFile(fileMessage.file);
+  }
+})
+
 /**
  * Loads files associated with a message received from the host.
  * @param {!File} file
@@ -30,29 +40,9 @@ async function loadFile(file) {
   const app = /** @type {?mediaApp.ClientApi} */ (
       document.querySelector('backlight-app'));
   if (app) {
-    app.loadFiles(fileList);
+    await app.loadFiles(fileList);
   } else {
     window.customLaunchData = {files: fileList};
-  }
-}
-
-function receiveMessage(/** Event */ e) {
-  const event = /** @type{MessageEvent<Object>} */ (e);
-  if (event.origin !== 'chrome://media-app') {
-    return;
-  }
-
-  // First ensure the message is our MessageEventData type, then act on it
-  // appropriately. Note test messages won't have a file (and are not handled by
-  // this listener), so it's currently sufficient to just check for `file`.
-  if ('file' in event.data) {
-    const message =
-        /** @type{MessageEvent<mediaApp.MessageEventData>}*/ (event);
-    if (message.data.file) {
-      loadFile(message.data.file);
-    } else {
-      console.error('Unknown message:', message);
-    }
   }
 }
 
@@ -63,5 +53,3 @@ function receiveMessage(/** Event */ e) {
 // TODO(crbug/1040328): Remove this when we have a polyfill that allows us to
 // talk to the privileged frame.
 window['chooseFileSystemEntries'] = null;
-
-window.addEventListener('message', receiveMessage, false);

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
+#include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -145,18 +146,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       return;
     }
 
-    user_session_mgr->InitRlz(user_profile);
-    user_session_mgr->InitializeCerts(user_profile);
-    user_session_mgr->InitializeCRLSetFetcher(user);
-    user_session_mgr->InitializeCertificateTransparencyComponents(user);
-
     ProfileHelper::Get()->ProfileStartup(user_profile);
-
-    user_session_mgr->InitializePrimaryProfileServices(user_profile, user);
-
-    if (user->GetType() == user_manager::USER_TYPE_CHILD) {
-      user_session_mgr->InitializeChildUserServices(user_profile);
-    }
 
     user_session_mgr->NotifyUserProfileLoaded(user_profile, user);
 
@@ -196,8 +186,14 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 }  // namespace
 
 ChromeSessionManager::ChromeSessionManager()
-    : oobe_configuration_(std::make_unique<OobeConfiguration>()) {}
-ChromeSessionManager::~ChromeSessionManager() {}
+    : oobe_configuration_(std::make_unique<OobeConfiguration>()),
+      user_session_initializer_(std::make_unique<UserSessionInitializer>()) {
+  AddObserver(user_session_initializer_.get());
+}
+
+ChromeSessionManager::~ChromeSessionManager() {
+  RemoveObserver(user_session_initializer_.get());
+}
 
 void ChromeSessionManager::Initialize(
     const base::CommandLine& parsed_command_line,

@@ -4793,14 +4793,14 @@ be describing additional metrics about the same event.
   <metric name="MatchType">
     <summary>
       An enum value representing the type of the match (popular domain, engaged
-      domain, etc.). The enum is defined in |LookalikeUrlInterstitialPage|.
+      domain, etc.). The enum is defined in |LookalikeUrlBlockingPage|.
     </summary>
   </metric>
   <metric name="UserAction">
     <summary>
       An enum value representing the decision the user made when shown an
       interstitial (ignored, suggestion_accepted, etc.). The enum is defined in
-      |LookalikeUrlInterstitialPage|.
+      |LookalikeUrlBlockingPage|.
     </summary>
   </metric>
 </event>

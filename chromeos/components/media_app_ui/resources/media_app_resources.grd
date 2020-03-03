@@ -19,6 +19,9 @@
       <!-- Unprivileged guest contents. -->
       <include name="IDR_MEDIA_APP_APP_HTML" file="app.html" type="BINDATA" />
       <include name="IDR_MEDIA_APP_RECEIVER_JS" file="js/receiver.js" type="BINDATA" />
+
+      <!-- Common contents. -->
+      <include name="IDR_MEDIA_APP_MESSAGE_PIPE_JS" file="js/message_pipe.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

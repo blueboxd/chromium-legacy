@@ -114,7 +114,7 @@ net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
     case mojom::ReferrerPolicy::kDefault:
       CHECK(false);
       return net::URLRequest::NO_REFERRER;
-    case mojom::ReferrerPolicy::kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       return net::URLRequest::
           REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
   }

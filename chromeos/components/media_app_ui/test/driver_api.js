@@ -13,3 +13,6 @@ var TestMessageResponseData;
  *     requestFullscreen: (boolean|undefined)}}
  */
 var TestMessageQueryData;
+
+/** @type {MessagePipe} */
+var guestMessagePipe;

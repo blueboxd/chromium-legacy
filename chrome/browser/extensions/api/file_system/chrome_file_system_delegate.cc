@@ -299,10 +299,11 @@ void ChromeFileSystemDelegate::ConfirmSensitiveDirectoryAccess(
     bool has_write_permission,
     const base::string16& app_name,
     content::WebContents* web_contents,
-    const base::Closure& on_accept,
-    const base::Closure& on_cancel) {
+    base::OnceClosure on_accept,
+    base::OnceClosure on_cancel) {
   CreateDirectoryAccessConfirmationDialog(has_write_permission, app_name,
-                                          web_contents, on_accept, on_cancel);
+                                          web_contents, std::move(on_accept),
+                                          std::move(on_cancel));
 }
 
 int ChromeFileSystemDelegate::GetDescriptionIdForAcceptType(

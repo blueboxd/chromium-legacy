@@ -103,7 +103,7 @@ class SandboxObfuscatedOriginEnumerator
   }
   ~SandboxObfuscatedOriginEnumerator() override = default;
 
-  GURL Next() override { return enum_->Next(); }
+  base::Optional<url::Origin> Next() override { return enum_->Next(); }
 
   bool HasFileSystemType(FileSystemType type) const override {
     return enum_->HasTypeDirectory(
@@ -375,10 +375,10 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(origins);
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty()) {
+  base::Optional<url::Origin> origin;
+  while ((origin = enumerator->Next()).has_value()) {
     if (enumerator->HasFileSystemType(type))
-      origins->insert(origin);
+      origins->insert(origin->GetURL());
   }
   switch (type) {
     case kFileSystemTypeTemporary:
@@ -399,11 +399,11 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(origins);
   std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty()) {
-    if (host == net::GetHostOrSpecFromURL(origin) &&
+  base::Optional<url::Origin> origin;
+  while ((origin = enumerator->Next()).has_value()) {
+    if (host == net::GetHostOrSpecFromURL(origin->GetURL()) &&
         enumerator->HasFileSystemType(type))
-      origins->insert(origin);
+      origins->insert(origin->GetURL());
   }
 }
 

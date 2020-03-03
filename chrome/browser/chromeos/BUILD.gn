@@ -1531,6 +1531,8 @@ source_set("chromeos") {
     "login/security_token_pin_dialog_host_ash_impl.h",
     "login/session/chrome_session_manager.cc",
     "login/session/chrome_session_manager.h",
+    "login/session/user_session_initializer.cc",
+    "login/session/user_session_initializer.h",
     "login/session/user_session_manager.cc",
     "login/session/user_session_manager.h",
     "login/signin/auth_error_observer.cc",

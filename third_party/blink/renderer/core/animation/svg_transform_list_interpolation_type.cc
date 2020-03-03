@@ -222,15 +222,15 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertNeutral(
 
 InterpolationValue SVGTransformListInterpolationType::MaybeConvertSVGValue(
     const SVGPropertyBase& svg_value) const {
-  if (svg_value.GetType() != kAnimatedTransformList)
+  const auto* svg_list = DynamicTo<SVGTransformList>(svg_value);
+  if (!svg_list)
     return nullptr;
 
-  const SVGTransformList& svg_list = ToSVGTransformList(svg_value);
-  auto result = std::make_unique<InterpolableList>(svg_list.length());
+  auto result = std::make_unique<InterpolableList>(svg_list->length());
 
   Vector<SVGTransformType> transform_types;
-  for (wtf_size_t i = 0; i < svg_list.length(); i++) {
-    const SVGTransform* transform = svg_list.at(i);
+  for (wtf_size_t i = 0; i < svg_list->length(); i++) {
+    const SVGTransform* transform = svg_list->at(i);
     SVGTransformType transform_type(transform->TransformType());
     if (transform_type == SVGTransformType::kMatrix) {
       // TODO(ericwilligers): Support matrix interpolation.

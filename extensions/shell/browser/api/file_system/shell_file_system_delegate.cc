@@ -41,12 +41,12 @@ void ShellFileSystemDelegate::ConfirmSensitiveDirectoryAccess(
     bool has_write_permission,
     const base::string16& app_name,
     content::WebContents* web_contents,
-    const base::Closure& on_accept,
-    const base::Closure& on_cancel) {
+    base::OnceClosure on_accept,
+    base::OnceClosure on_cancel) {
   NOTIMPLEMENTED();
 
   // Run the cancel callback by default.
-  on_cancel.Run();
+  std::move(on_cancel).Run();
 }
 
 int ShellFileSystemDelegate::GetDescriptionIdForAcceptType(

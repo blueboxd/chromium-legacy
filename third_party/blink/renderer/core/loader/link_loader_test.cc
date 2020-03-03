@@ -324,8 +324,7 @@ constexpr network::mojom::ReferrerPolicy kPreloadReferrerPolicyTestParams[] = {
     network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
     network::mojom::ReferrerPolicy::kSameOrigin,
     network::mojom::ReferrerPolicy::kStrictOrigin,
-    network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
     network::mojom::ReferrerPolicy::kNever};
 
 class LinkLoaderPreloadReferrerPolicyTest

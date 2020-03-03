@@ -36,7 +36,6 @@ js_library("cups_edit_printer_dialog") {
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
   ]
 }
 

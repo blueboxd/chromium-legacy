@@ -145,11 +145,11 @@ class TestResultsFetcher(object):
         data = json.loads(json_results_generator.strip_json_wrapper(data))
         suites = [
             entry['TestType'] for entry in data
-            # Some suite names are like 'webkit_layout_tests on Intel GPU (with
-            # patch)'. Only make sure it starts with webkit_layout_tests and
+            # Some suite names are like 'blink_web_tests on Intel GPU (with
+            # patch)'. Only make sure it starts with blink_web_tests and
             # runs with a patch. This should be changed eventually to use actual
             # structured data from the test results server.
-            if (entry['TestType'].startswith('webkit_layout_tests') and
+            if (entry['TestType'].startswith('blink_web_tests') and
                 entry['TestType'].endswith('(with patch)'))
         ]
         # In manual testing, I sometimes saw results where the same suite was

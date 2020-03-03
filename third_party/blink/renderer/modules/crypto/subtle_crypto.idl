@@ -32,7 +32,7 @@
 
 typedef DOMString KeyFormat;
 typedef DOMString KeyUsage;
-typedef (Dictionary or DOMString) AlgorithmIdentifier;
+typedef (object or DOMString) AlgorithmIdentifier;
 
 [
     SecureContext,

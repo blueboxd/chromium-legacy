@@ -17,12 +17,12 @@ Polymer({
 
   /** @override */
   attached() {
-    this.$.dialog.showModal();
+    /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
   /** @private */
   onOkTap_() {
-    this.$.dialog.cancel();
+    /** @type {!CrDialogElement} */ (this.$.dialog).cancel();
   },
 
   /** @private */

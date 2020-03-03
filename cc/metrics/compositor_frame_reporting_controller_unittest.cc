@@ -4,23 +4,30 @@
 
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "cc/metrics/event_metrics.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-class CompositorFrameReportingControllerTest;
+MATCHER(IsWhitelisted,
+        base::StrCat({negation ? "isn't" : "is", " whitelisted"})) {
+  return arg.IsWhitelisted();
+}
 
 class TestCompositorFrameReportingController
     : public CompositorFrameReportingController {
  public:
-  TestCompositorFrameReportingController(
-      CompositorFrameReportingControllerTest* test)
-      : CompositorFrameReportingController(), test_(test) {}
+  TestCompositorFrameReportingController() = default;
 
   TestCompositorFrameReportingController(
       const TestCompositorFrameReportingController& controller) = delete;
@@ -38,16 +45,11 @@ class TestCompositorFrameReportingController
     }
     return count;
   }
-
- protected:
-  CompositorFrameReportingControllerTest* test_;
 };
 
 class CompositorFrameReportingControllerTest : public testing::Test {
  public:
-  CompositorFrameReportingControllerTest() : reporting_controller_(this) {
-    current_id_ = viz::BeginFrameId(1, 1);
-  }
+  CompositorFrameReportingControllerTest() : current_id_(1, 1) {}
 
   // The following functions simulate the actions that would
   // occur for each phase of the reporting controller.
@@ -89,34 +91,35 @@ class CompositorFrameReportingControllerTest : public testing::Test {
               [CompositorFrameReportingController::PipelineStage::kCommit]);
     reporting_controller_.WillActivate();
     reporting_controller_.DidActivate();
-    last_activated_id_ = viz::BeginFrameId(current_id_);
+    last_activated_id_ = current_id_;
   }
 
-  void SimulateSubmitCompositorFrame(uint32_t frame_token) {
+  void SimulateSubmitCompositorFrame(uint32_t frame_token,
+                                     std::vector<EventMetrics> events_metrics) {
     if (!reporting_controller_.reporters()
              [CompositorFrameReportingController::PipelineStage::kActivate])
       SimulateActivate();
     CHECK(reporting_controller_.reporters()
               [CompositorFrameReportingController::PipelineStage::kActivate]);
-    reporting_controller_.DidSubmitCompositorFrame(frame_token, current_id_,
-                                                   last_activated_id_);
+    reporting_controller_.DidSubmitCompositorFrame(
+        frame_token, current_id_, last_activated_id_, events_metrics);
   }
 
   void SimulatePresentCompositorFrame() {
     ++next_token_;
-    SimulateSubmitCompositorFrame(*next_token_);
+    SimulateSubmitCompositorFrame(*next_token_, std::vector<EventMetrics>());
     viz::FrameTimingDetails details = {};
     details.presentation_feedback.timestamp = base::TimeTicks::Now();
     reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
   }
+
+  void IncrementCurrentId() { current_id_.sequence_number++; }
 
  protected:
   TestCompositorFrameReportingController reporting_controller_;
   viz::BeginFrameId current_id_;
   viz::BeginFrameId last_activated_id_;
   base::TimeTicks begin_main_start_;
-
- private:
   viz::FrameTokenGenerator next_token_;
 };
 
@@ -157,15 +160,15 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   reporting_controller_.WillBeginMainFrame(current_id_);
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
-  last_activated_id_ = viz::BeginFrameId(current_id_);
+  last_activated_id_ = current_id_;
   reporting_controller_.WillCommit();
   reporting_controller_.DidCommit();
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
-  reporting_controller_.DidSubmitCompositorFrame(0, current_id_,
-                                                 last_activated_id_);
+  reporting_controller_.DidSubmitCompositorFrame(
+      0, current_id_, last_activated_id_, std::vector<EventMetrics>());
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
   // 4 simultaneous reporters active.
@@ -256,9 +259,9 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
   base::HistogramTester histogram_tester;
-  viz::BeginFrameId current_id_1_ = viz::BeginFrameId(1, 1);
-  viz::BeginFrameId current_id_2_ = viz::BeginFrameId(1, 2);
-  viz::BeginFrameId current_id_3_ = viz::BeginFrameId(1, 3);
+  viz::BeginFrameId current_id_1_(1, 1);
+  viz::BeginFrameId current_id_2_(1, 2);
+  viz::BeginFrameId current_id_3_(1, 3);
 
   reporting_controller_.WillBeginImplFrame(current_id_1_);
   reporting_controller_.WillBeginMainFrame(current_id_1_);
@@ -288,8 +291,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
   reporting_controller_.WillBeginMainFrame(current_id_);
   reporting_controller_.BeginMainFrameAborted(current_id_);
   reporting_controller_.OnFinishImplFrame(current_id_);
-  reporting_controller_.DidSubmitCompositorFrame(1, current_id_,
-                                                 last_activated_id_);
+  reporting_controller_.DidSubmitCompositorFrame(
+      1, current_id_, last_activated_id_, std::vector<EventMetrics>());
 
   viz::FrameTimingDetails details = {};
   reporting_controller_.DidPresentCompositorFrame(1, details);
@@ -307,9 +310,9 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
 
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   base::HistogramTester histogram_tester;
-  viz::BeginFrameId current_id_1_ = viz::BeginFrameId(1, 1);
-  viz::BeginFrameId current_id_2_ = viz::BeginFrameId(1, 2);
-  viz::BeginFrameId current_id_3_ = viz::BeginFrameId(1, 3);
+  viz::BeginFrameId current_id_1_(1, 1);
+  viz::BeginFrameId current_id_2_(1, 2);
+  viz::BeginFrameId current_id_3_(1, 3);
   reporting_controller_.WillBeginImplFrame(current_id_1_);
   reporting_controller_.OnFinishImplFrame(current_id_1_);
   reporting_controller_.WillBeginMainFrame(current_id_1_);
@@ -321,8 +324,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   reporting_controller_.WillBeginMainFrame(current_id_2_);
   reporting_controller_.OnFinishImplFrame(current_id_2_);
   reporting_controller_.BeginMainFrameAborted(current_id_2_);
-  reporting_controller_.DidSubmitCompositorFrame(1, current_id_2_,
-                                                 current_id_1_);
+  reporting_controller_.DidSubmitCompositorFrame(
+      1, current_id_2_, current_id_1_, std::vector<EventMetrics>());
   viz::FrameTimingDetails details = {};
   reporting_controller_.DidPresentCompositorFrame(1, details);
   histogram_tester.ExpectTotalCount(
@@ -340,8 +343,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
       1);
-  reporting_controller_.DidSubmitCompositorFrame(2, current_id_2_,
-                                                 current_id_1_);
+  reporting_controller_.DidSubmitCompositorFrame(
+      2, current_id_2_, current_id_1_, std::vector<EventMetrics>());
   reporting_controller_.DidPresentCompositorFrame(2, details);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
@@ -360,8 +363,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted2) {
       2);
   reporting_controller_.WillBeginImplFrame(current_id_3_);
   reporting_controller_.OnFinishImplFrame(current_id_3_);
-  reporting_controller_.DidSubmitCompositorFrame(3, current_id_3_,
-                                                 current_id_1_);
+  reporting_controller_.DidSubmitCompositorFrame(
+      3, current_id_3_, current_id_1_, std::vector<EventMetrics>());
   reporting_controller_.DidPresentCompositorFrame(3, details);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.DroppedFrame.BeginImplFrameToSendBeginMainFrame", 0);
@@ -434,6 +437,77 @@ TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
       base::TimeDelta::FromMicroseconds(1).InMilliseconds(), 1);
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.SendBeginMainFrameToCommit.BeginMainSentToStarted", 1);
+}
+
+// Tests that EventLatency histograms are reported properly when a frame is
+// presented to the user.
+TEST_F(CompositorFrameReportingControllerTest,
+       EventLatencyForPresentedFrameReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = base::TimeTicks::Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_TOUCH_PRESSED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  // Submit a compositor frame and notify CompositorFrameReporter of the events
+  // affecting the frame.
+  ++next_token_;
+  SimulateSubmitCompositorFrame(*next_token_, events_metrics);
+
+  // Present the submitted compositor frame to the user.
+  const base::TimeTicks presentation_time = base::TimeTicks::Now();
+  viz::FrameTimingDetails details;
+  details.presentation_feedback.timestamp = presentation_time;
+  reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
+
+  // Verify that EventLatency histograms are recorded.
+  const int latency_ms = (presentation_time - event_time).InMicroseconds();
+  histogram_tester.ExpectTotalCount("EventLatency.TouchPressed.TotalLatency",
+                                    1);
+  histogram_tester.ExpectTotalCount("EventLatency.TouchMoved.TotalLatency", 2);
+  histogram_tester.ExpectBucketCount("EventLatency.TouchPressed.TotalLatency",
+                                     latency_ms, 1);
+  histogram_tester.ExpectBucketCount("EventLatency.TouchMoved.TotalLatency",
+                                     latency_ms, 2);
+}
+
+// Tests that EventLatency histograms are not reported when the frame is dropped
+// and not presented to the user.
+TEST_F(CompositorFrameReportingControllerTest,
+       EventLatencyForDidNotPresentFrameNotReported) {
+  base::HistogramTester histogram_tester;
+
+  const base::TimeTicks event_time = base::TimeTicks::Now();
+  std::vector<EventMetrics> events_metrics = {
+      {ui::ET_TOUCH_PRESSED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+      {ui::ET_TOUCH_MOVED, event_time},
+  };
+  EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
+
+  // Submit a compositor frame and notify CompositorFrameReporter of the events
+  // affecting the frame.
+  ++next_token_;
+  SimulateSubmitCompositorFrame(*next_token_, events_metrics);
+
+  // Submit another compositor frame.
+  ++next_token_;
+  IncrementCurrentId();
+  SimulateSubmitCompositorFrame(*next_token_, std::vector<EventMetrics>());
+
+  // Present the second compositor frame to the uesr, dropping the first one.
+  viz::FrameTimingDetails details;
+  details.presentation_feedback.timestamp = base::TimeTicks::Now();
+  reporting_controller_.DidPresentCompositorFrame(*next_token_, details);
+
+  // Verify that no EventLatency histogram is recorded.
+  histogram_tester.ExpectTotalCount("EventLatency.TouchPressed.TotalLatency",
+                                    0);
+  histogram_tester.ExpectTotalCount("EventLatency.TouchMoved.TotalLatency", 0);
 }
 
 }  // namespace

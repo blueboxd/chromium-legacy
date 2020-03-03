@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

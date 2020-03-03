@@ -16,27 +16,16 @@ const currentFiles = [];
  */
 let entryIndex = -1;
 
-/**
- * Helper to call postMessage on the guest frame.
- *
- * @param {Object} message
- */
-function postToGuestWindow(message) {
-  const guest =
-      /** @type{HTMLIFrameElement} */ (document.querySelector('iframe'));
-  // The next line should probably be passing a transfer argument, but that
-  // causes Chrome to send a "null" message. The transfer seems to work without
-  // the third argument (but inefficiently, perhaps).
-  guest.contentWindow.postMessage(message, 'chrome://media-app-guest');
-}
+/** A pipe through which we can send messages to the guest frame. */
+const guestMessagePipe = new MessagePipe('chrome://media-app-guest');
 
 /**
  * Loads a file in the guest.
  *
  * @param {File} file
  */
-async function loadFile(file) {
-  postToGuestWindow({'file': file});
+function loadFile(file) {
+  guestMessagePipe.sendMessage('file', {'file': file});
 }
 
 /**

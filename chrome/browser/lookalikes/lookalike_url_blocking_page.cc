@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 
 #include <utility>
 
@@ -23,10 +23,10 @@ using security_interstitials::MetricsHelper;
 
 // static
 const content::InterstitialPageDelegate::TypeID
-    LookalikeUrlInterstitialPage::kTypeForTesting =
-        &LookalikeUrlInterstitialPage::kTypeForTesting;
+    LookalikeUrlBlockingPage::kTypeForTesting =
+        &LookalikeUrlBlockingPage::kTypeForTesting;
 
-LookalikeUrlInterstitialPage::LookalikeUrlInterstitialPage(
+LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url,
     ukm::SourceId source_id,
@@ -45,9 +45,9 @@ LookalikeUrlInterstitialPage::LookalikeUrlInterstitialPage(
       MetricsHelper::TOTAL_VISITS);
 }
 
-LookalikeUrlInterstitialPage::~LookalikeUrlInterstitialPage() {}
+LookalikeUrlBlockingPage::~LookalikeUrlBlockingPage() {}
 
-void LookalikeUrlInterstitialPage::ReportUkmIfNeeded(UserAction action) {
+void LookalikeUrlBlockingPage::ReportUkmIfNeeded(UserAction action) {
   // We rely on the saved SourceId because deconstruction happens after the next
   // navigation occurs, so web contents points to the new destination.
   if (source_id_ != ukm::kInvalidSourceId) {
@@ -57,10 +57,10 @@ void LookalikeUrlInterstitialPage::ReportUkmIfNeeded(UserAction action) {
 }
 
 // static
-void LookalikeUrlInterstitialPage::RecordUkmEvent(
+void LookalikeUrlBlockingPage::RecordUkmEvent(
     ukm::SourceId source_id,
-    LookalikeUrlInterstitialPage::MatchType match_type,
-    LookalikeUrlInterstitialPage::UserAction user_action) {
+    LookalikeUrlBlockingPage::MatchType match_type,
+    LookalikeUrlBlockingPage::UserAction user_action) {
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   CHECK(ukm_recorder);
 
@@ -71,15 +71,15 @@ void LookalikeUrlInterstitialPage::RecordUkmEvent(
 }
 
 content::InterstitialPageDelegate::TypeID
-LookalikeUrlInterstitialPage::GetTypeForTesting() {
-  return LookalikeUrlInterstitialPage::kTypeForTesting;
+LookalikeUrlBlockingPage::GetTypeForTesting() {
+  return LookalikeUrlBlockingPage::kTypeForTesting;
 }
 
-bool LookalikeUrlInterstitialPage::ShouldCreateNewNavigation() const {
+bool LookalikeUrlBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
+void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   CHECK(load_time_data);
 
@@ -103,16 +103,16 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
       l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_CONTINUE, hostname));
 }
 
-void LookalikeUrlInterstitialPage::OnInterstitialClosing() {
+void LookalikeUrlBlockingPage::OnInterstitialClosing() {
   ReportUkmIfNeeded(UserAction::kCloseOrBack);
 }
 
-bool LookalikeUrlInterstitialPage::ShouldDisplayURL() const {
+bool LookalikeUrlBlockingPage::ShouldDisplayURL() const {
   return false;
 }
 
 // This handles the commands sent from the interstitial JavaScript.
-void LookalikeUrlInterstitialPage::CommandReceived(const std::string& command) {
+void LookalikeUrlBlockingPage::CommandReceived(const std::string& command) {
   if (command == "\"pageLoadComplete\"") {
     // content::WaitForRenderFrameReady sends this message when the page
     // load completes. Ignore it.
@@ -158,11 +158,11 @@ void LookalikeUrlInterstitialPage::CommandReceived(const std::string& command) {
   }
 }
 
-int LookalikeUrlInterstitialPage::GetHTMLTemplateId() {
+int LookalikeUrlBlockingPage::GetHTMLTemplateId() {
   return IDR_SECURITY_INTERSTITIAL_HTML;
 }
 
-void LookalikeUrlInterstitialPage::PopulateStringsForSharedHTML(
+void LookalikeUrlBlockingPage::PopulateStringsForSharedHTML(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("lookalike_url", true);
   load_time_data->SetBoolean("overridable", false);

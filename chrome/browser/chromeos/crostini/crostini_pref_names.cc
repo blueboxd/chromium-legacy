@@ -76,9 +76,12 @@ const char kCrostiniLastDiskSize[] = "crostini.last_disk_size";
 // A dictionary preference representing a user's settings of forwarded ports
 // to Crostini.
 const char kCrostiniPortForwarding[] = "crostini.port_forwarding.ports";
+// A boolean preference indicating whether Crostini is able to access the mic.
+const char kCrostiniMicSharing[] = "crostini.mic_sharing";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
+  registry->RegisterBooleanPref(kCrostiniMicSharing, true);
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
   registry->RegisterListPref(kCrostiniPortForwarding);

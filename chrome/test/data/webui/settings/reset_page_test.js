@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {Router, routes} from 'chrome://settings/settings.js';
+// #import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.m.js';
+// clang-format on
+
 cr.define('settings_reset_page', function() {
   /** @enum {string} */
   const TestNames = {
@@ -141,4 +149,5 @@ cr.define('settings_reset_page', function() {
           });
     });
   });
+  // #cr_define_end
 });

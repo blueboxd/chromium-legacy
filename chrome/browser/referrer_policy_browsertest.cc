@@ -791,8 +791,8 @@ struct ReferrerOverrideParams {
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests
-        .expected_policy = network::mojom::ReferrerPolicy::
-            kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+        .expected_policy =
+            network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
         .same_origin_nav = ReferrerPolicyTest::EXPECT_FULL_REFERRER,
         .cross_origin_nav = ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
         .cross_origin_downgrade_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,

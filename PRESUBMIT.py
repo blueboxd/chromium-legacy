@@ -372,7 +372,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^device/bluetooth/',
   '^extensions/browser/',
   '^extensions/renderer/',
-  '^extensions/shell/',
   '^extensions/test/',
   '^google_apis/dive/',
   '^google_apis/gcm/',

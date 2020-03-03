@@ -109,8 +109,7 @@ blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
       if (request.GetOrigin() != sanitized_referrer->url.GetOrigin())
         sanitized_referrer->url = GURL();
       break;
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       if (is_downgrade) {
         sanitized_referrer->url = GURL();
       } else if (request.GetOrigin() != sanitized_referrer->url.GetOrigin()) {
@@ -160,8 +159,7 @@ network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
       return network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
     case net::URLRequest::
         REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
-      return network::mojom::ReferrerPolicy::
-          kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      return network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
     case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin;
     case net::URLRequest::NEVER_CLEAR_REFERRER:

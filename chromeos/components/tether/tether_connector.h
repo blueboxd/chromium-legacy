@@ -25,7 +25,7 @@ class TetherConnector {
 
   virtual void ConnectToNetwork(
       const std::string& tether_network_guid,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) = 0;
 
   // Returns whether the connection attempt was successfully canceled.

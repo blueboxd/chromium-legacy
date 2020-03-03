@@ -85,10 +85,10 @@ void NetworkConnectionHandler::SetTetherDelegate(
 
 void NetworkConnectionHandler::InvokeConnectSuccessCallback(
     const std::string& service_path,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   NET_LOG_EVENT("Connect Request Succeeded", service_path);
   if (!success_callback.is_null())
-    success_callback.Run();
+    std::move(success_callback).Run();
   for (auto& observer : observers_)
     observer.ConnectSucceeded(service_path);
 }
@@ -106,32 +106,32 @@ void NetworkConnectionHandler::InvokeConnectErrorCallback(
 
 void NetworkConnectionHandler::InitiateTetherNetworkConnection(
     const std::string& tether_network_guid,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error_callback) {
   DCHECK(tether_delegate_);
   tether_delegate_->ConnectToNetwork(
       tether_network_guid,
-      base::Bind(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
-                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
-                 success_callback),
-      base::Bind(&NetworkConnectionHandler::InvokeConnectErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
-                 error_callback));
+      base::BindOnce(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
+                     weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                     std::move(success_callback)),
+      base::BindRepeating(&NetworkConnectionHandler::InvokeConnectErrorCallback,
+                          weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                          error_callback));
 }
 
 void NetworkConnectionHandler::InitiateTetherNetworkDisconnection(
     const std::string& tether_network_guid,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error_callback) {
   DCHECK(tether_delegate_);
   tether_delegate_->DisconnectFromNetwork(
       tether_network_guid,
-      base::Bind(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
-                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
-                 success_callback),
-      base::Bind(&NetworkConnectionHandler::InvokeConnectErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
-                 error_callback));
+      base::BindOnce(&NetworkConnectionHandler::InvokeConnectSuccessCallback,
+                     weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                     std::move(success_callback)),
+      base::BindRepeating(&NetworkConnectionHandler::InvokeConnectErrorCallback,
+                          weak_ptr_factory_.GetWeakPtr(), tether_network_guid,
+                          error_callback));
 }
 
 // static

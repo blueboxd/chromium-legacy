@@ -198,6 +198,13 @@ chrome.inputMethodPrivate.notifyImeMenuItemActivated = function(engineID, name) 
 chrome.inputMethodPrivate.showInputView = function(callback) {};
 
 /**
+ * Hides the input view window. If the input view window is already hidden, this
+ * function will do nothing.
+ * @param {function():void=} callback Called when the operation completes.
+ */
+chrome.inputMethodPrivate.hideInputView = function(callback) {};
+
+/**
  * Opens the options page for the input method extension. If the input method
  * does not have options, this function will do nothing.
  * @param {string} inputMethodId ID of the input method to open options for.

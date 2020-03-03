@@ -639,6 +639,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       {"crostiniDiskResizeTitle", IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE},
       {"crostiniDiskResizeShowButton",
        IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON},
+      {"enableCrostiniMicTitle", IDS_SETTINGS_CROSTINI_MIC_TITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   html_source->AddString(
@@ -689,6 +690,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniDiskResize",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
+  html_source->AddBoolean("showCrostiniMic",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kCrostiniShowMicSetting));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,

@@ -28,7 +28,9 @@
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/common/file_system/file_system_types.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace storage {
 
@@ -70,8 +72,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
    public:
     virtual ~AbstractOriginEnumerator() = default;
 
-    // Returns the next origin.  Returns empty if there are no more origins.
-    virtual GURL Next() = 0;
+    // Returns the next origin.  Returns base::nullopt if there are no more
+    // origins.
+    virtual base::Optional<url::Origin> Next() = 0;
 
     // Returns the current origin's information.
     // |type_string| must be ascii string.

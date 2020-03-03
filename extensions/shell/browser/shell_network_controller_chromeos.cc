@@ -59,9 +59,8 @@ ShellNetworkController::ShellNetworkController(
       chromeos::NetworkHandler::Get()->network_state_handler();
   state_handler->AddObserver(this, FROM_HERE);
   state_handler->SetTechnologyEnabled(
-      chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi),
-      true,
-      base::Bind(&HandleEnableWifiError));
+      chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi), true,
+      base::BindRepeating(&HandleEnableWifiError));
 
   // If we're unconnected, trigger a connection attempt and start scanning.
   NetworkConnectionStateChanged(NULL);
@@ -194,10 +193,10 @@ void ShellNetworkController::ConnectIfUnconnected() {
                : STATE_WAITING_FOR_NON_PREFERRED_RESULT;
   handler->network_connection_handler()->ConnectToNetwork(
       best_network->path(),
-      base::Bind(&ShellNetworkController::HandleConnectionSuccess,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ShellNetworkController::HandleConnectionError,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ShellNetworkController::HandleConnectionSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ShellNetworkController::HandleConnectionError,
+                          weak_ptr_factory_.GetWeakPtr()),
       false /* check_error_state */,
       chromeos::ConnectCallbackMode::ON_COMPLETED);
 }

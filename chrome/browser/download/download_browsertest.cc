@@ -1237,16 +1237,16 @@ class DownloadReferrerPolicyTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     DownloadReferrerPolicyTest,
-    ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
-                      network::mojom::ReferrerPolicy::kDefault,
-                      network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
-                      network::mojom::ReferrerPolicy::kNever,
-                      network::mojom::ReferrerPolicy::kOrigin,
-                      network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::
-                          kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-                      network::mojom::ReferrerPolicy::kSameOrigin,
-                      network::mojom::ReferrerPolicy::kStrictOrigin));
+    ::testing::Values(
+        network::mojom::ReferrerPolicy::kAlways,
+        network::mojom::ReferrerPolicy::kDefault,
+        network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+        network::mojom::ReferrerPolicy::kNever,
+        network::mojom::ReferrerPolicy::kOrigin,
+        network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
+        network::mojom::ReferrerPolicy::kSameOrigin,
+        network::mojom::ReferrerPolicy::kStrictOrigin));
 
 namespace {
 
@@ -3156,8 +3156,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3232,8 +3231,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest, SaveLinkAsReferrerPolicy) {
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3380,8 +3378,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
       break;
     case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kStrictOrigin:
     case network::mojom::ReferrerPolicy::kSameOrigin:
     case network::mojom::ReferrerPolicy::kNever:
@@ -3448,7 +3445,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // Check that the file contains the expected referrer. The referrer is
   // expected to be sent for policies kAlways, kDefault, and
   // kNoReferrerWhenDowngrade. The referrer should not be sent for policies
-  // kNever, kSameOrigin, and kNoReferrerWhenDowngradeOriginWhenCrossOrigin.
+  // kNever, kSameOrigin, and kStrictOriginWhenCrossOrigin.
   base::FilePath file(download_items[0]->GetTargetFilePath());
   GURL origin = url::Origin::Create(url).GetURL();
   switch (referrer_policy()) {
@@ -3462,8 +3459,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
       EXPECT_TRUE(VerifyFile(file, "", 0));
       break;
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
     case network::mojom::ReferrerPolicy::kOrigin:
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       EXPECT_TRUE(VerifyFile(file, origin.spec(), origin.spec().length()));

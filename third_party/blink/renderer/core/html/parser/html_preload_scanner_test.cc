@@ -872,9 +872,7 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "referrerpolicy='strict-origin-when-cross-origin' "
        "href='bla.gif'/>",
        "bla.gif", "http://example.test/", ResourceType::kImage, 0,
-       network::mojom::ReferrerPolicy::
-           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-       nullptr},
+       network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin, nullptr},
       {"http://example.test",
        "<link rel='stylesheet' href='sheet.css' type='text/css'>", "sheet.css",
        "http://example.test/", ResourceType::kCSSStyleSheet, 0,

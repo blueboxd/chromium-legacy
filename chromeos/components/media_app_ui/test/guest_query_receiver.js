@@ -40,12 +40,13 @@ async function waitForNode(query, opt_path) {
 /**
  * Acts on received TestMessageQueryData.
  *
- * @param {MessageEvent<TestMessageQueryData>} event
+ * @param {TestMessageQueryData} data
+ * @return {!Promise<TestMessageResponseData>}
  */
-async function runTestQuery(event) {
-  const data = event.data;
+async function runTestQuery(data) {
   const element = await waitForNode(data.testQuery, data.pathToRoot || []);
   let result = element.tagName;
+
   if (data.property) {
     result = JSON.stringify(element[data.property]);
   } else if (data.requestFullscreen) {
@@ -57,17 +58,23 @@ async function runTestQuery(event) {
     }
   }
 
-  const response = {testQueryResult: result};
-  event.source.postMessage(response, event.origin);
+  return {testQueryResult: result};
 }
 
-function receiveTestMessage(/** Event */ e) {
-  const event = /** @type{MessageEvent<TestMessageQueryData>} */ (e);
-  if (event.data.testQuery) {
-    runTestQuery(event);
-  }
-}
+// Wait until dom content has loaded to make sure receiver.js has been
+// parsed and executed.
+window.addEventListener('DOMContentLoaded', () => {
+  parentMessagePipe.registerHandler('test', (data) => {
+    return runTestQuery(/** @type{TestMessageQueryData} */ (data));
+  });
+  // Turn off error rethrowing for tests so the test runner doesn't mark
+  // our error handling tests as failed.
+  parentMessagePipe.rethrowErrors = false;
+  // Handler that will always error for helping to test the message pipe
+  // itself.
+  parentMessagePipe.registerHandler('bad-handler', () => {
+    throw Error('This is an error');
+  });
+});
 
-window.addEventListener('message', receiveTestMessage, false);
-
-//# sourceURL=guest_query_reciever.js
+//# sourceURL=guest_query_receiver.js

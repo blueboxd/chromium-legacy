@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -75,6 +76,9 @@ class MenuListSelectType final : public SelectType {
   const ComputedStyle* OptionStyle() const override {
     return option_style_.get();
   }
+
+  void ShowPopup() override;
+  void HidePopup() override;
 
  private:
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent& event);
@@ -194,7 +198,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     if (select_->GetLayoutObject() && !will_be_destroyed_ &&
         !select_->IsDisabledFormControl()) {
       if (select_->PopupIsVisible()) {
-        select_->HidePopup();
+        HidePopup();
       } else {
         // Save the selection so it can be compared to the new selection
         // when we call onChange during selectOption, which gets called
@@ -204,7 +208,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
         // TODO(lanwei): Will check if we need to add
         // InputDeviceCapabilities here when select menu list gets
         // focus, see https://crbug.com/476530.
-        select_->ShowPopup();
+        ShowPopup();
       }
     }
     return true;
@@ -251,8 +255,39 @@ bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
   // SelectOptionByPopup, which gets called after the user makes a selection
   // from the menu.
   select_->SaveLastSelection();
-  select_->ShowPopup();
+  ShowPopup();
   return true;
+}
+
+void MenuListSelectType::ShowPopup() {
+  if (select_->PopupIsVisible())
+    return;
+  Document& document = select_->GetDocument();
+  if (document.GetPage()->GetChromeClient().HasOpenedPopup())
+    return;
+  if (!select_->GetLayoutObject())
+    return;
+  if (select_->VisibleBoundsInVisualViewport().IsEmpty())
+    return;
+
+  if (!select_->popup_) {
+    select_->popup_ = document.GetPage()->GetChromeClient().OpenPopupMenu(
+        *document.GetFrame(), *select_);
+  }
+  if (!select_->popup_)
+    return;
+
+  select_->SetPopupIsVisible(true);
+  select_->ObserveTreeMutation();
+
+  select_->popup_->Show();
+  if (AXObjectCache* cache = document.ExistingAXObjectCache())
+    cache->DidShowMenuListPopup(select_->GetLayoutObject());
+}
+
+void MenuListSelectType::HidePopup() {
+  if (select_->popup_)
+    select_->popup_->Hide();
 }
 
 void MenuListSelectType::DidSelectOption(
@@ -301,7 +336,7 @@ void MenuListSelectType::DidBlur() {
   // made.  This matches other browsers' behavior.
   DispatchEventsIfSelectedOptionChanged();
   if (select_->PopupIsVisible())
-    select_->HidePopup();
+    HidePopup();
   SelectType::DidBlur();
 }
 
@@ -749,6 +784,14 @@ const ComputedStyle* SelectType::OptionStyle() const {
 void SelectType::UpdateMultiSelectFocus() {}
 
 void SelectType::SelectAll() {
+  NOTREACHED();
+}
+
+void SelectType::ShowPopup() {
+  NOTREACHED();
+}
+
+void SelectType::HidePopup() {
   NOTREACHED();
 }
 

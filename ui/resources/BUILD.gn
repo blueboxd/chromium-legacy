@@ -40,6 +40,9 @@ grit("webui_resources_grd") {
   source = "../webui/resources/webui_resources.grd"
 
   deps = [ "//ui/webui/resources:modulize" ]
+  if (is_chromeos) {
+    deps += [ "//ui/webui/resources/css:cros_colors_css" ]
+  }
 
   # The .grd contains references to generated files.
   source_is_generated = true

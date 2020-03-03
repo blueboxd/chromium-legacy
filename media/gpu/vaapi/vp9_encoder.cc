@@ -5,8 +5,7 @@
 #include "media/gpu/vaapi/vp9_encoder.h"
 
 #include "base/bits.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#include "media/gpu/macros.h"
 
 namespace media {
 
@@ -147,6 +146,8 @@ bool VP9Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
       current_params_.framerate == framerate) {
     return true;
   }
+  VLOGF(2) << "New bitrate: " << bitrate_allocation.GetSumBps()
+           << ", New framerate: " << framerate;
 
   current_params_.bitrate_allocation = bitrate_allocation;
   current_params_.framerate = framerate;

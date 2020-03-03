@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"
+#include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 
 namespace gpu {
 namespace webgpu {
@@ -28,16 +29,18 @@ class WebGPUInterface : public InterfaceBase {
 
   virtual const DawnProcTable& GetProcs() const = 0;
   virtual void FlushCommands() = 0;
-  virtual WGPUDevice GetDefaultDevice() = 0;
-  virtual ReservedTexture ReserveTexture(WGPUDevice device) = 0;
+  virtual WGPUDevice GetDevice(DawnDeviceClientID device_client_id) = 0;
+  virtual ReservedTexture ReserveTexture(
+      DawnDeviceClientID device_client_id) = 0;
   virtual bool RequestAdapterAsync(
       PowerPreference power_preference,
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
           request_adapter_callback) = 0;
   virtual bool RequestDeviceAsync(
       uint32_t adapter_service_id,
-      const WGPUDeviceProperties* requested_device_properties,
-      base::OnceCallback<void(bool)> request_device_callback) = 0;
+      const WGPUDeviceProperties& requested_device_properties,
+      base::OnceCallback<void(bool, DawnDeviceClientID)>
+          request_device_callback) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

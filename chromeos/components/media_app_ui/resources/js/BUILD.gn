@@ -19,6 +19,7 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     ":launch",
+    ":message_pipe",
     ":mojo_api_bootstrap",
     ":receiver",
   ]
@@ -29,10 +30,15 @@ js_library("launch") {
     "web_app_file_handling.externs.js",
     "dom_draft.externs.js",
   ]
+  deps = [ ":message_pipe" ]
+}
+
+js_library("message_pipe") {
 }
 
 js_library("receiver") {
   externs_list = [ "media_app.externs.js" ]
+  deps = [ ":message_pipe" ]
 }
 
 js_library("mojo_api_bootstrap") {

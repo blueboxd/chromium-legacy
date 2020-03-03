@@ -69,14 +69,14 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
   // NetworkConnectionHandler::TetherDelegate:
   void ConnectToNetwork(
       const std::string& tether_network_guid,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) override {
     last_connected_tether_network_guid_ = tether_network_guid;
-    success_callback.Run();
+    std::move(success_callback).Run();
   }
   void DisconnectFromNetwork(
       const std::string& tether_network_guid,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::StringResultCallback& error_callback) override {}
 
  private:

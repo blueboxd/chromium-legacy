@@ -53,7 +53,7 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
         factory = bot_test_expectations.BotTestExpectationsFactory(self.fake_builder_list())
 
         self.assertEqual(factory._results_url_for_builder('Dummy builder name'),
-                         'https://test-results.appspot.com/testfile?testtype=webkit_layout_tests'
+                         'https://test-results.appspot.com/testfile?testtype=blink_web_tests'
                          '&name=results-small.json&master=dummy.master&builder=Dummy%20builder%20name')
 
     def test_expectations_for_builder(self):

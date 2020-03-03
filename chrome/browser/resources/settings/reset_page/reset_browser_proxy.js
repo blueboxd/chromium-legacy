@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /** @interface */
-  class ResetBrowserProxy {
+  /* #export */ class ResetBrowserProxy {
     /**
      * @param {boolean} sendSettings Whether the user gave consent to upload
      *     broken settings to Google for analysis.
@@ -57,7 +61,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ResetBrowserProxy}
    */
-  class ResetBrowserProxyImpl {
+  /* #export */ class ResetBrowserProxyImpl {
     /** @override */
     performResetProfileSettings(sendSettings, requestOrigin) {
       return cr.sendWithPromise(

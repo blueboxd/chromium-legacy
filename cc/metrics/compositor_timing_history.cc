@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -979,10 +982,12 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
 void CompositorTimingHistory::DidSubmitCompositorFrame(
     uint32_t frame_token,
     const viz::BeginFrameId& current_frame_id,
-    const viz::BeginFrameId& last_activated_frame_id) {
+    const viz::BeginFrameId& last_activated_frame_id,
+    std::vector<EventMetrics> events_metrics) {
   DCHECK_EQ(base::TimeTicks(), submit_start_time_);
   compositor_frame_reporting_controller_->DidSubmitCompositorFrame(
-      frame_token, current_frame_id, last_activated_frame_id);
+      frame_token, current_frame_id, last_activated_frame_id,
+      std::move(events_metrics));
   submit_start_time_ = Now();
 }
 

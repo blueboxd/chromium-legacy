@@ -157,7 +157,7 @@ TEST_P(SandboxFileSystemBackendTest, Empty) {
   SetUpNewBackend(CreateAllowFileAccessOptions());
   std::unique_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator>
       enumerator(CreateOriginEnumerator());
-  ASSERT_TRUE(enumerator->Next().is_empty());
+  ASSERT_FALSE(enumerator->Next());
 }
 
 TEST_P(SandboxFileSystemBackendTest, EnumerateOrigins) {
@@ -174,29 +174,31 @@ TEST_P(SandboxFileSystemBackendTest, EnumerateOrigins) {
   };
   size_t temporary_size = base::size(temporary_origins);
   size_t persistent_size = base::size(persistent_origins);
-  std::set<GURL> temporary_set, persistent_set;
+  std::set<url::Origin> temporary_set, persistent_set;
   for (size_t i = 0; i < temporary_size; ++i) {
     CreateOriginTypeDirectory(temporary_origins[i], kFileSystemTypeTemporary);
-    temporary_set.insert(GURL(temporary_origins[i]));
+    temporary_set.insert(url::Origin::Create(GURL(temporary_origins[i])));
   }
   for (size_t i = 0; i < persistent_size; ++i) {
     CreateOriginTypeDirectory(persistent_origins[i], kFileSystemTypePersistent);
-    persistent_set.insert(GURL(persistent_origins[i]));
+    persistent_set.insert(url::Origin::Create(GURL(persistent_origins[i])));
   }
 
   std::unique_ptr<SandboxFileSystemBackendDelegate::OriginEnumerator>
       enumerator(CreateOriginEnumerator());
   size_t temporary_actual_size = 0;
   size_t persistent_actual_size = 0;
-  GURL current;
-  while (!(current = enumerator->Next()).is_empty()) {
-    SCOPED_TRACE(testing::Message() << "EnumerateOrigin " << current.spec());
+
+  base::Optional<url::Origin> current;
+  while ((current = enumerator->Next()).has_value()) {
+    SCOPED_TRACE(testing::Message()
+                 << "EnumerateOrigin " << current->Serialize());
     if (enumerator->HasFileSystemType(kFileSystemTypeTemporary)) {
-      ASSERT_TRUE(temporary_set.find(current) != temporary_set.end());
+      ASSERT_TRUE(temporary_set.find(current.value()) != temporary_set.end());
       ++temporary_actual_size;
     }
     if (enumerator->HasFileSystemType(kFileSystemTypePersistent)) {
-      ASSERT_TRUE(persistent_set.find(current) != persistent_set.end());
+      ASSERT_TRUE(persistent_set.find(current.value()) != persistent_set.end());
       ++persistent_actual_size;
     }
   }

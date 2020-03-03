@@ -53,9 +53,9 @@ class BuilderTest(LoggingTestCase):
     def test_results_url_with_build_number_step_name(self):
         self.assertEqual(
             TestResultsFetcher().results_url('Test Builder', 10,
-                                   'webkit_layout_tests (with patch)'),
+                                             'blink_web_tests (with patch)'),
             'https://test-results.appspot.com/data/layout_results/Test_Builder'
-            '/10/webkit_layout_tests%20%28with%20patch%29/layout-test-results')
+            '/10/blink_web_tests%20%28with%20patch%29/layout-test-results')
 
     def test_results_url_with_non_numeric_build_number(self):
         with self.assertRaisesRegexp(AssertionError, 'expected numeric build number'):
@@ -87,10 +87,10 @@ class BuilderTest(LoggingTestCase):
             'https://test-results.appspot.com/testfile?buildnumber=123&'
             'callback=ADD_RESULTS&builder=builder&name=full_results.json':
                 'ADD_RESULTS(%s);' % (json.dumps(
-                    [{"TestType": "webkit_layout_tests on Intel GPU (with patch)"},
+                    [{"TestType": "blink_web_tests on Intel GPU (with patch)"},
                      {"TestType": "base_unittests (with patch)"}])),
             'https://test-results.appspot.com/data/layout_results/builder/123/'
-            'webkit_layout_tests%20on%20Intel%20GPU%20%28with%20patch%29/'
+            'blink_web_tests%20on%20Intel%20GPU%20%28with%20patch%29/'
             'layout-test-results/failing_results.json':
                 json.dumps({'passed': True}),
         })
@@ -110,13 +110,13 @@ class BuilderTest(LoggingTestCase):
             'https://test-results.appspot.com/testfile?buildnumber=5&'
             'callback=ADD_RESULTS&builder=foo&name=full_results.json':
                 'ADD_RESULTS(%s);' % (json.dumps(
-                    [{"TestType": "webkit_layout_tests (with patch)"},
-                     {"TestType": "not_site_per_process_webkit_layout_tests (with patch)"},
-                     {"TestType": "webkit_layout_tests (retry with patch)"},
+                    [{"TestType": "blink_web_tests (with patch)"},
+                     {"TestType": "not_site_per_process_blink_web_tests (with patch)"},
+                     {"TestType": "blink_web_tests (retry with patch)"},
                      {"TestType": "base_unittests (with patch)"}]))
         })
         step_name = fetcher.get_layout_test_step_name(Build('foo', 5))
-        self.assertEqual(step_name, 'webkit_layout_tests (with patch)')
+        self.assertEqual(step_name, 'blink_web_tests (with patch)')
         self.assertLog([])
 
     def test_get_step_name_without_build_number(self):

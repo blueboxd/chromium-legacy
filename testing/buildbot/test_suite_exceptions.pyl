@@ -83,6 +83,300 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
+  'blink_web_tests': {
+    'remove_from': [
+      'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
+      'Win10 Tests x64 (dbg)',
+    ],
+    'modifications': {
+      'Fuchsia x64': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'Linux Tests': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+        ],
+      },
+      'Linux Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'Mac10.10 Tests': {
+        # TODO(kbr): this is essentially redundant.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.10.5',
+            },
+          ],
+          'shards': 25,
+        },
+      },
+      'Mac10.11 Tests': {
+        # TODO(kbr): this is essentially redundant.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.11.6',
+            },
+          ],
+          'shards': 25,
+        },
+      },
+      'Mac10.12 Tests': {
+        'swarming': {
+          'shards': 25,
+        },
+      },
+      'Mac10.13 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # Run the layout tests on a consistent set of hardware
+              # (Mac Minis).
+              'gpu': '8086:0a2e',
+            },
+          ],
+          'shards': 25,
+        },
+      },
+      'Mac10.13 Tests (dbg)': {
+        'args': [
+          '--debug',
+        ],
+      },
+      'V8 Blink Linux Debug': {
+        'args': [
+          '--debug',
+        ],
+      },
+      'V8 Blink Linux Future': {
+        'args': [
+          '--additional-driver-flag=--js-flags=--future',
+        ],
+      },
+      'WebKit Linux ASAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/ASANExpectations',
+          '--time-out-ms',
+          '48000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'WebKit Linux Leak': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/LeakExpectations',
+          '--time-out-ms',
+          '48000',
+          '--enable-leak-detection',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'WebKit Linux MSAN': {
+        'args': [
+          '--additional-expectations',
+          '../../third_party/blink/web_tests/MSANExpectations',
+          '--time-out-ms',
+          '66000',
+          '--enable-sanitizer',
+        ],
+        'swarming': {
+          'expiration': 36000,
+          'hard_timeout': 10800,
+          'io_timeout': 3600,
+          'shards': 20,
+        },
+      },
+      'WebKit Linux composite_after_paint Dummy Builder': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
+        ],
+      },
+      'WebKit Linux layout_ng_disabled Builder': {
+        'args': [
+          '--additional-driver-flag=--disable-blink-features=LayoutNG',
+        ],
+      },
+      'Win10 Tests x64': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 28
+        },
+      },
+      'Win10 Tests x64 (dbg)': {
+        'args': [
+          '--debug',
+          '--target',
+          'Debug_x64',
+        ],
+      },
+      'Win10 Tests x64 Code Coverage': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 28
+        },
+      },
+      'Win7 Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+          '--time-out-ms',
+          '60000'
+        ],
+        'experiment_percentage': 100,
+        # TODO(kbr): the "Windows-7-SP1" Swarming dimension set is implicit,
+        # from prefered_os_dimension in
+        # tools/build/scripts/slave/recipe_modules/swarming/api.py. Ideally,
+        # Swarming dimensions would be either specified for all testers on the
+        # waterfall (and therefore, explicitly specified for all tests in the
+        # generated JSON), or this would be removed, and the implicit one used.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-7-SP1',
+            }
+          ],
+        },
+      },
+      # tryserver.chromium.android
+      'android_blink_rel': {
+        'args': [
+          '--release',
+          '--android',
+          # TODO(crbug.com/912120): Breakpad was entirely disabled on
+          # Android. Remove this when it no longer affects Android crash
+          # log handling.
+          '--disable-breakpad',
+          # TODO(crbug.com/875172): run on the real GPU since the
+          # software fallback, SwiftShader, isn't yet for 32-bit ARM.
+          '--additional-driver-flag=--use-gpu-in-tests',
+        ],
+      },
+      'devtools_frontend_linux_blink_light_rel': {
+        'args': [
+          'http/tests/devtools',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'fuchsia-fyi-x64-rel': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+      'linux-bfcache-debug': {
+        'args': [
+          '--debug',
+          '--additional-driver-flag=--enable-features=BackForwardCache',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
+        ],
+      },
+      'linux-blink-animation-use-time-delta': {
+        'args': [
+          '--debug',
+        ],
+      },
+      'linux-blink-cors-rel': {
+        'args': [
+          '--additional-driver-flag=--disable-features=OutOfBlinkCors',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors',
+        ],
+      },
+      'linux-blink-heap-concurrent-marking-tsan-rel': {
+        'args': [
+          '--release',
+          '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
+        ],
+      },
+      'linux-code-coverage': {
+        'args': [
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'linux-layout-tests-fragment-item': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
+        ],
+      },
+      'linux-layout-tests-fragment-paint': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
+        ],
+      },
+      'mac-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # Run the layout tests on a consistent set of hardware
+              # (Mac Minis).
+              'gpu': '8086:0a2e',
+            },
+          ],
+          'shards': 25,
+        },
+      },
+      'mac10.10-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'mac10.11-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'mac10.12-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'mac10.13-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'mac10.13_retina-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'mac10.14-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+    },
+  },
   'boringssl_crypto_tests': {
     'remove_from': [
       # https://crbug.com/1054545
@@ -1402,7 +1696,7 @@
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
   },
-  'not_site_per_process_webkit_layout_tests': {
+  'not_site_per_process_blink_web_tests': {
     'remove_from': [
       # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
       'Linux Tests (dbg)(1)',
@@ -2001,300 +2295,6 @@
     'remove_from': [
       'Win7 FYI Debug (AMD)',
     ],
-  },
-  'webkit_layout_tests': {
-    'remove_from': [
-      'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
-      'Win10 Tests x64 (dbg)',
-    ],
-    'modifications': {
-      'Fuchsia x64': {
-        'args': [
-          '--platform=fuchsia',
-        ],
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      'Linux Tests': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Tests (dbg)(1)': {
-        'args': [
-          '--debug',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'Mac10.10 Tests': {
-        # TODO(kbr): this is essentially redundant.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': 'none',
-              'os': 'Mac-10.10.5',
-            },
-          ],
-          'shards': 25,
-        },
-      },
-      'Mac10.11 Tests': {
-        # TODO(kbr): this is essentially redundant.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': 'none',
-              'os': 'Mac-10.11.6',
-            },
-          ],
-          'shards': 25,
-        },
-      },
-      'Mac10.12 Tests': {
-        'swarming': {
-          'shards': 25,
-        },
-      },
-      'Mac10.13 Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              # Run the layout tests on a consistent set of hardware
-              # (Mac Minis).
-              'gpu': '8086:0a2e',
-            },
-          ],
-          'shards': 25,
-        },
-      },
-      'Mac10.13 Tests (dbg)': {
-        'args': [
-          '--debug',
-        ],
-      },
-      'V8 Blink Linux Debug': {
-        'args': [
-          '--debug',
-        ],
-      },
-      'V8 Blink Linux Future': {
-        'args': [
-          '--additional-driver-flag=--js-flags=--future',
-        ],
-      },
-      'WebKit Linux ASAN': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/ASANExpectations',
-          '--time-out-ms',
-          '48000',
-          '--enable-sanitizer',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'WebKit Linux Leak': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/LeakExpectations',
-          '--time-out-ms',
-          '48000',
-          '--enable-leak-detection',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'WebKit Linux MSAN': {
-        'args': [
-          '--additional-expectations',
-          '../../third_party/blink/web_tests/MSANExpectations',
-          '--time-out-ms',
-          '66000',
-          '--enable-sanitizer',
-        ],
-        'swarming': {
-          'expiration': 36000,
-          'hard_timeout': 10800,
-          'io_timeout': 3600,
-          'shards': 20,
-        },
-      },
-      'WebKit Linux composite_after_paint Dummy Builder': {
-        'args': [
-          '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
-        ],
-      },
-      'WebKit Linux layout_ng_disabled Builder': {
-        'args': [
-          '--additional-driver-flag=--disable-blink-features=LayoutNG',
-        ],
-      },
-      'Win10 Tests x64': {
-        'args': [
-          '--target',
-          'Release_x64',
-        ],
-        'swarming': {
-          "shards": 28
-        },
-      },
-      'Win10 Tests x64 (dbg)': {
-        'args': [
-          '--debug',
-          '--target',
-          'Debug_x64',
-        ],
-      },
-      'Win10 Tests x64 Code Coverage': {
-        'args': [
-          '--target',
-          'Release_x64',
-        ],
-        'swarming': {
-          "shards": 28
-        },
-      },
-      'Win7 Tests (dbg)(1)': {
-        'args': [
-          '--debug',
-          '--time-out-ms',
-          '60000'
-        ],
-        'experiment_percentage': 100,
-        # TODO(kbr): the "Windows-7-SP1" Swarming dimension set is implicit,
-        # from prefered_os_dimension in
-        # tools/build/scripts/slave/recipe_modules/swarming/api.py. Ideally,
-        # Swarming dimensions would be either specified for all testers on the
-        # waterfall (and therefore, explicitly specified for all tests in the
-        # generated JSON), or this would be removed, and the implicit one used.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-7-SP1',
-            }
-          ],
-        },
-      },
-      # tryserver.chromium.android
-      'android_blink_rel': {
-        'args': [
-          '--release',
-          '--android',
-          # TODO(crbug.com/912120): Breakpad was entirely disabled on
-          # Android. Remove this when it no longer affects Android crash
-          # log handling.
-          '--disable-breakpad',
-          # TODO(crbug.com/875172): run on the real GPU since the
-          # software fallback, SwiftShader, isn't yet for 32-bit ARM.
-          '--additional-driver-flag=--use-gpu-in-tests',
-        ],
-      },
-      'devtools_frontend_linux_blink_light_rel': {
-        'args': [
-          'http/tests/devtools',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-      },
-      'fuchsia-fyi-x64-rel': {
-        'args': [
-          '--platform=fuchsia',
-        ],
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      'linux-bfcache-debug': {
-        'args': [
-          '--debug',
-          '--additional-driver-flag=--enable-features=BackForwardCache',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
-        ],
-      },
-      'linux-blink-animation-use-time-delta': {
-        'args': [
-          '--debug',
-        ],
-      },
-      'linux-blink-cors-rel': {
-        'args': [
-          '--additional-driver-flag=--disable-features=OutOfBlinkCors',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors',
-        ],
-      },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'args': [
-          '--release',
-          '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
-        ],
-      },
-      'linux-code-coverage': {
-        'args': [
-          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'linux-layout-tests-fragment-item': {
-        'args': [
-          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
-        ],
-      },
-      'linux-layout-tests-fragment-paint': {
-        'args': [
-          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
-        ],
-      },
-      'mac-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              # Run the layout tests on a consistent set of hardware
-              # (Mac Minis).
-              'gpu': '8086:0a2e',
-            },
-          ],
-          'shards': 25,
-        },
-      },
-      'mac10.10-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.11-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.12-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.13-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.13_retina-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'mac10.14-blink-rel-dummy': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-    },
   },
   'webkit_unit_tests': {
     'remove_from': [

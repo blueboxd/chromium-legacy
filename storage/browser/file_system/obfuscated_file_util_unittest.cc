@@ -47,6 +47,8 @@
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 // TODO(crbug.com/961068): Fix memory leaks in tests and re-enable on LSAN.
 #ifdef LEAK_SANITIZER
@@ -1561,11 +1563,11 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       ofu()->CreateOriginEnumerator());
   // The test helper starts out with a single filesystem.
   EXPECT_TRUE(enumerator.get());
-  EXPECT_EQ(origin().GetURL(), enumerator->Next());
+  EXPECT_EQ(origin(), enumerator->Next());
   ASSERT_TRUE(type() == kFileSystemTypeTemporary);
   EXPECT_TRUE(HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
-  EXPECT_EQ(GURL(), enumerator->Next());
+  EXPECT_FALSE(enumerator->Next());
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
 
@@ -1607,13 +1609,14 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   enumerator = ofu()->CreateOriginEnumerator();
   EXPECT_TRUE(enumerator.get());
   std::set<Origin> origins_found;
-  GURL origin_url;
-  while (!(origin_url = enumerator->Next()).is_empty()) {
-    origins_found.insert(Origin::Create(origin_url));
-    SCOPED_TRACE(testing::Message() << "Handling " << origin_url.spec());
+  base::Optional<url::Origin> enumerator_origin;
+  while ((enumerator_origin = enumerator->Next()).has_value()) {
+    origins_found.insert(enumerator_origin.value());
+    SCOPED_TRACE(testing::Message()
+                 << "Handling " << enumerator_origin->Serialize());
     bool found = false;
     for (const auto& record : kOriginEnumerationTestRecords) {
-      if (origin_url != record.origin_url)
+      if (enumerator_origin->GetURL() != record.origin_url)
         continue;
       found = true;
       EXPECT_EQ(record.has_temporary,
@@ -1622,7 +1625,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
                 HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
     }
     // Deal with the default filesystem created by the test helper.
-    if (!found && origin_url == origin().GetURL()) {
+    if (!found && enumerator_origin == origin()) {
       ASSERT_TRUE(type() == kFileSystemTypeTemporary);
       EXPECT_TRUE(
           HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));

@@ -5,6 +5,7 @@
 #ifndef CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
 #define CC_METRICS_COMPOSITOR_FRAME_REPORTER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -12,6 +13,7 @@
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -137,6 +139,7 @@ class CC_EXPORT CompositorFrameReporter {
   void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown,
                          base::TimeTicks begin_main_start);
   void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
+  void SetEventsMetrics(std::vector<EventMetrics> events_metrics);
 
   int StageHistorySizeForTesting() { return stage_history_.size(); }
 
@@ -153,7 +156,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
-  void ReportStageHistograms() const;
+  void ReportCompositorLatencyHistograms() const;
   void ReportStageHistogramWithBreakdown(
       const StageData& stage,
       FrameSequenceTrackerType frame_sequence_tracker_type =
@@ -164,9 +167,11 @@ class CC_EXPORT CompositorFrameReporter {
   void ReportVizBreakdowns(
       const base::TimeTicks start_time,
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
-  void ReportHistogram(FrameSequenceTrackerType intraction_type,
-                       const int stage_type_index,
-                       base::TimeDelta time_delta) const;
+  void ReportCompositorLatencyHistogram(
+      FrameSequenceTrackerType intraction_type,
+      const int stage_type_index,
+      base::TimeDelta time_delta) const;
+  void ReportEventLatencyHistograms() const;
 
   StageData current_stage_;
   BeginMainFrameMetrics blink_breakdown_;
@@ -176,6 +181,9 @@ class CC_EXPORT CompositorFrameReporter {
   // to UMA if the termination status is |kPresentedFrame|. Reported data will
   // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
+
+  // List of metrics for events affecting this frame.
+  std::vector<EventMetrics> events_metrics_;
 
   const bool is_single_threaded_;
   DroppedFrameReportType report_type_ =

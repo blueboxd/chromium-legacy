@@ -171,6 +171,25 @@ class InputMethodPrivateShowInputViewFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);
 };
 
+// Implements the inputMethodPrivate.hideInputView method.
+class InputMethodPrivateHideInputViewFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateHideInputViewFunction() = default;
+  InputMethodPrivateHideInputViewFunction(
+      const InputMethodPrivateHideInputViewFunction&) = delete;
+  InputMethodPrivateHideInputViewFunction& operator=(
+      const InputMethodPrivateHideInputViewFunction&) = delete;
+
+ protected:
+  ~InputMethodPrivateHideInputViewFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.hideInputView",
+                             INPUTMETHODPRIVATE_HIDEINPUTVIEW)
+};
+
 // Implements the inputMethodPrivate.openOptionsPage method.
 class InputMethodPrivateOpenOptionsPageFunction : public ExtensionFunction {
  public:

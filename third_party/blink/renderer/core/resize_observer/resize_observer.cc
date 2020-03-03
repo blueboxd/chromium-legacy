@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_options.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
-#include "third_party/blink/renderer/core/resize_observer/resize_observer_options.h"
 
 namespace blink {
 

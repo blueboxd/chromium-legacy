@@ -68,6 +68,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/gpu/test/video_test_helpers.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/parsers/vp8_parser.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_level_limits.h"
@@ -2099,16 +2100,24 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
           base::TimeDelta().FromMilliseconds(
               (next_input_id_ + 1) * base::Time::kMillisecondsPerSecond /
               current_framerate_));
-  if (video_frame && g_native_input) {
 #if defined(OS_LINUX)
-    video_frame = test::CloneVideoFrame(
-        gpu_memory_buffer_factory_.get(), video_frame.get(),
-        video_frame->layout(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
-        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+  if (video_frame) {
+    if (g_native_input) {
+      video_frame = test::CloneVideoFrame(
+          gpu_memory_buffer_factory_.get(), video_frame.get(),
+          video_frame->layout(), VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
+          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+    } else {
+      // We want MOJO_SHARED_BUFFER memory for the Chrome OS VEA if it needs to
+      // use the image processor.
+      video_frame =
+          MojoSharedBufferVideoFrame::CreateFromYUVFrame(*video_frame);
+    }
+  }
 #else
+  if (g_native_input)
     video_frame = nullptr;
 #endif
-  }
 
   EXPECT_NE(nullptr, video_frame.get());
   return video_frame;
@@ -2647,6 +2656,9 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
       base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /
                                          fps_),
       true);
+  // We want MOJO_SHARED_BUFFER memory for the Chrome OS VEA if it needs to
+  // use the image processor.
+  video_frame = MojoSharedBufferVideoFrame::CreateFromYUVFrame(*video_frame);
 
   encoder_->Encode(video_frame, false);
 }

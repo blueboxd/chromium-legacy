@@ -29,17 +29,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
    public:
     // For ConnectToNetwork() calls.
     ConnectionParams(const std::string& service_path,
-                     const base::Closure& success_callback,
+                     base::OnceClosure success_callback,
                      const network_handler::ErrorCallback& error_callback,
                      bool check_error_state,
                      ConnectCallbackMode connect_callback_mode);
 
     // For DisconnectNetwork() calls.
     ConnectionParams(const std::string& service_path,
-                     const base::Closure& success_callback,
+                     base::OnceClosure success_callback,
                      const network_handler::ErrorCallback& error_callback);
 
-    ConnectionParams(const ConnectionParams& other);
+    ConnectionParams(ConnectionParams&&);
     ~ConnectionParams();
 
     const std::string& service_path() const { return service_path_; }
@@ -51,14 +51,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
       return *connect_callback_mode_;
     }
 
-    void InvokeSuccessCallback() const;
+    void InvokeSuccessCallback();
     void InvokeErrorCallback(
         const std::string& error_name,
         std::unique_ptr<base::DictionaryValue> error_data) const;
 
    private:
     std::string service_path_;
-    base::Closure success_callback_;
+    base::OnceClosure success_callback_;
     network_handler::ErrorCallback error_callback_;
     base::Optional<bool> check_error_state_;
     base::Optional<ConnectCallbackMode> connect_callback_mode_;
@@ -74,13 +74,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
  private:
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
-                        const base::Closure& success_callback,
+                        base::OnceClosure success_callback,
                         const network_handler::ErrorCallback& error_callback,
                         bool check_error_state,
                         ConnectCallbackMode connect_callback_mode) override;
   void DisconnectNetwork(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       const network_handler::ErrorCallback& error_callback) override;
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,

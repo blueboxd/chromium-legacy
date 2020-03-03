@@ -1036,6 +1036,7 @@ test("content_browsertests") {
     "../browser/web_contents/web_contents_impl_browsertest.cc",
     "../browser/web_contents/web_contents_view_aura_browsertest.cc",
     "../browser/web_contents_receiver_set_browsertest.cc",
+    "../browser/web_package/save_page_as_web_bundle_browsertest.cc",
     "../browser/web_package/signed_exchange_request_handler_browsertest.cc",
     "../browser/web_package/signed_exchange_subresource_prefetch_browsertest.cc",
     "../browser/web_package/web_bundle_browsertest.cc",
@@ -1101,6 +1102,7 @@ test("content_browsertests") {
   public_deps = [
     "//content:content_resources",
     "//content:dev_ui_content_resources",
+    "//services/data_decoder/public/mojom:mojom_resource_snapshot_for_web_bundle",
   ]
 
   deps = [

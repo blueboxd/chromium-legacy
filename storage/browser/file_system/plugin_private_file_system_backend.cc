@@ -258,9 +258,9 @@ void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
     return;
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty())
-    origins->insert(origin);
+  base::Optional<url::Origin> origin;
+  while ((origin = enumerator->Next()).has_value())
+    origins->insert(origin->GetURL());
 }
 
 void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
@@ -271,10 +271,10 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
     return;
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
-  GURL origin;
-  while (!(origin = enumerator->Next()).is_empty()) {
-    if (host == net::GetHostOrSpecFromURL(origin))
-      origins->insert(origin);
+  base::Optional<url::Origin> origin;
+  while ((origin = enumerator->Next()).has_value()) {
+    if (host == net::GetHostOrSpecFromURL(origin->GetURL()))
+      origins->insert(origin->GetURL());
   }
 }
 

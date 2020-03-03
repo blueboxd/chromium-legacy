@@ -28,6 +28,7 @@ js_modulizer("modulize") {
     "prefs_test_cases.js",
     "prefs_tests.js",
     "pref_util_tests.js",
+    "reset_page_test.js",
     "search_engines_page_test.js",
     "search_page_test.js",
     "search_settings_test.js",
@@ -44,6 +45,7 @@ js_modulizer("modulize") {
     "test_extension_control_browser_proxy.js",
     "test_languages_browser_proxy.js",
     "test_lifetime_browser_proxy.js",
+    "test_reset_browser_proxy.js",
     "test_search_engines_browser_proxy.js",
     "test_util.js",
   ]
@@ -54,6 +56,7 @@ js_modulizer("modulize") {
     ]
   }
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
+                         "reset_page.TestResetBrowserProxy|TestResetBrowserProxy",
                          "settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW|CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW",
                          "settings.ChromeCleanupIdleReason|ChromeCleanupIdleReason",
                          "settings.FakeLanguageSettingsPrivate|FakeLanguageSettingsPrivate",

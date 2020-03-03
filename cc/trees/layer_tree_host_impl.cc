@@ -967,6 +967,12 @@ LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
       new LatencyInfoSwapPromiseMonitor(latency, nullptr, this));
 }
 
+std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+LayerTreeHostImpl::GetScopedEventMetricsMonitor(
+    const EventMetrics& event_metrics) {
+  return events_metrics_manager_.GetScopedMonitor(event_metrics);
+}
+
 ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
   DCHECK(!scroll_elasticity_helper_);
   if (settings_.enable_elastic_overscroll) {
@@ -3233,11 +3239,13 @@ void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
   // SwapPromiseMonitor to say something happened that may cause a swap in the
   // future. The name should not refer to SetNeedsRedraw but it does for now.
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  events_metrics_manager_.SaveActiveEventsMetrics();
   client_->SetNeedsOneBeginImplFrameOnImplThread();
 }
 
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  events_metrics_manager_.SaveActiveEventsMetrics();
   client_->SetNeedsRedrawOnImplThread();
 }
 
@@ -5860,6 +5868,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     // event, the LatencyInfo associated with the input event will not be
     // added as a swap promise and we won't get any swap results.
     NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+    events_metrics_manager_.SaveActiveEventsMetrics();
 
     // The animation is no longer targeting a snap position. By clearing the
     // target, this will ensure that we attempt to resnap at the end of this
@@ -6169,6 +6178,15 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
+}
+
+std::vector<EventMetrics> LayerTreeHostImpl::TakeEventsMetrics() {
+  return events_metrics_manager_.TakeSavedEventsMetrics();
+}
+
+void LayerTreeHostImpl::AppendEventsMetrics(
+    std::vector<EventMetrics> events_metrics) {
+  events_metrics_manager_.AppendToSavedEventsMetrics(std::move(events_metrics));
 }
 
 base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {

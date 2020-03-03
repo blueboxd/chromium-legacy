@@ -5,6 +5,7 @@
 #include "cc/scheduler/scheduler.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -145,10 +146,12 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token) {
+void Scheduler::DidSubmitCompositorFrame(
+    uint32_t frame_token,
+    std::vector<EventMetrics> events_metrics) {
   compositor_timing_history_->DidSubmitCompositorFrame(
       frame_token, begin_main_frame_args_.frame_id,
-      last_activate_origin_frame_args_.frame_id);
+      last_activate_origin_frame_args_.frame_id, std::move(events_metrics));
   state_machine_.DidSubmitCompositorFrame();
 
   // There is no need to call ProcessScheduledActions here because

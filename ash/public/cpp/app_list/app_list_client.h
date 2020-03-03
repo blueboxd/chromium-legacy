@@ -115,7 +115,10 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invoked when a "page break" item with |id| is deleted.
   virtual void OnPageBreakItemDeleted(int profile_id,
                                       const std::string& id) = 0;
-
+  // Invoked when a "quick setting" is changed.
+  virtual void OnQuickSettingsChanged(
+      const std::string& setting_name,
+      const std::vector<std::pair<std::string, int>>& values) = 0;
   // Updated when item with |id| is set to |visible|. Only sent if
   // |notify_visibility_change| was set on the SearchResultMetadata.
   virtual void OnSearchResultVisibilityChanged(const std::string& id,

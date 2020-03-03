@@ -41,8 +41,8 @@ class ChromeFileSystemDelegate : public FileSystemDelegate {
   void ConfirmSensitiveDirectoryAccess(bool has_write_permission,
                                        const base::string16& app_name,
                                        content::WebContents* web_contents,
-                                       const base::Closure& on_accept,
-                                       const base::Closure& on_cancel) override;
+                                       base::OnceClosure on_accept,
+                                       base::OnceClosure on_cancel) override;
   int GetDescriptionIdForAcceptType(const std::string& accept_type) override;
 #if defined(OS_CHROMEOS)
   FileSystemDelegate::GrantVolumesMode GetGrantVolumesMode(

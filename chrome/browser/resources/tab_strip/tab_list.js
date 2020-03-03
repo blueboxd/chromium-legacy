@@ -748,12 +748,6 @@ class TabListElement extends CustomElement {
     this.animateScrollPosition_(scrollBy);
   }
 
-  /** @param {!Element} element */
-  showDropPlaceholder(element) {
-    this.unpinnedTabsElement_.appendChild(element);
-    this.animateScrollPosition_(element.offsetLeft);
-  }
-
   /**
    * @param {number} tabId
    * @param {string} imgData

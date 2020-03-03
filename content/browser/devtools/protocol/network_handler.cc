@@ -392,8 +392,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
       return Network::Request::ReferrerPolicyEnum::SameOrigin;
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       return Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case network::mojom::ReferrerPolicy::
-        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
   }
   NOTREACHED();

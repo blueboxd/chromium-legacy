@@ -81,6 +81,8 @@ namespace {
 const char kXkbPrefix[] = "xkb:";
 const char kErrorFailToShowInputView[] =
     "Unable to show the input view window because the keyboard is not enabled.";
+const char kErrorFailToHideInputView[] =
+    "Unable to hide the input view window because the keyboard is not enabled.";
 const char kErrorRouterNotAvailable[] = "The router is not available.";
 const char kErrorInvalidInputMethod[] = "Input method not found.";
 const char kErrorSpellCheckNotAvailable[] =
@@ -261,6 +263,17 @@ InputMethodPrivateShowInputViewFunction::Run() {
   }
 
   keyboard_client->ShowKeyboard();
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateHideInputViewFunction::Run() {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled()) {
+    return RespondNow(Error(kErrorFailToHideInputView));
+  }
+
+  keyboard_client->HideKeyboard(ash::HideReason::kUser);
   return RespondNow(NoArguments());
 }
 

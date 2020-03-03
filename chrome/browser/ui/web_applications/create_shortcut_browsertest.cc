@@ -26,11 +26,11 @@ namespace web_app {
 class CreateShortcutBrowserTest : public WebAppControllerBrowserTest {
  public:
   AppId InstallShortcutAppForCurrentUrl() {
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(true, false);
+    chrome::SetAutoAcceptWebAppDialogForTesting(true, false);
     WebAppInstallObserver observer(profile());
     CHECK(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
     AppId app_id = observer.AwaitNextInstall();
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(false, false);
+    chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
     return app_id;
   }
 
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
 
   AppId app_id = InstallShortcutAppForCurrentUrl();
   EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
-  // Bookmark apps to PWAs should launch in a tab.
+  // Shortcut apps to PWAs should launch in a tab.
   EXPECT_EQ(registrar().GetAppUserDisplayMode(app_id), DisplayMode::kBrowser);
 
   EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));

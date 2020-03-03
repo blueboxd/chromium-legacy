@@ -138,7 +138,7 @@ TEST_F(WebGPUDecoderTest, DawnCommands) {
   }
 
   cmds::DawnCommands cmd;
-  cmd.Init(0, 0, 0);
+  cmd.Init(kDeviceClientID, 0, 0, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 

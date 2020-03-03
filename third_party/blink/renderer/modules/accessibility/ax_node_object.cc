@@ -657,7 +657,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLTableCellElement>(*GetNode()))
     return DetermineTableCellRole();
   if (IsA<HTMLTableSectionElement>(*GetNode()))
-    return DetermineTableCellRole();
+    return DetermineTableSectionRole();
 
   if (const auto* input = DynamicTo<HTMLInputElement>(*GetNode())) {
     const AtomicString& type = input->type();

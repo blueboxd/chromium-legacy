@@ -6,7 +6,11 @@ import("//build/config/ios/asset_catalog.gni")
 import("//build/config/ios/rules.gni")
 
 group("resources") {
-  deps = [ ":consent_illustration" ]
+  deps = [
+    ":consent_illustration",
+    ":empty_credentials_illustration",
+    ":stale_credentials_illustration",
+  ]
 }
 
 imageset("consent_illustration") {
@@ -14,5 +18,21 @@ imageset("consent_illustration") {
     "consent_illustration.imageset/Contents.json",
     "consent_illustration.imageset/illustration_dark.png",
     "consent_illustration.imageset/illustration_light.png",
+  ]
+}
+
+imageset("empty_credentials_illustration") {
+  sources = [
+    "empty_credentials_illustration.imageset/Contents.json",
+    "empty_credentials_illustration.imageset/illustration_dark.png",
+    "empty_credentials_illustration.imageset/illustration_light.png",
+  ]
+}
+
+imageset("stale_credentials_illustration") {
+  sources = [
+    "stale_credentials_illustration.imageset/Contents.json",
+    "stale_credentials_illustration.imageset/illustration_dark.png",
+    "stale_credentials_illustration.imageset/illustration_light.png",
   ]
 }

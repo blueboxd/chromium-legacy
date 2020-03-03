@@ -26,6 +26,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -345,7 +346,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Sends updated enforcement of insecure request policy to all frame proxies
   // when the frame changes its setting.
-  void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
+  void OnEnforceInsecureRequestPolicy(
+      blink::mojom::InsecureRequestPolicy policy);
 
   // Sends updated enforcement of upgrade insecure navigations set to all frame
   // proxies when the frame changes its setting.

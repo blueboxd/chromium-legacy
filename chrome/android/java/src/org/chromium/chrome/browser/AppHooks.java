@@ -90,10 +90,13 @@ public abstract class AppHooks {
 
     /**
      * Initiate AndroidEdu device check.
+     * TODO(https://crbug.com/1044616) This method needs to be removed once we will remove the
+     *  downstream overriden method
      * @param callback Callback that should receive the results of the AndroidEdu device check.
      */
     public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onSchoolCheckDone(false));
+        assert false : "This method should not be called!";
     }
 
     /**

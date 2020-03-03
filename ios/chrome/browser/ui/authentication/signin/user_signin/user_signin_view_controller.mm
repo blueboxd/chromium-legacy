@@ -105,6 +105,19 @@ enum AuthenticationButtonType {
                     forControlEvents:UIControlEventTouchUpInside];
 }
 
+#pragma mark - MDCActivityIndicator
+
+- (void)startAnimatingActivityIndicator {
+  [self addActivityIndicatorToView];
+  [self.activityIndicator startAnimating];
+}
+
+- (void)stopAnimatingActivityIndicator {
+  [self.activityIndicator stopAnimating];
+  [self.activityIndicator removeFromSuperview];
+  self.activityIndicator = nil;
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -113,7 +126,6 @@ enum AuthenticationButtonType {
 
   [self addConfirmationButtonToView];
   [self embedUserConsentView];
-  [self addActivityIndicatorToView];
   [self addSkipSigninButtonToView];
 
   // The layout constraints should be added at the end once all of the views
@@ -126,7 +138,6 @@ enum AuthenticationButtonType {
                                           constants.ButtonBottomPadding +
                                           constants.ButtonTopPadding,
                                       0));
-  AddSameCenterConstraints(self.view, self.activityIndicator);
   AddSameConstraintsToSidesWithInsets(
       self.skipSigninButton, self.view,
       LayoutSides::kBottom | LayoutSides::kLeading,
@@ -179,9 +190,11 @@ enum AuthenticationButtonType {
       [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
   self.activityIndicator.strokeWidth = 3;
   self.activityIndicator.cycleColors = @[ [UIColor colorNamed:kBlueColor] ];
-  self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self.view addSubview:self.activityIndicator];
+
+  self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameCenterConstraints(self.view, self.activityIndicator);
 }
 
 // Embeds the user consent view in the root view.
@@ -261,11 +274,15 @@ enum AuthenticationButtonType {
 #pragma mark - Events
 
 - (void)onSkipSigninButtonPressed:(id)sender {
+  DCHECK_EQ(self.skipSigninButton, sender);
+
+  [self stopAnimatingActivityIndicator];
   [self.delegate userSigninViewControllerDidTapOnSkipSignin];
 }
 
 - (void)onConfirmationButtonPressed:(id)sender {
   DCHECK_EQ(self.confirmationButton, sender);
+
   switch (self.confirmationButton.tag) {
     case AuthenticationButtonTypeMore: {
       [self.delegate userSigninViewControllerDidScrollOnUnifiedConsent];
@@ -276,6 +293,7 @@ enum AuthenticationButtonType {
       break;
     }
     case AuthenticationButtonTypeConfirmation: {
+      [self startAnimatingActivityIndicator];
       [self.delegate userSigninViewControllerDidTapOnSignin];
       break;
     }

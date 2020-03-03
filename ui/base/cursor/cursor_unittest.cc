@@ -34,8 +34,8 @@ TEST(CursorTest, CustomType) {
   EXPECT_EQ(mojom::CursorType::kCustom, cursor.native_type());
 
   const float kScale = 2.0f;
-  cursor.set_device_scale_factor(kScale);
-  EXPECT_EQ(kScale, cursor.device_scale_factor());
+  cursor.set_image_scale_factor(kScale);
+  EXPECT_EQ(kScale, cursor.image_scale_factor());
 
   const gfx::Point kHotspot = gfx::Point(5, 2);
   cursor.set_custom_hotspot(kHotspot);

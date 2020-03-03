@@ -184,8 +184,8 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Checks that the policy was refreshed the given number of times.
   bool CheckPolicyRefreshCount(int count);
 
-  // Returns the object id of the given policy object.
-  const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
+  // Returns the invalidation topic corresponding to the given policy object.
+  const syncer::Topic& GetPolicyTopic(PolicyObject object) const;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 
@@ -200,9 +200,9 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // The invalidator which will be tested.
   std::unique_ptr<CloudPolicyInvalidator> invalidator_;
 
-  // Object ids for the test policy objects.
-  invalidation::ObjectId object_id_a_;
-  invalidation::ObjectId object_id_b_;
+  // Topics for the test policy objects.
+  syncer::Topic topic_a_;
+  syncer::Topic topic_b_;
 
   // Fake policy values which are alternated to cause the store to report a
   // changed policy.
@@ -221,8 +221,8 @@ CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase()
             network::TestNetworkConnectionTracker::CreateGetter()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
-      object_id_a_(syncer::kDeprecatedSourceForFCM, "asdf"),
-      object_id_b_(syncer::kDeprecatedSourceForFCM, "zxcv"),
+      topic_a_("asdf"),
+      topic_b_("zxcv"),
       policy_value_a_("asdf"),
       policy_value_b_("zxcv"),
       policy_value_cur_(policy_value_a_) {
@@ -285,7 +285,7 @@ void CloudPolicyInvalidatorTestBase::StorePolicy(PolicyObject object,
   em::PolicyData* data = new em::PolicyData();
   if (object != POLICY_OBJECT_NONE) {
     // CloudPolicyInvalidator expects the topic to subscribe in this field.
-    data->set_policy_invalidation_topic(GetPolicyObjectId(object).name());
+    data->set_policy_invalidation_topic(GetPolicyTopic(object));
   }
   data->set_timestamp(time.ToJavaTime());
   // Swap the policy value if a policy change is desired.
@@ -320,10 +320,8 @@ syncer::Invalidation CloudPolicyInvalidatorTestBase::FireInvalidation(
     PolicyObject object,
     int64_t version,
     const std::string& payload) {
-  syncer::Invalidation invalidation = syncer::Invalidation::Init(
-      GetPolicyObjectId(object),
-      version,
-      payload);
+  syncer::Invalidation invalidation =
+      syncer::Invalidation::Init(GetPolicyTopic(object), version, payload);
   invalidation_service_.EmitInvalidationForTest(invalidation);
   return invalidation;
 }
@@ -331,8 +329,8 @@ syncer::Invalidation CloudPolicyInvalidatorTestBase::FireInvalidation(
 syncer::Invalidation
 CloudPolicyInvalidatorTestBase::FireUnknownVersionInvalidation(
     PolicyObject object) {
-  syncer::Invalidation invalidation = syncer::Invalidation::InitUnknownVersion(
-      GetPolicyObjectId(object));
+  syncer::Invalidation invalidation =
+      syncer::Invalidation::InitUnknownVersion(GetPolicyTopic(object));
   invalidation_service_.EmitInvalidationForTest(invalidation);
   return invalidation;
 }
@@ -443,10 +441,10 @@ bool CloudPolicyInvalidatorTestBase::CheckPolicyRefreshCount(int count) {
   return testing::Mock::VerifyAndClearExpectations(client_);
 }
 
-const invalidation::ObjectId& CloudPolicyInvalidatorTestBase::GetPolicyObjectId(
+const syncer::Topic& CloudPolicyInvalidatorTestBase::GetPolicyTopic(
     PolicyObject object) const {
   EXPECT_TRUE(object == POLICY_OBJECT_A || object == POLICY_OBJECT_B);
-  return object == POLICY_OBJECT_A ? object_id_a_ : object_id_b_;
+  return object == POLICY_OBJECT_A ? topic_a_ : topic_b_;
 }
 
 class CloudPolicyInvalidatorTest : public CloudPolicyInvalidatorTestBase {};

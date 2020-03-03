@@ -27,6 +27,8 @@ class MirrorAccountReconcilorDelegate : public AccountReconcilorDelegate,
   // |ChromeOSAccountReconcilorDelegate|.
   bool IsReconcileEnabled() const override;
 
+  IdentityManager* GetIdentityManager() const { return identity_manager_; }
+
  private:
   // AccountReconcilorDelegate:
   bool IsAccountConsistencyEnforced() const override;

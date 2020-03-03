@@ -7,57 +7,9 @@
 
 #include "build/build_config.h"
 
-#if defined(COMPILER_MSVC)
-
-#if !defined(__clang__)
+#if defined(COMPILER_MSVC) && !defined(__clang__)
 #error "Only clang-cl is supported on Windows, see https://crbug.com/988071"
 #endif
-
-// Macros for suppressing and disabling warnings on MSVC.
-//
-// Warning numbers are enumerated at:
-// http://msdn.microsoft.com/en-us/library/8x5x43k7(VS.80).aspx
-//
-// The warning pragma:
-// http://msdn.microsoft.com/en-us/library/2c8f766e(VS.80).aspx
-//
-// Using __pragma instead of #pragma inside macros:
-// http://msdn.microsoft.com/en-us/library/d9x1s805.aspx
-
-// MSVC_PUSH_DISABLE_WARNING pushes |n| onto a stack of warnings to be disabled.
-// The warning remains disabled until popped by MSVC_POP_WARNING.
-#define MSVC_PUSH_DISABLE_WARNING(n) \
-  __pragma(warning(push)) __pragma(warning(disable : n))
-
-// Pop effects of innermost MSVC_PUSH_* macro.
-#define MSVC_POP_WARNING() __pragma(warning(pop))
-
-#else  // Not MSVC
-
-#define MSVC_PUSH_DISABLE_WARNING(n)
-#define MSVC_POP_WARNING()
-#define MSVC_DISABLE_OPTIMIZE()
-#define MSVC_ENABLE_OPTIMIZE()
-
-#endif  // COMPILER_MSVC
-
-// These macros can be helpful when investigating compiler bugs or when
-// investigating issues in local optimized builds, by temporarily disabling
-// optimizations for a single function or file. These macros should never be
-// used to permanently work around compiler bugs or other mysteries, and should
-// not be used in landed changes.
-#if !defined(OFFICIAL_BUILD)
-#if defined(__clang__)
-#define DISABLE_OPTIMIZE() __pragma(clang optimize off)
-#define ENABLE_OPTIMIZE() __pragma(clang optimize on)
-#elif defined(COMPILER_MSVC)
-#define DISABLE_OPTIMIZE() __pragma(optimize("", off))
-#define ENABLE_OPTIMIZE() __pragma(optimize("", on))
-#else
-// These macros are not currently available for other compiler options.
-#endif
-// These macros are not available in official builds.
-#endif  // !defined(OFFICIAL_BUILD)
 
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment

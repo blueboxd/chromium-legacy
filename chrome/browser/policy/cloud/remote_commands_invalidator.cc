@@ -12,8 +12,8 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/invalidation/public/single_object_invalidation_set.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 
 namespace policy {
 
@@ -76,7 +76,7 @@ void RemoteCommandsInvalidator::OnInvalidatorStateChange(
 }
 
 void RemoteCommandsInvalidator::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+    const syncer::TopicInvalidationMap& invalidation_map) {
   DCHECK_EQ(STARTED, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -84,7 +84,7 @@ void RemoteCommandsInvalidator::OnIncomingInvalidation(
     LOG(WARNING) << "Unexpected invalidation received.";
 
   const syncer::SingleObjectInvalidationSet& list =
-      invalidation_map.ForObject(object_id_);
+      invalidation_map.ForTopic(topic_);
   if (list.IsEmpty()) {
     NOTREACHED();
     return;
@@ -113,22 +113,21 @@ void RemoteCommandsInvalidator::ReloadPolicyData(
   if (state_ != STARTED)
     return;
 
-  // Create the ObjectId based on the policy data.
-  // If the policy does not specify an the ObjectId, then unregister.
-  invalidation::ObjectId object_id;
-  if (!policy || !GetRemoteCommandObjectIdFromPolicy(*policy, &object_id)) {
+  // Create the Topic based on the policy data.
+  // If the policy does not specify the Topic, then unregister.
+  syncer::Topic topic;
+  if (!policy || !GetRemoteCommandTopicFromPolicy(*policy, &topic)) {
     Unregister();
     return;
   }
 
-  // If the policy object id in the policy data is different from the currently
-  // registered object id, update the object registration.
-  if (!is_registered_ || !(object_id == object_id_))
-    Register(object_id);
+  // If the policy topic in the policy data is different from the currently
+  // registered topic, update the object registration.
+  if (!is_registered_ || topic != topic_)
+    Register(topic);
 }
 
-void RemoteCommandsInvalidator::Register(
-    const invalidation::ObjectId& object_id) {
+void RemoteCommandsInvalidator::Register(const syncer::Topic& topic) {
   // Register this handler with the invalidation service if needed.
   if (!is_registered_) {
     OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
@@ -136,19 +135,18 @@ void RemoteCommandsInvalidator::Register(
     is_registered_ = true;
   }
 
-  object_id_ = object_id;
+  topic_ = topic;
   UpdateInvalidationsEnabled();
 
-  // Update registration with the invalidation service.
-  syncer::ObjectIdSet ids;
-  ids.insert(object_id);
-  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
+  // Update subscription with the invalidation service.
+  CHECK(
+      invalidation_service_->UpdateInterestedTopics(this, /*topics=*/{topic}));
 }
 
 void RemoteCommandsInvalidator::Unregister() {
   if (is_registered_) {
-    CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(
-        this, syncer::ObjectIdSet()));
+    CHECK(invalidation_service_->UpdateInterestedTopics(this,
+                                                        syncer::TopicSet()));
     invalidation_service_->UnregisterInvalidationHandler(this);
     is_registered_ = false;
     UpdateInvalidationsEnabled();

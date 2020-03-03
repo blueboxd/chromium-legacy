@@ -297,6 +297,8 @@ def method_context(interface, method, component_info, is_visible=True):
 def argument_context(interface, method, argument, index, is_visible=True):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
+    if idl_type.has_string_context:
+        includes.add('third_party/blink/renderer/bindings/core/v8/generated_code_helper.h')
     if is_visible:
         idl_type.add_includes_for_type(extended_attributes)
     this_cpp_value = cpp_value(interface, method, index)
@@ -427,9 +429,12 @@ def v8_value_to_local_cpp_variadic_value(argument, index):
     assert argument.is_variadic
     idl_type = v8_types.native_value_traits_type_name(argument.idl_type,
                                                       argument.extended_attributes, True)
-
+    execution_context_if_needed = ''
+    if argument.idl_type.has_string_context:
+        execution_context_if_needed = ', bindings::ExecutionContextFromV8Wrappable(impl)'
+    assign_expression = 'ToImplArguments<%s>(info, %s, exception_state%s)' % (idl_type, index, execution_context_if_needed)
     return {
-        'assign_expression': 'ToImplArguments<%s>(info, %s, exception_state)' % (idl_type, index),
+        'assign_expression': assign_expression,
         'check_expression': 'exception_state.HadException()',
         'cpp_name': NameStyleConverter(argument.name).to_snake_case(),
         'declare_variable': False,

@@ -50,7 +50,6 @@
 // <include src="oobe_screen_demo_preferences.js">
 // <include src="oobe_screen_enable_debugging.js">
 // <include src="oobe_screen_eula.js">
-// <include src="oobe_screen_hid_detection.js">
 // <include src="oobe_screen_network.js">
 // <include src="oobe_screen_oauth_enrollment.js">
 // <include src="oobe_screen_update.js">
@@ -65,7 +64,6 @@ cr.define('cr.ui.Oobe', function() {
      */
     initialize() {
       cr.ui.login.DisplayManager.initialize();
-      login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
       login.NetworkScreen.register();
       login.EulaScreen.register();

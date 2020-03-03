@@ -41,6 +41,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import posixpath
 
+from idl_types import IdlAnnotatedType
 from idl_types import IdlArrayOrSequenceType
 from idl_types import IdlNullableType
 from idl_types import IdlRecordType
@@ -155,7 +156,8 @@ def string_resource_mode(idl_type):
         treat_null_as = idl_type.extended_attributes.get('TreatNullAs')
         if treat_null_as == 'EmptyString':
             return 'kTreatNullAsEmptyString'
-        raise ValueError('Unknown value for [TreatNullAs]: %s' % treat_null_as)
+        elif treat_null_as:
+            raise ValueError('Unknown value for [TreatNullAs]: %s' % treat_null_as)
     return ''
 
 
@@ -238,6 +240,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     if base_idl_type == 'SerializedScriptValue':
         return 'scoped_refptr<%s>' % base_idl_type
     if idl_type.is_string_type:
+        if idl_type.has_string_context:
+            return 'String'
         if not raw_type:
             return 'const String&' if used_as_rvalue_type else 'String'
         return 'V8StringResource<%s>' % string_resource_mode(idl_type)
@@ -588,10 +592,12 @@ V8_VALUE_TO_CPP_VALUE = {
 
 def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or idl_type.is_enum or idl_type.is_dictionary or idl_type.is_array_buffer_view_or_typed_array
+            or idl_type.has_string_context
             or idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'Object', 'USVString', 'SerializedScriptValue'))
 
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
+IdlAnnotatedType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
 IdlRecordType.v8_conversion_needs_exception_state = True
 IdlUnionType.v8_conversion_needs_exception_state = True
@@ -680,7 +686,10 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     else:
         arguments = v8_value
 
-    if base_idl_type in V8_VALUE_TO_CPP_VALUE:
+    if idl_type.has_string_context:
+        cpp_expression_format = 'NativeValueTraits<IDL%s>::NativeValue(%s, %s, exception_state, bindings::ExecutionContextFromV8Wrappable(impl))' % (
+            idl_type.name, isolate, v8_value)
+    elif base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.name == 'ArrayBuffer':
         cpp_expression_format = (
@@ -692,7 +701,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
             cpp_expression_format = ('ToMaybeShared<%s>({isolate}, {v8_value}, exception_state)' % this_cpp_type)
         else:
             cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exception_state)' % this_cpp_type)
-
     elif idl_type.is_union_type:
         nullable = 'UnionTypeConversionMode::kNullable' if idl_type.includes_nullable_type \
             else 'UnionTypeConversionMode::kNotNullable'

@@ -63,9 +63,9 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
@@ -137,6 +137,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
                           blink::mojom::WebFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestDestination,
                           network::mojom::RequestDestination::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::InsecureRequestPolicy,
+                          blink::mojom::InsecureRequestPolicy::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
@@ -321,7 +323,8 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   IPC_STRUCT_MEMBER(url::Origin, origin)
 
   // The insecure request policy the document for the load is enforcing.
-  IPC_STRUCT_MEMBER(blink::WebInsecureRequestPolicy, insecure_request_policy)
+  IPC_STRUCT_MEMBER(blink::mojom::InsecureRequestPolicy,
+                    insecure_request_policy)
 
   // The upgrade insecure navigations set the document for the load is
   // enforcing.
@@ -558,7 +561,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
 // Update a proxy's replicated enforcement of insecure request policy.
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
-                    blink::WebInsecureRequestPolicy)
+                    blink::mojom::InsecureRequestPolicy)
 
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.

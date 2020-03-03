@@ -10,6 +10,7 @@
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/browser/procedural_block_types.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
@@ -17,6 +18,10 @@ class ChromeBrowserState;
 @class TabModel;
 
 @protocol SceneControllerGuts <WebStateListObserving>
+
+// The scene level component for url loading. Is passed down to
+// browser state level UrlLoadingService instances.
+@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;

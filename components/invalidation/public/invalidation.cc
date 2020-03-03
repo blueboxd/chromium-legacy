@@ -26,24 +26,40 @@ const char kPayloadKey[] = "payload";
 const int64_t kInvalidVersion = -1;
 }
 
+// static
 Invalidation Invalidation::Init(const invalidation::ObjectId& id,
                                 int64_t version,
                                 const std::string& payload) {
   return Invalidation(id, false, version, payload, AckHandle::CreateUnique());
 }
 
+// static
+Invalidation Invalidation::Init(const Topic& topic,
+                                int64_t version,
+                                const std::string& payload) {
+  return Invalidation::Init(ConvertTopicToId(topic), version, payload);
+}
+
+// static
 Invalidation Invalidation::InitUnknownVersion(
     const invalidation::ObjectId& id) {
   return Invalidation(
       id, true, kInvalidVersion, std::string(), AckHandle::CreateUnique());
 }
 
+// static
+Invalidation Invalidation::InitUnknownVersion(const Topic& topic) {
+  return InitUnknownVersion(ConvertTopicToId(topic));
+}
+
+// static
 Invalidation Invalidation::InitFromDroppedInvalidation(
     const Invalidation& dropped) {
   return Invalidation(
       dropped.id_, true, kInvalidVersion, std::string(), dropped.ack_handle_);
 }
 
+// static
 std::unique_ptr<Invalidation> Invalidation::InitFromValue(
     const base::DictionaryValue& value) {
   invalidation::ObjectId id;
@@ -81,7 +97,10 @@ std::unique_ptr<Invalidation> Invalidation::InitFromValue(
 
 Invalidation::Invalidation(const Invalidation& other) = default;
 
-Invalidation::~Invalidation() {
+Invalidation::~Invalidation() = default;
+
+Topic Invalidation::topic() const {
+  return id_.name();
 }
 
 invalidation::ObjectId Invalidation::object_id() const {
@@ -120,8 +139,8 @@ bool Invalidation::SupportsAcknowledgement() const {
 void Invalidation::Acknowledge() const {
   if (SupportsAcknowledgement()) {
     ack_handler_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AckHandler::Acknowledge, ack_handler_, id_,
-                                  ack_handle_));
+        FROM_HERE, base::BindOnce(&AckHandler::Acknowledge, ack_handler_,
+                                  topic(), ack_handle_));
   }
 }
 
@@ -129,7 +148,7 @@ void Invalidation::Drop() {
   if (SupportsAcknowledgement()) {
     ack_handler_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&AckHandler::Drop, ack_handler_, id_, ack_handle_));
+        base::BindOnce(&AckHandler::Drop, ack_handler_, topic(), ack_handle_));
   }
 }
 

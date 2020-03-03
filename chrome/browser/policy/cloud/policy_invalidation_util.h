@@ -13,36 +13,30 @@ class PolicyData;
 
 }  // namespace enterprise_management
 
-namespace invalidation {
-
-class ObjectId;
-
-}  // namespace invalidation
-
 namespace policy {
 
-// Returns true if |topic| is a public topic. If |topic| is public,
-// publish/subscribe service will fan out all the outgoing messages to all the
-// devices subscribed to this topic.
+// Returns true if |topic| is a public topic. Topic can be either public or
+// private. Private topic is keyed by GAIA ID, while public isn't, so many
+// users can be subscribed to the same public topic.
 // For example:
-// If device subscribes to "DeviceGuestModeEnabled" public topic all the
-// instances subscribed to this topic will receive all the outgoing messages
-// addressed to topic "DeviceGuestModeEnabled". But if 2 devices with different
-// InstanceID subscribe to private topic "BOOKMARK", they will receive different
-// set of messages addressed to pair ("BOOKMARK", InstanceID) respectievely.
+// If client subscribes to "DeviceGuestModeEnabled" public topic all the
+// clients subscribed to this topic will receive all the outgoing messages
+// addressed to topic "DeviceGuestModeEnabled". But if 2 clients with different
+// users subscribe to private topic "BOOKMARK", they will receive different set
+// of messages addressed to pair ("BOOKMARK", GAIA ID) respectievely.
 bool IsPublicInvalidationTopic(const syncer::Topic& topic);
 
 // Returns true if |policy| has data about policy to invalidate, and saves
-// that data in |object_id|, and false otherwise.
-bool GetCloudPolicyObjectIdFromPolicy(
+// that data in |topic|, and false otherwise.
+bool GetCloudPolicyTopicFromPolicy(
     const enterprise_management::PolicyData& policy,
-    invalidation::ObjectId* object_id);
+    syncer::Topic* topic);
 
-// The same as GetCloudPolicyObjectIdFromPolicy but gets the |object_id| for
+// The same as GetCloudPolicyTopicFromPolicy but gets the |topic| for
 // remote command.
-bool GetRemoteCommandObjectIdFromPolicy(
+bool GetRemoteCommandTopicFromPolicy(
     const enterprise_management::PolicyData& policy,
-    invalidation::ObjectId* object_id);
+    syncer::Topic* topic);
 
 }  // namespace policy
 

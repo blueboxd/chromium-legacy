@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
@@ -28,7 +27,6 @@ namespace blink {
 namespace {
 
 enum TrustedTypeViolationKind {
-  kAnyTrustedTypeAssignment,
   kTrustedHTMLAssignment,
   kTrustedScriptAssignment,
   kTrustedScriptURLAssignment,
@@ -46,8 +44,6 @@ enum TrustedTypeViolationKind {
 
 const char* GetMessage(TrustedTypeViolationKind kind) {
   switch (kind) {
-    case kAnyTrustedTypeAssignment:
-      return "This document requires any trusted type assignment.";
     case kTrustedHTMLAssignment:
       return "This document requires 'TrustedHTML' assignment.";
     case kTrustedScriptAssignment:
@@ -229,31 +225,6 @@ String GetStringFromScriptHelper(
 bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
   return execution_context && execution_context->RequireTrustedTypes() &&
          !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context);
-}
-
-String GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
-        string_or_trusted_type,
-    const ExecutionContext* execution_context,
-    ExceptionState& exception_state) {
-  DCHECK(!string_or_trusted_type.IsNull());
-
-  if (string_or_trusted_type.IsString() &&
-      RequireTrustedTypesCheck(execution_context)) {
-    TrustedTypeFail(
-        kAnyTrustedTypeAssignment, execution_context, exception_state,
-        GetStringFromTrustedTypeWithoutCheck(string_or_trusted_type));
-    return g_empty_string;
-  }
-
-  if (string_or_trusted_type.IsTrustedHTML())
-    return string_or_trusted_type.GetAsTrustedHTML()->toString();
-  if (string_or_trusted_type.IsTrustedScript())
-    return string_or_trusted_type.GetAsTrustedScript()->toString();
-  if (string_or_trusted_type.IsTrustedScriptURL())
-    return string_or_trusted_type.GetAsTrustedScriptURL()->toString();
-
-  return string_or_trusted_type.GetAsString();
 }
 
 String GetStringFromTrustedTypeWithoutCheck(

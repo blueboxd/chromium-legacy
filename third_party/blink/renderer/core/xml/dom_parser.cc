@@ -64,4 +64,8 @@ void DOMParser::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
+Document* DOMParser::GetDocument() const {
+  return context_document_.Get();
+}
+
 }  // namespace blink

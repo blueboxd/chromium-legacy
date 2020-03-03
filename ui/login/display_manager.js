@@ -125,7 +125,6 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_HID_DETECTION,
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE

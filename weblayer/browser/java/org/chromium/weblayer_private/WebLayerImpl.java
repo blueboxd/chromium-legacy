@@ -37,6 +37,7 @@ import org.chromium.components.embedder_support.application.ClassLoaderContextWr
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
@@ -189,6 +190,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
         R.onResourcesLoaded(resourcesPackageId);
+        SelectionPopupController.setMustUseWebContentsContext();
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
         BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);

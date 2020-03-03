@@ -25,8 +25,8 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
@@ -43,7 +43,6 @@
 #include "components/sync/test/callback_counter.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google/cacheinvalidation/include/types.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -150,9 +149,9 @@ class MockInvalidationService : public invalidation::InvalidationService {
 
   MOCK_METHOD1(RegisterInvalidationHandler,
                void(syncer::InvalidationHandler* handler));
-  MOCK_METHOD2(UpdateRegisteredInvalidationIds,
+  MOCK_METHOD2(UpdateInterestedTopics,
                bool(syncer::InvalidationHandler* handler,
-                    const syncer::ObjectIdSet& ids));
+                    const syncer::TopicSet& topics));
   MOCK_METHOD1(UnregisterInvalidationHandler,
                void(syncer::InvalidationHandler* handler));
   MOCK_METHOD0(GetInvalidatorStat, syncer::InvalidatorState());
@@ -188,8 +187,7 @@ class SyncEngineImplTest : public testing::Test {
 
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     sync_thread_.StartAndWaitForTesting();
-    ON_CALL(invalidator_,
-            UpdateRegisteredInvalidationIds(testing::_, testing::_))
+    ON_CALL(invalidator_, UpdateInterestedTopics(testing::_, testing::_))
         .WillByDefault(testing::Return(true));
     backend_ = std::make_unique<SyncEngineImpl>(
         "dummyDebugName", &invalidator_, sync_prefs_->AsWeakPtr(),
@@ -752,15 +750,14 @@ TEST_F(SyncEngineImplTest,
 #endif
 
   InitializeBackend(true);
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(),
-                  ModelTypeSetToObjectIdSet(invalidation_enabled_types)));
+  EXPECT_CALL(
+      invalidator_,
+      UpdateInterestedTopics(
+          backend_.get(), ModelTypeSetToTopicSet(invalidation_enabled_types)));
   ConfigureDataTypes();
 
   // At shutdown, we clear the registered invalidation ids.
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+  EXPECT_CALL(invalidator_, UpdateInterestedTopics(backend_.get(), TopicSet()));
 }
 
 TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
@@ -773,14 +770,13 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
 
   InitializeBackend(true);
   EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
-                                      enabled_types_, CommitOnlyTypes()))));
+              UpdateInterestedTopics(backend_.get(),
+                                     ModelTypeSetToTopicSet(Difference(
+                                         enabled_types_, CommitOnlyTypes()))));
   ConfigureDataTypes();
 
   // At shutdown, we clear the registered invalidation ids.
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+  EXPECT_CALL(invalidator_, UpdateInterestedTopics(backend_.get(), TopicSet()));
 }
 
 TEST_F(SyncEngineImplTest,
@@ -795,9 +791,9 @@ TEST_F(SyncEngineImplTest,
   ConfigureDataTypes();
 
   EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
-                                      enabled_types_, CommitOnlyTypes()))));
+              UpdateInterestedTopics(backend_.get(),
+                                     ModelTypeSetToTopicSet(Difference(
+                                         enabled_types_, CommitOnlyTypes()))));
   backend_->SetInvalidationsForSessionsEnabled(true);
 
   ModelTypeSet enabled_types(enabled_types_);
@@ -806,14 +802,13 @@ TEST_F(SyncEngineImplTest,
   enabled_types.Remove(FAVICON_TRACKING);
 
   EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(
-                  backend_.get(), ModelTypeSetToObjectIdSet(Difference(
-                                      enabled_types, CommitOnlyTypes()))));
+              UpdateInterestedTopics(backend_.get(),
+                                     ModelTypeSetToTopicSet(Difference(
+                                         enabled_types, CommitOnlyTypes()))));
   backend_->SetInvalidationsForSessionsEnabled(false);
 
   // At shutdown, we clear the registered invalidation ids.
-  EXPECT_CALL(invalidator_,
-              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+  EXPECT_CALL(invalidator_, UpdateInterestedTopics(backend_.get(), TopicSet()));
 }
 
 // Regression test for crbug.com/1019956.

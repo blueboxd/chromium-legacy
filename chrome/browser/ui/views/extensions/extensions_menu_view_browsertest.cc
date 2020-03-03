@@ -52,6 +52,11 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
   }
 
   void ShowUi(const std::string& name) override {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // The extensions menu can appear offscreen on Linux, so verifying bounds
+    // makes the tests flaky.
+    set_should_verify_dialog_bounds(false);
+#endif
     ui_test_name_ = name;
 
     if (name == "ReloadPageBubble") {

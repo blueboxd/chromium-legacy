@@ -3709,7 +3709,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
     return aura::client::GetCursorClient(
                browser()->window()->GetNativeWindow()->GetRootWindow())
         ->GetCursor()
-        .device_scale_factor();
+        .image_scale_factor();
   }
 
  private:

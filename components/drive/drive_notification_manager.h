@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_handler.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace invalidation {
@@ -47,7 +48,7 @@ class DriveNotificationManager : public KeyedService,
   // syncer::InvalidationHandler implementation.
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+      const syncer::TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   bool IsPublicTopic(const syncer::Topic& topic) const override;
 
@@ -108,10 +109,10 @@ class DriveNotificationManager : public KeyedService,
   // Returns a string representation of NotificationSource.
   static std::string NotificationSourceToString(NotificationSource source);
 
-  std::string GetDriveInvalidationObjectId() const;
-  std::string GetTeamDriveInvalidationObjectId(
+  syncer::Topic GetDriveInvalidationTopic() const;
+  syncer::Topic GetTeamDriveInvalidationTopic(
       const std::string& team_drive_id) const;
-  std::string ExtractTeamDriveId(base::StringPiece object_id) const;
+  std::string ExtractTeamDriveId(base::StringPiece topic_name) const;
 
   invalidation::InvalidationService* invalidation_service_;
   base::ObserverList<DriveNotificationObserver>::Unchecked observers_;

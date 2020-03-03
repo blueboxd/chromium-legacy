@@ -9,7 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigation_preload_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -277,8 +279,9 @@ ScriptPromise ServiceWorkerRegistration::update(
   auto mojom_settings_object = mojom::blink::FetchClientSettingsObject::New(
       settings_object.GetReferrerPolicy(),
       KURL(settings_object.GetOutgoingReferrer()),
-      settings_object.GetInsecureRequestsPolicy() &
-              blink::kUpgradeInsecureRequests
+      (settings_object.GetInsecureRequestsPolicy() &
+       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+              mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone
           ? blink::mojom::InsecureRequestsPolicy::kUpgrade
           : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
 

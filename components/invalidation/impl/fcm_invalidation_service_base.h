@@ -65,11 +65,8 @@ class FCMInvalidationServiceBase
   // It is an error to have registered handlers when the service is destroyed.
   void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  // TODO(crbug.com/1029698,crbug.com/1029481): This methods updates the set of
-  // *topics* that we're *subscribed* to. Once the legacy Tango implementation
-  // (i.e. TiclInvalidationService) is gone, rename accordingly.
-  bool UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
-                                       const syncer::ObjectIdSet& ids) override;
+  bool UpdateInterestedTopics(syncer::InvalidationHandler* handler,
+                              const syncer::TopicSet& topics) override;
   void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
   syncer::InvalidatorState GetInvalidatorState() const override;

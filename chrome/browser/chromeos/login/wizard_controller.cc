@@ -540,6 +540,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   if (CanShowHIDDetectionScreen()) {
     append(std::make_unique<chromeos::HIDDetectionScreen>(
         oobe_ui->GetView<HIDDetectionScreenHandler>(),
+        oobe_ui->GetCoreOobeView(),
         base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                             weak_factory_.GetWeakPtr())));
   }

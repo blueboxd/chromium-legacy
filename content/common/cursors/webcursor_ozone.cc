@@ -18,7 +18,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (!platform_cursor_) {
     platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
         GetCursorBitmap(cursor), GetCursorHotstop(cursor),
-        cursor.device_scale_factor());
+        cursor.image_scale_factor());
   }
 
   return platform_cursor_;

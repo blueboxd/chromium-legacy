@@ -1649,8 +1649,8 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
                                  const ComputedStyle* new_root_style) {
   if (!new_root_style || !UsesRemUnits())
     return false;
-  if (!old_root_style ||
-      old_root_style->FontSize() != new_root_style->FontSize()) {
+  if (!old_root_style || old_root_style->SpecifiedFontSize() !=
+                             new_root_style->SpecifiedFontSize()) {
     DCHECK(Resolver());
     // Resolved rem units are stored in the matched properties cache so we need
     // to make sure to invalidate the cache if the documentElement font size

@@ -238,7 +238,7 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
   if (*cursor == mojom::CursorType::kCustom)
     return;
 
-  cursor->set_device_scale_factor(scale());
+  cursor->set_image_scale_factor(scale());
   cursor->SetPlatformCursor(CursorFromId(cursor->native_type()));
 }
 

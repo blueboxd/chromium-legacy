@@ -385,8 +385,8 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<AutoEnrollmentCheckScreenHandler>(
       js_calls_container_.get()));
 
-  AddScreenHandler(std::make_unique<HIDDetectionScreenHandler>(
-      js_calls_container_.get(), core_handler_));
+  AddScreenHandler(
+      std::make_unique<HIDDetectionScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
       std::make_unique<ErrorScreenHandler>(js_calls_container_.get()));

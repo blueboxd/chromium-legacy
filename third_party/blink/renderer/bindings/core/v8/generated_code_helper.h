@@ -19,9 +19,14 @@
 namespace blink {
 
 class Document;
+class DOMParser;
 class ExecutionContext;
+class LocalDOMWindow;
+class Node;
+class Range;
 class QualifiedName;
 class ScriptState;
+class WorkerGlobalScope;
 
 CORE_EXPORT void V8ConstructorAttributeGetter(
     v8::Local<v8::Name> property_name,
@@ -131,6 +136,20 @@ CORE_EXPORT bool IsEsIterableObject(v8::Isolate* isolate,
 
 CORE_EXPORT Document* ToDocumentFromExecutionContext(
     ExecutionContext* execution_context);
+
+CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
+    const LocalDOMWindow* window);
+
+CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
+    const WorkerGlobalScope* scope);
+
+CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(const Node* node);
+
+CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
+    const Range* range);
+
+CORE_EXPORT ExecutionContext* ExecutionContextFromV8Wrappable(
+    const DOMParser* parser);
 
 }  // namespace bindings
 

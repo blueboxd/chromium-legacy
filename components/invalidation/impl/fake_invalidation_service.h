@@ -33,8 +33,8 @@ class FakeInvalidationService : public InvalidationService {
 
   void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  bool UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
-                                       const syncer::ObjectIdSet& ids) override;
+  bool UpdateInterestedTopics(syncer::InvalidationHandler* handler,
+                              const syncer::TopicSet& topics) override;
   void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
 

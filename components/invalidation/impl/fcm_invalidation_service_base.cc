@@ -14,7 +14,6 @@
 #include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/public/invalidator_state.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -83,17 +82,28 @@ void FCMInvalidationServiceBase::RegisterInvalidationHandler(
   logger_.OnRegistration(handler->GetOwnerName());
 }
 
-bool FCMInvalidationServiceBase::UpdateRegisteredInvalidationIds(
+bool FCMInvalidationServiceBase::UpdateInterestedTopics(
     syncer::InvalidationHandler* handler,
-    const syncer::ObjectIdSet& ids) {
+    const syncer::TopicSet& topic_set) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   update_was_requested_ = true;
-  DVLOG(2) << "Registering ids: " << ids.size();
-  syncer::Topics topics = ConvertIdsToTopics(ids, handler);
-  if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
+  DVLOG(2) << "Subscribing to topics: " << topic_set.size();
+  // TODO(crbug.com/1029698): |is_public| should be a part of dedicated Topic
+  // type, that would allow to avoid the conversion below and removal of
+  // syncer::Topics, syncer::TopicMetadata and
+  // InvalidationHandler::IsPublicTopic().
+  syncer::Topics topic_map;
+  for (const auto& topic : topic_set) {
+    topic_map.emplace(topic,
+                      syncer::TopicMetadata{handler->IsPublicTopic(topic)});
+  }
+  // TODO(crbug.com/1054404): UpdateRegisteredTopics() should be renamed to
+  // clarify that it actually updates whether topics need subscription (aka
+  // interested).
+  if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topic_map))
     return false;
   DoUpdateSubscribedTopicsIfNeeded();
-  logger_.OnUpdateTopics(invalidator_registrar_.GetHandlerNameToTopicsMap());
+  logger_.OnUpdatedTopics(invalidator_registrar_.GetHandlerNameToTopicsMap());
   return true;
 }
 
@@ -140,8 +150,7 @@ void FCMInvalidationServiceBase::OnInvalidate(
     const syncer::TopicInvalidationMap& invalidation_map) {
   invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 
-  logger_.OnInvalidation(
-      ConvertTopicInvalidationMapToObjectIdInvalidationMap(invalidation_map));
+  logger_.OnInvalidation(invalidation_map);
 }
 
 void FCMInvalidationServiceBase::OnInvalidatorStateChange(

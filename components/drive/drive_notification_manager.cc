@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "google/cacheinvalidation/types.pb.h"
 
 namespace drive {
@@ -32,8 +32,8 @@ const int kSlowPollingIntervalInSecs = 3600;
 // The period to batch together invalidations before passing them to observers.
 constexpr int kInvalidationBatchIntervalSecs = 15;
 
-// The sync invalidation object ID for Google Drive.
-const char kDriveInvalidationObjectId[] = "Drive";
+// The sync invalidation Topic name for Google Drive.
+const char kDriveInvalidationTopicName[] = "Drive";
 
 // Team drive invalidation ID's from FCM are "team-drive-<team_drive_id>".
 constexpr char kTeamDriveChangePrefix[] = "team-drive-";
@@ -84,19 +84,18 @@ void DriveNotificationManager::OnInvalidatorStateChange(
 }
 
 void DriveNotificationManager::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+    const syncer::TopicInvalidationMap& invalidation_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "XMPP Drive Notification Received";
-  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
 
-  for (const auto& id : ids) {
+  for (const auto& topic : invalidation_map.GetTopics()) {
     // Empty string indicates default change list.
     std::string unpacked_id;
-    if (id.name() != GetDriveInvalidationObjectId()) {
-      unpacked_id = ExtractTeamDriveId(id.name());
-      DCHECK(!unpacked_id.empty()) << "Unexpected ID " << id.name();
+    if (topic != GetDriveInvalidationTopic()) {
+      unpacked_id = ExtractTeamDriveId(topic);
+      DCHECK(!unpacked_id.empty()) << "Unexpected topic " << topic;
     }
-    auto invalidations = invalidation_map.ForObject(id);
+    auto invalidations = invalidation_map.ForTopic(topic);
     int64_t& invalidation_version =
         invalidated_change_ids_.emplace(unpacked_id, -1).first->second;
     for (auto& invalidation : invalidations) {
@@ -244,18 +243,15 @@ void DriveNotificationManager::UpdateRegisteredDriveNotifications() {
   if (!invalidation_service_)
     return;
 
+  syncer::TopicSet topics;
   syncer::ObjectIdSet ids;
-  ids.insert(
-      invalidation::ObjectId(ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-                             GetDriveInvalidationObjectId()));
+  topics.insert(GetDriveInvalidationTopic());
 
   for (const auto& team_drive_id : team_drive_ids_) {
-    ids.insert(invalidation::ObjectId(
-        ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-        GetTeamDriveInvalidationObjectId(team_drive_id)));
+    topics.insert(GetTeamDriveInvalidationTopic(team_drive_id));
   }
 
-  CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(this, ids));
+  CHECK(invalidation_service_->UpdateInterestedTopics(this, topics));
   push_notification_registered_ = true;
   OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
 }
@@ -284,22 +280,22 @@ std::string DriveNotificationManager::NotificationSourceToString(
   return "";
 }
 
-std::string DriveNotificationManager::GetDriveInvalidationObjectId() const {
-  return kDriveInvalidationObjectId;
+syncer::Topic DriveNotificationManager::GetDriveInvalidationTopic() const {
+  return kDriveInvalidationTopicName;
 }
 
-std::string DriveNotificationManager::GetTeamDriveInvalidationObjectId(
+syncer::Topic DriveNotificationManager::GetTeamDriveInvalidationTopic(
     const std::string& team_drive_id) const {
   return base::StrCat({kTeamDriveChangePrefix, team_drive_id});
 }
 
 std::string DriveNotificationManager::ExtractTeamDriveId(
-    base::StringPiece object_id) const {
+    base::StringPiece topic_name) const {
   base::StringPiece prefix = kTeamDriveChangePrefix;
-  if (!object_id.starts_with(prefix)) {
+  if (!topic_name.starts_with(prefix)) {
     return {};
   }
-  return object_id.substr(prefix.size()).as_string();
+  return topic_name.substr(prefix.size()).as_string();
 }
 
 }  // namespace drive

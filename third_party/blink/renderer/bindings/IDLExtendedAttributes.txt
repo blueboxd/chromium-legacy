@@ -98,6 +98,7 @@ SaveSameObject
 SecureContext=|*
 Serializable
 SetterCallWith=ExecutionContext|Isolate|ScriptState
+StringContext=TrustedHTML|TrustedScript|TrustedScriptURL
 Transferable
 TreatNonObjectAsNull
 TreatNullAs=EmptyString

@@ -113,6 +113,16 @@ struct IDLStringBase final : public IDLBaseHelper<String> {};
 template <V8StringResourceMode Mode>
 struct IDLUSVStringBase final : public IDLBaseHelper<String> {};
 
+template <V8StringResourceMode Mode>
+struct IDLStringStringContextTrustedHTMLBase final
+    : public IDLBaseHelper<String> {};
+template <V8StringResourceMode Mode>
+struct IDLStringStringContextTrustedScriptBase final
+    : public IDLBaseHelper<String> {};
+template <V8StringResourceMode Mode>
+struct IDLUSVStringStringContextTrustedScriptURLBase final
+    : public IDLBaseHelper<String> {};
+
 // Define non-template versions of the above for simplicity.
 using IDLByteString = IDLByteStringBase<V8StringResourceMode::kDefaultMode>;
 using IDLString = IDLStringBase<V8StringResourceMode::kDefaultMode>;
@@ -129,6 +139,33 @@ using IDLUSVStringOrNull =
 // [TreatNullAs] Strings
 using IDLStringTreatNullAsEmptyString =
     IDLStringBase<V8StringResourceMode::kTreatNullAsEmptyString>;
+
+// [StringContext] Strings
+using IDLStringStringContextTrustedHTML =
+    IDLStringStringContextTrustedHTMLBase<V8StringResourceMode::kDefaultMode>;
+using IDLStringStringContextTrustedScript =
+    IDLStringStringContextTrustedScriptBase<V8StringResourceMode::kDefaultMode>;
+using IDLUSVStringStringContextTrustedScriptURL =
+    IDLUSVStringStringContextTrustedScriptURLBase<
+        V8StringResourceMode::kDefaultMode>;
+using IDLStringStringContextTrustedHTMLOrNull =
+    IDLStringStringContextTrustedHTMLBase<
+        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
+using IDLStringStringContextTrustedScriptOrNull =
+    IDLStringStringContextTrustedScriptBase<
+        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
+using IDLUSVStringStringContextTrustedScriptURLOrNull =
+    IDLUSVStringStringContextTrustedScriptURLBase<
+        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
+using IDLStringStringContextTrustedHTMLTreatNullAsEmptyString =
+    IDLStringStringContextTrustedHTMLBase<
+        V8StringResourceMode::kTreatNullAsEmptyString>;
+using IDLStringStringContextTrustedScriptTreatNullAsEmptyString =
+    IDLStringStringContextTrustedScriptBase<
+        V8StringResourceMode::kTreatNullAsEmptyString>;
+using IDLUSVStringStringContextTrustedScriptURLTreatNullAsEmptyString =
+    IDLUSVStringStringContextTrustedScriptURLBase<
+        V8StringResourceMode::kTreatNullAsEmptyString>;
 
 // Strings for the new bindings generator
 

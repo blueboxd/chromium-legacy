@@ -71,7 +71,7 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
     image_cursors_->SetPlatformCursor(&cursor);
-    cursor.set_device_scale_factor(image_cursors_->GetScale());
+    cursor.set_image_scale_factor(image_cursors_->GetScale());
     delegate->CommitCursor(cursor);
 
     if (delegate->IsCursorVisible())

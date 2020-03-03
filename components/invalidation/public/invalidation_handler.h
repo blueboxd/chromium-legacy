@@ -13,7 +13,7 @@
 
 namespace syncer {
 
-class ObjectIdInvalidationMap;
+class TopicInvalidationMap;
 
 class INVALIDATION_EXPORT InvalidationHandler {
  public:
@@ -22,11 +22,10 @@ class INVALIDATION_EXPORT InvalidationHandler {
   // Called when the invalidator state changes.
   virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
 
-  // Called when a invalidation is received.  The per-id states are in
-  // |id_state_map| and the source is in |source|.  Note that this may be
-  // called regardless of the current invalidator state.
+  // Called when a invalidation is received. Note that this may be called
+  // regardless of the current invalidator state.
   virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) = 0;
+      const TopicInvalidationMap& invalidation_map) = 0;
 
   // Returned value must be unique for the handlers using the same invalidation
   // service.

@@ -16,46 +16,46 @@ class InvalidationHandler;
 namespace invalidation {
 class InvalidationLogger;
 
-// Interface for classes that handle invalidation registrations and send out
-// invalidations to register handlers.
+// Interface for classes that handle invalidation subscriptions and send out
+// invalidations to registered handlers.
 //
 // Invalidation clients should follow the pattern below:
 //
 // When starting the client:
 //
-//   frontend->RegisterInvalidationHandler(client_handler);
+//   service->RegisterInvalidationHandler(client_handler);
 //
-// When the set of IDs to register changes for the client during its lifetime
-// (i.e., between calls to RegisterInvalidationHandler(client_handler) and
-// UnregisterInvalidationHandler(client_handler):
+// When the set of topics to register changes for the client during its
+// lifetime (i.e., between calls to RegisterInvalidationHandler(client_handler)
+// and UnregisterInvalidationHandler(client_handler):
 //
-//   frontend->UpdateRegisteredInvalidationIds(client_handler, client_ids);
+//   service->UpdateInterestedTopics(client_handler, client_topics);
 //
 // When shutting down the client for browser shutdown:
 //
-//   frontend->UnregisterInvalidationHandler(client_handler);
+//   service->UnregisterInvalidationHandler(client_handler);
 //
-// Note that there's no call to UpdateRegisteredIds() -- this is because the
-// invalidation API persists registrations across browser restarts.
+// Note that there's no call to UpdateInterestedTopics() -- this is because the
+// invalidation API persists interested topics across browser restarts.
 //
 // When permanently shutting down the client, e.g. when disabling the related
 // feature:
 //
-//   frontend->UpdateRegisteredInvalidationIds(client_handler, ObjectIdSet());
-//   frontend->UnregisterInvalidationHandler(client_handler);
+//   service->UpdateInterestedTopics(client_handler, {});
+//   service->UnregisterInvalidationHandler(client_handler);
 //
 // If an invalidation handler cares about the invalidator state, it should also
 // do the following when starting the client:
 //
-//   invalidator_state = frontend->GetInvalidatorState();
+//   invalidator_state = service->GetInvalidatorState();
 //
 // It can also do the above in OnInvalidatorStateChange(), or it can use the
 // argument to OnInvalidatorStateChange().
 //
 // It is an error to have registered handlers when an
-// InvalidationFrontend is shut down; clients must ensure that they
+// InvalidationService is shut down; clients must ensure that they
 // unregister themselves before then. (Depending on the
-// InvalidationFrontend, shutdown may be equivalent to destruction, or
+// InvalidationService, shutdown may be equivalent to destruction, or
 // a separate function call like Shutdown()).
 //
 // NOTE(akalin): Invalidations that come in during browser shutdown may get
@@ -72,14 +72,15 @@ class InvalidationService {
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) = 0;
 
-  // Updates the set of ObjectIds associated with |handler|.  |handler| must
-  // not be NULL, and must already be registered.  An ID must be registered for
-  // at most one handler.  If ID is already registered function returns false.
+  // Updates the set of topics associated with |handler|. |handler| must not be
+  // nullptr, and must already be registered. A topic must be subscribed for at
+  // most one handler. If topic is already subscribed for another
+  // InvalidationHandler function returns false.
   //
-  // Registered IDs are persisted across restarts of sync.
-  virtual bool UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) WARN_UNUSED_RESULT = 0;
+  // Subscribed topics are persisted across restarts of sync.
+  virtual bool UpdateInterestedTopics(syncer::InvalidationHandler* handler,
+                                      const syncer::TopicSet& topics)
+      WARN_UNUSED_RESULT = 0;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs

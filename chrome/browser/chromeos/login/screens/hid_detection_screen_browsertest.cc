@@ -22,6 +22,8 @@ namespace chromeos {
 
 class HIDDetectionScreenTest : public InProcessBrowserTest {
  public:
+  enum class DeviceType { kKeyboard, kMouse };
+
   HIDDetectionScreenTest() {
     // HID detection screen only appears for Chromebases, Chromebits, and
     // Chromeboxes.
@@ -72,7 +74,9 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
     return hid_detection_screen_->GetAdapterForTesting();
   }
 
-  void AddDeviceToService(bool is_mouse, device::mojom::InputDeviceType type) {
+  void AddDeviceToService(DeviceType dev_type,
+                          device::mojom::InputDeviceType type) {
+    const bool is_mouse = dev_type == DeviceType::kMouse;
     auto device = device::mojom::InputDeviceInfo::New();
     device->id = is_mouse ? "mouse" : "keyboard";
     device->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
@@ -83,7 +87,8 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void RemoveDeviceFromService(bool is_mouse) {
+  void RemoveDeviceFromService(DeviceType dev_type) {
+    const bool is_mouse = dev_type == DeviceType::kMouse;
     std::string id = is_mouse ? "mouse" : "keyboard";
     fake_input_service_manager_->RemoveDevice(std::move(id));
     base::RunLoop().RunUntilIdle();
@@ -117,32 +122,38 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
 
   // Generic connection types. Unlike the pointing device, which may be a tablet
   // or touchscreen, the keyboard only reports usb and bluetooth states.
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_SERIO);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_SERIO);
   EXPECT_TRUE(handler()->continue_button_enabled_for_test());
 
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_SERIO);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_SERIO);
   EXPECT_EQ("connected", handler()->mouse_state_for_test());
   EXPECT_EQ("usb", handler()->keyboard_state_for_test());
   EXPECT_TRUE(handler()->continue_button_enabled_for_test());
 
   // Remove generic devices, add usb devices.
-  RemoveDeviceFromService(true);
-  RemoveDeviceFromService(false);
+  RemoveDeviceFromService(DeviceType::kMouse);
+  RemoveDeviceFromService(DeviceType::kKeyboard);
   EXPECT_FALSE(handler()->continue_button_enabled_for_test());
 
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_USB);
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_USB);
   EXPECT_EQ("usb", handler()->mouse_state_for_test());
   EXPECT_EQ("usb", handler()->keyboard_state_for_test());
   EXPECT_TRUE(handler()->continue_button_enabled_for_test());
 
   // Remove usb devices, add bluetooth devices.
-  RemoveDeviceFromService(true);
-  RemoveDeviceFromService(false);
+  RemoveDeviceFromService(DeviceType::kMouse);
+  RemoveDeviceFromService(DeviceType::kKeyboard);
   EXPECT_FALSE(handler()->continue_button_enabled_for_test());
 
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_BLUETOOTH);
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_BLUETOOTH);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_BLUETOOTH);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_BLUETOOTH);
   EXPECT_EQ("paired", handler()->mouse_state_for_test());
   EXPECT_EQ("paired", handler()->keyboard_state_for_test());
   EXPECT_TRUE(handler()->continue_button_enabled_for_test());
@@ -154,15 +165,19 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
   OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
   EXPECT_TRUE(adapter()->IsPowered());
 
-  // Add a pair of USB mouse/keyboard so that |pointing_device_connect_type_|
-  // and |keyboard_device_connect_type_| are
+  // Add a pair of USB mouse/keyboard so that |pointing_device_type_|
+  // and |keyboard_type_| are
   // device::mojom::InputDeviceType::TYPE_USB.
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_USB);
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_USB);
 
   // Add another pair of Bluetooth mouse/keyboard.
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_BLUETOOTH);
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_BLUETOOTH);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_BLUETOOTH);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_BLUETOOTH);
 
   // Simulate the user's click on "Continue" button.
   hid_detection_screen()->OnContinueButtonClicked();
@@ -178,8 +193,10 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, NoBluetoothDeviceConnected) {
   OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
   EXPECT_TRUE(adapter()->IsPowered());
 
-  AddDeviceToService(true, device::mojom::InputDeviceType::TYPE_USB);
-  AddDeviceToService(false, device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_USB);
 
   // Simulate the user's click on "Continue" button.
   hid_detection_screen()->OnContinueButtonClicked();

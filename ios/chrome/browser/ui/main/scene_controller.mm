@@ -149,6 +149,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
 @implementation SceneController
 @synthesize settingsNavigationController;  //< From AppNavigation protocol.
+@synthesize appURLLoadingService =
+    _appURLLoadingService;  //< From SceneControllerGuts
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -162,6 +164,9 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
           << "The window must be created by the scene delegate";
       self.sceneState.window = [[ChromeOverlayWindow alloc]
           initWithFrame:[[UIScreen mainScreen] bounds]];
+
+      _appURLLoadingService = new AppUrlLoadingService();
+      _appURLLoadingService->SetDelegate(self);
     }
   }
   return self;
@@ -339,7 +344,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
   params.from_chrome = command.fromChrome;
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
-  self.mainController.appURLLoadingService->LoadUrlInNewTab(params);
+  self.appURLLoadingService->LoadUrlInNewTab(params);
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.

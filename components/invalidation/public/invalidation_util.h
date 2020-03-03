@@ -65,12 +65,11 @@ struct INVALIDATION_EXPORT InvalidationVersionLessThan {
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
 
-typedef std::map<invalidation::ObjectId, int, ObjectIdLessThan>
-    ObjectIdCountMap;
-
 using Topic = std::string;
 // It should be std::set, since std::set_difference is used for it.
 using TopicSet = std::set<std::string>;
+
+using TopicCountMap = std::map<Topic, int>;
 
 INVALIDATION_EXPORT struct TopicMetadata {
   // Whether the topic is public.

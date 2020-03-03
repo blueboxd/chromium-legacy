@@ -165,8 +165,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = true;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.isFirstRunEulaAccepted = true;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
@@ -184,8 +183,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
@@ -213,8 +211,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.REGULAR_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.REGULAR_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
@@ -244,8 +241,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
         mSequencer.shouldShowSearchEnginePage = false;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
@@ -273,8 +269,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = true;
         mSequencer.shouldShowSearchEnginePage = true;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
         assertTrue(mSequencer.calledOnFlowIsKnown);
@@ -301,8 +296,7 @@ public class FirstRunFlowSequencerTest {
         mSequencer.hasAnyUserSeenToS = false;
         mSequencer.shouldSkipFirstUseHints = false;
         mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.initializeSharedState(
-                false /* androidEduDevice */, ChildAccountStatus.NOT_CHILD);
+        mSequencer.initializeSharedState(ChildAccountStatus.NOT_CHILD);
 
         mSequencer.processFreEnvironmentPreNative();
 

@@ -30,11 +30,15 @@ void FakeInvalidationService::RegisterInvalidationHandler(
   invalidator_registrar_->RegisterHandler(handler);
 }
 
-bool FakeInvalidationService::UpdateRegisteredInvalidationIds(
+bool FakeInvalidationService::UpdateInterestedTopics(
     syncer::InvalidationHandler* handler,
-    const syncer::ObjectIdSet& ids) {
-  syncer::Topics topics = ConvertIdsToTopics(ids, handler);
-  return invalidator_registrar_->UpdateRegisteredTopics(handler, topics);
+    const syncer::TopicSet& topics) {
+  syncer::Topics topic_map;
+  for (const auto& topic : topics) {
+    topic_map.emplace(topic,
+                      syncer::TopicMetadata{handler->IsPublicTopic(topic)});
+  }
+  return invalidator_registrar_->UpdateRegisteredTopics(handler, topic_map);
 }
 
 void FakeInvalidationService::UnregisterInvalidationHandler(

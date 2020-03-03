@@ -36,8 +36,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -112,8 +114,9 @@ void SharedWorkerClientHolder::Connect(
               .GetFetchClientSettingsObject());
 
   mojom::InsecureRequestsPolicy insecure_requests_policy =
-      outside_fetch_client_settings_object->GetInsecureRequestsPolicy() &
-              kUpgradeInsecureRequests
+      (outside_fetch_client_settings_object->GetInsecureRequestsPolicy() &
+       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+              mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone
           ? mojom::InsecureRequestsPolicy::kUpgrade
           : mojom::InsecureRequestsPolicy::kDoNotUpgrade;
 

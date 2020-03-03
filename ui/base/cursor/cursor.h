@@ -47,8 +47,8 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) Cursor {
 
   mojom::CursorType native_type() const { return native_type_; }
   PlatformCursor platform() const { return platform_cursor_; }
-  float device_scale_factor() const { return device_scale_factor_; }
-  void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
+  float image_scale_factor() const { return image_scale_factor_; }
+  void set_image_scale_factor(float scale) { image_scale_factor_ = scale; }
 
   const SkBitmap& custom_bitmap() const { return custom_bitmap_; }
   void set_custom_bitmap(const SkBitmap& bitmap) { custom_bitmap_ = bitmap; }
@@ -74,8 +74,8 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) Cursor {
   // The native platform cursor.
   PlatformCursor platform_cursor_ = 0;
 
-  // The device scale factor for the cursor.
-  float device_scale_factor_ = 0.0f;
+  // The scale factor for the cursor bitmap.
+  float image_scale_factor_ = 0.0f;
 
   // The hotspot for the cursor. This is only used for the custom cursor type.
   gfx::Point custom_hotspot_;

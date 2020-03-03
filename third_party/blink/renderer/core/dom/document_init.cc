@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -117,11 +118,12 @@ mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   return flags;
 }
 
-WebInsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy() const {
+mojom::blink::InsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy()
+    const {
   DCHECK(MasterDocumentLoader());
   Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
   if (!parent_frame)
-    return kLeaveInsecureRequestsAlone;
+    return mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
   return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 

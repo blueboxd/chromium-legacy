@@ -521,6 +521,20 @@ void func([TreatNullAs=Emptytring] DOMString str);
 
 Implementation: Given `[TreatNullAs=EmptyString]`, a JavaScript null is converted to a Blink empty string, for which `String::IsEmpty()` returns true, but `String::IsNull()` return false.
 
+### [StringContext=TrustedHTML|TrustedScript|TrustedScriptURL] _(t)_
+
+Standard: [TrustedType](https://w3c.github.io/webappsec-trusted-types/dist/spec/#!trustedtypes-extended-attribute)
+
+Summary: Indicate that a DOMString for HTMLs and scripts or USVString for script URLs is to be supplemented with additional Trusted Types enforcement logic.
+
+Usage: Must be specified on a DOMString or a USVString type.
+
+```webidl
+typedef [StringContext=TrustedHTML] DOMString TrustedString;
+attribute TrustedString str;
+void func(TrustedString str);
+```
+
 ### [Unforgeable] _(m,a)_
 
 Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)

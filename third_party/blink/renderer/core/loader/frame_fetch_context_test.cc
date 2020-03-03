@@ -40,10 +40,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
@@ -337,7 +337,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
   void ExpectIsAutomaticUpgradeSet(const char* input,
                                    const char* main_frame,
-                                   WebInsecureRequestPolicy policy,
+                                   mojom::blink::InsecureRequestPolicy policy,
                                    bool expected_value) {
     const KURL input_url(input);
     const KURL main_frame_url(main_frame);
@@ -410,7 +410,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
   };
 
   document->GetSecurityContext().SetInsecureRequestPolicy(
-      kUpgradeInsecureRequests);
+      mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
     document->GetSecurityContext().ClearInsecureNavigationsToUpgradeForTest();
@@ -454,7 +454,7 @@ TEST_F(FrameFetchContextModifyRequestTest,
 
   RecreateFetchContext(KURL("https://secureorigin.test/image.png"));
   document->GetSecurityContext().SetInsecureRequestPolicy(
-      kLeaveInsecureRequestsAlone);
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
 
   ExpectUpgrade("http://example.test/image.png",
                 "http://example.test/image.png");
@@ -480,27 +480,27 @@ TEST_F(FrameFetchContextModifyRequestTest,
 TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeSet) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "https://example.test",
-                              kLeaveInsecureRequestsAlone, true);
+  ExpectIsAutomaticUpgradeSet(
+      "http://example.test/image.png", "https://example.test",
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone, true);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeNotSet) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
   // Upgrade shouldn't happen if the resource is already https.
-  ExpectIsAutomaticUpgradeSet("https://example.test/image.png",
-                              "https://example.test",
-                              kLeaveInsecureRequestsAlone, false);
+  ExpectIsAutomaticUpgradeSet(
+      "https://example.test/image.png", "https://example.test",
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone, false);
   // Upgrade shouldn't happen if the site is http.
-  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "http://example.test",
-                              kLeaveInsecureRequestsAlone, false);
+  ExpectIsAutomaticUpgradeSet(
+      "http://example.test/image.png", "http://example.test",
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone, false);
 
   // Flag shouldn't be set if upgrade was due to upgrade-insecure-requests.
-  ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "https://example.test", kUpgradeInsecureRequests,
-                              false);
+  ExpectIsAutomaticUpgradeSet(
+      "http://example.test/image.png", "https://example.test",
+      mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests, false);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
@@ -530,24 +530,24 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
   // the tests both before and after providing a document to the context.
   for (const auto& test : tests) {
     document->GetSecurityContext().SetInsecureRequestPolicy(
-        kLeaveInsecureRequestsAlone);
+        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
 
     document->GetSecurityContext().SetInsecureRequestPolicy(
-        kUpgradeInsecureRequests);
+        mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
   }
 
   for (const auto& test : tests) {
     document->GetSecurityContext().SetInsecureRequestPolicy(
-        kLeaveInsecureRequestsAlone);
+        mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
 
     document->GetSecurityContext().SetInsecureRequestPolicy(
-        kUpgradeInsecureRequests);
+        mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
   }

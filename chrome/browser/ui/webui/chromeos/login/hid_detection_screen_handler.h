@@ -15,7 +15,6 @@
 
 namespace chromeos {
 
-class CoreOobeView;
 class HIDDetectionScreen;
 
 // Interface between HID detection screen and its representation, either WebUI
@@ -39,11 +38,10 @@ class HIDDetectionView {
   virtual void SetKeyboardState(const std::string& value) = 0;
   virtual void SetMouseState(const std::string& value) = 0;
   virtual void SetKeyboardPinCode(const std::string& value) = 0;
-  virtual void SetNumKeysEnteredExpected(bool value) = 0;
+  virtual void SetPinDialogVisible(bool value) = 0;
   virtual void SetNumKeysEnteredPinCode(int value) = 0;
-  virtual void SetMouseDeviceName(const std::string& value) = 0;
+  virtual void SetPointingDeviceName(const std::string& value) = 0;
   virtual void SetKeyboardDeviceName(const std::string& value) = 0;
-  virtual void SetKeyboardDeviceLabel(const std::string& value) = 0;
   virtual void SetContinueButtonEnabled(bool value) = 0;
 };
 
@@ -54,8 +52,7 @@ class HIDDetectionScreenHandler
  public:
   using TView = HIDDetectionView;
 
-  HIDDetectionScreenHandler(JSCallsContainer* js_calls_container,
-                            CoreOobeView* core_oobe_view);
+  HIDDetectionScreenHandler(JSCallsContainer* js_calls_container);
   ~HIDDetectionScreenHandler() override;
 
   // HIDDetectionView implementation:
@@ -68,17 +65,15 @@ class HIDDetectionScreenHandler
   void SetKeyboardState(const std::string& value) override;
   void SetMouseState(const std::string& value) override;
   void SetKeyboardPinCode(const std::string& value) override;
-  void SetNumKeysEnteredExpected(bool value) override;
+  void SetPinDialogVisible(bool value) override;
   void SetNumKeysEnteredPinCode(int value) override;
-  void SetMouseDeviceName(const std::string& value) override;
+  void SetPointingDeviceName(const std::string& value) override;
   void SetKeyboardDeviceName(const std::string& value) override;
-  void SetKeyboardDeviceLabel(const std::string& value) override;
   void SetContinueButtonEnabled(bool value) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void DeclareJSCallbacks() override;
   void Initialize() override;
 
   // Registers the preference for derelict state.
@@ -106,9 +101,6 @@ class HIDDetectionScreenHandler
   }
 
  private:
-  // JS messages handlers.
-  void HandleOnContinue();
-
   // Cached values that have been sent to JS. Used by tests.
   std::string keyboard_state_;
   std::string mouse_state_;
@@ -121,8 +113,6 @@ class HIDDetectionScreenHandler
   bool continue_button_enabled_ = false;
 
   HIDDetectionScreen* screen_ = nullptr;
-
-  CoreOobeView* core_oobe_view_ = nullptr;
 
   // If true, Initialize() will call Show().
   bool show_on_init_ = false;

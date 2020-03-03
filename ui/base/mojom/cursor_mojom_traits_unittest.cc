@@ -30,7 +30,7 @@ TEST_F(CursorStructTraitsTest, TestBuiltIn) {
   for (int i = 0; i < static_cast<int>(ui::mojom::CursorType::kCustom); ++i) {
     ui::mojom::CursorType type = static_cast<ui::mojom::CursorType>(i);
     ui::Cursor input(type);
-    input.set_device_scale_factor(1);
+    input.set_image_scale_factor(1);
 
     ui::Cursor output;
     ASSERT_TRUE(EchoCursor(input, &output));
@@ -51,14 +51,14 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   input.set_custom_bitmap(bitmap);
 
   const float kScale = 2.0f;
-  input.set_device_scale_factor(kScale);
+  input.set_image_scale_factor(kScale);
 
   ui::Cursor output;
   EXPECT_TRUE(EchoCursor(input, &output));
   EXPECT_EQ(input, output);
 
   EXPECT_EQ(ui::mojom::CursorType::kCustom, output.native_type());
-  EXPECT_EQ(kScale, output.device_scale_factor());
+  EXPECT_EQ(kScale, output.image_scale_factor());
   EXPECT_EQ(kHotspot, GetCursorHotstop(output));
 
   // Even though the pixel data is the same, the bitmap generation ids differ.
@@ -83,7 +83,7 @@ TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
   ui::Cursor input(ui::mojom::CursorType::kCustom);
   input.set_custom_hotspot(kHotspot);
   input.set_custom_bitmap(SkBitmap());
-  input.set_device_scale_factor(kScale);
+  input.set_image_scale_factor(kScale);
 
   ui::Cursor output;
   ASSERT_TRUE(EchoCursor(input, &output));
@@ -98,9 +98,9 @@ TEST_F(CursorStructTraitsTest, TestDeviceScaleFactors) {
 
   for (auto scale : {0.f, 0.525f, 0.75f, 0.9f, 1.f, 2.1f, 2.5f, 3.f, 10.f}) {
     SCOPED_TRACE(testing::Message() << " scale: " << scale);
-    input.set_device_scale_factor(scale);
+    input.set_image_scale_factor(scale);
     EXPECT_TRUE(EchoCursor(input, &output));
-    EXPECT_EQ(scale, output.device_scale_factor());
+    EXPECT_EQ(scale, output.image_scale_factor());
   }
 }
 

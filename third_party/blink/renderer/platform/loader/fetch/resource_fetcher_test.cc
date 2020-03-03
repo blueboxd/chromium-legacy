@@ -37,6 +37,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -103,7 +104,8 @@ const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
       SecurityOrigin::Create(KURL("https://example.com/")),
       network::mojom::ReferrerPolicy::kDefault, "https://example.com/foo.html",
       HttpsState::kModern, AllowedByNosniff::MimeTypeCheck::kStrict,
-      address_space, kLeaveInsecureRequestsAlone,
+      address_space,
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
       FetchClientSettingsObject::InsecureNavigationsSet());
 }
 

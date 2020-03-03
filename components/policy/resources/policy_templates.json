@@ -19833,7 +19833,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': True,
+      'example_value': 0,
       'id': 650,
       'caption': '''Enable Ambient Authentication for profile types.''',
       'tags': [],
@@ -19851,7 +19851,7 @@
 
       Note that, ambient authentication is always allowed on regular profiles.
 
-      If the policy is left not set, then the Incognito and Guest sessions will not be able to ambiently authenticate in the future releases of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, as they will be disallowed.'''
+      In <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 81 and later, if the policy is left not set, ambient authentication will be enabled in regular sessions only.'''
     },
     {
       'name': 'PaymentMethodQueryEnabled',

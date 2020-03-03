@@ -9,17 +9,14 @@
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
-#include "google/cacheinvalidation/types.pb.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 
 namespace {
 
-const invalidation::ObjectId kDefaultCorpusObjectId(
-    ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-    "Drive");
+const syncer::Topic kDefaultCorpusTopic = "Drive";
 
 struct ShutdownHelper {
   template <typename T>
@@ -53,11 +50,9 @@ class FakeDriveNotificationObserver : public DriveNotificationObserver {
   std::map<std::string, int64_t> notification_ids_;
 };
 
-invalidation::ObjectId CreateTeamDriveInvalidationObjectId(
+syncer::Topic CreateTeamDriveInvalidationTopic(
     const std::string& team_drive_id) {
-  return invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-      base::StrCat({"team-drive-", team_drive_id}));
+  return base::StrCat({"team-drive-", team_drive_id});
 }
 
 }  // namespace
@@ -94,29 +89,30 @@ class DriveNotificationManagerTest : public testing::Test {
 };
 
 TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
-  // TODO(crbug.com/1029698): cleanup subscribed topics vs registered ids
-  // terminology.
   // By default, we should have registered for default corpus notifications on
   // initialization.
   auto subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                                .GetAllSubscribedTopics();
 
-  syncer::Topics expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId}, drive_notification_manager_.get());
+  // TODO(crbug.com/1029698): replace syncer::Topics with syncer::TopicSet once
+  // |is_public| become the part of dedicated syncer::Topic struct. This should
+  // simplify this test.
+  syncer::Topics expected_topics;
+  expected_topics.emplace(kDefaultCorpusTopic,
+                          syncer::TopicMetadata{/*is_public=*/false});
   EXPECT_EQ(expected_topics, subscribed_topics);
 
   const std::string team_drive_id_1 = "td_id_1";
-  const auto team_drive_1_object_id =
-      CreateTeamDriveInvalidationObjectId(team_drive_id_1);
+  const auto team_drive_1_topic =
+      CreateTeamDriveInvalidationTopic(team_drive_id_1);
 
   // Add the team drive
   drive_notification_manager_->UpdateTeamDriveIds({team_drive_id_1}, {});
   subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                           .GetAllSubscribedTopics();
 
-  expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId, team_drive_1_object_id},
-      drive_notification_manager_.get());
+  expected_topics.emplace(team_drive_1_topic,
+                          syncer::TopicMetadata{/*is_public=*/true});
   EXPECT_EQ(expected_topics, subscribed_topics);
 
   // Remove the team drive.
@@ -124,32 +120,31 @@ TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
   subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                           .GetAllSubscribedTopics();
 
-  expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId}, drive_notification_manager_.get());
+  expected_topics.erase(team_drive_1_topic);
   EXPECT_EQ(expected_topics, subscribed_topics);
 
   const std::string team_drive_id_2 = "td_id_2";
-  const auto team_drive_2_object_id =
-      CreateTeamDriveInvalidationObjectId(team_drive_id_2);
+  const auto team_drive_2_topic =
+      CreateTeamDriveInvalidationTopic(team_drive_id_2);
 
-  // Add two team drives
+  // Add two team drives.
   drive_notification_manager_->UpdateTeamDriveIds(
       {team_drive_id_1, team_drive_id_2}, {});
   subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                           .GetAllSubscribedTopics();
 
-  expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId, team_drive_1_object_id, team_drive_2_object_id},
-      drive_notification_manager_.get());
+  expected_topics.emplace(team_drive_1_topic,
+                          syncer::TopicMetadata{/*is_public=*/true});
+  expected_topics.emplace(team_drive_2_topic,
+                          syncer::TopicMetadata{/*is_public=*/true});
   EXPECT_EQ(expected_topics, subscribed_topics);
 
+  // Remove the first team drive.
   drive_notification_manager_->UpdateTeamDriveIds({}, {team_drive_id_1});
   subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                           .GetAllSubscribedTopics();
 
-  expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId, team_drive_2_object_id},
-      drive_notification_manager_.get());
+  expected_topics.erase(team_drive_1_topic);
   EXPECT_EQ(expected_topics, subscribed_topics);
 
   // Remove a team drive that doesn't exists with no changes.
@@ -158,9 +153,6 @@ TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
   subscribed_topics = fake_invalidation_service_->invalidator_registrar()
                           .GetAllSubscribedTopics();
 
-  expected_topics = syncer::ConvertIdsToTopics(
-      {kDefaultCorpusObjectId, team_drive_2_object_id},
-      drive_notification_manager_.get());
   EXPECT_EQ(expected_topics, subscribed_topics);
 }
 
@@ -170,7 +162,7 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
   // Emitting an invalidation should not call our observer until the timer
   // expires.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusObjectId));
+      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusTopic));
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
@@ -182,14 +174,14 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
 
   // Register a team drive for notifications
   const std::string team_drive_id_1 = "td_id_1";
-  const auto team_drive_1_object_id =
-      CreateTeamDriveInvalidationObjectId(team_drive_id_1);
+  const auto team_drive_1_topic =
+      CreateTeamDriveInvalidationTopic(team_drive_id_1);
   drive_notification_manager_->UpdateTeamDriveIds({team_drive_id_1}, {});
 
   // Emit invalidation for default corpus, should not emit a team drive
   // invalidation.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(kDefaultCorpusObjectId, 1, ""));
+      syncer::Invalidation::Init(kDefaultCorpusTopic, 1, ""));
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
@@ -201,7 +193,7 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
 
   // Emit team drive invalidation
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(team_drive_1_object_id, 2, ""));
+      syncer::Invalidation::Init(team_drive_1_topic, 2, ""));
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
@@ -211,17 +203,17 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
 
   // Emit both default corpus and team drive.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(kDefaultCorpusObjectId, 1, ""));
+      syncer::Invalidation::Init(kDefaultCorpusTopic, 1, ""));
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(team_drive_1_object_id, 2, ""));
+      syncer::Invalidation::Init(team_drive_1_topic, 2, ""));
 
   // Emit with an earlier version. This should be ignored.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(kDefaultCorpusObjectId, 0, ""));
+      syncer::Invalidation::Init(kDefaultCorpusTopic, 0, ""));
 
   // Emit without a version. This should be ignored too.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusObjectId));
+      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusTopic));
 
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 

@@ -22,8 +22,8 @@ InvalidatorState FakeInvalidationHandler::GetInvalidatorState() const {
   return state_;
 }
 
-const ObjectIdInvalidationMap&
-FakeInvalidationHandler::GetLastInvalidationMap() const {
+const TopicInvalidationMap& FakeInvalidationHandler::GetLastInvalidationMap()
+    const {
   return last_invalidation_map_;
 }
 
@@ -36,7 +36,7 @@ void FakeInvalidationHandler::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void FakeInvalidationHandler::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const TopicInvalidationMap& invalidation_map) {
   last_invalidation_map_ = invalidation_map;
   ++invalidation_count_;
 }

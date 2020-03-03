@@ -19,16 +19,11 @@ class ChromeBrowserState;
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
 @protocol TabSwitcher;
-class AppUrlLoadingService;
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
 // ownership of Scene-related objects to SceneController.
 @protocol MainControllerGuts
-
-// The application level component for url loading. Is passed down to
-// browser state level UrlLoadingService instances.
-@property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
 
 // If YES, the tab switcher is currently active.
 @property(nonatomic, assign, getter=isTabSwitcherActive)

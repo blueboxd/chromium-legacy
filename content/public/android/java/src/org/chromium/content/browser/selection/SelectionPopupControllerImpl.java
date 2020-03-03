@@ -106,6 +106,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // Embedders should set this properly to use the correct view for readback.
     private static boolean sShouldGetReadbackViewFromWindowAndroid;
 
+    // A flag to determine if we must only use the context from the associated web contents
+    // to inflate menus. By default we use the context held by the ActionMode, because this
+    // enables correct theming, but in cases where we rely on the wrapping of contexts for
+    // correct resource lookup, this is not correct. In that case we must directly inflate
+    // menus from the context.
+    private static boolean sMustUseWebContentsContext;
+
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<SelectionPopupControllerImpl> INSTANCE =
                 SelectionPopupControllerImpl::new;
@@ -199,6 +206,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     public static void setShouldGetReadbackViewFromWindowAndroid() {
         sShouldGetReadbackViewFromWindowAndroid = true;
+    }
+
+    public static void setMustUseWebContentsContext() {
+        sMustUseWebContentsContext = true;
     }
 
     /**
@@ -715,15 +726,23 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * the items that are not relevant to the input text being edited.
      */
     public static void initializeMenu(Context context, ActionMode mode, Menu menu) {
-        try {
-            mode.getMenuInflater().inflate(R.menu.select_action_menu, menu);
-        } catch (Resources.NotFoundException e) {
-            // TODO(tobiasjs) by the time we get here we have already
-            // caused a resource loading failure to be logged. WebView
-            // resource access needs to be improved so that this
-            // logspam can be avoided.
-            new MenuInflater(context).inflate(R.menu.select_action_menu, menu);
+        if (!sMustUseWebContentsContext) {
+            // For WebView the correct choice is to use the actionMode context because webview
+            // assets have been added to its asset path. However we need to fall back to
+            // using the web contents context in the case where the AssetManager associated with
+            // the actionMode context does not contain our assets, because not doing so will cause a
+            // crash.
+            try {
+                mode.getMenuInflater().inflate(R.menu.select_action_menu, menu);
+                return;
+            } catch (Resources.NotFoundException e) {
+                // TODO(tobiasjs) by the time we get here we have already
+                // caused a resource loading failure to be logged. WebView
+                // resource access needs to be improved so that this
+                // logspam can be avoided.
+            }
         }
+        new MenuInflater(context).inflate(R.menu.select_action_menu, menu);
     }
 
     @TargetApi(Build.VERSION_CODES.O)

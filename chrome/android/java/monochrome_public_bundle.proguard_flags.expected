@@ -694,13 +694,13 @@
 }
 
 # Keep the classes/members we need for client functionality.
--keep @interface android.support.annotation.Keep
--keep @android.support.annotation.Keep class *
+-keep @interface androidx.annotation.Keep
+-keep @androidx.annotation.Keep class *
 -keepclasseswithmembers class * {
-  @android.support.annotation.Keep <fields>;
+  @androidx.annotation.Keep <fields>;
 }
 -keepclasseswithmembers class * {
-  @android.support.annotation.Keep <methods>;
+  @androidx.annotation.Keep <methods>;
 }
 
 # Keep the names of classes/members we need for client functionality.
@@ -763,6 +763,26 @@
 # Ensure that proguard will not strip the handleIntent method.
 -keepclassmembers class com.google.android.gms.gcm.GcmListenerService {
     public void handleIntent(android.content.Intent);
+}
+
+################################################################################
+# obj/third_party/android_deps/google_play_services_vision_common_java/proguard.txt
+################################################################################
+# We keep all fields for every generated proto file as the runtime uses
+# reflection over them that ProGuard cannot detect. Without this keep
+# rule, fields may be removed that would cause runtime failures.
+-keepclassmembers class * extends com.google.android.gms.internal.vision.zzfy {
+  <fields>;
+}
+
+################################################################################
+# obj/third_party/android_deps/google_play_services_vision_java/proguard.txt
+################################################################################
+# We keep all fields for every generated proto file as the runtime uses
+# reflection over them that ProGuard cannot detect. Without this keep
+# rule, fields may be removed that would cause runtime failures.
+-keepclassmembers class * extends com.google.android.gms.internal.vision.zzfy {
+  <fields>;
 }
 
 ################################################################################

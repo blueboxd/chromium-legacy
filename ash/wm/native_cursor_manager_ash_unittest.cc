@@ -61,7 +61,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   EXPECT_EQ(ui::mojom::CursorType::kCopy,
             test_api.GetCurrentCursor().native_type());
   UpdateDisplay("800x800*2/r");
-  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(ui::CursorSize::kNormal, test_api.GetCurrentCursorSize());
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
@@ -85,7 +85,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
 
   // Device scale factor and rotation do change even while cursor is locked.
   UpdateDisplay("800x800/u");
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_180, test_api.GetCurrentCursorRotation());
 
   cursor_manager->UnlockCursor();
@@ -94,7 +94,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   // Cursor type changes to the one specified while cursor is locked.
   EXPECT_EQ(ui::mojom::CursorType::kPointer,
             test_api.GetCurrentCursor().native_type());
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
@@ -131,11 +131,11 @@ TEST_F(NativeCursorManagerAshTest, SetDeviceScaleFactorAndRotation) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   UpdateDisplay("800x100*2");
-  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("800x100/l");
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_270, test_api.GetCurrentCursorRotation());
 }
 
@@ -166,7 +166,7 @@ TEST_F(NativeCursorManagerAshTest, FractionalScale) {
   CursorManagerTestApi test_api(cursor_manager);
   // Cursor should use the resource scale factor.
   UpdateDisplay("800x100*1.25");
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
 }
 
 }  // namespace ash

@@ -14,7 +14,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/invalidation/public/ack_handle.h"
+#include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_export.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
@@ -27,10 +29,18 @@ class AckHandler;
 class INVALIDATION_EXPORT Invalidation {
  public:
   // Factory functions.
+  // TODO(crbug.com/1029698): all ObjectID-based factory functions should be
+  // eventually replaced with Topic-based alternative. The end goal is to avoid
+  // any mentions of ObjectID here and in the whole components/invalidation
+  // directory.
   static Invalidation Init(const invalidation::ObjectId& id,
                            int64_t version,
                            const std::string& payload);
+  static Invalidation Init(const Topic& topic,
+                           int64_t version,
+                           const std::string& payload);
   static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
+  static Invalidation InitUnknownVersion(const Topic& topic);
   static Invalidation InitFromDroppedInvalidation(const Invalidation& dropped);
   static std::unique_ptr<Invalidation> InitFromValue(
       const base::DictionaryValue& value);
@@ -41,6 +51,7 @@ class INVALIDATION_EXPORT Invalidation {
   // Compares two invalidations.  The comparison ignores ack-tracking state.
   bool Equals(const Invalidation& other) const;
 
+  Topic topic() const;
   invalidation::ObjectId object_id() const;
   bool is_unknown_version() const;
 

@@ -1355,7 +1355,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivity.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/TargetDeviceInfo.java",
   "java/src/org/chromium/chrome/browser/services/AccountsChangedReceiver.java",
-  "java/src/org/chromium/chrome/browser/services/AndroidEduAndChildAccountHelper.java",
+  "java/src/org/chromium/chrome/browser/services/AndroidChildAccountHelper.java",
   "java/src/org/chromium/chrome/browser/services/AndroidEduOwnerCheckCallback.java",
   "java/src/org/chromium/chrome/browser/services/GoogleServicesManager.java",
   "java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerService.java",

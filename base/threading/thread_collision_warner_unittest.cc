@@ -13,10 +13,6 @@
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// '' : local class member function does not have a body
-MSVC_PUSH_DISABLE_WARNING(4822)
-
-
 #if defined(NDEBUG)
 
 // Would cause a memory leak otherwise.

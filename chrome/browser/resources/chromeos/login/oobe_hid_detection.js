@@ -10,41 +10,117 @@
 (function() {
 /** @const {number} */ var PINCODE_LENGTH = 6;
 
-Polymer({
-  is: 'oobe-hid-detection-md',
+// Enumeration of possible connection states of a device.
+const CONNECTION = {
+  SEARCHING: 'searching',
+  USB: 'usb',
+  CONNECTED: 'connected',
+  PAIRING: 'pairing',
+  PAIRED: 'paired',
+};
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+Polymer({
+  is: 'oobe-hid-detection',
+
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+
+  EXTERNAL_API: [
+    'setKeyboardState',
+    'setMouseState',
+    'setKeyboardPinCode',
+    'setPinDialogVisible',
+    'setNumKeysEnteredPinCode',
+    'setPointingDeviceName',
+    'setKeyboardDeviceName',
+    'setContinueButtonEnabled',
+  ],
 
   properties: {
     /** "Continue" button is disabled until HID devices are paired. */
-    continueButtonDisabled: {
+    continueButtonEnabled: {
       type: Boolean,
-      value: true,
+      value: false,
     },
 
-    /** This is the displayed text for keyboard "Pairing" state. */
-    keyboardPairingLabel: String,
+    /**
+     * The keyboard device name
+     */
+    keyboardDeviceName: {
+      type: String,
+      value: '',
+    },
 
-    /** This is the displayed text for keyboard "Paired" state. */
-    keyboardPairedLabel: String,
+    /**
+     * The pointing device name
+     */
+    pointingDeviceName: {
+      type: String,
+      value: '',
+    },
 
     /**
      * Current state in mouse pairing process.
      * @private
      */
-    mouseState_: String,
+    mouseState_: {
+      type: String,
+      value: CONNECTION.SEARCHING,
+    },
 
     /**
      * Current state in keyboard pairing process.
      * @private
      */
-    keyboardState_: String,
+    keyboardState_: {
+      type: String,
+      value: CONNECTION.SEARCHING,
+    },
 
     /**
-     * Controls visibility of keyboard pincode.
+     * Controls the visibility of the PIN dialog.
      * @private
      */
-    keyboardPincodeVisible_: Boolean,
+    pinDialogVisible_: {
+      type: Boolean,
+      value: false,
+      observer: 'onPinDialogVisibilityChanged_',
+    },
+
+    /**
+     * The PIN code to be typed by the user
+     */
+    pinCode: {
+      type: String,
+      value: '000000',
+      observer: 'onPinParametersChanged_',
+    },
+
+    /**
+     * The number of keys that the user already entered for this PIN.
+     * This helps the user to see what's the next key to be pressed.
+     */
+    numKeysEnteredPinCode: {
+      type: Number,
+      value: 0,
+      observer: 'onPinParametersChanged_',
+    },
+
+    /**
+     *  Whether the dialog for PIN input is being shown.
+     *  Internal use only. Used for preventing multiple openings.
+     */
+    pinDialogIsOpen_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The title that is displayed on the PIN dialog
+     */
+    pinDialogTitle: {
+      type: String,
+      computed: 'getPinDialogTitle_(locale, keyboardDeviceName)',
+    },
 
     /**
      * Reference to OOBE screen object.
@@ -53,119 +129,160 @@ Polymer({
     screen: Object,
   },
 
-  /**
-   * Displayed keyboard pincode.
-   */
-  keyboardPincode_: String,
+  /** @override */
+  ready() {
+    this.initializeLoginScreen('HIDDetectionScreen', {
+      resetAllowed: false,
+      enableDebuggingAllowed: true,
+    });
+  },
 
   /**
-   * Helper function to update keyboard/mouse state.
-   * @param {string} state Existing connection state (one of
-   *   screen.CONNECTION).
-   * @param {string} newState New connection state (one of screen.CONNECTION).
-   * @private
+   * Provides the label for the mouse row
    */
-  calculateState_(state, newState) {
-    if (newState === undefined)
-      return state;
+  getMouseLabel_() {
+    var stateToStrMap = new Map([
+      [CONNECTION.SEARCHING, 'hidDetectionMouseSearching'],
+      [CONNECTION.USB, 'hidDetectionUSBMouseConnected'],
+      [CONNECTION.CONNECTED, 'hidDetectionPointingDeviceConnected'],
+      [CONNECTION.PAIRING, 'hidDetectionPointingDeviceConnected'],
+      [CONNECTION.PAIRED, 'hidDetectionBTMousePaired'],
+    ]);
 
-    if (newState == this.screen.CONNECTION.UPDATE)
-      return state;
+    if (stateToStrMap.has(this.mouseState_))
+      return this.i18n(stateToStrMap.get(this.mouseState_));
+    else
+      return '';
+  },
 
-    return newState;
+  /**
+   * Provides the label for the keyboard row
+   */
+  getKeyboardLabel_() {
+    switch (this.keyboardState_) {
+      case CONNECTION.SEARCHING:
+        return this.i18n('hidDetectionKeyboardSearching');
+      case CONNECTION.USB:
+      case CONNECTION.CONNECTED:
+        return this.i18n('hidDetectionUSBKeyboardConnected');
+      case CONNECTION.PAIRED:
+        return this.i18n(
+            'hidDetectionBluetoothKeyboardPaired', this.keyboardDeviceName);
+      case CONNECTION.PAIRING:
+        return this.i18n(
+            'hidDetectionKeyboardPairing', this.keyboardDeviceName);
+    }
+  },
+
+  /**
+   * If the user accidentally closed the PIN dialog, tapping on on the keyboard
+   * row while the dialog should be visible will reopen it.
+   */
+  openPinDialog_() {
+    this.onPinDialogVisibilityChanged_();
   },
 
   /**
    * Helper function to calculate visibility of 'connected' icons.
-   * @param {string} state Connection state (one of screen.CONNECTION).
+   * @param {string} state Connection state (one of CONNECTION).
    * @private
    */
   tickIsVisible_(state) {
-    return (state == this.screen.CONNECTION.USB) ||
-        (state == this.screen.CONNECTION.CONNECTED) ||
-        (state == this.screen.CONNECTION.PAIRED);
+    return (state == CONNECTION.USB) || (state == CONNECTION.CONNECTED) ||
+        (state == CONNECTION.PAIRED);
   },
 
   /**
-   * Helper function to update keyboard/mouse state.
-   * Returns true if strings are not equal. False otherwize.
-   * @param {string} string1
-   * @param {string} string2
+   * Updates the visibility of the PIN dialog.
    * @private
    */
-  notEq_(string1, string2) {
-    return string1 != string2;
-  },
-
-  /**
-   * Sets current state in mouse pairing process.
-   * @param {string} state Connection state (one of screen.CONNECTION).
-   */
-  setMouseState(state) {
-    this.mouseState_ = this.calculateState_(this.mouseState_, state);
-  },
-
-  /**
-   * Updates visibility of keyboard pincode.
-   * @param {string} state Connection state (one of screen.CONNECTION).
-   * @private
-   */
-  updateKeyboardPincodeVisible_(state) {
-    this.keyboardPincodeVisible_ = this.keyboardPincode_ &&
-        (this.keyboardState_ == this.screen.CONNECTION.PAIRING);
-  },
-
-  /**
-   * Sets current state in keyboard pairing process.
-   * @param {string} state Connection state (one of screen.CONNECTION).
-   */
-  setKeyboardState(state) {
-    this.keyboardState_ = this.calculateState_(this.keyboardState_, state);
-    this.updateKeyboardPincodeVisible_();
-  },
-
-  /**
-   * Sets displayed keyboard pin.
-   * @param {string} pincode Pincode.
-   * @param {number} entered Number of digits already entered.
-   * @param {boolean} expected
-   * @param {string} label Connection state displayed description.
-   */
-  setPincodeState(pincode, entered, expected, label) {
-    this.keyboardPincode_ = pincode;
-    if (!pincode) {
-      this.updateKeyboardPincodeVisible_();
-      return;
+  onPinDialogVisibilityChanged_() {
+    if (this.pinDialogVisible_) {
+      if (!this.pinDialogIsOpen_) {
+        this.$['hid-pin-popup'].showDialog();
+        this.pinDialogIsOpen_ = true;
+      }
+    } else {
+      this.$['hid-pin-popup'].hideDialog();
+      this.pinDialogIsOpen_ = false;
     }
+  },
 
-    if (pincode.length != PINCODE_LENGTH)
-      console.error('Wrong pincode length');
+  /**
+   * Sets the title of the PIN dialog according to the device's name.
+   */
+  getPinDialogTitle_() {
+    return this.i18n('hidDetectionPinDialogTitle', this.keyboardDeviceName);
+  },
 
-    // Pincode keys plus Enter key.
-    for (let i = 0; i < (PINCODE_LENGTH + 1); i++) {
-      var pincodeSymbol = this.$['hid-keyboard-pincode-sym-' + (i + 1)];
-      pincodeSymbol.classList.toggle('key-typed', i < entered && expected);
-      pincodeSymbol.classList.toggle('key-untyped', i > entered && expected);
-      pincodeSymbol.classList.toggle('key-next', i == entered && expected);
+  /**
+   *  Modifies the PIN that is seen on the PIN dialog.
+   *  Also marks the current number to be entered with the class 'key-next'.
+   */
+  onPinParametersChanged_() {
+    const keysEntered = this.numKeysEnteredPinCode;
+    for (let i = 0; i < PINCODE_LENGTH; i++) {
+      const pincodeSymbol = this.$['hid-pincode-sym-' + (i + 1)];
+      pincodeSymbol.classList.toggle('key-next', i == keysEntered);
       if (i < PINCODE_LENGTH)
-        pincodeSymbol.textContent = pincode[i] ? pincode[i] : '';
+        pincodeSymbol.textContent = this.pinCode[i] ? this.pinCode[i] : '';
     }
+  },
 
-    var wasVisible = this.keyboardPincodeVisible_;
-    this.updateKeyboardPincodeVisible_();
-    if (this.keyboardPincodeVisible_ && !wasVisible) {
-      announceAccessibleMessage(
-          label + ' ' + pincode + ' ' +
-          loadTimeData.getString('hidDetectionBTEnterKey'));
-    }
+  /**
+   * Action to be taken when the user closes the PIN dialog before finishing
+   * the pairing process.
+   */
+  onPinDialogClosed_() {
+    this.pinDialogIsOpen_ = false;
   },
 
   /**
    * This is 'on-tap' event handler for 'Continue' button.
    */
   onHIDContinueTap_(event) {
-    chrome.send('HIDDetectionOnContinue');
+    this.userActed('HIDDetectionOnContinue');
     event.stopPropagation();
+  },
+
+  /**
+   * Sets current state in keyboard pairing process.
+   * @param {string} state Connection state (one of CONNECTION).
+   */
+  setKeyboardState(state) {
+    this.keyboardState_ = state;
+  },
+
+  /**
+   * Sets current state in mouse pairing process.
+   * @param {string} state Connection state (one of CONNECTION).
+   */
+  setMouseState(state) {
+    this.mouseState_ = state;
+  },
+
+  setKeyboardPinCode(pin) {
+    this.pinCode = pin;
+  },
+
+  setPinDialogVisible(visibility) {
+    this.pinDialogVisible_ = visibility;
+  },
+
+  setNumKeysEnteredPinCode(num_keys) {
+    this.numKeysEnteredPinCode = num_keys;
+  },
+
+  setPointingDeviceName(device_name) {
+    this.pointingDeviceName = device_name;
+  },
+
+  setKeyboardDeviceName(device_name) {
+    this.keyboardDeviceName = device_name;
+  },
+
+  setContinueButtonEnabled(enabled) {
+    this.continueButtonEnabled = enabled;
   },
 });
 })();

@@ -61,9 +61,7 @@ TEST(InvalidatorRegistrarWithMemoryTest, Basic) {
 
   invalidator->DispatchInvalidationsToHandlers(invalidation_map);
   EXPECT_EQ(1, handler.GetInvalidationCount());
-  EXPECT_EQ(expected_invalidations,
-            ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-                handler.GetLastInvalidationMap()));
+  EXPECT_EQ(expected_invalidations, handler.GetLastInvalidationMap());
 
   // Remove id1, add id3.
   EXPECT_TRUE(invalidator->UpdateRegisteredTopics(
@@ -76,9 +74,7 @@ TEST(InvalidatorRegistrarWithMemoryTest, Basic) {
   // Removed topic should not be notified, newly-added ones should.
   invalidator->DispatchInvalidationsToHandlers(invalidation_map);
   EXPECT_EQ(2, handler.GetInvalidationCount());
-  EXPECT_EQ(expected_invalidations,
-            ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-                handler.GetLastInvalidationMap()));
+  EXPECT_EQ(expected_invalidations, handler.GetLastInvalidationMap());
 
   invalidator->UpdateInvalidatorState(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetInvalidatorState());
@@ -149,17 +145,13 @@ TEST(InvalidatorRegistrarWithMemoryTest, MultipleHandlers) {
   expected_invalidations1.Insert(Invalidation::Init(id2, 2, "2"));
 
   EXPECT_EQ(1, handler1.GetInvalidationCount());
-  EXPECT_EQ(expected_invalidations1,
-            ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-                handler1.GetLastInvalidationMap()));
+  EXPECT_EQ(expected_invalidations1, handler1.GetLastInvalidationMap());
 
   TopicInvalidationMap expected_invalidations2;
   expected_invalidations2.Insert(Invalidation::Init(id3, 3, "3"));
 
   EXPECT_EQ(1, handler2.GetInvalidationCount());
-  EXPECT_EQ(expected_invalidations2,
-            ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-                handler2.GetLastInvalidationMap()));
+  EXPECT_EQ(expected_invalidations2, handler2.GetLastInvalidationMap());
 
   EXPECT_EQ(0, handler3.GetInvalidationCount());
   EXPECT_EQ(0, handler4.GetInvalidationCount());

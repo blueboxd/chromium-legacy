@@ -18,7 +18,7 @@
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -154,11 +154,11 @@ void CloudPolicyInvalidator::OnInvalidatorStateChange(
 }
 
 void CloudPolicyInvalidator::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+    const syncer::TopicInvalidationMap& invalidation_map) {
   DCHECK(state_ == STARTED);
   DCHECK(thread_checker_.CalledOnValidThread());
   const syncer::SingleObjectInvalidationSet& list =
-      invalidation_map.ForObject(object_id_);
+      invalidation_map.ForTopic(topic_);
   if (list.IsEmpty()) {
     NOTREACHED();
     return;
@@ -226,7 +226,7 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
       highest_handled_invalidation_version_ = store_invalidation_version;
   }
 
-  UpdateRegistration(store->policy());
+  UpdateSubscription(store->policy());
   UpdateMaxFetchDelay(store->policy_map());
 }
 
@@ -323,23 +323,23 @@ void CloudPolicyInvalidator::HandleInvalidation(
       delay);
 }
 
-void CloudPolicyInvalidator::UpdateRegistration(
+void CloudPolicyInvalidator::UpdateSubscription(
     const enterprise_management::PolicyData* policy) {
-  // Create the ObjectId based on the policy data.
-  // If the policy does not specify an ObjectId, then unregister.
-  invalidation::ObjectId object_id;
-  if (!policy || !GetCloudPolicyObjectIdFromPolicy(*policy, &object_id)) {
+  // Create the Topic based on the policy data.
+  // If the policy does not specify a Topic, then unregister.
+  syncer::Topic topic;
+  if (!policy || !GetCloudPolicyTopicFromPolicy(*policy, &topic)) {
     Unregister();
     return;
   }
 
-  // If the policy object id in the policy data is different from the currently
-  // registered object id, update the object registration.
-  if (!is_registered_ || !(object_id == object_id_))
-    Register(object_id);
+  // If the policy topic in the policy data is different from the currently
+  // registered topic, update the object registration.
+  if (!is_registered_ || topic != topic_)
+    Register(topic);
 }
 
-void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
+void CloudPolicyInvalidator::Register(const syncer::Topic& topic) {
   // Register this handler with the invalidation service if needed.
   if (!is_registered_) {
     OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
@@ -350,18 +350,16 @@ void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
   if (invalid_)
     AcknowledgeInvalidation();
   is_registered_ = true;
-  object_id_ = object_id;
+  topic_ = topic;
   UpdateInvalidationsEnabled();
 
-  // Update registration with the invalidation service.
-  syncer::ObjectIdSet ids;
-  ids.insert(object_id);
+  // Update subscription with the invalidation service.
   bool success =
-      invalidation_service_->UpdateRegisteredInvalidationIds(this, ids);
+      invalidation_service_->UpdateInterestedTopics(this, /*topics=*/{topic});
   // Do not crash as server might send duplicate invalidation IDs due to
   // http://b/119860379.
   if (!success) {
-    LOG(ERROR) << "Failed to register " << syncer::ObjectIdToString(object_id)
+    LOG(ERROR) << "Failed to subscribe to " << topic
                << " for policy invalidations";
   }
   base::UmaHistogramBoolean(kMetricPolicyInvalidationRegistration, success);
@@ -372,8 +370,8 @@ void CloudPolicyInvalidator::Unregister() {
   if (is_registered_) {
     if (invalid_)
       AcknowledgeInvalidation();
-    CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(
-        this, syncer::ObjectIdSet()));
+    CHECK(invalidation_service_->UpdateInterestedTopics(this,
+                                                        syncer::TopicSet()));
     invalidation_service_->UnregisterInvalidationHandler(this);
     is_registered_ = false;
     UpdateInvalidationsEnabled();

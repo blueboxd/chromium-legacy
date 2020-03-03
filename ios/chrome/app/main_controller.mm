@@ -133,7 +133,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
-#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
@@ -417,7 +416,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 @implementation MainController
 // Defined by MainControllerGuts.
-@synthesize appURLLoadingService;
 @synthesize dismissingTabSwitcher = _dismissingTabSwitcher;
 @synthesize restoreHelper = _restoreHelper;
 
@@ -605,16 +603,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // This is per-window code.
 
   DCHECK(!self.browserViewWrangler);
-
-  self.appURLLoadingService = new AppUrlLoadingService();
-  self.appURLLoadingService->SetDelegate(self.sceneController);
+  DCHECK(self.sceneController.appURLLoadingService);
 
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainBrowserState
              webStateListObserver:self.sceneController
        applicationCommandEndpoint:self.sceneController
       browsingDataCommandEndpoint:self
-             appURLLoadingService:self.appURLLoadingService];
+             appURLLoadingService:self.sceneController.appURLLoadingService];
 
   // Ensure the main tab model is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];

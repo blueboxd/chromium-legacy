@@ -31,6 +31,10 @@
 // Test for interface extended attributes and special operations.
 // Also used as a target by TestObject
 
+typedef [StringContext=TrustedHTML] DOMString TrustedHTMLString;
+typedef [StringContext=TrustedScript] DOMString TrustedScriptString;
+typedef [StringContext=TrustedScriptURL] USVString TrustedScriptURLString;
+
 [
     ActiveScriptWrappable,
     Custom=LegacyCallAsFunction,
@@ -148,6 +152,16 @@
     // Arguments that are sequences or records of nullable types.
     void methodWithNullableSequences(sequence<double?> numbers, sequence<DOMString?> strings, sequence<Element?> elements, sequence<(double or DOMString)?> unions);
     void methodWithNullableRecords(record<DOMString, double?> numbers, record<DOMString, DOMString?> strings, record<DOMString, Element?> elements, record<DOMString, (double or DOMString)?> unions);
+
+    // Trusted Types
+    [RaisesException=Setter] attribute TrustedScriptString scriptString;
+    [CallWith=ScriptState, RaisesException] long setTimeoutForScript(TrustedScriptString handler);
+    [RaisesException=Setter] attribute TrustedHTMLString htmlString;
+    [CallWith=ScriptState, RaisesException] long setTimeoutForHTML(TrustedHTMLString handler);
+    [RaisesException=Setter] attribute TrustedScriptURLString scriptURLString;
+    [CallWith=ScriptState, RaisesException] long setTimeoutForScriptURL(TrustedScriptURLString handler);
+    [RaisesException=Setter] attribute TrustedScriptString? optionalScriptString;
+    [RaisesException=Setter] attribute [StringContext=TrustedHTML, TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringHTMLString;
 };
 
 TestInterface includes TestInterfaceMixin;

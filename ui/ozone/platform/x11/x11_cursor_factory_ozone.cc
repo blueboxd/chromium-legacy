@@ -25,7 +25,7 @@ PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
 // Gets default aura cursor bitmap/hotspot and creates a X11CursorOzone with it.
 scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(mojom::CursorType type) {
   Cursor cursor(type);
-  cursor.set_device_scale_factor(1);
+  cursor.set_image_scale_factor(1);
   SkBitmap bitmap = GetCursorBitmap(cursor);
   gfx::Point hotspot = GetCursorHotstop(cursor);
   if (!bitmap.isNull())

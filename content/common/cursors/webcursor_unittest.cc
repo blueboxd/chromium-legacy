@@ -160,15 +160,15 @@ TEST(WebCursorTest, CursorScaleFactor) {
 #if defined(USE_OZONE)
   // For Ozone cursors, the size of the cursor is capped at 64px, and this is
   // enforce through the calculated scale factor.
-  EXPECT_EQ(0.5f, cursor.GetNativeCursor().device_scale_factor());
+  EXPECT_EQ(0.5f, cursor.GetNativeCursor().image_scale_factor());
 #else
-  EXPECT_EQ(2.1f, cursor.GetNativeCursor().device_scale_factor());
+  EXPECT_EQ(2.1f, cursor.GetNativeCursor().image_scale_factor());
 #endif
 
   // Test that the Display dsf is copied.
   WebCursor copy(cursor);
-  EXPECT_EQ(cursor.GetNativeCursor().device_scale_factor(),
-            copy.GetNativeCursor().device_scale_factor());
+  EXPECT_EQ(cursor.GetNativeCursor().image_scale_factor(),
+            copy.GetNativeCursor().image_scale_factor());
 }
 
 TEST(WebCursorTest, UnscaledImageCopy) {

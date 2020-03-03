@@ -83,8 +83,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void DoOnInvalidatorStateChange(InvalidatorState state);
 
   // Forwards an invalidation to the sync manager.
-  void DoOnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map);
+  void DoOnIncomingInvalidation(const TopicInvalidationMap& invalidation_map);
 
   // Note:
   //

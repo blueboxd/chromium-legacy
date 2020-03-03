@@ -508,7 +508,7 @@ android_aar_prebuilt("android_arch_lifecycle_viewmodel_java_orig") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_annotation_annotation_java") {
-  jar_path = "libs/androidx_annotation_annotation/annotation-1.0.0.jar"
+  jar_path = "libs/androidx_annotation_annotation/annotation-1.1.0.jar"
   output_name = "androidx_annotation_annotation"
   supports_android = true
   skip_jetify = true
@@ -1287,7 +1287,7 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_processor_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_auth_java") {
-  aar_path = "libs/com_google_android_gms_play_services_auth/play-services-auth-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_auth/play-services-auth-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_auth/com_google_android_gms_play_services_auth.info"
   deps = [
     ":google_play_services_auth_api_phone_java",
@@ -1303,7 +1303,7 @@ android_aar_prebuilt("google_play_services_auth_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_auth_api_phone_java") {
-  aar_path = "libs/com_google_android_gms_play_services_auth_api_phone/play-services-auth-api-phone-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_auth_api_phone/play-services-auth-api-phone-17.1.0.aar"
   info_path = "libs/com_google_android_gms_play_services_auth_api_phone/com_google_android_gms_play_services_auth_api_phone.info"
   deps = [
     ":google_play_services_base_java",
@@ -1317,7 +1317,7 @@ android_aar_prebuilt("google_play_services_auth_api_phone_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_auth_base_java") {
-  aar_path = "libs/com_google_android_gms_play_services_auth_base/play-services-auth-base-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_auth_base/play-services-auth-base-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_auth_base/com_google_android_gms_play_services_auth_base.info"
   deps = [
     ":google_play_services_base_java",
@@ -1331,7 +1331,7 @@ android_aar_prebuilt("google_play_services_auth_base_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_base_java") {
-  aar_path = "libs/com_google_android_gms_play_services_base/play-services-base-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_base/play-services-base-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_base/com_google_android_gms_play_services_base.info"
   deps = [
     ":google_play_services_basement_java",
@@ -1344,7 +1344,7 @@ android_aar_prebuilt("google_play_services_base_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_basement_java") {
-  aar_path = "libs/com_google_android_gms_play_services_basement/play-services-basement-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_basement/play-services-basement-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_basement/com_google_android_gms_play_services_basement.info"
   deps = [ ":com_android_support_support_v4_java" ]
 
@@ -1355,7 +1355,7 @@ android_aar_prebuilt("google_play_services_basement_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_cast_java") {
-  aar_path = "libs/com_google_android_gms_play_services_cast/play-services-cast-16.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_cast/play-services-cast-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_cast/com_google_android_gms_play_services_cast.info"
   deps = [
     ":com_android_support_mediarouter_v7_java",
@@ -1371,7 +1371,7 @@ android_aar_prebuilt("google_play_services_cast_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_cast_framework_java") {
-  aar_path = "libs/com_google_android_gms_play_services_cast_framework/play-services-cast-framework-16.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_cast_framework/play-services-cast-framework-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_cast_framework/com_google_android_gms_play_services_cast_framework.info"
   deps = [
     ":com_android_support_mediarouter_v7_java",
@@ -1388,7 +1388,7 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_fido_java") {
-  aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_fido/com_google_android_gms_play_services_fido.info"
   deps = [
     ":google_play_services_base_java",
@@ -1402,7 +1402,7 @@ android_aar_prebuilt("google_play_services_fido_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_gcm_java") {
-  aar_path = "libs/com_google_android_gms_play_services_gcm/play-services-gcm-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_gcm/play-services-gcm-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_gcm/com_google_android_gms_play_services_gcm.info"
   deps = [
     ":google_play_services_base_java",
@@ -1417,7 +1417,7 @@ android_aar_prebuilt("google_play_services_gcm_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_iid_java") {
-  aar_path = "libs/com_google_android_gms_play_services_iid/play-services-iid-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_iid/play-services-iid-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_iid/com_google_android_gms_play_services_iid.info"
   deps = [
     ":google_play_services_base_java",
@@ -1432,7 +1432,7 @@ android_aar_prebuilt("google_play_services_iid_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_instantapps_java") {
-  aar_path = "libs/com_google_android_gms_play_services_instantapps/play-services-instantapps-16.0.0.aar"
+  aar_path = "libs/com_google_android_gms_play_services_instantapps/play-services-instantapps-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_instantapps/com_google_android_gms_play_services_instantapps.info"
   deps = [
     ":google_play_services_base_java",
@@ -1446,7 +1446,7 @@ android_aar_prebuilt("google_play_services_instantapps_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_location_java") {
-  aar_path = "libs/com_google_android_gms_play_services_location/play-services-location-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_location/play-services-location-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_location/com_google_android_gms_play_services_location.info"
   deps = [
     ":google_play_services_base_java",
@@ -1461,7 +1461,7 @@ android_aar_prebuilt("google_play_services_location_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_tasks_java") {
-  aar_path = "libs/com_google_android_gms_play_services_tasks/play-services-tasks-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_tasks/play-services-tasks-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_tasks/com_google_android_gms_play_services_tasks.info"
   deps = [ ":google_play_services_basement_java" ]
 
@@ -1471,7 +1471,7 @@ android_aar_prebuilt("google_play_services_tasks_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_vision_java") {
-  aar_path = "libs/com_google_android_gms_play_services_vision/play-services-vision-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_vision/play-services-vision-18.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_vision/com_google_android_gms_play_services_vision.info"
   deps = [
     ":google_play_services_base_java",
@@ -1485,7 +1485,7 @@ android_aar_prebuilt("google_play_services_vision_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_vision_common_java") {
-  aar_path = "libs/com_google_android_gms_play_services_vision_common/play-services-vision-common-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_vision_common/play-services-vision-common-18.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_vision_common/com_google_android_gms_play_services_vision_common.info"
   deps = [
     ":google_play_services_base_java",
@@ -2293,7 +2293,7 @@ java_prebuilt("com_github_kevinstern_software_and_algorithms_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_clearcut_java") {
-  aar_path = "libs/com_google_android_gms_play_services_clearcut/play-services-clearcut-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_clearcut/play-services-clearcut-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_clearcut/com_google_android_gms_play_services_clearcut.info"
 
   # To remove visibility constraint, add this dependency to
@@ -2312,7 +2312,7 @@ android_aar_prebuilt("google_play_services_clearcut_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_flags_java") {
-  aar_path = "libs/com_google_android_gms_play_services_flags/play-services-flags-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_flags/play-services-flags-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_flags/com_google_android_gms_play_services_flags.info"
 
   # To remove visibility constraint, add this dependency to
@@ -2329,7 +2329,7 @@ android_aar_prebuilt("google_play_services_flags_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_phenotype_java") {
-  aar_path = "libs/com_google_android_gms_play_services_phenotype/play-services-phenotype-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_phenotype/play-services-phenotype-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_phenotype/com_google_android_gms_play_services_phenotype.info"
 
   # To remove visibility constraint, add this dependency to
@@ -2347,7 +2347,7 @@ android_aar_prebuilt("google_play_services_phenotype_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_places_placereport_java") {
-  aar_path = "libs/com_google_android_gms_play_services_places_placereport/play-services-places-placereport-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_places_placereport/play-services-places-placereport-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_places_placereport/com_google_android_gms_play_services_places_placereport.info"
 
   # To remove visibility constraint, add this dependency to
@@ -2361,7 +2361,7 @@ android_aar_prebuilt("google_play_services_places_placereport_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_stats_java") {
-  aar_path = "libs/com_google_android_gms_play_services_stats/play-services-stats-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_stats/play-services-stats-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_stats/com_google_android_gms_play_services_stats.info"
 
   # To remove visibility constraint, add this dependency to

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -76,7 +77,7 @@ network::mojom::IPAddressSpace FetchClientSettingsObjectImpl::GetAddressSpace()
   return execution_context_->GetSecurityContext().AddressSpace();
 }
 
-WebInsecureRequestPolicy
+mojom::blink::InsecureRequestPolicy
 FetchClientSettingsObjectImpl::GetInsecureRequestsPolicy() const {
   return execution_context_->GetSecurityContext().GetInsecureRequestPolicy();
 }

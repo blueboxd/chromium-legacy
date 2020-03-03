@@ -138,7 +138,7 @@ TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
-// Verifies cursor's device scale factor is updated when a cursor has moved
+// Verifies cursor's image scale factor is updated when a cursor has moved
 // across root windows with different device scale factors
 // (http://crbug.com/154183).
 TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
@@ -148,11 +148,11 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
                                          display::DisplayPlacement::RIGHT, 0));
   CursorManagerTestApi cursor_test_api(Shell::Get()->cursor_manager());
 
-  EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().image_scale_factor());
   TestIfMouseWarpsAt(gfx::Point(399, 200));
-  EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().image_scale_factor());
   TestIfMouseWarpsAt(gfx::Point(400, 200));
-  EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().image_scale_factor());
 }
 
 // Verifies that pressing the key repeatedly will not hide the cursor.

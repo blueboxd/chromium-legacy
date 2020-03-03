@@ -124,6 +124,10 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'SameObject' in attribute.extended_attributes and
         'SaveSameObject' in attribute.extended_attributes)
 
+    # [StringContext]
+    if idl_type.has_string_context:
+        includes.add('bindings/core/v8/generated_code_helper.h')
+
     # [CachedAccessor]
     is_cached_accessor = 'CachedAccessor' in extended_attributes
 

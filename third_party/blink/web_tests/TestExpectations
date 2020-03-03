@@ -6043,7 +6043,6 @@ crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-
 
 # Sheriff 2019-08-26
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
-crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope.js [ Pass Crash ]
 crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Pass Failure ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
@@ -6754,3 +6753,5 @@ crbug.com/1047648 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreenca
 
 crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Pass Failure ]
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Pass Timeout ]
+crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/responsive/interpolation/offset-rotate-responsive.html [ Pass Failure ]
+crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]

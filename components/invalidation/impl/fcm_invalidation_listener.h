@@ -65,10 +65,9 @@ class FCMInvalidationListener
   void ClearInstanceIDToken();
 
   // AckHandler implementation.
-  void Acknowledge(const invalidation::ObjectId& id,
+  void Acknowledge(const Topic& topic,
                    const syncer::AckHandle& handle) override;
-  void Drop(const invalidation::ObjectId& id,
-            const syncer::AckHandle& handle) override;
+  void Drop(const Topic& topic, const syncer::AckHandle& handle) override;
 
   // FCMSyncNetworkChannel::Observer implementation.
   void OnFCMChannelStateChanged(FcmChannelState state) override;

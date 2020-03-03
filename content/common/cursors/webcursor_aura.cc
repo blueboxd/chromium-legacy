@@ -22,7 +22,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot, &scale);
       custom_cursor_->set_custom_bitmap(bitmap);
       custom_cursor_->set_custom_hotspot(hotspot);
-      custom_cursor_->set_device_scale_factor(scale);
+      custom_cursor_->set_image_scale_factor(scale);
       custom_cursor_->SetPlatformCursor(GetPlatformCursor(*custom_cursor_));
     }
     return *custom_cursor_;

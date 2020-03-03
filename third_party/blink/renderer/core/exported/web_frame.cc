@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
@@ -158,7 +159,7 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
+mojom::blink::InsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
   return ToCoreFrame(*this)->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 

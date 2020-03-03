@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
@@ -150,8 +150,7 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
 
   if (invalidation_handler_registered_) {
     if (reason != BROWSER_SHUTDOWN) {
-      bool success =
-          invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
+      bool success = invalidator_->UpdateInterestedTopics(this, /*topics=*/{});
       DCHECK(success);
     }
     invalidator_->UnregisterInvalidationHandler(this);
@@ -307,8 +306,8 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
       invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
     }
 #endif
-    bool success = invalidator_->UpdateRegisteredInvalidationIds(
-        this, ModelTypeSetToObjectIdSet(invalidation_enabled_types));
+    bool success = invalidator_->UpdateInterestedTopics(
+        this, ModelTypeSetToTopicSet(invalidation_enabled_types));
     DCHECK(success);
   }
 
@@ -386,7 +385,7 @@ void SyncEngineImpl::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncEngineImpl::OnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const TopicInvalidationMap& invalidation_map) {
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnIncomingInvalidation,
                                 backend_, invalidation_map));
@@ -460,8 +459,8 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
     enabled_for_invalidation.Remove(syncer::FAVICON_IMAGES);
     enabled_for_invalidation.Remove(syncer::FAVICON_TRACKING);
   }
-  bool success = invalidator_->UpdateRegisteredInvalidationIds(
-      this, ModelTypeSetToObjectIdSet(enabled_for_invalidation));
+  bool success = invalidator_->UpdateInterestedTopics(
+      this, ModelTypeSetToTopicSet(enabled_for_invalidation));
   DCHECK(success);
 }
 

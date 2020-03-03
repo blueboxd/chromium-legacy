@@ -5141,6 +5141,24 @@
             ]
         }
     ],
+    "SharingWebRTC": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SharingPeerConnectionReceiver"
+                    ]
+                }
+            ]
+        }
+    ],
     "Show109ObsoleteInfobar": [
         {
             "platforms": [
@@ -5866,6 +5884,7 @@
     "UseSkiaRenderer": [
         {
             "platforms": [
+                "android",
                 "linux",
                 "windows"
             ],

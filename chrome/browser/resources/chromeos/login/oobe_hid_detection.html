@@ -46,7 +46,7 @@
   </svg>
 </iron-iconset-svg>
 
-<dom-module id="oobe-hid-detection-md">
+<dom-module id="oobe-hid-detection">
   <template>
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_hid_detection.css">
@@ -58,7 +58,7 @@
       </iron-icon>
       <div slot="footer" class="flex layout vertical">
         <div class="layout vertical justified hid-selection-entry">
-          <div class="flex layout horizontal center">
+          <div id="hid-mouse-row" class="flex layout horizontal center">
             <hd-iron-icon id="mouse-icon" alt=""
                 icon1x="oobe-hid-detection-20:mouse"
                 icon2x="oobe-hid-detection-40:mouse">
@@ -66,26 +66,14 @@
             <img id="mouse-tick" alt=""
                 hidden="[[!tickIsVisible_(mouseState_)]]"
                 src="chrome://theme/IDR_BLUETOOTH_PAIRING_TICK">
-            <div id="mouse-label-searching" aria-live="polite"
-                hidden="[[notEq_(mouseState_, screen.CONNECTION.SEARCHING)]]">
-              [[i18nDynamic(locale, 'hidDetectionMouseSearching')]]
-            </div>
-            <div id="mouse-label-usb" aria-live="polite"
-                hidden="[[notEq_(mouseState_, screen.CONNECTION.USB)]]">
-              [[i18nDynamic(locale, 'hidDetectionUSBMouseConnected')]]
-            </div>
-            <div id="mouse-label-connected" aria-live="polite"
-                hidden="[[notEq_(mouseState_, screen.CONNECTION.CONNECTED)]]">
-              [[i18nDynamic(locale, 'hidDetectionPointingDeviceConnected')]]
-            </div>
-            <div id="mouse-label-paired" aria-live="polite"
-                hidden="[[notEq_(mouseState_, screen.CONNECTION.PAIRED)]]">
-              [[i18nDynamic(locale, 'hidDetectionBTMousePaired')]]
+            <div id="mouse-label" aria-live="polite">
+              [[getMouseLabel_(locale, mouseState_, pointingDeviceName)]]
             </div>
           </div>
         </div>
         <div class="layout vertical hid-selection-entry">
-          <div id="status-container" class="flex layout horizontal center">
+          <div id="hid-keyboard-row" class="flex layout horizontal center"
+              on-tap="openPinDialog_">
             <hd-iron-icon id="keyboard-icon" alt=""
                 icon1x="oobe-hid-detection-20:keyboard"
                 icon2x="oobe-hid-detection-40:keyboard">
@@ -93,47 +81,8 @@
             <img id="keyboard-tick" alt=""
                 hidden="[[!tickIsVisible_(keyboardState_)]]"
                 src="chrome://theme/IDR_BLUETOOTH_PAIRING_TICK">
-            <div aria-live="polite"
-                hidden="[[notEq_(keyboardState_, screen.CONNECTION.SEARCHING)]]"
-                >
-              [[i18nDynamic(locale, 'hidDetectionKeyboardSearching')]]
-            </div>
-            <div aria-live="polite"
-                hidden="[[notEq_(keyboardState_, screen.CONNECTION.USB)]]">
-              [[i18nDynamic(locale, 'hidDetectionUSBKeyboardConnected')]]
-            </div>
-            <div aria-live="polite"
-                hidden="[[notEq_(keyboardState_, screen.CONNECTION.PAIRED)]]">
-               [[keyboardPairedLabel]]
-            </div>
-            <div hidden="[[notEq_(keyboardState_, screen.CONNECTION.PAIRING)]]">
-               [[keyboardPairingLabel]]
-            </div>
-          </div>
-          <div id="hid-keyboard-pincode"
-              class="layout horizontal center-justified"
-              hidden="[[!keyboardPincodeVisible_]]">
-            <div id="hid-keyboard-pincode-sym-1"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-2"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-3"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-4"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-5"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-6"
-                class="bluetooth-keyboard-button">
-            </div>
-            <div id="hid-keyboard-pincode-sym-7"
-                class="bluetooth-keyboard-button">
-              [[i18nDynamic(locale, 'hidDetectionBTEnterKey')]]
+            <div id="keyboard-label" aria-live="polite">
+              [[getKeyboardLabel_(locale, keyboardState_, keyboardDeviceName)]]
             </div>
           </div>
         </div>
@@ -141,8 +90,30 @@
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onHIDContinueTap_"
             text-key="hidDetectionContinue"
-            disabled="[[continueButtonDisabled]]"></oobe-text-button>
+            disabled="[[!continueButtonEnabled]]"></oobe-text-button>
       </div>
     </oobe-dialog>
+
+    <!-- Popup that displays the PIN for pairing with a bluetooth keyboard. -->
+    <oobe-help-dialog id="hid-pin-popup" on-close="onPinDialogClosed_">
+      <h1 slot="title">[[pinDialogTitle]]</h1>
+      <div slot="content" class="content-padding">
+        <div>
+          [[i18nDynamic(locale, 'hidDetectionBluetoothPairingCode')]]
+        </div>
+        <div id="hid-keyboard-pincode"
+            class="layout horizontal center-justified pin-code-style">
+          <div id="hid-pincode-sym-1"></div>
+          <div id="hid-pincode-sym-2"></div>
+          <div id="hid-pincode-sym-3"></div>
+          <div id="hid-pincode-sym-4"></div>
+          <div id="hid-pincode-sym-5"></div>
+          <div id="hid-pincode-sym-6"></div>
+        </div>
+        <div>
+          [[i18nDynamic(locale, 'hidDetectionBluetoothPairingCodeExplanation')]]
+        </div>
+      </div>
+    </oobe-help-dialog>
   </template>
 </dom-module>

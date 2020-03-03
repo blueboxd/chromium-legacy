@@ -1597,13 +1597,13 @@ TEST_F(WindowTreeHostManagerTest,
       gfx::Point(20, 50));
 
   EXPECT_EQ("20,50", env->last_mouse_location().ToString());
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   SwapPrimaryDisplay();
 
   EXPECT_EQ("20,50", env->last_mouse_location().ToString());
-  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 
@@ -1627,7 +1627,7 @@ TEST_F(WindowTreeHostManagerTest,
       gfx::Point(20, 50));
 
   EXPECT_EQ("20,50", env->last_mouse_location().ToString());
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("300x300*2/r");
@@ -1636,7 +1636,7 @@ TEST_F(WindowTreeHostManagerTest,
 
   // Cursor should be centered on the remaining display.
   EXPECT_EQ("75,75", env->last_mouse_location().ToString());
-  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 
@@ -1662,7 +1662,7 @@ TEST_F(WindowTreeHostManagerTest,
   shell->cursor_manager()->HideCursor();
 
   EXPECT_EQ(cursor_location, env->last_mouse_location());
-  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("300x300*2/r");
@@ -1678,7 +1678,7 @@ TEST_F(WindowTreeHostManagerTest,
   EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
 
   // The cursor scale and rotation should be updated.
-  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 

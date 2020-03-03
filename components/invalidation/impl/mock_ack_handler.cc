@@ -76,9 +76,7 @@ bool MockAckHandler::AllInvalidationsAccountedFor() const {
   return unacked_invalidations_.empty() && unrecovered_drop_events_.empty();
 }
 
-void MockAckHandler::Acknowledge(
-    const invalidation::ObjectId& id,
-    const AckHandle& handle) {
+void MockAckHandler::Acknowledge(const Topic& topic, const AckHandle& handle) {
   AckHandleMatcher matcher(handle);
   auto it = std::find_if(unacked_invalidations_.begin(),
                          unacked_invalidations_.end(), matcher);
@@ -87,15 +85,13 @@ void MockAckHandler::Acknowledge(
     unacked_invalidations_.erase(it);
   }
 
-  auto it2 = unrecovered_drop_events_.find(id);
+  auto it2 = unrecovered_drop_events_.find(topic);
   if (it2 != unrecovered_drop_events_.end() && it2->second.Equals(handle)) {
     unrecovered_drop_events_.erase(it2);
   }
 }
 
-void MockAckHandler::Drop(
-    const invalidation::ObjectId& id,
-    const AckHandle& handle) {
+void MockAckHandler::Drop(const Topic& topic, const AckHandle& handle) {
   AckHandleMatcher matcher(handle);
   auto it = std::find_if(unacked_invalidations_.begin(),
                          unacked_invalidations_.end(), matcher);
@@ -103,8 +99,8 @@ void MockAckHandler::Drop(
     dropped_invalidations_.push_back(*it);
     unacked_invalidations_.erase(it);
   }
-  unrecovered_drop_events_.erase(id);
-  unrecovered_drop_events_.insert(std::make_pair(id, handle));
+  unrecovered_drop_events_.erase(topic);
+  unrecovered_drop_events_.emplace(topic, handle);
 }
 
 }  // namespace syncer

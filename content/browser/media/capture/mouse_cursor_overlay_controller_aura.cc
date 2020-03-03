@@ -159,8 +159,8 @@ gfx::NativeCursor MouseCursorOverlayController::GetCurrentCursorOrDefault()
     if (auto* host = window->GetHost()) {
       gfx::NativeCursor cursor = host->last_cursor();
       if (cursor != ui::mojom::CursorType::kNull) {
-        if (cursor.device_scale_factor() < 1.0f) {
-          cursor.set_device_scale_factor(1.0f);
+        if (cursor.image_scale_factor() < 1.0f) {
+          cursor.set_image_scale_factor(1.0f);
         }
         return cursor;
       }
@@ -181,7 +181,7 @@ gfx::RectF MouseCursorOverlayController::ComputeRelativeBoundsForOverlay(
       if (auto* root_window = window->GetRootWindow()) {
         // Compute the cursor size in terms of DIP coordinates.
         const SkBitmap& bitmap = GetCursorBitmap(cursor);
-        const float scale_factor = cursor.device_scale_factor();
+        const float scale_factor = cursor.image_scale_factor();
         const gfx::SizeF size =
             scale_factor > 0.0f
                 ? gfx::ScaleSize(gfx::SizeF(bitmap.width(), bitmap.height()),

@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b194080401437a53c361577cbe65fee941fc4d62',
+  'skia_revision': '853789cdfe3c518492959458804add4a8d2e664c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7e2188ded3d36ba92b5f5bf7d572f564f12a688e',
+  'v8_revision': '189353b3360a48f637f7bb228db10268fdc991c9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b84969ad69c3fd72c80f2091f56fc21fdef692d9',
+  'angle_revision': 'c3655c3a7d55049bb9c881dc89df66f69125afb8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b6cad595a9dfb67e9703efc9670ed377a79da152',
+  'devtools_frontend_revision': 'd5ae9bf042df46c5eddab0d34d643f4dd7897d28',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -532,7 +532,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '594e477685268094783deab7522e479b463a8760',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '844112ed66147768bb88c48ad5af1179ab3ed7c8',
       'condition': 'checkout_ios',
   },
 
@@ -1239,7 +1239,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '29f04c8cdb9bb12711a1706b061ec81d82311c5f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8ff2fc8fcdb168a9ba4ac17d053d3e8dd7864912',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1515,7 +1515,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@194c399f9673d54fa6a8f0e95b6f4ceb173967e8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e36af5c1ab9bb1c194e46c956d4e3154eb5caa1b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1629,7 +1629,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_annotation_annotation',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2663,7 +2663,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2674,7 +2674,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth_api_phone',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2685,7 +2685,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth_base',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2696,7 +2696,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_base',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2707,7 +2707,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_basement',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2718,7 +2718,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast',
-              'version': 'version:16.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2729,7 +2729,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast_framework',
-              'version': 'version:16.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2740,7 +2740,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_clearcut',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2751,7 +2751,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_fido',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2762,7 +2762,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_flags',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2773,7 +2773,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_gcm',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2784,7 +2784,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_iid',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2795,7 +2795,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_instantapps',
-              'version': 'version:16.0.0-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2806,7 +2806,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_location',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2817,7 +2817,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_phenotype',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2828,7 +2828,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_places_placereport',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2839,7 +2839,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_stats',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2850,7 +2850,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_tasks',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:17.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2861,7 +2861,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_vision',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:18.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2872,7 +2872,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_vision_common',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:18.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',

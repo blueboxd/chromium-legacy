@@ -87,6 +87,7 @@ EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES = frozenset([
     'AllowShared',
     'Clamp',
     'EnforceRange',
+    'StringContext',
     'TreatNullAs',
 ])
 
@@ -608,7 +609,8 @@ class IdlNullableType(IdlTypeBase):
 
 class IdlAnnotatedType(IdlTypeBase):
     """IdlAnnoatedType represents an IDL type with extended attributes.
-    [Clamp], [EnforceRange], and [TreatNullAs] are applicable to types.
+    [Clamp], [EnforceRange], [StringContext], and [TreatNullAs] are applicable
+    to types.
     https://heycam.github.io/webidl/#idl-annotated-types
     """
 
@@ -620,6 +622,9 @@ class IdlAnnotatedType(IdlTypeBase):
         if any(key not in EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES
                for key in extended_attributes):
             raise ValueError('Extended attributes not applicable to types: %s' % self)
+
+        if 'StringContext' in extended_attributes and inner_type.base_type not in ['DOMString', 'USVString']:
+            raise ValueError('StringContext is only applicable to string types.')
 
     def __str__(self):
         annotation = ', '.join((key + ('' if val is None else '=' + val))
@@ -642,6 +647,10 @@ class IdlAnnotatedType(IdlTypeBase):
     @property
     def is_annotated_type(self):
         return True
+
+    @property
+    def has_string_context(self):
+        return 'StringContext' in self.extended_attributes
 
     @property
     def name(self):

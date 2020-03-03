@@ -31,6 +31,7 @@
 #include "content/public/common/navigation_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
 namespace content {
 
@@ -119,7 +120,10 @@ FrameTreeNode::FrameTreeNode(
           scope,
           name,
           unique_name,
-          false /* should enforce strict mixed content checking */,
+          blink::mojom::InsecureRequestPolicy::
+              kLeaveInsecureRequestsAlone /* should enforce strict mixed content
+                                             checking */
+          ,
           std::vector<uint32_t>()
           /* hashes of hosts for insecure request upgrades */,
           false /* is a potentially trustworthy unique origin */,
@@ -343,7 +347,7 @@ void FrameTreeNode::AddContentSecurityPolicies(
 }
 
 void FrameTreeNode::SetInsecureRequestPolicy(
-    blink::WebInsecureRequestPolicy policy) {
+    blink::mojom::InsecureRequestPolicy policy) {
   if (policy == replication_state_.insecure_request_policy)
     return;
   render_manager_.OnEnforceInsecureRequestPolicy(policy);

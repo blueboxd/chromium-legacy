@@ -62,21 +62,21 @@ dependencies {
     // Play services libraries
     // See https://developers.google.com/android/guides/releases for updates
     // Starting from 15.0.0 these libraries are allowed to update independently
-    def gmsVersion = '15.0.1'
+    def gmsVersion = '17.0.0'
     compile "com.google.android.gms:play-services-basement:${gmsVersion}"
     compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
     compile "com.google.android.gms:play-services-base:${gmsVersion}"
     compile "com.google.android.gms:play-services-auth-base:${gmsVersion}"
-    compile "com.google.android.gms:play-services-auth-api-phone:${gmsVersion}"
+    compile "com.google.android.gms:play-services-auth-api-phone:17.1.0"
     compile "com.google.android.gms:play-services-auth:${gmsVersion}"
-    compile "com.google.android.gms:play-services-cast:16.0.1"
-    compile "com.google.android.gms:play-services-cast-framework:16.0.1"
+    compile "com.google.android.gms:play-services-cast:${gmsVersion}"
+    compile "com.google.android.gms:play-services-cast-framework:${gmsVersion}"
     compile "com.google.android.gms:play-services-iid:${gmsVersion}"
-    compile "com.google.android.gms:play-services-instantapps:16.0.0"
+    compile "com.google.android.gms:play-services-instantapps:${gmsVersion}"
     compile "com.google.android.gms:play-services-gcm:${gmsVersion}"
     compile "com.google.android.gms:play-services-location:${gmsVersion}"
-    compile "com.google.android.gms:play-services-vision-common:${gmsVersion}"
-    compile "com.google.android.gms:play-services-vision:${gmsVersion}"
+    compile "com.google.android.gms:play-services-vision-common:18.0.0"
+    compile "com.google.android.gms:play-services-vision:18.0.0"
     compile "com.google.android.gms:play-services-fido:${gmsVersion}"
 
     // TODO (bjoyce): Remove after androidx migration crbug.com/896775

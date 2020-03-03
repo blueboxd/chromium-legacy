@@ -14,7 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/configure_context.h"
@@ -277,20 +277,18 @@ bool SyncEngineBackend::ShouldIgnoreRedundantInvalidation(
 }
 
 void SyncEngineBackend::DoOnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const TopicInvalidationMap& invalidation_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ObjectIdSet ids = invalidation_map.GetObjectIds();
-  for (const invalidation::ObjectId& object_id : ids) {
+  for (const Topic& topic : invalidation_map.GetTopics()) {
     ModelType type;
-    if (!NotificationTypeToRealModelType(object_id.name(), &type)) {
-      DLOG(WARNING) << "Notification has invalid id: "
-                    << ObjectIdToString(object_id);
+    if (!NotificationTypeToRealModelType(topic, &type)) {
+      DLOG(WARNING) << "Notification has invalid topic: " << topic;
     } else {
       UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
                                 ModelTypeHistogramValue(type));
       SingleObjectInvalidationSet invalidation_set =
-          invalidation_map.ForObject(object_id);
+          invalidation_map.ForTopic(topic);
       for (Invalidation invalidation : invalidation_set) {
         if (ShouldIgnoreRedundantInvalidation(invalidation, type)) {
           continue;

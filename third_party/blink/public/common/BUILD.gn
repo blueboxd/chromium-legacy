@@ -143,6 +143,7 @@ source_set("headers") {
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
     "security/security_style.h",
+    "security_context/insecure_request_policy.h",
     "service_worker/service_worker_status_code.h",
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.h",

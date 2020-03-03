@@ -54,22 +54,18 @@ class INVALIDATION_EXPORT MockAckHandler
   bool AllInvalidationsAccountedFor() const;
 
   // Implementation of AckHandler.
-  void Acknowledge(const invalidation::ObjectId& id,
-                   const AckHandle& handle) override;
-  void Drop(const invalidation::ObjectId& id, const AckHandle& handle) override;
+  void Acknowledge(const Topic& topic, const AckHandle& handle) override;
+  void Drop(const Topic& topic, const AckHandle& handle) override;
 
  private:
   typedef std::vector<syncer::Invalidation> InvalidationVector;
-  typedef std::map<invalidation::ObjectId,
-                   AckHandle,
-                   ObjectIdLessThan> IdHandleMap;
 
   InvalidationVector unsent_invalidations_;
   InvalidationVector unacked_invalidations_;
   InvalidationVector acked_invalidations_;
   InvalidationVector dropped_invalidations_;
 
-  IdHandleMap unrecovered_drop_events_;
+  std::map<Topic, AckHandle> unrecovered_drop_events_;
 };
 
 }  // namespace syncer

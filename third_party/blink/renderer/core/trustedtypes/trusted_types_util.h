@@ -25,14 +25,6 @@ enum class SpecificTrustedType {
   kTrustedScriptURL,
 };
 
-String CORE_EXPORT GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-    const ExecutionContext*,
-    ExceptionState&);
-
-String CORE_EXPORT GetStringFromTrustedTypeWithoutCheck(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&);
-
 String CORE_EXPORT GetStringFromSpecificTrustedType(
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
     SpecificTrustedType,

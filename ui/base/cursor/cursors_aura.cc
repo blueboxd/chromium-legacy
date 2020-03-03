@@ -486,7 +486,7 @@ SkBitmap GetDefaultBitmap(const Cursor& cursor) {
   int resource_id;
   gfx::Point hotspot;
   if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
-                        cursor.device_scale_factor(), &resource_id, &hotspot)) {
+                        cursor.image_scale_factor(), &resource_id, &hotspot)) {
     return SkBitmap();
   }
   return *ResourceBundle::GetSharedInstance()
@@ -505,7 +505,7 @@ gfx::Point GetDefaultHotspot(const Cursor& cursor) {
   int resource_id;
   gfx::Point hotspot;
   if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
-                        cursor.device_scale_factor(), &resource_id, &hotspot)) {
+                        cursor.image_scale_factor(), &resource_id, &hotspot)) {
     return gfx::Point();
   }
   return hotspot;

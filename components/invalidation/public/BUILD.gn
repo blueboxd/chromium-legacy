@@ -20,8 +20,6 @@ static_library("public") {
     "invalidation_util.h",
     "invalidator_state.cc",
     "invalidator_state.h",
-    "object_id_invalidation_map.cc",
-    "object_id_invalidation_map.h",
     "single_object_invalidation_set.cc",
     "single_object_invalidation_set.h",
     "topic_invalidation_map.cc",

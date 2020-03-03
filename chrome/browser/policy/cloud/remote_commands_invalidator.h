@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/invalidation/public/invalidation_handler.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "google/cacheinvalidation/include/types.h"
 
 namespace invalidation {
 class InvalidationService;
@@ -53,7 +53,7 @@ class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
   // syncer::InvalidationHandler:
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+      const syncer::TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   bool IsPublicTopic(const syncer::Topic& topic) const override;
 
@@ -67,15 +67,20 @@ class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
   // commands fetch.
   virtual void DoRemoteCommandsFetch() = 0;
 
-  // Subclasses must call this function to set the object id for remote command
+  // Subclasses must call this function to set the topic for remote command
   // invalidations.
   void ReloadPolicyData(const enterprise_management::PolicyData* policy);
 
  private:
-  // Registers the given object with the invalidation service.
-  void Register(const invalidation::ObjectId& object_id);
+  // Registers this handler with |invalidation_service_| if needed and
+  // subscribes to the given |topic| with the invalidation service.
+  void Register(const syncer::Topic& topic);
 
-  // Unregisters the current object with the invalidation service.
+  // Unregisters this handler and unsubscribes from the current topic with
+  // the invalidation service.
+  // TODO(crbug.com/1056114): Topic subscription remains active after browser
+  // restart, so explicit unsubscription here causes redundant (un)subscription
+  // traffic (and potentially leaking subscriptions).
   void Unregister();
 
   // Updates invalidations_enabled_.
@@ -103,8 +108,8 @@ class RemoteCommandsInvalidator : public syncer::InvalidationHandler {
   // Whether this object has registered for remote commands invalidations.
   bool is_registered_ = false;
 
-  // The object id representing the remote commands in the invalidation service.
-  invalidation::ObjectId object_id_;
+  // The Topic representing the remote commands in the invalidation service.
+  syncer::Topic topic_;
 
   // A thread checker to make sure that callbacks are invoked on the correct
   // thread.

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -67,7 +68,7 @@ class IsolatedWorldCSPDelegate final
   // supported.
   void SetSandboxFlags(SandboxFlags) override {}
   void SetRequireTrustedTypes() override {}
-  void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
+  void AddInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy) override {}
 
   // TODO(crbug.com/916885): Figure out if we want to support violation
   // reporting for isolated world CSPs.

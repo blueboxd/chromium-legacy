@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/invalidation/public/invalidation_handler.h"
-#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/topic_invalidation_map.h"
 
 namespace syncer {
 
@@ -21,19 +21,19 @@ class FakeInvalidationHandler : public InvalidationHandler {
   ~FakeInvalidationHandler() override;
 
   InvalidatorState GetInvalidatorState() const;
-  const ObjectIdInvalidationMap& GetLastInvalidationMap() const;
+  const TopicInvalidationMap& GetLastInvalidationMap() const;
   int GetInvalidationCount() const;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) override;
+      const TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   bool IsPublicTopic(const syncer::Topic& topic) const override;
 
  private:
   InvalidatorState state_;
-  ObjectIdInvalidationMap last_invalidation_map_;
+  TopicInvalidationMap last_invalidation_map_;
   int invalidation_count_;
   std::string owner_name_;
 

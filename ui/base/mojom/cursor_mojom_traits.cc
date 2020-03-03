@@ -42,14 +42,10 @@ bool StructTraits<ui::mojom::CursorDataView, ui::Cursor>::Read(
   if (!data.ReadHotspot(&hotspot) || !data.ReadBitmap(&bitmap))
     return false;
 
-  // TODO(estade): do we even need this field? It doesn't appear to be used
-  // anywhere and is a property of the display, not the cursor.
-  float device_scale_factor = data.device_scale_factor();
-
   *out = ui::Cursor(type);
   out->set_custom_bitmap(bitmap);
   out->set_custom_hotspot(hotspot);
-  out->set_device_scale_factor(device_scale_factor);
+  out->set_image_scale_factor(data.image_scale_factor());
   return true;
 }
 

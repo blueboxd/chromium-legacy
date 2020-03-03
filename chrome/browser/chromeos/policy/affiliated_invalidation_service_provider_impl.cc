@@ -86,7 +86,7 @@ class AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver
   // public syncer::InvalidationHandler:
   void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+      const syncer::TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
 
  private:
@@ -201,7 +201,7 @@ void AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
 
 void AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
     OnIncomingInvalidation(
-        const syncer::ObjectIdInvalidationMap& invalidation_map) {}
+        const syncer::TopicInvalidationMap& invalidation_map) {}
 
 std::string AffiliatedInvalidationServiceProviderImpl::
     InvalidationServiceObserver::GetOwnerName() const {

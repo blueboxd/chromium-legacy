@@ -380,6 +380,8 @@ class PasswordFormManagerTest : public testing::Test,
     ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
         .WillByDefault(Return(true));
+    ON_CALL(*client_.GetPasswordFeatureManager(), GetDefaultPasswordStore)
+        .WillByDefault(Return(PasswordForm::Store::kProfileStore));
 
     fetcher_.reset(new FakeFormFetcher());
     fetcher_->Fetch();

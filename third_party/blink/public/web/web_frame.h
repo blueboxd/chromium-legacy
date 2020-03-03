@@ -33,8 +33,8 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
@@ -98,7 +98,7 @@ class BLINK_EXPORT WebFrame {
   WebSecurityOrigin GetSecurityOrigin() const;
 
   // The frame's insecure request policy.
-  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
+  mojom::InsecureRequestPolicy GetInsecureRequestPolicy() const;
 
   // The frame's upgrade insecure navigations set.
   WebVector<unsigned> GetInsecureRequestToUpgrade() const;

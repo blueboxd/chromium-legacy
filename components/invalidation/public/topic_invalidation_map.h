@@ -14,8 +14,11 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/single_object_invalidation_set.h"
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 namespace syncer {
-class ObjectIdInvalidationMap;
 
 // A set of notifications with some helper methods to organize them by object ID
 // and version number.
@@ -38,11 +41,17 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
   void Insert(const Invalidation& invalidation);
 
   // Returns a new map containing the subset of invaliations from this map
-  // whose IDs were in the specified |ids| set.
-  TopicInvalidationMap GetSubsetWithTopics(const Topics& ids) const;
+  // whose topic were in the specified |topics|.
+  // TODO(crbug.com/1029698): replace all usages with the version below and
+  // remove this method.
+  TopicInvalidationMap GetSubsetWithTopics(const Topics& topics) const;
 
-  // Returns the subset of invalidations with IDs matching |id|.
-  const SingleObjectInvalidationSet& ForTopic(Topic id) const;
+  // Returns a new map containing the subset of invaliations from this map
+  // whose topic were in the specified |topics|.
+  TopicInvalidationMap GetSubsetWithTopics(const TopicSet& topics) const;
+
+  // Returns the subset of invalidations with Topic matching |topic|.
+  const SingleObjectInvalidationSet& ForTopic(Topic topic) const;
 
   // Returns the contents of this map in a single vector.
   void GetAllInvalidations(std::vector<syncer::Invalidation>* out) const;
@@ -50,28 +59,15 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
   // Call Acknowledge() on all contained Invalidations.
   void AcknowledgeAll() const;
 
-  // Serialize this map to a value.
+  // Serialize this map to a value. Used to expose value on
+  // chrome://invalidations page.
   std::unique_ptr<base::ListValue> ToValue() const;
 
-  // Deserialize the value into a map and use it to re-initialize this object.
-  bool ResetFromValue(const base::ListValue& value);
-
-  // Prints the contentes of this map as a human-readable string.
-  std::string ToString() const;
-
  private:
-  typedef std::map<Topic, SingleObjectInvalidationSet> TopicToListMap;
+  TopicInvalidationMap(const std::map<Topic, SingleObjectInvalidationSet>& map);
 
-  TopicInvalidationMap(const TopicToListMap& map);
-
-  TopicToListMap map_;
+  std::map<Topic, SingleObjectInvalidationSet> map_;
 };
-
-TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
-    ObjectIdInvalidationMap object_ids_map);
-
-ObjectIdInvalidationMap ConvertTopicInvalidationMapToObjectIdInvalidationMap(
-    const TopicInvalidationMap& topics_map);
 
 }  // namespace syncer
 

@@ -11,7 +11,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script_url.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -190,6 +194,72 @@ struct NativeValueTraits<IDLStringBase<mode>>
     if (!string.Prepare(isolate, exception_state))
       return String();
     return string;
+  }
+};
+
+template <V8StringResourceMode mode>
+struct NativeValueTraits<IDLStringStringContextTrustedHTMLBase<mode>>
+    : public NativeValueTraitsBase<
+          IDLStringStringContextTrustedHTMLBase<mode>> {
+  static String NativeValue(v8::Isolate* isolate,
+                            v8::Local<v8::Value> value,
+                            ExceptionState& exception_state,
+                            ExecutionContext* execution_context) {
+    if (V8TrustedHTML::HasInstance(value, isolate)) {
+      TrustedHTML* trusted_value =
+          V8TrustedHTML::ToImpl(v8::Local<v8::Object>::Cast(value));
+      return trusted_value->toString();
+    } else {
+      V8StringResource<mode> string(value);
+      if (!string.Prepare(isolate, exception_state))
+        return String();
+      return GetStringFromTrustedHTML(string, execution_context,
+                                      exception_state);
+    }
+  }
+};
+
+template <V8StringResourceMode mode>
+struct NativeValueTraits<IDLStringStringContextTrustedScriptBase<mode>>
+    : public NativeValueTraitsBase<
+          IDLStringStringContextTrustedScriptBase<mode>> {
+  static String NativeValue(v8::Isolate* isolate,
+                            v8::Local<v8::Value> value,
+                            ExceptionState& exception_state,
+                            ExecutionContext* execution_context) {
+    if (V8TrustedScript::HasInstance(value, isolate)) {
+      TrustedScript* trusted_value =
+          V8TrustedScript::ToImpl(v8::Local<v8::Object>::Cast(value));
+      return trusted_value->toString();
+    } else {
+      V8StringResource<mode> string(value);
+      if (!string.Prepare(isolate, exception_state))
+        return String();
+      return GetStringFromTrustedScript(string, execution_context,
+                                        exception_state);
+    }
+  }
+};
+
+template <V8StringResourceMode mode>
+struct NativeValueTraits<IDLUSVStringStringContextTrustedScriptURLBase<mode>>
+    : public NativeValueTraitsBase<
+          IDLUSVStringStringContextTrustedScriptURLBase<mode>> {
+  static String NativeValue(v8::Isolate* isolate,
+                            v8::Local<v8::Value> value,
+                            ExceptionState& exception_state,
+                            ExecutionContext* execution_context) {
+    if (V8TrustedScriptURL::HasInstance(value, isolate)) {
+      TrustedScriptURL* trusted_value =
+          V8TrustedScriptURL::ToImpl(v8::Local<v8::Object>::Cast(value));
+      return trusted_value->toString();
+    } else {
+      V8StringResource<mode> string(value);
+      if (!string.Prepare(isolate, exception_state))
+        return String();
+      return GetStringFromTrustedScriptURL(string, execution_context,
+                                           exception_state);
+    }
   }
 };
 

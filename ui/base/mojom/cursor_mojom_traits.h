@@ -18,8 +18,8 @@ struct StructTraits<ui::mojom::CursorDataView, ui::Cursor> {
   }
   static gfx::Point hotspot(const ui::Cursor& c);
   static SkBitmap bitmap(const ui::Cursor& c);
-  static float device_scale_factor(const ui::Cursor& c) {
-    return c.device_scale_factor();
+  static float image_scale_factor(const ui::Cursor& c) {
+    return c.image_scale_factor();
   }
   static bool Read(ui::mojom::CursorDataView data, ui::Cursor* out);
 };

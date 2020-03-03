@@ -406,9 +406,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
 
   GetInvalidationServiceForSenderId(kPolicyFCMInvalidationSenderID)
       ->EmitInvalidationForTest(syncer::Invalidation::Init(
-          invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
-                                 policy_invalidation_topic),
-          now.InMicroseconds() /* version */, "payload"));
+          policy_invalidation_topic, now.InMicroseconds() /* version */,
+          "payload"));
   {
     base::RunLoop run_loop;
     on_policy_updated_ = run_loop.QuitClosure();

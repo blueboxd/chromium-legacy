@@ -88,7 +88,7 @@ void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
   // it would return a scale-factor-100 bitmap with a scale-factor-200 hotspot.
   // This causes the hotspot to go out of range.  As a result, we would need to
   // manually downscale the hotspot.
-  float scale_factor = cursor.device_scale_factor();
+  float scale_factor = cursor.image_scale_factor();
   cursor_hotspot.SetPoint(cursor_hotspot.x() / scale_factor,
                           cursor_hotspot.y() / scale_factor);
 

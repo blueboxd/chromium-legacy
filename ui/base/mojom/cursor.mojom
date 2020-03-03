@@ -21,5 +21,5 @@ struct Cursor {
   skia.mojom.Bitmap? bitmap;
 
   // This is the image scale of this cursor.
-  float device_scale_factor;
+  float image_scale_factor;
 };

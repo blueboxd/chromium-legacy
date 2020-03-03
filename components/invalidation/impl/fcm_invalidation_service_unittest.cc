@@ -192,9 +192,8 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) {
-    fake_listener_->EmitSavedInvalidationsForTest(
-        ConvertObjectIdInvalidationMapToTopicInvalidationMap(invalidation_map));
+      const syncer::TopicInvalidationMap& invalidation_map) {
+    fake_listener_->EmitSavedInvalidationsForTest(invalidation_map);
   }
 
   base::test::TaskEnvironment task_environment_;

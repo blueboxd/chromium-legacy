@@ -356,6 +356,33 @@ VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
   return result;
 }
 
+template <typename IDLType>
+VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    int start_index,
+    ExceptionState& exception_state,
+    ExecutionContext* execution_context) {
+  using TraitsType = NativeValueTraits<IDLType>;
+  using VectorType = VectorOf<typename TraitsType::ImplType>;
+
+  int length = info.Length();
+  VectorType result;
+  if (start_index < length) {
+    if (static_cast<size_t>(length - start_index) > VectorType::MaxCapacity()) {
+      exception_state.ThrowRangeError("Array length exceeds supported limit.");
+      return VectorType();
+    }
+    result.ReserveInitialCapacity(length - start_index);
+    for (int i = start_index; i < length; ++i) {
+      result.UncheckedAppend(TraitsType::NativeValue(
+          info.GetIsolate(), info[i], exception_state, execution_context));
+      if (exception_state.HadException())
+        return VectorType();
+    }
+  }
+  return result;
+}
+
 // The functions below implement low-level abstract ES operations for dealing
 // with iterators. Most code should use ScriptIterator instead.
 //

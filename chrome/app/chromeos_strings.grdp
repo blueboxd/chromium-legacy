@@ -503,8 +503,17 @@
   <message name="IDS_HID_DETECTION_PAIRED_BLUETOOTH_KEYBOARD" desc="Text shown on HID detection screen next to keyboard icon after Bluetooth keyboard is connected.">
     "<ph name="DEVICE_NAME">$1<ex>Bluetooth Keyboard</ex></ph>" paired
   </message>
-  <message name="IDS_HID_DETECTION_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message displayed on HID detection screen when pairing a Bluetooth keyboard.">
-    Type this code on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" to pair:
+  <message name="IDS_HID_DETECTION_PAIRING_BLUETOOTH_KEYBOARD" desc="Bluetooth pairing message displayed on HID detection screen when pairing a Bluetooth keyboard.">
+    Pairing with "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" ...
+  </message>
+  <message name="IDS_HID_DETECTION_PAIRING_BLUETOOTH_KEYBOARD_PIN_DIALOG_TITLE" desc="Dialog title for PIN input on HID detection screen when pairing a Bluetooth keyboard.">
+    Pair with "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>"?
+  </message>
+  <message name="IDS_HID_DETECTION_BLUETOOTH_PAIRING_CODE" desc="Bluetooth pairing code inside the PIN input dialog on the HID detection screen.">
+    Bluetooth pairing code:
+  </message>
+  <message name="IDS_HID_DETECTION_BLUETOOTH_PAIRING_CODE_EXPLANATION" desc="Explanation to the user on how to type in the PIN while connecting to a bluetooth keyboard on the HID detection screen.">
+    Type the bluetooth pairing code then press Return or Enter.
   </message>
   <message name="IDS_HID_DETECTION_DEFAULT_KEYBOARD_NAME" desc="Default keyboard name used at HID-detection labels and messages at HID-detection OOBE screen.">
     Unknown keyboard

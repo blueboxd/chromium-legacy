@@ -100,7 +100,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) override;
+      const TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   void OnInvalidatorClientIdChange(const std::string& client_id) override;
 

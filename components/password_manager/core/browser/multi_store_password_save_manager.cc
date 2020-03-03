@@ -51,7 +51,7 @@ MultiStorePasswordSaveManager::MultiStorePasswordSaveManager(
 MultiStorePasswordSaveManager::~MultiStorePasswordSaveManager() = default;
 
 FormSaver* MultiStorePasswordSaveManager::GetFormSaverForGeneration() {
-  return IsAccountStoreActive() && account_store_form_saver_
+  return IsAccountStoreEnabled() && account_store_form_saver_
              ? account_store_form_saver_.get()
              : form_saver_.get();
 }
@@ -69,21 +69,20 @@ void MultiStorePasswordSaveManager::SaveInternal(
 
   switch (pending_credentials_.in_store) {
     case PasswordForm::Store::kAccountStore:
-      if (account_store_form_saver_ && IsAccountStoreActive())
+      if (account_store_form_saver_ && IsAccountStoreEnabled()) {
         account_store_form_saver_->Save(
             pending_credentials_, AccountStoreMatches(matches), old_password);
+      }
+      // TODO(crbug.com/1012203): Record UMA for how many passwords get dropped
+      // here. In rare cases it could happen that the user *was* opted in when
+      // the save dialog was shown, but now isn't anymore.
       break;
     case PasswordForm::Store::kProfileStore:
       form_saver_->Save(pending_credentials_, ProfileStoreMatches(matches),
                         old_password);
       break;
     case PasswordForm::Store::kNotSet:
-      if (account_store_form_saver_ && IsAccountStoreActive())
-        account_store_form_saver_->Save(
-            pending_credentials_, AccountStoreMatches(matches), old_password);
-      else
-        form_saver_->Save(pending_credentials_, ProfileStoreMatches(matches),
-                          old_password);
+      NOTREACHED();
       break;
   }
 }
@@ -95,7 +94,7 @@ void MultiStorePasswordSaveManager::UpdateInternal(
   // update operation is no-op.
   form_saver_->Update(pending_credentials_, ProfileStoreMatches(matches),
                       old_password);
-  if (account_store_form_saver_ && IsAccountStoreActive()) {
+  if (account_store_form_saver_ && IsAccountStoreEnabled()) {
     account_store_form_saver_->Update(
         pending_credentials_, AccountStoreMatches(matches), old_password);
   }
@@ -104,7 +103,7 @@ void MultiStorePasswordSaveManager::UpdateInternal(
 void MultiStorePasswordSaveManager::PermanentlyBlacklist(
     const PasswordStore::FormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
-  if (account_store_form_saver_ && IsAccountStoreActive() &&
+  if (account_store_form_saver_ && IsAccountStoreEnabled() &&
       client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
           PasswordForm::Store::kAccountStore) {
     account_store_form_saver_->PermanentlyBlacklist(form_digest);
@@ -118,7 +117,7 @@ void MultiStorePasswordSaveManager::Unblacklist(
   // Try to unblacklist in both stores anyway because if credentials don't
   // exist, the unblacklist operation is no-op.
   form_saver_->Unblacklist(form_digest);
-  if (account_store_form_saver_ && IsAccountStoreActive()) {
+  if (account_store_form_saver_ && IsAccountStoreEnabled()) {
     account_store_form_saver_->Unblacklist(form_digest);
   }
 }
@@ -130,9 +129,8 @@ std::unique_ptr<PasswordSaveManager> MultiStorePasswordSaveManager::Clone() {
   return result;
 }
 
-bool MultiStorePasswordSaveManager::IsAccountStoreActive() {
-  return client_->GetPasswordSyncState() ==
-         password_manager::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;
+bool MultiStorePasswordSaveManager::IsAccountStoreEnabled() {
+  return client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage();
 }
 
 void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {

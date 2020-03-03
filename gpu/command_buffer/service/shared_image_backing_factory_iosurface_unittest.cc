@@ -87,10 +87,12 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
 
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   // Check clearing.
@@ -179,9 +181,11 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   GLenum expected_target = GL_TEXTURE_RECTANGLE;
@@ -272,10 +276,12 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, LegacyClearing) {
   gfx::Size size(256, 256);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
 
   // Create a backing.
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   EXPECT_TRUE(backing);
   backing->SetCleared();
   EXPECT_TRUE(backing->IsCleared());
@@ -346,9 +352,11 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_DISPLAY;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =

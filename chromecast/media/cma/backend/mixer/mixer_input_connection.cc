@@ -179,6 +179,9 @@ MixerInputConnection::MixerInputConnection(
                      ? params.device_id()
                      : ::media::AudioDeviceDescription::kDefaultDeviceId),
       content_type_(mixer_service::ConvertContentType(params.content_type())),
+      focus_type_(params.has_focus_type()
+                      ? mixer_service::ConvertContentType(params.focus_type())
+                      : content_type_),
       playout_channel_(params.channel_selection()),
       io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       max_queued_frames_(std::max(GetQueueSize(params), algorithm_fill_size_)),
@@ -201,6 +204,7 @@ MixerInputConnection::MixerInputConnection(
 
   LOG(INFO) << "Create " << this << " (" << device_id_
             << "), content type: " << AudioContentTypeToString(content_type_)
+            << ", focus type: " << AudioContentTypeToString(focus_type_)
             << ", fill size: " << fill_size_
             << ", algorithm fill size: " << algorithm_fill_size_
             << ", channel count: " << num_channels_
@@ -516,15 +520,23 @@ int MixerInputConnection::sample_rate() const {
 bool MixerInputConnection::primary() {
   return primary_;
 }
+
 const std::string& MixerInputConnection::device_id() {
   return device_id_;
 }
+
 AudioContentType MixerInputConnection::content_type() {
   return content_type_;
 }
+
+AudioContentType MixerInputConnection::focus_type() {
+  return focus_type_;
+}
+
 int MixerInputConnection::desired_read_size() {
   return algorithm_fill_size_;
 }
+
 int MixerInputConnection::playout_channel() {
   return playout_channel_;
 }

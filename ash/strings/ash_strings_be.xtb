@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Уліковы запіс пад кіраваннем <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Вярнуць вярнуцца да мовы: <ph name="FROM_LOCALE" /> (патрабуецца перазапуск)</translation>
 <translation id="3576141592585647168">Змена часавага пояса</translation>
+<translation id="3593646411856133110">Каб убачыць адкрытыя праграмы, правядзіце пальцам уверх і ўтрымлівайце</translation>
 <translation id="3595596368722241419">Акумулятар поўнасцю зараджаны</translation>
 <translation id="3604801046548457007">Стол <ph name="DESK_TITILE" /> створаны</translation>
 <translation id="3606978283550408104">Дысплэй Брайля падключаны.</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">Начны рэжым уключаецца аўтаматычна пасля захаду сонца</translation>
 <translation id="5750765938512549687">Bluetooth выключаны</translation>
 <translation id="576453121877257266">Начны рэжым уключаны.</translation>
+<translation id="5769373120130404283">Экран прыватнасці</translation>
 <translation id="5777841717266010279">Спыніць абагульванне экрана?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Спыніць трансляцыю <ph name="ROUTE_TITLE" /> на <ph name="RECEIVER_NAME" /></translation>
@@ -403,6 +405,7 @@
 <translation id="6297287540776456956">Выкарыстоўвайце стыло для выбару рэгіёна</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> павернуты на <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth уключаны</translation>
+<translation id="6381109794406942707">Каб разблакіраваць прыладу, увядзіце PIN-код.</translation>
 <translation id="639644700271529076">CAPS LOCK выключаны</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" /></translation>
@@ -613,6 +616,7 @@
 <translation id="9072519059834302790">Засталося часу да поўнай разрадкі акумулятара: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Каб перайсці на галоўны экран, правядзіце пальцам уверх</translation>
 <translation id="9080206825613744995">Мікрафон выкарыстоўваецца.</translation>
 <translation id="9084606467167974638">Змяніць месцазнаходжанне меню</translation>
 <translation id="9089416786594320554">Метады ўводу</translation>

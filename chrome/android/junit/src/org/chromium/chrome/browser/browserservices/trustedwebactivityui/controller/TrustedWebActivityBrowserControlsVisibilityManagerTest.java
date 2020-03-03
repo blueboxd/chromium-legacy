@@ -29,11 +29,15 @@ import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegateJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
+import org.chromium.components.security_state.SecurityStateModelJni;
 import org.chromium.content_public.common.BrowserControlsState;
 
 /**
@@ -49,6 +53,10 @@ public class TrustedWebActivityBrowserControlsVisibilityManagerTest {
     @Mock
     public TabImpl mTab;
     @Mock
+    ChromeSecurityStateModelDelegate.Natives mChromeSecurityStateModelDelegateMocks;
+    @Mock
+    SecurityStateModel.Natives mSecurityStateMocks;
+    @Mock
     public CustomTabToolbarCoordinator mToolbarCoordinator;
     @Mock
     public CloseButtonVisibilityManager mCloseButtonVisibilityManager;
@@ -59,6 +67,9 @@ public class TrustedWebActivityBrowserControlsVisibilityManagerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        SecurityStateModelJni.TEST_HOOKS.setInstanceForTesting(mSecurityStateMocks);
+        ChromeSecurityStateModelDelegateJni.TEST_HOOKS.setInstanceForTesting(
+                mChromeSecurityStateModelDelegateMocks);
         when(mTabProvider.getTab()).thenReturn(mTab);
         when(mTab.getParentId()).thenReturn(Tab.INVALID_TAB_ID);
         setTabSecurityLevel(ConnectionSecurityLevel.NONE);

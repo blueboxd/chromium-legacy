@@ -75,7 +75,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
     // Enable display locking, used in some tests.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "CSSRenderSubtree");
+        switches::kEnableBlinkFeatures, "CSSSubtreeVisibilityHiddenMatchable");
   }
 
   void RunAriaTest(const base::FilePath::CharType* file_path) {

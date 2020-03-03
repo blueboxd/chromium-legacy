@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.settings.website.CookieControlsBridge;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -54,6 +54,7 @@ import org.chromium.components.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -577,7 +578,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(webContents);
+        final int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
+                webContents, ChromeSecurityStateModelDelegate.getInstance());
 
         @PreviewPageState
         int previewPageState = PreviewPageState.NOT_PREVIEW;

@@ -20,9 +20,14 @@ namespace views {
 class BoundsAnimator;
 }
 
+namespace ui {
+class AnimationMetricsReporter;
+}
+
 namespace ash {
 class BackButton;
 class HomeButton;
+class NavigationButtonAnimationMetricsReporter;
 class Shelf;
 class ShelfView;
 
@@ -90,12 +95,26 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
  private:
   class Delegate;
 
-  void UpdateButtonVisibility(views::View* button, bool visible, bool animate);
+  void UpdateButtonVisibility(
+      views::View* button,
+      bool visible,
+      bool animate,
+      ui::AnimationMetricsReporter* animation_metrics_reporter);
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;
   gfx::Rect target_bounds_;
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
+
+  // Animation metrics reporter for back button animations. Owned by the
+  // Widget to ensure it outlives the BackButton view.
+  std::unique_ptr<NavigationButtonAnimationMetricsReporter>
+      back_button_metrics_reporter_;
+
+  // Animation metrics reporter for home button animations. Owned by the
+  // Widget to ensure it outlives the HomeButton view.
+  std::unique_ptr<NavigationButtonAnimationMetricsReporter>
+      home_button_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfNavigationWidget);
 };

@@ -2701,7 +2701,6 @@
 <translation id="4737715515457435632">請連上網路</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4739639199548674512">票證</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> 和另外 1 個頁面}other{<ph name="PAGE_TITLE" /> 和另外 # 個頁面}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />瞭解如何更新應用程式<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{開啟網站音訊}other{開啟多個網站的音訊}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -5213,7 +5212,6 @@
 <translation id="8214489666383623925">開啟檔案...</translation>
 <translation id="8214962590150211830">移除這個使用者</translation>
 <translation id="8215295261562449873">先將我的應用程式和檔案備份至「下載內容」資料夾再升級 Linux。</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> 和另外 1 個頁面}other{<ph name="PAGE_TITLE" /> 和另外 # 個頁面}}</translation>
 <translation id="8217399928341212914">繼續禁止自動下載多個檔案</translation>
 <translation id="8218847192766059983">新增語言或重新排列清單。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">你通常會封鎖通知。如要允許這個網站傳送通知給你，請按這裡。</translation>
@@ -5426,6 +5424,7 @@
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8514746246728959655">請改用其他安全金鑰</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
 <translation id="8521475323816527629">快速存取應用程式</translation>
 <translation id="8523493869875972733">保留變更</translation>
 <translation id="8523849605371521713">依政策新增</translation>
@@ -5546,6 +5545,7 @@
 <translation id="8673383193459449849">伺服器問題</translation>
 <translation id="8675354002693747642">預先共用金鑰</translation>
 <translation id="8676374126336081632">清除輸入</translation>
+<translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="8677212948402625567">全部收合...</translation>
 <translation id="8678648549315280022">管理下載設定...</translation>
 <translation id="8678933587484842200">你希望如何啟動這個應用程式？</translation>

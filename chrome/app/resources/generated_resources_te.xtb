@@ -2685,7 +2685,6 @@
 <translation id="4737715515457435632">దయచేసి నెట్‌వర్క్‌కు కనెక్ట్ చేయండి</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
 <translation id="4739639199548674512">టిక్కెట్‌లు</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" />, మరో 1 పేజీ}other{<ph name="PAGE_TITLE" />, మరో # పేజీలు}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />అప్లికేషన్‌లను ఎలా అప్‌డేట్ చేయాలో తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{సైట్‌ను అన్‌మ్యూట్ చేయి}other{సైట్‌లను అన్‌మ్యూట్ చేయి}}</translation>
 <translation id="4746351372139058112">సందేశాలు</translation>
@@ -5184,7 +5183,6 @@
 <translation id="8214489666383623925">ఫైల్‌ను తెరువు...</translation>
 <translation id="8214962590150211830">ఈ వ్యక్తిని తీసివేయి</translation>
 <translation id="8215295261562449873">Linuxను అప్‌గ్రేడ్ చేసే ముందు నా యాప్‌లు, ఫైల్‌లను 'డౌన్‌లోడ్‌లు' ఫోల్డర్‌కు బ్యాకప్ చేయండి.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" />, మరో 1 పేజీ}other{<ph name="PAGE_TITLE" />, మరో # పేజీలు}}</translation>
 <translation id="8217399928341212914">బహుళ ఫైల్‌ల యొక్క స్వయంచాలక డౌన్‌లోడ్‌లను బ్లాక్ చేయడాన్ని కొనసాగించు</translation>
 <translation id="8218847192766059983">భాషలను జోడించండి లేదా జాబితా క్రమాన్ని మళ్లీ మార్చండి. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">మీరు సాధారణంగా నోటిఫికేషన్‌లను బ్లాక్ చేస్తుంటారు. ఈ సైట్ నుండి నోటిఫికేషన్‌లను పొందాలంటే, ఇక్కడ క్లిక్ చేయండి.</translation>
@@ -5395,6 +5393,7 @@
 <translation id="851263357009351303">చిత్రాలను చూపించడానికి ఎల్లప్పుడూ <ph name="HOST" />ను అనుమతించు</translation>
 <translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
 <translation id="8514746246728959655">వేరొక సెక్యూరిటీ కీని ప్రయత్నించండి</translation>
+<translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8521475323816527629">మీ యాప్‌లను వేగంగా పొందండి</translation>
 <translation id="8523493869875972733">మార్పులను అలాగే ఉంచు</translation>
 <translation id="8523849605371521713">విధానం ద్వారా జోడించబడింది</translation>
@@ -5515,6 +5514,7 @@
 <translation id="8673383193459449849">సర్వర్ సమస్య</translation>
 <translation id="8675354002693747642">ముందే షేర్ చేసిన కీ</translation>
 <translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
+<translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
 <translation id="8677212948402625567">అన్నీ కుదించు...</translation>
 <translation id="8678648549315280022">డౌన్‌లోడ్ సెట్టింగ్‌లను నిర్వహించండి...</translation>
 <translation id="8678933587484842200">మీరు ఈ అప్లికేషన్‌ను ఎలా ప్రారంభించాలనుకుంటున్నారు?</translation>

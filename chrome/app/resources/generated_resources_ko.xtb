@@ -2684,7 +2684,6 @@
 <translation id="4737715515457435632">네트워크에 연결하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4739639199548674512">티켓</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> 외 1개 페이지}other{<ph name="PAGE_TITLE" /> 외 #개 페이지}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />애플리케이션 업데이트 방법 알아보기<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{사이트 숨기기 취소}other{사이트 숨기기 취소}}</translation>
 <translation id="4746351372139058112">메시지</translation>
@@ -5187,7 +5186,6 @@
 <translation id="8214489666383623925">파일 열기...</translation>
 <translation id="8214962590150211830">이 사용자 삭제</translation>
 <translation id="8215295261562449873">Linux를 업그레이드하기 전에 앱과 파일을 다운로드 폴더에 백업합니다.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> 외 1개 페이지}other{<ph name="PAGE_TITLE" /> 외 #개 페이지}}</translation>
 <translation id="8217399928341212914">여러 파일을 다운로드하지 못하도록 계속 차단</translation>
 <translation id="8218847192766059983">언어를 추가하거나 목록을 재정렬합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">기본적으로 알림을 차단하는 중입니다. 이 사이트의 알림을 허용하려면 여기를 클릭하세요.</translation>
@@ -5398,6 +5396,7 @@
 <translation id="851263357009351303"><ph name="HOST" />에서 이미지 표시 항상 허용</translation>
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8514746246728959655">다른 보안 키를 사용해 보세요</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8521475323816527629">앱으로 빠르게 이동</translation>
 <translation id="8523493869875972733">변경사항 유지</translation>
 <translation id="8523849605371521713">정책에 의해 추가</translation>
@@ -5518,6 +5517,7 @@
 <translation id="8673383193459449849">서버 문제</translation>
 <translation id="8675354002693747642">사전 공유 키:</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
+<translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="8677212948402625567">모두 접기...</translation>
 <translation id="8678648549315280022">다운로드 설정 관리...</translation>
 <translation id="8678933587484842200">이 애플리케이션을 실행할 방법을 선택하세요.</translation>

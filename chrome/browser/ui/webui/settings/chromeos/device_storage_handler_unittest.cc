@@ -44,6 +44,7 @@ class TestStorageHandler : public StorageHandler {
       : StorageHandler(profile, html_source) {}
 
   // Pull WebUIMessageHandler::set_web_ui() into public so tests can call it.
+  using StorageHandler::RoundByteSize;
   using StorageHandler::set_web_ui;
 };
 
@@ -206,14 +207,46 @@ class StorageHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StorageHandlerTest);
 };
 
+TEST_F(StorageHandlerTest, RoundByteSize) {
+  static const struct {
+    int64_t bytes;
+    const char* expected;
+  } cases[] = {
+      {0, "0 B"},
+      {3, "4 B"},
+      {4, "4 B"},
+      {5, "8 B"},
+      {8 * 1024 - 1, "8.0 KB"},
+      {8 * 1024, "8.0 KB"},
+      {8 * 1024 + 1, "16.0 KB"},
+      {31 * 1024 * 1024, "32.0 MB"},
+      {32 * 1024 * 1024, "32.0 MB"},
+      {50 * 1024 * 1024, "64.0 MB"},
+      {65LL * 1024 * 1024 * 1024, "128 GB"},
+      {130LL * 1024 * 1024 * 1024, "256 GB"},
+      {130LL * 1024 * 1024 * 1024, "256 GB"},
+      {1LL * 1024 * 1024 * 1024 * 1024, "1.0 TB"},
+      {1LL * 1024 * 1024 * 1024 * 1024 + 1, "2.0 TB"},
+      {(1LL << 61) + 1, "4,096 PB"},
+  };
+
+  for (auto& c : cases) {
+    int64_t rounded_bytes = handler_->RoundByteSize(c.bytes);
+    EXPECT_EQ(base::ASCIIToUTF16(c.expected), ui::FormatBytes(rounded_bytes));
+  }
+}
+
 TEST_F(StorageHandlerTest, GlobalSizeStat) {
   // Get local filesystem storage statistics.
   const base::FilePath mount_path =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   int64_t total_size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
   int64_t available_size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
-  int64_t used_size = total_size - available_size;
-  double used_ratio = static_cast<double>(used_size) / total_size;
+
+  // Round the total size.
+  int64_t rounded_total_size = handler_->RoundByteSize(total_size);
+  int64_t used_size = rounded_total_size - available_size;
+  double used_ratio = static_cast<double>(used_size) / rounded_total_size;
 
   // Get statistics from storage handler's UpdateSizeStat.
   size_stat_test_api_->StartCalculation();
@@ -239,9 +272,9 @@ TEST_F(StorageHandlerTest, GlobalSizeStat) {
                     : storage_handler_used_ratio - used_ratio;
   // Running the test while writing data on disk (~400MB/s), the difference
   // between the values returned by the two AmountOfFreeDiskSpace calls is never
-  // more than 100KB. By expecting diff to be less than 100KB / total_size, the
-  // test is very unlikely to be flaky.
-  EXPECT_LE(diff, static_cast<double>(100 * 1024) / total_size);
+  // more than 100KB. By expecting diff to be less than 100KB /
+  // rounded_total_size, the test is very unlikely to be flaky.
+  EXPECT_LE(diff, static_cast<double>(100 * 1024) / rounded_total_size);
 }
 
 TEST_F(StorageHandlerTest, StorageSpaceState) {
@@ -311,9 +344,9 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
 }
 
 TEST_F(StorageHandlerTest, AppsExtensionsSize) {
-  // The data for apps and extensions installed from the webstore is stored in
-  // the Extensions folder. Add data at a random location in the Extensions
-  // folder and check UI callback message.
+  // The data for apps and extensions apps_size_test_api_installed from the
+  // webstore is stored in the Extensions folder. Add data at a random location
+  // in the Extensions folder and check UI callback message.
   const base::FilePath extensions_data_path =
       profile_->GetPath()
           .AppendASCII("Extensions")

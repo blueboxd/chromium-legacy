@@ -102,13 +102,25 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
     removed_configurations_[service_path] = guid;
   }
 
+  void OnConfigurationModified(const std::string& service_path,
+                               const std::string& guid,
+                               base::DictionaryValue* set_properties) override {
+    updated_configurations_[service_path] = guid;
+  }
+
   bool HasRemovedConfiguration(const std::string& service_path) {
     return removed_configurations_.find(service_path) !=
            removed_configurations_.end();
   }
 
+  bool HasUpdatedConfiguration(const std::string& service_path) {
+    return updated_configurations_.find(service_path) !=
+           updated_configurations_.end();
+  }
+
  private:
   std::map<std::string, std::string> removed_configurations_;
+  std::map<std::string, std::string> updated_configurations_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConfigurationObserver);
 };
@@ -646,7 +658,7 @@ TEST_F(NetworkConfigurationHandlerTest, StubCreateConfiguration) {
   EXPECT_EQ(NetworkProfileHandler::GetSharedProfilePath(), actual_profile);
 }
 
-TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
+TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Removed) {
   const std::string service_path("/service/test_wifi");
 
   auto network_configuration_observer =
@@ -664,6 +676,34 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
 
   EXPECT_TRUE(
       network_configuration_observer->HasRemovedConfiguration(service_path));
+
+  network_configuration_handler_->RemoveObserver(
+      network_configuration_observer.get());
+}
+
+TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Updated) {
+  const std::string service_path("/service/test_wifi");
+
+  auto network_configuration_observer =
+      std::make_unique<TestNetworkConfigurationObserver>();
+  network_configuration_handler_->AddObserver(
+      network_configuration_observer.get());
+  CreateTestConfiguration(service_path, shill::kTypeWifi);
+
+  EXPECT_FALSE(
+      network_configuration_observer->HasUpdatedConfiguration(service_path));
+
+  base::DictionaryValue properties;
+  properties.SetKey(shill::kSecurityProperty, base::Value(shill::kSecurityPsk));
+  properties.SetKey(shill::kPassphraseProperty, base::Value("secret"));
+
+  network_configuration_handler_->SetShillProperties(
+      create_service_path_, properties, base::DoNothing(),
+      base::Bind(&ErrorCallback));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(network_configuration_observer->HasUpdatedConfiguration(
+      create_service_path_));
 
   network_configuration_handler_->RemoveObserver(
       network_configuration_observer.get());

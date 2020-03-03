@@ -128,8 +128,7 @@ void V8HTMLConstructor::HtmlConstructor(
       // During upgrade an element has invoked the same constructor
       // before calling 'super' and that invocation has poached the
       // element.
-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                        "this instance is already constructed");
+      exception_state.ThrowTypeError("This instance is already constructed");
       return;
     }
   }

@@ -11,6 +11,7 @@
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="1524282610922162960">Compartilhar uma guia do Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Seu administrador exige que você reinicie o Chromium para que uma atualização seja feita.}=1{Seu administrador exige que você reinicie o Chromium para que uma atualização seja feita. Sua janela anônima não será aberta novamente.}one{Seu administrador exige que você reinicie o Chromium para que uma atualização seja feita. Sua janela anônima não será aberta novamente.}other{Seu administrador exige que você reinicie o Chromium para que uma atualização seja feita. Suas # janelas anônimas não serão abertas novamente.}}</translation>
+<translation id="1663739491876737434">O Chromium não pode verificar suas senhas. Tente novamente amanhã.</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
@@ -59,6 +60,7 @@
 <translation id="358997566136285270">Logotipo do Chromium</translation>
 <translation id="3639635944603682591">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Uma nova atualização está disponível para o Chromium e será feita assim que você reiniciá-lo.}=1{Uma nova atualização está disponível para o Chromium e será feita assim que você reiniciá-lo. Sua janela anônima não será aberta novamente.}one{Uma nova atualização está disponível para o Chromium e será feita assim que você reiniciá-lo. Sua janela anônima não será aberta novamente.}other{Uma nova atualização está disponível para o Chromium e será feita assim que você reiniciá-lo. Suas # janelas anônimas não serão abertas novamente.}}</translation>
+<translation id="3685209450716071127">O Chromium não pode verificar suas senhas. Verifique sua conexão com a Internet.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Seu administrador pede que você reinicie o Chromium para que esta atualização seja feita.}=1{Seu administrador pede que você reinicie o Chromium para que esta atualização seja feita. Sua janela anônima não será aberta novamente.}one{Seu administrador pede que você reinicie o Chromium para que esta atualização seja feita. Sua janela anônima não será aberta novamente.}other{Seu administrador pede que você reinicie o Chromium para que esta atualização seja feita. Suas # janelas anônimas não serão abertas novamente.}}</translation>
 <translation id="3713809861844741608">Abrir link em nova &amp;guia do Chromium</translation>
 <translation id="3728336900324680424">O Chromium acessará seu Drive para fazer sugestões na barra de endereço</translation>
@@ -90,7 +92,9 @@
 <translation id="4943838377383847465">O Chromium está em modo de segundo plano.</translation>
 <translation id="4987820182225656817">Convidados podem usar o Chromium sem deixar nada para trás.</translation>
 <translation id="4994636714258228724">Cadastrar-se no Chromium</translation>
+<translation id="5093066630040073147">Nenhuma senha salva. O Chromium pode verificar suas senhas quando elas estiverem salvas na sua Conta do Google.</translation>
 <translation id="5277894862589591112">Para que as alterações sejam aplicadas, reinicie o Chromium</translation>
+<translation id="5310059007469274549">O Chromium não pode verificar suas senhas porque são muitas</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atualizando o Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permitir login no Chromium</translation>
@@ -100,12 +104,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" />: Chromium Beta</translation>
 <translation id="5479196819031988440">O Chromium OS não pode abrir essa página.</translation>
 <translation id="5480860683791598150">O Chromium precisa acessar seu local para compartilhá-lo com este site</translation>
+<translation id="5488573303232097702">A atualização do Chromium não foi concluída. Algo deu errado. Corrija as atualizações com falhas e problemas de atualização do Google Chrome.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Uma atualização do Chromium está disponível}=1{Uma atualização do Chromium está disponível}one{Uma atualização do Chromium está disponível há # dia}other{Uma atualização do Chromium está disponível há # dias}}</translation>
 <translation id="5631814766731275228">Nome e foto do Chromium</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou versão superior.</translation>
 <translation id="5653831366781983928">Reinicie o Chromium agora</translation>
 <translation id="5698481217667032250">Exibir Chromium neste idioma</translation>
+<translation id="5814748786105822016">O Chromium não pode verificar suas senhas</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -121,6 +127,7 @@
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="6219195342503754812">{0,plural, =0{O Chromium será reiniciado agora}=1{O Chromium será reiniciado em 1 segundo}one{O Chromium será reiniciado em # segundo}other{O Chromium será reiniciado em # segundos}}</translation>
 <translation id="6248213926982192922">Tornar o Chromium o navegador padrão</translation>
+<translation id="6266342355635466082">O Chromium não pode verificar se há atualizações. Verifique sua conexão com a Internet.</translation>
 <translation id="6268381023930128611">Sair do Chromium?</translation>
 <translation id="6295779123002464101">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="6309712487085796862">O Chromium está usando sua câmera.</translation>
@@ -191,12 +198,14 @@
 <translation id="8417404458978023919">{0,plural, =1{Reiniciar o Chromium em 1 dia}one{Reiniciar o Chromium em # dia}other{Reiniciar o Chromium em # dias}}</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
+<translation id="8568283329061645092">O Chromium pode verificar suas senhas quando você faz login com sua Conta do Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8619360774459241877">Iniciando o Chromium…</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
 <translation id="8682540261359803721">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações de navegador do Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>
+<translation id="8774315820480073720">O administrador gerencia as atualizações do Chromium</translation>
 <translation id="8796602469536043152">O Chromium precisa de permissão para este site acessar sua câmera e seu microfone</translation>
 <translation id="8803635938069941624">Termos do Chromium OS</translation>
 <translation id="8821041990367117597">O Chromium não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>

@@ -76,6 +76,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     content::AutoplayPolicy,
     content::AutoplayPolicy::kNoUserGestureRequired,
     content::AutoplayPolicy::kDocumentUserActivationRequired)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::PreferredColorScheme,
+                              blink::PreferredColorScheme::kNoPreference,
+                              blink::PreferredColorScheme::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebRect)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -233,6 +236,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(media_controls_enabled)
   IPC_STRUCT_TRAITS_MEMBER(do_not_update_selection_on_mutating_selection_range)
   IPC_STRUCT_TRAITS_MEMBER(autoplay_policy)
+  IPC_STRUCT_TRAITS_MEMBER(preferred_color_scheme)
   IPC_STRUCT_TRAITS_MEMBER(low_priority_iframes_threshold)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)

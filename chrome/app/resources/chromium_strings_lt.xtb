@@ -13,6 +13,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="151962892725702025">„Chromium“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="1524282610922162960">„Chromium“ skirtuko bendrinimas</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį}=1{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį. Inkognito langas nebus atidarytas iš naujo.}one{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langas nebus atidarytas iš naujo.}few{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langai nebus atidaryti iš naujo.}many{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito lango nebus atidaryta iš naujo.}other{Administratorius reikalauja paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti naujinį. # inkognito langų nebus atidaryta iš naujo.}}</translation>
+<translation id="1663739491876737434">„Chromium“ negali patikrinti jūsų slaptažodžių. Rytoj bandykite dar kartą.</translation>
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
 <translation id="1774152462503052664">Paleisti „Chromium“ fone</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
@@ -63,6 +64,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
 <translation id="3639635944603682591">Šio asmens naršymo duomenys bus ištrinti iš šio įrenginio. Jei norite atkurti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo.}=1{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. Inkognito langas nebus atidarytas iš naujo.}one{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langas nebus atidarytas iš naujo.}few{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langai nebus atidaryti iš naujo.}many{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito lango nebus atidaryta iš naujo.}other{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langų nebus atidaryta iš naujo.}}</translation>
+<translation id="3685209450716071127">„Chromium“ negali patikrinti jūsų slaptažodžių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį}=1{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. Inkognito langas nebus atidarytas iš naujo.}one{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langas nebus atidarytas iš naujo.}few{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langai nebus atidaryti iš naujo.}many{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito lango nebus atidaryta iš naujo.}other{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langų nebus atidaryta iš naujo.}}</translation>
 <translation id="3713809861844741608">Atidaryti nuorodą naujame „Chromium“ &amp;skirtuke</translation>
 <translation id="3728336900324680424">„Chromium“ turės prieigą prie Disko, kad galėtų teikti pasiūlymus adreso juostoje</translation>
@@ -94,7 +96,9 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4943838377383847465">„Chromium“ veikia fono režimu.</translation>
 <translation id="4987820182225656817">Svečiai gali naudoti „Chromium“ nepalikdami jokių duomenų.</translation>
 <translation id="4994636714258228724">Pridėkite save prie „Chromium“</translation>
+<translation id="5093066630040073147">Nėra išsaugotų slaptažodžių. „Chromium“ gali tikrinti jūsų slaptažodžius, kai išsaugote juos „Google“ paskyroje.</translation>
 <translation id="5277894862589591112">Norėdami pritaikyti pakeitimus, paleiskite „Chromium“ iš naujo</translation>
+<translation id="5310059007469274549">„Chromium“ negali patikrinti jūsų slaptažodžių, nes jų per daug</translation>
 <translation id="5358375970380395591">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atnaujinama „Chromium“ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Leisti „Chromium“ prisijungti</translation>
@@ -104,12 +108,14 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5438241569118040789">„<ph name="PAGE_TITLE" />“ – „Chromium Beta“</translation>
 <translation id="5479196819031988440">„Chromium“ OS negali atidaryti šio puslapio.</translation>
 <translation id="5480860683791598150">„Chromium“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine</translation>
+<translation id="5488573303232097702">Nepavyko atnaujinti „Chromium“, įvyko klaida. Pašalinkite „Chrome“ naujinimo problemas ir naujinių klaidas.</translation>
 <translation id="549669000822060376">Palaukite, kol „Chromium“ įdiegs naujausius sistemos naujinius.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Pasiekiamas „Chromium“ naujinys}=1{Pasiekiamas „Chromium“ naujinys}one{„Chromium“ naujinys pasiekiamas # dieną}few{„Chromium“ naujinys pasiekiamas # dienas}many{„Chromium“ naujinys pasiekiamas # dienos}other{„Chromium“ naujinys pasiekiamas # dienų}}</translation>
 <translation id="5631814766731275228">„Chromium“ pavadinimas ir paveikslėlis</translation>
 <translation id="5634636535844844681">Kad būtų galima naudoti „Chromium“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>
 <translation id="5653831366781983928">Dabar iš naujo paleiskite „Chromium“</translation>
 <translation id="5698481217667032250">Pateikti „Chromium“ šia kalba</translation>
+<translation id="5814748786105822016">„Chromium“ negali patikrinti jūsų slaptažodžių</translation>
 <translation id="5820394555380036790">„Chromium“ OS</translation>
 <translation id="5862307444128926510">Sveiki, tai „Chromium“</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
@@ -125,6 +131,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6212496753309875659">Šiame kompiuteryje jau yra naujesnės versijos „Chromium“. Jei programinė įranga neveikia, pašalinkite „Chromium“ ir bandykite dar kartą.</translation>
 <translation id="6219195342503754812">{0,plural, =0{„Chromium“ bus paleista iš naujo dabar}=1{„Chromium“ bus paleista iš naujo po 1 sekundės}one{„Chromium“ bus paleista iš naujo po # sekundės}few{„Chromium“ bus paleista iš naujo po # sekundžių}many{„Chromium“ bus paleista iš naujo po # sekundės}other{„Chromium“ bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="6248213926982192922">Padaryti „Chromium“ numatytąja naršykle</translation>
+<translation id="6266342355635466082">„Chromium“ negali tikrinti naujinių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="6268381023930128611">Atsijungti nuo „Chromium“?</translation>
 <translation id="6295779123002464101">Failas „<ph name="FILE_NAME" />“ gali būti pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="6309712487085796862">„Chromium“ naudoja jūsų fotoaparatą.</translation>
@@ -200,6 +207,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8417404458978023919">{0,plural, =1{„Chromium“ paleidimas iš naujo po dienos}one{„Chromium“ paleidimas iš naujo po # dienos}few{„Chromium“ paleidimas iš naujo po # dienų}many{„Chromium“ paleidimas iš naujo po # dienos}other{„Chromium“ paleidimas iš naujo po # dienų}}</translation>
 <translation id="8453117565092476964">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
+<translation id="8568283329061645092">„Chromium“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="8619360774459241877">Pristatoma „Chromium“...</translation>
 <translation id="8621669128220841554">Nepavyko įdiegti dėl nenurodytos klaidos. Atsisiųskite „Chromium“ dar kartą.</translation>
@@ -207,6 +215,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
       naršyklės „Chromium“ nustatymuose<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“ arba ieškote „Omnibox“.</translation>
 <translation id="8704119203788522458">Tai jūsų „Chromium“</translation>
+<translation id="8774315820480073720">Jūsų administratorius tvarko „Chromium“ naujinius</translation>
 <translation id="8796602469536043152">„Chromium“ reikia leidimo, kad galėtų naudoti fotoaparatą ir mikrofoną šioje svetainėje</translation>
 <translation id="8803635938069941624">„Chromium“ OS sąlygos</translation>
 <translation id="8821041990367117597">„Chromium“ negali sinchronizuoti jūsų duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>

@@ -2686,7 +2686,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4737715515457435632">Интернетке туташыңыз</translation>
 <translation id="473775607612524610">Жаңыртуу</translation>
 <translation id="4739639199548674512">Билеттер</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> жана дагы 1 барак}other{<ph name="PAGE_TITLE" /> жана дагы # барак}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Колдонмолорду жаңыртканды үйрөнүп алыңыз<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Сайттын үнүн чыгаруу}other{Сайттардын үнүн чыгаруу}}</translation>
 <translation id="4746351372139058112">Билдирүүлөр</translation>
@@ -5188,7 +5187,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8214489666383623925">Төмөнкү файлды ачуу…</translation>
 <translation id="8214962590150211830">Бул адамды алып салуу</translation>
 <translation id="8215295261562449873">Linux'ту жаңыртуудан мурда колдонмолор менен файлдардын камдык көчүрмөлөрү "Жүктөлүп алынгандар" папкасына сакталсын.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> жана дагы 1 барак}other{<ph name="PAGE_TITLE" /> жана дагы # барак}}</translation>
 <translation id="8217399928341212914">Бир нече файлды автоматтык түрдө жүктөп алуу аракети бөгөттөлө берсин</translation>
 <translation id="8218847192766059983">Тилдерди кошуңуз же тизмени иреттеңиз. <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Адатта билдирмелерди өчүрөсүз. Бул сайтка билдирмелерди жөнөтүүгө уруксат берүү үчүн бул жерди чыкылдатыңыз.</translation>
@@ -5399,6 +5397,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="851263357009351303">Сүрөттөрдү көрсөтүү үчүн, <ph name="HOST" /> ар дайыма уруксат берилсин</translation>
 <translation id="8513108775083588393">Авто айлануу</translation>
 <translation id="8514746246728959655">Башка коопсуздук ачкычын колдонуп көрүңүз</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> түзмөгүңүз өчүп турганда кубатталбай калышы мүмкүн.</translation>
 <translation id="8521475323816527629">Колдонмолоруңузду ылдам алыңыз</translation>
 <translation id="8523493869875972733">Өзгөрүүлөр сакталсын</translation>
 <translation id="8523849605371521713">Ишкана саясаты тарабынан кошулду</translation>
@@ -5519,6 +5518,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8673383193459449849">Сервер көйгөйү</translation>
 <translation id="8675354002693747642">Алдын ала бөлүшүлгөн ачкыч</translation>
 <translation id="8676374126336081632">Киргизилген нерсени тазалоо</translation>
+<translation id="8676770494376880701">Кубаты төмөн кубаттагыч туташтырылды</translation>
 <translation id="8677212948402625567">Баарын жыйнап коюу…</translation>
 <translation id="8678648549315280022">Жүктөп алуу жөндөөлөрүн башкаруу…</translation>
 <translation id="8678933587484842200">Бул колдонмону кандай жол менен ачкыңыз келет?</translation>

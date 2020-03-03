@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">ຕັດ</translation>
 <translation id="2292556288342944218">ການເຂົ້າເຖິງອິນເຕີເນັດຂອງທ່ານຖືກບລັອກໄວ້</translation>
 <translation id="2297722699537546652">B5 (ຊອງຈົດໝາຍ)</translation>
+<translation id="2300306941146563769">ອັບໂຫຼດບໍ່ໄດ້</translation>
 <translation id="2310021320168182093">Chou2 (ຊອງຈົດໝາຍ)</translation>
 <translation id="2315864634253056100">ຊື່ເວັບໄຊນີ້ປາກົດວ່າຄ້າຍຄືກັບ <ph name="LOOKALIKE_DOMAIN" />. ບາງຄັ້ງຜູ້ໂຈມຕີປອມເປັນເວັບໄຊຕ່າງໆໂດຍການເຮັດການປ່ຽນແປງທີ່ເບິ່ງເຫັນໄດ້ຍາກຕໍ່ກັບທີ່ຢູ່ເວັບໄຊ.</translation>
 <translation id="2316887270356262533">ຂະຫຍາຍພື້ນທີ່ຫວ່າງໄດ້ໜ້ອຍກວ່າ 1 MB. ບາງເວັບໄຊອາດຈະໂຫຼດຊ້າກວ່າໃນການເຂົ້າເບິ່ງຄັ້ງຕໍ່ໄປຂອງທ່ານ.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">ກວດພົບການ​ປ່ຽນ​ແປງ​ເຄືອ​ຂ່າຍ​ແລ້ວ.</translation>
 <translation id="2910133103376701357">ອຸປະກອນ ແລະ ບັນຊີຂອງທ່ານຖືກຈັດການໂດຍ <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID ຜູ້ໃຊ້ບັນຊີວຽກ</translation>
+<translation id="2915068235268646559">ການຂັດຂ້ອງຈາກ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">ປິດໂປຣແກຣມອື່ນ</translation>
 <translation id="2922350208395188000">ບໍ່ສາມາດກວດກາໃບຢັ້ງຢືນຂອງເຊີບເວີໄດ້.</translation>
 <translation id="2925673989565098301">ວິທີການຈັດສົ່ງ</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">ຕັດອອກຫຼັງຈາກສຳເນົາແຕ່ລະສະບັບ</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">ເຊີບເວີນີ້ບໍ່ສາມາດພິສູດໄດ້ວ່າ ມັນແມ່ນ <ph name="DOMAIN" />; ໃບຢັ້ງຢືນຄວາມປອດໄພຂອງມັນມາຈາກ <ph name="DOMAIN2" />. ອັນນີ້ອາດຈະເຮັດໃຫ້ເກີດມີການປັບຕັ້ງຄ່າຜິດ ຫຼືຜູ້ໂຈມຕີອາດຈະດັກເອົາການເຊື່ອມຕໍ່ຂອງທ່ານ.</translation>
+<translation id="2943895734390379394">ເວລາອັບໂຫຼດ:</translation>
 <translation id="2948083400971632585">ທ່ານສາມາດປິດໃຊ້ງານພຣັອກຊີໃດໜຶ່ງທີ່ໄດ້ປັບຕັ້ງຄ່າສໍາລັບການເຊື່ອມຕໍ່ຈາກໜ້າການຕັ້ງຄ່າ.</translation>
 <translation id="2951588413176968965">ກ່ອງເມວຂອງຂ້ອຍ</translation>
 <translation id="295526156371527179">ຄຳເຕືອນ: ນະໂຍບາຍນີ້ບໍ່ຖືກຮວມເຂົ້າກັນເປັນພົດຈະນານຸກົມຕາມທີ່ລະບຸໄວ້ໂດຍນະໂຍບາຍ ເພາະວ່າມັນບໍ່ແມ່ນພົດຈະນານຸກົມ.</translation>
@@ -1085,6 +1088,7 @@
 <translation id="563324245173044180">ບລັອກເນື້ອຫາທີ່ຫຼອກລວງໄວ້ແລ້ວ.</translation>
 <translation id="5644090287519800334">ປ່ຽນຕຳແໜ່ງຮູບພາບດ້ານ 1 ຕາມແກນ X</translation>
 <translation id="5645854190134202180">ຜຽນສອງ</translation>
+<translation id="5654927323611874862">ID ລາຍງານການຂັດຂ້ອງທີ່ອັບໂຫຼດແລ້ວ:</translation>
 <translation id="5659593005791499971">ອີເມວ</translation>
 <translation id="5663614846592581799">9x11 (ຊອງຈົດໝາຍ)</translation>
 <translation id="5663955426505430495">ຜູ້ເບິ່ງແຍງລະບົບຂອງອຸປະກອນນີ້ໄດ້ຕິດຕັ້ງສ່ວນຂະຫຍາຍສຳລັບຟັງຊັນເພີ່ມເຕີມແລ້ວ. ສ່ວນຂະຫຍາຍມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານ.</translation>
@@ -1392,6 +1396,7 @@
 <translation id="7079718277001814089">ເວັບໄຊນີ້ປະກອບມີມາລແວ</translation>
 <translation id="7081308185095828845">ຄຸນສົມບັດນີ້ບໍ່ສາມາດໃຊ້ໄດ້ໃນອຸປະກອນຂອງທ່ານ</translation>
 <translation id="7083258188081898530">ຖາດ 9</translation>
+<translation id="7086090958708083563">ການອັບໂຫຼດທີ່ຂໍໂດຍຜູ້ໃຊ້</translation>
 <translation id="7087282848513945231">ເຂດປົກຄອງ</translation>
 <translation id="7090678807593890770">ຊອກຫາ <ph name="LINK" /> ໃນ Google</translation>
 <translation id="7108338896283013870">ເຊື່ອງ</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ໄປຫາ<ph name="SITE" /> (ບໍ່​ປອດ​ໄພ​)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">ໃບ​ຢັ້ງ​ຢືນ</translation>
 <translation id="7716147886133743102">ບລັອກໄວ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
+<translation id="7716375162095500223">ບໍ່ທັນອັບໂຫຼດ ຫຼື ລະເລີຍເທື່ອ</translation>
 <translation id="7716424297397655342">ບໍ່ສາມາດຊອກພົບເວັບໄຊນີ້ໄດ້ຈາກແຄສ</translation>
 <translation id="7723047071702270851">ແກ້ໄຂບັດ</translation>
 <translation id="7740996059027112821">ມາດ​ຕະ​ຖານ</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">ຖ້າທ່ານເຂົ້າໃຈຄວາມສ່ຽງຕໍ່ຄວາມປອດໄພຂອງທ່ານ, ທ່ານອາດຈະ <ph name="BEGIN_LINK" />ເຂົ້າເບິ່ງເວັບໄຊທ໌ນີ້<ph name="END_LINK" /> ກ່ອນໂປຣແກຣມອັນຕະລາຍຈະຖືກຍ້າຍອອກໄປ.</translation>
 <translation id="8349305172487531364">ແຖບບຸກມາກສ໌</translation>
+<translation id="8355270400102541638">ບໍລິບົດການຂັດຂ້ອງພາຍໃນເຄື່ອງ:</translation>
 <translation id="8363502534493474904">ກຳລັງປິດໂໝດເຮືອບິນ</translation>
 <translation id="8364627913115013041">ບໍ່​ໄດ້ຕັ້ງ​.</translation>
 <translation id="8368476060205742148">ບໍລິການ Google Play</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">ເຂົ້າລະຫັດຂໍ້ມູນທີ່ຊິ້ງດ້ວຍລະຫັດຜ່ານການຊິ້ງຂໍ້ມູນຂອງທ່ານເອງ</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ບັດເຄຣດິດ}other{# ບັດເຄຣດິດ}}</translation>
 <translation id="8473863474539038330">ທີ່ຢູ່ ແລະ ອື່ນໆອີກ</translation>
+<translation id="8474910779563686872">ສະແດງລາຍລະອຽດຂອງນັກພັດທະນາ</translation>
 <translation id="8479754468255770962">ໜີບກະຫຼັບເຟີຢູ່ລຸ່ມສຸດເບື້ອງຊ້າຍ</translation>
 <translation id="8483780878231876732">ເພື່ອໃຊ້ບັດຕ່າງໆຈາກບັນຊີ Google ຂອງທ່ານ, ໃຫ້ເຂົ້າສູ່ລະບົບ Chrome</translation>
 <translation id="8488350697529856933">ນໍາໃຊ້ກັບ</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690">ໂດຍປົກກະຕິ <ph name="SITE" /> ໃຊ້ການເຂົ້າລະຫັດເພື່ອປົກປ້ອງຂໍ້ມູນຂອງທ່ານ. ເມື່ອ Chromium ພະຍາຍາມເຊື່ອມຕໍ່ກັບ <ph name="SITE" /> ໃນເທື່ອນີ້, ເວັບໄຊໄດ້ມີການສົ່ງຂໍ້ມູນປະຈຳຕົວທີ່ຜິດປົກກະຕິ ແລະບໍ່ຖືກຕ້ອງກັບຄືນ. ນີ້ອາດຈະເກີດຂຶ້ນເມື່ອຜູ້ໂຈມຕີພະຍາຍາມປອມເປັນ <ph name="SITE" /> ຫຼື ໜ້າຈໍການເຂົ້າສູ່ລະບົບ Wi-Fi ໄດ້ຂັດຈັງຫວະການເຊື່ອມຕໍ່. ຂໍ້ມູນຂອງທ່ານຍັງປອດໄພຢູ່ເພາະວ່າ Chromium ໄດ້ຢຸດການເຊື່ອມຕໍ່ກ່ອນທີ່ຈະມີການແລກປ່ຽນຂໍ້ມູນ.</translation>
 <translation id="9106062320799175032">ເພີ່ມທີ່ຢູ່ການຮຽກເກັບເງິນ</translation>
 <translation id="9114524666733003316">ກຳລັງຢືນຢັນບັດ...</translation>
+<translation id="9119042192571987207">ອັບໂຫລດແລ້ວ</translation>
 <translation id="9128870381267983090">ເຊື່ອມ​ຕໍ່ກັບ​ເຄືອ​ຂ່າຍ</translation>
 <translation id="9137013805542155359">ສະແດງຕົ້ນສະບັບ</translation>
 <translation id="9141013498910525015">ຈັດການທີ່ຢູ່</translation>

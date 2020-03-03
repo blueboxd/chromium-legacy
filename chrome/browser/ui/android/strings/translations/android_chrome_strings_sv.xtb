@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129382876167171263">Filer som webbplatser har sparat visas här</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
+<translation id="1303339473099049190">Det gick inte att hitta lösenordet. Kontrollera stavningen och försök igen.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Skickades från <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppera flikar</translation>
+<translation id="1311657260431405215">QR-koden är inte en webbadress: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Navigeringshistoriken har öppnats</translation>
 <translation id="1331212799747679585">Det går inte att uppdatera Chrome. Fler alternativ</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
@@ -323,6 +325,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
 <translation id="3353615205017136254">Lite-sida tillhandahållen av Google. Tryck på knappen Läs in original för att läsa in den ursprungliga sidan.</translation>
 <translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
+<translation id="3373979091428520308">Om du vill dela den här sidan med en annan enhet måste du aktivera synkronisering i inställningarna för Chrome på den andra enheten</translation>
 <translation id="3374023511497244703">Bokmärken, historik, lösenord och annan data i Chrome synkroniseras inte längre med ditt Google-konto</translation>
 <translation id="3384347053049321195">Dela bild</translation>
 <translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
@@ -672,6 +675,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
+<translation id="5964805880140440652">Aktivera synkronisering i inställningarna för Chrome om du vill dela den här sidan med annan enhet</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
 <translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6036057147555329831">Extra ICU</translation>

@@ -27,7 +27,6 @@ mojom::UpdateSystemColorInfoParamsPtr MakeUpdateSystemColorInfoParams(
       mojom::UpdateSystemColorInfoParams::New();
   params->is_dark_mode = native_theme->ShouldUseDarkColors();
   params->is_high_contrast = native_theme->UsesHighContrastColors();
-  params->preferred_color_scheme = native_theme->GetPreferredColorScheme();
   const auto& colors = native_theme->GetSystemColors();
   params->colors.insert(colors.begin(), colors.end());
 

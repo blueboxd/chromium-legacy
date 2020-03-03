@@ -69,6 +69,11 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   // Remove the handler from the list of observers of every observed instances.
   void StopObservingEvents();
 
+ protected:
+  // Round a given number of bytes up to the next power of 2.
+  // Ex: 14 => 16, 150 => 256.
+  int64_t RoundByteSize(int64_t bytes);
+
  private:
   // Handlers of JS messages.
   void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);

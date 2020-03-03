@@ -28,8 +28,11 @@ void SnapshotCacheWebStateListObserver::WebStateActivatedAt(
     web::WebState* new_web_state,
     int active_index,
     int reason) {
-  if (!(reason & WebStateListObserver::CHANGE_REASON_USER_ACTION))
+  if (!((reason & WebStateListObserver::CHANGE_REASON_ACTIVATED) ||
+        (reason & WebStateListObserver::CHANGE_REASON_CLOSED) ||
+        (reason & WebStateListObserver::CHANGE_REASON_INSERTED))) {
     return;
+  }
 
   NSMutableSet<NSString*>* set = [NSMutableSet set];
   if (active_index > 0) {

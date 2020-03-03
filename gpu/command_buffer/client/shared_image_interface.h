@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
 
 #if !defined(OS_NACL)
@@ -54,10 +55,12 @@ class GPU_EXPORT SharedImageInterface {
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
-                                    const gfx::Size& size,
-                                    const gfx::ColorSpace& color_space,
-                                    uint32_t usage) = 0;
+  virtual Mailbox CreateSharedImage(
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) = 0;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the

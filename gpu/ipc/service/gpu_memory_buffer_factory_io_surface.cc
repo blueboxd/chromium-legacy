@@ -136,10 +136,12 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
 }
 
 scoped_refptr<gl::GLImage>
-GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
-                                                      gfx::BufferFormat format,
-                                                      gfx::BufferUsage usage,
-                                                      bool* is_cleared) {
+GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    SurfaceHandle surface_handle,
+    bool* is_cleared) {
   bool should_clear = false;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format, should_clear));

@@ -197,35 +197,38 @@ void WebrtcVideoStream::OnCaptureResult(
   current_frame_stats_->capture_delay =
       base::TimeDelta::FromMilliseconds(frame ? frame->capture_time_ms() : 0);
 
-  WebrtcVideoEncoder::FrameParams frame_params;
-  if (!scheduler_->OnFrameCaptured(frame.get(), &frame_params)) {
+  if (!frame) {
+    scheduler_->OnFrameCaptured(nullptr, nullptr);
     return;
   }
 
   // TODO(sergeyu): Handle ERROR_PERMANENT result here.
-  if (frame) {
-    webrtc::DesktopVector dpi =
-        frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
-                               : frame->dpi();
+  webrtc::DesktopVector dpi =
+      frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
+                             : frame->dpi();
 
-    if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
-      frame_size_ = frame->size();
-      frame_dpi_ = dpi;
-      if (observer_)
-        observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
-    }
+  if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
+    frame_size_ = frame->size();
+    frame_dpi_ = dpi;
+    if (observer_)
+      observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
+  }
 
-    current_frame_stats_->capturer_id = frame->capturer_id();
+  current_frame_stats_->capturer_id = frame->capturer_id();
 
-    if (!encoder_) {
-      encoder_selector_.SetDesktopFrame(*frame);
-      encoder_ = encoder_selector_.CreateEncoder();
-      encoder_->SetLosslessEncode(lossless_encode_);
-      encoder_->SetLosslessColor(lossless_color_);
+  if (!encoder_) {
+    encoder_selector_.SetDesktopFrame(*frame);
+    encoder_ = encoder_selector_.CreateEncoder();
+    encoder_->SetLosslessEncode(lossless_encode_);
+    encoder_->SetLosslessColor(lossless_color_);
 
-      // TODO(zijiehe): Permanently stop the video stream if we cannot create an
-      // encoder for the |frame|.
-    }
+    // TODO(zijiehe): Permanently stop the video stream if we cannot create an
+    // encoder for the |frame|.
+  }
+
+  WebrtcVideoEncoder::FrameParams frame_params;
+  if (!scheduler_->OnFrameCaptured(frame.get(), &frame_params)) {
+    return;
   }
 
   if (encoder_) {

@@ -250,9 +250,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                         const MediaTracksUpdatedCB& tracks_updated_cb);
 
   // Notifies a caller via |parse_warning_cb| of a parse warning.
-  void SetParseWarningCallback(
-      const std::string& id,
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(const std::string& id,
+                               SourceBufferParseWarningCB parse_warning_cb);
 
   // Removed an ID & associated resources that were previously added with
   // AddId().

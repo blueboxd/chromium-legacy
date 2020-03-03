@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Növbəti</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Sonrakı 4-cü səviyyə başlığı yoxdur</translation>
+<translation id="1212770441379271564">Növbəti bir neçə qısayol ChromeVox əmri deyil, lakin Chrome'dan maksimum yararlanmaq üçün faydalıdır.
+    Düymələr və keçidlər kimi əməliyyat elementləri arasında irəli getmək üçün Tab düyməsinə basın. Geriyə getmək üçün Shift+Tab üzərinə basın.
+    Chrome brauzerinin ünvan qutusuna (omnibox da adlanır) daxil olmaq üçün Control + L üzərinə basın.
+    Avtomatik olaraq yeni tab açmaq və ona keçmək üçün Control+T üzərinə basın. Kursorunuz omnibox daxilində olacaq.
+    Tabı bağlamaq üçün Control+W üzərinə basın.
+    Açıq tablar arasında irəli getmək üçün Control+Tab düymələrindən istifadə edin.
+    Chrome brauzer menyusunu açmaq üçün Alt+F üzərinə basın.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome'a Səs verilməsi</translation>
 <translation id="1225969361094801578">Tünd Barıt Bozu</translation>
 <translation id="1229276918471378188">Öncəki keçid</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">rəng seçən</translation>
 <translation id="4221012616705981690">Öncəki siyahı yoxdur</translation>
 <translation id="4221071177874897997">Qalın olanları göstərin:</translation>
+<translation id="4225355998815256469">Forma İdarələri</translation>
 <translation id="4229646983878045487">tarix vaxt</translation>
 <translation id="4230834257931120629">Açıq-barıt Bozu</translation>
 <translation id="4231102694147661229">Developer seçimlərini Aktiv Edin</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Cümlə</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Yeniliklərə baxmaq üçün ChromeVox o, n düymələrinə basın</translation>
+<translation id="4646606380313237501">{"ar": "Ərəb",
+    "as": "Assam",
+    "aw": "Avadhi",
+    "be": "Benqal",
+    "bg": "Bolqar",
+    "bh": "Bihar",
+    "bo": "Tibet",
+    "br": "Braj",
+    "ca": "Katalan",
+    "ckb": "Sorani",
+    "cs": "Çex",
+    "cy": "Vall",
+    "da": "Danimarka",
+    "de": "Alman",
+    "de_CH": "Alman (İsveçrə)",
+    "de_DE": "Alman (Almaniya)",
+    "dra": "Dravid",
+    "el": "Yunan",
+    "en": "İngilis",
+    "en_CA": "İngilis (Kanada)",
+    "en_GB": "İngilis (Birləşmiş Krallıq)",
+    "en_US": "İngilis (ABŞ)",
+    "eo": "Esperanto",
+    "es": "İspan",
+    "et": "Eston",
+    "fa": "Fars",
+    "fr": "Fransız",
+    "fr_CA": "Fransız (Kanada)",
+    "fr_FR": "Fransız (Fransa)",
+    "fi": "Fin",
+    "ga": "İrland",
+    "gd": "Qaelik",
+    "gon": "Qondi",
+    "gu": "Qücərat",
+    "he": "İvrit",
+    "hi": "Hind",
+    "hr": "Xorvat",
+    "hu": "Macar",
+    "hy": "Erməni",
+    "is": "İsland",
+    "it": "İtalyan",
+    "iu": "İnuktitut",
+    "ka": "Kannada",
+    "kh": "Xasi",
+    "ko": "Koreya",
+    "kok": "Konkani",
+    "kru": "Kurux",
+    "ks": "Kəşmir",
+    "lt": "Litva",
+    "lv": "Latviya",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Malta",
+    "mwr": "Marvari",
+    "mn": "Monqol",
+    "mun": "Munda",
+    "nb": "Norveç Bukmolu",
+    "ne": "Nepal",
+    "nl": "Holland",
+    "no": "Norveç",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Polyak",
+    "pt": "Portuqal",
+    "pu": "Pəncab",
+    "ro": "Rumın",
+    "ru": "Rus",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Sinhal",
+    "sk": "Slovak",
+    "sl": "Sloven",
+    "sr": "Serb",
+    "sv": "İsveç",
+    "ta": "Tamil",
+    "te": "Teluqu",
+    "tr": "Türk",
+    "tsn": "Afrikaans",
+    "uk": "Ukrayna",
+    "ur": "Urdu",
+    "vi": "Vyetnam",
+    "zh": "Çin",
+    "zh_TW": "Çin (Ənənəvi Han)"}</translation>
 <translation id="4647836961514597010">Rəng seçici</translation>
 <translation id="4660783501463101648">Klassik silindi. ChromeVox Klassikə qayıtmaq üçün klaviatura keçidi silindi.</translation>
 <translation id="4661075872484491155">ağac</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Yapışqan rejim aktivdir</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vergül}other{# vergül}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, mətn qutusu</translation>
+<translation id="532485153932049746">Mətn formatı
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Yalnız 1, yaxud 2 düymə ilə cihazı idarə edin.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Brayl</translation>
 <translation id="5402791055281059602">Qalıcı siqnal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{nöqtəli vergül}other{# nöqtəli vergül}}</translation>
+<translation id="5420259671171615858">Menyuları axtarın</translation>
 <translation id="5435274640623994081">Qulaqlıq girişini aktiv edin</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{nisbətən az}other{# nisbətən az işarələr}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Orfoqrafik səhv aşkarlandı</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">qayıdın</translation>
+<translation id="7429415133937917139">Ekranın yuxarısındakı ChromeVox panelində
+    yenilənən brayl displeyinin çıxışını simulyasiya edir</translation>
 <translation id="7434509671034404296">Developer</translation>
 <translation id="743783356331413498">Məsələn</translation>
 <translation id="7439060726180460871">Kataloq</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Əvvəlki radio düyməsi</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Sonrakı kombo xanası yoxdur</translation>
+<translation id="772146615414628379">Təbriklər! ChromeVox'dan uğurla istifadə etmək üçün əsasları öyrəndiniz. Unutmayın ki, Axtarış+Nöqtə üzərinə basmaqla istənilən vaxt ChromeVox əmr menyusunu aça bilərsiniz. ChromeVox və Chrome ƏS haqqında daha ətraflı məlumat əldə etmək üçün aşağıdakı məqalələrə daxil olun.
+    Təlim materialını tamamladınızsa, ChromeVox'dan istifadə edərək "Bağlayın" düyməsinə yönəlin və üzərinə klikləyin.</translation>
 <translation id="7724603315864178912">Kəsin</translation>
 <translation id="7731785449856576010">Sonrakı media vidceti yoxdur</translation>
 <translation id="773906353055481349">Xanalarla hərəkət etmək üçün oxlarla Search+Ctrl+Alt düymələrinə basın</translation>

@@ -2274,6 +2274,7 @@ if (!is_android) {
         "../browser/chromeos/login/screens/fingerprint_setup_browsertest.cc",
         "../browser/chromeos/login/screens/gesture_navigation_screen_browsertest.cc",
         "../browser/chromeos/login/screens/hid_detection_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/marketing_opt_in_screen_browsertest.cc",
         "../browser/chromeos/login/screens/mock_arc_terms_of_service_screen.cc",
         "../browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h",
         "../browser/chromeos/login/screens/mock_demo_preferences_screen.cc",

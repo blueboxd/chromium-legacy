@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1206619573307042055">マーキー</translation>
 <translation id="1207086294218137981">次のレベル 4 の見出しはありません</translation>
+<translation id="1212770441379271564">次に紹介するいくつかのショートカットは ChromeVox のコマンドではありませんが、Chrome を活用する際に役立ちます。
+    ボタンやリンクなどの操作可能な項目間を移動するには、順方向の場合は Tab キー、逆方向の場合は Shift+Tab キーを押します。
+    Chrome ブラウザのアドレスバー（オムニボックスとも呼ばれます）に移動するには、Ctrl+L キーを押します。
+    新しいタブを自動的に開いてそのタブに移動するには、Ctrl+T キーを押します。カーソルはアドレスバー内に置かれます。
+    タブを閉じるには Ctrl+W キーを押します。
+    開いているタブ間を移動するには、Ctrl+Tab キーを押します。
+    Chrome ブラウザのメニューを開くには、Alt+F キーを押します。</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome を音声で読み上げ</translation>
 <translation id="1225969361094801578">ダーク スレートグレー</translation>
 <translation id="1229276918471378188">前のジャンプ</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">カラー選択ツール</translation>
 <translation id="4221012616705981690">前のリストはありません</translation>
 <translation id="4221071177874897997">太字を表す:</translation>
+<translation id="4225355998815256469">フォーム コントロール</translation>
 <translation id="4229646983878045487">日時</translation>
 <translation id="4230834257931120629">ライト スレートグレー</translation>
 <translation id="4231102694147661229">デベロッパー向けオプションを有効にする</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">文</translation>
 <translation id="4623097797855662355">奥付</translation>
 <translation id="463135993322337640">ChromeVox+o+n キーを押すと新機能を確認できます</translation>
+<translation id="4646606380313237501">{"ar": "アラビア語",
+    "as": "アッサム語",
+    "aw": "アワディー語",
+    "be": "ベンガル語",
+    "bg": "ブルガリア語",
+    "bh": "ビハール語",
+    "bo": "チベット語",
+    "br": "ブラジュ語",
+    "ca": "カタルーニャ語",
+    "ckb": "ソラニー語",
+    "cs": "チェコ語",
+    "cy": "ウェールズ語",
+    "da": "デンマーク語",
+    "de": "ドイツ語",
+    "de_CH": "ドイツ語（スイス）",
+    "de_DE": "ドイツ語（ドイツ）",
+    "dra": "ドラヴィダ語",
+    "el": "ギリシャ語",
+    "en": "英語",
+    "en_CA": "英語（カナダ）",
+    "en_GB": "英語（イギリス）",
+    "en_US": "英語（アメリカ）",
+    "eo": "エスペラント語",
+    "es": "スペイン語",
+    "et": "エストニア語",
+    "fa": "ペルシャ語",
+    "fr": "フランス語",
+    "fr_CA": "フランス語（カナダ）",
+    "fr_FR": "フランス語（フランス）",
+    "fi": "フィンランド語",
+    "ga": "アイルランド語",
+    "gd": "ゲール語",
+    "gon": "ゴーンディー語",
+    "gu": "グジャラト語",
+    "he": "ヘブライ語",
+    "hi": "ヒンディー語",
+    "hr": "クロアチア語",
+    "hu": "ハンガリー語",
+    "hy": "アルメニア語",
+    "is": "アイスランド語",
+    "it": "イタリア語",
+    "iu": "イヌクティトゥト語",
+    "ka": "カンナダ語",
+    "kh": "カーシ語",
+    "ko": "韓国語",
+    "kok": "コンカニ語",
+    "kru": "クルク語",
+    "ks": "カシミール語",
+    "lt": "リトアニア語",
+    "lv": "ラトビア語",
+    "mao": "マオリ語",
+    "ml": "マラヤーラム語",
+    "mt": "マルタ語",
+    "mwr": "マールワーリー語",
+    "mn": "モンゴル語",
+    "mun": "ムンダ語",
+    "nb": "ノルウェー語ボークモール",
+    "ne": "ネパール語",
+    "nl": "オランダ語",
+    "no": "ノルウェー語",
+    "or": "オリヤ語",
+    "pi": "パーリ語",
+    "pl": "ポーランド語",
+    "pt": "ポルトガル語",
+    "pu": "パンジャブ語",
+    "ro": "ルーマニア語",
+    "ru": "ロシア語",
+    "sa": "サンスクリット語",
+    "si": "シンド語",
+    "sin": "シンハラ語",
+    "sk": "スロバキア語",
+    "sl": "スロベニア語",
+    "sr": "セルビア語",
+    "sv": "スウェーデン語",
+    "ta": "タミル語",
+    "te": "テルグ語",
+    "tr": "トルコ語",
+    "tsn": "アフリカーンス語",
+    "uk": "ウクライナ語",
+    "ur": "ウルドゥー語",
+    "vi": "ベトナム語",
+    "zh": "中国語",
+    "zh_TW": "中国語（繁体字）"}</translation>
 <translation id="4647836961514597010">カラー選択ツール</translation>
 <translation id="4660783501463101648">クラシックの削除。ChromeVox クラシックに戻るキーボード切り替えは削除されました。</translation>
 <translation id="4661075872484491155">ツリー</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">スティッキー モードは有効</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{カンマ}other{# 個のカンマ}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />、テキスト ボックス</translation>
+<translation id="532485153932049746">テキストの書式設定
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />、リンク</translation>
 <translation id="5331522683003474486">1～2 個のスイッチだけでデバイスを制御します。</translation>
 <translation id="5336381510091010269">リストのインライン オートコンプリート</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">点字</translation>
 <translation id="5402791055281059602">モーダル アラート</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{セミコロン}other{# 個のセミコロン}}</translation>
+<translation id="5420259671171615858">メニューを検索する</translation>
 <translation id="5435274640623994081">イアコンのログを有効にする</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{小なり}other{# 個の小なり記号}}</translation>
 <translation id="5444587279251314700">（有効）</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">スペルミスが見つかりました</translation>
 <translation id="7408482676469142474">表</translation>
 <translation id="7425395583360211003">改行</translation>
+<translation id="7429415133937917139">点字ディスプレイの出力を
+    画面上部の ChromeVox パネルにシミュレートします</translation>
 <translation id="7434509671034404296">開発 / 管理</translation>
 <translation id="743783356331413498">例</translation>
 <translation id="7439060726180460871">ディレクトリ</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">前のラジオボタン</translation>
 <translation id="7701196182766842984">リストのオートコンプリート</translation>
 <translation id="7714340021005120797">次のコンボボックスはありません</translation>
+<translation id="772146615414628379">以上が ChromeVox を使用するための基本事項です。ChromeVox のコマンド メニューは、検索+ピリオド（.）キーを押していつでも開くことができます。ChromeVox と Chrome OS について詳しくは、以下の記事をご覧ください。
+    チュートリアルを終了するには、ChromeVox を使って閉じるボタンまで移動し、クリックしてください。</translation>
 <translation id="7724603315864178912">切り取り</translation>
 <translation id="7731785449856576010">次のメディア ウィジェットはありません</translation>
 <translation id="773906353055481349">検索+Ctrl+Alt キーを押しながら矢印キーを押して、セル間を移動します</translation>

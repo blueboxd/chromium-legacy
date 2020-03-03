@@ -48,6 +48,9 @@ constexpr base::TimeDelta kDragHandleNudgeOpacityDelay =
 constexpr base::TimeDelta kDragHandleNudgeOpacityAnimationDuration =
     base::TimeDelta::FromMilliseconds(200);
 
+// Delay before animating the drag handle and showing the drag handle nudge.
+constexpr base::TimeDelta kShowNudgeDelay = base::TimeDelta::FromSeconds(2);
+
 // This class is deleted after OnImplicitAnimationsCompleted() is called.
 class HideNudgeObserver : public ui::ImplicitAnimationObserver {
  public:
@@ -90,7 +93,9 @@ bool DragHandle::DoesIntersectRect(const views::View* target,
 }
 
 void DragHandle::ShowDragHandleNudge() {
-  if (ShowingNudge())
+  // Do not show drag handle nudge if it is already shown or drag handle is not
+  // visible.
+  if (ShowingNudge() || !GetVisible())
     return;
   showing_nudge_ = true;
   PrefService* pref =
@@ -108,6 +113,14 @@ void DragHandle::ShowDragHandleNudge() {
   }
   contextual_tooltip::HandleNudgeShown(
       pref, contextual_tooltip::TooltipType::kDragHandle);
+}
+
+void DragHandle::ScheduleShowDragHandleNudge() {
+  if (showing_nudge_)
+    return;
+  show_drag_handle_nudge_timer_.Start(
+      FROM_HERE, kShowNudgeDelay,
+      base::BindOnce(&DragHandle::ShowDragHandleNudge, base::Unretained(this)));
 }
 
 void DragHandle::SetColorAndOpacity(SkColor color, float opacity) {

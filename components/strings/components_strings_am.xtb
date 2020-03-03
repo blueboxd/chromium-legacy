@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">ከርክም</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
 <translation id="2297722699537546652">B5 (የደብዳቤ ፖስታ)</translation>
+<translation id="2300306941146563769">አልተሰቀለም</translation>
 <translation id="2310021320168182093">Chou2 (የደብዳቤ ፖስታ)</translation>
 <translation id="2315864634253056100">የዚህ ጣቢያ ስም ከ<ph name="LOOKALIKE_DOMAIN" /> ጋር ይመሳሰላል። አጥቂዎች አንዳንድ ጊዜ በድር አድራሻው ላይ ለማየት የሚያስቸግሩ ለውጦችን በማድረግ ጣቢያዎችን ያስመስሉ።</translation>
 <translation id="2316887270356262533">እስከ 1 ሜባ ቦታ ድረስ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
@@ -440,6 +441,7 @@
 <translation id="2909946352844186028">የአውታረ መረብ ለውጥ ተገኝቷል።</translation>
 <translation id="2910133103376701357">የእርስዎ መሣሪያ እና መለያ የሚተዳደሩት በ<ph name="ENROLLMENT_DOMAIN" /> ነው።</translation>
 <translation id="2911973620368911614">የስራ አካውንቲንግ ተጠቃሚ መታወቂያ</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" /> ላይ ስንክል</translation>
 <translation id="2916038427272391327">ሌሎች ፕሮግራሞችን ይዝጉ</translation>
 <translation id="2922350208395188000">የአገልጋይ እውቅና ማረጋገጫ ሊረጋገጥ አልቻለም።</translation>
 <translation id="2925673989565098301">የማድረሻ ስልት</translation>
@@ -448,6 +450,7 @@
 <translation id="2930577230479659665">ከእያንዳንዱ ቅጂ በኋላ ከርክም</translation>
 <translation id="2934466151127459956">መንግስት-ደብዳቤ</translation>
 <translation id="2941952326391522266">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በ<ph name="DOMAIN2" /> ነው የተሰጠው። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
+<translation id="2943895734390379394">የሰቀላ ጊዜ፦</translation>
 <translation id="2948083400971632585">ከቅንብሮች ገጽ ሆነው ማናቸውንም ለግንኙነት የተዋቀሩ ተኪዎችን ማሰናከል ይችላሉ።</translation>
 <translation id="2951588413176968965">የእኔ የመልዕክት ሳጥን</translation>
 <translation id="295526156371527179">ማስጠንቀቂያ፦ ይህ መመሪያ መዝገበ-ቃላት ስላልሆነ እንደ መዝገበ-ቃላት አልተዋሃደም።</translation>
@@ -1080,6 +1083,7 @@
 <translation id="563324245173044180">አታላይ ይዘት ታግዷል።</translation>
 <translation id="5644090287519800334">ጎን 1 ምስል X ሽግሽግ</translation>
 <translation id="5645854190134202180">ሁለተኛ ፈረቃ</translation>
+<translation id="5654927323611874862">የተሰቀለ የስንክል ሪፖርት መታወቂያ፦</translation>
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5663614846592581799">9x11 (የደብዳቤ ፖስታ)</translation>
 <translation id="5663955426505430495">የዚህ መሣሪያ አስተዳዳሪ ለተጨማሪ ተግባራት ቅጥያዎችን ጭኗል። ቅጥያዎች የአንዳንድ ውሂብዎ መዳረሻ አላቸው።</translation>
@@ -1387,6 +1391,7 @@
 <translation id="7079718277001814089">ይህ ጣቢያ ተንኮል-አዘል ዌር ይዟል</translation>
 <translation id="7081308185095828845">ይህ ባህሪ በእርስዎ መሣሪያ ላይ አይገኝም</translation>
 <translation id="7083258188081898530">መሳቢያ 9</translation>
+<translation id="7086090958708083563">ሰቀላ በተጠቃሚ ተጠይቋል</translation>
 <translation id="7087282848513945231">ክፍለ ሀገር</translation>
 <translation id="7090678807593890770"><ph name="LINK" />ን በGoogle ላይ ይፈልጉ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
@@ -1549,6 +1554,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ወደ <ph name="SITE" /> ቀጥል (ደህንነቱ ያልተጠበቀ)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">ሰርቲፊኬት</translation>
 <translation id="7716147886133743102">በእርስዎ አስተዳዳሪ ታግዷል</translation>
+<translation id="7716375162095500223">እስካሁን አልተሰቀለም ወይም ችላ ተብሏል</translation>
 <translation id="7716424297397655342">ይህ ጣቢያ ከመሸጎጫው ላይ ሊጫን አይችልም</translation>
 <translation id="7723047071702270851">ካርትን ያርትዑ</translation>
 <translation id="7740996059027112821">መደበኛ</translation>
@@ -1693,6 +1699,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">በእርስዎ ደህንነት ላይ የሚያመጣቸውን ስጋቶች ከተረዱ አደገኛ ፕሮግራሞቹ ከመወገዳቸው በፊት <ph name="BEGIN_LINK" />ይህን ጣቢያ መጎብኘት<ph name="END_LINK" /> ይችላሉ።</translation>
 <translation id="8349305172487531364">የዕልባቶች አሞሌ</translation>
+<translation id="8355270400102541638">የአካባቢያዊ ስንክል አውድ፦</translation>
 <translation id="8363502534493474904">የአውሮፕላን ሁነታን ማጥፋት</translation>
 <translation id="8364627913115013041">አልተዋቀረም።</translation>
 <translation id="8368476060205742148">Google Play አገልግሎቶች</translation>
@@ -1713,6 +1720,7 @@
 <translation id="8461694314515752532">የሰመረ ውሂብ በራስዎ የስምረት ይለፍ ሐረግ ያመሣጥሩ</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ክሬዲት ካርድ}one{# ክሬዲት ካርዶች}other{# ክሬዲት ካርዶች}}</translation>
 <translation id="8473863474539038330">አድራሻዎች እና ተጨማሪ</translation>
+<translation id="8474910779563686872">የገንቢ ዝርዝሮችን አሳይ</translation>
 <translation id="8479754468255770962">ከታች ግራ በኩል ስቴፕለር ምታ</translation>
 <translation id="8483780878231876732">ከእርስዎ የGoogle መለያ ካርዶችን ለመጠቀም ወደ Chrome በመለያ ይግቡ</translation>
 <translation id="8488350697529856933">የሚመለከተው ለ</translation>
@@ -1839,6 +1847,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> የእርስዎን መረጃ ለመጠበቅ በመደበኝነት ምስጠራን ይጠቀማል። Chromium አሁን ከ<ph name="SITE" /> ጋር ለመገናኘት ሲሞክር ድር ጣቢያው ያልተለመዱ እና ትክክል ያልሆኑ ምስክርነቶችን መልሷል። ይህ አንድ አጥቂ <ph name="SITE" />ን አስመስሎ ለመቅረብ ሲሞክር ነው ወይም አንድ የWi-Fi መግቢያ ገጽ ግንኙነቱን ሲቋረጥ ሊከሰት ይችላል። Chromium ማንኛውም የውሂብ ልውውጥ ከመካሄዱ በፊት ግንኙነቱን ስላቋረጠው አሁንም የእርስዎ መረጃ ደህንነት የተጠበቀ ነው።</translation>
 <translation id="9106062320799175032">የመክፈያ አድራሻ ያክሉ</translation>
 <translation id="9114524666733003316">ካርድን በማረጋገጥ ላይ...</translation>
+<translation id="9119042192571987207">ተሰቅሏል</translation>
 <translation id="9128870381267983090">ከአውታረ መረብ ጋር ይገናኙ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9141013498910525015">አድራሻዎችን ያቀናብሩ</translation>

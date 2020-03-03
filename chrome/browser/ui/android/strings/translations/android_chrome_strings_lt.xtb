@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Išvalykite istoriją, slapukus, svetainės duomenis, talpyklą…</translation>
 <translation id="129382876167171263">Svetainių išsaugoti failai rodomi čia</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
+<translation id="1303339473099049190">Nepavyko rasti šio slaptažodžio. Patikrinkite rašybą ir bandykite dar kartą.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – išsiųsta iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="1310482092992808703">Grupuoti skirtukus</translation>
 <translation id="1327257854815634930">Naršymo istorija atidaryta</translation>
@@ -323,6 +324,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="3350687908700087792">Uždaryti visus inkognito skirtukų lapus</translation>
 <translation id="3353615205017136254">Supaprastintasis puslapis, kurį teikia „Google“. Palieskite mygtuką „Įkelti pradinį“, kad būtų įkeltas pradinis puslapis.</translation>
 <translation id="3367813778245106622">Prisijunkite dar kartą, kad pradėtumėte sinchronizavimą</translation>
+<translation id="3373979091428520308">Jei norite bendrinti šį puslapį su kitu įrenginiu, įjunkite sinchronizavimą abiejų įrenginių „Chrome“ nustatymuose</translation>
 <translation id="3374023511497244703">Su jūsų „Google“ paskyra nebebus sinchronizuojamos žymės, istorija, slaptažodžiai ir kiti „Chrome“ duomenys</translation>
 <translation id="3384347053049321195">Bendrinti vaizdą</translation>
 <translation id="3386292677130313581">Klausti prieš leidžiant svetainėms žinoti vietą (rekomenduojama)</translation>
@@ -672,6 +674,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5956665950594638604">Atidaryti „Chrome“ pagalb. centrą naujame skirtuke</translation>
 <translation id="5958275228015807058">Suraskite failus ir puslapius „Atsisiuntimų“ skiltyje</translation>
 <translation id="5962718611393537961">Palieskite ir sutraukite</translation>
+<translation id="5964805880140440652">Jei norite bendrinti šį puslapį su kitu įrenginiu, įjunkite sinchronizavimą „Chrome“ nustatymuose</translation>
 <translation id="6000066717592683814">Palikti „Google“</translation>
 <translation id="6005538289190791541">Siūlomas slaptažodis</translation>
 <translation id="6036057147555329831">Papildomas ICU</translation>

@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -65,6 +65,7 @@ import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.UrlUtil;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -896,7 +897,8 @@ public class PaymentRequestImpl
 
         mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillCards,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
-                SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
+                SecurityStateModel.getSecurityLevelForWebContents(
+                        mWebContents, ChromeSecurityStateModelDelegate.getInstance()),
                 new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler);
 
         // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
@@ -2559,6 +2561,12 @@ public class PaymentRequestImpl
     @Override
     public PaymentApp.PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
         return this;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public String getTotalAmountCurrency() {
+        return mRawTotal.amount.currency;
     }
 
     // PaymentAppFactoryDelegate implementation.

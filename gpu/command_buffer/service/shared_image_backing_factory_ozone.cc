@@ -28,6 +28,7 @@ std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryOzone::CreateSharedImage(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
+    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
@@ -35,7 +36,7 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
   DCHECK(!is_thread_safe);
   return SharedImageBackingOzone::Create(dawn_procs_, shared_context_state_,
                                          mailbox, format, size, color_space,
-                                         usage);
+                                         usage, surface_handle);
 }
 
 std::unique_ptr<SharedImageBacking>

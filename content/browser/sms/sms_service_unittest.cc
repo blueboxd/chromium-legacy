@@ -502,6 +502,31 @@ TEST_F(SmsServiceTest, Cancel) {
   ASSERT_FALSE(service.fetcher()->HasSubscribers());
 }
 
+TEST_F(SmsServiceTest, CancelForNoDelegate) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  auto provider = std::make_unique<MockSmsProvider>();
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(),
+                         std::move(provider));
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&fetcher, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop loop;
+
+  service->Receive(base::BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp,
+              const Optional<string>& sms) {
+        EXPECT_EQ(SmsStatus::kCancelled, status);
+        EXPECT_EQ(base::nullopt, sms);
+        loop.Quit();
+      }));
+
+  loop.Run();
+
+  ASSERT_FALSE(fetcher.HasSubscribers());
+}
+
 TEST_F(SmsServiceTest, Abort) {
   NavigateAndCommit(GURL(kTestUrl));
 

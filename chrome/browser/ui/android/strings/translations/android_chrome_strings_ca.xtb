@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Esborra l'historial, les galetes, les dades dels llocs web, la memòria cau, etc.</translation>
 <translation id="129382876167171263">Els fitxers desats pels llocs web es mostren aquí</translation>
 <translation id="129553762522093515">Tancades recentment</translation>
+<translation id="1303339473099049190">No es troba aquesta contrasenya. Comprova que estigui ben escrita i torna-ho a provar.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" />: s'ha enviat des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Agrupa les pestanyes</translation>
+<translation id="1311657260431405215">Aquest codi QR no és un URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">L'historial de navegació està obert</translation>
 <translation id="1331212799747679585">No es pot actualitzar Chrome. Més opcions</translation>
 <translation id="1332501820983677155">Dreceres per a funcions de Google Chrome</translation>
@@ -323,6 +325,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="3350687908700087792">Tanca totes les pestanyes d'incògnit</translation>
 <translation id="3353615205017136254">Pàgina en mode bàsic oferida per Google. Toca el botó Carrega la versió original per carregar la pàgina original.</translation>
 <translation id="3367813778245106622">Torna a iniciar la sessió per començar la sincronització</translation>
+<translation id="3373979091428520308">Per compartir aquesta pàgina amb un altre dispositiu, activa la sincronització a la configuració de Chrome de l'altre dispositiu</translation>
 <translation id="3374023511497244703">Les adreces d'interès, l'historial, les contrasenyes i altres dades de Chrome ja no se sincronitzaran amb el teu Compte de Google</translation>
 <translation id="3384347053049321195">Comparteix la imatge</translation>
 <translation id="3386292677130313581">Pregunta'm abans de permetre que els llocs web sàpiguen la meva ubicació (opció recomanada)</translation>
@@ -672,6 +675,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5956665950594638604">Obre Centre d'ajuda de Chrome en una pestanya nova</translation>
 <translation id="5958275228015807058">Trobaràs els teus fitxers i les teves pàgines a Baixades</translation>
 <translation id="5962718611393537961">Toca per replegar</translation>
+<translation id="5964805880140440652">Per compartir aquesta pàgina amb un altre dispositiu, activa la sincronització a la configuració de Chrome</translation>
 <translation id="6000066717592683814">Continua amb Google</translation>
 <translation id="6005538289190791541">Contrasenya suggerida</translation>
 <translation id="6036057147555329831">ICU addicional</translation>

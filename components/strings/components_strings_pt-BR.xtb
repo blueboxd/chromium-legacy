@@ -316,6 +316,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2289385804009217824">Cortar</translation>
 <translation id="2292556288342944218">O seu acesso à Internet está bloqueado</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">Não enviado</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">O nome desse site é parecido com o de <ph name="LOOKALIKE_DOMAIN" />. Às vezes, os invasores imitam sites, fazendo modificações quase imperceptíveis no endereço da Web.</translation>
 <translation id="2316887270356262533">Libera menos de 1 MB. O carregamento de alguns sites pode ficar mais lento no seu próximo acesso.</translation>
@@ -438,6 +439,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2909946352844186028">Foi detectada uma alteração na rede.</translation>
 <translation id="2910133103376701357">Seu dispositivo e sua conta são gerenciados por <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID do usuário de conta de trabalho</translation>
+<translation id="2915068235268646559">Falha a partir de <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Fechar outros programas</translation>
 <translation id="2922350208395188000">O certificado do servidor não pode ser verificado.</translation>
 <translation id="2925673989565098301">Método de envio</translation>
@@ -446,6 +448,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2930577230479659665">Cortar depois de cada cópia</translation>
 <translation id="2934466151127459956">Government Letter</translation>
 <translation id="2941952326391522266">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança é de <ph name="DOMAIN2" />. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
+<translation id="2943895734390379394">Tempo de upload:</translation>
 <translation id="2948083400971632585">Na página "Configurações", você pode desativar quaisquer proxies configurados para uma conexão.</translation>
 <translation id="2951588413176968965">Minha caixa de e-mails</translation>
 <translation id="295526156371527179">Aviso: esta política não foi mesclada como um dicionário conforme especificado porque ela não é um dicionário.</translation>
@@ -1078,6 +1081,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="563324245173044180">Conteúdo enganoso bloqueado.</translation>
 <translation id="5644090287519800334">Mudança X no lado 1 da imagem</translation>
 <translation id="5645854190134202180">Segundo turno</translation>
+<translation id="5654927323611874862">Código do relatório de falha enviado:</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">O administrador do dispositivo instalou extensões para funções adicionais. As extensões têm acesso a alguns dos seus dados.</translation>
@@ -1385,6 +1389,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="7079718277001814089">Este site contém malware</translation>
 <translation id="7081308185095828845">Esse recurso não está disponível no seu dispositivo</translation>
 <translation id="7083258188081898530">Bandeja 9</translation>
+<translation id="7086090958708083563">Upload solicitado pelo usuário</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Pesquise <ph name="LINK" /> no Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -1547,6 +1552,7 @@ Mais detalhes:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Ir para <ph name="SITE" /> (não seguro)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
 <translation id="7716147886133743102">Bloqueada pelo administrador</translation>
+<translation id="7716375162095500223">Ainda não enviado ou ignorado</translation>
 <translation id="7716424297397655342">Não é possível carregar este site a partir do cache</translation>
 <translation id="7723047071702270851">Edite o Cartão</translation>
 <translation id="7740996059027112821">Padrão</translation>
@@ -1691,6 +1697,7 @@ Mais detalhes:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se você entende os riscos para sua segurança, pode <ph name="BEGIN_LINK" />visitar este site<ph name="END_LINK" /> antes de os programas nocivos serem removidos.</translation>
 <translation id="8349305172487531364">Barra de favoritos</translation>
+<translation id="8355270400102541638">Contexto de falha local:</translation>
 <translation id="8363502534493474904">Desativar o modo avião</translation>
 <translation id="8364627913115013041">Não definida.</translation>
 <translation id="8368476060205742148">Serviços do Google Play</translation>
@@ -1711,6 +1718,7 @@ Mais detalhes:
 <translation id="8461694314515752532">Criptografar dados sincronizados com sua senha de sincronização</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}one{# cartão de crédito}other{# cartões de crédito}}</translation>
 <translation id="8473863474539038330">Endereços e mais</translation>
+<translation id="8474910779563686872">Mostrar detalhes do desenvolvedor</translation>
 <translation id="8479754468255770962">Grampo na parte inferior esquerda</translation>
 <translation id="8483780878231876732">Para usar os cards da sua Conta do Google, faça login no Google Chrome</translation>
 <translation id="8488350697529856933">Aplicável a</translation>
@@ -1838,6 +1846,7 @@ Mais detalhes:
 incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chromium interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="9106062320799175032">Adicione um Endereço de Faturamento</translation>
 <translation id="9114524666733003316">Confirmando cartão…</translation>
+<translation id="9119042192571987207">Enviado</translation>
 <translation id="9128870381267983090">Conectar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9141013498910525015">Gerenciar endereços</translation>

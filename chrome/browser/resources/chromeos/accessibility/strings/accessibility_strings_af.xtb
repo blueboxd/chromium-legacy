@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1206619573307042055">markies</translation>
 <translation id="1207086294218137981">Geen volgende vlak 4-opskrif nie</translation>
+<translation id="1212770441379271564">Die volgende paar kortpaaie is nie ChromeVox-bevele nie, maar hulle is steeds baie nuttig om die meeste voordeel uit Chrome te kry.
+    Druk die Tab-sleutel om vorentoe deur optree-items, soos knoppies en skakels, te navigeer. Druk Shift+Tab om agtertoe te navigeer.
+    Druk Control+L om na die Chrome-blaaieradreskassie, ook die omniboks genoem, te gaan.
+    Druk Control+T om 'n nuwe oortjie oop te maak en outomaties daarheen te gaan. Jou merker sal in die omniboks wees.
+    Druk Control+W om 'n oortjie toe te maak. 
+    Gebruik Control+Tab om vorentoe tussen oortjies te beweeg.
+    Druk Alt+F om die Chrome-blaaierkieslys oop te maak.</translation>
 <translation id="1213216066620407844">ChromeVox – Gee Chrome 'n stem</translation>
 <translation id="1225969361094801578">Donker leigrys</translation>
 <translation id="1229276918471378188">Vorige sprong</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">kleurkieser</translation>
 <translation id="4221012616705981690">Geen vorige lys nie</translation>
 <translation id="4221071177874897997">Dui vetdruk aan:</translation>
+<translation id="4225355998815256469">Vormkontroles</translation>
 <translation id="4229646983878045487">datum tyd</translation>
 <translation id="4230834257931120629">Ligte leigrys</translation>
 <translation id="4231102694147661229">Aktiveer ontwikkelaaropsies</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Sin</translation>
 <translation id="4623097797855662355">Eindtitel</translation>
 <translation id="463135993322337640">Druk ChromeVox o, n om uit te vind wat nuut is</translation>
+<translation id="4646606380313237501">{"ar": "Arabies",
+    "as": "Assamees",
+    "aw": "Awadhi",
+    "be": "Bengaals",
+    "bg": "Bulgaars",
+    "bh": "Bihari",
+    "bo": "Tibettaans",
+    "br": "Braj",
+    "ca": "Katalaans",
+    "ckb": "Sorani",
+    "cs": "Tsjeggies",
+    "cy": "Wallies",
+    "da": "Deens",
+    "de": "Duits",
+    "de_CH": "Duits (Switserland)",
+    "de_DE": "Duits (Duitsland)",
+    "dra": "Dravidies",
+    "el": "Grieks",
+    "en": "Engels",
+    "en_CA": "Engels (Kanada)",
+    "en_GB": "Engels (Verenigde Koninkryk)",
+    "en_US": "Engels (Verenigste State)",
+    "eo": "Esperanto",
+    "es": "Spaans",
+    "et": "Esties",
+    "fa": "Persies",
+    "fr": "Frans",
+    "fr_CA": "Frans (Kanada)",
+    "fr_FR": "Frans (Frankryk)",
+    "fi": "Fins",
+    "ga": "Iers",
+    "gd": "Gaelies",
+    "gon": "Gondi",
+    "gu": "Goedjarati",
+    "he": "Hebreeus",
+    "hi": "Hindi",
+    "hr": "Kroaties",
+    "hu": "Hongaars",
+    "hy": "Armeens",
+    "is": "Yslands",
+    "it": "Italiaans",
+    "iu": "Inoektitoet",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Koreaans",
+    "kok": "Konkani",
+    "kru": "Koeroekh",
+    "ks": "Kasjmiri",
+    "lt": "Litaus",
+    "lv": "Letties",
+    "mao": "Maori",
+    "ml": "Malabaars",
+    "mt": "Maltees",
+    "mwr": "Marwari",
+    "mn": "Mongools",
+    "mun": "Moenda",
+    "nb": "Noorse Bokmål",
+    "ne": "Nepalees",
+    "nl": "Nederlands",
+    "no": "Noors",
+    "or": "Oria",
+    "pi": "Pali",
+    "pl": "Pools",
+    "pt": "Portugees",
+    "pu": "Pandjabi",
+    "ro": "Roemeens",
+    "ru": "Russies",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Singalees",
+    "sk": "Slowaaks",
+    "sl": "Sloweens",
+    "sr": "Serwies",
+    "sv": "Sweeds",
+    "ta": "Tamil",
+    "te": "Teloegoe",
+    "tr": "Turks",
+    "tsn": "Afrikaans",
+    "uk": "Oekraïns",
+    "ur": "Oerdoe",
+    "vi": "Viëtnamees",
+    "zh": "Sjinees",
+    "zh_TW": "Sjinees (Tradisionele Han)"}</translation>
 <translation id="4647836961514597010">Kleurkieser</translation>
 <translation id="4660783501463101648">Klassiek is verwyder. Die sleutelbord se wipsleutel om na ChromeVox Classic terug te skakel, is verwyder.</translation>
 <translation id="4661075872484491155">boom</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Taaimodus geaktiveer</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# kommas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekskassie</translation>
+<translation id="532485153932049746">Teksformatering
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, skakel</translation>
 <translation id="5331522683003474486">Beheer die toestel met net 1 of 2 skakelaars.</translation>
 <translation id="5336381510091010269">outo-inlyn+lys</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">'n Modale opletberig</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{kommapunt}other{# kommapunte}}</translation>
+<translation id="5420259671171615858">Deursoek die kieslyste</translation>
 <translation id="5435274640623994081">Aktiveer oorikoonloginskrywings</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{minder as}other{# minder as-tekens}}</translation>
 <translation id="5444587279251314700">(aktief)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Spelfout bespeur</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">terugkeer</translation>
+<translation id="7429415133937917139">Simuleer die lewering van 'n herlaaibare brailleskerm
+    in die ChromeVox-paneel aan die bokant van die skerm</translation>
 <translation id="7434509671034404296">Ontwikkelaar</translation>
 <translation id="743783356331413498">Voorbeeld</translation>
 <translation id="7439060726180460871">Gids</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Vorige radioknoppie</translation>
 <translation id="7701196182766842984">outolys</translation>
 <translation id="7714340021005120797">Geen volgende kombinasiekassie nie</translation>
+<translation id="772146615414628379">Geluk! Jy het die noodsaaklike dinge geleer om ChromeVox suksesvol te kan gebruik. Onthou dat jy op enige tydstip Search+Punt kan druk om die ChromeVox-bevelkieslys oop te maak. Lees die volgende artikels om selfs nog meer oor ChromeVox en Chrome-bedryfstelsel te wete te kom.
+    Gebruik ChromeVox om na die Maak Toe-knoppie toe te gaan en klik dit as jy klaar is met die tutoriaal.</translation>
 <translation id="7724603315864178912">Knip</translation>
 <translation id="7731785449856576010">Geen volgende medialegstuk nie</translation>
 <translation id="773906353055481349">Druk Search+Ctrl+Alt met pyle om volgens sel te navigeer</translation>

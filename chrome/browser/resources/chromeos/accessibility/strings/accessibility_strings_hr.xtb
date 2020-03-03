@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1206619573307042055">pomični tekst</translation>
 <translation id="1207086294218137981">Nema sljedećeg naslova 4. razine</translation>
+<translation id="1212770441379271564">Sljedećih nekoliko prečaca nisu naredbe ChromeVoxa, ali su također vrlo korisni za iskorištavanje svih mogućnosti Chromea.
+    Za kretanje unaprijed po stavkama koje omogućuju radnju, kao što su gumbi i veze, pritišćite tipku Tab. Za pomicanje unatrag pritišćite tipke Shift i Tab.
+    Za ulazak u adresni okvir preglednika Chrome, odnosno višenamjenski okvir, pritisnite tipke Control i L.
+    Za otvaranje nove kartice i automatski prelazak na nju pritisnite tipke Control i T. Pokazivač će biti u višenamjenskom okviru.
+    Da biste zatvorili karticu, pritisnite tipke Control i W.
+    Za pomicanje unaprijed kroz otvorene kartice koristite tipke Control i Tab.
+    Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation>
 <translation id="1213216066620407844">ChromeVox – daje Chromeu glas</translation>
 <translation id="1225969361094801578">Tamna plavosiva</translation>
 <translation id="1229276918471378188">Prethodni skok</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">odabir boja</translation>
 <translation id="4221012616705981690">Nema prethodnog popisa</translation>
 <translation id="4221071177874897997">Naznači podebljano:</translation>
+<translation id="4225355998815256469">Kontrole obrasca</translation>
 <translation id="4229646983878045487">datum vrijeme</translation>
 <translation id="4230834257931120629">Svijetla sivoplava</translation>
 <translation id="4231102694147661229">Omogući opcije za razvojne programere</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Rečenica</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Pritisnite ChromeVox "O", "N" da biste saznali novosti</translation>
+<translation id="4646606380313237501">{"ar": "arapski",
+    "as": "asamski",
+    "aw": "awadhi",
+    "be": "bengalski",
+    "bg": "bugarski",
+    "bh": "biharski",
+    "bo": "tibetski",
+    "br": "braj",
+    "ca": "katalonski",
+    "ckb": "soranski",
+    "cs": "češki",
+    "cy": "velški",
+    "da": "danski",
+    "de": "njemački",
+    "de_CH": "njemački (Švicarska)",
+    "de_DE": "njemački (Njemačka)",
+    "dra": "dravidski",
+    "el": "grčki",
+    "en": "engleski",
+    "en_CA": "engleski (Kanada)",
+    "en_GB": "engleski (Ujedinjeno Kraljevstvo)",
+    "en_US": "engleski (Sjedinjene Američke Države)",
+    "eo": "esperanto",
+    "es": "španjolski",
+    "et": "estonski",
+    "fa": "perzijski",
+    "fr": "francuski",
+    "fr_CA": "francuski (Kanada)",
+    "fr_FR": "francuski (Francuska)",
+    "fi": "finski",
+    "ga": "irski",
+    "gd": "škotski gaelski",
+    "gon": "gondi",
+    "gu": "gudžaratski",
+    "he": "hebrejski",
+    "hi": "hindski",
+    "hr": "hrvatski",
+    "hu": "mađarski",
+    "hy": "armenski",
+    "is": "islandski",
+    "it": "talijanski",
+    "iu": "inuitski",
+    "ka": "karnatački",
+    "kh": "khasi",
+    "ko": "korejski",
+    "kok": "konkanski",
+    "kru": "kuruški",
+    "ks": "kašmirski",
+    "lt": "litavski",
+    "lv": "latvijski",
+    "mao": "maorski",
+    "ml": "malajalamski",
+    "mt": "malteški",
+    "mwr": "marwari",
+    "mn": "mongolski",
+    "mun": "mundski",
+    "nb": "norveški bokmål",
+    "ne": "nepalski",
+    "nl": "nizozemski",
+    "no": "norveški",
+    "or": "orijski",
+    "pi": "pali",
+    "pl": "poljski",
+    "pt": "portugalski",
+    "pu": "pandžapski",
+    "ro": "rumunjski",
+    "ru": "ruski",
+    "sa": "sanskrt",
+    "si": "sindhski",
+    "sin": "singalski",
+    "sk": "slovački",
+    "sl": "slovenski",
+    "sr": "srpski",
+    "sv": "švedski",
+    "ta": "tamilski",
+    "te": "teluški",
+    "tr": "turski",
+    "tsn": "afrikaans",
+    "uk": "ukrajinski",
+    "ur": "urdski",
+    "vi": "vijetnamski",
+    "zh": "kineski",
+    "zh_TW": "kineski (tradicionalni han)"}</translation>
 <translation id="4647836961514597010">Odabir boja</translation>
 <translation id="4660783501463101648">Verzija Classic je uklonjena. Uklonjen je prekidač tipkovnice za vraćanje na ChromeVox Classic.</translation>
 <translation id="4661075872484491155">stablo</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Ljepljiv način omogućen</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{zarez}one{# zarez}few{# zareza}other{# zareza}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstualni okvir</translation>
+<translation id="532485153932049746">Oblikovanje teksta
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, veza</translation>
 <translation id="5331522683003474486">Kontrolirajte uređaj samo jednim ili dvama prekidačima.</translation>
 <translation id="5336381510091010269">autougr+pop</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Brajica</translation>
 <translation id="5402791055281059602">Modalno upozorenje</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{točka sa zarezom}one{# točka sa zarezom}few{# točke sa zarezom}other{# točaka sa zarezom}}</translation>
+<translation id="5420259671171615858">Pretražite izbornike</translation>
 <translation id="5435274640623994081">Omogući zapisnik zvučnih ikona</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak "manje od"}one{# znak "manje od"}few{# znaka "manje od"}other{# znakova "manje od"}}</translation>
 <translation id="5444587279251314700">(aktivno)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Otkrivena pravopisna pogreška</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">natrag</translation>
+<translation id="7429415133937917139">Simulira izlaz brajevog retka s osvježavanjem
+        na ChromeVoxovoj ploči pri vrhu zaslona</translation>
 <translation id="7434509671034404296">Razvojni programer</translation>
 <translation id="743783356331413498">Primjer</translation>
 <translation id="7439060726180460871">Direktorij</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Prethodni izborni gumb</translation>
 <translation id="7701196182766842984">autopop</translation>
 <translation id="7714340021005120797">Nema sljedećeg kombiniranog okvira</translation>
+<translation id="772146615414628379">Čestitamo! Saznali ste osnove potrebne za uspješnu upotrebu ChromeVoxa. Zapamtite da ChromeVoxov izbornik za naredbe možete otvoriti u bilo kojem trenutku tako što ćete pritisnuti tipku za pretraživanje i tipku za točku. Još više o ChromeVoxu i OS-u Chrome možete saznati u sljedećim člancima.
+    Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknite ga.</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Nema sljedećeg widgeta medija</translation>
 <translation id="773906353055481349">Za kretanje od ćelije do ćelije pritisnite tipku za pretraživanje + Ctrl + Alt i strelice</translation>

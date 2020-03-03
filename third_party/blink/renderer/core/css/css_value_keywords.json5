@@ -1209,10 +1209,8 @@
     // none
     "back-button",
 
-    // render-subtree
-    "invisible",
-    "skip-activation",
-    "skip-viewport-activation",
+    // subtree-visibility
+    "hidden-matchable",
 
     // -internal-empty-line-height
     // none

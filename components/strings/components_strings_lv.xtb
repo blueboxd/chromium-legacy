@@ -316,6 +316,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2289385804009217824">Apgriešana</translation>
 <translation id="2292556288342944218">Piekļuve internetam ir bloķēta</translation>
 <translation id="2297722699537546652">B5 (aploksne)</translation>
+<translation id="2300306941146563769">Nav augšupielādēts</translation>
 <translation id="2310021320168182093">Chou2 (aploksne)</translation>
 <translation id="2315864634253056100">Šīs vietnes nosaukums izskatās līdzīgs vietnei <ph name="LOOKALIKE_DOMAIN" />. Uzbrucēji dažkārt atdarina vietnes, veicot grūti pamanāmas izmaiņas tīmekļa adresē.</translation>
 <translation id="2316887270356262533">Tiks atbrīvots mazāk nekā 1 MB. Dažas vietnes nākamajā apmeklējumā var ielādēt lēnāk.</translation>
@@ -442,6 +443,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2909946352844186028">Konstatētas tīkla izmaiņas.</translation>
 <translation id="2910133103376701357">Jūsu ierīci un kontu pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Uzdevuma konta lietotāja ID</translation>
+<translation id="2915068235268646559">Avārija no: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Aizveriet citas programmas</translation>
 <translation id="2922350208395188000">Servera sertifikātu nevar pārbaudīt.</translation>
 <translation id="2925673989565098301">Piegādes veids</translation>
@@ -450,6 +452,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2930577230479659665">Apgriešana pēc katras kopijas</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts ir saistīts ar domēnu <ph name="DOMAIN2" />. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
+<translation id="2943895734390379394">Augšupielādes laiks:</translation>
 <translation id="2948083400971632585">Iestatījumu lapā varat atspējot jebkurus starpniekserverus, kas konfigurēti savienojuma izveidei.</translation>
 <translation id="2951588413176968965">Mana pastkaste</translation>
 <translation id="295526156371527179">Brīdinājums! Šī politika netika apvienota kā vārdnīca atbilstoši politikā noteiktajam, jo tā nav vārdnīca.</translation>
@@ -1082,6 +1085,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="563324245173044180">Bloķēts maldinošs saturs</translation>
 <translation id="5644090287519800334">1. puses attēla nobīde uz X ass</translation>
 <translation id="5645854190134202180">Otrā maiņa</translation>
+<translation id="5654927323611874862">Augšupielādētā avārijas pārskata ID:</translation>
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5663614846592581799">9x11 (aploksne)</translation>
 <translation id="5663955426505430495">Šīs ierīces administrators ir instalējis paplašinājumus papildu funkcijām. Paplašinājumiem ir piekļuve dažiem jūsu datiem.</translation>
@@ -1389,6 +1393,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="7079718277001814089">Šī vietne satur ļaunprātīgu programmatūru</translation>
 <translation id="7081308185095828845">Šī funkcija jūsu ierīcē nav pieejama</translation>
 <translation id="7083258188081898530">9. paplāte</translation>
+<translation id="7086090958708083563">Augšupielādi pieprasīja lietotājs.</translation>
 <translation id="7087282848513945231">Grāfiste</translation>
 <translation id="7090678807593890770">Veiciet Google meklēšanu, izmantojot vaicājumu “<ph name="LINK" />”</translation>
 <translation id="7108338896283013870">Slēpt</translation>
@@ -1551,6 +1556,7 @@ Papildu informācija:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Apmeklēt vietni <ph name="SITE" /> (nav droša)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikāts</translation>
 <translation id="7716147886133743102">Bloķēja jūsu administrators</translation>
+<translation id="7716375162095500223">Vēl neaugšupielādēts vai ignorēts</translation>
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
 <translation id="7723047071702270851">Kartes informācijas rediģēšana</translation>
 <translation id="7740996059027112821">Standarta</translation>
@@ -1695,6 +1701,7 @@ Papildu informācija:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ja apzināties drošības risku, varat arī <ph name="BEGIN_LINK" />apmeklēt šo vietni<ph name="END_LINK" />, pirms ir noņemtas kaitīgās programmas.</translation>
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
+<translation id="8355270400102541638">Lokālais avārijas konteksts:</translation>
 <translation id="8363502534493474904">Izslēdziet lidojuma režīmu.</translation>
 <translation id="8364627913115013041">Nav iestatīta.</translation>
 <translation id="8368476060205742148">Google Play pakalpojumi</translation>
@@ -1715,6 +1722,7 @@ Papildu informācija:
 <translation id="8461694314515752532">Šifrējiet sinhronizētos datus, izmantojot savu sinhronizācijas ieejas frāzi</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredītkarte}zero{# kredītkartes}one{# kredītkarte}other{# kredītkartes}}</translation>
 <translation id="8473863474539038330">Adreses un citus datus</translation>
+<translation id="8474910779563686872">Skatīt informāciju par izstrādātāju</translation>
 <translation id="8479754468255770962">Skavojums apakšējā kreisajā malā</translation>
 <translation id="8483780878231876732">Lai izmantotu kartes no sava Google konta, pierakstieties pārlūkā Chrome!</translation>
 <translation id="8488350697529856933">Attiecas uz</translation>
@@ -1841,6 +1849,7 @@ Papildu informācija:
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>
 <translation id="9114524666733003316">Notiek kartes apstiprināšana...</translation>
+<translation id="9119042192571987207">Augšupielādēts</translation>
 <translation id="9128870381267983090">Izveidot savienojumu ar tīklu</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9141013498910525015">Pārvaldīt adreses</translation>

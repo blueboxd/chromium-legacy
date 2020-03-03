@@ -9,7 +9,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,18 +29,15 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DelayedScreenLockIntentHandlerTest {
-    @Mock
-    private Context mApplicationContextMock;
-    @Mock
-    private Activity mActivityMock;
+    @Mock private Context mContextMock;
 
     private DelayedScreenLockIntentHandler mIntentHandler;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mIntentHandler = new DelayedScreenLockIntentHandler(mActivityMock);
-        ContextUtils.initApplicationContextForTests(mApplicationContextMock);
+        mIntentHandler = new DelayedScreenLockIntentHandler();
+        ContextUtils.initApplicationContextForTests(mContextMock);
     }
 
     @Test
@@ -50,12 +46,11 @@ public class DelayedScreenLockIntentHandlerTest {
         final Intent intent = new Intent(Intent.ACTION_USER_PRESENT);
 
         mIntentHandler.updateDeferredIntent(deferredIntent);
-        mIntentHandler.onReceive(null, intent);
+        mIntentHandler.onReceive(mContextMock, intent);
 
-        verify(mApplicationContextMock)
-                .registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
-        verify(mActivityMock).startActivity(deferredIntent);
-        verify(mApplicationContextMock).unregisterReceiver(mIntentHandler);
+        verify(mContextMock).registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
+        verify(mContextMock).startActivity(deferredIntent);
+        verify(mContextMock).unregisterReceiver(mIntentHandler);
     }
 
     @Test
@@ -64,13 +59,12 @@ public class DelayedScreenLockIntentHandlerTest {
         final Intent intent = new Intent(Intent.ACTION_USER_PRESENT);
 
         mIntentHandler.updateDeferredIntent(deferredIntent);
-        mIntentHandler.onReceive(null, intent);
-        mIntentHandler.onReceive(null, intent);
+        mIntentHandler.onReceive(mContextMock, intent);
+        mIntentHandler.onReceive(mContextMock, intent);
 
-        verify(mApplicationContextMock)
-                .registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
-        verify(mActivityMock).startActivity(deferredIntent);
-        verify(mApplicationContextMock).unregisterReceiver(mIntentHandler);
+        verify(mContextMock).registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
+        verify(mContextMock).startActivity(deferredIntent);
+        verify(mContextMock).unregisterReceiver(mIntentHandler);
     }
 
     @Test
@@ -81,26 +75,24 @@ public class DelayedScreenLockIntentHandlerTest {
 
         mIntentHandler.updateDeferredIntent(deferredIntent1);
         mIntentHandler.updateDeferredIntent(deferredIntent2);
-        mIntentHandler.onReceive(null, intent);
+        mIntentHandler.onReceive(mContextMock, intent);
 
-        verify(mApplicationContextMock)
-                .registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
-        verify(mActivityMock).startActivity(deferredIntent2);
-        verify(mApplicationContextMock).unregisterReceiver(mIntentHandler);
+        verify(mContextMock).registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
+        verify(mContextMock).startActivity(deferredIntent2);
+        verify(mContextMock).unregisterReceiver(mIntentHandler);
     }
 
     @Test
     public void testNonExpectedIntentAction() {
         mIntentHandler.updateDeferredIntent(new Intent());
         try {
-            mIntentHandler.onReceive(null, new Intent());
+            mIntentHandler.onReceive(mContextMock, new Intent());
         } catch (AssertionError assertError) {
             // Ignore AssertErrors
         }
 
-        verify(mApplicationContextMock)
-                .registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
-        verify(mActivityMock, never()).startActivity(any(Intent.class));
-        verify(mApplicationContextMock, never()).unregisterReceiver(mIntentHandler);
+        verify(mContextMock).registerReceiver(eq(mIntentHandler), any(IntentFilter.class));
+        verify(mContextMock, never()).startActivity(any(Intent.class));
+        verify(mContextMock, never()).unregisterReceiver(mIntentHandler);
     }
 }

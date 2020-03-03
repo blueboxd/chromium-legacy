@@ -316,6 +316,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2289385804009217824">Kärbi</translation>
 <translation id="2292556288342944218">Teie juurdepääs Internetile on blokeeritud</translation>
 <translation id="2297722699537546652">B5 (ümbrik)</translation>
+<translation id="2300306941146563769">Üles laadimata</translation>
 <translation id="2310021320168182093">Chou2 (ümbrik)</translation>
 <translation id="2315864634253056100">Saidi nimi sarnaneb domeenile <ph name="LOOKALIKE_DOMAIN" />. Ründajad imiteerivad mõnikord saite, tehes veebiaadressis väikeseid raskesti märgatavaid muudatusi.</translation>
 <translation id="2316887270356262533">Vabastab alla 1 MB. Mõne saidi laadimine võib järgmisel külastusel rohkem aega võtta.</translation>
@@ -444,6 +445,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2909946352844186028">Tuvastati võrgumuudatus.</translation>
 <translation id="2910133103376701357">Teie seadet ja kontot haldab <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Kasutaja ID tööde arvestuse jaoks</translation>
+<translation id="2915068235268646559">Kokkujooksmine – <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Sulgege muud programmid</translation>
 <translation id="2922350208395188000">Serveri sertifikaati ei saa kontrollida.</translation>
 <translation id="2925673989565098301">Kohaletoimetamisviis</translation>
@@ -452,6 +454,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2930577230479659665">Kärbi pärast iga koopiat</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaati pärineb domeenilt <ph name="DOMAIN2" />. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
+<translation id="2943895734390379394">Üleslaadimise aeg:</translation>
 <translation id="2948083400971632585">Seadete lehel saate keelata kõik ühenduse jaoks konfigureeritud puhverserverid.</translation>
 <translation id="2951588413176968965">Minu postkast</translation>
 <translation id="295526156371527179">Hoiatus! Seda reeglit ei liidetud reeglis määratud sõnastikuna, kuna see ei ole sõnastik.</translation>
@@ -1085,6 +1088,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="563324245173044180">Petlik sisu blokeeriti.</translation>
 <translation id="5644090287519800334">Pildi nihe X-teljel 1. poolel</translation>
 <translation id="5645854190134202180">Teine vahetus</translation>
+<translation id="5654927323611874862">Üleslaaditud krahhiaruande ID:</translation>
 <translation id="5659593005791499971">Meil</translation>
 <translation id="5663614846592581799">9x11 (ümbrik)</translation>
 <translation id="5663955426505430495">Seadme administraator on installinud laiendused, mis hõlmavad lisafunktsioone. Laiendustel on juurdepääs teie mõningatele andmetele.</translation>
@@ -1392,6 +1396,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="7079718277001814089">See sait sisaldab pahavara</translation>
 <translation id="7081308185095828845">See funktsioon pole teie seadmes saadaval</translation>
 <translation id="7083258188081898530">Salv 9</translation>
+<translation id="7086090958708083563">Kasutaja taotles üleslaadimist</translation>
 <translation id="7087282848513945231">Maakond</translation>
 <translation id="7090678807593890770">Sisestage Google'isse otsing <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Peida</translation>
@@ -1554,6 +1559,7 @@ Lisateave:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Edasiliikumine saidile <ph name="SITE" /> (ebaturvaline)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikaat</translation>
 <translation id="7716147886133743102">Blokeeris administraator</translation>
+<translation id="7716375162095500223">Pole veel üles laaditud või eiratakse</translation>
 <translation id="7716424297397655342">Seda saiti ei saa vahemälust laadida</translation>
 <translation id="7723047071702270851">Kaardi muutmine</translation>
 <translation id="7740996059027112821">Tavapärane</translation>
@@ -1698,6 +1704,7 @@ Lisateave:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda saiti külastada<ph name="END_LINK" /> enne, kui kahjulikud programmid on eemaldatud.</translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
+<translation id="8355270400102541638">Kohaliku kokkujooksmise kontekst:</translation>
 <translation id="8363502534493474904">Lülitage lennurežiim välja</translation>
 <translation id="8364627913115013041">Määramata.</translation>
 <translation id="8368476060205742148">Google Play teenused</translation>
@@ -1718,6 +1725,7 @@ Lisateave:
 <translation id="8461694314515752532">Krüpteeri sünkroonitud andmed sünkroonimisparooliga</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 krediitkaart}other{# krediitkaarti}}</translation>
 <translation id="8473863474539038330">Aadressid ja muu</translation>
+<translation id="8474910779563686872">Kuva arendaja üksikasjad</translation>
 <translation id="8479754468255770962">Kirjaklamber vasakul all</translation>
 <translation id="8483780878231876732">Google'i konto kaartide kasutamiseks logige sisse Chrome'i</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
@@ -1843,6 +1851,7 @@ Lisateave:
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>
 <translation id="9114524666733003316">Kaardi kinnitamine …</translation>
+<translation id="9119042192571987207">Üles laaditud</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9141013498910525015">Aadresside haldamine</translation>

@@ -208,12 +208,9 @@
 
 // Sets the location bar up.
 - (void)setUpLocationBar {
-  self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
-
-  self.locationBarCoordinator.browser = self.browser;
-  self.locationBarCoordinator.dispatcher = self.browser->GetCommandDispatcher();
-  self.locationBarCoordinator.commandDispatcher =
-      self.browser->GetCommandDispatcher();
+  self.locationBarCoordinator =
+      [[LocationBarCoordinator alloc] initWithBaseViewController:nil
+                                                         browser:self.browser];
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.popupPresenterDelegate =
       self.popupPresenterDelegate;

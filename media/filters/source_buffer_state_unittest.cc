@@ -99,7 +99,7 @@ class SourceBufferStateTest : public ::testing::Test {
     // These tests are not expected to issue any parse warnings.
     EXPECT_CALL(*this, OnParseWarningMock(_)).Times(0);
 
-    sbs->SetParseWarningCallback(base::Bind(
+    sbs->SetParseWarningCallback(base::BindRepeating(
         &SourceBufferStateTest::OnParseWarningMock, base::Unretained(this)));
 
     return sbs;

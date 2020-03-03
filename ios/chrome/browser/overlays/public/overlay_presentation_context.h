@@ -14,7 +14,6 @@ class OverlayPresentationContextObserver;
 // Object that handles presenting the overlay UI for OverlayRequests.
 class OverlayPresentationContext {
  public:
-  OverlayPresentationContext() = default;
   virtual ~OverlayPresentationContext() = default;
 
   // Adds and removes |observer|.

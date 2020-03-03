@@ -2686,7 +2686,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4737715515457435632">Hãy kết nối với mạng</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4739639199548674512">Phiếu</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> và 1 trang khác}other{<ph name="PAGE_TITLE" /> và # trang khác}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Tìm hiểu cách cập nhật ứng dụng<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Bật âm thanh trang web}other{Bật âm thanh các trang web}}</translation>
 <translation id="4746351372139058112">Tin nhắn</translation>
@@ -5189,7 +5188,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8214489666383623925">Mở Tệp...</translation>
 <translation id="8214962590150211830">Xóa người này</translation>
 <translation id="8215295261562449873">Sao lưu ứng dụng và tệp của tôi vào thư mục Tệp đã tải xuống trước khi nâng cấp Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> và 1 trang khác}other{<ph name="PAGE_TITLE" /> và # trang khác}}</translation>
 <translation id="8217399928341212914">Tiếp tục chặn tự động tải nhiều tệp xuống</translation>
 <translation id="8218847192766059983">Thêm ngôn ngữ hoặc sắp xếp lại danh sách. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Bạn thường chặn các thông báo. Để cho phép trang web này thông báo cho bạn, hãy nhấp vào đây.</translation>
@@ -5400,6 +5398,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="851263357009351303">Luôn cho phép <ph name="HOST" /> hiển thị hình ảnh</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>
 <translation id="8514746246728959655">Thử một khóa bảo mật khác</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
 <translation id="8521475323816527629">Truy cập nhanh vào các ứng dụng của bạn</translation>
 <translation id="8523493869875972733">Lưu thay đổi</translation>
 <translation id="8523849605371521713">Được thêm bởi chính sách</translation>
@@ -5520,6 +5519,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8673383193459449849">Sự cố máy chủ</translation>
 <translation id="8675354002693747642">Khóa được chia sẻ trước</translation>
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
+<translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
 <translation id="8677212948402625567">Thu gọn tất cả...</translation>
 <translation id="8678648549315280022">Quản lý cài đặt tải xuống...</translation>
 <translation id="8678933587484842200">Bạn muốn ứng dụng này khởi động như thế nào?</translation>

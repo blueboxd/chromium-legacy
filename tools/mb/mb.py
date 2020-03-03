@@ -1310,6 +1310,7 @@ class MetaBuildWrapper(object):
                vals.get('cros_passthrough', False))
     is_mac = self.platform == 'darwin'
     is_msan = 'is_msan=true' in vals['gn_args']
+    is_ios = 'target_os="ios"' in vals['gn_args']
 
     err = ''
     for f in files:
@@ -1317,6 +1318,11 @@ class MetaBuildWrapper(object):
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
       if is_android:
+        break
+
+      # iOS has generated directories in gn data items.
+      # Skipping for iOS instead of listing all apps.
+      if is_ios:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of

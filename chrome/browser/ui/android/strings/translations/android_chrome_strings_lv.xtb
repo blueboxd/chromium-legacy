@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Dzēst vēsturi, sīkfailus, vietnes datus, kešatmiņu…</translation>
 <translation id="129382876167171263">Šeit tiek rādīti tīmekļa vietņu saglabātie faili</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
+<translation id="1303339473099049190">Nevar atrast meklēto paroli. Pārbaudiet pareizrakstību un mēģiniet vēlreiz.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> — nosūtīts no ierīces <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupēt cilnes</translation>
 <translation id="1327257854815634930">Navigācijas vēsture ir atvērta</translation>
@@ -323,6 +324,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="3350687908700087792">Aizvērt visas inkognito režīma cilnes</translation>
 <translation id="3353615205017136254">Vienkāršota lapa, ko nodrošina Google. Pieskarieties pogai “Ielādēt sākotnējo”, lai ielādētu sākotnējo lapu.</translation>
 <translation id="3367813778245106622">Lai sāktu sinhronizēšanu, pierakstieties vēlreiz</translation>
+<translation id="3373979091428520308">Lai kopīgotu šo lapu ar citu ierīci, otras ierīces Chrome iestatījumos ieslēdziet sinhronizāciju.</translation>
 <translation id="3374023511497244703">Jūsu grāmatzīmes, vēsture, paroles un citi Chrome dati vairs netiks sinhronizēti ar jūsu Google kontu</translation>
 <translation id="3384347053049321195">Kopīgot attēlu</translation>
 <translation id="3386292677130313581">Jautāt, pirms atļaut vietnēm uzzināt jūsu atrašanās vietu (ieteicams)</translation>
@@ -672,6 +674,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5956665950594638604">Atvērt Chrome palīdzības centru jaunā cilnē</translation>
 <translation id="5958275228015807058">Atrodiet savus failus un lapas sadaļā Lejupielādes</translation>
 <translation id="5962718611393537961">Pieskarties, lai sakļautu</translation>
+<translation id="5964805880140440652">Lai kopīgotu šo lapu citā ierīcē, Chrome iestatījumos ieslēdziet sinhronizāciju.</translation>
 <translation id="6000066717592683814">Arī turpmāk izmantot Google</translation>
 <translation id="6005538289190791541">Ieteiktā parole</translation>
 <translation id="6036057147555329831">Citi ICU</translation>

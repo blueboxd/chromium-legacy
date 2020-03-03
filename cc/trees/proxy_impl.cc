@@ -407,7 +407,7 @@ void ProxyImpl::RenewTreePriority() {
   const bool user_interaction_in_progress =
       host_impl_->pinch_gesture_active() ||
       host_impl_->page_scale_animation_active() ||
-      host_impl_->IsActivelyScrolling();
+      host_impl_->IsActivelyPrecisionScrolling();
 
   if (host_impl_->ukm_manager()) {
     host_impl_->ukm_manager()->SetUserInteractionInProgress(

@@ -37,6 +37,7 @@
 <translation id="1900795423379050516">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
       postavke preglednika Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Dopusti prijavu u Chrome</translation>
+<translation id="1983547493073464667">Chrome ne može provjeriti vaše zaporke</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2094919256425865063">Želite li ipak zatvoriti Chrome?</translation>
 <translation id="2120620239521071941">Time će se izbrisati sljedeći broj stavki s uređaja: <ph name="ITEMS_COUNT" />. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
@@ -52,15 +53,19 @@
 <translation id="2467438592969358367">Google Chrome želi izvesti vaše zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2534507159460261402">Google Pay (kopirano na Chrome)</translation>
+<translation id="2559627601176023786">Nema nijedne spremljene zaporke. Chrome može provjeriti vaše zaporke kad ih spremite na svoj Google račun.</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="2586406160782125153">Time će se izbrisati podaci o pregledavanju s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotip Chrome</translation>
+<translation id="261226884343006626">Chrome ne može provjeriti vaše zaporke. Pokušajte ponovo sutra.</translation>
+<translation id="2622559029861875898">Chrome ne može provjeriti ažuriranja. Provjerite internetsku vezu.</translation>
 <translation id="2644798301485385923">OS Chrome</translation>
 <translation id="2652691236519827073">Otvori vezu na novoj &amp;kartici Chromea</translation>
 <translation id="2665296953892887393">Pomognite nam poboljšati Google Chrome šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
 <translation id="2689103672227170538">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromea.</translation>
 <translation id="2765403129283291972">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
+<translation id="2775140325783767197">Chrome ne može provjeriti vaše zaporke. Provjerite internetsku vezu.</translation>
 <translation id="2799223571221894425">Pokreni ponovo</translation>
 <translation id="2847461019998147611">Prikaži Google Chrome na tom jeziku</translation>
 <translation id="2857540653560290388">Pokretanje Chromea...</translation>
@@ -76,6 +81,7 @@
 <translation id="3395323229510056640">Potraži pomoć za upotrebu OS-a Chrome</translation>
 <translation id="3396977131400919238">Došlo je do pogreške operacijskog sustava tijekom instalacije. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="3398288718845740432">Sakrij u izborniku Chromea</translation>
+<translation id="3434246496373299699">Chrome može provjeriti vaše zaporke kad se prijavite Google računom</translation>
 <translation id="3451115285585441894">Dodavanje u Chrome...</translation>
 <translation id="345171907106878721">Dodajte sebe kao korisnika Chromea</translation>
 <translation id="34857402635545079">Izbriši i podatke s Chromea (<ph name="URL" />)</translation>
@@ -91,6 +97,7 @@
 <translation id="386202838227397562">Zatvorite sve Google Chrome prozore i pokušajte ponovo.</translation>
 <translation id="3873044882194371212">Otvori vezu u ano&amp;nimnom prozoru Chromea</translation>
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
+<translation id="3943605108614542032">Vaš administrator upravlja Chromeovim ažuriranjima</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="4053720452172726777">Prilagodite Google Chrome i upravljajte njime</translation>
 <translation id="4143243756087420366">Ime i slika Chrome profila</translation>
@@ -102,7 +109,7 @@
 <translation id="4293420128516039005">Prijavite se da biste sinkronizirali i prilagodili Chrome na svim svojim uređajima</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
-<translation id="4335235004908507846">Chrome vam može pomoći da se bolje zaštitite od povrede podataka, loših proširenja i još mnogo toga</translation>
+<translation id="4335235004908507846">Chrome vam može pomoći da se bolje zaštitite od povrede podataka, zlonamjernih proširenja i još mnogo toga</translation>
 <translation id="4343195214584226067">Proširenje <ph name="EXTENSION_NAME" /> dodano je u Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">U tijeku je neka druga operacija na Google Chromeu. Pokušajte ponovo kasnije.</translation>
@@ -200,6 +207,7 @@
 <translation id="7808348361785373670">Ukloni iz Chromea...</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome ažuriran je</translation>
+<translation id="7888686278524752658">Chrome se nije ažurirao zbog pogreške. Riješite probleme s ažuriranjem i neuspjela ažuriranja Chromea.</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
 <translation id="7896673875602241923">Netko se prethodno prijavio u Chrome na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Izradite novog korisnika Chromea kako bi vaši podaci bili odvojeni.</translation>
 <translation id="7916016681687251387">OS Chrome nije mogao sinkronizirati vaše podatke. Ispravite to odmah.</translation>
@@ -230,6 +238,7 @@
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instaliranje na razini sustava. Pokušajte ponovno pokrenuti program za instalaciju kao administrator.</translation>
 <translation id="8914504000324227558">Ponovo pokrenite Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Dostupno je ažuriranje Chromea}=1{Dostupno je ažuriranje Chromea}one{Ažuriranje Chromea dostupno je # dana}few{Ažuriranje Chromea dostupno je # dana}other{Ažuriranje Chromea dostupno je # dana}}</translation>
+<translation id="9025321516765676895">Chrome ne može provjeriti vaše zaporke jer ih je previše</translation>
 <translation id="9026991721384951619">OS Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="9067395829937117663">Google Chrome zahtijeva Windows 7 ili noviju verziju.</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>

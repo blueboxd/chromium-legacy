@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Maak geskiedenis, webkoekies, werfdata, kas skoon …</translation>
 <translation id="129382876167171263">Lêers wat deur webwerwe gestoor is, verskyn hier</translation>
 <translation id="129553762522093515">Onlangs toegemaak</translation>
+<translation id="1303339473099049190">Kan nie daardie wagwoord kry nie. Gaan die spelling na en probeer weer.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Gestuur vanaf <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Groepeer oortjies</translation>
+<translation id="1311657260431405215">Hierdie QR-kode is nie 'n URL nie: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Navigasiegeskiedenis is oopgemaak</translation>
 <translation id="1331212799747679585">Chrome kan nie opdateer nie. Meer opsies</translation>
 <translation id="1332501820983677155">Google Chrome-kenmerkkortpaaie</translation>
@@ -323,6 +325,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="3350687908700087792">Maak alle incognito-oortjies toe</translation>
 <translation id="3353615205017136254">Ligte bladsy deur Google verskaf. Tik op die Laai Oorspronklike Bladsy-knoppie om die oorspronklike bladsy te laai.</translation>
 <translation id="3367813778245106622">Meld weer aan om sinkronisering te begin</translation>
+<translation id="3373979091428520308">Skakel sinkronisering in Chrome-instellings op 'n ander toestel aan om hierdie bladsy met die ander toestel te deel</translation>
 <translation id="3374023511497244703">Jou boekmerke, geskiedenis, wagwoorde en ander Chrome-data sal nie meer met jou Google-rekening gesinkroniseer word nie</translation>
 <translation id="3384347053049321195">Deel prent</translation>
 <translation id="3386292677130313581">Vra voordat werwe toegelaat word om jou ligging te ken (aanbeveel)</translation>
@@ -672,6 +675,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5956665950594638604">Maak die Chrome-hulpsentrum in 'n nuwe oortjie oop</translation>
 <translation id="5958275228015807058">Kry jou lêers en bladsye in Aflaaie</translation>
 <translation id="5962718611393537961">Tik om in te vou</translation>
+<translation id="5964805880140440652">Skakel sinkronisering in Chrome-instellings aan om hierdie bladsy met 'n ander toestel te deel</translation>
 <translation id="6000066717592683814">Hou Google</translation>
 <translation id="6005538289190791541">Voorgestelde wagwoord</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>

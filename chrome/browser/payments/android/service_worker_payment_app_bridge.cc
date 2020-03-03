@@ -467,6 +467,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
     const JavaParamRef<jstring>& jpayment_request_origin,
     const JavaParamRef<jobjectArray>& jmethod_data,
     const JavaParamRef<jobjectArray>& jmodifiers,
+    const JavaParamRef<jstring>& jcurrency,
     const JavaParamRef<jobject>& jcallback,
     const JavaParamRef<jobject>& japp) {
   content::WebContents* web_contents =
@@ -479,6 +480,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_FireCanMakePaymentEvent(
       GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
   event_data->method_data =
       ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data);
+  if (!jcurrency.is_null())
+    event_data->currency = ConvertJavaStringToUTF8(env, jcurrency);
 
   for (auto jmodifier : jmodifiers.ReadElements<jobject>()) {
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();

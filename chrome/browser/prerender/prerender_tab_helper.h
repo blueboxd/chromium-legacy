@@ -29,23 +29,13 @@ class PrerenderTabHelper
   ~PrerenderTabHelper() override;
 
   // content::WebContentsObserver implementation.
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DidRedirectNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-
-  // Called when the URL of the main frame changed, either when the load
-  // commits, or a redirect happens.
-  void MainFrameUrlDidChange(const GURL& url);
 
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
   base::TimeTicks swap_ticks() const { return swap_ticks_; }
-
-  Origin origin() const { return origin_; }
 
  private:
   explicit PrerenderTabHelper(content::WebContents* web_contents);
@@ -62,17 +52,8 @@ class PrerenderTabHelper
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
 
-  // The origin of the relevant prerender or ORIGIN_NONE if there is no
-  // prerender associated with the WebContents.
-  Origin origin_;
-
   // Record the most recent swap time.
   base::TimeTicks swap_ticks_;
-
-  // Current URL being loaded.
-  GURL url_;
-
-  base::WeakPtrFactory<PrerenderTabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

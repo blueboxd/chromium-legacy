@@ -426,7 +426,7 @@ class CORE_EXPORT DisplayLockContext final
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 
   // State that tracks whether we've been activated. Note that this is only
-  // valid for CSS version of render-subtree.
+  // valid for CSS version of subtree-visibility.
   bool css_is_activated_ = false;
 
   base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};

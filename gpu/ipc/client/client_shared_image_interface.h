@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace gpu {
 class SharedImageInterfaceProxy;
@@ -39,10 +40,12 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
   void Flush() override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(
       const Mailbox& mailbox) override;
-  Mailbox CreateSharedImage(viz::ResourceFormat format,
-                            const gfx::Size& size,
-                            const gfx::ColorSpace& color_space,
-                            uint32_t usage) override;
+  Mailbox CreateSharedImage(
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) override;
   Mailbox CreateSharedImage(viz::ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,

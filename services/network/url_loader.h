@@ -425,18 +425,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Will only be set for requests that have |obey_origin_policy| set.
   mojom::OriginPolicyManager* origin_policy_manager_;
 
-  // Whether ResourceRequest::isolated_world_origin was present and had a
-  // non-http/https scheme.  In //chrome-layer's terms, |true| indicates that
-  // the request was made by a content script of a Chrome extension.
+  // Stores ResourceRequest::isolated_world_origin.
   //
-  // Note that |is_for_non_http_isolated_world_| is unreliable (i.e. always
-  // |false|) when URLLoaderFactoryParams::ignore_isolated_world_origin may be
-  // |true| (e.g. when the CorbAllowlistAlsoAppliesToOorCors feature is
+  // Note that |isolated_world_origin_| is unreliable (i.e. always
+  // base::nullopt) when URLLoaderFactoryParams::ignore_isolated_world_origin
+  // may be |true| (e.g. when the CorbAllowlistAlsoAppliesToOorCors feature is
   // enabled).
   //
   // TODO(lukasza): https://crbug.com/920638: Remove
-  // |is_for_non_http_isolated_world_| once we gather enough UMA data.
-  const bool is_for_non_http_isolated_world_ = false;
+  // |isolated_world_origin_| once we gather enough UMA and Rappor data.
+  const base::Optional<url::Origin> isolated_world_origin_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

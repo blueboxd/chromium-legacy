@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
 <translation id="129382876167171263">Os arquivos salvos por sites são exibidos aqui</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
+<translation id="1303339473099049190">Não foi possível encontrar essa senha. Verifique a ortografia e tente novamente.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" />: enviado de <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Agrupar guias</translation>
+<translation id="1311657260431405215">Este código QR não é um URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">O histórico de navegação está aberto</translation>
 <translation id="1331212799747679585">Não é possível atualizar o Chrome. Mais opções</translation>
 <translation id="1332501820983677155">Atalhos de recursos do Google Chrome</translation>
@@ -323,6 +325,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
 <translation id="3353615205017136254">Página Lite exibida pelo Google. Toque no botão "Carregar original" para carregar a página original.</translation>
 <translation id="3367813778245106622">Faça login novamente para começar a sincronizar</translation>
+<translation id="3373979091428520308">Para compartilhar esta página com outro dispositivo, ative a sincronização nas configurações do Chrome no outro dispositivo</translation>
 <translation id="3374023511497244703">Seus favoritos, histórico, senhas e outros dados do Chrome não serão mais sincronizados com sua Conta do Google</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
 <translation id="3386292677130313581">Perguntar antes de permitir que sites saibam seu local (recomendado)</translation>
@@ -673,6 +676,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5956665950594638604">Abrir Central de Ajuda do Chrome em uma nova guia</translation>
 <translation id="5958275228015807058">Encontre seus arquivos e páginas em Downloads</translation>
 <translation id="5962718611393537961">Toque para recolher</translation>
+<translation id="5964805880140440652">Para compartilhar esta página com outro dispositivo, ative a sincronização nas configurações do Chrome</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
 <translation id="6005538289190791541">Senha sugerida</translation>
 <translation id="6036057147555329831">ICU extra</translation>

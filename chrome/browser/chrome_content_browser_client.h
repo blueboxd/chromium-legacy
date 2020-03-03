@@ -661,7 +661,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
                                  content::BrowserContext* browser_context);
-  virtual ui::NativeTheme* GetWebTheme() const;  // For testing.
+  virtual const ui::NativeTheme* GetWebTheme() const;  // For testing.
 
   // Used by subclasses (e.g. implemented by downstream embedders) to add
   // their own extra part objects.

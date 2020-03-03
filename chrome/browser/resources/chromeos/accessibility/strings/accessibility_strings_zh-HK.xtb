@@ -35,13 +35,13 @@
 <translation id="1201402288615127009">下一個</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">冇下一個第 4 級標題</translation>
-<translation id="1212770441379271564">以下這些快速鍵並非 ChromeVox 指令，但仍然很實用，可協助你善用 Chrome。
-    如要前往下一個操作項目 (例如按鈕和連結)，請按下 Tab 鍵；如要返回上一個操作項目，請按下 Shift+Tab 鍵。
-    如要進入 Chrome 瀏覽器的網址方塊 (又稱為網址列)，請按下 Control+L 鍵。
-    如要自動開啟並前往新分頁，請按下 Control+T 鍵 (游標會移至網址列)。
-    如要關閉分頁，請按下 Control+W 鍵。
-    如要移至下一個開啟的分頁，請使用 Control+Tab 鍵。
-    如要開啟 Chrome 瀏覽器選單，請按下 Alt+F 鍵。</translation>
+<translation id="1212770441379271564">以下這些快速鍵並非 ChromeVox 指令，但非常實用，可協助您善用 Chrome。
+    如要透過操作項目 (例如按鈕和連結) 向前導覽，請按 Tab 鍵；如要向後導覽，請按 Shift + Tab 鍵。
+    如要進入 Chrome 瀏覽器的網址方塊 (亦稱為網址列)，請按 Control + L 鍵。
+    如要自動開啟並前往新分頁，請按 Control + T 鍵 (游標會移至網址列)。
+    如要關閉分頁，請按 Control + W 鍵。
+    如要移至下一個開啟的分頁，請使用 Control + Tab 鍵。
+    如要開啟 Chrome 瀏覽器選單，請按 Alt + F 鍵。</translation>
 <translation id="1213216066620407844">ChromeVox：為 Chrome 提供語音朗讀功能</translation>
 <translation id="1225969361094801578">深岩灰色</translation>
 <translation id="1229276918471378188">上一個跳轉</translation>
@@ -497,7 +497,7 @@
 <translation id="421884353938374759">顏色挑選器</translation>
 <translation id="4221012616705981690">冇上一份清單</translation>
 <translation id="4221071177874897997">標示粗體：</translation>
-<translation id="4225355998815256469">表單控制項</translation>
+<translation id="4225355998815256469">表格控制項</translation>
 <translation id="4229646983878045487">日期時間</translation>
 <translation id="4230834257931120629">淺灰色</translation>
 <translation id="4231102694147661229">啟用開發人員選項</translation>
@@ -559,8 +559,8 @@
     "bg": "保加利亞文",
     "bh": "比哈爾文",
     "bo": "藏文",
-    "br": "布拉傑文",
-    "ca": "卡達隆尼亞文",
+    "br": "布拉杰文",
+    "ca": "加泰隆尼亞文",
     "ckb": "索拉尼文",
     "cs": "捷克文",
     "cy": "威爾斯文",
@@ -568,13 +568,13 @@
     "de": "德文",
     "de_CH": "德文 (瑞士)",
     "de_DE": "德文 (德國)",
-    "dra": "德拉維達文",
+    "dra": "達羅毗荼文",
     "el": "希臘文",
     "en": "英文",
     "en_CA": "英文 (加拿大)",
     "en_GB": "英文 (英國)",
     "en_US": "英文 (美國)",
-    "eo": "國際文",
+    "eo": "世界文",
     "es": "西班牙文",
     "et": "愛沙尼亞文",
     "fa": "波斯文",
@@ -584,16 +584,16 @@
     "fi": "芬蘭文",
     "ga": "愛爾蘭文",
     "gd": "蓋爾文",
-    "gon": "貢德文",
-    "gu": "古哈拉地文",
+    "gon": "共地文",
+    "gu": "古吉拉特文",
     "he": "希伯來文",
-    "hi": "北印度文",
-    "hr": "克羅埃西亞文",
+    "hi": "印度文",
+    "hr": "克羅地亞文",
     "hu": "匈牙利文",
     "hy": "亞美尼亞文",
     "is": "冰島文",
-    "it": "義大利文",
-    "iu": "伊努伊特文",
+    "it": "意大利文",
+    "iu": "因紐特文",
     "ka": "卡納達文",
     "kh": "卡西文",
     "ko": "韓文",
@@ -605,10 +605,10 @@
     "mao": "毛利文",
     "ml": "馬拉雅拉姆文",
     "mt": "馬耳他文",
-    "mwr": "馬瓦麗文",
+    "mwr": "馬爾瓦里文",
     "mn": "蒙古文",
     "mun": "蒙達文",
-    "nb": "挪威文 (巴克摩)",
+    "nb": "書面挪威文",
     "ne": "尼泊爾文",
     "nl": "荷蘭文",
     "no": "挪威文",
@@ -623,18 +623,18 @@
     "si": "信德文",
     "sin": "錫蘭文",
     "sk": "斯洛伐克文",
-    "sl": "斯洛維尼亞文",
+    "sl": "斯洛文尼亞文",
     "sr": "塞爾維亞文",
     "sv": "瑞典文",
     "ta": "泰米爾文",
     "te": "泰盧固文",
     "tr": "土耳其文",
-    "tsn": "布爾文 (非洲南部的荷蘭文)",
+    "tsn": "南非荷蘭文",
     "uk": "烏克蘭文",
     "ur": "烏都文",
     "vi": "越南文",
     "zh": "中文",
-    "zh_TW": "中文 (繁體)"}</translation>
+    "zh_TW": "中文 (繁體中文)"}</translation>
 <translation id="4647836961514597010">顏色挑選器</translation>
 <translation id="4660783501463101648">已移除傳統版。現在無法再透過鍵盤切換回 ChromeVox 傳統版。</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -1044,8 +1044,8 @@
 <translation id="7400575256015741911">偵測到拼字錯誤</translation>
 <translation id="7408482676469142474">表格</translation>
 <translation id="7425395583360211003">歸位鍵</translation>
-<translation id="7429415133937917139">在 ChromeVox 面板的畫面頂端
-        模擬可重新整理的點字顯示器輸出結果</translation>
+<translation id="7429415133937917139">在 ChromeVox 面板的畫面頂部
+    模擬展示可重新整理的點字顯示器輸出結果</translation>
 <translation id="7434509671034404296">開發人員</translation>
 <translation id="743783356331413498">例子</translation>
 <translation id="7439060726180460871">目錄</translation>
@@ -1084,8 +1084,8 @@
 <translation id="7693840228159394336">上一個圓形按鈕</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">冇下一個組合方塊</translation>
-<translation id="772146615414628379">恭喜！你已成功掌握 ChromeVox 的基本用法。提醒你，隨時按下搜尋鍵 + 英文句點鍵即可開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome 作業系統，請參閱下列文章。
-   如要結束教學課程，請使用 ChromeVox 找到 [關閉] 按鈕，按一下即可結束。</translation>
+<translation id="772146615414628379">恭喜！您已成功學到基本的 ChromeVox 使用方法。您隨時可以按 Search + 句號鍵開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome 作業系統，請參閱下列文章。
+    如要結束教學課程，請使用 ChromeVox 導覽並按一下 [關閉] 按鈕。</translation>
 <translation id="7724603315864178912">剪下</translation>
 <translation id="7731785449856576010">冇下一個媒體小工具</translation>
 <translation id="773906353055481349">按下 Search+Ctrl+Alt 鍵和箭咀鍵，即可按儲存格導覽</translation>

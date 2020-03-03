@@ -41,6 +41,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="1900795423379050516">Ef stilling sést ekki á þessari síðu skaltu athuga <ph name="LINK_BEGIN" />
       stillingar Chrome vafrans<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Leyfa innskráningu í Chrome</translation>
+<translation id="1983547493073464667">Chrome getur ekki athugað aðgangsorðin þín</translation>
 <translation id="2063848847527508675">Endurræsa þarf Chrome OS til að nota uppfærsluna.</translation>
 <translation id="2094919256425865063">Viltu samt loka Chrome?</translation>
 <translation id="2120620239521071941">Þetta mun eyða <ph name="ITEMS_COUNT" /> atriðum úr þessu tæki. Skráðu þig inn í Chrome sem <ph name="USER_EMAIL" /> til að endurheimta gögnin síðar.</translation>
@@ -56,15 +57,19 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="2467438592969358367">Google Chrome vill flytja út aðgangsorðin þín. Sláðu inn Windows-aðgangsorðið þitt til að leyfa það.</translation>
 <translation id="2485422356828889247">Fjarlægja</translation>
 <translation id="2534507159460261402">Google Pay (afritað í Chrome)</translation>
+<translation id="2559627601176023786">Engin vistuð aðgangsorð. Chrome getur athugað aðgangsorðin þín þegar þú vistar þau á Google reikningnum þínum.</translation>
 <translation id="2580411288591421699">Ekki er hægt að setja upp sömu útgáfu Google Chrome og er nú þegar í gangi. Lokaðu Google Chrome og reyndu aftur.</translation>
 <translation id="2586406160782125153">Þetta mun eyða vefskoðunargögnum úr þessu tæki. Skráðu þig inn í Chrome sem <ph name="USER_EMAIL" /> til að endurheimta gögnin síðar.</translation>
 <translation id="2588322182880276190">Merki Chrome</translation>
+<translation id="261226884343006626">Chrome getur ekki athugað aðgangsorðin þín. Reyndu aftur á morgun.</translation>
+<translation id="2622559029861875898">Chrome getur ekki athugað með uppfærslur. Athugaðu nettenginguna þína.</translation>
 <translation id="2644798301485385923">Chrome OS kerfi</translation>
 <translation id="2652691236519827073">Opna tengil í nýjum &amp;flipa í Chrome</translation>
 <translation id="2665296953892887393">Hjálpaðu til við að bæta Google Chrome með því að senda tilkynningar um hrun og <ph name="UMA_LINK" /> til Google.</translation>
 <translation id="2689103672227170538">Þessi viðbót hefur breytt því hvaða síða birtist þegar þú ræsir Chrome.</translation>
 <translation id="2765403129283291972">Chrome þarf leyfi til að nota hljóðnemann á þessu vefsvæði</translation>
 <translation id="2770231113462710648">Breyta sjálfgefnum vafra í:</translation>
+<translation id="2775140325783767197">Chrome getur ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="2799223571221894425">Endurræsa</translation>
 <translation id="2847461019998147611">Birta Google Chrome á þessu tungumáli</translation>
 <translation id="2857540653560290388">Ræsir Chrome...</translation>
@@ -80,6 +85,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="3395323229510056640">Fá hjálp með Chrome OS</translation>
 <translation id="3396977131400919238">Stýrikerfisvilla kom upp við uppsetningu. Sæktu Google Chrome aftur.</translation>
 <translation id="3398288718845740432">Fela í valmynd Chrome</translation>
+<translation id="3434246496373299699">Chrome getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum</translation>
 <translation id="3451115285585441894">Bætir við Chrome...</translation>
 <translation id="345171907106878721">Bættu þér við Chrome</translation>
 <translation id="34857402635545079">Hreinsa líka gögn úr Chrome (<ph name="URL" />)</translation>
@@ -95,6 +101,7 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="386202838227397562">Lokaðu öllum Google Chrome gluggum og reyndu aftur.</translation>
 <translation id="3873044882194371212">Opna tengil í h&amp;uliðsglugga í Chrome</translation>
 <translation id="3889417619312448367">Fjarlægja Google Chrome</translation>
+<translation id="3943605108614542032">Kerfisstjórinn þinn stjórnar uppfærslum Chrome</translation>
 <translation id="4050175100176540509">Mikilvægar öryggislagfæringar og nýir eiginleikar eru í boði í nýjustu útgáfunni.</translation>
 <translation id="4053720452172726777">Sérsníða og stjórna Google Chrome</translation>
 <translation id="4143243756087420366">Nafn og mynd fyrir Chrome</translation>
@@ -208,6 +215,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="7808348361785373670">Fjarlægja úr Chrome...</translation>
 <translation id="7825851276765848807">Uppsetning mistókst vegna ótilgreindrar villu. Sæktu Google Chrome aftur.</translation>
 <translation id="7855730255114109580">Google Chrome er uppfært</translation>
+<translation id="7888686278524752658">Chrome uppfærðist ekki, eitthvað fór úrskeiðis. Lagaðu uppfærsluvandamál Chrome og uppfærslur sem mistókust.</translation>
 <translation id="7890208801193284374">Ef nokkrir eru um sömu tölvu geta vinir og fjölskyldumeðlimir vafrað hver á sínum prófíl og sett Chrome upp eins og hverjum og einum líkar best.</translation>
 <translation id="7896673875602241923">Einhver hefur skráð sig inn á Chrome í þessari tölvu sem <ph name="ACCOUNT_EMAIL_LAST" />. Búðu til nýjan notanda í Chrome til að halda upplýsingum ykkar aðskildum.</translation>
 <translation id="7916016681687251387">Chrome OS gat ekki samstillt gögnin þín. Laga núna.</translation>
@@ -238,6 +246,7 @@ Google Chrome getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="8862326446509486874">Þú hefur ekki tilskilin réttindi til uppsetningar fyrir kerfið allt. Prófaðu að keyra uppsetningarforritið aftur sem stjórnandi.</translation>
 <translation id="8914504000324227558">Endurræsa Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Uppfærsla er í boði fyrir Chrome}=1{Uppfærsla er í boði fyrir Chrome}one{Uppfærsla hefur verið í boði fyrir Chrome í # dag}other{Uppfærsla hefur verið í boði fyrir Chrome í # daga}}</translation>
+<translation id="9025321516765676895">Chrome getur ekki athugað aðgangsorð vegna þess að þau eru of mörg</translation>
 <translation id="9026991721384951619">Chrome OS gat ekki samstillt gögnin þín vegna þess að innskráningarupplýsingar reikningsins eru úreltar.</translation>
 <translation id="9067395829937117663">Google Chrome krefst Windows 7 eða nýrri útgáfu.</translation>
 <translation id="911206726377975832">Eyða líka vafragögnum?</translation>

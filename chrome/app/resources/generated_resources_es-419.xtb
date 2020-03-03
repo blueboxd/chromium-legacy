@@ -2683,7 +2683,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4737715515457435632">Conéctate a una red</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> y 1 página más}other{<ph name="PAGE_TITLE" /> y # páginas más}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Obtener información sobre cómo actualizar las aplicaciones<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Activar el sonido del sitio}other{Activar el sonido de los sitios}}</translation>
 <translation id="4746351372139058112">Mensajes</translation>
@@ -5186,7 +5185,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8214489666383623925">Abrir archivo...</translation>
 <translation id="8214962590150211830">Eliminar a esta persona</translation>
 <translation id="8215295261562449873">Antes de actualizar Linux, crea una copia de seguridad de mis apps y archivos en la carpeta Descargas.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> y 1 página más}other{<ph name="PAGE_TITLE" /> y # páginas más}}</translation>
 <translation id="8217399928341212914">Seguir bloqueando las descargas automáticas de varios archivos</translation>
 <translation id="8218847192766059983">Agrega idiomas o cambia el orden de la lista. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Por lo general, bloqueas las notificaciones. Si quieres permitir que este sitio las muestre, haz clic aquí.</translation>
@@ -5397,6 +5395,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="851263357009351303">Siempre permitir que <ph name="HOST" /> muestre imágenes</translation>
 <translation id="8513108775083588393">Giro automático</translation>
 <translation id="8514746246728959655">Prueba con otra llave de seguridad</translation>
+<translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8521475323816527629">Accede a las apps rápidamente</translation>
 <translation id="8523493869875972733">Conservar cambios</translation>
 <translation id="8523849605371521713">Agregada por la política</translation>
@@ -5517,6 +5516,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8673383193459449849">Error del servidor</translation>
 <translation id="8675354002693747642">Clave compartida previamente</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
+<translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8677212948402625567">Contraer todo...</translation>
 <translation id="8678648549315280022">Administrar configuración de descarga…</translation>
 <translation id="8678933587484842200">¿Cómo deseas que se ejecute esta app?</translation>

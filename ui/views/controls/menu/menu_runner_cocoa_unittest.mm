@@ -324,7 +324,8 @@ TEST_P(MenuRunnerCocoaTest, RunMenuAndCancel) {
   EXPECT_EQ(1, menu_close_count_);
 }
 
-TEST_P(MenuRunnerCocoaTest, RunMenuAndDelete) {
+// Marking as disabled for crbug/1058157.
+TEST_P(MenuRunnerCocoaTest, DISABLED_RunMenuAndDelete) {
   RunMenu(base::BindOnce(&MenuRunnerCocoaTest::MenuDeleteCallback,
                          base::Unretained(this)));
   // Note the close callback is NOT invoked for deleted menus.

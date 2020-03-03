@@ -162,7 +162,8 @@ void SharedImageStub::OnCreateSharedImage(
   }
 
   if (!factory_->CreateSharedImage(params.mailbox, params.format, params.size,
-                                   params.color_space, params.usage)) {
+                                   params.color_space, gpu::kNullSurfaceHandle,
+                                   params.usage)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return;

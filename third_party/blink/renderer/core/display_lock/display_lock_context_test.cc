@@ -88,9 +88,9 @@ class DisplayLockEmptyEventListener final : public NativeEventListener {
 }  // namespace
 
 class DisplayLockContextTest : public testing::Test,
-                               private ScopedCSSRenderSubtreeForTest {
+                               private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
  public:
-  DisplayLockContextTest() : ScopedCSSRenderSubtreeForTest(true) {}
+  DisplayLockContextTest() : ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
 
   void SetUp() override {
     web_view_helper_.Initialize();
@@ -129,9 +129,9 @@ class DisplayLockContextTest : public testing::Test,
 
   void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("render-subtree: invisible");
-    if (!activatable)
-      value.Append(" skip-activation");
+    value.Append("subtree-visibility: hidden");
+    if (activatable)
+      value.Append("-matchable");
     element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());
     UpdateAllLifecyclePhasesForTest();
   }
@@ -209,7 +209,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   // If the element is dirty, style recalc would handle it in the next recalc.
   element->setAttribute(
       html_names::kStyleAttr,
-      "render-subtree: invisible skip-activation; color: red;");
+      "subtree-visibility: hidden; color: red;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
@@ -241,7 +241,7 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   // Lock the child.
   child->setAttribute(
       html_names::kStyleAttr,
-      "render-subtree: invisible skip-activation; color: blue;");
+      "subtree-visibility: hidden; color: blue;");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
@@ -746,7 +746,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChangeCSS) {
       background: blue;
     }
     .locked {
-      render-subtree: invisible skip-activation;
+      subtree-visibility: hidden;
     }
     </style>
     <body><div class=locked id="container"><b>t</b>esting<div id=inner></div></div></body>
@@ -935,7 +935,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
 
   SetHtmlInnerHTML(R"HTML(
     <body>
-    <div id="nonviewport" style="render-subtree: invisible skip-viewport-activation">
+    <div id="nonviewport" style="subtree-visibility: hidden-matchable">
     </div>
     </body>
   )HTML");
@@ -1115,25 +1115,6 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
-  // Set just the skip activation token, without the invisible token. This
-  // should make the element not be locked, but also not be activatable.
-  StringBuilder value;
-  value.Append("render-subtree: skip-activation");
-  non_activatable->setAttribute(html_names::kStyleAttr, value.ToAtomicString());
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsLocked());
-  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable(
-      DisplayLockActivationReason::kAny));
-
-  // Re-acquire the lock for |activatable|, but without the activatable flag.
-  LockElement(*activatable, false);
-
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
-  EXPECT_FALSE(activatable->GetDisplayLockContext()->IsActivatable(
-      DisplayLockActivationReason::kAny));
-
   // Re-acquire the lock for |activatable| again with the activatable flag.
   LockElement(*activatable, true);
 
@@ -1209,7 +1190,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   document_child->setAttribute(
       html_names::kStyleAttr,
-      "render-subtree: invisible skip-activation; color: red;");
+      "subtree-visibility: hidden; color: red;");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(document_child->NeedsStyleRecalc());
@@ -1714,11 +1695,11 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
 }
 
 class DisplayLockContextRenderingTest : public RenderingTest,
-                                        private ScopedCSSRenderSubtreeForTest {
+                                        private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
  public:
   DisplayLockContextRenderingTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedCSSRenderSubtreeForTest(true) {}
+        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
 };
 
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
@@ -1809,7 +1790,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 10u);
 
   GetDocument().getElementById("e")->setAttribute(html_names::kStyleAttr,
-                                                  "render-subtree: invisible");
+                                                  "subtree-visibility: auto");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that the dirty_all call propagate the dirty bit from the unlocked
@@ -1825,7 +1806,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 8u);
 
   GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
-                                                  "render-subtree: invisible");
+                                                  "subtree-visibility: auto");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that this dirty_all call is now not propagating the dirty bits at all,

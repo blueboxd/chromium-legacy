@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
 #include "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -109,10 +108,10 @@ class LocationBarCoordinatorTest : public PlatformTest {
 
     delegate_ = [[TestToolbarCoordinatorDelegate alloc] init];
 
-    coordinator_ = [[LocationBarCoordinator alloc] init];
-    coordinator_.browser = browser_.get();
+    coordinator_ = [[LocationBarCoordinator alloc]
+        initWithBaseViewController:nil
+                           browser:browser_.get()];
     coordinator_.delegate = delegate_;
-    coordinator_.commandDispatcher = [[CommandDispatcher alloc] init];
   }
 
   void TearDown() override {

@@ -316,6 +316,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2289385804009217824">Knip</translation>
 <translation id="2292556288342944218">Jou internettoegang is geblokkeer</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">Nie opgelaai nie</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">Hierdie werf se naam lyk soortgelyk aan <ph name="LOOKALIKE_DOMAIN" />. Aanvallers boots soms werwe na deur veranderinge aan die webadres te maak wat moeilik is om te sien.</translation>
 <translation id="2316887270356262533">Maak minder as 1 MB beskikbaar. Sommige werwe sal dalk op jou volgende besoek stadiger laai.</translation>
@@ -444,6 +445,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2909946352844186028">'n Netwerkverandering is bespeur.</translation>
 <translation id="2910133103376701357">Jou toestel en rekening word deur <ph name="ENROLLMENT_DOMAIN" /> bestuur.</translation>
 <translation id="2911973620368911614">Taakrekening se gebruiker-ID</translation>
+<translation id="2915068235268646559">Omval op <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Maak ander programme toe</translation>
 <translation id="2922350208395188000">Bediener se sertifikaat kan nie nagegaan word nie.</translation>
 <translation id="2925673989565098301">Afleweringmetode</translation>
@@ -452,6 +454,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2930577230479659665">Knip ná elke kopie</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat is van <ph name="DOMAIN2" /> af. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
+<translation id="2943895734390379394">Oplaaityd:</translation>
 <translation id="2948083400971632585">Jy kan enige instaanbedieners wat vir 'n verbinding opgestel is van die instellingsbladsy af deaktiveer.</translation>
 <translation id="2951588413176968965">My posbus</translation>
 <translation id="295526156371527179">Waarskuwing: Hierdie beleid is nie saamgevoeg as 'n woordeboek soos deur die beleid gespesifiseer nie, want dit is nie 'n woordeboek nie.</translation>
@@ -1085,6 +1088,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="563324245173044180">Misleidende inhoud is geblokkeer.</translation>
 <translation id="5644090287519800334">Skuif prent langs X-as op kant 1</translation>
 <translation id="5645854190134202180">Tweede skof</translation>
+<translation id="5654927323611874862">Het omvalverslag-ID opgelaai:</translation>
 <translation id="5659593005791499971">E-pos</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">Die administrateur van hierdie toestel het uitbreidings vir bykomende funksies geïnstalleer. Uitbreidings het toegang tot sommige van jou data.</translation>
@@ -1392,6 +1396,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="7079718277001814089">Hierdie werf bevat wanware</translation>
 <translation id="7081308185095828845">Hierdie kenmerk is nie op jou toestel beskikbaar nie</translation>
 <translation id="7083258188081898530">Laai 9</translation>
+<translation id="7086090958708083563">Oplaai deur gebruiker versoek</translation>
 <translation id="7087282848513945231">Land</translation>
 <translation id="7090678807593890770">Deursoek Google vir <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Versteek</translation>
@@ -1554,6 +1559,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Gaan voort na <ph name="SITE" /> (onveilig)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikaat</translation>
 <translation id="7716147886133743102">Geblokkeer deur jou administrateur</translation>
+<translation id="7716375162095500223">Nog nie opgelaai nie, of geïgnoreer</translation>
 <translation id="7716424297397655342">Hierdie werf kan nie uit die kas gelaai word nie</translation>
 <translation id="7723047071702270851">Wysig kaart</translation>
 <translation id="7740996059027112821">Standaard</translation>
@@ -1698,6 +1704,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">As jy die gevare vir jou veiligheid verstaan, kan jy <ph name="BEGIN_LINK" />hierdie werf besoek<ph name="END_LINK" /> voordat die skadelike programme verwyder is.</translation>
 <translation id="8349305172487531364">Boekmerkebalk</translation>
+<translation id="8355270400102541638">Konteks van plaaslike omval:</translation>
 <translation id="8363502534493474904">Vliegtuigmodus afskakel</translation>
 <translation id="8364627913115013041">Nie gestel nie.</translation>
 <translation id="8368476060205742148">Google Play Dienste</translation>
@@ -1718,6 +1725,7 @@ Bykomende besonderhede:
 <translation id="8461694314515752532">Enkripteer gesinkroniseerde data met jou eie sinkroniseringwagfrase</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredietkaart}other{# kredietkaarte}}</translation>
 <translation id="8473863474539038330">Adresse en meer</translation>
+<translation id="8474910779563686872">Wys ontwikkelaarbesonderhede</translation>
 <translation id="8479754468255770962">Kram links onder</translation>
 <translation id="8483780878231876732">Meld by Chrome aan om kaarte van jou Google-rekening af te gebruik</translation>
 <translation id="8488350697529856933">Is van toepassing op</translation>
@@ -1843,6 +1851,7 @@ Bykomende besonderhede:
 <translation id="9103872766612412690"><ph name="SITE" /> gebruik gewoonlik enkripsie om jou inligting te beskerm. Toe Chromium hierdie keer aan <ph name="SITE" /> probeer koppel het, het die webwerf ongewone en verkeerde eiebewyse teruggestuur. Dit kan gebeur wanneer 'n aanvaller probeer voorgee om <ph name="SITE" /> te wees, óf wanneer 'n Wi-Fi-aanmeldskerm die verbinding onderbreek het. Jou inligting is steeds veilig, want Chromium het die verbinding gestaak voordat enige data uitgeruil is.</translation>
 <translation id="9106062320799175032">Voeg faktureringadres by</translation>
 <translation id="9114524666733003316">Bevestig tans kaart …</translation>
+<translation id="9119042192571987207">Opgelaai</translation>
 <translation id="9128870381267983090">Koppel aan netwerk</translation>
 <translation id="9137013805542155359">Wys oorspronklike</translation>
 <translation id="9141013498910525015">Bestuur adresse</translation>

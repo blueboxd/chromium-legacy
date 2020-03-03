@@ -6758,3 +6758,8 @@ crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-fr
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Pass Timeout ]
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/responsive/interpolation/offset-rotate-responsive.html [ Pass Failure ]
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
+
+### sheriff 2020-03-03
+crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
+crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
+crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]

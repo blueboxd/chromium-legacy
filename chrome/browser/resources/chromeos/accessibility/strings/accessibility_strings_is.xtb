@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Engin næsta 4. stigs fyrirsögn</translation>
+<translation id="1212770441379271564">Eftirfarandi flýtilyklar eru ekki ChromeVox skipanir, en eru samt mjög gagnlegir upp á að fá sem mest út úr Chrome.
+Til að fletta áfram gegnum aðgerðaratriði eins og hnappa og tengla skal ýta á dálkalykilinn. Til að fletta til baka skal ýta á Shift + dálkalykil.
+Til að opna veffangastiku Chrome skal ýta á Ctrl+L.
+Til að opna og fara sjálfkrafa í nýjan flipa skal ýta á Ctrl+T. Bendillinn verður í veffangastikunni.
+Til að loka flipa skal ýta á Ctrl+W.
+Til að fara áfram á milli flipa skal ýta á Ctrl + dálkalykil.
+Til að opna vafravalmynd Chrome skal ýta á Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox – gefur Chrome mál</translation>
 <translation id="1225969361094801578">Dökkgráblár</translation>
 <translation id="1229276918471378188">Fyrra stökk</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">litaval</translation>
 <translation id="4221012616705981690">Enginn fyrri listi</translation>
 <translation id="4221071177874897997">Gefa ábendingu um feitletrun:</translation>
+<translation id="4225355998815256469">Stýringar eyðublaðs</translation>
 <translation id="4229646983878045487">dagsetning og tími</translation>
 <translation id="4230834257931120629">Ljósgráblár</translation>
 <translation id="4231102694147661229">Virkja valkosti þróunaraðila</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Setning</translation>
 <translation id="4623097797855662355">Baktitill</translation>
 <translation id="463135993322337640">Ýttu á ChromeVox o, n til að fá upplýsingar um nýjungar</translation>
+<translation id="4646606380313237501">{"ar": "arabíska",
+    "as": "assamska",
+    "aw": "awadhi",
+    "be": "bengalska",
+    "bg": "búlgarska",
+    "bh": "bíharísk mál",
+    "bo": "tíbeska",
+    "br": "braj",
+    "ca": "katalónska",
+    "ckb": "sorani",
+    "cs": "tékkneska",
+    "cy": "velska",
+    "da": "danska",
+    "de": "þýska",
+    "de_CH": "þýska (Sviss)",
+    "de_DE": "þýska (Þýskaland)",
+    "dra": "dravidíska",
+    "el": "gríska",
+    "en": "enska",
+    "en_CA": "enska (Kanada)",
+    "en_GB": "enska (Bretland)",
+    "en_US": "enska (Bandaríkin)",
+    "eo": "esperantó",
+    "es": "spænska",
+    "et": "eistneska",
+    "fa": "persneska",
+    "fr": "franska",
+    "fr_CA": "franska (Kanada)",
+    "fr_FR": "franska (Frakkland)",
+    "fi": "finnska",
+    "ga": "írska",
+    "gd": "gelíska",
+    "gon": "gondi",
+    "gu": "gújaratí",
+    "he": "hebreska",
+    "hi": "hindí",
+    "hr": "króatíska",
+    "hu": "ungverska",
+    "hy": "armenska",
+    "is": "íslenska",
+    "it": "ítalska",
+    "iu": "inuktitut",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "kóreska",
+    "kok": "konkani",
+    "kru": "kurukh",
+    "ks": "kasmírska",
+    "lt": "litháíska",
+    "lv": "lettneska",
+    "mao": "maoríska",
+    "ml": "malajalam",
+    "mt": "maltneska",
+    "mwr": "marwari",
+    "mn": "mongólska",
+    "mun": "munda",
+    "nb": "norskt bókmál",
+    "ne": "nepalska",
+    "nl": "hollenska",
+    "no": "norska",
+    "or": "oriya",
+    "pi": "palí",
+    "pl": "pólska",
+    "pt": "portúgalska",
+    "pu": "púnjabí",
+    "ro": "rúmenska",
+    "ru": "rússneska",
+    "sa": "sanskrít",
+    "si": "sindhí",
+    "sin": "sinhalíska",
+    "sk": "slóvakíska",
+    "sl": "slóvenska",
+    "sr": "serbneska",
+    "sv": "sænska",
+    "ta": "tamílska",
+    "te": "telúgú",
+    "tr": "tyrkneska",
+    "tsn": "afríkanska",
+    "uk": "úkraínska",
+    "ur": "úrdú",
+    "vi": "víetnamska",
+    "zh": "kínverska",
+    "zh_TW": "kínverska (hefðbundið han)"}</translation>
 <translation id="4647836961514597010">Litaval</translation>
 <translation id="4660783501463101648">Sígilt fjarlægt. Lyklaborðsskipunin til að skipta yfir í sígilt ChromeVox hefur verið fjarlægð.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Festistilling virk</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}one{# komma}other{# kommur}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, textareitur</translation>
+<translation id="532485153932049746">Textasnið
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, tengill</translation>
 <translation id="5331522683003474486">Stjórnaðu tækinu með aðeins einum eða tveimur rofum.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Blindraletur</translation>
 <translation id="5402791055281059602">Viðvörun sem krefst staðfestingar</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semíkomma}one{# semíkomma}other{# semíkommur}}</translation>
+<translation id="5420259671171615858">Leita í valmyndunum</translation>
 <translation id="5435274640623994081">Kveikja á skráningu hljóðmerkja</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{minna en}one{# minna en-merki}other{# minna en-merki}}</translation>
 <translation id="5444587279251314700">(virkt)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Ritvilla fannst</translation>
 <translation id="7408482676469142474">tafla</translation>
 <translation id="7425395583360211003">vending</translation>
+<translation id="7429415133937917139">Hermir eftir úttaki blindraletursskjás sem hægt er að endurnýja
+    á ChromeVox svæðinu efst á skjánum</translation>
 <translation id="7434509671034404296">Forritarar</translation>
 <translation id="743783356331413498">Dæmi</translation>
 <translation id="7439060726180460871">Skráasafn</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Fyrri valhnappur</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Engin næsta fellivalmynd</translation>
+<translation id="772146615414628379">Til hamingju! Þú hefur náð tökum á undirstöðuatriðunum í ChromeVox. Mundu að þú getur opnað skipanavalmynd ChromeVox hvenær sem er með því að ýta á leitarlykilinn og punkt. Til að fá frekari upplýsingar um ChromeVox og Chrome OS skaltu skoða eftirfarandi greinar.
+    Ef þú hefur ekki lengur þörf fyrir frekari kennslu skaltu nota ChromeVox til að velja og smella á hnappinn Loka.</translation>
 <translation id="7724603315864178912">Klippa</translation>
 <translation id="7731785449856576010">Engin næsta margmiðlunargræja</translation>
 <translation id="773906353055481349">Ýttu á leitarlykilinn+Ctrl+Alt og örvarnar til að fara á milli hólfa</translation>

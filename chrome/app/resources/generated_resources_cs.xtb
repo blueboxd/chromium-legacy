@@ -2517,7 +2517,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
 <translation id="4488502501195719518">Vymazat všechna data?</translation>
 <translation id="4495419450179050807">Nezobrazovat na této stránce</translation>
-<translation id="4496054781541092778">automaticky zablokoval oprávnění <ph name="PERMISSION" /></translation>
+<translation id="4496054781541092778">oprávnění <ph name="PERMISSION" /> automaticky zablokováno</translation>
 <translation id="4500114933761911433">Plugin <ph name="PLUGIN_NAME" /> selhal</translation>
 <translation id="450099669180426158">Ikona vykřičníku</translation>
 <translation id="4501530680793980440">Potvrdit odstranění</translation>
@@ -2684,7 +2684,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4737715515457435632">Připojte se prosím k síti</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4739639199548674512">Lístky</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> a 1 další stránka}few{<ph name="PAGE_TITLE" /> a # další stránky}many{<ph name="PAGE_TITLE" /> a # další stránky}other{<ph name="PAGE_TITLE" /> a # dalších stránek}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Přečtěte si, jak aktualizovat aplikace<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Zapnout zvuk webu}few{Zapnout zvuk webů}many{Zapnout zvuk webů}other{Zapnout zvuk webů}}</translation>
 <translation id="4746351372139058112">Zprávy</translation>
@@ -3596,7 +3595,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – připojeno k zařízení USB</translation>
 <translation id="6028117231645531007">Přidat otisk prstu</translation>
 <translation id="6029587122245504742">Nejpomalejší</translation>
-<translation id="6029594605736587274">zablokoval(a) oprávnění <ph name="PERMISSION" /></translation>
+<translation id="6029594605736587274">oprávnění <ph name="PERMISSION" /> zablokováno</translation>
 <translation id="6032715498678347852">Chcete-li rozšíření udělit přístup k tomuto webu, klikněte na něj.</translation>
 <translation id="6032912588568283682">Systém souborů</translation>
 <translation id="6038929619733116134">Blokovat, pokud web zobrazuje rušivé nebo zavádějící reklamy</translation>
@@ -5175,7 +5174,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8200772114523450471">Pokračovat</translation>
 <translation id="8202160505685531999">Chcete-li aktualizovat profil zařízení <ph name="DEVICE_TYPE" />, znovu zadejte heslo.</translation>
 <translation id="8203732864715032075">Odesílat vám oznámení a zapamatovat si tento počítač pro Zprávy. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
-<translation id="8204129288640092672">Aplikace <ph name="APP_NAME" /> je blokována rodičem. O oprávnění k použití této aplikace požádejte rodiče.</translation>
+<translation id="8204129288640092672">Aplikace <ph name="APP_NAME" /> je blokována rodičem. O oprávnění používat tuto aplikaci požádejte rodiče.</translation>
 <translation id="820568752112382238">Nejnavštěvovanější weby</translation>
 <translation id="8206581664590136590">Odesílat údaje o využití a diagnostice. Pomozte prostředí Android svého dítěte zlepšit tím, že necháte do Googlu automaticky odesílat diagnostické údaje a údaje o využití zařízení a aplikací. Tyto údaje nebudou používány ke zjištění totožnosti dítěte a pomohou nám se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Pokud má dítě zapnuté dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do jeho účtu Google. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Melodie</translation>
@@ -5186,7 +5185,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8214489666383623925">Otevřít soubor...</translation>
 <translation id="8214962590150211830">Odebrat tohoto uživatele</translation>
 <translation id="8215295261562449873">Před upgradováním Linuxu zálohovat mé aplikace a soubory do složky Stažené soubory.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> a 1 další stránka}few{<ph name="PAGE_TITLE" /> a # další stránky}many{<ph name="PAGE_TITLE" /> a # další stránky}other{<ph name="PAGE_TITLE" /> a # dalších stránek}}</translation>
 <translation id="8217399928341212914">I nadále blokovat automatické stahování několika souborů</translation>
 <translation id="8218847192766059983">Přidejte jazyky nebo přeuspořádejte seznam. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Obvykle oznámení blokujete. Chcete-li tomuto webu zobrazování oznámení povolit, klikněte sem.</translation>
@@ -5296,7 +5294,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8358912028636606457">Odesílání zvuku karty na tomto zařízení není podporováno.</translation>
 <translation id="8363095875018065315">stabilní</translation>
 <translation id="8363142353806532503">Mikrofon je blokován</translation>
-<translation id="8363763184161554204">povolil(a) oprávnění <ph name="PERMISSION" /></translation>
+<translation id="8363763184161554204">oprávnění <ph name="PERMISSION" /> povoleno</translation>
 <translation id="8366396658833131068">Připojení k síti je obnoveno. Vyberte jinou síť nebo stisknutím tlačítka Pokračovat níže spusťte aplikaci kiosku.</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368859634510605990">&amp;Otevřít všechny záložky</translation>
@@ -5397,6 +5395,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="851263357009351303">Vždy povolovat zobrazování obrázků z webu <ph name="HOST" /></translation>
 <translation id="8513108775083588393">Automatické otáčení</translation>
 <translation id="8514746246728959655">Zkuste jiný bezpečnostní klíč</translation>
+<translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8521475323816527629">Dostaňte se rychle k aplikacím</translation>
 <translation id="8523493869875972733">Uchovat změny</translation>
 <translation id="8523849605371521713">Přidáno zásadou</translation>
@@ -5517,6 +5516,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8673383193459449849">Problém se serverem</translation>
 <translation id="8675354002693747642">Předsdílený klíč</translation>
 <translation id="8676374126336081632">Vymazat vstup</translation>
+<translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
 <translation id="8677212948402625567">Sbalit vše...</translation>
 <translation id="8678648549315280022">Spravovat nastavení stahování...</translation>
 <translation id="8678933587484842200">Jak tuto aplikaci chcete spouštět?</translation>
@@ -5891,7 +5891,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="9170884462774788842">Jiný program ve vašem počítači nainstaloval motiv, který může měnit funkce Chromu.</translation>
 <translation id="9173995187295789444">Vyhledávání zařízení Bluetooth...</translation>
-<translation id="9174995235526870547">Aplikace <ph name="APP_NAME" /> je blokována administrátorem. O oprávnění k použití této aplikace požádejte administrátora.</translation>
+<translation id="9174995235526870547">Aplikace <ph name="APP_NAME" /> je blokována správcem. O oprávnění používat tuto aplikaci požádejte správce.</translation>
 <translation id="9176476835295860688">Odesílat údaje o využití a diagnostice. Toto zařízení aktuálně automaticky odesílá do Googlu diagnostické údaje a údaje o zařízení a využití. Tyto údaje nám pomohou se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Toto nastavení je <ph name="BEGIN_LINK1" />vyžadováno<ph name="END_LINK1" /> vlastníkem. Pokud máte zapnuté dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do vašeho účtu Google. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – je připojeno zařízení Bluetooth</translation>
 <translation id="9179734824669616955">Nastavení systému Linux (Beta) na zařízení <ph name="DEVICE_TYPE" /></translation>

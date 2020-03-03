@@ -529,10 +529,11 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
   gpu::Mailbox CreateSharedImage(ResourceFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
-                                 uint32_t usage) override {
+                                 uint32_t usage,
+                                 gpu::SurfaceHandle surface_handle) override {
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
-    if (shared_image_factory_.CreateSharedImage(mailbox, format, size,
-                                                color_space, usage))
+    if (shared_image_factory_.CreateSharedImage(
+            mailbox, format, size, color_space, surface_handle, usage))
       return mailbox;
     return gpu::Mailbox();
   }

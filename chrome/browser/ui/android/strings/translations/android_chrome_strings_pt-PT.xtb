@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129382876167171263">Os ficheiros guardados por Websites são apresentados aqui.</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
+<translation id="1303339473099049190">Não é possível encontrar essa palavra-passe. Verifique a ortografia e tente novamente.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Enviado de <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Agrupar separadores</translation>
+<translation id="1311657260431405215">Este código QR não é um URL: <ph name="QRCODEVALUE" />.</translation>
 <translation id="1327257854815634930">O histórico de navegação está aberto.</translation>
 <translation id="1331212799747679585">Não é possível atualizar o Chrome. Mais opções.</translation>
 <translation id="1332501820983677155">Atalhos das funcionalidades do Google Chrome</translation>
@@ -323,6 +325,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3350687908700087792">Fechar todos os separadores de navegação anónima</translation>
 <translation id="3353615205017136254">Página em modo lite fornecida pela Google. Toque no botão Carregar original para carregar a página original.</translation>
 <translation id="3367813778245106622">Iniciar sessão novamente para iniciar a sincronização</translation>
+<translation id="3373979091428520308">Para partilhar esta página com outro dispositivo, ative a sincronização nas definições do Chrome no outro dispositivo.</translation>
 <translation id="3374023511497244703">Os marcadores, o histórico, as palavras-passe e outros dados do Chrome deixarão de ser sincronizados com a sua Conta Google.</translation>
 <translation id="3384347053049321195">Partilhar imagem</translation>
 <translation id="3386292677130313581">Perguntar antes de permitir que os sites conheçam a sua localização (recomendado)</translation>
@@ -672,6 +675,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
+<translation id="5964805880140440652">Para partilhar esta página com outro dispositivo, ative a sincronização nas definições do Chrome.</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6036057147555329831">ICU extra</translation>

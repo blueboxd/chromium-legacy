@@ -115,22 +115,27 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 void SetupAnimator(ui::ScopedLayerAnimationSettings* animation_setter,
                    base::TimeDelta animation_duration,
-                   gfx::Tween::Type type) {
+                   gfx::Tween::Type type,
+                   ui::AnimationMetricsReporter* animation_metrics_reporter) {
   animation_setter->SetTransitionDuration(animation_duration);
   if (!animation_duration.is_zero()) {
     animation_setter->SetTweenType(type);
     animation_setter->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    if (animation_metrics_reporter)
+      animation_setter->SetAnimationMetricsReporter(animation_metrics_reporter);
   }
 }
 
 void AnimateOpacity(views::Widget* widget,
                     float target_opacity,
                     base::TimeDelta animation_duration,
-                    gfx::Tween::Type type) {
+                    gfx::Tween::Type type,
+                    ui::AnimationMetricsReporter* animation_metrics_reporter) {
   ui::ScopedLayerAnimationSettings animation_setter(
       GetLayer(widget)->GetAnimator());
-  SetupAnimator(&animation_setter, animation_duration, type);
+  SetupAnimator(&animation_setter, animation_duration, type,
+                animation_metrics_reporter);
   GetLayer(widget)->SetOpacity(target_opacity);
 }
 
@@ -608,7 +613,7 @@ void ShelfLayoutManager::UpdateContextualNudges() {
     if (contextual_tooltip::ShouldShowNudge(
             Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
             contextual_tooltip::TooltipType::kDragHandle)) {
-      shelf_widget_->ShowDragHandleNudge();
+      shelf_widget_->ScheduleShowDragHandleNudge();
     }
   } else {
     shelf_widget_->HideDragHandleNudge();
@@ -1446,14 +1451,17 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
       ShelfConfig::Get()->DimAnimationTween();
 
   AnimateOpacity(shelf_->navigation_widget(), target_opacity_,
-                 dim_animation_duration, dim_animation_tween);
+                 dim_animation_duration, dim_animation_tween,
+                 shelf_->GetNavigationWidgetAnimationMetricsReporter());
 
   AnimateOpacity(shelf_->hotseat_widget(),
                  shelf_->hotseat_widget()->CalculateOpacity(),
-                 dim_animation_duration, dim_animation_tween);
+                 dim_animation_duration, dim_animation_tween,
+                 /*animation_metrics_reporter=*/nullptr);
 
   AnimateOpacity(shelf_->status_area_widget(), target_opacity_,
-                 dim_animation_duration, dim_animation_tween);
+                 dim_animation_duration, dim_animation_tween,
+                 /*animation_metrics_reporter=*/nullptr);
 
   shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
 }

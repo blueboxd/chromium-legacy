@@ -347,6 +347,11 @@ SecurityContextInit::CreateReportOnlyFeaturePolicy() const {
   // For non-Document initialization, returns nullptr directly.
   if (!initialized_feature_policy_state_)
     return nullptr;
+
+  // If header not present, returns nullptr directly.
+  if (report_only_feature_policy_header_.empty())
+    return nullptr;
+
   // Report-only feature policy only takes effect when it is stricter than
   // enforced feature policy, i.e. when enforced feature policy allows a feature
   // while report-only feature policy do not. In such scenario, a report-only

@@ -35,6 +35,9 @@ table ApplicationConfig {
 
   /// Simulates a different resolution for rendering.
   8: fuchsia.ui.gfx.vec2 force_content_dimensions;
+
+  /// List of the web permissions that should be granted to the application.
+  9: vector<fuchsia.web.PermissionDescriptor> permissions;
 };
 
 /// Service interface for working with application configurations.

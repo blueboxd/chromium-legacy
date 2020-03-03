@@ -440,10 +440,10 @@
       status: "experimental",
     },
     {
-      // Support for CSS intrinsic-* sizing properties.
-      // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
+      // Support for CSS contain-intrinsic-size property.
+      // https://wicg.github.io/display-locking/contain-intrinsic-size.html
       name: "CSSIntrinsicSize",
-      implied_by: ["CSSRenderSubtree"],
+      implied_by: ["CSSSubtreeVisibility"],
       status: "experimental",
     },
     {
@@ -512,12 +512,30 @@
       status: "test",
     },
     {
-      name: "CSSRenderSubtree",
+      name: "CSSSnapSize",
       status: "experimental",
     },
     {
-      name: "CSSSnapSize",
+      // The main subtree-visibility feature.
+      // https://wicg.github.io/display-locking/
+      name: "CSSSubtreeVisibility",
       status: "experimental",
+      implied_by: ["CSSSubtreeVisibilityHiddenMatchable"]
+    },
+    {
+      // The subtree-visibility activation event which will be replaced by
+      // the beforematch event. When beforematch is available, this feaure
+      // will be removed.
+      name: "CSSSubtreeVisibilityActivationEvent",
+      implied_by: ["CSSSubtreeVisibility"]
+    },
+    {
+      // The subtree-visibility: hidden-matchable feature. This is a planned
+      // follow-up to the main CSSSubtreeVisibility feature, thus it is gated
+      // by a different flag.
+      // https://wicg.github.io/display-locking/
+      name: "CSSSubtreeVisibilityHiddenMatchable",
+      status: "experimental"
     },
     {
       name: "CSSSupportsSelector",
@@ -1490,6 +1508,10 @@
       name: "ScreenEnumeration",
       status: "experimental",
     },
+    {
+      name: "ScreenWakeLock",
+      status: "experimental",
+    },
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.
     {
@@ -1627,6 +1649,10 @@
       status: "stable",
     },
     {
+      name: "SystemWakeLock",
+      status: "experimental",
+    },
+    {
       name: "TextDetector",
       status: "experimental",
     },
@@ -1745,8 +1771,7 @@
     },
     {
       name: "WakeLock",
-      origin_trial_feature_name: "WakeLock",
-      status: "experimental",
+      implied_by: ['ScreenWakeLock', 'SystemWakeLock'],
     },
     {
       name: "WebAnimationsAPI",

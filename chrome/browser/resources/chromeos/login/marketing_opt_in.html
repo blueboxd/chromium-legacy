@@ -15,10 +15,12 @@
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:checkmark"
           icon2x="oobe-32:checkmark">
       </hd-iron-icon>
-      <div slot="subtitle">
+      <div slot="subtitle" id="marketing-opt-in-subtitle"
+          hidden="[[!marketingOptInEnabled_]]">
         [[i18nRecursive(locale, 'marketingOptInScreenSubtitle', 'productName')]]
       </div>
-      <div slot="footer" class="layout vertical">
+      <div slot="footer" class="layout vertical" id="marketing-opt-in-toggles"
+          hidden="[[!marketingOptInEnabled_]]">
         <div class="marketing-option layout horizontal center">
           <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
           </hd-iron-icon>

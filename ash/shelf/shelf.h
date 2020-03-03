@@ -34,6 +34,7 @@ namespace ash {
 enum class AnimationChangeType;
 class HotseatWidget;
 class HotseatWidgetAnimationMetricsReporter;
+class NavigationWidgetAnimationMetricsReporter;
 class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
@@ -231,6 +232,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
   ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter();
+  ui::AnimationMetricsReporter* GetNavigationWidgetAnimationMetricsReporter();
 
  protected:
   // ShelfLayoutManagerObserver:
@@ -291,6 +293,11 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // ensure it outlives the Hotseat Widget.
   std::unique_ptr<HotseatWidgetAnimationMetricsReporter>
       hotseat_transition_metrics_reporter_;
+
+  // Animation metrics reporter for navigation widget animations. Owned by the
+  // Shelf to ensure it outlives the Navigation Widget.
+  std::unique_ptr<NavigationWidgetAnimationMetricsReporter>
+      navigation_widget_metrics_reporter_;
 
   // True while the animation to enter or exit tablet mode is running. Sometimes
   // this value is true when the shelf movements are not actually animating

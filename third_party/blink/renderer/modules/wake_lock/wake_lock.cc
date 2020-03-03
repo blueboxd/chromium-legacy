@@ -54,6 +54,20 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
   auto* context = ExecutionContext::From(script_state);
   DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
 
+  if (type == "screen" && !RuntimeEnabledFeatures::ScreenWakeLockEnabled()) {
+    exception_state.ThrowTypeError(
+        "The provided value 'screen' is not a valid enum value of type "
+        "WakeLockType.");
+    return ScriptPromise();
+  }
+
+  if (type == "system" && !RuntimeEnabledFeatures::SystemWakeLockEnabled()) {
+    exception_state.ThrowTypeError(
+        "The provided value 'system' is not a valid enum value of type "
+        "WakeLockType.");
+    return ScriptPromise();
+  }
+
   // 2.1. If document is not allowed to use the policy-controlled feature named
   //      "wake-lock", reject promise with a "NotAllowedError" DOMException and
   //      return promise.

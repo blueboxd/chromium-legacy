@@ -69,6 +69,10 @@ message OutputStreamParams {
   // If |true|, the receiver will not close the stream after a period of
   // inactivity.
   optional bool never_timeout_connection = 15;
+
+  // If present, volume limits apply to this stream based on the |focus_type|
+  // instead of the |content_type|.
+  optional ContentType focus_type = 16;
 }
 
 // Indicates that we want to start playing the sample with PTS |start_pts|

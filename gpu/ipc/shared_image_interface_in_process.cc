@@ -129,7 +129,8 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    gpu::SurfaceHandle surface_handle) {
   auto mailbox = Mailbox::GenerateForSharedImage();
   {
     base::AutoLock lock(lock_);
@@ -140,8 +141,8 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
     ScheduleGpuTask(
         base::BindOnce(
             &SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread,
-            base::Unretained(this), mailbox, format, size, color_space, usage,
-            MakeSyncToken(next_fence_sync_release_++)),
+            base::Unretained(this), mailbox, format, surface_handle, size,
+            color_space, usage, MakeSyncToken(next_fence_sync_release_++)),
         {});
   }
   return mailbox;
@@ -150,6 +151,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
 void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
+    gpu::SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
@@ -160,8 +162,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
 
   LazyCreateSharedImageFactory();
 
-  if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
-                                                color_space, usage)) {
+  if (!shared_image_factory_->CreateSharedImage(
+          mailbox, format, size, color_space, surface_handle, usage)) {
     // Signal errors by losing the command buffer.
     command_buffer_helper_->SetError();
     return;

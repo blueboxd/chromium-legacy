@@ -100,9 +100,9 @@ void SizeStatCalculator::PerformCalculation() {
                  base::Owned(available_size)));
 }
 
-void SizeStatCalculator::OnGetSizeStat(int64_t* total_size,
-                                       int64_t* available_size) {
-  NotifySizeCalculated(*total_size, *available_size);
+void SizeStatCalculator::OnGetSizeStat(int64_t* total_bytes,
+                                       int64_t* available_bytes) {
+  NotifySizeCalculated(*total_bytes, *available_bytes);
 }
 
 MyFilesSizeCalculator::MyFilesSizeCalculator(

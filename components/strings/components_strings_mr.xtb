@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">ट्रिम करा</translation>
 <translation id="2292556288342944218">तुमचा इंटरनेट ॲक्सेस ब्लॉक केला आहे</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">अपलोड केला नाही</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">या साइटचे नाव <ph name="LOOKALIKE_DOMAIN" /> सारखे दिसत आहे. हल्लेखोर कधीकधी वेब पत्त्यामध्ये दिसण्यास कठीण असे बदल करून साइटची नक्कल करतात.</translation>
 <translation id="2316887270356262533">१ MB पेक्षा कमी जागा मोकळी करते. काही साइट तुमच्या पुढील भेटीच्या वेळी आणखी धीम्या गतीने लोड होऊ शकतात.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">एक नेटवर्क बदल आढळला.</translation>
 <translation id="2910133103376701357">तुमचे डिव्हाइस आणि खाते <ph name="ENROLLMENT_DOMAIN" /> कडून व्यवस्थापित केले जाते.</translation>
 <translation id="2911973620368911614">जॉब लेखांकन वापरकर्ता आयडी</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" /> पासून क्रॅश</translation>
 <translation id="2916038427272391327">अन्य प्रोग्राम बंद करा</translation>
 <translation id="2922350208395188000">सर्व्हरचे सर्टिफिकेट तपासणे शक्य नाही.</translation>
 <translation id="2925673989565098301">वितरण पद्धत</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">प्रत्येक प्रतीनंतर ट्रिम करा</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट <ph name="DOMAIN2" /> वरील आहे. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
+<translation id="2943895734390379394">अपलोड करण्याची वेळ:</translation>
 <translation id="2948083400971632585">तुम्हे सेटिंग्ज पेजवरून एका कनेक्शनसाठी कॉन्फिगर केलेले कोणत्याही प्रॉक्सी अक्षम करू शकता.</translation>
 <translation id="2951588413176968965">माझा मेलबॉक्स</translation>
 <translation id="295526156371527179">चेतावणी: धोरणामध्ये नमूद केल्याप्रमाणे हे धोरण शब्दकोश म्हणून विलीन केले नाही कारण तो एखादा शब्दकोश नाही.</translation>
@@ -1084,6 +1087,7 @@
 <translation id="563324245173044180">फसवणारा आशय ब्लॉक केला.</translation>
 <translation id="5644090287519800334">साइड १ इमेज X शिफ्ट</translation>
 <translation id="5645854190134202180">दुसरी शिफ्ट</translation>
+<translation id="5654927323611874862">अपलोड केलेल्या क्रॅश अहवालाचा आयडी:</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">या डिव्हाइसच्या अ‍ॅडमिनिस्ट्रेटरने अतिरिक्त फंक्शनसाठी एक्स्टेंशन इंस्टॉल केले आहे. एक्स्टेंशनकडे तुमच्या काही डेटाचा अ‍ॅक्सेस आहे.</translation>
@@ -1392,6 +1396,7 @@
 <translation id="7079718277001814089">या साइटमध्ये मालवेअर आहे</translation>
 <translation id="7081308185095828845">हे वैशिष्ट्य तुमच्या डिव्हाइसवर उपलब्ध नाही</translation>
 <translation id="7083258188081898530">ट्रे ९</translation>
+<translation id="7086090958708083563">वापरकर्त्याने अपलोडची विनंती केली आहे</translation>
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="7090678807593890770">Google वर <ph name="LINK" /> शोधा</translation>
 <translation id="7108338896283013870">लपवा</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /> <ph name="SITE" /> (असुरक्षित) वर सुरु ठेवा<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">सर्टिफिकेट</translation>
 <translation id="7716147886133743102">तुमच्या ॲडमिनिस्ट्रेटरने ब्लॉक केलेले</translation>
+<translation id="7716375162095500223">अजून अपलोड केले नाही किंवा दुर्लक्षित केले आहे</translation>
 <translation id="7716424297397655342">ही साइट कॅशे मधून लोड करणे शक्य नाही</translation>
 <translation id="7723047071702270851">कार्ड संपादित करा</translation>
 <translation id="7740996059027112821">मानक</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">तुमच्या सुरक्षिततेच्या जोखमी समजत असल्यास, धोकादायक प्रोग्राम काढले जाण्यापूर्वी तुम्ही <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट देऊ शकता<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
+<translation id="8355270400102541638">स्थानिक क्रॅश संदर्भ:</translation>
 <translation id="8363502534493474904">विमान मोड बंद करा</translation>
 <translation id="8364627913115013041">सेट केलेले नाही.</translation>
 <translation id="8368476060205742148">Google Play सेवा</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">तुमच्या स्वतःच्या सिंक पासफ्रेजसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
+<translation id="8474910779563686872">डेव्हलपर तपशील दाखवा</translation>
 <translation id="8479754468255770962">स्टेपल बॉटम लेफ्ट</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Chromium ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेंशियल परत पाठवले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Chromium ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
 <translation id="9106062320799175032">बिलिंग पत्ता जोडा</translation>
 <translation id="9114524666733003316">कार्डची निश्चिती करत आहे...</translation>
+<translation id="9119042192571987207">अपलोड केला</translation>
 <translation id="9128870381267983090">नेटवर्कशी कनेक्ट करा</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9141013498910525015">पत्ते व्यवस्थापित करा</translation>

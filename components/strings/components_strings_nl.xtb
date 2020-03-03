@@ -316,6 +316,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2289385804009217824">Bijsnijden</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
 <translation id="2297722699537546652">B5 (envelop)</translation>
+<translation id="2300306941146563769">Niet geüpload</translation>
 <translation id="2310021320168182093">Chou2 (envelop)</translation>
 <translation id="2315864634253056100">De naam van deze site lijkt op <ph name="LOOKALIKE_DOMAIN" />. Aanvallers maken sites soms na door wijzigingen in het webadres aan te brengen die je moeilijk kunt zien.</translation>
 <translation id="2316887270356262533">Hiermee wordt minder dan 1 MB vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
@@ -438,6 +439,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2910133103376701357">Je apparaat en account worden beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Gebruikers-ID van taakaccount</translation>
+<translation id="2915068235268646559">Crash van <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Andere programma's sluiten</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
 <translation id="2925673989565098301">Bezorgingsmethode</translation>
@@ -446,6 +448,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2930577230479659665">Bijsnijden na elke kopie</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is afkomstig van <ph name="DOMAIN2" />. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
+<translation id="2943895734390379394">Uploadtijd:</translation>
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
 <translation id="2951588413176968965">Mijn mailbox</translation>
 <translation id="295526156371527179">Waarschuwing: Dit beleid is niet samengevoegd als woordenboek zoals gespecificeerd door het beleid, omdat het geen woordenboek is.</translation>
@@ -1073,6 +1076,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="563324245173044180">Misleidende content geblokkeerd.</translation>
 <translation id="5644090287519800334">Beeldverschuiving X van zijde 1</translation>
 <translation id="5645854190134202180">Tweede dienst</translation>
+<translation id="5654927323611874862">ID van geüpload crashrapport:</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5663614846592581799">9x11 (envelop)</translation>
 <translation id="5663955426505430495">De beheerder van dit apparaat heeft extensies voor aanvullende functies geïnstalleerd. Extensies hebben toegang tot sommige van je gegevens.</translation>
@@ -1379,6 +1383,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="7079718277001814089">Deze site bevat malware</translation>
 <translation id="7081308185095828845">Deze functie is niet beschikbaar op je apparaat</translation>
 <translation id="7083258188081898530">Lade 9</translation>
+<translation id="7086090958708083563">Upload aangevraagd door gebruiker</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
@@ -1541,6 +1546,7 @@ Aanvullende informatie:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Doorgaan naar <ph name="SITE" /> (onveilig)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificaat</translation>
 <translation id="7716147886133743102">Geblokkeerd door je beheerder</translation>
+<translation id="7716375162095500223">Nog niet geüpload, of genegeerd</translation>
 <translation id="7716424297397655342">Deze site kan niet worden geladen vanuit het cachegeheugen</translation>
 <translation id="7723047071702270851">Pas bewerken</translation>
 <translation id="7740996059027112821">Standaard</translation>
@@ -1685,6 +1691,7 @@ Aanvullende informatie:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke programma's zijn verwijderd.</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
+<translation id="8355270400102541638">Lokale crashcontext:</translation>
 <translation id="8363502534493474904">Zet de vliegtuigmodus uit</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
 <translation id="8368476060205742148">Google Play-services</translation>
@@ -1705,6 +1712,7 @@ Aanvullende informatie:
 <translation id="8461694314515752532">Gesynchroniseerde gegevens versleutelen met een eigen wachtwoordzin</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 creditcard}other{# creditcards}}</translation>
 <translation id="8473863474539038330">Adressen en meer</translation>
+<translation id="8474910779563686872">Ontwikkelaarsgegevens weergeven</translation>
 <translation id="8479754468255770962">Nietje linksonder</translation>
 <translation id="8483780878231876732">Log in bij Chrome om passen uit je Google-account te gebruiken</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
@@ -1830,6 +1838,7 @@ Aanvullende informatie:
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
 <translation id="9114524666733003316">Creditcard bevestigen...</translation>
+<translation id="9119042192571987207">Geüpload</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9141013498910525015">Adressen beheren</translation>

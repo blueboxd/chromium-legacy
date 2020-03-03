@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Tetapan Audio</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3631369015426612114">Benarkan pemberitahuan daripada yang berikut</translation>
+<translation id="3638400994746983214">Togol skrin privasi. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tangkap bahagian</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
@@ -245,6 +246,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4021716437419160885">Tatal ke bawah</translation>
+<translation id="402772165574991617">Gunakan gerak isyarat untuk bertukar antara apl dengan pantas dan berinteraksi dengan Chromebook anda dalam mod tablet.</translation>
 <translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
@@ -293,6 +295,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4659419629803378708">ChromeVox didayakan</translation>
 <translation id="4665114317261903604">Togol Jangan ganggu. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Buka kunci peranti menggunakan kod ibu bapa</translation>
+<translation id="4702647871202761252">Skrin privasi dimatikan</translation>
 <translation id="4710243778082831592">Tetapan IME</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
 <translation id="4734965478015604180">Mendatar</translation>
@@ -429,6 +432,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6559976592393364813">Tanya Pentadbir</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diurus oleh Pentadbir anda</translation>
+<translation id="6614169507485700968">Skrin privasi dihidupkan</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6637729079642709226">Tukar masa</translation>
 <translation id="6650933572246256093">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kekunci laluan ini pada peranti tersebut: <ph name="PASSKEY" /></translation>
@@ -443,6 +447,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6715542151869432661">Peranti mudah alih tidak ditemui.</translation>
 <translation id="6723839937902243910">Kuasa</translation>
 <translation id="6727969043791803658">Disambungkan, bateri <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">Dikuatkuasakan oleh pentadbir anda</translation>
 <translation id="6751826523481687655">Pengesanan prestasi dihidupkan</translation>
 <translation id="6752912906630585008">Meja <ph name="REMOVED_DESK" /> dialih keluar dan digabungkan dengan Meja <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Membekalkan kuasa kepada peranti USB-C yang disambungkan</translation>
@@ -530,6 +535,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8029629653277878342">PIN atau kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="8030169304546394654">Diputuskan sambungan</translation>
+<translation id="8042024183333293953">Cubalah navigasi gerak isyarat baharu</translation>
 <translation id="8048123526339889627">Tetapan Bluetooth</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>

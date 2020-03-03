@@ -123,15 +123,15 @@ const int kLocationAuthorizationStatusCount = 5;
 }
 
 - (void)start {
-  DCHECK(self.commandDispatcher);
   DCHECK(self.browser);
 
   if (self.started)
     return;
 
-  [self.commandDispatcher startDispatchingToTarget:self
-                                       forProtocol:@protocol(OmniboxFocuser)];
-  [self.commandDispatcher
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(OmniboxFocuser)];
+  [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(LoadQueryCommands)];
 
@@ -140,9 +140,12 @@ const int kLocationAuthorizationStatusCount = 5;
   self.viewController = [[LocationBarViewController alloc] init];
   self.viewController.incognito = isIncognito;
   self.viewController.delegate = self;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   self.viewController.dispatcher =
       static_cast<id<ActivityServiceCommands, BrowserCommands,
-                     ApplicationCommands, LoadQueryCommands>>(self.dispatcher);
+                     ApplicationCommands, LoadQueryCommands>>(
+          self.browser->GetCommandDispatcher());
   self.viewController.voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                                ->GetVoiceSearchProvider()
                                                ->IsVoiceSearchEnabled();
@@ -182,9 +185,11 @@ const int kLocationAuthorizationStatusCount = 5;
   // Create BadgeMediator and set the viewController as its consumer.
   self.badgeMediator = [[BadgeMediator alloc] initWithBrowser:self.browser];
   self.badgeMediator.consumer = self.badgeViewController;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
   self.badgeMediator.dispatcher =
       static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
-          self.dispatcher);
+          self.browser->GetCommandDispatcher());
   buttonFactory.delegate = self.badgeMediator;
   FullscreenController* fullscreenController =
       FullscreenController::FromBrowserState(self.browserState);
@@ -209,7 +214,7 @@ const int kLocationAuthorizationStatusCount = 5;
 - (void)stop {
   if (!self.started)
     return;
-  [self.commandDispatcher stopDispatchingToTarget:self];
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];
   [self.omniboxCoordinator stop];

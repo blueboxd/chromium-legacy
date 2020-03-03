@@ -1092,6 +1092,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor markering van het caret-teken in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
+<translation id="2509919237512982967">Verouderde formulierbesturingselementen gebruiken tot M84.</translation>
 <translation id="2514328368635166290">Hiermee specificeer je de URL van het voorkeurspictogram voor de standaardzoekprovider.
 
           Dit beleid is optioneel. Als je het niet instelt, wordt er geen pictogram weergegeven voor de zoekprovider.
@@ -5174,6 +5175,13 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
+<translation id="8937282917198525844"> Vanaf M81 hebben de standaard formulierbesturingselementen (bijv. &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) een nieuw uiterlijk met verbeterde toegankelijkheid en betere platformuniformiteit. Met dit beleid worden de 'verouderde' formulierbesturingselementen hersteld tot M84.
+
+      Als dit beleid is ingesteld op True, worden de 'verouderde' formulierbesturingselementen gebruikt voor alle sites.
+
+      Als dit beleid is ingesteld op False of niet is ingesteld, worden de formulierbesturingselementen ingeschakeld als ze worden gelanceerd in M81, M82 en M83.
+
+      Dit beleid wordt na Chrome 84 verwijderd.</translation>
 <translation id="8938932171964587769">Beëindigd in M69. Gebruik in plaats hiervan
       OverrideSecurityRestrictionsOnInsecureOrigin.
 

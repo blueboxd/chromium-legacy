@@ -30,8 +30,13 @@ jumbo_static_library("core") {
 }
 
 if (is_android) {
-  java_cpp_enum("security_state_enums_java") {
+  java_cpp_enum("security_state_enums") {
     sources = [ "security_state.h" ]
+  }
+
+  android_library("security_state_enums_java") {
+    srcjar_deps = [ ":security_state_enums" ]
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
   }
 }
 

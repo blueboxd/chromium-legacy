@@ -50,7 +50,6 @@ class MockBufferQueue : public BufferQueue {
  public:
   MockBufferQueue()
       : BufferQueue(/*sii_=*/nullptr,
-                    /*gpu_memory_buffer_manager=*/nullptr,
                     gpu::kNullSurfaceHandle) {}
   ~MockBufferQueue() override = default;
 

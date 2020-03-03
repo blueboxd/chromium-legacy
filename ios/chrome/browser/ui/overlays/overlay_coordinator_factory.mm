@@ -32,6 +32,13 @@
   DCHECK(browser);
   NSArray<Class>* supportedCoordinatorClasses = @[];
   switch (modality) {
+    case OverlayModality::kTesting:
+      // Use TestOverlayRequestCoordinatorFactory to create factories for
+      // OverlayModality::kTesting.
+      // TODO(crbug.com/1056837): Remove requirement once modalities are
+      // converted to no longer use enums.
+      NOTREACHED();
+      break;
     case OverlayModality::kWebContentArea:
       supportedCoordinatorClasses =
           web_content_area::GetSupportedOverlayCoordinatorClasses();

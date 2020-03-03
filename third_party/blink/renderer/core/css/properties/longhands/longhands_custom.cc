@@ -4945,60 +4945,6 @@ const CSSValue* R::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-const CSSValue* RenderSubtree::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  CSSValueID id = range.Peek().Id();
-  if (id == CSSValueID::kNone)
-    return css_property_parser_helpers::ConsumeIdent(range);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  bool has_invisible = false;
-  bool has_skip_activation = false;
-  bool has_skip_viewport_activation = false;
-  while (true) {
-    id = range.Peek().Id();
-    if (id == CSSValueID::kInvisible && !has_invisible) {
-      list->Append(*css_property_parser_helpers::ConsumeIdent(range));
-      has_invisible = true;
-    } else if (id == CSSValueID::kSkipActivation && !has_skip_activation) {
-      list->Append(*css_property_parser_helpers::ConsumeIdent(range));
-      has_skip_activation = true;
-    } else if (id == CSSValueID::kSkipViewportActivation &&
-               !has_skip_viewport_activation) {
-      list->Append(*css_property_parser_helpers::ConsumeIdent(range));
-      has_skip_viewport_activation = true;
-    } else {
-      break;
-    }
-  }
-  if (!list->length())
-    return nullptr;
-  return list;
-}
-
-const CSSValue* RenderSubtree::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const SVGComputedStyle&,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  if (style.RenderSubtree() == RenderSubtreeFlags::kNone)
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.RenderSubtreeInvisible())
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kInvisible));
-  if (style.RenderSubtreeSkipActivation())
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kSkipActivation));
-  if (style.RenderSubtreeSkipViewportActivation()) {
-    list->Append(
-        *CSSIdentifierValue::Create(CSSValueID::kSkipViewportActivation));
-  }
-  DCHECK(list->length());
-  return list;
-}
-
 const CSSValue* Resize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
@@ -5935,6 +5881,31 @@ const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
                                           CSSPrimitiveValue::UnitType::kPixels);
   }
   return CSSValue::Create(length, style.EffectiveZoom());
+}
+
+const CSSValue* SubtreeVisibility::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.SubtreeVisibility());
+}
+
+const CSSValue* SubtreeVisibility::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  auto id = range.Peek().Id();
+  if (id == CSSValueID::kHiddenMatchable &&
+      !RuntimeEnabledFeatures::CSSSubtreeVisibilityHiddenMatchableEnabled()) {
+    return nullptr;
+  }
+  if (!css_property_parser_helpers::IdentMatches<
+          CSSValueID::kVisible, CSSValueID::kAuto, CSSValueID::kHidden,
+          CSSValueID::kHiddenMatchable>(id)) {
+    return nullptr;
+  }
+  return css_property_parser_helpers::ConsumeIdent(range);
 }
 
 const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,

@@ -133,7 +133,9 @@ void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
     case WebStateListObserver::ChangeReason::CHANGE_REASON_REPLACED:
       change_reason_string = "replaced";
       break;
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_USER_ACTION:
+    case WebStateListObserver::ChangeReason::CHANGE_REASON_ACTIVATED:
+    case WebStateListObserver::ChangeReason::CHANGE_REASON_CLOSED:
+    case WebStateListObserver::ChangeReason::CHANGE_REASON_INSERTED:
       change_reason_string = "for user action";
       break;
   }

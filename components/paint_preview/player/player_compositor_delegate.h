@@ -24,7 +24,7 @@ class SkBitmap;
 
 namespace paint_preview {
 
-struct DirectoryKey;
+class DirectoryKey;
 
 class PlayerCompositorDelegate {
  public:

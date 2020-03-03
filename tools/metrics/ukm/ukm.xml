@@ -1603,8 +1603,8 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="DidHaveRenderSubtreeMatch">
     <summary>
-      Boolean indicating whether there was an active match in render-subtree
-      locked elements.
+      Boolean indicating whether there was an active match in subtree-visibility
+      unrendered elements.
     </summary>
   </metric>
   <metric name="DidSearch">

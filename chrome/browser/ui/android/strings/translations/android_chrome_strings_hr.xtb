@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
 <translation id="129382876167171263">Ovdje se prikazuju datoteke koje su spremile web-lokacije</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
+<translation id="1303339473099049190">Ta zaporka nije pronađena. Provjerite jeste li je točno napisali pa pokušajte ponovno.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – poslano s uređaja <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupiraj kartice</translation>
+<translation id="1311657260431405215">Taj QR kôd nije URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Otvorena je povijest navigacije</translation>
 <translation id="1331212799747679585">Chrome se ne može ažurirati. Više opcija</translation>
 <translation id="1332501820983677155">Prečaci za značajke Google Chromea</translation>
@@ -323,6 +325,7 @@ Dodirnite i držite bilo koju riječ da biste pokrenuli pretraživanje. Ako žel
 <translation id="3350687908700087792">Zatvori sve anonimne kartice</translation>
 <translation id="3353615205017136254">Jednostavnu stranicu pruža Google. Dodirnite gumb Učitaj izvornu stranicu da biste učitali izvornu stranicu.</translation>
 <translation id="3367813778245106622">Prijavite se ponovo da biste pokrenuli sinkronizaciju</translation>
+<translation id="3373979091428520308">Da biste podijelili ovu stranicu s nekim drugim uređajem, uključite sinkroniziranje u Chromeovim postavkama na tom uređaju</translation>
 <translation id="3374023511497244703">Vaše oznake, povijest, zaporke i drugi podaci iz Chromea više se neće sinkronizirati s vašim Google računom</translation>
 <translation id="3384347053049321195">Dijeli sliku</translation>
 <translation id="3386292677130313581">Web-lokacije moraju tražiti dopuštenje za pristup lokaciji (preporučeno)</translation>
@@ -672,6 +675,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5956665950594638604">Otvaranje Chromeovog centra za pomoć na novoj kartici</translation>
 <translation id="5958275228015807058">Pronađite svoje datoteke i stranice u Preuzimanjima</translation>
 <translation id="5962718611393537961">Dodirnite da biste saželi</translation>
+<translation id="5964805880140440652">Da biste podijelili ovu stranicu s nekim drugim uređajem, uključite sinkroniziranje u Chromeovim postavkama</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
 <translation id="6005538289190791541">Predložena zaporka</translation>
 <translation id="6036057147555329831">Dodatni ICU</translation>

@@ -446,8 +446,6 @@ void OSSettingsUI::BindInterface(
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::UserActionRecorder> receiver) {
-  DCHECK(!user_action_recorder_)
-      << "Should only be bound once per settings session.";
   user_action_recorder_ =
       std::make_unique<SettingsUserActionTracker>(std::move(receiver));
 }

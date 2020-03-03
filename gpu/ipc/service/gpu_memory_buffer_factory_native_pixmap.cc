@@ -203,13 +203,14 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
+    SurfaceHandle surface_handle,
     bool* is_cleared) {
   scoped_refptr<gfx::NativePixmap> pixmap;
 #if defined(USE_OZONE)
   pixmap = ui::OzonePlatform::GetInstance()
                ->GetSurfaceFactoryOzone()
-               ->CreateNativePixmap(gpu::kNullSurfaceHandle, GetVulkanDevice(),
-                                    size, format, usage);
+               ->CreateNativePixmap(surface_handle, GetVulkanDevice(), size,
+                                    format, usage);
 #else
   NOTIMPLEMENTED();
 #endif

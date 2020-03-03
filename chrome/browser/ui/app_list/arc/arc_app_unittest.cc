@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"

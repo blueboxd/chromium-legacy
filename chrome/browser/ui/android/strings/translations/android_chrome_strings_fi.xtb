@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Tyhjennä historia, evästeet, sivustojen tiedot, välimuisti ja niin edelleen.</translation>
 <translation id="129382876167171263">Sivustojen tallentamat tiedostot näkyvät tässä</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
+<translation id="1303339473099049190">Tätä salasanaa ei löydy. Tarkista oikeinkirjoitus ja yritä uudelleen.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Lähetetty laitteelta <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Ryhmittele välilehtiä</translation>
+<translation id="1311657260431405215">Tämä QR-koodi ei ole URL-osoite: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Navigointihistoria avattu</translation>
 <translation id="1331212799747679585">Chromea ei voi päivittää. Lisää vaihtoehtoja</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
@@ -323,6 +325,7 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="3350687908700087792">Sulje kaikki incognito-välilehdet.</translation>
 <translation id="3353615205017136254">Googlen tarjoama yksinkertaistettu sivu. Valitse Lataa alkuperäinen, jos haluat ladata alkuperäisen sivun.</translation>
 <translation id="3367813778245106622">Aloita synkronointi kirjautumalla uudelleen sisään.</translation>
+<translation id="3373979091428520308">Jos haluat jakaa tämän sivun toiselle laitteelle, ota synkronointi käyttöön toisen laitteen Chrome-asetuksista</translation>
 <translation id="3374023511497244703">Kirjanmerkkejä, historiaa, salasanoja tai muuta Chrome-dataa ei enää synkronoida Google-tilille.</translation>
 <translation id="3384347053049321195">Jaa kuva</translation>
 <translation id="3386292677130313581">Pyydä lupaa, kun sivustot yrittävät käyttää sijaintiasi (suositus).</translation>
@@ -672,6 +675,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5956665950594638604">Avaa Chromen ohjekeskus uudella välilehdellä</translation>
 <translation id="5958275228015807058">Löydät tiedostosi ja sivusi Latauksista</translation>
 <translation id="5962718611393537961">Tiivistä napauttamalla.</translation>
+<translation id="5964805880140440652">Jos haluat jakaa tämän sivun toiselle laitteelle, ota synkronointi käyttöön Chromen asetuksista</translation>
 <translation id="6000066717592683814">Käytä Googlea</translation>
 <translation id="6005538289190791541">Salasanaehdotus</translation>
 <translation id="6036057147555329831">Ylimääräinen ICU</translation>

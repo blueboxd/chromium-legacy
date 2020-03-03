@@ -9,9 +9,10 @@ import android.support.annotation.DrawableRes;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -131,7 +132,8 @@ import java.net.URISyntaxException;
 
     @Override
     public void didChangeVisibleSecurityState() {
-        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContentsRef);
+        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
+                mWebContentsRef, ChromeSecurityStateModelDelegate.getInstance());
         mModel.set(PaymentHandlerToolbarProperties.SECURITY_ICON,
                 getSecurityIconResource(securityLevel));
     }

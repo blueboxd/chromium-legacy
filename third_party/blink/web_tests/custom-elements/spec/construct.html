@@ -146,7 +146,7 @@ test_with_window((w) => {
   }
   w.customElements.define('a-a', A);
   let d = w.document.createElement('div');
-  assert_reports(window, 'INVALID_STATE_ERR', () => {
+  assert_reports_js(window, TypeError, () => {
     d.innerHTML = '<a-a>';
   }, 'Creating an element that is already constructed marker should report ' +
      'InvalidStateError');
@@ -171,7 +171,7 @@ test_with_window((w) => {
   }
   w.customElements.define('a-a', A);
   w.document.body.appendChild(e);
-  assert_array_equals(errors, ['InvalidStateError'], 'Upgrading an element ' +
-    'that is already constructed marker should throw InvalidStateError');
+  assert_array_equals(errors, ['TypeError'], 'Upgrading an element ' +
+    'that is already constructed marker should throw TypeError');
 }, 'Already constructed marker, upgrade element');
 </script>

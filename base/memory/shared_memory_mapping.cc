@@ -34,21 +34,18 @@ namespace base {
 SharedMemoryMapping::SharedMemoryMapping() = default;
 
 SharedMemoryMapping::SharedMemoryMapping(SharedMemoryMapping&& mapping) noexcept
-    : memory_(mapping.memory_),
+    : memory_(std::exchange(mapping.memory_, nullptr)),
       size_(mapping.size_),
       mapped_size_(mapping.mapped_size_),
-      guid_(mapping.guid_) {
-  mapping.memory_ = nullptr;
-}
+      guid_(mapping.guid_) {}
 
 SharedMemoryMapping& SharedMemoryMapping::operator=(
     SharedMemoryMapping&& mapping) noexcept {
   Unmap();
-  memory_ = mapping.memory_;
+  memory_ = std::exchange(mapping.memory_, nullptr);
   size_ = mapping.size_;
   mapped_size_ = mapping.mapped_size_;
   guid_ = mapping.guid_;
-  mapping.memory_ = nullptr;
   return *this;
 }
 

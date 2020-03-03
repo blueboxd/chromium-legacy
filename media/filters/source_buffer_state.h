@@ -147,8 +147,7 @@ class MEDIA_EXPORT SourceBufferState {
 
   void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);
 
-  void SetParseWarningCallback(
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(SourceBufferParseWarningCB parse_warning_cb);
 
  private:
   // State advances through this list to PARSER_INITIALIZED.

@@ -15,6 +15,11 @@ luci.console_view(
             short_name = 'cfi',
         ),
         luci.console_view_entry(
+            builder = 'ci/Android WebLayer P FYI (rel)',
+            category = 'weblayer',
+            short_name = 'p-rel',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Android WebView P Blink-CORS FYI (rel)',
             category = 'webview',
             short_name = 'cors',

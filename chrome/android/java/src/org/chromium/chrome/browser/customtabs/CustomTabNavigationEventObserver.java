@@ -9,11 +9,12 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.components.security_state.SecurityStateModel;
 
 import javax.inject.Inject;
 
@@ -64,7 +65,11 @@ public class CustomTabNavigationEventObserver extends EmptyTabObserver {
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) {
-        if (SecurityStateModel.isContentDangerous(tab.getWebContents())) return;
+        boolean isContentDangerous = SecurityStateModel.isContentDangerous(
+                tab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
+        if (isContentDangerous) {
+            return;
+        }
         mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.NAVIGATION_FAILED);
     }
 }

@@ -26,6 +26,23 @@ class TextNavigationManager {
 
     /** @private {function(chrome.automation.AutomationEvent): undefined} */
     this.selectionListener_ = this.onNavChange_.bind(this);
+
+    /**
+     * Keeps track of when there's a selection in the current node.
+     * @private {boolean}
+     */
+    this.selectionExists_ = false;
+
+    /**
+     * Keeps track of when the clipboard is empty.
+     * @private {boolean}
+     */
+    this.clipboardHasData_ = false;
+
+    if (SwitchAccess.instance.improvedTextInputEnabled()) {
+      chrome.clipboard.onClipboardDataChanged.addListener(
+          this.updateClipboardHasData_.bind(this));
+    }
   }
 
   static initialize() {
@@ -160,6 +177,58 @@ class TextNavigationManager {
     manager.manageNavigationListener_(false /** Removing listener */);
     manager.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
     manager.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
+    if (manager.currentlySelecting_) {
+      manager.setupDynamicSelection_(true /* resetCursor */);
+    }
+    EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
+  }
+
+  /** @return {boolean} */
+  static get clipboardHasData() {
+    return TextNavigationManager.instance.clipboardHasData_;
+  }
+
+  /** @return {boolean} */
+  static get selectionExists() {
+    return TextNavigationManager.instance.selectionExists_;
+  }
+
+  /** @param {boolean} newVal */
+  static set selectionExists(newVal) {
+    TextNavigationManager.instance.selectionExists_ = newVal;
+  }
+
+  /**
+   * Returns the selection end index.
+   * @return {number}
+   */
+  getSelEndIndex() {
+    return this.selectionEndIndex_;
+  }
+
+  /**
+   * Reset the selectionStartIndex to NO_SELECT_INDEX.
+   */
+  resetSelStartIndex() {
+    this.selectionStartIndex_ = TextNavigationManager.NO_SELECT_INDEX;
+  }
+
+  /**
+   * Returns the selection start index.
+   * @return {number}
+   */
+  getSelStartIndex() {
+    return this.selectionStartIndex_;
+  }
+
+  /**
+   * Sets the selection start index.
+   * @param {number} startIndex
+   * @param {!chrome.automation.AutomationNode} textNode
+   */
+  setSelStartIndexAndNode(startIndex, textNode) {
+    this.selectionStartIndex_ = startIndex;
+    this.selectionStartObject_ = textNode;
   }
 
   /**
@@ -292,6 +361,17 @@ class TextNavigationManager {
       }
     }
     this.manageNavigationListener_(true /** Add the listener */);
+  }
+
+  /*
+   * TODO(rosalindag): Add functionality to catch when clipboardHasData_ needs
+   * to be set to false.
+   * Set the clipboardHasData variable to true and reload the menu.
+   * @private
+   */
+  updateClipboardHasData_() {
+    this.clipboardHasData_ = true;
+    MenuManager.reloadMenuIfNeeded();
   }
 }
 

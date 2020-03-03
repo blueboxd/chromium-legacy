@@ -31,6 +31,8 @@ constexpr char kTokenChars15[] = TCHAR ":/";
 constexpr char kKeyChars09[] = DIGIT LCALPHA "_-";
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-15#section-3.1.2
 constexpr char kKeyChars15[] = DIGIT LCALPHA "_-.*";
+constexpr char kSP[] = " ";
+constexpr char kOWS[] = " \t";
 #undef DIGIT
 #undef LCALPHA
 #undef UCALPHA
@@ -159,6 +161,35 @@ class StructuredHeaderParser {
           return ReadToken();
         return base::nullopt;
     }
+  }
+
+  // Parses a Dictionary ([SH15] 4.2.2).
+  base::Optional<Dictionary> ReadDictionary() {
+    DCHECK_EQ(version_, kDraft15);
+    Dictionary members;
+    while (!input_.empty()) {
+      base::Optional<std::string> key(ReadKey());
+      if (!key)
+        return base::nullopt;
+      base::Optional<ParameterizedMember> member;
+      if (ConsumeChar('=')) {
+        member = ReadItemOrInnerList();
+        if (!member)
+          return base::nullopt;
+      } else {
+        member = ParameterizedMember{Item(true), {}};
+      }
+      members[*key] = std::move(*member);
+      SkipWhitespaces();
+      if (input_.empty())
+        break;
+      if (!ConsumeChar(','))
+        return base::nullopt;
+      SkipWhitespaces();
+      if (input_.empty())
+        return base::nullopt;
+    }
+    return members;
   }
 
   // Parses a Parameterised List ([SH09] 4.2.5).
@@ -466,7 +497,13 @@ class StructuredHeaderParser {
   }
 
   void SkipWhitespaces() {
-    input_ = base::TrimWhitespaceASCII(input_, base::TRIM_LEADING);
+    if (version_ == kDraft09) {
+      input_ =
+          base::TrimString(input_, base::StringPiece(kOWS), base::TRIM_LEADING);
+    } else {
+      input_ =
+          base::TrimString(input_, base::StringPiece(kSP), base::TRIM_LEADING);
+    }
   }
 
   bool ConsumeChar(char expected) {
@@ -614,6 +651,27 @@ class StructuredHeaderSerializer {
     return false;
   }
 
+  // Serializes a Dictionary ([SH15] 4.1.2).
+  bool WriteDictionary(const Dictionary& value) {
+    bool first = true;
+    for (const auto& dict : value) {
+      const auto& dict_member = dict.second;
+      if (!first)
+        output_ << ", ";
+      if (!WriteKey(dict.first))
+        return false;
+      first = false;
+      if (dict_member.params.empty() && !dict_member.member_is_inner_list &&
+          dict_member.member.front().item.is_boolean() &&
+          dict_member.member.front().item.GetBoolean())
+        continue;
+      output_ << "=";
+      if (!WriteParameterizedMember(dict_member))
+        return false;
+    }
+    return true;
+  }
+
  private:
   bool WriteParameterizedMember(const ParameterizedMember& value) {
     // Serializes a parameterized member ([SH15] 4.1.1).
@@ -719,6 +777,7 @@ ParameterizedItem::ParameterizedItem(Item id, const Parameters& ps)
     : item(std::move(id)), params(ps) {}
 ParameterizedItem::~ParameterizedItem() = default;
 
+ParameterizedMember::ParameterizedMember() = default;
 ParameterizedMember::ParameterizedMember(const ParameterizedMember&) = default;
 ParameterizedMember& ParameterizedMember::operator=(
     const ParameterizedMember&) = default;
@@ -742,6 +801,46 @@ ParameterisedIdentifier& ParameterisedIdentifier::operator=(
 ParameterisedIdentifier::ParameterisedIdentifier(Item id, const Parameters& ps)
     : identifier(std::move(id)), params(ps) {}
 ParameterisedIdentifier::~ParameterisedIdentifier() = default;
+
+Dictionary::Dictionary() = default;
+Dictionary::Dictionary(const Dictionary&) = default;
+Dictionary::Dictionary(std::vector<DictionaryMember> members)
+    : members_(std::move(members)) {}
+Dictionary::~Dictionary() = default;
+std::vector<DictionaryMember>::iterator Dictionary::begin() {
+  return members_.begin();
+}
+std::vector<DictionaryMember>::const_iterator Dictionary::begin() const {
+  return members_.begin();
+}
+std::vector<DictionaryMember>::iterator Dictionary::end() {
+  return members_.end();
+}
+std::vector<DictionaryMember>::const_iterator Dictionary::end() const {
+  return members_.end();
+}
+ParameterizedMember& Dictionary::operator[](std::size_t idx) {
+  return members_[idx].second;
+}
+ParameterizedMember& Dictionary::operator[](base::StringPiece key) {
+  for (auto& member : members_) {
+    if (member.first == key)
+      return member.second;
+  }
+  return (*(members_.insert(members_.end(), make_pair(std::string(key),
+                                                      ParameterizedMember()))))
+      .second;
+}
+std::size_t Dictionary::size() {
+  return members_.size();
+}
+bool Dictionary::contains(base::StringPiece key) {
+  for (auto& member : members_) {
+    if (member.first == key)
+      return true;
+  }
+  return false;
+}
 
 base::Optional<ParameterizedItem> ParseItem(base::StringPiece str) {
   StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft15);
@@ -784,6 +883,14 @@ base::Optional<List> ParseList(base::StringPiece str) {
   return base::nullopt;
 }
 
+base::Optional<Dictionary> ParseDictionary(const base::StringPiece& str) {
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft15);
+  base::Optional<Dictionary> dictionary = parser.ReadDictionary();
+  if (dictionary && parser.FinishParsing())
+    return dictionary;
+  return base::nullopt;
+}
+
 base::Optional<std::string> SerializeItem(const Item& value) {
   StructuredHeaderSerializer s;
   if (s.WriteItem(ParameterizedItem(value, {})))
@@ -801,6 +908,13 @@ base::Optional<std::string> SerializeItem(const ParameterizedItem& value) {
 base::Optional<std::string> SerializeList(const List& value) {
   StructuredHeaderSerializer s;
   if (s.WriteList(value))
+    return s.Output();
+  return base::nullopt;
+}
+
+base::Optional<std::string> SerializeDictionary(const Dictionary& value) {
+  StructuredHeaderSerializer s;
+  if (s.WriteDictionary(value))
     return s.Output();
   return base::nullopt;
 }

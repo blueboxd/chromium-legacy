@@ -196,7 +196,7 @@ void SourceBufferState::SetTracksWatcher(
 }
 
 void SourceBufferState::SetParseWarningCallback(
-    const SourceBufferParseWarningCB& parse_warning_cb) {
+    SourceBufferParseWarningCB parse_warning_cb) {
   // Give the callback to |frame_processor_|; none of these warnings are
   // currently emitted elsewhere.
   frame_processor_->SetParseWarningCallback(parse_warning_cb);

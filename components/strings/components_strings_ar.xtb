@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">قطع</translation>
 <translation id="2292556288342944218">تم حظر دخولك إلى الإنترنت</translation>
 <translation id="2297722699537546652">‏B5 (مغلف)</translation>
+<translation id="2300306941146563769">لم يتم التحميل</translation>
 <translation id="2310021320168182093">‏Chou2 (مغلف)</translation>
 <translation id="2315864634253056100">يشبه اسم هذا الموقع الإلكتروني النطاق <ph name="LOOKALIKE_DOMAIN" />. يحاكي المخترِقون أحيانًا المواقع الإلكترونية من خلال إجراء تغييرات يصعب رؤيتها على عنوان الويب.</translation>
 <translation id="2316887270356262533">سيتم توفير أقل من 1 ميغابايت. وقد يتم تحميل بعض المواقع بشكل أبطأ عند زيارتها في المرة القادمة.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
 <translation id="2910133103376701357">يدير نطاق التسجيل <ph name="ENROLLMENT_DOMAIN" /> جهازك وحسابك.</translation>
 <translation id="2911973620368911614">رقم تعريف حساب العمل للمستخدم</translation>
+<translation id="2915068235268646559">مُعطّل منذ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">إغلاق البرامج الأخرى</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
 <translation id="2925673989565098301">طريقة التسليم</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">القطع بعد كل نسخة</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان من <ph name="DOMAIN2" />. وربما سبب ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
+<translation id="2943895734390379394">وقت التحميل:</translation>
 <translation id="2948083400971632585">يمكنك إيقاف أي خوادم وكيلة تمت تهيئتها لاتصال من صفحة الإعدادات.</translation>
 <translation id="2951588413176968965">صندوق بريدي الإلكتروني</translation>
 <translation id="295526156371527179">تحذير: لم يتم دمج هذه السياسة كمعجم كما هو موضح بموجب السياسة؛ لأنها ليست معجمًا.</translation>
@@ -1085,6 +1088,7 @@
 <translation id="563324245173044180">تم حظر المحتوى المُضلّل.</translation>
 <translation id="5644090287519800334">‏طباعة الجانب الأول image X shift</translation>
 <translation id="5645854190134202180">مناوبة العمل الثانية</translation>
+<translation id="5654927323611874862">مُعرّف تقرير الأعطال الذي تم تحميله:</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5663614846592581799">‏9x11 (مغلف)</translation>
 <translation id="5663955426505430495">ثبَّت مشرف هذا الجهاز الإضافات للوظائف الإضافية. يمكن للإضافات الوصول إلى بعض بياناتك.</translation>
@@ -1392,6 +1396,7 @@
 <translation id="7079718277001814089">يحتوي هذا الموقع على برامج ضارة</translation>
 <translation id="7081308185095828845">لا تتوفّر هذه الميزة على جهازك.</translation>
 <translation id="7083258188081898530">الدُرج 9</translation>
+<translation id="7086090958708083563">التحميل مطلوب بواسطة المستخدم.</translation>
 <translation id="7087282848513945231">مقاطعة</translation>
 <translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />متابعة إلى <ph name="SITE" /> (غير آمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">شهادة</translation>
 <translation id="7716147886133743102">تم الحظر من قبل المشرف</translation>
+<translation id="7716375162095500223">لم يتم التحميل أو التجاهل بعد.</translation>
 <translation id="7716424297397655342">لا يمكن تحميل موقع الويب هذا من ذاكرة التخزين المؤقت</translation>
 <translation id="7723047071702270851">تعديل البطاقة</translation>
 <translation id="7740996059027112821">عادي</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
+<translation id="8355270400102541638">سياق التعطّل على جهاز المستخدِم:</translation>
 <translation id="8363502534493474904">إيقاف "وضع الطائرة"</translation>
 <translation id="8364627913115013041">لم يتم تعيينها.</translation>
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">ترميز البيانات المتزامنة باستخدام عبارة مرور المزامنة الخاصة بك</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{بطاقة ائتمان واحدة}zero{# بطاقة ائتمان}two{بطاقتا ائتمان (#)}few{# بطاقات ائتمان}many{# بطاقة ائتمان}other{# بطاقة ائتمان}}</translation>
 <translation id="8473863474539038330">العناوين والمزيد</translation>
+<translation id="8474910779563686872">عرض تفاصيل مطوّر البرامج</translation>
 <translation id="8479754468255770962">وضع دبوس أسفل اليسار</translation>
 <translation id="8483780878231876732">‏لاستخدام البطاقات من حسابك في Google، يُرجى تسجيل الدخول إلى Chrome</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
@@ -1844,6 +1852,7 @@
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
 <translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>
+<translation id="9119042192571987207">تم التحميل</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9141013498910525015">إدارة العناوين الجغرافية</translation>

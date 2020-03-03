@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3576141592585647168">タイムゾーンを変更</translation>
+<translation id="3593646411856133110">開いているアプリを表示するには、上にスワイプして長押ししてください</translation>
 <translation id="3595596368722241419">バッテリー残量: フル</translation>
 <translation id="3604801046548457007">デスク <ph name="DESK_TITILE" /> が作成されました</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">夜間モードは日の入り時刻に自動的にオンになります</translation>
 <translation id="5750765938512549687">Bluetooth はオフです</translation>
 <translation id="576453121877257266">夜間モードはオンです。</translation>
+<translation id="5769373120130404283">プライバシー スクリーン</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> の「<ph name="ROUTE_TITLE" />」を停止します</translation>
@@ -403,6 +405,7 @@
 <translation id="6297287540776456956">タッチペンを使って部分を選択してください</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
 <translation id="6376931439017688372">Bluetooth はオンです</translation>
+<translation id="6381109794406942707">デバイスのロックを解除するには PIN を入力してください。</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" /></translation>
@@ -614,6 +617,7 @@
 <translation id="9072519059834302790">あと <ph name="TIME_LEFT" />で電池がなくなります。</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ホームに移動するには上にスワイプしてください</translation>
 <translation id="9080206825613744995">マイクは使用中です。</translation>
 <translation id="9084606467167974638">メニューの位置を切り替え</translation>
 <translation id="9089416786594320554">入力方法</translation>

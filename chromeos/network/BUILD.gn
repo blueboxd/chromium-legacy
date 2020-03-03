@@ -71,6 +71,7 @@ component("network") {
     "network_certificate_handler.h",
     "network_configuration_handler.cc",
     "network_configuration_handler.h",
+    "network_configuration_observer.cc",
     "network_configuration_observer.h",
     "network_connect.cc",
     "network_connect.h",

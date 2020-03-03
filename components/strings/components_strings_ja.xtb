@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">トリミング</translation>
 <translation id="2292556288342944218">インターネット アクセスがブロックされています</translation>
 <translation id="2297722699537546652">B5（封筒）</translation>
+<translation id="2300306941146563769">アップロードされていません</translation>
 <translation id="2310021320168182093">長2（封筒）</translation>
 <translation id="2315864634253056100">このサイトの名前は <ph name="LOOKALIKE_DOMAIN" /> と似ているようです。不正なユーザーが、ウェブアドレスを一目ではわからないように改変してサイトを偽装している可能性があります。</translation>
 <translation id="2316887270356262533">最大で 1 MB を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
@@ -438,6 +439,7 @@
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2910133103376701357">ご使用のデバイスとアカウントは <ph name="ENROLLMENT_DOMAIN" /> で管理されています。</translation>
 <translation id="2911973620368911614">ジョブ管理ユーザー ID</translation>
+<translation id="2915068235268646559"><ph name="CRASH_TIME" /> のクラッシュ</translation>
 <translation id="2916038427272391327">他のプログラムを終了する</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
 <translation id="2925673989565098301">配達方法</translation>
@@ -446,6 +448,7 @@
 <translation id="2930577230479659665">トリミング（コピー単位）</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は <ph name="DOMAIN2" /> から発行されています。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="2943895734390379394">アップロード時間:</translation>
 <translation id="2948083400971632585">接続用に設定されたプロキシは、設定ページで無効にできます。</translation>
 <translation id="2951588413176968965">自分の用紙受け</translation>
 <translation id="295526156371527179">警告: このポリシーは辞書でないため、ポリシーで指定されているとおりに辞書として統合されませんでした。</translation>
@@ -1078,6 +1081,7 @@
 <translation id="563324245173044180">不正の可能性があるコンテンツがブロックされました。</translation>
 <translation id="5644090287519800334">1 面の画像の X 軸移動</translation>
 <translation id="5645854190134202180">2 番目のシフト</translation>
+<translation id="5654927323611874862">アップロード済みのクラッシュ レポート ID:</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5663614846592581799">9x11（封筒）</translation>
 <translation id="5663955426505430495">このデバイスの管理者によって、機能を追加する拡張機能がインストールされました。この拡張機能では、ユーザーデータの一部にアクセスする場合があります。</translation>
@@ -1385,6 +1389,7 @@
 <translation id="7079718277001814089">このサイトには不正なソフトウェアが含まれています</translation>
 <translation id="7081308185095828845">この機能はお使いのデバイスではご利用いただけません</translation>
 <translation id="7083258188081898530">トレイ 9</translation>
+<translation id="7086090958708083563">ユーザーからアップロードがリクエストされました</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
 <translation id="7108338896283013870">非表示</translation>
@@ -1547,6 +1552,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">証明書</translation>
 <translation id="7716147886133743102">管理者によってブロック</translation>
+<translation id="7716375162095500223">まだアップロードされていないか、無視されました</translation>
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7723047071702270851">カードの編集</translation>
 <translation id="7740996059027112821">標準</translation>
@@ -1691,6 +1697,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">有害なプログラムが削除されるより前に<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>
+<translation id="8355270400102541638">ローカル クラッシュ コンテキスト:</translation>
 <translation id="8363502534493474904">機内モードをオフにする</translation>
 <translation id="8364627913115013041">未設定</translation>
 <translation id="8368476060205742148">Google Play 開発者サービス</translation>
@@ -1711,6 +1718,7 @@
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 件のクレジット カード}other{# 件のクレジット カード}}</translation>
 <translation id="8473863474539038330">住所やその他の情報</translation>
+<translation id="8474910779563686872">デベロッパーの詳細を表示</translation>
 <translation id="8479754468255770962">ステープル（左下）</translation>
 <translation id="8483780878231876732">Google アカウントに保存したカードを使用するには Chrome にログインしてください</translation>
 <translation id="8488350697529856933">適用先</translation>
@@ -1837,6 +1845,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9106062320799175032">請求先住所の追加</translation>
 <translation id="9114524666733003316">カードを確認しています…</translation>
+<translation id="9119042192571987207">アップロード済み</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9141013498910525015">住所を管理</translation>

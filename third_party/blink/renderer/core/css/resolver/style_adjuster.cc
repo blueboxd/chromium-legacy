@@ -572,37 +572,39 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
-static void AdjustStateForRenderSubtree(ComputedStyle& style,
+static void AdjustStateForSubtreeVisibility(ComputedStyle& style,
                                         Element* element) {
   if (!element)
     return;
 
-  bool should_be_invisible = style.RenderSubtreeInvisible();
+  bool should_be_visible = style.SubtreeVisibility() == ESubtreeVisibility::kVisible;
   auto* context = element->GetDisplayLockContext();
-
-  // Return early if there's no context and no render-subtree invisible token.
-  if (!should_be_invisible && !context)
-    return;
-
-  // Create a context if we need to be invisible.
-  if (should_be_invisible && !context) {
+  if (!context) {
+    // Return early if there is no context and we should be visible.
+    if (should_be_visible)
+      return;
     context = &element->EnsureDisplayLockContext();
   }
-  DCHECK(context);
 
   uint16_t activation_mask =
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
-  if (style.RenderSubtreeSkipActivation()) {
-    activation_mask = 0;
-  } else if (style.RenderSubtreeSkipViewportActivation()) {
-    activation_mask &=
-        ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
+  switch (style.SubtreeVisibility()) {
+    case ESubtreeVisibility::kVisible:
+    case ESubtreeVisibility::kAuto:
+      break;
+    case ESubtreeVisibility::kHidden:
+      activation_mask = 0;
+      break;
+    case ESubtreeVisibility::kHiddenMatchable:
+      activation_mask &=
+          ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
+      break;
   }
 
   // Propagate activatable style to context.
   context->SetActivatable(activation_mask);
 
-  if (should_be_invisible) {
+  if (!should_be_visible) {
     // Add containment to style if we're invisible.
     auto contain = style.Contain() | kContainsStyle | kContainsLayout;
     // If we haven't activated, then we should also contain size. This means
@@ -676,8 +678,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
-  if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
-    AdjustStateForRenderSubtree(style, element);
+  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    AdjustStateForSubtreeVisibility(style, element);
 
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&

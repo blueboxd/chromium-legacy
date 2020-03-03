@@ -106,6 +106,7 @@ void QuotaManagerProxy::NotifyWriteFailed(const url::Origin& origin) {
     io_thread_->PostTask(
         FROM_HERE,
         base::BindOnce(&QuotaManagerProxy::NotifyWriteFailed, this, origin));
+    return;
   }
   if (manager_)
     manager_->NotifyWriteFailed(origin);

@@ -1947,7 +1947,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -2393,7 +2392,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_coverage_data": true,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
@@ -3266,7 +3264,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -3742,7 +3739,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_coverage_data": true,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {

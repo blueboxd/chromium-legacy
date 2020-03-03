@@ -51,6 +51,10 @@ views::View* ShelfTestApi::GetHomeButton() {
   return GetShelfWidget()->navigation_widget()->GetHomeButton();
 }
 
+bool ShelfTestApi::HasLoginShelfGestureHandler() const {
+  return GetShelfWidget()->login_shelf_gesture_controller_for_testing();
+}
+
 ScrollableShelfInfo ShelfTestApi::GetScrollableShelfInfoForState(
     const ScrollableShelfState& state) {
   const auto* scrollable_shelf_view = GetScrollableShelfView();

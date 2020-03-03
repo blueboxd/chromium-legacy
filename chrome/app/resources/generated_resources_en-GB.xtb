@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">On – customised settings</translation>
 <translation id="1489664337021920575">Choose another option</translation>
 <translation id="1493892686965953381">Waiting for <ph name="LOAD_STATE_PARAMETER" />...</translation>
+<translation id="1494438840282430403">Also clear browsing data (<ph name="URL" />) which may sign you out of Google.com.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> other available devices.</translation>
 <translation id="1495677929897281669">Back to tab</translation>
 <translation id="1499271269825557605">If you don’t recognise an extension, or if your browser isn’t working as expected, you can turn off or customise extensions here.</translation>
@@ -1178,7 +1179,9 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2586672484245266891">Please enter a shorter URL</translation>
 <translation id="2587922766792651800">Timed out</translation>
 <translation id="2588636910004461974">Devices from <ph name="VENDOR_NAME" /></translation>
+<translation id="2593594315333286814">Accessibility settings for navigation</translation>
 <translation id="2594999711683503743">Search Google or type URL</translation>
+<translation id="2602501489742255173">Swipe up to get started</translation>
 <translation id="2603115962224169880">Clean up computer</translation>
 <translation id="2603463522847370204">Open in &amp;Incognito window</translation>
 <translation id="2604255671529671813">Network connection error</translation>
@@ -1340,6 +1343,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2804043232879091219">The alternative browser could not be opened</translation>
 <translation id="2804667941345577550">You’ll be signed out of this site, including in open tabs</translation>
 <translation id="2804680522274557040">Camera turned off</translation>
+<translation id="2805539617243680210">You're ready!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2805770823691782631">Additional details</translation>
@@ -1423,6 +1427,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2903457445916429186">Open selected items</translation>
 <translation id="2903882649406874750">Always block <ph name="HOST" /> from accessing sensors</translation>
 <translation id="2904456025988372123">Ask when a site tries to download files automatically after the first file</translation>
+<translation id="2905990582795979495">You are ready to use your <ph name="DEVICE_TYPE" />. Get <ph name="DEVICE_TYPE" /> tips and updates on Google products and share feedback. Unsubscribe at any time.</translation>
 <translation id="2907619724991574506">Startup URLs</translation>
 <translation id="2907798539022650680">Failed to connect to '<ph name="NAME" />': <ph name="DETAILS" />
     Server message: <ph name="SERVER_MSG" /></translation>
@@ -1696,6 +1701,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="3308134619352333507">Hide Button</translation>
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
+<translation id="3311445899360743395">Data associated with this app may be removed from this device.</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
 <translation id="3313622045786997898">Certificate Signature Value</translation>
 <translation id="3315158641124845231">Hide <ph name="PRODUCT_NAME" /></translation>
@@ -1956,6 +1962,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3670229581627177274">Turn on Bluetooth</translation>
 <translation id="3672681487849735243">A factory error has been detected</translation>
 <translation id="367645871420407123">leave empty if you want to set the root password to the default test image value</translation>
+<translation id="3677106374019847299">Enter custom provider</translation>
 <translation id="3677657024345889897">Quietest</translation>
 <translation id="3677911431265050325">Request mobile site</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
@@ -2076,6 +2083,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3816118180265633665">Chrome colours</translation>
 <translation id="3817524650114746564">Open your computer's proxy settings</translation>
 <translation id="3817579325494460411">Not provided</translation>
+<translation id="381892968844315516">Plugin VM isn't allowed on this device. Contact your organisation's device administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Back Up</translation>
 <translation id="3819261658055281761">The system failed to store the long-term API access token for this device.</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
@@ -2458,6 +2466,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4378154925671717803">Phone</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4378556263712303865">Device requisition</translation>
+<translation id="4379281552162875326">Uninstall '<ph name="APP_NAME" />'?</translation>
 <translation id="4380648069038809855">Entered full screen</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, +1 more account}other{<ph name="EMAIL" />, +<ph name="EXTRA_ACCOUNTS" /> more accounts}}</translation>
 <translation id="4384312707950789900">Add to preferred</translation>
@@ -2703,7 +2712,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4737715515457435632">Please connect to a network</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> and 1 more page}other{<ph name="PAGE_TITLE" /> and # more pages}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Find out how to update applications<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Unmute site}other{Unmute sites}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -3325,6 +3333,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5618075537869101857">Oh no, the kiosk application could not be launched.</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
 <translation id="56197088284879152">Connection is congested to remote device: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="5620549857835247159">Show Launcher, Back and Overview buttons in shelf in tablet mode.</translation>
 <translation id="5620568081365989559">DevTools requests full access to <ph name="FOLDER_PATH" />. Make sure that you do not expose any sensitive information.</translation>
 <translation id="5620612546311710611">usage statistics</translation>
 <translation id="5620655347161642930">Export passwords…</translation>
@@ -3856,6 +3865,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6349101878882523185">Install <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sync isn’t working. Try signing out and back in again.</translation>
 <translation id="6351063337294363751">You can clear your browsing data from this menu</translation>
+<translation id="6352223293513723497">Your device is low on storage space. Please free up space to use Plugin VM.</translation>
 <translation id="6352773953037195952">Highest</translation>
 <translation id="6354918092619878358">SECG elliptic curve secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Keep device turned on</translation>
@@ -4134,12 +4144,14 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6758056191028427665">Let us know how we’re doing.</translation>
 <translation id="6759193508432371551">Factory reset</translation>
 <translation id="6762833852331690540">On</translation>
+<translation id="6764693078871405569">Also clear browsing data (<ph name="URL" />) which will sign you out of <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Choose another language…</translation>
 <translation id="6767639283522617719">Can’t join the domain. Make sure that the settings are correct for the organisational unit.</translation>
 <translation id="6769712124046837540">Adding printer...</translation>
 <translation id="6770664076092644100">Verify via NFC</translation>
 <translation id="6771503742377376720">Is a Certification Authority</translation>
 <translation id="6772339735733515807">Manage your extensions</translation>
+<translation id="6774271858705413900">Something went wrong. Please wait a few minutes and run Plugin VM again.</translation>
 <translation id="6774402201608588477">You turned one bad extension back on</translation>
 <translation id="6775163072363532304">Available devices will appear here.</translation>
 <translation id="6777817260680419853">Redirect blocked</translation>
@@ -5216,7 +5228,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8214489666383623925">Open File...</translation>
 <translation id="8214962590150211830">Remove This Person</translation>
 <translation id="8215295261562449873">Back up my apps and files to the downloads folder before upgrading Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> and 1 more page}other{<ph name="PAGE_TITLE" /> and # more pages}}</translation>
 <translation id="8217399928341212914">Continue blocking automatic downloads of multiple files</translation>
 <translation id="8218847192766059983">Add languages or reorder list. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">You usually block notifications. To let this site notify you, click here.</translation>
@@ -5429,6 +5440,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="851263357009351303">Always allow <ph name="HOST" /> to show images</translation>
 <translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="8514746246728959655">Try a different security key</translation>
+<translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8521475323816527629">Get to your apps fast</translation>
 <translation id="8523493869875972733">Keep Changes</translation>
 <translation id="8523849605371521713">Added by policy</translation>
@@ -5443,6 +5455,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8538358978858059843">Enable cloud services for Cast?</translation>
 <translation id="8539727552378197395">No (HttpOnly)</translation>
 <translation id="8539766201049804895">Upgrade</translation>
+<translation id="8540136935098276800">Enter a correctly formatted URL</translation>
 <translation id="8540608333167683902">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>
 <translation id="8541462173655894684">Did not find any printers from the print server</translation>
 <translation id="8542618328173222274">Ask when a site wants to use your virtual reality devices and data</translation>
@@ -5459,6 +5472,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8551388862522347954">Licences</translation>
 <translation id="8553342806078037065">Manage other people</translation>
 <translation id="8554899698005018844">No language</translation>
+<translation id="8556135141412663091">Your device needs to be updated before you can use Plugin VM.</translation>
 <translation id="8557022314818157177">Keep touching your security key until your fingerprint is captured</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
 <translation id="8557930019681227453">Manifest</translation>
@@ -5549,6 +5563,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8673383193459449849">Server problem</translation>
 <translation id="8675354002693747642">Pre-shared key</translation>
 <translation id="8676374126336081632">Clear input</translation>
+<translation id="8676770494376880701">Low-power charger connected</translation>
 <translation id="8677212948402625567">Collapse all...</translation>
 <translation id="8678648549315280022">Manage download settings...</translation>
 <translation id="8678933587484842200">How would you like this application to launch?</translation>
@@ -5709,6 +5724,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8871696467337989339">You are using an unsupported command-line flag: <ph name="BAD_FLAG" />. Stability and security will suffer.</translation>
 <translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8872155268274985541">Invalid Kiosk external update manifest file found. Failed to update Kiosk app. Please remove the USB stick.</translation>
+<translation id="8872187374998143710">Please restart your device to use Plugin VM.</translation>
 <translation id="8872777911145321141">Ask when a site wants to use your virtual reality devices and data (recommended)</translation>
 <translation id="8874184842967597500">Not connected</translation>
 <translation id="8876307312329369159">This setting can't be changed in a demo session.</translation>

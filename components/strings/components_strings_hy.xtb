@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Կտրել</translation>
 <translation id="2292556288342944218">Համացանցի մուտքն արգելափակված է</translation>
 <translation id="2297722699537546652">B5 (ծրար)</translation>
+<translation id="2300306941146563769">Վերբեռնված չէ</translation>
 <translation id="2310021320168182093">Chou2 (ծրար)</translation>
 <translation id="2315864634253056100">Այս կայքի անունը նման է <ph name="LOOKALIKE_DOMAIN" /> տիրույթի անվանը: Հաքերները երբեմն ստեղծում են կայքերի կրկնօրինակներ՝ փոքր-ինչ փոփոխելով դրանց տիրույթի հասցեները, ինչը հնարավոր չէ միանգամից նկատել։</translation>
 <translation id="2316887270356262533">Կազատվի մինչև 1 ՄԲ տարածք։ Դրանից հետո որոշ կայքեր հնարավոր է՝ ավելի դանդաղ բեռնվեն։</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">Ցանցը փոփվել է:</translation>
 <translation id="2910133103376701357">Ձեր սարքն ու հաշիվը կառավարվում են <ph name="ENROLLMENT_DOMAIN" /> տիրույթի կողմից:</translation>
 <translation id="2911973620368911614">Աշխատանքային հաշվի օգտատիրոջ ID</translation>
+<translation id="2915068235268646559">Խափանման օրը և ժամը՝ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Փակեք մյուս ծրագրերը</translation>
 <translation id="2922350208395188000">Հնարավոր չէ ստուգել սերվերի վկայագիրը:</translation>
 <translation id="2925673989565098301">Առաքման եղանակը</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">Կտրել յուրաքանչյուր օրինակից հետո</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Դրա անվտանգության վկայականը <ph name="DOMAIN2" />-ից է: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
+<translation id="2943895734390379394">Վերբեռնման օրը և ժամը՝</translation>
 <translation id="2948083400971632585">Դուք կարող եք անջատել կապակցման համար օգտագործվող պրոքսի-սերվերները ները կարգավորումների էջից:</translation>
 <translation id="2951588413176968965">Իմ փոստարկղը</translation>
 <translation id="295526156371527179">Զգուշացում. այս կանոնը չի միավորվել որպես բառարան, ինչպես նշված է կանոնում, քանի որ այն բառարան չէ:</translation>
@@ -1085,6 +1088,7 @@
 <translation id="563324245173044180">Խարդախություն պարունակող բովանդակությունն արգելափակված է</translation>
 <translation id="5644090287519800334">Պատկերների տեղաշարժ երեսի կողմից՝ X առանցքով</translation>
 <translation id="5645854190134202180">Մինչև երկրորդ հերթափոխը</translation>
+<translation id="5654927323611874862">Խափանման մասին թարմացված հաշվետվության ID՝</translation>
 <translation id="5659593005791499971">Էլփոստ</translation>
 <translation id="5663614846592581799">9x11 (ծրար)</translation>
 <translation id="5663955426505430495">Այս սարքի ադմինիստրատորը լրացուցիչ գործառույթների համար ընդլայնումներ է տեղադրել: Ձեր տվյալների մի մասը հասանելի է այդ ընդլայնումներին:</translation>
@@ -1392,6 +1396,7 @@
 <translation id="7079718277001814089">Այս կայքը վնասաբեր ծրագիր է պարունակում</translation>
 <translation id="7081308185095828845">Այս գործառույթը հասանելի չէ ձեր սարքում</translation>
 <translation id="7083258188081898530">Դարակ 9</translation>
+<translation id="7086090958708083563">Օգտատերը վերբեռնման հայտ է ուղարկել</translation>
 <translation id="7087282848513945231">Կոմսություն</translation>
 <translation id="7090678807593890770">Որոնեք Google-ում «<ph name="LINK" />» հարցումով</translation>
 <translation id="7108338896283013870">Թաքցնել</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Անցնել <ph name="SITE" /> (ապահով չէ)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Վկայագիր</translation>
 <translation id="7716147886133743102">Արգելափակվել է ձեր ադմինիստրատորի կողմից</translation>
+<translation id="7716375162095500223">Անտեսվել է կամ դեռ չի վերբեռնվել</translation>
 <translation id="7716424297397655342">Այս կայքը չի կարող բեռնվել հիշապահեստից</translation>
 <translation id="7723047071702270851">Փոփոխեք քարտի տվյալները</translation>
 <translation id="7740996059027112821">Ստանդարտ</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Եթե դուք գիտակցում եք անվտանգության հետ կապված ռիսկերը, ապա կարող եք <ph name="BEGIN_LINK" />այցելել այս կայքը<ph name="END_LINK" /> նախքան վնասաբեր ծրագրերը հեռացնելը:</translation>
 <translation id="8349305172487531364">Էջանիշների գոտի</translation>
+<translation id="8355270400102541638">Խափանման լոկալ կոնտեքստը՝</translation>
 <translation id="8363502534493474904">Անջատել Ավիառեժիմը</translation>
 <translation id="8364627913115013041">Կարգավորված չէ:</translation>
 <translation id="8368476060205742148">Google Play-ի ծառայություններ</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">Գաղտնագրել համաժամացված տվյալները սեփական համաժամացման անցաբառով</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 վարկային քարտ}one{# credit cards}other{# վարկային քարտ}}</translation>
 <translation id="8473863474539038330">Հասցեներ և այլ տեղեկություններ</translation>
+<translation id="8474910779563686872">Ցուցադրել մշակողի տվյալները</translation>
 <translation id="8479754468255770962">Ամրակ ներքևի ձախ կողմում</translation>
 <translation id="8483780878231876732">Google հաշվի քարտերն օգտագործելու համար Chrome-ում մուտք գործեք ձեր հաշիվ</translation>
 <translation id="8488350697529856933">Վերաբերում է՝</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690">Ձեր տվյալները պաշտպանելու համար <ph name="SITE" /> կայքը սովորաբար գաղտնագրում է օգտագործում: Chromium-ի՝ <ph name="SITE" /> կայքին կապակցվելու փորձի ժամանակ կայքը վերադարձրեց արտասովոր և սխալ մուտքային տվյալներ: Հնարավոր է, որ <ph name="SITE" /> կայքի անվան տակ նենգորդ է հանդես գալիս, կամ Wi-Fi մուտքի էկրանի կապն ընդհատվել է: Ձեր տվյալները, այնուամենայնիվ, ապահով են, քանի որ Chromium-ն ընդհատել էր կապը՝ նախքան տեղի կունենար տվյալների փոխանակում:</translation>
 <translation id="9106062320799175032">Ավելացրեք վճարային հասցեն</translation>
 <translation id="9114524666733003316">Քարտի հաստատում...</translation>
+<translation id="9119042192571987207">Վերբեռնված է</translation>
 <translation id="9128870381267983090">Կապակցեք ցանցին</translation>
 <translation id="9137013805542155359">Ցույց տալ բնօրինակը</translation>
 <translation id="9141013498910525015">Կառավարել հասցեները</translation>

@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Tovább</translation>
 <translation id="1206619573307042055">fényújság</translation>
 <translation id="1207086294218137981">Nincs következő 4. szintű címsor</translation>
+<translation id="1212770441379271564">A következő néhány billentyűparancs nem ChromeVox-parancs, de nagyon hasznosak, ha a lehető legtöbbet szeretné kihozni a Chrome-ból.
+    A kattintható elemek (például a gombok és linkek) közötti előre történő navigációhoz nyomja le a Tab billentyűt. A visszafelé történő navigáláshoz nyomja le a Shift + Tab billentyűkombinációt.
+    A Chrome böngésző címsávjába (avagy cím- és keresősávjába) lépéshez nyomja le a Control + L billentyűkombinációt.
+    Új lap megnyitásához és az automatikus ráváltáshoz nyomja le a Control + T billentyűkombinációt. A kurzor a cím- és keresősávba kerül.
+    Az adott lap bezárásához nyomja le a Control + W billentyűkombinációt.
+    A megnyitott lapok közötti előrelépéshez használja a Control + Tab billentyűkombinációt.
+    A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyűkombinációt.</translation>
 <translation id="1213216066620407844">ChromeVox – A Chrome megszólaltatása</translation>
 <translation id="1225969361094801578">Sötét palaszürke</translation>
 <translation id="1229276918471378188">Előző ugrás</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">színválasztó</translation>
 <translation id="4221012616705981690">Nincs előző lista</translation>
 <translation id="4221071177874897997">Félkövér jelzése:</translation>
+<translation id="4225355998815256469">Űrlapvezérlők</translation>
 <translation id="4229646983878045487">dátum idő</translation>
 <translation id="4230834257931120629">Világos palaszürke</translation>
 <translation id="4231102694147661229">Fejlesztői beállítások engedélyezése</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Mondat</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Nyomja meg a ChromeVox o, n billentyűket, ha többet szeretne megtudni az újdonságokról</translation>
+<translation id="4646606380313237501">{"ar": "arab",
+    "as": "asszámi",
+    "aw": "avadhi",
+    "be": "bengáli",
+    "bg": "bolgár",
+    "bh": "bihari",
+    "bo": "tibeti",
+    "br": "braj",
+    "ca": "katalán",
+    "ckb": "szorani",
+    "cs": "cseh",
+    "cy": "walesi",
+    "da": "dán",
+    "de": "német",
+    "de_CH": "német (Svájc)",
+    "de_DE": "német (Németország)",
+    "dra": "dravida",
+    "el": "görög",
+    "en": "angol",
+    "en_CA": "angol (Kanada)",
+    "en_GB": "angol (Egyesült Királyság)",
+    "en_US": "angol (Amerikai Egyesült Államok)",
+    "eo": "eszperantó",
+    "es": "spanyol",
+    "et": "észt",
+    "fa": "perzsa",
+    "fr": "francia",
+    "fr_CA": "francia (Kanada)",
+    "fr_FR": "francia (Franciaország)",
+    "fi": "finn",
+    "ga": "ír",
+    "gd": "gael",
+    "gon": "gondi",
+    "gu": "gudzsaráti",
+    "he": "héber",
+    "hi": "hindi",
+    "hr": "horvát",
+    "hu": "magyar",
+    "hy": "örmény",
+    "is": "izlandi",
+    "it": "olasz",
+    "iu": "inuktitut",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "koreai",
+    "kok": "konkani",
+    "kru": "kurukh",
+    "ks": "kasmíri",
+    "lt": "litván",
+    "lv": "lett",
+    "mao": "maori",
+    "ml": "malajálam",
+    "mt": "máltai",
+    "mwr": "marwari",
+    "mn": "mongol",
+    "mun": "munda",
+    "nb": "norvég bokmål",
+    "ne": "nepáli",
+    "nl": "holland",
+    "no": "norvég",
+    "or": "oriya",
+    "pi": "páli",
+    "pl": "lengyel",
+    "pt": "portugál",
+    "pu": "pandzsábi",
+    "ro": "román",
+    "ru": "orosz",
+    "sa": "szanszkrit",
+    "si": "szindhi",
+    "sin": "szingaléz",
+    "sk": "szlovák",
+    "sl": "szlovén",
+    "sr": "szerb",
+    "sv": "svéd",
+    "ta": "tamil",
+    "te": "telugu",
+    "tr": "török",
+    "tsn": "afrikaans",
+    "uk": "ukrán",
+    "ur": "urdu",
+    "vi": "vietnámi",
+    "zh": "kínai",
+    "zh_TW": "kínai (hagyományos han)"}</translation>
 <translation id="4647836961514597010">Színválasztó</translation>
 <translation id="4660783501463101648">A hagyományos verzió eltávolítva. A ChromeVox hagyományos verziójára való váltásra alkalmas billentyűzetkapcsolót eltávolítottuk.</translation>
 <translation id="4661075872484491155">fa</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Beragadó mód bekapcsolva</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vessző}other{# vessző}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, szövegmező</translation>
+<translation id="532485153932049746">Szövegformázás
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Mindössze egy vagy kettő kapcsolóval vezérelheti az eszközt.</translation>
 <translation id="5336381510091010269">automatikus kiegészítés (szövegközi és lista)</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Modális riasztás</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{pontosvessző}other{# pontosvessző}}</translation>
+<translation id="5420259671171615858">Keresés a menükben</translation>
 <translation id="5435274640623994081">Hangjelzés naplózásának engedélyezése</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kisebb jel}other{# kisebb jel}}</translation>
 <translation id="5444587279251314700">(aktív)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Észlelt helyesírási hiba</translation>
 <translation id="7408482676469142474">tábl</translation>
 <translation id="7425395583360211003">ugrás a sor elejére</translation>
+<translation id="7429415133937917139">Frissíthető Braille-kijelző kimenetét szimulálja a képernyő tetején elhelyezkedő ChromeVox-panelen</translation>
 <translation id="7434509671034404296">Fejlesztőknek</translation>
 <translation id="743783356331413498">Példa</translation>
 <translation id="7439060726180460871">Címtár</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Előző választógomb</translation>
 <translation id="7701196182766842984">automatikus kiegészítés lista</translation>
 <translation id="7714340021005120797">Nincs következő kombinált mező</translation>
+<translation id="772146615414628379">Gratulálunk! Megtanulta a ChromeVox használatának alapjait. Ne feledje, hogy bármikor megnyithatja a ChromeVox parancsmenüjét a Keresés + pont billentyűkombinációval. Az alábbi cikkekből még többet megtudhat a ChromeVoxról és a Chrome OS-ről.
+    Ha végzett az oktatással, kattintson a Bezárás gombra a ChromeVox segítségével.</translation>
 <translation id="7724603315864178912">Kivágás</translation>
 <translation id="7731785449856576010">Nincs következő médiamodul</translation>
 <translation id="773906353055481349">A cellánkénti mozgáshoz használja a Keresés+Ctrl+Alt és a nyílbillentyűket</translation>

@@ -2681,7 +2681,6 @@
 <translation id="4737715515457435632">请连接到网络</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4739639199548674512">票据</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{“<ph name="PAGE_TITLE" />”以及另外 1 个网页}other{“<ph name="PAGE_TITLE" />”以及另外 # 个网页}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />了解如何更新应用<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{将这个网站取消静音}other{将这些网站取消静音}}</translation>
 <translation id="4746351372139058112">信息</translation>
@@ -5183,7 +5182,6 @@
 <translation id="8214489666383623925">打开文件...</translation>
 <translation id="8214962590150211830">移除此用户</translation>
 <translation id="8215295261562449873">在升级 Linux 之前，将我的应用和文件备份到“下载内容”文件夹。</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{“<ph name="PAGE_TITLE" />”以及另外 1 个网页}other{“<ph name="PAGE_TITLE" />”以及另外 # 个网页}}</translation>
 <translation id="8217399928341212914">继续阻止自动下载多个文件</translation>
 <translation id="8218847192766059983">添加语言或调整列表中的语言排序。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">您通常会屏蔽通知。要允许此网站向您发送通知，请点击此处。</translation>
@@ -5394,6 +5392,7 @@
 <translation id="851263357009351303">始终允许 <ph name="HOST" /> 显示图片</translation>
 <translation id="8513108775083588393">自动旋转屏幕</translation>
 <translation id="8514746246728959655">尝试改用一个不同的安全密钥</translation>
+<translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
 <translation id="8521475323816527629">快速访问您的应用</translation>
 <translation id="8523493869875972733">保留更改</translation>
 <translation id="8523849605371521713">按政策添加</translation>
@@ -5514,6 +5513,7 @@
 <translation id="8673383193459449849">服务器出现问题</translation>
 <translation id="8675354002693747642">预共享密钥</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
+<translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="8677212948402625567">全部收起...</translation>
 <translation id="8678648549315280022">管理下载设置…</translation>
 <translation id="8678933587484842200">您希望通过何种方式启动此应用？</translation>

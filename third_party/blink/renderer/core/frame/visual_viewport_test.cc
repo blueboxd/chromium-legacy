@@ -2747,9 +2747,8 @@ TEST_F(VisualViewportSimTest, UsedColorSchemeFromRootElement) {
   ScopedCSSColorSchemeForTest color_scheme_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest color_scheme_ua_enabled(true);
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(*(WebView().GetPage()),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(*(WebView().GetPage()));
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   WebView().MainFrameWidget()->Resize(WebSize(400, 600));
 
   const VisualViewport& visual_viewport =

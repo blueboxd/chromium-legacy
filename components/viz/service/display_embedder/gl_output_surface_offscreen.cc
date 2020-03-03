@@ -50,6 +50,7 @@ void GLOutputSurfaceOffscreen::EnsureBackbuffer() {
     const uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
                            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                            gpu::SHARED_IMAGE_USAGE_DISPLAY;
+
     mailbox_ = sii->CreateSharedImage(kFboTextureFormat, texture_size,
                                       color_space_, flags);
 

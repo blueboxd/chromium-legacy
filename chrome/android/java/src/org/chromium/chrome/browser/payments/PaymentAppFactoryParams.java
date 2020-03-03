@@ -86,4 +86,9 @@ public interface PaymentAppFactoryParams {
     default PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
         return null;
     }
+
+    /** @return The currency of the total amount. Should not be null. */
+    default String getTotalAmountCurrency() {
+        return null;
+    }
 }

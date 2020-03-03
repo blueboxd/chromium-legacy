@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2179182049312275900">Du kan til enhver tid aktivere synkronisering i indstillingerne.</translation>
 <translation id="2198757192731523470">Google kan bruge din historik til at tilpasse Søgning, annoncer og andre Google-tjenester.</translation>
+<translation id="2218443599109088993">Zoom ud</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2239626343334228536">Browserdata ryddes...</translation>
 <translation id="2257567812274161158">Der kunne ikke synkroniseres.</translation>
@@ -417,6 +418,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6464071786529933911">Åbn på ny inkognitofane</translation>
 <translation id="6476800141292307438">Siden oversættes til <ph name="LANGUAGE" />. Valgmulighederne findes nederst på skærmen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
+<translation id="6561262006871132942">Zoom ind</translation>
 <translation id="6610002944194042868">Valgmuligheder for oversættelse</translation>
 <translation id="6628106477656132239">Udløbsdatoen er ugyldig</translation>
 <translation id="6638511529934826365">Zoom ind/ud på tekst…</translation>

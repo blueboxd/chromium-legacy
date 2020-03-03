@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
 <translation id="129382876167171263">W tym miejscu pojawiają się pliki zapisane przez witryny</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
+<translation id="1303339473099049190">Nie udało się znaleźć tego hasła. Sprawdź pisownię i spróbuj jeszcze raz.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – wysłane z: <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupuj karty</translation>
+<translation id="1311657260431405215">Ten kod QR nie jest adresem URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Historia nawigacji jest otwarta</translation>
 <translation id="1331212799747679585">Nie udało się zaktualizować Chrome. Więcej opcji</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
@@ -323,6 +325,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3350687908700087792">Zamknij wszystkie karty incognito</translation>
 <translation id="3353615205017136254">Lżejsza wersja strony dostarczona przez Google. Aby wczytać oryginalną wersję, kliknij przycisk Załaduj oryginał.</translation>
 <translation id="3367813778245106622">Zaloguj się ponownie, by rozpocząć synchronizację</translation>
+<translation id="3373979091428520308">Aby udostępnić tę stronę na innym urządzeniu, włącz synchronizację w ustawieniach Chrome na obu urządzeniach</translation>
 <translation id="3374023511497244703">Twoje zakładki, historia, hasła i inne dane z Chrome nie będą już synchronizowane z kontem Google</translation>
 <translation id="3384347053049321195">Udostępnij zdjęcie</translation>
 <translation id="3386292677130313581">Pytaj, zanim udostępnisz stronom swoją lokalizację (zalecane)</translation>
@@ -672,6 +675,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5956665950594638604">Otwórz Centrum pomocy Chrome w nowej karcie</translation>
 <translation id="5958275228015807058">Znajdź pliki i strony w Pobranych plikach</translation>
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
+<translation id="5964805880140440652">Aby udostępnić tę stronę na innym urządzeniu, włącz synchronizację w ustawieniach Chrome.</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
 <translation id="6005538289190791541">Proponowane hasło</translation>
 <translation id="6036057147555329831">Dodatkowy moduł ICU</translation>

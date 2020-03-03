@@ -22,11 +22,20 @@ class WebStateListObserver {
     // the active WebState change.
     CHANGE_REASON_NONE = 0,
 
-    // Used to indicate the active WebState changed because it was replaced.
+    // Used to indicate the active WebState changed because active WebState was
+    // replaces.
     CHANGE_REASON_REPLACED = 1 << 0,
 
-    // Used to indicate the active WebState changed due to a user action.
-    CHANGE_REASON_USER_ACTION = 1 << 1,
+    // Used to indicate the active WebState changed because it was activated.
+    CHANGE_REASON_ACTIVATED = 1 << 1,
+
+    // Used to indicate the active WebState changed because active WebState was
+    // closed.
+    CHANGE_REASON_CLOSED = 1 << 2,
+
+    // Used to indicate the active WebState changed because a new active
+    // WebState was inserted.
+    CHANGE_REASON_INSERTED = 1 << 3,
   };
 
   WebStateListObserver();
@@ -76,9 +85,7 @@ class WebStateListObserver {
 
   // Invoked after |new_web_state| was activated at the specified index. Both
   // WebState are either valid or null (if there was no selection or there is
-  // no selection). If |reason| has CHANGE_REASON_USER_ACTION set then the
-  // change is due to an user action. If |reason| has CHANGE_REASON_REPLACED
-  // set then the change is caused because the WebState was replaced.
+  // no selection). See ChangeReason enum for possible values for |reason|.
   virtual void WebStateActivatedAt(WebStateList* web_state_list,
                                    web::WebState* old_web_state,
                                    web::WebState* new_web_state,

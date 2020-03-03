@@ -186,8 +186,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           std::make_unique<BufferQueue>(
-              context_provider->SharedImageInterface(),
-              gpu_memory_buffer_manager_.get(), surface_handle));
+              context_provider->SharedImageInterface(), surface_handle));
 #else
       NOTREACHED();
 #endif

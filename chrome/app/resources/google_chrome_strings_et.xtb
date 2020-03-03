@@ -39,6 +39,7 @@
 <translation id="1900795423379050516">Kui seadet sellel lehel ei kuvata, vaadake oma <ph name="LINK_BEGIN" />
       Chrome'i brauseri seadeid<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Luba Chrome'i sisselogimine</translation>
+<translation id="1983547493073464667">Chrome ei saa teie paroole kontrollida</translation>
 <translation id="2063848847527508675">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
 <translation id="2094919256425865063">Kas väljuda Chrome'ist ikkagi?</translation>
 <translation id="2120620239521071941">See kustutab sellest seadmest <ph name="ITEMS_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
@@ -54,15 +55,19 @@
 <translation id="2467438592969358367">Google Chrome soovib teie paroole eksportida. Selle lubamiseks sisestage oma Windowsi parool.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2534507159460261402">Google Pay (kopeeritud Chrome'i)</translation>
+<translation id="2559627601176023786">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida siis, kui salvestate need oma Google'i kontole.</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="2586406160782125153">See kustutab sellest seadmest teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
+<translation id="261226884343006626">Chrome ei saa teie paroole kontrollida. Proovige homme uuesti.</translation>
+<translation id="2622559029861875898">Chrome ei saa värskendusi otsida. Kontrollige internetiühendust.</translation>
 <translation id="2644798301485385923">Chrome OS-i süsteem</translation>
 <translation id="2652691236519827073">Ava link Chrome'i uuel &amp;vahelehel</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Google'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">See laiendus muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
 <translation id="2765403129283291972">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
+<translation id="2775140325783767197">Chrome ei saa teie paroole kontrollida. Kontrollige internetiühendust.</translation>
 <translation id="2799223571221894425">Taaskäivita</translation>
 <translation id="2847461019998147611">Kuva Google Chrome selles keeles</translation>
 <translation id="2857540653560290388">Chrome'i käivitamine …</translation>
@@ -78,6 +83,7 @@
 <translation id="3395323229510056640">Chrome OS-i puhul abi hankimine</translation>
 <translation id="3396977131400919238">Installimisel ilmnes operatsioonisüsteemi viga. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
+<translation id="3434246496373299699">Chrome saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="345171907106878721">Lisa Chrome'i</translation>
 <translation id="34857402635545079">Kustuta andmed ka Chrome'ist (<ph name="URL" />)</translation>
@@ -93,6 +99,7 @@
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
 <translation id="3873044882194371212">Ava link Chrome'i inko&amp;gnito aknas</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
+<translation id="3943605108614542032">Chrome'i värskendusi haldab administraator</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
 <translation id="4143243756087420366">Chrome'i nimi ja pilt</translation>
@@ -204,6 +211,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7808348361785373670">Chrome'ist eemaldamine ...</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="7855730255114109580">Google Chrome on ajakohane</translation>
+<translation id="7888686278524752658">Chrome'i ei värskendatud, midagi läks valesti. Lahendage Chrome'i värskendamisprobleemid ja parandage ebaõnnestunud värskendused.</translation>
 <translation id="7890208801193284374">Kui jagate oma arvutit, siis saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chrome'i just nii, nagu neile meeldib.</translation>
 <translation id="7896673875602241923">Keegi on varem selles arvutis Chrome'i sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Looge uus Chrome'i kasutaja, et oma teave eraldi hoida.</translation>
 <translation id="7916016681687251387">Chrome OS ei saanud teie andmeid sünkroonida. Parandage kohe.</translation>
@@ -234,6 +242,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="8914504000324227558">Käivita Chrome uuesti</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome'i värskendus on saadaval}=1{Chrome'i värskendus on saadaval}other{Chrome'i värskendus on # päeva saadaval olnud}}</translation>
+<translation id="9025321516765676895">Chrome ei saa teie paroole kontrollida, kuna neid on liiga palju</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="9067395829937117663">Google Chrome vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>

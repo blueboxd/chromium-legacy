@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Sula umlando, amakhukhi, idatha yesayithi, inqolobane…</translation>
 <translation id="129382876167171263">Amafayela ngamawebhusayithi abonakala lapha</translation>
 <translation id="129553762522093515">Ivalwe kamuva nje</translation>
+<translation id="1303339473099049190">Akuyitholi leyo phasiwedi. Hlola isipelingi sakho bese uzama futhi.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Ithunyelwe kusukela ku-<ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Faka kuqembu amathebhu</translation>
+<translation id="1311657260431405215">Ikhodi ye-QR ayiyona i-URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Umlando wokuzula uvuliwe</translation>
 <translation id="1331212799747679585">I-Chrome ayikwazi ukubuyekeza. Izinketho eziningi</translation>
 <translation id="1332501820983677155">Izinqamuleli zesici se-Google Chrome</translation>
@@ -323,6 +325,7 @@ Thinta uphinde ubambe noma iliphi igama ukuze useshe. Ukuze wenze ngcono usesho 
 <translation id="3350687908700087792">Vala wonke amathebhu we-incognito</translation>
 <translation id="3353615205017136254">Ikhasi elilula linikezwe i-Google. Thepha inkinobho yokulayisha okwangempela ukuze ilayishe ikhasi langempela.</translation>
 <translation id="3367813778245106622">Ngena ngemvume futhi ukuze uqale ukuvumelanisa</translation>
+<translation id="3373979091428520308">Ukuze wabelane ngaleli khasi nenye idivayisi, vula ukuvumelanisa kuzilungiselelo ze-Chrome kwenye idivayisi</translation>
 <translation id="3374023511497244703">Amabhukhimakhi akho, umlando, amaphasiwedi, nenye idatha ye-Chrome ngeke isavumelaniswa ku-akhawunti yakho ye-Google</translation>
 <translation id="3384347053049321195">Yabelana isithombe</translation>
 <translation id="3386292677130313581">Buza ngaphambi kokuvumela amasayithi ukuthi azi indawo yakho (kunconyiwe)</translation>
@@ -672,6 +675,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5956665950594638604">Vula isikhungo sosizo se-Chrome kuthebhu entsha</translation>
 <translation id="5958275228015807058">Thola amafayela akho namakhasi kokulandiwe</translation>
 <translation id="5962718611393537961">Thepha ukuze ugoqe</translation>
+<translation id="5964805880140440652">Ukuze wabelane ngaleli khasi nenye idivayisi, vula ukuvumelanisa kuzilungiselelo ze-Chrome</translation>
 <translation id="6000066717592683814">Gcina i-Google</translation>
 <translation id="6005538289190791541">Iphasiwedi ephakanyisiwe</translation>
 <translation id="6036057147555329831">I-ICU engeziwe</translation>

@@ -14,69 +14,6 @@
 
 namespace blink {
 
-namespace {
-
-void ParseAcceptChHeader(const String& header_value,
-                         WebEnabledClientHints& enabled_hints) {
-  CommaDelimitedHeaderSet accept_client_hints_header;
-  ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
-
-  for (size_t i = 0;
-       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
-    enabled_hints.SetIsEnabled(
-        static_cast<mojom::WebClientHintsType>(i),
-        accept_client_hints_header.Contains(kClientHintsNameMapping[i]));
-  }
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kDeviceMemory,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kDeviceMemory));
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kRtt,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kRtt));
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kDownlink,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kDownlink));
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kEct,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kEct));
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kLang,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kLang) &&
-          RuntimeEnabledFeatures::LangClientHintHeaderEnabled());
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kUA,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUA) &&
-          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kUAArch,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAArch) &&
-          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kUAPlatform,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAPlatform) &&
-          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kUAModel,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAModel) &&
-          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
-
-  enabled_hints.SetIsEnabled(
-      mojom::WebClientHintsType::kUAMobile,
-      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAMobile) &&
-          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
-}
-
-}  // namespace
-
 ClientHintsPreferences::ClientHintsPreferences() {
   DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kMaxValue) + 1,
             kClientHintsMappingsCount);
@@ -102,16 +39,24 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (!IsClientHintsAllowed(url))
     return;
 
-  WebEnabledClientHints new_enabled_types;
+  // 8-bit conversions from String can turn non-ASCII characters into ?,
+  // turning syntax errors into "correct" syntax, so reject those first.
+  // (.Utf8() doesn't have this problem, but it does a lot of expensive
+  //  work that would be wasted feeding to an ASCII-only syntax).
+  if (!header_value.ContainsOnlyASCIIOrEmpty())
+    return;
 
-  ParseAcceptChHeader(header_value, new_enabled_types);
+  // Note: .Ascii() would convert tab to ?, which is undesirable.
+  base::Optional<std::vector<blink::mojom::WebClientHintsType>> parsed_ch =
+      ParseAcceptCH(header_value.Latin1(),
+                    RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
+                    RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+  if (!parsed_ch.has_value())
+    return;
 
-  for (size_t i = 0;
-       i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
-    mojom::WebClientHintsType type = static_cast<mojom::WebClientHintsType>(i);
-    enabled_hints_.SetIsEnabled(type, enabled_hints_.IsEnabled(type) ||
-                                          new_enabled_types.IsEnabled(type));
-  }
+  // Note: this keeps previously enabled hints.
+  for (blink::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
+    enabled_hints_.SetIsEnabled(newly_enabled, true);
 
   if (context) {
     for (size_t i = 0;

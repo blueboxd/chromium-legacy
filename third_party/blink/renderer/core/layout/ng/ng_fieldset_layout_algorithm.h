@@ -32,7 +32,9 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
       NGBlockNode legend,
       LogicalSize available_size);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
-      LogicalSize padding_box_size);
+      NGBlockNode fieldset_content,
+      LogicalSize padding_box_size,
+      LayoutUnit block_offset);
 
   const NGBoxStrut border_padding_;
 };

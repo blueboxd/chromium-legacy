@@ -2680,7 +2680,6 @@
 <translation id="4737715515457435632">Сүлжээнд холбогдоно уу!</translation>
 <translation id="473775607612524610">Шинэчлэх</translation>
 <translation id="4739639199548674512">Тасалбар</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> болон бусад 1 хуудас}other{<ph name="PAGE_TITLE" /> болон бусад # хуудас}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Аппыг шинэчилж сурна уу<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Сайтын дууг нээх}other{Сайтуудын дууг нээх}}</translation>
 <translation id="4746351372139058112">Зурвасууд</translation>
@@ -5179,7 +5178,6 @@
 <translation id="8214489666383623925">Файлыг нээ...</translation>
 <translation id="8214962590150211830">Энэ хүнийг устга</translation>
 <translation id="8215295261562449873">Linux-г дэвшүүлэхийн өмнө миний аппууд болон файлуудыг Татаж авсан файлын фолдер луу хуулбарлах.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> болон бусад 1 хуудас}other{<ph name="PAGE_TITLE" /> болон бусад # хуудас}}</translation>
 <translation id="8217399928341212914">Олон файл автоматаар зэрэг татах үйлдлийг блозлох тохиргоог үргэлжлүүлэх</translation>
 <translation id="8218847192766059983">Хэл нэмэх эсвэл жагсаалтыг дахин эрэмбэлэх. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Та ихэвчлэн мэдэгдлийг хориглодог. Энэ сайтад танд мэдэгдэхийг зөвшөөрөхийн тулд энд товшино уу.</translation>
@@ -5390,6 +5388,7 @@
 <translation id="851263357009351303"><ph name="HOST" />-д зургуудыг харуулахыг үргэлж зөвшөөр</translation>
 <translation id="8513108775083588393">Автоматаар эргэх</translation>
 <translation id="8514746246728959655">Аюулгүй байдлын өөр түлхүүр туршиж үзнэ үү</translation>
+<translation id="8517041960877371778">Таны <ph name="DEVICE_TYPE" /> асаалттай үед цэнэглэхгүй.</translation>
 <translation id="8521475323816527629">Аппдаа хурдан хандах</translation>
 <translation id="8523493869875972733">Өөрчлөлтийг хадгалах</translation>
 <translation id="8523849605371521713">Удирдамжийн дагуу нэмсэн</translation>
@@ -5510,6 +5509,7 @@
 <translation id="8673383193459449849">Серверийн асуудал</translation>
 <translation id="8675354002693747642">Урьдчилан хуваалцсан түлхүүр</translation>
 <translation id="8676374126336081632">Оролтыг цэвэрлэх</translation>
+<translation id="8676770494376880701">Цэнэглэгчийг холбосон байна</translation>
 <translation id="8677212948402625567">Бүгдийг нуух...</translation>
 <translation id="8678648549315280022">Татаж авах тохиргоог удирдах ...</translation>
 <translation id="8678933587484842200">Та энэ аппыг хэрхэн ажиллуулах хүсэлтэй байна вэ?</translation>

@@ -41,6 +41,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1900795423379050516">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
       inställningarna för webbläsaren Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Tillåt inloggning i Chrome</translation>
+<translation id="1983547493073464667">Chrome kan inte kontrollera dina lösenord</translation>
 <translation id="2063848847527508675">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2094919256425865063">Vill du avsluta Chrome ändå?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> tas bort från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
@@ -56,15 +57,19 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2467438592969358367">Lösenorden exporteras från Google Chrome. Skriv ditt Windows-lösenord om du tillåter detta.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2534507159460261402">Google Pay (har kopierats till Chrome)</translation>
+<translation id="2559627601176023786">Inga sparade lösenord. Chrome kan kontrollera dina lösenord när du sparar dem i Google-kontot.</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="2586406160782125153">Webbinformationen raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
+<translation id="261226884343006626">Chrome kan inte kontrollera dina lösenord. Försök igen i morgon.</translation>
+<translation id="2622559029861875898">Chrome kan inte söka efter uppdateringar. Testa att kontrollera internetanslutningen.</translation>
 <translation id="2644798301485385923">Chrome OS-system</translation>
 <translation id="2652691236519827073">Öppna länkar i en ny flik i Chrome</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google.</translation>
 <translation id="2689103672227170538">Det här tillägget har ändrat vilken sida som visas när du startar Chrome.</translation>
 <translation id="2765403129283291972">Du behöver ge Chrome behörighet att använda mikrofonen på webbplatsen</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
+<translation id="2775140325783767197">Chrome kan inte kontrollera dina lösenord. Testa att kontrollera internetanslutningen.</translation>
 <translation id="2799223571221894425">Starta om</translation>
 <translation id="2847461019998147611">Visa Google Chrome på det här språket</translation>
 <translation id="2857540653560290388">Chrome startas …</translation>
@@ -80,6 +85,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3395323229510056640">Få hjälp med Chrome OS</translation>
 <translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Ladda ned Google Chrome igen.</translation>
 <translation id="3398288718845740432">Dölj i Chrome-menyn</translation>
+<translation id="3434246496373299699">Chrome kan kontrollera dina lösenord när du loggar in med Google-kontot</translation>
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="345171907106878721">Lägg till dig själv i Chrome</translation>
 <translation id="34857402635545079">Rensa även data från Chrome (<ph name="URL" />)</translation>
@@ -95,6 +101,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
 <translation id="3873044882194371212">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
+<translation id="3943605108614542032">Administratören hanterar uppdateringar av Chrome</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="4143243756087420366">Namn och bild i Chrome</translation>
@@ -209,6 +216,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7808348361785373670">Ta bort från Chrome …</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
+<translation id="7888686278524752658">Ett fel uppstod och Chrome uppdaterades inte. Åtgärda uppdateringsproblem och misslyckade uppdateringar i Chrome.</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
 <translation id="7916016681687251387">Det gick inte att synkronisera data i Chrome OS. Åtgärda nu.</translation>
@@ -239,6 +247,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="8914504000324227558">Starta om Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Det finns en uppdatering för Chrome}=1{Det finns en uppdatering för Chrome}other{Det finns en uppdatering för Chrome sedan # dagar}}</translation>
+<translation id="9025321516765676895">Chrome kan inte kontrollera dina lösenord eftersom det finns för många</translation>
 <translation id="9026991721384951619">Det gick inte att synkronisera data med Chrome OS eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="9067395829937117663">För Google Chrome krävs Windows 7 eller senare.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>

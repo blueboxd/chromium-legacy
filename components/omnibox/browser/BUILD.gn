@@ -313,14 +313,12 @@ if (is_android) {
       "//base:base_java",
       "//base:jni_java",
       "//components/embedder_support/android:util_java",
+      "//components/security_state/core:security_state_enums_java",
       "//content/public/android:content_java",
       "//third_party/android_deps:com_android_support_support_compat_java",
     ]
 
-    srcjar_deps = [
-      ":browser_java_enums_srcjar",
-      "//components/security_state/core:security_state_enums_java",
-    ]
+    srcjar_deps = [ ":browser_java_enums_srcjar" ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 

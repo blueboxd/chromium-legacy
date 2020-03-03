@@ -2686,7 +2686,6 @@
 <translation id="4737715515457435632">โปรดเชื่อมต่อเครือข่าย</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4739639199548674512">ตั๋ว</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> และอีก 1 หน้า}other{<ph name="PAGE_TITLE" /> และอีก # หน้า}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ดูวิธีอัปเดตแอปพลิเคชัน<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{เลิกซ่อนเว็บไซต์}other{เลิกซ่อนเว็บไซต์}}</translation>
 <translation id="4746351372139058112">ข้อความ</translation>
@@ -5189,7 +5188,6 @@
 <translation id="8214489666383623925">เปิดไฟล์...</translation>
 <translation id="8214962590150211830">นำบุคคลนี้ออก</translation>
 <translation id="8215295261562449873">สำรองข้อมูลแอปและไฟล์ในโฟลเดอร์ดาวน์โหลดก่อนที่จะอัปเกรด Linux</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> และอีก 1 หน้า}other{<ph name="PAGE_TITLE" /> และอีก # หน้า}}</translation>
 <translation id="8217399928341212914">ดำเนินการบล็อกการดาวน์โหลดไฟล์หลายๆ ไฟล์โดยอัตโนมัติต่อไป</translation>
 <translation id="8218847192766059983">เพิ่มภาษาหรือจัดเรียงรายการใหม่ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">คุณมักจะบล็อกการแจ้งเตือน หากต้องการให้เว็บไซต์ส่งการแจ้งเตือน ให้คลิกที่นี่</translation>
@@ -5400,6 +5398,7 @@
 <translation id="851263357009351303">อนุญาตให้ <ph name="HOST" /> แสดงภาพเสมอ</translation>
 <translation id="8513108775083588393">หมุนอัตโนมัติ</translation>
 <translation id="8514746246728959655">ลองใช้คีย์ความปลอดภัยอื่น</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
 <translation id="8521475323816527629">ไปที่แอปได้อย่างรวดเร็ว</translation>
 <translation id="8523493869875972733">เก็บการเปลี่ยนแปลงไว้</translation>
 <translation id="8523849605371521713">เพิ่มตามนโยบาย</translation>
@@ -5520,6 +5519,7 @@
 <translation id="8673383193459449849">ปัญหาของเซิร์ฟเวอร์</translation>
 <translation id="8675354002693747642">คีย์ที่แชร์ล่วงหน้า</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
+<translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
 <translation id="8677212948402625567">ยุบทั้งหมด...</translation>
 <translation id="8678648549315280022">จัดการการตั้งค่าการดาวน์โหลด...</translation>
 <translation id="8678933587484842200">คุณต้องการเปิดแอปพลิเคชันนี้ด้วยวิธีใด</translation>

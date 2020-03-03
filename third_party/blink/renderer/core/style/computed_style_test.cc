@@ -529,9 +529,8 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -570,9 +569,8 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
       CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
       ua_context);
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);

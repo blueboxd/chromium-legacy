@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1206619573307042055">markör</translation>
 <translation id="1207086294218137981">Det finns inga fler rubriker på nivå 4</translation>
+<translation id="1212770441379271564">De följande kortkommandona är inte ChromeVox-kommandon, men de är fortfarande mycket användbara för att få ut så mycket som möjligt av Chrome.
+    Navigera framåt genom objekt som knappar och länkar genom att trycka på tabbtangenten. Navigera bakåt genom att trycka på Skift + tabbtangenten.
+    Öppna adressfältet i Chrome genom att trycka på Ctrl + L.
+    Öppna en ny flik automatiskt genom att trycka på Ctrl + T. Markören är i adressfältet.
+    Stäng en flik genom att trycka Ctrl + W.
+    Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
+    Öppna Chrome-menyn genom att trycka på Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – ger röst åt Chrome</translation>
 <translation id="1225969361094801578">Mörkt skiffergrå</translation>
 <translation id="1229276918471378188">Föregående hopp</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">färgval</translation>
 <translation id="4221012616705981690">Det finns ingen föregående lista</translation>
 <translation id="4221071177874897997">Ange fetstil:</translation>
+<translation id="4225355998815256469">Formulärkontroller</translation>
 <translation id="4229646983878045487">datum och tid</translation>
 <translation id="4230834257931120629">Ljust skiffergrå</translation>
 <translation id="4231102694147661229">Aktivera utvecklaralternativ</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Mening</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Tryck på ChromeVox O + N om du vill veta mer om nyheterna.</translation>
+<translation id="4646606380313237501">{"ar": "arabiska",
+    "as": "assamesiska",
+    "aw": "avadhi",
+    "be": "bengali",
+    "bg": "bulgariska",
+    "bh": "bihari",
+    "bo": "tibetanska",
+    "br": "braj",
+    "ca": "katalanska",
+    "ckb": "sorani",
+    "cs": "tjeckiska",
+    "cy": "walesiska",
+    "da": "danska",
+    "de": "tyska",
+    "de_CH": "tyska (Schweiz)",
+    "de_DE": "tyska (Tyskland)",
+    "dra": "dravidiska",
+    "el": "grekiska",
+    "en": "engelska",
+    "en_CA": "engelska (Kanada)",
+    "en_GB": "engelska (Storbritannien)",
+    "en_US": "engelska (USA)",
+    "eo": "esperanto",
+    "es": "spanska",
+    "et": "estniska",
+    "fa": "persiska",
+    "fr": "franska",
+    "fr_CA": "franska (Kanada)",
+    "fr_FR": "franska (Frankrike)",
+    "fi": "finska",
+    "ga": "iriska",
+    "gd": "gaeliska",
+    "gon": "gondi",
+    "gu": "gujarati",
+    "he": "hebreiska",
+    "hi": "hindi",
+    "hr": "kroatiska",
+    "hu": "ungerska",
+    "hy": "armeniska",
+    "is": "isländska",
+    "it": "italienska",
+    "iu": "inuktitut",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "koreanska",
+    "kok": "konkani",
+    "kru": "kurux",
+    "ks": "kashmiri",
+    "lt": "litauiska",
+    "lv": "lettiska",
+    "mao": "maori",
+    "ml": "malayalam",
+    "mt": "maltesiska",
+    "mwr": "marvari",
+    "mn": "mongoliska",
+    "mun": "munda",
+    "nb": "norskt bokmål",
+    "ne": "nepali",
+    "nl": "nederländska",
+    "no": "norska",
+    "or": "oriya",
+    "pi": "pali",
+    "pl": "polska",
+    "pt": "portugisiska",
+    "pu": "punjabi",
+    "ro": "rumänska",
+    "ru": "ryska",
+    "sa": "sanskrit",
+    "si": "sindhi",
+    "sin": "singalesiska",
+    "sk": "slovakiska",
+    "sl": "slovenska",
+    "sr": "serbiska",
+    "sv": "svenska",
+    "ta": "tamil",
+    "te": "telugu",
+    "tr": "turkiska",
+    "tsn": "afrikaans",
+    "uk": "ukrainska",
+    "ur": "urdu",
+    "vi": "vietnamesiska",
+    "zh": "kinesiska",
+    "zh_TW": "kinesiska (traditionell)"}</translation>
 <translation id="4647836961514597010">Färgval</translation>
 <translation id="4660783501463101648">Klassisk Chromevox har tagits bort. Det går inte längre att aktivera och inaktivera klassisk Chromevox med tangentbordet.</translation>
 <translation id="4661075872484491155">träd</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Låsta knappar har aktiverats</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komman}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, textruta</translation>
+<translation id="532485153932049746">Textformatering
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, länk</translation>
 <translation id="5331522683003474486">Styr enheten med bara en eller två brytare.</translation>
 <translation id="5336381510091010269">autoslutför på raden och i lista</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Punktskrift</translation>
 <translation id="5402791055281059602">En modal avisering</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolon}}</translation>
+<translation id="5420259671171615858">Sök i menyerna</translation>
 <translation id="5435274640623994081">Aktivera loggning av ljudikoner</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre än-tecken}other{# mindre än-tecken}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Ett stavfel har upptäckts</translation>
 <translation id="7408482676469142474">tabell</translation>
 <translation id="7425395583360211003">retur</translation>
+<translation id="7429415133937917139">Simulerar utdatan från en uppdaterbar punktskriftsskärm
+    på ChromeVox-panelen högst upp på skärmen</translation>
 <translation id="7434509671034404296">Utvecklare</translation>
 <translation id="743783356331413498">Exempel</translation>
 <translation id="7439060726180460871">Katalog</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Föregående alternativknapp</translation>
 <translation id="7701196182766842984">autoslutför i lista</translation>
 <translation id="7714340021005120797">Det finns inga fler kombinationsrutor</translation>
+<translation id="772146615414628379">Grattis! Nu kan du grunderna i att använda ChromeVox. Kom ihåg att du kan öppna kommandomenyn för ChromeVox när som helst genom att trycka på söktangenten + punkt. Om du vill veta ännu mer om ChromeVox och Chrome OS kan du läsa följande artiklar.
+    Om du är klar med självstudierna kan du använda ChromeVox till att navigera till stängningsknappen och klicka på den.</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7731785449856576010">Det finns inga fler mediewidgetar</translation>
 <translation id="773906353055481349">Flytta en cell i taget genom att trycka på Sök+Ctrl+Alt</translation>

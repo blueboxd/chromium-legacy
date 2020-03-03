@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Endelea</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Hakuna kichwa cha kiwango cha nne kinachofuata</translation>
+<translation id="1212770441379271564">Njia chache za mikato zinazofuata si amri za ChromeVox, lakini bado ni muhimu ili kutumia Chrome kikamilifu.
+Ili uende mbele kupitia vipengee vinavyoweza kutekelezwa kama vile vitufe na viungo, bonyeza kitufe cha Tab. Ili urudi nyuma, bonyeza Shift+Tab.
+Ili utumie upau wa kutafutia wa kivinjari cha Chrome, ambao pia unaitwa sanduku kuu, bonyeza Control + L.
+Ili ufungue na uende kwenye kichupo kipya kiotomatiki, bonyeza Control+T. Kiteuzi chako kitakuwa katika sanduku kuu.
+Ili ufunge kichupo, bonyeza Control+W.
+Ili uende mbele katikati ya vichupo vilivyofunguliwa tumia Control+Tab.
+Ili ufungue menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Inaipa Chrome Sauti</translation>
 <translation id="1225969361094801578">Kijivu Kilichokolea</translation>
 <translation id="1229276918471378188">Kuruka kulikotangulia</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">kiteua rangi</translation>
 <translation id="4221012616705981690">Hakuna orodha iliyotangulia</translation>
 <translation id="4221071177874897997">Onyesha herufi nzito:</translation>
+<translation id="4225355998815256469">Udhibiti Fomu</translation>
 <translation id="4229646983878045487">tarehe na saa</translation>
 <translation id="4230834257931120629">Kijivu Isiyokolea</translation>
 <translation id="4231102694147661229">Washa Chaguo za Wasanidi Programu</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Sentensi</translation>
 <translation id="4623097797855662355">Kolofoni</translation>
 <translation id="463135993322337640">Bonyeza ChromeVox o, n ili upate matoleo mapya</translation>
+<translation id="4646606380313237501">{"ar": "Kiarabu",
+    "as": "Kiasami",
+    "aw": "Kiawadhi",
+    "be": "Kibengali",
+    "bg": "Kibulgaria",
+    "bh": "Kibihari",
+    "bo": "Kitibeti",
+    "br": "Kibraji",
+    "ca": "Kikatalani",
+    "ckb": "Kisorani",
+    "cs": "Kicheki",
+    "cy": "Kiwelshi",
+    "da": "Kiholanzi",
+    "de": "Kijerumani",
+    "de_CH": "Kijerumani (Uswisi)",
+    "de_DE": "Kijerumani (Ujerumani)",
+    "dra": "Kidravidi",
+    "el": "Kigiriki",
+    "en": "Kiingereza",
+    "en_CA": "Kiingereza (Kanada)",
+    "en_GB": "Kiingereza (Uingereza)",
+    "en_US": "Kiingereza (Marekani)",
+    "eo": "Kiessperanto",
+    "es": "Kihispania",
+    "et": "Kiestonia",
+    "fa": "Kiajemi",
+    "fr": "Kifaransa",
+    "fr_CA": "Kifaransa (Kanada)",
+    "fr_FR": "Kifaransa (Ufaransa)",
+    "fi": "Kifini",
+    "ga": "Kiairishi",
+    "gd": "Kigaeli",
+    "gon": "Kigondi",
+    "gu": "Kigujarati",
+    "he": "Kiyahudi",
+    "hi": "Kihindi",
+    "hr": "Kikroeshia",
+    "hu": "Kihungaria",
+    "hy": "Kiarmenia",
+    "is": "Kiaisilandi",
+    "it": "Kiitaliano",
+    "iu": "Kiinuktituti",
+    "ka": "Kikannada",
+    "kh": "Kikhasi",
+    "ko": "Kikorea",
+    "kok": "Kikonkani",
+    "kru": "Kikurukh",
+    "ks": "Kikashmiri",
+    "lt": "Kilitwania",
+    "lv": "Kilatvia",
+    "mao": "Kimaori",
+    "ml": "Kimalayalam",
+    "mt": "Kimalta",
+    "mwr": "Kimarwari",
+    "mn": "Kimongolia",
+    "mun": "Kimunda",
+    "nb": "Bokmål ya Norwe",
+    "ne": "Kinepali",
+    "nl": "Kiholanzi",
+    "no": "Kinorwe",
+    "or": "Kioriya",
+    "pi": "Kipali",
+    "pl": "Kipolandi",
+    "pt": "Kireno",
+    "pu": "Kipunjabi",
+    "ro": "Kiromania",
+    "ru": "Kirusi",
+    "sa": "Kisanskriti",
+    "si": "Kisindhi",
+    "sin": "Kisinhala",
+    "sk": "Kislovaki",
+    "sl": "Kislovenia",
+    "sr": "Kiserbia",
+    "sv": "Kiswidi",
+    "ta": "Kitamili",
+    "te": "Kitelugu",
+    "tr": "Kituruki",
+    "tsn": "Kiafrikana,",
+    "uk": "Kiukreni",
+    "ur": "Kiurdu",
+    "vi": "Kivietinamu",
+    "zh": "Kichina",
+    "zh_TW": "Kichina (Hani ya Jadi)"}</translation>
 <translation id="4647836961514597010">Kiteua rangi</translation>
 <translation id="4660783501463101648">Kibodi ya kawaida imeondolewa. Kipengele cha kugeuza kibodi ili kurudi kwenye kibodi ya Kawaida ya ChromeVox kimeondolewa.</translation>
 <translation id="4661075872484491155">mti</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Hali ya kunata imewashwa</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{koma #}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, kikasha maandishi</translation>
+<translation id="532485153932049746">Muundo wa maandishi
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, kiungo</translation>
 <translation id="5331522683003474486">Dhibiti kifaa kwa kutumia swichi 1 au 2 tu.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Breli</translation>
 <translation id="5402791055281059602">Arifa ya hali inayogeuzika</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{nuktamkato}other{nuktamikato #}}</translation>
+<translation id="5420259671171615858">Tafuta kwenye menyu</translation>
 <translation id="5435274640623994081">Washa kumbukumbu za sehemu ya kiashiria cha sauti</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ndogo kuliko}other{alama # za ndogo kuliko}}</translation>
 <translation id="5444587279251314700">(inatumika)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Kosa la tahajia limegunduliwa</translation>
 <translation id="7408482676469142474">jedwali</translation>
 <translation id="7425395583360211003">rudi</translation>
+<translation id="7429415133937917139">Huiga matokeo ya onyesho la braille linaloweza kuonyeshwa upya
+        katika kidirisha cha ChromeVox juu ya skrini</translation>
 <translation id="7434509671034404296">Wasanidi Programu</translation>
 <translation id="743783356331413498">Mfano</translation>
 <translation id="7439060726180460871">Saraka</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Kitufe cha mviringo kilichotangulia</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Hakuna kisanduku mseto kinachofuata</translation>
+<translation id="772146615414628379">Hongera! Umejifunza mambo muhimu kuhusu jinsi ya kutumia ChromeVox. Kumbuka kwamba unaweza kufungua menyu ya amri za ChromeVox wakati wowote kwa kubonyeza Search+Period. Ili upate maelezo zaidi kuhusu ChromeVox na Mfumo wa Uendeshaji wa Chrome, soma makala yafuatayo.
+    Ikiwa umemaliza mafunzo, tumia ChromeVox kwenda kwenye kitufe cha Kufunga na ukibofye.</translation>
 <translation id="7724603315864178912">Kata</translation>
 <translation id="7731785449856576010">Hakuna wijeti ya maudhui inayofuata</translation>
 <translation id="773906353055481349">Bonyeza Search+Ctrl+Alt pamoja na vishale ili upitie kwenye visanduku</translation>

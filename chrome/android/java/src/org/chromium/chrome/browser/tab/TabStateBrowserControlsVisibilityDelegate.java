@@ -10,11 +10,12 @@ import android.os.Message;
 
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -192,8 +193,8 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &= !url.startsWith(UrlConstants.CHROME_URL_PREFIX);
         enableHidingBrowserControls &= !url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
 
-        enableHidingBrowserControls &=
-                !SecurityStateModel.isContentDangerous(mTab.getWebContents());
+        enableHidingBrowserControls &= !SecurityStateModel.isContentDangerous(
+                mTab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
         enableHidingBrowserControls &=
                 !SelectionPopupController.fromWebContents(webContents).isFocusedNodeEditable();
         enableHidingBrowserControls &= !mTab.isShowingErrorPage();

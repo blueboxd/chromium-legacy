@@ -236,6 +236,7 @@
 <translation id="8284326494547611709">कैप्शन</translation>
 <translation id="8346634859695247203">सेक्शन</translation>
 <translation id="835897206747267392">अमान्य मान.</translation>
+<translation id="839593075537728968">मान, <ph name="MINIMUM_TIME" /> और <ph name="MAXIMUM_TIME" /> के बीच होना चाहिए.</translation>
 <translation id="8403857369060869934">बीता हुआ समय: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">भाग</translation>
 <translation id="8433900881053900389">टूलबार</translation>

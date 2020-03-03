@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -73,6 +74,10 @@ const int kOneAccount = 1;
 const int kTwoAccounts = 2;
 const int kThreeAccounts = 3;
 
+const int kOneFailure = 1;
+const int kThreeFailures = 3;
+const int kLotsOfFailures = 1000000;
+
 // Account keys for the kerberos.accounts pref.
 constexpr char kKeyPrincipal[] = "principal";
 constexpr char kKeyPassword[] = "password";
@@ -88,6 +93,11 @@ constexpr char kDefaultConfig[] = R"([libdefaults]
   default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   forwardable = true)";
+
+// A long time delta, used to fast forward the task environment until all
+// pending operations are completed. This value should be equal to the maximum
+// time to delay requests on |kBackoffPolicyForManagedAccounts|.
+const base::TimeDelta kLongTimeDelay = base::TimeDelta::FromMinutes(10);
 
 // Fake observer used to test notifications sent by KerberosCredentialsManager
 // on accounts changes.
@@ -192,23 +202,23 @@ class KerberosCredentialsManagerTest : public testing::Test {
     return KerberosClient::Get()->GetTestInterface();
   }
 
-  void SetupResultCallback(int account_count) {
+  void SetupResultCallback(int operation_count) {
     // If this is the first account addition, sets |result_run_loop_|.
-    if (accounts_addition_count_ == 0) {
+    if (remaining_operation_count_ == 0) {
       EXPECT_TRUE(result_errors_.empty());
       EXPECT_FALSE(result_run_loop_);
       result_run_loop_ = std::make_unique<base::RunLoop>();
     }
 
-    accounts_addition_count_ += account_count;
+    remaining_operation_count_ += operation_count;
   }
 
   // Gets a callback that adds the passed-in error to |result_errors_|.
-  // |account_count| is the number of times the callback should be called
+  // |operation_count| is the number of times the callback should be called
   // before stopping |result_run_loop_|.
   base::RepeatingCallback<void(kerberos::ErrorType)> GetRepeatingCallback(
-      int account_count) {
-    SetupResultCallback(account_count);
+      int operation_count) {
+    SetupResultCallback(operation_count);
     return base::BindRepeating(&KerberosCredentialsManagerTest::OnResult,
                                weak_ptr_factory_.GetWeakPtr());
   }
@@ -221,32 +231,43 @@ class KerberosCredentialsManagerTest : public testing::Test {
   }
 
   void OnResult(kerberos::ErrorType error) {
-    DCHECK_LT(0, accounts_addition_count_);
-    accounts_addition_count_--;
+    // Fails if the test tries to execute more operations than expected.
+    ASSERT_LT(0, remaining_operation_count_);
+    remaining_operation_count_--;
     result_errors_.insert(error);
 
     // Stops |result_run_loop_| if all additions are finished.
-    if (accounts_addition_count_ == 0) {
+    if (remaining_operation_count_ == 0) {
       result_run_loop_->Quit();
     }
   }
 
-  void WaitAndVerifyResult(std::multiset<kerberos::ErrorType> expected_errors_,
+  void WaitAndVerifyResult(std::multiset<kerberos::ErrorType> expected_errors,
                            int expected_notifications_count,
                            int expected_accounts_count) {
-    EXPECT_LT(0, accounts_addition_count_);
+    EXPECT_LT(0, remaining_operation_count_);
     ASSERT_TRUE(result_run_loop_);
     result_run_loop_->Run();
 
-    EXPECT_EQ(expected_errors_, result_errors_);
+    EXPECT_EQ(expected_errors, result_errors_);
     EXPECT_EQ(expected_notifications_count, observer_.notifications_count());
     EXPECT_EQ(expected_accounts_count,
               observer_.accounts_count_at_last_notification());
 
-    EXPECT_EQ(0, accounts_addition_count_);
+    EXPECT_EQ(0, remaining_operation_count_);
     result_run_loop_.reset();
     result_errors_.clear();
     observer_.Reset();
+  }
+
+  std::multiset<kerberos::ErrorType> GetRepeatedError(kerberos::ErrorType error,
+                                                      int repetitions) {
+    std::multiset<kerberos::ErrorType> result;
+    for (int i = 0; i < repetitions; i++) {
+      result.insert(error);
+    }
+
+    return result;
   }
 
   // Calls |mgr_->AddAccountAndAuthenticate()| with |principal_name|,
@@ -338,7 +359,8 @@ class KerberosCredentialsManagerTest : public testing::Test {
     EXPECT_TRUE(user_context.GetPasswordKey()->GetSecret().empty());
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   user_manager::ScopedUserManager scoped_user_manager_;
   ScopedTestingLocalState local_state_;
   std::unique_ptr<TestingProfile> profile_;
@@ -346,7 +368,7 @@ class KerberosCredentialsManagerTest : public testing::Test {
   std::unique_ptr<KerberosCredentialsManager> mgr_;
   FakeKerberosCredentialsManagerObserver observer_;
 
-  int accounts_addition_count_ = 0;
+  int remaining_operation_count_ = 0;
   std::unique_ptr<base::RunLoop> result_run_loop_;
   std::multiset<kerberos::ErrorType> result_errors_;
 
@@ -587,8 +609,7 @@ TEST_F(KerberosCredentialsManagerTest,
                                   kConfig, kAllowExisting, GetResultCallback());
 
   WaitAndVerifyResult(
-      {kerberos::ERROR_BAD_PASSWORD, kerberos::ERROR_BAD_PASSWORD,
-       kerberos::ERROR_BAD_PASSWORD},
+      GetRepeatedError(kerberos::ERROR_BAD_PASSWORD, kThreeAccounts),
       kOneNotification, kThreeAccounts);
   EXPECT_TRUE(mgr_->GetActiveAccount().empty());
 }
@@ -608,9 +629,8 @@ TEST_F(KerberosCredentialsManagerTest,
                                   kDontRememberPassword, kConfig,
                                   kAllowExisting, GetResultCallback());
 
-  WaitAndVerifyResult(
-      {kerberos::ERROR_NONE, kerberos::ERROR_NONE, kerberos::ERROR_NONE},
-      kOneNotification, kThreeAccounts);
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kThreeAccounts),
+                      kOneNotification, kThreeAccounts);
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 }
 
@@ -780,7 +800,7 @@ TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
 
   // Two notifications are expected: one from AddAccountRunner and another from
   // RemoveAllManagedAccountsExcept.
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kTwoNotifications, kTwoAccounts);
 
   EXPECT_TRUE(mgr_->IsKerberosEnabled());
@@ -813,7 +833,7 @@ TEST_F(KerberosCredentialsManagerTest,
                                   kRememberPassword, kConfig, kAllowExisting,
                                   GetResultCallback());
 
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kOneNotification, kTwoAccounts);
 
   SetPref(prefs::kKerberosRememberPasswordEnabled, base::Value(false));
@@ -966,7 +986,7 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefConfig) {
 
   // Two notifications are expected: one from AddAccountRunner and another from
   // RemoveAllManagedAccountsExcept().
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kTwoNotifications, kTwoAccounts);
 
   VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
@@ -1005,7 +1025,7 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefPassword) {
 
   // Two notifications are expected: one from AddAccountRunner and another from
   // RemoveAllManagedAccountsExcept().
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kTwoNotifications, kTwoAccounts);
 
   VerifyVotedForSavingLoginPassword(kSaveLoginPassword);
@@ -1046,7 +1066,7 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefRememberPassword) {
 
   // Two notifications are expected: one from AddAccountRunner and another from
   // RemoveAllManagedAccountsExcept().
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kTwoNotifications, kTwoAccounts);
 
   VerifyVotedForSavingLoginPassword(kSaveLoginPassword);
@@ -1089,10 +1109,182 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefClearAccounts) {
 
   // Two notifications are expected: one from AddAccountRunner and another from
   // RemoveAllManagedAccountsExcept().
-  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+  WaitAndVerifyResult(GetRepeatedError(kerberos::ERROR_NONE, kTwoAccounts),
                       kTwoNotifications, kTwoAccounts);
 
   VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref retries to add account if addition fails for network
+// related errors.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefRetry) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  client_test_interface()->SetSimulatedNumberOfNetworkFailures(kOneFailure *
+                                                               kOneAccount);
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback((kOneFailure + 1) * kOneAccount));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected for each attempt: one from AddAccountRunner
+  // and another from RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult({kerberos::ERROR_NETWORK_PROBLEM, kerberos::ERROR_NONE},
+                      (kOneFailure + 1) * kTwoNotifications, kOneAccount);
+
+  // Fast forwarding the task environment to force all pending tasks to be
+  // executed. Makes sure no retry is scheduled after a successful attempt.
+  task_environment_.FastForwardBy(kLongTimeDelay);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(1u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref retries multiple times to add account if addition
+// fails multiple times for network related errors.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefMultipleRetries) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  client_test_interface()->SetSimulatedNumberOfNetworkFailures(kThreeFailures *
+                                                               kOneAccount);
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback((kThreeFailures + 1) * kOneAccount));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected for each attempt: one from AddAccountRunner
+  // and another from RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult(
+      {kerberos::ERROR_NETWORK_PROBLEM, kerberos::ERROR_NETWORK_PROBLEM,
+       kerberos::ERROR_NETWORK_PROBLEM, kerberos::ERROR_NONE},
+      (kThreeFailures + 1) * kTwoNotifications, kOneAccount);
+
+  // Fast forwarding the task environment to force all pending tasks to be
+  // executed. This will make sure no retry is scheduled after a successful
+  // attempt.
+  task_environment_.FastForwardBy(kLongTimeDelay);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(1u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref retries to add multiple accounts if addition fails for
+// network related errors.
+TEST_F(KerberosCredentialsManagerTest,
+       UpdateAccountsFromPrefRetryMultipleAccounts) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  client_test_interface()->SetSimulatedNumberOfNetworkFailures(kOneFailure *
+                                                               kTwoAccounts);
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback((kOneFailure + 1) * kTwoAccounts));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+  managed_account_2.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected for each attempt: one from AddAccountRunner
+  // and another from RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult(
+      {kerberos::ERROR_NETWORK_PROBLEM, kerberos::ERROR_NETWORK_PROBLEM,
+       kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+      (kOneFailure + 1) * kTwoNotifications, kTwoAccounts);
+
+  // Fast forwarding the task environment to force all pending tasks to be
+  // executed. This will make sure no retry is scheduled after a successful
+  // attempt.
+  task_environment_.FastForwardBy(kLongTimeDelay);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref stops retrying after a certain number of network
+// related errors.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefStopsRetrying) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  client_test_interface()->SetSimulatedNumberOfNetworkFailures(kLotsOfFailures);
+
+  mgr_->SetAddManagedAccountCallbackForTesting(GetRepeatingCallback(
+      KerberosCredentialsManager::kMaxFailureCountForManagedAccounts *
+      kTwoAccounts));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+  managed_account_2.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected for each attempt: one from AddAccountRunner
+  // and another from RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult(
+      GetRepeatedError(
+          kerberos::ERROR_NETWORK_PROBLEM,
+          KerberosCredentialsManager::kMaxFailureCountForManagedAccounts *
+              kTwoAccounts),
+      KerberosCredentialsManager::kMaxFailureCountForManagedAccounts *
+          kTwoNotifications,
+      kTwoAccounts);
+
+  // Fast forwarding the task environment to force all pending tasks to be
+  // executed. This will make sure no retry is scheduled after a certain number
+  // of network related errors.
+  task_environment_.FastForwardBy(kLongTimeDelay);
 
   Accounts accounts = ListAccounts();
   ASSERT_EQ(2u, accounts.size());

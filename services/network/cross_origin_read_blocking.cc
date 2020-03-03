@@ -30,6 +30,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 using base::StringPiece;
@@ -659,9 +660,10 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
-    base::Optional<url::Origin> request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
     mojom::RequestMode request_mode,
-    bool is_for_non_http_isolated_world)
+    const base::Optional<url::Origin>& isolated_world_origin,
+    mojom::NetworkServiceClient* network_service_client)
     : seems_sensitive_from_cors_heuristic_(
           SeemsSensitiveFromCORSHeuristic(response)),
       seems_sensitive_from_cache_heuristic_(
@@ -671,7 +673,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
       content_length_(response.content_length),
       http_response_code_(response.headers ? response.headers->response_code()
                                            : 0),
-      is_for_non_http_isolated_world_(is_for_non_http_isolated_world) {
+      isolated_world_origin_(isolated_world_origin),
+      network_service_client_(network_service_client) {
   // CORB should look directly at the Content-Type header if one has been
   // received from the network. Ignoring |response.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
@@ -1168,7 +1171,11 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
   //    2b) Even if we could preserve |isolated_world_origin_| just for UMA,
   //        CORS would block the response before LogAllowedResponse gets a
   //        chance to run.
-  if (is_for_non_http_isolated_world_) {
+  bool is_for_non_http_isolated_world =
+      isolated_world_origin_.has_value() &&
+      isolated_world_origin_->scheme() != url::kHttpScheme &&
+      isolated_world_origin_->scheme() != url::kHttpsScheme;
+  if (is_for_non_http_isolated_world) {
     // We log whether CORS would block this response if it were enabled for
     // content scripts.  Caveat: This will be true even in cases where the
     // server would have sent an ACAO response header if Chrome had sent an
@@ -1176,6 +1183,12 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
     UMA_HISTOGRAM_BOOLEAN(
         "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript",
         is_cors_blocking_expected_);
+
+    if (network_service_client_ && is_cors_blocking_expected_) {
+      network_service_client_
+          ->LogRapporSampleForCrossOriginFetchFromContentScript3(
+              isolated_world_origin_->host());
+    }
   }
 
   if (corb_protection_logging_needs_sniffing_) {

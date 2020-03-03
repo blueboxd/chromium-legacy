@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1206619573307042055">መልሶ መልስ</translation>
 <translation id="1207086294218137981">ምንም ቀጣይ የደረጃ 4 ርዕስ የለም</translation>
+<translation id="1212770441379271564">የሚከተሉት ጥቂት አቋራጮች የChromeVox ትዕዛዞች አይደሉም፣ ነገር ግን ከChrome ምርጡን ሁሉ ለማግኘት አሁንም በጣም ጠቃሚ ናቸው።
+    እንደ አዝራሮች እና አገናኞች ባሉ የእርምጃ ንጥሎች ውስጥ ወደፊት ለመሄድ የTab አዝራሩን ይጫኑ። ወደኋላ ለመሄድ Shift+Tab ይጫኑ።
+    ኦምኒቦክ በመባል ወደሚታወቀው የChrome አሳሽ የአድራሻ ሳጥን ለመግባት Control + L ይጫኑ።
+    ወደ አዲስ ትር በራስ-ሰር ለመሄድ እና ለመክፈት Control+T ይጫኑ። የእርስዎ ጠቋሚ በኦሚኒቦክሱ ውስጥ ይሆናል።
+    አንድ ትር ለመዝጋት Control+W ይጫኑ።
+    በክፍት ትሮች መካከል ወደፊት ለመሄድ Control+Tab ይጠቀሙ።
+    የChrome አሳሽ ምናሌውን ለመክፈት Alt+F ይጫኑ።</translation>
 <translation id="1213216066620407844">ChromeVox - ድምጽ ለChrome መስጠት</translation>
 <translation id="1225969361094801578">ጠቆር ያለ መከለያ ግራጫ</translation>
 <translation id="1229276918471378188">ቀዳሚ ዝላይ</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">color picker</translation>
 <translation id="4221012616705981690">ምንም ቀዳሚ ዝርዝር የለም</translation>
 <translation id="4221071177874897997">ደማቅ አመልክት፦</translation>
+<translation id="4225355998815256469">የቅጽ መቆጣጠሪያዎች</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">ፈካ ያለ አረንጓዴያማ ግራጫ</translation>
 <translation id="4231102694147661229">የገንቢዎች አማራጮችን አንቃ</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">አረፍተ ነገር</translation>
 <translation id="4623097797855662355">ኮሎፎን</translation>
 <translation id="463135993322337640">ምን አዲስ ነገር እንዳለ ለማወቅ ChromeVox o፣ n ይጫኑ</translation>
+<translation id="4646606380313237501">{«ar»፦ «ዓረብኛ»፣
+    «as»፦ «አሳሜዝ»፣
+    «aw»፦ «አዋዲ»፣
+    «be»፦ «ቤንጋሊ»፣
+    «bg»፦ «ቡልጋሪያኛ»፣
+    «bh»፦ «ቢሃሪኛ»፣
+    «bo»፦ «ቲቤትኛ»፣
+    «br»፦ «ብራጅ»፣
+    «ca»፦ «ካታላኛ»፣
+    «ckb»፦ «ሶራኒኛ»፣
+    «cs»፦ «ቼክኛ»፣
+    «cy»፦ «ዌልስኛ»፣
+    «da»፦ «ዴንማርክኛ»፣
+    «de»፦ «ጀርመንኛ»፣
+    «de_CH»፦ «ጀርመንኛ (ስዊዘርላንድ)»፣
+    «de_DE»፦ «ጀርመንኛ (ጀርመን)»፣
+    «dra»፦ «ድራቪዲያኛ»
+    «el»፦ «ግሪክኛ»፣
+    «en»፦ «እንግሊዝኛ»፣
+    «en_CA»፦ «እንግሊዝኛ (ካናዳ)»፣
+    «en_GB»፦ «እንግሊዝኛ (ዩናይትድ ኪንግደም)»፣
+    «en_US»፦ «እንግሊዝኛ (አሜሪካ)»፣
+    «eo»፦ «ኤስፔራንቶ»፣
+    «es»፦ «ስፓኒሽ»፣
+    «et»፦ «ኤስቶኒያኛ»፣
+    «fa»፦ «ፋርስኛ»፣
+    «fr»፦ «ፈረንሳይኛ»፣
+    «fr_CA»፦ «ፈረንሳይኛ (ካናዳ)»፣
+    «fr_FR»፦ «ፈረንሳይኛ (ፈረንሳይ)»፣
+    «fi»፦ «ፊንላንድኛ»፣
+    «ga»፦ «አየርላንድኛ»፣
+    «gd»፦ «ጋኤሊክ»፣
+    «gon»፦ «ጎንዲኛ»፣
+    «gu»፦ «ጉጃራቲኛ»፣
+    «he»፦ «ዕብራይስጥ»፣
+    «hi»፦ «ሂንዲ»፣
+    «hr»፦ «ክሮሺያኛ»፣
+    «hu»፦ «ሃንጋሪኛ»፣
+    «hy»፦ «አርሜንያኛ»፣
+    «is»፦ «አይስላንድኛ»፣
+    «it»፦ «ጣልያንኛ»፣
+    «iu»፦ «ኢኑክቲቱትኛ»፣
+    «ka»፦ «ከነዳ»፣
+    «kh»፦ «ካሲ»፣
+    «ko»፦ «ኮሪያኛ»፣
+    «kok»፦ «ኮንካኒኛ»፣
+    «kru»፦ «ኩሩክኛ»፣
+    «ks»፦ «ካሽሚርኛ»፣
+    «lt»፦ «ሊትዌኒያኛ»፣
+    «lv»፦ «ላቲቪያኛ»፣
+    «mao»፦ «ማውሪኛ»፣
+    «ml»፦ «ማላያላም»፣
+    «mt»፦ «ማልታኛ»፣
+    «mwr»፦ «ማራዋሪኛ»፣
+    «mn»፦ «ሞንጎሊያኛ»፣
+    «mun»፦ «ሙንዳ»፣
+    «nb»፦ «ኖርዌይኛ ቦክማል»፣
+    «ne»፦ «ኔፓልኛ»፣
+    «nl»፦ «ደች»፣
+    «no»፦ «ኖርዌይኛ»፣
+    «or»፦ «ኦሪያኛ»፣
+    «pi»፦ «ፓሊ»፣
+    «pl»፦ «ፖላንድኛ»፣
+    «pt»፦ «ፖርቱጋልኛ»፣
+    «pu»፦ «ፑንጃብኛ»፣
+    «ro»፦ «ሮማኒያኛ»፣
+    «ru»፦ «ሩሲያኛ»፣
+    «sa»፦ «ሳንስክሪት»፣
+    «si»፦ «ሲንዲኛ»፣
+    «sin»፦ «ሲንሃላኛ»፣
+    «sk»፦ «ስሎቫክኛ»፣
+    «sl»፦ «ስሎቬንያኛ»፣
+    «sr»፦ «ሰርቢያኛ»፣
+    «sv»፦ «ስዊዲንኛ»፣
+    «ta»፦ «ታሚልኛ»፣
+    «te»፦ «ተለጉኛ»፣
+    «tr»፦ «ቱርክኛ»፣
+    «tsn»፦ «አፍሪካንስ»፣
+    «uk»፦ «ዩክሬንኛ»፣
+    «ur»፦ «ኡርዱ»፣
+    «vi»፦ «ቬትናምኛ»፣
+    «zh»፦ «ቻይንኛ»፣
+    «zh_TW»፦ «ቻይንኛ (ተለምዷዊ ሃን)»}</translation>
 <translation id="4647836961514597010">ቀለም መምረጫ</translation>
 <translation id="4660783501463101648">የታወቀ ገጽታ ተወግዷል። ተመልሶ ወደ የታወቀው የChromeVox ገጽታ የሚወስደው የቁልፍ ሰሌዳ መቀያየሪያው ተወግዷል።</translation>
 <translation id="4661075872484491155">ዛፍ</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">አጣባቂ ሁነታ ነቅቷል</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ኮማ}one{# ኮማዎች}other{# ኮማዎች}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />፣ የጽሑፍ ሳጥን</translation>
+<translation id="532485153932049746">የጽሑፍ ቅርጸት
+        <ph name="FONT_SIZE_STRING" />
+        <ph name="COLOR_STRING" />
+        <ph name="BOLD_STRING" />
+        <ph name="ITALIC_STRING" />
+        <ph name="UNDERLINE_STRING" />
+        <ph name="LINE_THROUGH_STRING" />
+        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />፣ አገናኝ</translation>
 <translation id="5331522683003474486">መሣሪያውን በ1 ወይም 2 መቆጣጠሪያዎች ብቻ ይቆጣጠሩ።</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">ብሬይል</translation>
 <translation id="5402791055281059602">ሁነታዊ ማንቂያ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{ድርብ ሰረዝ}one{# ድርብ ሰረዞች}other{# ድርብ ሰረዞች}}</translation>
+<translation id="5420259671171615858">ምናሌዎችን ይፈልጉ</translation>
 <translation id="5435274640623994081">የጆሮ አዶ ምዝግብ ማስታወሻን ያንቁ</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ያንሳል}one{# የያንሳል ምልክቶች}other{# የያንሳል ምልክቶች}}</translation>
 <translation id="5444587279251314700">(ገቢር)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">የፊደል አጻጻፍ ስህተት ተገኝቷል</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">መልስ</translation>
+<translation id="7429415133937917139">ሊታደስ የሚችል የብሬል ማሳያን ውጽዓት በማያ ገጹ አናት ላይ ባለው 
+        የChromeVox ፓነል ውስጥ ያስመስላል</translation>
 <translation id="7434509671034404296">ገንቢ</translation>
 <translation id="743783356331413498">ምሳሌ</translation>
 <translation id="7439060726180460871">ማውጫ</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">ቀዳሚ የሬዲዮ አዝራር</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">ምንም ቀጣይ ጥምድ ሳጥን የለም</translation>
+<translation id="772146615414628379">እንኳን ደስ አለዎት! በተስካ ሁኔታ ChromeVox ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች ተምረዋል። ፍለጋ+ነጥብ ላይ በመጫን በማንኛውም ጊዜ የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። እንዲያውም ስለChromeVox እና Chrome OS የበለጠ ለመረዳት የሚከተሉትን ጽሑፎች ይጎብኙ።
+    የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7731785449856576010">ምንም ቀጣይ የሚዲያ ንዑስ ፕሮግራም የለም</translation>
 <translation id="773906353055481349">በሕዋስ ለማሰስ ፍለጋ+Ctrl+Alt ከቀስቶች ጋር ይጫኑ</translation>

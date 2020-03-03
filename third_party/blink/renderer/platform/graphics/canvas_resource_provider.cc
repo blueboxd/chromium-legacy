@@ -309,9 +309,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
               old_resource_shared_image->GetTextureIdForReadAccess(),
               GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
         }
+        UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ContentChangeMode",
+                              mode_ == SkSurface::kRetain_ContentChangeMode);
         surface_->replaceBackendTexture(CreateGrTextureForResource(),
-                                        GetGrSurfaceOrigin());
-        surface_->flush();
+                                        GetGrSurfaceOrigin(), mode_);
+        mode_ = SkSurface::kRetain_ContentChangeMode;
         if (!old_resource_shared_image->has_read_access()) {
           RasterInterface()->EndSharedImageAccessDirectCHROMIUM(
               old_resource_shared_image->GetTextureIdForReadAccess());
@@ -433,6 +435,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       return;
 
     if (is_accelerated_) {
+      // We reset |mode_| here since the draw commands which overwrite the
+      // complete canvas must have been flushed at this point without triggering
+      // copy-on-write.
+      mode_ = SkSurface::kRetain_ContentChangeMode;
       // Issue any skia work using this resource before releasing write access.
       FlushGrContext();
       auto texture_id = resource()->GetTextureIdForWriteAccess();
@@ -1274,6 +1280,7 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
 void CanvasResourceProvider::SkipQueuedDrawCommands() {
   if (!recorder_)
     return;
+  mode_ = SkSurface::kDiscard_ContentChangeMode;
   recorder_->finishRecordingAsPicture();
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(Size().Width(), Size().Height());

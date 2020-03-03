@@ -85,7 +85,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::Mailbox CreateSharedImage(viz::ResourceFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
-                                 uint32_t usage) override {
+                                 uint32_t usage,
+                                 gpu::SurfaceHandle surface_handle) override {
     NOTREACHED();
     return gpu::Mailbox();
   }

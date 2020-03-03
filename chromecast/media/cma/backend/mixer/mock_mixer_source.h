@@ -41,6 +41,7 @@ class MockMixerSource : public MixerInput::Source {
   bool primary() override { return primary_; }
   const std::string& device_id() override { return device_id_; }
   AudioContentType content_type() override { return content_type_; }
+  AudioContentType focus_type() override { return focus_type_; }
   int desired_read_size() override { return 1; }
   int playout_channel() override { return playout_channel_; }
   bool active() override { return true; }
@@ -61,6 +62,13 @@ class MockMixerSource : public MixerInput::Source {
   void set_primary(bool primary) { primary_ = primary; }
   void set_content_type(AudioContentType content_type) {
     content_type_ = content_type;
+    if (!set_focus_type_) {
+      focus_type_ = content_type;
+    }
+  }
+  void set_focus_type(AudioContentType focus_type) {
+    focus_type_ = focus_type;
+    set_focus_type_ = true;
   }
   void set_playout_channel(int channel) { playout_channel_ = channel; }
   void set_multiplier(float multiplier) { multiplier_ = multiplier; }
@@ -79,6 +87,8 @@ class MockMixerSource : public MixerInput::Source {
   ::media::ChannelLayout channel_layout_ = ::media::CHANNEL_LAYOUT_STEREO;
   const std::string device_id_;
   AudioContentType content_type_ = AudioContentType::kMedia;
+  AudioContentType focus_type_ = AudioContentType::kMedia;
+  bool set_focus_type_ = false;
   int playout_channel_ = kChannelAll;
   float multiplier_ = 1.0f;
 

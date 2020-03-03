@@ -316,6 +316,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2289385804009217824">Leikkaus</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="2297722699537546652">B5 (kirjekuori)</translation>
+<translation id="2300306941146563769">Ei lähetetty</translation>
 <translation id="2310021320168182093">Chou2 (kirjekuori)</translation>
 <translation id="2315864634253056100">Sivuston nimi on samankaltainen kuin <ph name="LOOKALIKE_DOMAIN" />. Hyökkääjät jäljittelevät joskus sivustoja tekemällä verkko-osoitteeseen vaikeasti havaittavia muutoksia.</translation>
 <translation id="2316887270356262533">Vapauttaa alle 1 Mt. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
@@ -444,6 +445,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2909946352844186028">Verkossa havaittiin muutos.</translation>
 <translation id="2910133103376701357"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi ja tiliäsi.</translation>
 <translation id="2911973620368911614">Työpaikan kirjanpitokäyttäjän tunnus</translation>
+<translation id="2915068235268646559">Kaatuminen <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Sulje muita ohjelmia.</translation>
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
 <translation id="2925673989565098301">Toimitustapa</translation>
@@ -452,6 +454,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2930577230479659665">Leikkaa jokaisen kopion jälkeen</translation>
 <translation id="2934466151127459956">Viranomaiskirje</translation>
 <translation id="2941952326391522266">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on verkkotunnuksesta <ph name="DOMAIN2" />. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
+<translation id="2943895734390379394">Latausaika:</translation>
 <translation id="2948083400971632585">Voit poistaa yhteydelle määritetyt välityspalvelimet käytöstä asetussivulla.</translation>
 <translation id="2951588413176968965">Oma postilaatikko</translation>
 <translation id="295526156371527179">Varoitus: tätä käytäntöä ei yhdistetty käytännössä kuvatulla tavalla sanakirjana, sillä se ei ole sanakirja.</translation>
@@ -1086,6 +1089,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="563324245173044180">Harhaanjohtava sisältö estetty</translation>
 <translation id="5644090287519800334">1. puolen kuvan X vaihto</translation>
 <translation id="5645854190134202180">Toinen työvuoro</translation>
+<translation id="5654927323611874862">Lähetetyn virheraportin tunnus:</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
 <translation id="5663614846592581799">9x11 (kirjekuori)</translation>
 <translation id="5663955426505430495">Laitteen järjestelmänvalvoja on asentanut lisätoimintojen laajennuksia. Laajennuksilla on pääsy osaan datastasi.</translation>
@@ -1393,6 +1397,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="7079718277001814089">Tämä sivusto sisältää haittaohjelmia</translation>
 <translation id="7081308185095828845">Ominaisuus ei ole käytettävissä tällä laitteella</translation>
 <translation id="7083258188081898530">Lokero 9</translation>
+<translation id="7086090958708083563">Käyttäjä pyysi lataamista</translation>
 <translation id="7087282848513945231">Piirikunta</translation>
 <translation id="7090678807593890770">Tee Google-haku: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Piilota</translation>
@@ -1555,6 +1560,7 @@ Lisätietoja:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Siirry sivustoon <ph name="SITE" /> (tämä ei ole turvallista)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Varmenne</translation>
 <translation id="7716147886133743102">Järjestelmänvalvojan estämä</translation>
+<translation id="7716375162095500223">Ei vielä lähetetty, tai ohitettu</translation>
 <translation id="7716424297397655342">Tätä sivustoa ei voi ladata välimuistista</translation>
 <translation id="7723047071702270851">Muokkaa korttia</translation>
 <translation id="7740996059027112821">Vakio</translation>
@@ -1699,6 +1705,7 @@ Lisätietoja:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jos ymmärrät käyntiä koskevat turvallisuusriskit, voit <ph name="BEGIN_LINK" />siirtyä tähän sivustoon<ph name="END_LINK" /> jo ennen haitallisten ohjelmien poistamista.</translation>
 <translation id="8349305172487531364">Kirjanmerkkipalkki</translation>
+<translation id="8355270400102541638">Kaatumisen paikallinen konteksti:</translation>
 <translation id="8363502534493474904">Poista lentokonetila käytöstä.</translation>
 <translation id="8364627913115013041">Ei määritetty.</translation>
 <translation id="8368476060205742148">Google Play Palvelut</translation>
@@ -1719,6 +1726,7 @@ Lisätietoja:
 <translation id="8461694314515752532">Salaa synkronoidut tiedot oman synkronoinnin tunnuslauseesi avulla</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 luottokortti}other{# luottokorttia}}</translation>
 <translation id="8473863474539038330">Osoitteet ja muita tietoja</translation>
+<translation id="8474910779563686872">Näytä kehittäjätiedot</translation>
 <translation id="8479754468255770962">Niitti vasemmassa alakulmassa</translation>
 <translation id="8483780878231876732">Jos haluat käyttää Google-tilillesi tallennettuja kortteja, kirjaudu Chromeen</translation>
 <translation id="8488350697529856933">Käyttöalue</translation>
@@ -1845,6 +1853,7 @@ Lisätietoja:
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>
 <translation id="9114524666733003316">Vahvistetaan korttia…</translation>
+<translation id="9119042192571987207">Lähetetty</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9141013498910525015">Ylläpidä osoitteita</translation>

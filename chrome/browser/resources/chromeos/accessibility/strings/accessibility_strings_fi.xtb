@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Ei seuraavia tason 4 otsikoita</translation>
+<translation id="1212770441379271564">Seuraavat pikanäppäimet eivät ole ChromeVox-komentoja, mutta ne auttavat silti käyttämään Chromea tehokkaasti.
+    Siirry seuraavaan interaktiiviseen kohteeseen, esim. painikkeeseen tai linkkiin, sarkainnäppäimellä. Siirry edelliseen kohteeseen painamalla Vaihto + sarkain.
+    Siirry Chrome-selaimen osoitekenttään eli omniboxiin painamalla Control + L.
+    Avaa uusi välilehti ja siirry sille automaattisesti painamalla Control + T. Osoitin siirtyy automaattisesti omniboxiin.
+    Sulje välilehti painamalla Control + W.
+    Siirry avoimelta välilehdeltä toiselle painamalla Control + sarkain.
+    Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – Chromen ääni</translation>
 <translation id="1225969361094801578">Tumma liuskekivenharmaa</translation>
 <translation id="1229276918471378188">Edellinen siirtyminen</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">värinvalitsin</translation>
 <translation id="4221012616705981690">Ei edellisiä luetteloita</translation>
 <translation id="4221071177874897997">Lihavoinnin merkki:</translation>
+<translation id="4225355998815256469">Lomakkeiden hallinta</translation>
 <translation id="4229646983878045487">päiväys/aika</translation>
 <translation id="4230834257931120629">Vaalea liuskekivenharmaa</translation>
 <translation id="4231102694147661229">Ota kehittäjäasetukset käyttöön</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Virke</translation>
 <translation id="4623097797855662355">Kolofoni</translation>
 <translation id="463135993322337640">Saat tietoja uusista ominaisuuksista painamalla ChromeVox + o + n.</translation>
+<translation id="4646606380313237501">{"ar": "arabia",
+    "as": "assami",
+    "aw": "awadhi",
+    "be": "bengali",
+    "bg": "bulgaria",
+    "bh": "bihari",
+    "bo": "tiibet",
+    "br": "braj",
+    "ca": "katalaani",
+    "ckb": "sorani",
+    "cs": "tšekki",
+    "cy": "kymri",
+    "da": "tanska",
+    "de": "saksa",
+    "de_CH": "saksa (Sveitsi)",
+    "de_DE": "saksa (Saksa)",
+    "dra": "dravidi",
+    "el": "kreikka",
+    "en": "englanti",
+    "en_CA": "englanti (Kanada)",
+    "en_GB": "englanti (Yhdistynyt kuningaskunta)",
+    "en_US": "englanti (Yhdysvallat)",
+    "eo": "esperanto",
+    "es": "espanja",
+    "et": "viro",
+    "fa": "persia",
+    "fr": "ranska",
+    "fr_CA": "ranska (Kanada)",
+    "fr_FR": "ranska (Ranska)",
+    "fi": "suomi",
+    "ga": "iiri",
+    "gd": "gaeli",
+    "gon": "gondi",
+    "gu": "gujarati",
+    "he": "heprea",
+    "hi": "hindi",
+    "hr": "kroatia",
+    "hu": "unkari",
+    "hy": "armenia",
+    "is": "islanti",
+    "it": "italia",
+    "iu": "inuktitut",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "korea",
+    "kok": "konkani",
+    "kru": "kuruk",
+    "ks": "kashmir",
+    "lt": "liettua",
+    "lv": "latvia",
+    "mao": "maori",
+    "ml": "malayalam",
+    "mt": "malta",
+    "mwr": "marwari",
+    "mn": "mongolia",
+    "mun": "munda",
+    "nb": "norjan bokmål",
+    "ne": "nepali",
+    "nl": "hollanti",
+    "no": "norja",
+    "or": "oriya",
+    "pi": "pali",
+    "pl": "puola",
+    "pt": "portugali",
+    "pu": "pandžabi",
+    "ro": "romania",
+    "ru": "venäjä",
+    "sa": "sanskriitti",
+    "si": "sindhi",
+    "sin": "sinhala",
+    "sk": "slovakia",
+    "sl": "sloveeni",
+    "sr": "serbia",
+    "sv": "ruotsi",
+    "ta": "tamil",
+    "te": "telugu",
+    "tr": "turkki",
+    "tsn": "afrikaans",
+    "uk": "ukraina",
+    "ur": "urdu",
+    "vi": "vietnam",
+    "zh": "kiina",
+    "zh_TW": "kiina (perinteinen han)"}</translation>
 <translation id="4647836961514597010">Värinvalitsin</translation>
 <translation id="4660783501463101648">Classic poistettiin. ChromeVox Classicin käyttöönoton pikanäppäin poistettiin.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Kiinnitetty tila käytössä</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{pilkku}other{# pilkkua}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstikenttä</translation>
+<translation id="532485153932049746">Tekstin muotoilu
+        <ph name="FONT_SIZE_STRING" />
+        <ph name="COLOR_STRING" />
+        <ph name="BOLD_STRING" />
+        <ph name="ITALIC_STRING" />
+        <ph name="UNDERLINE_STRING" />
+        <ph name="LINE_THROUGH_STRING" />
+        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, linkki</translation>
 <translation id="5331522683003474486">Ohjaa laitetta vain 1–2 kytkimellä.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Pistekirjoitus</translation>
 <translation id="5402791055281059602">Modaalinen ilmoitus</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{puolipiste}other{# puolipistettä}}</translation>
+<translation id="5420259671171615858">Hae valikoista</translation>
 <translation id="5435274640623994081">Ota earcon-äänimerkkien kirjaaminen käyttöön</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{pienemmyys}other{# pienemmyysmerkkiä}}</translation>
 <translation id="5444587279251314700">(aktiivinen)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Oikeinkirjoitusvirhe havaittu</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">takaisin</translation>
+<translation id="7429415133937917139">Simuloi päivitettävän pistekirjoitusnäytön ulostuloa
+    näytön yläreunan ChromeVox-paneelissa</translation>
 <translation id="7434509671034404296">Kehittäjille</translation>
 <translation id="743783356331413498">Esimerkki</translation>
 <translation id="7439060726180460871">Hakemisto</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Edellinen valintanappi</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Ei seuraavia yhdistelmäruutuja</translation>
+<translation id="772146615414628379">Onnittelut! Olet oppinut ChromeVoxin käytön perusteet. Voit avata ChromeVoxin komentovalikon koska tahansa painamalla Haku + piste. Seuraavista artikkeleista voit lukea lisää ChromeVoxista ja Chrome-käyttöjärjestelmästä.
+    Jos haluat poistua ohjeesta, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja klikkaa sitä.</translation>
 <translation id="7724603315864178912">Leikkaa</translation>
 <translation id="7731785449856576010">Ei seuraavia mediawidgetejä</translation>
 <translation id="773906353055481349">Siirry solusta toiseen painamalla Haku+Ctrl+Alt ja nuolinäppäintä</translation>

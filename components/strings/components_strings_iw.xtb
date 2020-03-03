@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">חיתוך</translation>
 <translation id="2292556288342944218">הגישה לאינטרנט חסומה</translation>
 <translation id="2297722699537546652">B5 (Envelope)‎</translation>
+<translation id="2300306941146563769">לא הועלה</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)‎</translation>
 <translation id="2315864634253056100">שם האתר הזה נראה דומה לדומיין <ph name="LOOKALIKE_DOMAIN" />. תוקפים שמחקים אתרים לפעמים משתמשים בכתובת האינטרנט של האתר המקורי, ועושים בה שינויים שקשה להבחין בהם.</translation>
 <translation id="2316887270356262533">‏פינוי של פחות מ-‎1 MB‎ מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
@@ -442,6 +443,7 @@
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
 <translation id="2910133103376701357">המכשיר והחשבון שלך מנוהלים על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">מזהה משתמש של חשבון עבודה</translation>
+<translation id="2915068235268646559">קריסה משעה <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">סגירת תוכניות אחרות</translation>
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
 <translation id="2925673989565098301">שיטת משלוח</translation>
@@ -450,6 +452,7 @@
 <translation id="2930577230479659665">חיתוך אחרי כל עותק</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו הוא מ-<ph name="DOMAIN2" />. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
+<translation id="2943895734390379394">זמן העלאה:</translation>
 <translation id="2948083400971632585">‏ניתן להשבית כל שרת proxy המוגדר לחיבור מדף ההגדרות.</translation>
 <translation id="2951588413176968965">תיבת הדואר שלי</translation>
 <translation id="295526156371527179">אזהרה: המדיניות הזו לא עברה מיזוג כמילון בהתאם למדיניות, מאחר שהיא אינה מילון.</translation>
@@ -1088,6 +1091,7 @@ Del</translation>
 <translation id="563324245173044180">תוכן מטעה נחסם</translation>
 <translation id="5644090287519800334">‏הזזה של תמונה בצד 1 על ציר X</translation>
 <translation id="5645854190134202180">משמרת שנייה</translation>
+<translation id="5654927323611874862">מזהה דוח הקריסה שהועלה:</translation>
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5663614846592581799">9x11 (Envelope)‎</translation>
 <translation id="5663955426505430495">מנהל המערכת של המכשיר הזה התקין תוספים שמאפשרים להשתמש בפונקציות נוספות. לתוספים יש גישה לחלק מהנתונים שלך.</translation>
@@ -1395,6 +1399,7 @@ Del</translation>
 <translation id="7079718277001814089">האתר הזה מכיל תוכנה זדונית</translation>
 <translation id="7081308185095828845">התכונה הזו לא זמינה במכשיר שלך</translation>
 <translation id="7083258188081898530">מגש 9</translation>
+<translation id="7086090958708083563">ההעלאה התבקשה על ידי המשתמש</translation>
 <translation id="7087282848513945231">מחוז</translation>
 <translation id="7090678807593890770">‏חפש ב-Google את <ph name="LINK" /></translation>
 <translation id="7108338896283013870">הסתרה</translation>
@@ -1557,6 +1562,7 @@ Del</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">אישור</translation>
 <translation id="7716147886133743102">נחסמה על-ידי מנהל המערכת</translation>
+<translation id="7716375162095500223">עדיין לא הועלה או המערכת מתעלמת מהפריט</translation>
 <translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהמטמון</translation>
 <translation id="7723047071702270851">עריכת כרטיס</translation>
 <translation id="7740996059027112821">רגילה</translation>
@@ -1701,6 +1707,7 @@ Del</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
+<translation id="8355270400102541638">ההקשר המקומי של הקריסה:</translation>
 <translation id="8363502534493474904">לכבות את מצב הטיסה</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
 <translation id="8368476060205742148">‏שירותי Google Play</translation>
@@ -1721,6 +1728,7 @@ Del</translation>
 <translation id="8461694314515752532">הצפנת נתונים מסונכרנים בעזרת ביטוי סיסמה אישי לסנכרון</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{כרטיס אשראי אחד}two{שני כרטיסי אשראי}many{# כרטיסי אשראי}other{# כרטיסי אשראי}}</translation>
 <translation id="8473863474539038330">כתובות ועוד</translation>
+<translation id="8474910779563686872">הצגת פרטי המפתח</translation>
 <translation id="8479754468255770962">סיכת הידוק בפינה השמאלית התחתונה</translation>
 <translation id="8483780878231876732">‏כדי להשתמש בכרטיסים מחשבון Google, היכנס אל Chrome</translation>
 <translation id="8488350697529856933">חל על</translation>
@@ -1847,6 +1855,7 @@ Del</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
 <translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>
+<translation id="9119042192571987207">הועלה</translation>
 <translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9141013498910525015">ניהול כתובות</translation>

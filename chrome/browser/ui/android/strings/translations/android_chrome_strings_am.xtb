@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">ታሪክ፣ ኩኪዎች፣ የጣቢያ ውሂብ፣ መሸጎጫን አጽዳ…</translation>
 <translation id="129382876167171263">በድር ጣቢያዎች የተቀመጡ ፋይሎች እዚህ ይታያሉ</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
+<translation id="1303339473099049190">ይህንን ይለፍ ቃል ማግኘት አይቻልም። የፊደል አጻጻፍዎን ይፈትሹና እንደገና ይሞክሩ።</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - ከ<ph name="DEVICE_NAME" /> የተላከ</translation>
 <translation id="1310482092992808703">ትሮችን ይሰብስቡ</translation>
 <translation id="1327257854815634930">የዳሰሳ ታሪክ ተከፍቷል</translation>
@@ -323,6 +324,7 @@
 <translation id="3350687908700087792">ሁሉንም ማንነት የማያሳውቅ ትሮችን ይዝጉ</translation>
 <translation id="3353615205017136254">ቀላል ገጽ በGoogle ቀርቧል። ኦርጂናሉን ገጽ ለመጫን ኦርጂናል ጫን የሚለውን አዝራር መታ ያድርጉ።</translation>
 <translation id="3367813778245106622">ስምረትን ለመጀመር እንደገና ይግቡ</translation>
+<translation id="3373979091428520308">ይህን ገጽ ለሌላ መሣሪያ ለማጋራት በሌላኛው መሣሪያ የChrome ቅንብሮች ውስጥ ስምረትን ያብሩ</translation>
 <translation id="3374023511497244703">የእርስዎ እልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌላ የ Chrome ውሂብ ከእንግዲህ ወደ የእርስዎ Google መለያ ይሰምራል</translation>
 <translation id="3384347053049321195">ምስል አጋራ</translation>
 <translation id="3386292677130313581">ጣቢያዎች አካባቢዎን እንዲያውቁ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
@@ -672,6 +674,7 @@
 <translation id="5956665950594638604">የChrome እገዛ ማዕከልን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="5958275228015807058">የእርስዎን ፋይሎች እና ገጾች በውርዶች ውስጥ ያግኙ</translation>
 <translation id="5962718611393537961">ለመሰብሰብ መታ ያድርጉ</translation>
+<translation id="5964805880140440652">ይህን ገጽ ለሌላ መሣሪያ ለማጋራት በChrome ቅንብሮች ውስጥ ስምረትን ያብሩ</translation>
 <translation id="6000066717592683814">Googleን አቆየው</translation>
 <translation id="6005538289190791541">የተጠቆመ የይለፍ ቃል</translation>
 <translation id="6036057147555329831">ተጨማሪ አይሲዩ</translation>

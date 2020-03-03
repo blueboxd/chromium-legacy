@@ -59,9 +59,7 @@
 
 // Invoked after |newWebState| was activated at the specified index. Both
 // WebState are either valid or null (if there was no selection or there is
-// no selection). If |reason| has CHANGE_REASON_USER_ACTION set then the
-// change is due to an user action. If |reason| has CHANGE_REASON_REPLACED
-// set then the change is caused because the WebState was replaced.
+// no selection). See ChangeReason enum for possible values for |reason|.
 - (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState

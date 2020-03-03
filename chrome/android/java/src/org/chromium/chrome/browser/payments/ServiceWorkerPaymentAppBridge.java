@@ -168,6 +168,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                     mDelegate.getParams().getPaymentRequestOrigin(),
                     supportedRequestedMethodData.toArray(new PaymentMethodData[0]),
                     supportedRequestedModifiers.toArray(new PaymentDetailsModifier[0]),
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MINIMAL_UI)
+                            ? mDelegate.getParams().getTotalAmountCurrency()
+                            : null,
                     /*callback=*/this, app);
         }
 
@@ -667,7 +670,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
         void fireCanMakePaymentEvent(WebContents webContents, long registrationId,
                 String serviceWorkerScope, String paymentRequestId, String topOrigin,
                 String paymentRequestOrigin, PaymentMethodData[] methodData,
-                PaymentDetailsModifier[] modifiers, PaymentHandlerFinder callback,
+                PaymentDetailsModifier[] modifiers, String currency, PaymentHandlerFinder callback,
                 ServiceWorkerPaymentApp app);
         void onClosingPaymentAppWindow(WebContents webContents, int reason);
     }

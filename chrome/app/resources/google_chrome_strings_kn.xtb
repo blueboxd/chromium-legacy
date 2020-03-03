@@ -38,6 +38,7 @@
 <translation id="1877026089748256423">Chrome ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="1900795423379050516">ಈ ಪುಟದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್ ಒಂದು ಕಾಣಿಸದಿದ್ದರೆ, ನಿಮ್ಮ <ph name="LINK_BEGIN" />Chrome ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="LINK_END" /> ನೋಡಿರಿ</translation>
 <translation id="1919130412786645364">Chrome ಸೈನ್-ಇನ್ ಅನ್ನು ಅನುಮತಿಸಿ</translation>
+<translation id="1983547493073464667">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="2063848847527508675">ಅಪ್‌ಡೇಟ್ ಅನ್ವಯಿಸಲು Chrome OS ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2094919256425865063">ಹೇಗಿದ್ದರೂ Chrome ಅನ್ನು ಮುಚ್ಚುವುದೇ?</translation>
 <translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
@@ -53,15 +54,19 @@
 <translation id="2467438592969358367">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="2485422356828889247">ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="2534507159460261402">Google Pay (Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
+<translation id="2559627601176023786">ಯಾವುದೇ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಿಲ್ಲ. ನೀವು Google ಖಾತೆಯಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಿದಾಗ, Chrome ಅವುಗಳನ್ನು ಪರಿಶೀಲಿಸಬಲ್ಲದು.</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2586406160782125153">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2588322182880276190">Chrome ಲೋಗೊ</translation>
+<translation id="261226884343006626">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಾಳೆ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="2622559029861875898">ಅಪ್‌ಡೇಟ್‌ಗಳಿವೆಯೇ ಎಂದು ನೋಡಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ನೋಡಿ.</translation>
 <translation id="2644798301485385923">Chrome OS ಸಿಸ್ಟಂ</translation>
 <translation id="2652691236519827073">ಹೊಸ Chrome &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="2665296953892887393">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Google Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="2689103672227170538">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಯಾವ ಪುಟ ತೋರಿಸಬೇಕು ಎಂಬ ಪುಟವನ್ನು ಈ ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="2765403129283291972">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸಲು Chrome ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="2770231113462710648">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
+<translation id="2775140325783767197">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ನೋಡಿ.</translation>
 <translation id="2799223571221894425">ಮರುಪ್ರಾರಂಭಿಸು</translation>
 <translation id="2847461019998147611">ಈ ಭಾಷೆಯಲ್ಲಿ Google Chrome ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="2857540653560290388">Chrome ಅನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -77,6 +82,7 @@
 <translation id="3395323229510056640">Chrome OS ನಿಂದ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="3396977131400919238">ಸ್ಥಾಪನೆ ವೇಳೆ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ ದೋಷವು ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="3398288718845740432">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
+<translation id="3434246496373299699">ನೀವು Google ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಬಲ್ಲದು</translation>
 <translation id="3451115285585441894">Chrome ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="345171907106878721">ನಿಮ್ಮನ್ನು Chrome ಗೆ ಸೇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="34857402635545079">Chrome ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
@@ -92,6 +98,7 @@
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
+<translation id="3943605108614542032">Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸುತ್ತಾರೆ</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="4053720452172726777">Google Chrome ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="4143243756087420366">Chrome ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
@@ -200,6 +207,7 @@
 <translation id="7808348361785373670">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
 <translation id="7825851276765848807">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="7855730255114109580">Google Chrome ಅನ್ನು ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
+<translation id="7888686278524752658">Chrome ಅಪ್‌ಡೇಟ್ ಆಗಲಿಲ್ಲ, ಏನೋ ಸಮಸ್ಯೆಯಾಗಿದೆ. Chrome ಅಪ್‌ಡೇಟ್ ಸಮಸ್ಯೆಗಳು ಹಾಗೂ ವಿಫಲವಾದ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸರಿಪಡಿಸಿ.</translation>
 <translation id="7890208801193284374">ನೀವು ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಂಡರೆ, ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬದವರು ಪ್ರತ್ಯೇಕವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಬಹುದು ಮತ್ತು Chrome ಅನ್ನು ಅವರ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಹೊಂದಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="7896673875602241923">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ದಯವಿಟ್ಟು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.</translation>
 <translation id="7916016681687251387">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಈಗಲೇ ಸರಿಪಡಿಸಿ.</translation>
@@ -231,6 +239,7 @@
 <translation id="8862326446509486874">ಸಿಸ್ಟಂ ಮಟ್ಟದ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ನೀವು ಸರಿಯಾದ ಹಕ್ಕುಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ನಿರ್ವಾಹಕರಂತೆ ಮತ್ತೆ ಇನ್‌ಸ್ಟಾಲರ್ ಅನ್ನು ರನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="8914504000324227558">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}=1{Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}one{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}other{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}}</translation>
+<translation id="9025321516765676895">ತೀರಾ ಹೆಚ್ಚು ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿರುವ ಕಾರಣ Chrome ಗೆ ಅವುಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="9026991721384951619">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="9067395829937117663">Google Chrome ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿಯು ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>

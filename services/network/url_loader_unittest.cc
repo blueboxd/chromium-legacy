@@ -2591,6 +2591,9 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     }
   }
 
+  void LogRapporSampleForCrossOriginFetchFromContentScript3(
+      const std::string& isolated_world_host) override {}
+
   void WaitUntilRawResponse(size_t goal) {
     if (raw_response_cookies_.size() < goal) {
       wait_for_raw_response_goal_ = goal;

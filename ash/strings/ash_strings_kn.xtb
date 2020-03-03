@@ -209,6 +209,7 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="3576141592585647168">ಸಮಯವಲಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
+<translation id="3593646411856133110">ತೆರೆದಿರುವ ಆ್ಯಪ್‌ಗಳನ್ನು ನೋಡಲು, ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ, ಒತ್ತಿಹಿಡಿಯಿರಿ</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ಡೆಸ್ಕ್ ಅನ್ನು ರಚಿಸಲಾಗಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೈಲ್‌ ಡಿಸ್‌ಪ್ಲೇ ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">ನೈಟ್ ಲೈಟ್, ಸೂರ್ಯಾಸ್ತದ ಸಮಯದಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಆನ್ ಆಗುತ್ತದೆ</translation>
 <translation id="5750765938512549687">ಬ್ಲೂಟೂತ್ ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="576453121877257266">ನೈಟ್ ಲೈಟ್ ಆನ್ ಆಗಿದೆ.</translation>
+<translation id="5769373120130404283">ಗೌಪ್ಯತೆ ಪರದೆ</translation>
 <translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ನಲ್ಲಿ <ph name="ROUTE_TITLE" /> ನಿಲ್ಲಿಸಿ</translation>
@@ -404,6 +406,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6297287540776456956">ಪ್ರದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಲು ಸ್ಟೈಲಸ್ ಬಳಸಿ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ಅನ್ನು <ph name="ROTATION" /> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="6376931439017688372">ಬ್ಲೂಟೂತ್ ಆನ್ ಆಗಿದೆ</translation>
+<translation id="6381109794406942707">ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಪಿನ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="639644700271529076">CAPS LOCK ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" /></translation>
@@ -614,6 +617,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="9072519059834302790">ಬ್ಯಾಟರಿ ಖಾಲಿಯಾಗಲು <ph name="TIME_LEFT" /> ಸಮಯವಿದೆ.</translation>
 <translation id="9074739597929991885">ಬ್ಲೂಟೂತ್‌</translation>
 <translation id="9079731690316798640">ವೈ-ಫೈ: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ಮುಖಪುಟಕ್ಕೆ ಹೋಗಲು ಮೇಲೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="9080206825613744995">ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="9084606467167974638">ಮೆನುವಿನ ಸ್ಥಾನವನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>

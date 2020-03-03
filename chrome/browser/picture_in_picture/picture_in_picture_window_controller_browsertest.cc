@@ -2434,8 +2434,17 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
 
 // Show/hide fullscreen page and check that Auto Picture-in-Picture is
 // triggered.
+
+// Crashes on Mac only.  http://crbug.com/1058087
+#if defined(OS_MACOSX)
+#define MAYBE_AutoPictureInPictureTriggeredWhenFullscreen \
+  DISABLED_AutoPictureInPictureTriggeredWhenFullscreen
+#else
+#define MAYBE_AutoPictureInPictureTriggeredWhenFullscreen \
+  AutoPictureInPictureTriggeredWhenFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPictureTriggeredWhenFullscreen) {
+                       MAYBE_AutoPictureInPictureTriggeredWhenFullscreen) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));

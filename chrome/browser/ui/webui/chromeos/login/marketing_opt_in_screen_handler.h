@@ -56,6 +56,7 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   // BaseScreenHandler:
   void Initialize() override;
   void RegisterMessages() override;
+  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
   // WebUI event handler.
   void HandleAllSet(bool play_communications_opt_in,

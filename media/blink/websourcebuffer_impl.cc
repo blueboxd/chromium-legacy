@@ -73,8 +73,8 @@ WebSourceBufferImpl::WebSourceBufferImpl(const std::string& id,
       id, base::Bind(&WebSourceBufferImpl::InitSegmentReceived,
                      base::Unretained(this)));
   demuxer_->SetParseWarningCallback(
-      id, base::Bind(&WebSourceBufferImpl::NotifyParseWarning,
-                     base::Unretained(this)));
+      id, base::BindRepeating(&WebSourceBufferImpl::NotifyParseWarning,
+                              base::Unretained(this)));
 }
 
 WebSourceBufferImpl::~WebSourceBufferImpl() = default;

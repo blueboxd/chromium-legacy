@@ -291,9 +291,6 @@ blink::WebThemeEngine* RendererBlinkPlatformImpl::ThemeEngine() {
       GetContentClient()->renderer()->OverrideThemeEngine();
   if (!theme_engine)
     theme_engine = BlinkPlatformImpl::ThemeEngine();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDarkMode))
-    theme_engine->SetPreferredColorScheme(blink::PreferredColorScheme::kDark);
   return theme_engine;
 }
 

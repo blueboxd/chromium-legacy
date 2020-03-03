@@ -92,8 +92,8 @@ class FrameProcessorTest : public ::testing::TestWithParam<bool> {
             base::Unretained(&callbacks_)),
         &media_log_);
     frame_processor_->SetParseWarningCallback(
-        base::Bind(&FrameProcessorTestCallbackHelper::OnParseWarning,
-                   base::Unretained(&callbacks_)));
+        base::BindRepeating(&FrameProcessorTestCallbackHelper::OnParseWarning,
+                            base::Unretained(&callbacks_)));
   }
 
   enum StreamFlags {

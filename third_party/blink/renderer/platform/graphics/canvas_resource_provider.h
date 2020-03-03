@@ -253,6 +253,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   ResourceProviderType type_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
+  SkSurface::ContentChangeMode mode_ = SkSurface::kRetain_ContentChangeMode;
 
  private:
   class CanvasImageProvider;

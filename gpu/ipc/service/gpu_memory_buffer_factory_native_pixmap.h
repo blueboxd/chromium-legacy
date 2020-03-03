@@ -64,6 +64,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryNativePixmap
   scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
                                                   gfx::BufferFormat format,
                                                   gfx::BufferUsage usage,
+                                                  SurfaceHandle surface_handle,
                                                   bool* is_cleared) override;
   unsigned RequiredTextureType() override;
 

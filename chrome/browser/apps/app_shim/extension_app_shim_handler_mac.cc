@@ -69,7 +69,6 @@
 #include "extensions/common/constants.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
-using extensions::AppWindow;
 using extensions::AppWindowRegistry;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
@@ -311,10 +310,27 @@ bool ExtensionAppShimHandler::Delegate::IsProfileLockedForPath(
   return profiles::IsProfileLocked(full_path);
 }
 
-AppWindowList ExtensionAppShimHandler::Delegate::GetWindows(
+bool ExtensionAppShimHandler::Delegate::ShowAppWindows(
     Profile* profile,
-    const std::string& extension_id) {
-  return AppWindowRegistry::Get(profile)->GetAppWindowsForApp(extension_id);
+    const std::string& app_id) {
+  AppWindowList windows =
+      AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id);
+  for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
+    if (*it)
+      (*it)->GetBaseWindow()->Show();
+  }
+  return !windows.empty();
+}
+
+void ExtensionAppShimHandler::Delegate::CloseAppWindows(
+    Profile* profile,
+    const std::string& app_id) {
+  AppWindowList windows =
+      AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id);
+  for (auto it = windows.begin(); it != windows.end(); ++it) {
+    if (*it)
+      (*it)->GetBaseWindow()->Close();
+  }
 }
 
 const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
@@ -325,7 +341,8 @@ const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
 
 bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
     Profile* profile,
-    const extensions::Extension* extension) {
+    const std::string& app_id) {
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (!profile || !extension)
     return false;
   if (extension->is_hosted_app() &&
@@ -349,15 +366,22 @@ std::unique_ptr<AppShimHost> ExtensionAppShimHandler::Delegate::CreateHost(
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
     Profile* profile,
-    const std::string& extension_id,
+    const std::string& app_id,
     base::OnceCallback<void()> callback) {
-  (new EnableViaPrompt(profile, extension_id, std::move(callback)))->Run();
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
+  if (extension)
+    std::move(callback).Run();
+  else
+    (new EnableViaPrompt(profile, app_id, std::move(callback)))->Run();
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
-    const Extension* extension,
+    const std::string& app_id,
     const std::vector<base::FilePath>& files) {
+  const extensions::Extension* extension =
+      MaybeGetAppExtension(profile, app_id);
+  DCHECK(extension);
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (extension->is_hosted_app()) {
@@ -399,10 +423,16 @@ void ExtensionAppShimHandler::Delegate::OpenAppURLInBrowserWindow(
 
 void ExtensionAppShimHandler::Delegate::LaunchShim(
     Profile* profile,
-    const Extension* extension,
+    const std::string& app_id,
     bool recreate_shims,
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
+  if (!extension) {
+    std::move(launched_callback).Run(base::Process());
+    return;
+  }
+
   // Only force recreation of shims when RemoteViews is in use (that is, for
   // PWAs). Otherwise, shims may be created unexpectedly.
   // https://crbug.com/941160
@@ -502,15 +532,6 @@ const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
       web_app::GetAppIdFromApplicationName(browser->app_name()));
 }
 
-void ExtensionAppShimHandler::RequestUserAttentionForWindow(
-    AppWindow* app_window,
-    chrome::mojom::AppShimAttentionType attention_type) {
-  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
-  AppShimHost* host = FindHost(profile, app_window->extension_id());
-  if (host && !host->UsesRemoteViews())
-    host->GetAppShim()->SetUserAttention(attention_type);
-}
-
 void ExtensionAppShimHandler::OnShimLaunchRequested(
     AppShimHost* host,
     bool recreate_shims,
@@ -531,16 +552,7 @@ void ExtensionAppShimHandler::OnShimLaunchRequested(
       profile = delegate_->ProfileForPath(host->GetProfilePath());
     }
   }
-
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
-  if (!profile || !extension) {
-    // If the profile or extension has been unloaded, indicate that the launch
-    // failed. This will close the AppShimHost eventually, if appropriate.
-    std::move(launched_callback).Run(base::Process());
-    return;
-  }
-  delegate_->LaunchShim(profile, extension, recreate_shims,
+  delegate_->LaunchShim(profile, host->GetAppId(), recreate_shims,
                         std::move(launched_callback),
                         std::move(terminated_callback));
 }
@@ -569,7 +581,7 @@ void ExtensionAppShimHandler::OnShimProcessConnectedForRegisterOnly(
   // exit), but many tests assume this behavior, and need to be updated.
   Profile* profile = delegate_->ProfileForPath(bootstrap->GetProfilePath());
   const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
-  if (profile && extension && delegate_->AllowShimToConnect(profile, extension))
+  if (profile && extension && delegate_->AllowShimToConnect(profile, app_id))
     GetOrCreateProfileState(profile, extension);
 
   // Because this was a register-only launch, it must have been launched by
@@ -637,12 +649,10 @@ void ExtensionAppShimHandler::OnShimProcessConnectedForLaunch(
     for (const auto& profile_path : profile_paths_to_launch) {
       if (profile_path.empty())
         continue;
-      LoadProfileAppCallback callback_wrapped = base::BindOnce(
-          [](base::OnceClosure callback_to_wrap, Profile*,
-             const extensions::Extension*) {
-            std::move(callback_to_wrap).Run();
-          },
-          std::move(callback));
+      LoadProfileAppCallback callback_wrapped =
+          base::BindOnce([](base::OnceClosure callback_to_wrap,
+                            Profile*) { std::move(callback_to_wrap).Run(); },
+                         std::move(callback));
       callback = base::BindOnce(&ExtensionAppShimHandler::LoadProfileAndApp,
                                 weak_factory_.GetWeakPtr(), profile_path,
                                 app_id, std::move(callback_wrapped));
@@ -689,7 +699,7 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     // Create a ProfileState for this app, if appropriate (e.g, not for
     // open-in-a-tab bookmark apps).
     ProfileState* profile_state = nullptr;
-    if (delegate_->AllowShimToConnect(profile, extension))
+    if (delegate_->AllowShimToConnect(profile, app_id))
       profile_state = GetOrCreateProfileState(profile, extension);
 
     // If there exist any open window for this profile, then bring them to the
@@ -707,7 +717,7 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     // Launch the app (open a window for it) if there were no open windows for
     // it already, or if we were asked to open files.
     if (!had_open_windows || !launch_files.empty()) {
-      delegate_->LaunchApp(profile, extension, launch_files);
+      delegate_->LaunchApp(profile, app_id, launch_files);
       launch_files.clear();
     }
 
@@ -849,7 +859,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(
     // TODO(jackhou): Add some UI for this case and remove the LOG.
     LOG(ERROR) << "Requested directory is not a known profile '"
                << profile_path.value() << "'.";
-    std::move(callback).Run(profile, nullptr);
+    std::move(callback).Run(profile);
     return;
   }
 
@@ -859,7 +869,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   // life within a certain window.
   const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (extension) {
-    std::move(callback).Run(profile, extension);
+    std::move(callback).Run(profile);
   } else {
     delegate_->EnableExtension(
         profile, app_id,
@@ -872,12 +882,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(
 void ExtensionAppShimHandler::OnAppEnabled(const base::FilePath& profile_path,
                                            const std::string& app_id,
                                            LoadProfileAppCallback callback) {
-  // If the profile doesn't exist, it may have been deleted during the enable
-  // prompt.
-  Profile* profile = delegate_->ProfileForPath(profile_path);
-  const Extension* extension =
-      profile ? delegate_->MaybeGetAppExtension(profile, app_id) : nullptr;
-  std::move(callback).Run(profile, extension);
+  std::move(callback).Run(delegate_->ProfileForPath(profile_path));
 }
 
 bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
@@ -921,13 +926,8 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
     apps_.erase(found_app);
 
   // Close app windows if we decided to do so above.
-  if (close_windows) {
-    AppWindowList windows = delegate_->GetWindows(profile, app_id);
-    for (auto it = windows.begin(); it != windows.end(); ++it) {
-      if (*it)
-        (*it)->GetBaseWindow()->Close();
-    }
-  }
+  if (close_windows)
+    delegate_->CloseAppWindows(profile, app_id);
 }
 
 void ExtensionAppShimHandler::OnShimFocus(AppShimHost* host) {
@@ -943,16 +943,11 @@ void ExtensionAppShimHandler::OnShimFocus(AppShimHost* host) {
     return;
   }
 
-  AppWindowList windows = delegate_->GetWindows(profile, host->GetAppId());
-  if (!windows.empty()) {
-    for (auto it = windows.rbegin(); it != windows.rend(); ++it) {
-      if (*it)
-        (*it)->GetBaseWindow()->Show();
-    }
+  if (delegate_->ShowAppWindows(profile, host->GetAppId()))
     return;
-  }
 
-  delegate_->LaunchApp(profile, extension, std::vector<base::FilePath>());
+  delegate_->LaunchApp(profile, host->GetAppId(),
+                       std::vector<base::FilePath>());
 }
 
 void ExtensionAppShimHandler::OnShimOpenedFiles(
@@ -970,10 +965,7 @@ void ExtensionAppShimHandler::OnShimOpenedFiles(
     profile = delegate_->ProfileForPath(host->GetProfilePath());
   }
   DCHECK(profile);
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
-  DCHECK(extension);
-  delegate_->LaunchApp(profile, extension, files);
+  delegate_->LaunchApp(profile, host->GetAppId(), files);
 }
 
 void ExtensionAppShimHandler::OnShimSelectedProfile(
@@ -983,12 +975,13 @@ void ExtensionAppShimHandler::OnShimSelectedProfile(
       profile_path, host->GetAppId(),
       base::BindOnce(
           &ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), host->GetAppId()));
 }
 
 void ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded(
-    Profile* profile,
-    const extensions::Extension* extension) {
+    const std::string& app_id,
+    Profile* profile) {
+  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (!extension)
     return;
 
@@ -1007,7 +1000,7 @@ void ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded(
   } else {
     // Otherwise, launch the app for this profile (which will open a new
     // window).
-    delegate_->LaunchApp(profile, extension, std::vector<base::FilePath>());
+    delegate_->LaunchApp(profile, app_id, std::vector<base::FilePath>());
   }
 }
 

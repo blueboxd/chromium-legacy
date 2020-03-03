@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Edasi</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Järgmist 4. taseme pealkirja ei ole</translation>
+<translation id="1212770441379271564">Järgmised otseteed ei ole ChromeVoxi käsud, ent need on siiski väga kasulikud ja võimaldavad Chrome'i parimal moel kasutada.
+Tegevusüksuste, näiteks nuppude ja linkide hulgas navigeerimiseks kasutage tabulaatorit. Tagasisuunas navigeerimiseks vajutage tõstuklahvi ja tabulaatorit. 
+Chrome'i brauseri aadressiriba ehk omnikastikese valimiseks vajutage klahvikombinatsiooni Ctrl + L.
+Uue vahelehe avamiseks ja automaatselt aktiveerimiseks vajutage klahvikombinatsiooni Ctrl + T. Teie kursor asub uuel vahelehel omnikastikeses. 
+Vahelehe sulgemiseks vajutage klahvikombinatsiooni Ctrl + W. 
+Avatud vahelehtede hulgas edasiliikumiseks vajutage klahvi Ctrl ja tabulaatorit. 
+Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – annab Chrome'ile hääle</translation>
 <translation id="1225969361094801578">Tume kiltsinine</translation>
 <translation id="1229276918471378188">Eelmine hüpe</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">värvivalija</translation>
 <translation id="4221012616705981690">Eelmist loendit ei ole</translation>
 <translation id="4221071177874897997">Viita paksule:</translation>
+<translation id="4225355998815256469">Vormi juhtnupud</translation>
 <translation id="4229646983878045487">kuupäev, kellaaeg</translation>
 <translation id="4230834257931120629">Hele kiltsinine</translation>
 <translation id="4231102694147661229">Luba arendaja valikud</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Lause</translation>
 <translation id="4623097797855662355">Kolofoon</translation>
 <translation id="463135993322337640">Vajutage ChromeVoxi nuppe O ja N, et tutvuda uute funktsioonidega</translation>
+<translation id="4646606380313237501">{"ar": "araabia",
+    "as": "assami",
+    "aw": "avadhi",
+    "be": "bengali",
+    "bg": "bulgaaria",
+    "bh": "bihari",
+    "bo": "tiibeti",
+    "br": "bradži",
+    "ca": "katalaani",
+    "ckb": "sorani",
+    "cs": "tšehhi",
+    "cy": "kõmri",
+    "da": "taani",
+    "de": "saksa",
+    "de_CH": "saksa (Šveits)",
+    "de_DE": "saksa (Saksamaa)",
+    "dra": "draviidi",
+    "el": "kreeka",
+    "en": "inglise",
+    "en_CA": "inglise (Kanada)",
+    "en_GB": "inglise (Ühendkuningriik)",
+    "en_US": "inglise (Ameerika Ühendriigid)",
+    "eo": "esperanto",
+    "es": "hispaania",
+    "et": "eesti",
+    "fa": "pärsia",
+    "fr": "prantsuse",
+    "fr_CA": "prantsuse (Kanada)",
+    "fr_FR": "prantsuse (Prantsusmaa)",
+    "fi": "soome",
+    "ga": "iiri",
+    "gd": "gaeli",
+    "gon": "gondi",
+    "gu": "gudžarati",
+    "he": "heebrea",
+    "hi": "hindi",
+    "hr": "horvaatia",
+    "hu": "ungari",
+    "hy": "armeenia",
+    "is": "islandi",
+    "it": "itaalia",
+    "iu": "inuktituti",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "korea",
+    "kok": "konkani",
+    "kru": "kuruhhi",
+    "ks": "kašmiiri",
+    "lt": "leedu",
+    "lv": "läti",
+    "mao": "maoori",
+    "ml": "malajalami",
+    "mt": "malta",
+    "mwr": "maarvari",
+    "mn": "mongoolia",
+    "mun": "munda",
+    "nb": "norra bokmål",
+    "ne": "nepaali",
+    "nl": "hollandi",
+    "no": "norra",
+    "or": "oria",
+    "pi": "pali",
+    "pl": "poola",
+    "pt": "portugali",
+    "pu": "pandžabi",
+    "ro": "rumeenia",
+    "ru": "vene",
+    "sa": "sanskriti",
+    "si": "sindhi",
+    "sin": "singali",
+    "sk": "slovaki",
+    "sl": "sloveeni",
+    "sr": "serbia",
+    "sv": "rootsi",
+    "ta": "tamili",
+    "te": "telugu",
+    "tr": "rumeenia",
+    "tsn": "afrikaani",
+    "uk": "ukraina",
+    "ur": "urdu",
+    "vi": "vietnami",
+    "zh": "hiina",
+    "zh_TW": "hiina (traditsiooniline han)"}</translation>
 <translation id="4647836961514597010">Värvivalija</translation>
 <translation id="4660783501463101648">Klassikaline versioon on eemaldatud. Klassikalise ChromeVoxi aktiveerimise lüliti on klaviatuurilt eemaldatud.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Nakkerežiim on lubatud</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstikast</translation>
+<translation id="532485153932049746">Teksti vorming
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Võimaldab juhtida seadet vaid 1 või 2 lülitiga.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Modaalne teatis</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikoolon}other{# semikoolonit}}</translation>
+<translation id="5420259671171615858">Otsing menüüdest</translation>
 <translation id="5435274640623994081">Helisignaali logimise lubamine</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{vähem kui}other{# märki „vähem kui”}}</translation>
 <translation id="5444587279251314700">(aktiivne)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Tuvastati õigekirjaviga</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">tagasi</translation>
+<translation id="7429415133937917139">Simuleerib ekraani ülaosas oleval ChromeVoxi paneelil
+    värskendatava Braille' ekraani väljundit</translation>
 <translation id="7434509671034404296">Arendaja</translation>
 <translation id="743783356331413498">Näide</translation>
 <translation id="7439060726180460871">Kataloog</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Eelmine raadionupp</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Järgmist liitboksi ei ole</translation>
+<translation id="772146615414628379">Õnnitleme! Olete omandanud ChromeVoxi kasutamiseks vajalikud põhiteadmised. Pidage meeles, et saate ChromeVoxi käsumenüü avada igal ajal, vajutades otsinguklahvi ja punktiklahvi. ChromeVoxi ja Chrome OS-i kohta lisateabe saamiseks lugege järgmisi artikleid.
+    Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja klõpsake sellel.</translation>
 <translation id="7724603315864178912">Lõika</translation>
 <translation id="7731785449856576010">Järgmist meediavidinat ei ole</translation>
 <translation id="773906353055481349">Lahtri kaupa navigeerimiseks vajutage korraga otsinguklahvi, klahve Ctrl + Alt ja nooleklahve</translation>

@@ -24,12 +24,13 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.util.ColorUtils;
 
@@ -179,7 +180,9 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
                 }
 
                 private boolean hasSecurityWarningOrError(Tab tab) {
-                    return SecurityStateModel.isContentDangerous(tab.getWebContents());
+                    boolean isContentDangerous = SecurityStateModel.isContentDangerous(
+                            tab.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
+                    return isContentDangerous;
                 }
             };
             mTabObserverRegistrar.registerActivityTabObserver(mIconTabObserver);

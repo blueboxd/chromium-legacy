@@ -78,7 +78,6 @@ type_mappings = [
   "content.mojom.InputEventAckState=::content::InputEventAckState",
   "content.mojom.NetworkConnectionType=::net::NetworkChangeNotifier::ConnectionType",
   "content.mojom.PointerType=::blink::WebPointerProperties::PointerType",
-  "content.mojom.PreferredColorScheme=::ui::NativeTheme::PreferredColorScheme",
   "content.mojom.ScrollGranularity=::ui::ScrollGranularity",
   "content.mojom.SyntheticPinch=::content::SyntheticPinchGestureParams",
   "content.mojom.SyntheticPointerAction=::content::SyntheticPointerActionListParams",

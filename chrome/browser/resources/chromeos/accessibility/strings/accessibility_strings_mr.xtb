@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">पुढील पातळी चार शीर्षक नाही</translation>
+<translation id="1212770441379271564">पुढील काही शॉर्टकट ChromeVox कमांड नाहीत, परंतु तरीही Chrome मधून बरेच काही मिळवण्यासाठी ते खूप उपयुक्त आहेत.
+    बटणे आणि लिंक यांसारख्या कृती करण्यायोग्य आयटममधून पुढे नेव्हिगेट करण्यासाठी, Tab की दाबा. मागे नेव्हिगेट करण्यासाठी, Shift+Tab दाबा.
+    Chrome ब्राउझरचा, ऑम्निबॉक्सदेखील म्हणवला जाणारा, ॲड्रेस बॉक्स ॲक्सेस करण्यासाठी Control + L दाबा.
+    नवीन टॅब उघडण्यासाठी आणि त्यामध्ये आपोआप जाण्यासाठी, Control+T दाबा. तुमचा कर्सर ऑम्निबॉक्समध्ये असेल.
+    टॅब बंद करण्यासाठी, Control+W दाबा.
+    उघडलेल्या टॅबमध्ये पुढे जाण्यासाठी, Control+Tab वापरा.
+    Chrome ब्राउझर मेनू उघडण्यासाठी, Alt+F दाबा.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ला आवाज देत आहे</translation>
 <translation id="1225969361094801578">गडद राखाडी</translation>
 <translation id="1229276918471378188">मागील जंप</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">रंग निवडक</translation>
 <translation id="4221012616705981690">मागील सूची नाही</translation>
 <translation id="4221071177874897997">ठळक सूचित करा:</translation>
+<translation id="4225355998815256469">फॉर्म नियंत्रणे</translation>
 <translation id="4229646983878045487">तारीख वेळ</translation>
 <translation id="4230834257931120629">फिकट राखाडी</translation>
 <translation id="4231102694147661229">डेव्हलपर पर्याय सुरू करा</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">वाक्य</translation>
 <translation id="4623097797855662355">बोधचिन्ह</translation>
 <translation id="463135993322337640">नवीन काय आहे ते पाहण्यासाठी ChromeVox o, n दाबा</translation>
+<translation id="4646606380313237501">{"ar": "अरबी",
+    "as": "आसामी",
+    "aw": "अवधी",
+    "be": "बंगाली",
+    "bg": "बल्गेरियन",
+    "bh": "बिहारी",
+    "bo": "तिबेटन",
+    "br": "ब्रज",
+    "ca": "कॅटलान",
+    "ckb": "सोरानी",
+    "cs": "चेक",
+    "cy": "वेल्श",
+    "da": "डॅनिश",
+    "de": "जर्मन",
+    "de_CH": "जर्मन (स्वित्झर्लँड)",
+    "de_DE": "जर्मन (जर्मनी)",
+    "dra": "द्रविडी",
+    "el": "ग्रीक",
+    "en": "इंग्रजी",
+    "en_CA": "इंग्रजी (कॅनडा)",
+    "en_GB": "इंग्रजी (युनायटेड किंगडम)",
+    "en_US": "इंग्रजी (युनायटेड स्टेट्स)",
+    "eo": "एस्पेरांतो",
+    "es": "स्पॅनिश",
+    "et": "एस्टोनियन",
+    "fa": "फारसी",
+    "fr": "फ्रेंच",
+    "fr_CA": "फ्रेंच (कॅनडा)",
+    "fr_FR": "फ्रेंच (फ्रान्स)",
+    "fi": "फिनिश",
+    "ga": "आयरिश",
+    "gd": "गॅलिक",
+    "gon": "गोंडी",
+    "gu": "गुजराती",
+    "he": "हिब्रू",
+    "hi": "हिंदी",
+    "hr": "क्रोएशियन",
+    "hu": "हंगेरियन",
+    "hy": "आर्मेनियन",
+    "is": "आइसलँडिक",
+    "it": "इटालियन",
+    "iu": "इनुक्तितूत",
+    "ka": "कन्नड",
+    "kh": "खासी",
+    "ko": "कोरियन",
+    "kok": "कोंकणी ",
+    "kru": "कुरक",
+    "ks": "काश्मिरी",
+    "lt": "लिथुआनियन",
+    "lv": "लाटव्हियन",
+    "mao": "माओरी",
+    "ml": "मल्याळम",
+    "mt": "माल्टीज",
+    "mwr": "मारवाडी",
+    "mn": "मंगोलियन",
+    "mun": "मुंडा",
+    "nb": "नॉर्वेजियन बोकमाल",
+    "ne": "नेपाळी",
+    "nl": "डच",
+    "no": "नॉर्वेजियन",
+    "or": "उडिया",
+    "pi": "पाली",
+    "pl": "पोलिश",
+    "pt": "पोर्तुगीज",
+    "pu": "पंजाबी",
+    "ro": "रोमानियन",
+    "ru": "रशियन",
+    "sa": "संस्कृत",
+    "si": "सिंधी",
+    "sin": "सिंहली",
+    "sk": "स्लोव्हाक",
+    "sl": "स्लोव्हेनियन",
+    "sr": "सर्बियन",
+    "sv": "स्वीडिश",
+    "ta": "तमिळ",
+    "te": "तेलुगु",
+    "tr": "तुर्की",
+    "tsn": "आफ्रिकान्स",
+    "uk": "युक्रेनियन",
+    "ur": "उर्दू",
+    "vi": "व्हिएतनामी",
+    "zh": "चिनी",
+    "zh_TW": "चिनी (पारंपरिक हान)"}</translation>
 <translation id="4647836961514597010">रंग निवडक</translation>
 <translation id="4660783501463101648">क्लासिक काढले. ChromeVox क्लासिक मध्ये परत स्विच करण्यासाठी कीबोर्ड टॉगल काढले गेले आहे.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">रोचक मोड सक्षम</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{स्वल्पविराम}other{# स्वल्पविराम}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, मजकूर बॉक्स</translation>
+<translation id="532485153932049746">मजकूर फॉरमॅटिंग
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, लिंक</translation>
 <translation id="5331522683003474486">फक्त एक किंवा दोन स्विचसह डिव्हाइस नियंत्रित करा.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">ब्रेल</translation>
 <translation id="5402791055281059602">एक मॉडेल सूचना</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}other{# अर्धविराम}}</translation>
+<translation id="5420259671171615858">मेनू शोधा</translation>
 <translation id="5435274640623994081">इअरकॉन लॉगिंग सुरू करा</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{पेक्षा कमी}other{# पेक्षा कमी चिन्हे}}</translation>
 <translation id="5444587279251314700">(सक्रिय)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">शब्दलेखन चूक आढळली</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">मिळवणे</translation>
+<translation id="7429415133937917139">स्क्रीनच्या वरच्या बाजूला ChromeVox पॅनलमध्ये
+    रिफ्रेश करता येण्यासारख्या ब्रेल डिस्प्लेचे आउटपुट सिम्युलेट करते</translation>
 <translation id="7434509671034404296">डेव्हलपर</translation>
 <translation id="743783356331413498">उदाहरण</translation>
 <translation id="7439060726180460871">डिरेक्टरी</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">मागील रेडिओ बटण</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">पुढील कॉम्‍बो बॉक्‍स नाही</translation>
+<translation id="772146615414628379">अभिनंदन! ChromeVox यशस्वीरीत्या वापरण्यासाठी अत्यावश्यक असलेल्या गोष्टी तुम्ही जाणून घेतल्या आहेत. लक्षात ठेवा की, Search+Period दाबून तुम्ही कधीही ChromeVox कमांड मेनू उघडू शकता. ChromeVox आणि Chrome OS यांबद्दल आणखी जास्त जाणून घेण्यासाठी, पुढील लेख वाचा.
+    तुम्ही ट्युटोरियल पूर्ण केले असल्यास, ChromeVox वापरून बंद करा बटणावर नेव्हिगेट करा आणि त्यावर क्लिक करा.</translation>
 <translation id="7724603315864178912">कट करा</translation>
 <translation id="7731785449856576010">पुढील मीडिया विजेट नाही</translation>
 <translation id="773906353055481349">सेलनुसार नेव्हिगेट करण्यासाठी ॲरोंसोबत Search+Ctrl+Alt दाबा</translation>

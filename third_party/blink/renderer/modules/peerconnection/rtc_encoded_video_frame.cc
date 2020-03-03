@@ -25,7 +25,7 @@ String RTCEncodedVideoFrame::type() const {
 }
 
 uint64_t RTCEncodedVideoFrame::timestamp() const {
-  return delegate_->ReceivedTime();
+  return delegate_ ? delegate_->ReceivedTime() : 0;
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::data() const {
@@ -46,7 +46,6 @@ DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {
 
 void RTCEncodedVideoFrame::setData(DOMArrayBuffer* data) {
   frame_data_ = data;
-  replaced_frame_data_ = true;
 }
 
 String RTCEncodedVideoFrame::toString() const {
@@ -67,7 +66,7 @@ String RTCEncodedVideoFrame::toString() const {
 std::unique_ptr<webrtc::video_coding::EncodedFrame>
 RTCEncodedVideoFrame::PassDelegate() {
   // Sync the delegate data with |frame_data_| if necessary.
-  if (replaced_frame_data_) {
+  if (delegate_ && frame_data_) {
     rtc::scoped_refptr<webrtc::EncodedImageBuffer> webrtc_image =
         webrtc::EncodedImageBuffer::Create(
             static_cast<const uint8_t*>(frame_data_->Data()),

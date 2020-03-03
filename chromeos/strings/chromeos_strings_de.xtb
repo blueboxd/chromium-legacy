@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1195447618553298278">Unbekannter Fehler.</translation>
+<translation id="1468664791493211953">Angebote</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und kann Ihre Aktivitäten möglicherweise überwachen.</translation>
 <translation id="150962533380566081">Ungültiger PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
@@ -42,6 +43,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
+<translation id="8208861521865154048">Vorteile</translation>
 <translation id="8747900814994928677">Änderung bestätigen</translation>
 <translation id="910415269708673980">Aktualisieren Sie das Ticket für <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Entsperren</translation>

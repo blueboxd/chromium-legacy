@@ -2684,7 +2684,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4737715515457435632">Sambungkan ke jaringan</translation>
 <translation id="473775607612524610">Perbarui</translation>
 <translation id="4739639199548674512">Tiket</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> dan 1 Halaman Lainnya}other{<ph name="PAGE_TITLE" /> dan # Halaman Lainnya}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Pelajari cara mengupdate aplikasi<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Aktifkan notifikasi situs}other{Aktifkan notifikasi beberapa situs}}</translation>
 <translation id="4746351372139058112">Pesan</translation>
@@ -5187,7 +5186,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8214489666383623925">Buka File...</translation>
 <translation id="8214962590150211830">Hapus Orang ini</translation>
 <translation id="8215295261562449873">Cadangkan aplikasi dan file saya ke folder Download sebelum mengupgrade Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> dan 1 halaman lainnya}other{<ph name="PAGE_TITLE" /> dan # halaman lainnya}}</translation>
 <translation id="8217399928341212914">Lanjutkan memblokir download otomatis beberapa file</translation>
 <translation id="8218847192766059983">Tambahkan bahasa atau urutkan ulang daftar. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Anda biasanya memblokir notifikasi. Untuk mengizinkan situs ini memberi Anda notifikasi, klik di sini.</translation>
@@ -5398,6 +5396,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="851263357009351303">Selalu izinkan <ph name="HOST" /> menampilkan gambar</translation>
 <translation id="8513108775083588393">Putar otomatis</translation>
 <translation id="8514746246728959655">Coba kunci keamanan lain</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8521475323816527629">Buka aplikasi dengan cepat</translation>
 <translation id="8523493869875972733">Simpan Perubahan</translation>
 <translation id="8523849605371521713">Ditambahkan sesuai kebijakan</translation>
@@ -5518,6 +5517,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8673383193459449849">Server bermasalah</translation>
 <translation id="8675354002693747642">Kunci yang dibagikan sebelumnya</translation>
 <translation id="8676374126336081632">Hapus masukan</translation>
+<translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
 <translation id="8677212948402625567">Ciutkan semua...</translation>
 <translation id="8678648549315280022">Mengelola setelan download...</translation>
 <translation id="8678933587484842200">Bagaimana Anda ingin meluncurkan aplikasi ini?</translation>

@@ -2161,7 +2161,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     metadata.is_resourceless_software_draw_with_scroll_or_animation =
-        IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
+        IsActivelyPrecisionScrolling() || mutator_host_->NeedsTickAnimations();
   }
 
   const base::flat_set<viz::SurfaceRange>& referenced_surfaces =
@@ -2974,7 +2974,7 @@ const ScrollNode* LayerTreeHostImpl::CurrentlyScrollingNode() const {
   return active_tree()->CurrentlyScrollingNode();
 }
 
-bool LayerTreeHostImpl::IsActivelyScrolling() const {
+bool LayerTreeHostImpl::IsActivelyPrecisionScrolling() const {
   if (!CurrentlyScrollingNode())
     return false;
   // On Android WebView root flings are controlled by the application,
@@ -2982,7 +2982,14 @@ bool LayerTreeHostImpl::IsActivelyScrolling() const {
   // are actually animating. So assume there are none.
   if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport())
     return false;
-  return true;
+
+  if (!last_scroll_update_state_)
+    return false;
+
+  bool did_scroll_content =
+      did_scroll_x_for_scroll_gesture_ || did_scroll_y_for_scroll_gesture_;
+  return !ShouldAnimateScroll(last_scroll_update_state_.value()) &&
+         did_scroll_content;
 }
 
 void LayerTreeHostImpl::CreatePendingTree() {
@@ -4615,7 +4622,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
   if (!CurrentlyScrollingNode())
     return InputHandlerScrollResult();
 
-  last_scroll_state_ = *scroll_state;
+  last_scroll_update_state_ = *scroll_state;
 
   bool is_delta_percent_units = scroll_state->delta_granularity() ==
                                 ui::ScrollGranularity::kScrollByPercentage;
@@ -4774,13 +4781,13 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
-  DCHECK(last_scroll_state_);
+  DCHECK(last_scroll_update_state_);
   bool imprecise_wheel_scrolling =
       latched_scroll_type_ == InputHandler::WHEEL &&
-      last_scroll_state_->delta_granularity() !=
+      last_scroll_update_state_->delta_granularity() !=
           ui::ScrollGranularity::kScrollByPrecisePixel;
-  gfx::ScrollOffset last_scroll_delta(last_scroll_state_->delta_x(),
-                                      last_scroll_state_->delta_y());
+  gfx::ScrollOffset last_scroll_delta(last_scroll_update_state_->delta_x(),
+                                      last_scroll_update_state_->delta_y());
 
   std::unique_ptr<SnapSelectionStrategy> strategy;
 
@@ -4905,7 +4912,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   did_scroll_y_for_scroll_gesture_ = false;
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   latched_scroll_type_.reset();
-  last_scroll_state_.reset();
+  last_scroll_update_state_.reset();
 }
 
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {

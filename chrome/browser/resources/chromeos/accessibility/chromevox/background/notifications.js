@@ -17,7 +17,7 @@ const UpdateNotification = class {
   constructor() {
     this.data = {};
     this.data.type = 'basic';
-    this.data.iconUrl = '/images/chromevox-16.png';
+    this.data.iconUrl = '/chromevox/images/chromevox-16.png';
     this.data.title = Msgs.getMsg('update_title');
     this.data.message = Msgs.getMsg('update_message_new');
   }

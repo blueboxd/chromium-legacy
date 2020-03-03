@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Nie ma następnego nagłówka poziomu 4</translation>
+<translation id="1212770441379271564">Poniższe skróty nie są poleceniami ChromeVoxa, ale są bardzo przydatne podczas korzystania z Chrome.
+    Aby przejść do następnego aktywnego elementu, np. przycisku lub linku, naciśnij klawisz Tab. Aby przejść do poprzedniego elementu, naciśnij Shift + Tab.
+    Aby otworzyć pole adresu w przeglądarce Chrome (omnibox), naciśnij Ctrl + L.
+    Aby otworzyć nową kartę i automatycznie do niej przejść, naciśnij Ctrl + T. Kursor zostanie ustawiony w omniboksie.
+    Aby zamknąć kartę, naciśnij Ctrl + W.
+    Aby przejść do następnej otwartej karty, naciśnij Ctrl + Tab.
+    Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – niech Chrome przemówi</translation>
 <translation id="1225969361094801578">Ciemny szaroniebieski</translation>
 <translation id="1229276918471378188">Poprzednie przejście</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">selektor kolorów</translation>
 <translation id="4221012616705981690">Nie ma poprzedniej listy</translation>
 <translation id="4221071177874897997">Wskaż pogrubienie:</translation>
+<translation id="4225355998815256469">Elementy sterujące formularzy</translation>
 <translation id="4229646983878045487">data i godzina</translation>
 <translation id="4230834257931120629">Jasny szaroniebieski</translation>
 <translation id="4231102694147661229">Włącz opcje dewelopera</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Zdanie</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Naciśnij ChromeVox + O + N, by poznać nowe funkcje</translation>
+<translation id="4646606380313237501">{"ar": "arabski",
+    "as": "asamski",
+    "aw": "awadhi",
+    "be": "bengalski",
+    "bg": "bułgarski",
+    "bh": "bihari",
+    "bo": "tybetański",
+    "br": "bradź",
+    "ca": "kataloński",
+    "ckb": "sorani",
+    "cs": "czeski",
+    "cy": "walijski",
+    "da": "duński",
+    "de": "niemiecki",
+    "de_CH": "niemiecki (Szwajcaria)",
+    "de_DE": "niemiecki (Niemcy)",
+    "dra": "drawidyjski",
+    "el": "grecki",
+    "en": "angielski",
+    "en_CA": "angielski (Kanada)",
+    "en_GB": "angielski (Wielka Brytania)",
+    "en_US": "angielski (Stany Zjednoczone)",
+    "eo": "esperanto",
+    "es": "hiszpański",
+    "et": "estoński",
+    "fa": "perski",
+    "fr": "francuski",
+    "fr_CA": "francuski (Kanada)",
+    "fr_FR": "francuski (Francja)",
+    "fi": "fiński",
+    "ga": "irlandzki",
+    "gd": "gaelicki",
+    "gon": "gondi",
+    "gu": "gudżarati",
+    "he": "hebrajski",
+    "hi": "hindi",
+    "hr": "chorwacki",
+    "hu": "węgierski",
+    "hy": "ormiański",
+    "is": "islandzki",
+    "it": "włoski",
+    "iu": "inuktitut",
+    "ka": "kannada",
+    "kh": "khasi",
+    "ko": "koreański",
+    "kok": "konkani",
+    "kru": "kurukh",
+    "ks": "kaszmirski",
+    "lt": "litewski",
+    "lv": "łotewski",
+    "mao": "maoryski",
+    "ml": "malajalam",
+    "mt": "maltański",
+    "mwr": "marwari",
+    "mn": "mongolski",
+    "mun": "munda",
+    "nb": "norweski Bokmål",
+    "ne": "nepalski",
+    "nl": "niderlandzki",
+    "no": "norweski",
+    "or": "orija",
+    "pi": "pali",
+    "pl": "polski",
+    "pt": "portugalski",
+    "pu": "pendżabski",
+    "ro": "rumuński",
+    "ru": "rosyjski",
+    "sa": "sanskryt",
+    "si": "sindhi",
+    "sin": "sinhala",
+    "sk": "słowacki",
+    "sl": "słoweński",
+    "sr": "serbski",
+    "sv": "szwedzki",
+    "ta": "tamilski",
+    "te": "telugu",
+    "tr": "turecki",
+    "tsn": "afrikaans",
+    "uk": "ukraiński",
+    "ur": "urdu",
+    "vi": "wietnamski",
+    "zh": "chiński",
+    "zh_TW": "chiński (tradycyjny Han)"}</translation>
 <translation id="4647836961514597010">Selektor kolorów</translation>
 <translation id="4660783501463101648">Klasyczny ChromeVox został usunięty. Przełącznik pozwalający na powrót do niego został usunięty.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Tryb klawiszy trwałych włączony</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{przecinek}few{# przecinki}many{# przecinków}other{# commas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, pole tekstowe</translation>
+<translation id="532485153932049746">Formatowanie tekstu
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Steruj urządzeniem za pomocą 1 lub 2 przełączników.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Pismo Braille'a</translation>
 <translation id="5402791055281059602">Alert w oknie modalnym</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{średnik}few{# średniki}many{# średników}other{# semicolons}}</translation>
+<translation id="5420259671171615858">Przeszukaj menu.</translation>
 <translation id="5435274640623994081">Włącz rejestrowanie ikony audio</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mniejszy niż}few{# znaki mniejszości}many{# znaków mniejszości}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(aktywna)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Wykryto błąd pisowni</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">powrót</translation>
+<translation id="7429415133937917139">Symuluje wyjście odświeżanego monitora brajlowskiego w panelu ChromeVoxa u góry ekranu.</translation>
 <translation id="7434509671034404296">Deweloper</translation>
 <translation id="743783356331413498">Przykład</translation>
 <translation id="7439060726180460871">Katalog</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Poprzedni przycisk opcji</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Nie ma następnego pola wyboru</translation>
+<translation id="772146615414628379">Gratulacje! Znasz już podstawy korzystania z czytnika ChromeVox. Pamiętaj, że menu poleceń ChromeVoxa możesz otworzyć w każdej chwili, naciskając Wyszukaj + kropkę. Aby dowiedzieć się więcej o czytniku ChromeVox i systemie operacyjnym Chrome, przeczytaj poniższe artykuły.
+    Jeśli nie korzystasz już z samouczka, za pomocą czytnika ChromeVox przejdź do przycisku Zamknij i go kliknij.</translation>
 <translation id="7724603315864178912">Wytnij</translation>
 <translation id="7731785449856576010">Nie ma widżetu następnego pliku multimedialnego</translation>
 <translation id="773906353055481349">Naciśnij klawisz wyszukiwania + Ctrl + Alt i przechodź między komórkami za pomocą strzałek</translation>

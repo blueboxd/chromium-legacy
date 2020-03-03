@@ -32,6 +32,11 @@ class MarketingOptInScreen : public BaseScreen,
   // ash::ShelfCondif::Observer:
   void OnShelfConfigUpdated() override;
 
+  void set_exit_callback_for_testing(
+      const base::RepeatingClosure& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
  protected:
   // BaseScreen:
   void ShowImpl() override;

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
 <translation id="1195447618553298278">Nepoznata greška.</translation>
+<translation id="1468664791493211953">Ponude</translation>
 <translation id="1482734542997480527">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i moguće je da može pratiti vaše aktivnosti.</translation>
 <translation id="150962533380566081">Nevažeći PUK.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
@@ -42,6 +43,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
 <translation id="808894953321890993">Promijenite lozinku</translation>
+<translation id="8208861521865154048">Privilegije</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>
 <translation id="910415269708673980">Osvježite tiket za <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Otključaj</translation>

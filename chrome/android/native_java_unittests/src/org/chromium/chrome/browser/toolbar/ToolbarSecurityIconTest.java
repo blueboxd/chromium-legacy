@@ -17,10 +17,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
-import org.chromium.chrome.browser.ssl.SecurityStateModelJni;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
+import org.chromium.components.security_state.SecurityStateModelJni;
 
 /**
  * Unit tests for {@link LocationBarLayout} class.

@@ -45,10 +45,12 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  Mailbox CreateSharedImage(viz::ResourceFormat format,
-                            const gfx::Size& size,
-                            const gfx::ColorSpace& color_space,
-                            uint32_t usage) override;
+  Mailbox CreateSharedImage(
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) override;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the
@@ -152,6 +154,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   void LazyCreateSharedImageFactory();
   void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     viz::ResourceFormat format,
+                                    gpu::SurfaceHandle surface_handle,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,

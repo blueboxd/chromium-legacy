@@ -248,7 +248,8 @@ void WebStateList::ActivateWebStateAt(int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ContainsIndex(index));
   auto lock = LockForMutation();
-  return ActivateWebStateAtImpl(index);
+  return ActivateWebStateAtImpl(index,
+                                WebStateListObserver::CHANGE_REASON_ACTIVATED);
 }
 
 base::AutoReset<bool> WebStateList::LockForMutation() {
@@ -295,7 +296,7 @@ int WebStateList::InsertWebStateImpl(int index,
     SetOpenerOfWebStateAt(index, opener);
 
   if (activating)
-    ActivateWebStateAtImpl(index);
+    ActivateWebStateAtImpl(index, WebStateListObserver::CHANGE_REASON_INSERTED);
 
   return index;
 }
@@ -417,7 +418,8 @@ void WebStateList::CloseAllWebStatesImpl(int close_flags) {
         // WebState is de-activated before closing them. This avoid sending
         // one notification per WebState in the worst case (when the active
         // WebState is the last one and no opener is set to any WebState).
-        web_state_list->ActivateWebStateAtImpl(kInvalidIndex);
+        web_state_list->ActivateWebStateAtImpl(
+            kInvalidIndex, WebStateListObserver::CHANGE_REASON_CLOSED);
 
         // Close the WebStates from last to first.
         while (!web_state_list->empty())
@@ -427,14 +429,13 @@ void WebStateList::CloseAllWebStatesImpl(int close_flags) {
       close_flags));
 }
 
-void WebStateList::ActivateWebStateAtImpl(int index) {
+void WebStateList::ActivateWebStateAtImpl(int index, int reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(locked_);
   DCHECK(ContainsIndex(index) || index == kInvalidIndex);
   web::WebState* old_web_state = GetActiveWebState();
   active_index_ = index;
-  NotifyIfActiveWebStateChanged(
-      old_web_state, WebStateListObserver::CHANGE_REASON_USER_ACTION);
+  NotifyIfActiveWebStateChanged(old_web_state, reason);
 }
 
 void WebStateList::AddObserver(WebStateListObserver* observer) {

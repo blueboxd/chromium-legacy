@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1206619573307042055">marquesiña</translation>
 <translation id="1207086294218137981">Non hai ningunha cabeceira posterior de nivel 4</translation>
+<translation id="1212770441379271564">Os seguintes atallos non son comandos de ChromeVox, pero son moi útiles para aproveitar Chrome ao máximo.
+    Para avanzar por elementos nos que se poida realizar algunha acción, como botóns e ligazóns, preme a tecla Tab. Para retroceder, preme Maiúsculas + Tab.
+    Para ir á caixa de enderezo do navegador Chrome, tamén coñecida como Omnibox, preme Control + L.
+    Para abrir unha nova pestana e ir a ela automaticamente, preme Control + T. O cursor aparecerá na barra de enderezos Omnibox.
+    Para pechar unha pestana, preme Control + W.
+    Para avanzar entre as pestanas abertas, utiliza Control + Tab.
+    Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox, a voz de Chrome</translation>
 <translation id="1225969361094801578">Gris lousa escuro</translation>
 <translation id="1229276918471378188">Salto anterior</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">selector de cor</translation>
 <translation id="4221012616705981690">Non hai ningunha lista anterior</translation>
 <translation id="4221071177874897997">Indicar grosa:</translation>
+<translation id="4225355998815256469">Controis de formulario</translation>
 <translation id="4229646983878045487">data e hora</translation>
 <translation id="4230834257931120629">Gris lousa claro</translation>
 <translation id="4231102694147661229">Activar opcións para programadores</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Frase</translation>
 <translation id="4623097797855662355">Colofón</translation>
 <translation id="463135993322337640">Para obter máis información sobre as novidades, preme ChromeVox seguido da tecla O e, despois, a N</translation>
+<translation id="4646606380313237501">{"ar": "Árabe",
+    "as": "Assamés",
+    "aw": "Awadhi",
+    "be": "Bengalí",
+    "bg": "Búlgaro",
+    "bh": "Bihari",
+    "bo": "Tibetano",
+    "br": "Braj",
+    "ca": "Catalán",
+    "ckb": "Sorani",
+    "cs": "Checo",
+    "cy": "Galés",
+    "da": "Dinamarqués",
+    "de": "Alemán",
+    "de_CH": "Alemán (Suíza)",
+    "de_DE": "Alemán (Alemaña)",
+    "dra": "Dravídico",
+    "el": "Grego",
+    "en": "Inglés",
+    "en_CA": "Inglés (Canadá)",
+    "en_GB": "Inglés (Reino Unido)",
+    "en_US": "Inglés (Estados Unidos)",
+    "eo": "Esperanto",
+    "es": "Español",
+    "et": "Estoniano",
+    "fa": "Persa",
+    "fr": "Francés",
+    "fr_CA": "Francés (Canadá)",
+    "fr_FR": "Francés (Francia)",
+    "fi": "Finés",
+    "ga": "Irlandés",
+    "gd": "Gaélico",
+    "gon": "Gondi",
+    "gu": "Guxarati",
+    "he": "Hebreo",
+    "hi": "Hindi",
+    "hr": "Croata",
+    "hu": "Húngaro",
+    "hy": "Armenio",
+    "is": "Islandés",
+    "it": "Italiano",
+    "iu": "Inuktitut",
+    "ka": "Kannará",
+    "kh": "Khasi",
+    "ko": "Coreano",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Caxemirés",
+    "lt": "Lituano",
+    "lv": "Letón",
+    "mao": "Maorí",
+    "ml": "Malabar",
+    "mt": "Maltés",
+    "mwr": "Marwari",
+    "mn": "Mongol",
+    "mun": "Munda",
+    "nb": "Noruegués bokmål",
+    "ne": "Nepalí",
+    "nl": "Neerlandés",
+    "no": "Noruegués",
+    "or": "Odiá",
+    "pi": "Pali",
+    "pl": "Polaco",
+    "pt": "Portugués",
+    "pu": "Panxabí",
+    "ro": "Romanés",
+    "ru": "Ruso",
+    "sa": "Sánscrito",
+    "si": "Sindhi",
+    "sin": "Cingalés",
+    "sk": "Eslovaco",
+    "sl": "Esloveno",
+    "sr": "Serbio",
+    "sv": "Sueco",
+    "ta": "Támil",
+    "te": "Telugu",
+    "tr": "Turco",
+    "tsn": "Afrikaans",
+    "uk": "Ucraíno",
+    "ur": "Urdú",
+    "vi": "Vietnamita",
+    "zh": "Chinés",
+    "zh_TW": "Chinés (han tradicional)"}</translation>
 <translation id="4647836961514597010">Seleccionador de cor</translation>
 <translation id="4660783501463101648">Eliminouse a versión clásica. Quitouse a combinación de teclas para volver á versión clásica de ChromeVox.</translation>
 <translation id="4661075872484491155">árbore</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Modo de teclas presas activado</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, caixa de texto</translation>
+<translation id="532485153932049746">Formato do texto
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" /> (ligazón)</translation>
 <translation id="5331522683003474486">Controla o dispositivo con só 1 ou 2 interruptores.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Unha alerta modal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{punto e coma}other{# puntos e comas}}</translation>
+<translation id="5420259671171615858">Realiza buscas nos menús</translation>
 <translation id="5435274640623994081">Activar rexistro de iconas auditivas</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos de menor que}}</translation>
 <translation id="5444587279251314700">(activa)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Erro ortográfico detectado</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">retorno</translation>
+<translation id="7429415133937917139">Simula a saída dunha liña braille actualizable no panel de
+    ChromeVox, situado na parte superior da pantalla</translation>
 <translation id="7434509671034404296">Programador</translation>
 <translation id="743783356331413498">Exemplo</translation>
 <translation id="7439060726180460871">Directorio</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Botón de opción anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Non hai ningunha caixa de combinación posterior</translation>
+<translation id="772146615414628379">Parabéns! Xa aprendiches os conceptos básicos para utilizar ChromeVox correctamente. Lembra que podes abrir o menú de comandos de ChromeVox en calquera momento premendo a tecla de busca + punto. Para consultar aínda máis información sobre ChromeVox e Chrome OS, consulta os seguintes artigos.
+    Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e fai clic nel.</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7731785449856576010">Non hai ningún widget multimedia posterior</translation>
 <translation id="773906353055481349">Preme a tecla de busca+Ctrl+Alt coas frechas para desprazarte polas celas</translation>

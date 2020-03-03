@@ -61,6 +61,7 @@ public class CrashesListActivity extends Activity {
 
     private CrashListExpandableAdapter mCrashListViewAdapter;
     private WebViewPackageError mDifferentPackageError;
+    private PersistentErrorView mCrashConsentError;
 
     // There is a limit on the length of this query string, see https://crbug.com/1015923
     // TODO(https://crbug.com/1052295): add assert statement to check the length of this String.
@@ -105,19 +106,11 @@ public class CrashesListActivity extends Activity {
 
         mDifferentPackageError =
                 new WebViewPackageError(this, findViewById(R.id.crashes_list_activity_layout));
+        mCrashConsentError =
+                buildCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
+
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
-
-        final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
-        if (!enableMinidumpUploadingForTesting) {
-            PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
-                // enabled is a Boolean object and can be null.
-                if (!Boolean.TRUE.equals(enabled)) {
-                    showCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
-                }
-            });
-        }
     }
 
     @Override
@@ -128,6 +121,21 @@ public class CrashesListActivity extends Activity {
         // activity.
         mDifferentPackageError.showMessageIfDifferent();
         mCrashListViewAdapter.updateCrashes();
+
+        // Firstly, check for the flag value in commandline file, since it doesn't require any IPCs.
+        if (CommandLine.getInstance().hasSwitch(
+                    AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH)) {
+            mCrashConsentError.hide();
+        } else {
+            PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
+                // enabled is a Boolean object and can be null.
+                if (Boolean.TRUE.equals(enabled)) {
+                    mCrashConsentError.hide();
+                } else {
+                    mCrashConsentError.show();
+                }
+            });
+        }
     }
 
     /**
@@ -428,7 +436,7 @@ public class CrashesListActivity extends Activity {
         }
     }
 
-    private void showCrashConsentError(boolean canUseGms) {
+    private PersistentErrorView buildCrashConsentError(boolean canUseGms) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle("Error Showing Crashes");
         if (canUseGms) {
@@ -451,11 +459,10 @@ public class CrashesListActivity extends Activity {
             dialogBuilder.setMessage("Crash collection is not supported at the moment.");
         }
 
-        new PersistentErrorView(this, PersistentErrorView.Type.ERROR)
+        return new PersistentErrorView(this, PersistentErrorView.Type.ERROR)
                 .prependToLinearLayout(findViewById(R.id.crashes_list_activity_layout))
                 .setText("Crash collection is disabled. Tap for more info.")
-                .setDialog(dialogBuilder.create())
-                .show();
+                .setDialog(dialogBuilder.create());
     }
 
     @Override

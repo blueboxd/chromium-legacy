@@ -229,8 +229,8 @@ void TestMediaSource::DemuxerOpenedTask() {
                             base::Unretained(this)));
 
   chunk_demuxer_->SetParseWarningCallback(
-      kSourceId,
-      base::Bind(&TestMediaSource::OnParseWarningMock, base::Unretained(this)));
+      kSourceId, base::BindRepeating(&TestMediaSource::OnParseWarningMock,
+                                     base::Unretained(this)));
 
   SetSequenceMode(initial_sequence_mode_);
   AppendData(initial_append_size_);

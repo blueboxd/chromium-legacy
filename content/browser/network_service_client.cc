@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
+#include "components/rappor/public/rappor_service.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_client.h"
@@ -257,4 +259,16 @@ void NetworkServiceClient::OnCorsPreflightRequestCompleted(
   devtools_instrumentation::OnCorsPreflightRequestCompleted(
       process_id, render_frame_id, devtools_request_id, status);
 }
+
+void NetworkServiceClient::LogRapporSampleForCrossOriginFetchFromContentScript3(
+    const std::string& isolated_world_host) {
+  rappor::RapporService* rappor =
+      GetContentClient()->browser()->GetRapporService();
+  if (!rappor)
+    return;
+
+  rappor->RecordSampleString("Extensions.CrossOriginFetchFromContentScript3",
+                             rappor::UMA_RAPPOR_TYPE, isolated_world_host);
+}
+
 }  // namespace content

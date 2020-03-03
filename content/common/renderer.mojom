@@ -180,7 +180,6 @@ struct UpdateScrollbarThemeParams {
 struct UpdateSystemColorInfoParams {
   bool is_dark_mode;
   bool is_high_contrast;
-  PreferredColorScheme preferred_color_scheme;
   // uint32 represents a SkColor in the map.
   map<SystemThemeColor, uint32> colors;
 };

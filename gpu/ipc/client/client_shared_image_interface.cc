@@ -71,7 +71,9 @@ Mailbox ClientSharedImageInterface::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    gpu::SurfaceHandle surface_handle) {
+  DCHECK_EQ(surface_handle, kNullSurfaceHandle);
   return AddMailbox(
       proxy_->CreateSharedImage(format, size, color_space, usage));
 }

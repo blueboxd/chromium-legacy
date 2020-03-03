@@ -316,6 +316,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2289385804009217824">Retallat</translation>
 <translation id="2292556288342944218">El vostre accés a Internet està bloquejat</translation>
 <translation id="2297722699537546652">B5 (sobre)</translation>
+<translation id="2300306941146563769">No penjat</translation>
 <translation id="2310021320168182093">Chou2 (sobre)</translation>
 <translation id="2315864634253056100">El nom d'aquest lloc web s'assembla a <ph name="LOOKALIKE_DOMAIN" />. De vegades, els atacants imiten llocs web introduint canvis difícils de veure a l'adreça web.</translation>
 <translation id="2316887270356262533">Allibera menys d'1 MB. És possible que alguns llocs web es carreguin més a poc a poc la propera vegada que els visitis.</translation>
@@ -438,6 +439,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2910133103376701357">El dispositiu i el compte estan gestionats per <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Identificador d'usuari del compte de treball</translation>
+<translation id="2915068235268646559">Inici del bloqueig: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
 <translation id="2925673989565098301">Mètode d'entrega</translation>
@@ -446,6 +448,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2930577230479659665">Retalla després de cada còpia</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat prové del domini <ph name="DOMAIN2" />. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="2943895734390379394">Hora de la pujada:</translation>
 <translation id="2948083400971632585">Podeu desactivar qualsevol servidor intermediari configurat per a una connexió des de la pàgina de configuració.</translation>
 <translation id="2951588413176968965">La meva bústia de correu</translation>
 <translation id="295526156371527179">Advertiment: aquesta política no s'ha combinat com a diccionari segons el que s'especifica a la política perquè no és un diccionari.</translation>
@@ -733,7 +736,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="421066178035138955">Utilitza dades i dispositius de realitat virtual</translation>
 <translation id="4214357935346142455">perfil de la pantalla d'inici de sessió</translation>
 <translation id="4215751373031079683">7x9 (sobre)</translation>
-<translation id="4220128509585149162">Errors</translation>
+<translation id="4220128509585149162">Bloqueigs</translation>
 <translation id="422022731706691852">És possible que els atacants del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> provin d'enganyar-te perquè instal·lis programes que poden perjudicar la teva experiència de navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs web que visitis). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4221630205957821124">&lt;h4&gt;Pas 1: inicieu la sessió al portal&lt;/h4&gt;
     &lt;p&gt;Les xarxes Wi-Fi de llocs com ara cafeteries o aeroports requereixen que inicieu la sessió. Per veure la pàgina d'inici de sessió, aneu a una pàgina que faci servir &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
@@ -1078,6 +1081,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="563324245173044180">S'ha bloquejat el contingut enganyós.</translation>
 <translation id="5644090287519800334">Desplaçament a l'eix X del costat 1 de la imatge</translation>
 <translation id="5645854190134202180">Segon torn</translation>
+<translation id="5654927323611874862">Identificador de l'informe d'error penjat:</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5663614846592581799">9x11 (sobre)</translation>
 <translation id="5663955426505430495">L'administrador del dispositiu ha instal·lat extensions per obtenir funcions addicionals. Les extensions tenen accés a algunes de les teves dades.</translation>
@@ -1385,6 +1389,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="7079718277001814089">Aquest lloc web conté programari maliciós</translation>
 <translation id="7081308185095828845">Aquesta funció no està disponible al teu dispositiu</translation>
 <translation id="7083258188081898530">Safata 9</translation>
+<translation id="7086090958708083563">Pujada sol·licitada per l'usuari</translation>
 <translation id="7087282848513945231">Comtat</translation>
 <translation id="7090678807593890770">Cerqueu <ph name="LINK" /> a Google</translation>
 <translation id="7108338896283013870">Amaga</translation>
@@ -1547,6 +1552,7 @@ Detalls addicionals:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continua per accedir a <ph name="SITE" /> (no segur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
 <translation id="7716147886133743102">Bloquejat per l'administrador</translation>
+<translation id="7716375162095500223">Ignorat o encara no penjat</translation>
 <translation id="7716424297397655342">Aquest lloc no es pot carregar des de la memòria cau</translation>
 <translation id="7723047071702270851">Edita la targeta</translation>
 <translation id="7740996059027112821">Estàndard</translation>
@@ -1691,6 +1697,7 @@ Detalls addicionals:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si enteneu el risc que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc<ph name="END_LINK" /> abans que no s'hagin suprimit els programes perjudicials.</translation>
 <translation id="8349305172487531364">Barra d'adreces d'interès</translation>
+<translation id="8355270400102541638">Context del bloqueig local:</translation>
 <translation id="8363502534493474904">Desactiva el mode d'avió.</translation>
 <translation id="8364627913115013041">No s'ha definit.</translation>
 <translation id="8368476060205742148">Serveis de Google Play</translation>
@@ -1711,6 +1718,7 @@ Detalls addicionals:
 <translation id="8461694314515752532">Encripta les dades sincronitzades amb la teva frase de contrasenya de sincronització</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 targeta de crèdit}other{# targetes de crèdit}}</translation>
 <translation id="8473863474539038330">Adreces i més</translation>
+<translation id="8474910779563686872">Mostra els detalls del desenvolupador</translation>
 <translation id="8479754468255770962">Grapat a la part inferior esquerra</translation>
 <translation id="8483780878231876732">Per poder utilitzar targetes del teu compte de Google, inicia la sessió a Chrome</translation>
 <translation id="8488350697529856933">Objectiu d'aplicació</translation>
@@ -1836,6 +1844,7 @@ Detalls addicionals:
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="9106062320799175032">Afegeix una adreça de facturació</translation>
 <translation id="9114524666733003316">S'està confirmant la targeta...</translation>
+<translation id="9119042192571987207">Penjat</translation>
 <translation id="9128870381267983090">Connecta't a la xarxa</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9141013498910525015">Gestiona les adreces</translation>

@@ -6549,6 +6549,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Contained me card."/>
 </enum>
 
+<enum name="BooleanContentChangeMode">
+  <int value="0" label="Discard Content"/>
+  <int value="1" label="Retain Content"/>
+</enum>
+
 <enum name="BooleanContinueChoice">
   <int value="0" label="Chose CANCEL"/>
   <int value="1" label="Chose CONTINUE"/>
@@ -42048,6 +42053,7 @@ Called by update_use_counter_css.py.-->
   <int value="652" label="contain-intrinsic-width"/>
   <int value="653" label="render-subtree"/>
   <int value="654" label="origin-trial-test-property"/>
+  <int value="655" label="subtree-visibility"/>
 </enum>
 
 <enum name="MappedEditingCommands">

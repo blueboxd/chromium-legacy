@@ -58,6 +58,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           WebPreferences* prefs) override;
   base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()

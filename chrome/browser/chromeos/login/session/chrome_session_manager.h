@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
+#include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace base {
@@ -43,6 +44,7 @@ class ChromeSessionManager : public session_manager::SessionManager {
 
  private:
   std::unique_ptr<chromeos::OobeConfiguration> oobe_configuration_;
+  std::unique_ptr<UserSessionInitializer> user_session_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);
 };

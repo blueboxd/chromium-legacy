@@ -19,7 +19,6 @@ crbug.com/982194 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht 
 crbug.com/982194 external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Failure ]
 crbug.com/982194 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
-crbug.com/982194 external/wpt/css/css-overflow/overflow-inline-transform-relative.html [ Failure ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 crbug.com/949909 external/wpt/css/css-text-decor/text-emphasis-color-001.xht [ Failure ]

@@ -2685,7 +2685,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4737715515457435632">Establece conexión con una red</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> y 1 página más}other{<ph name="PAGE_TITLE" /> y # páginas más}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Cómo actualizar aplicaciones<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Activar sonido del sitio web}other{Activar sonido de los sitios web}}</translation>
 <translation id="4746351372139058112">Mensajes</translation>
@@ -5188,7 +5187,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8214489666383623925">Abrir archivo...</translation>
 <translation id="8214962590150211830">Eliminar este perfil</translation>
 <translation id="8215295261562449873">Crear una copia de seguridad de las aplicaciones y archivos en la carpeta Descargas antes de actualizar Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> y 1 página más}other{<ph name="PAGE_TITLE" /> y # páginas más}}</translation>
 <translation id="8217399928341212914">Seguir bloqueando descargas automáticas de varios archivos</translation>
 <translation id="8218847192766059983">Añade o reordena idiomas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Normalmente bloqueas todas las notificaciones. Si quieres permitir que este sitio web te muestre notificaciones, haz clic aquí.</translation>
@@ -5399,6 +5397,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="851263357009351303">Permitir siempre que <ph name="HOST" /> muestre imágenes</translation>
 <translation id="8513108775083588393">Girar automáticamente</translation>
 <translation id="8514746246728959655">Prueba con una llave de seguridad diferente</translation>
+<translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8521475323816527629">Accede rápidamente a tus aplicaciones</translation>
 <translation id="8523493869875972733">Mantener cambios</translation>
 <translation id="8523849605371521713">Añadida por política</translation>
@@ -5519,6 +5518,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8673383193459449849">Problema en el servidor</translation>
 <translation id="8675354002693747642">Clave precompartida</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
+<translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8677212948402625567">Ocultar todos...</translation>
 <translation id="8678648549315280022">Administrar configuración de descargas...</translation>
 <translation id="8678933587484842200">¿Cómo te gustaría que se iniciara esta aplicación?</translation>

@@ -36,6 +36,7 @@
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="1900795423379050516">Se un'impostazione non viene mostrata in questa pagina, cercala nelle <ph name="LINK_BEGIN" />impostazioni del browser Chrome<ph name="LINK_END" />.</translation>
 <translation id="1919130412786645364">Consenti l'accesso a Chrome</translation>
+<translation id="1983547493073464667">Chrome non può controllare le tue password</translation>
 <translation id="2063848847527508675">Per applicare l'aggiornamento è necessario riavviare Chrome OS.</translation>
 <translation id="2094919256425865063">Vuoi chiudere comunque Chrome?</translation>
 <translation id="2120620239521071941">Verranno eliminati <ph name="ITEMS_COUNT" /> elementi da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come <ph name="USER_EMAIL" />.</translation>
@@ -51,15 +52,19 @@
 <translation id="2467438592969358367">Google Chrome vuole esportare le password. Per consentire l'esportazione, digita la tua password Windows.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2534507159460261402">Google Pay (copiata in Chrome)</translation>
+<translation id="2559627601176023786">Nessuna password salvata. Chrome può controllare le password quando le salvi nel tuo Account Google.</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="2586406160782125153">Verranno eliminati i tuoi dati di navigazione da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo di Chrome</translation>
+<translation id="261226884343006626">Chrome non può controllare le tue password. Riprova domani.</translation>
+<translation id="2622559029861875898">Chrome non può controllare la disponibilità di aggiornamenti. Prova a controllare la connessione a Internet.</translation>
 <translation id="2644798301485385923">Sistema Chrome OS</translation>
 <translation id="2652691236519827073">Apri link in una nuova &amp;scheda di Chrome</translation>
 <translation id="2665296953892887393">Aiutaci a migliorare Google Chrome inviando a Google rapporti sugli arresti anomali e <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Questa estensione ha cambiato la pagina mostrata all'avvio di Chrome.</translation>
 <translation id="2765403129283291972">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono</translation>
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
+<translation id="2775140325783767197">Chrome non può controllare le tue password. Prova a controllare la connessione a Internet.</translation>
 <translation id="2799223571221894425">Riavvia</translation>
 <translation id="2847461019998147611">Visualizza Google Chrome in questa lingua</translation>
 <translation id="2857540653560290388">Avvio di Chrome...</translation>
@@ -75,6 +80,7 @@
 <translation id="3395323229510056640">Ricevi assistenza per Chrome OS</translation>
 <translation id="3396977131400919238">Durante l'installazione si è verificato un errore del sistema operativo. Scarica nuovamente Google Chrome.</translation>
 <translation id="3398288718845740432">Nascondi in menu Chrome</translation>
+<translation id="3434246496373299699">Chrome può controllare le tue password quando accedi con il tuo Account Google</translation>
 <translation id="3451115285585441894">Aggiunta a Chrome in corso...</translation>
 <translation id="345171907106878721">Aggiungiti a Chrome</translation>
 <translation id="34857402635545079">Cancella anche i dati di Chrome (<ph name="URL" />)</translation>
@@ -90,6 +96,7 @@
 <translation id="386202838227397562">Chiudi tutte le finestre di Google Chrome e riprova.</translation>
 <translation id="3873044882194371212">Apri link in una finestra di navigazione in inco&amp;gnito di Chrome</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
+<translation id="3943605108614542032">L'amministratore gestisce gli aggiornamenti di Chrome</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
 <translation id="4143243756087420366">Nome e immagine di Chrome</translation>
@@ -198,6 +205,7 @@
 <translation id="7808348361785373670">Rimuovi da Chrome...</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome è aggiornato</translation>
+<translation id="7888686278524752658">Chrome non si è aggiornato, si è verificato un errore. Risolvi i problemi di aggiornamento di Chrome e di aggiornamenti non riusciti.</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
 <translation id="7896673875602241923">Qualcuno ha già eseguito l'accesso a Chrome su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Crea un nuovo utente Chrome per tenere separate le tue informazioni.</translation>
 <translation id="7916016681687251387">Impossibile sincronizzare i dati in Chrome OS. Risolvi subito il problema.</translation>
@@ -228,6 +236,7 @@
 <translation id="8862326446509486874">Non disponi dei diritti appropriati per l'installazione a livello di sistema. Prova a eseguire nuovamente il programma di installazione come Amministratore.</translation>
 <translation id="8914504000324227558">Riavvia Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{È disponibile un aggiornamento di Chrome}=1{È disponibile un aggiornamento di Chrome}other{È disponibile un aggiornamento di Chrome da # giorni}}</translation>
+<translation id="9025321516765676895">Chrome non può controllare le tue password perché sono troppe</translation>
 <translation id="9026991721384951619">Impossibile sincronizzare i dati in Chrome OS perché i dati di accesso dell'account sono obsoleti.</translation>
 <translation id="9067395829937117663">Google Chrome richiede Windows 7 o versioni successive.</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>

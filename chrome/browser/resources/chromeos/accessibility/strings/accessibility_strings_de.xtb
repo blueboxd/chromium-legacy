@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Keine nächste Überschrift der Ebene 4</translation>
+<translation id="1212770441379271564">Bei den nächsten Tastaturbefehlen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind für die optimale Bedienung von Chrome dennoch sehr hilfreich.
+    Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärtsgehen möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Umschalttaste + Tab.
+    Wenn Sie auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchten, drücken Sie Strg + L.
+    Um einen neuen Tab zu öffnen und automatisch dorthin zu wechseln, drücken Sie Strg + T. Ihr Cursor befindet sich dann in der Omnibox.
+    Wenn Sie einen Tab schließen möchten, drücken Sie Strg + W.
+    Um zwischen offenen Tabs vorwärtszugehen, verwenden Sie Strg + Tab.
+    Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – eine Stimme für Chrome</translation>
 <translation id="1225969361094801578">Dunkles Schiefergrau</translation>
 <translation id="1229276918471378188">Vorheriger Sprung</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">color picker</translation>
 <translation id="4221012616705981690">Keine vorherige Liste</translation>
 <translation id="4221071177874897997">Fettformatierung angeben:</translation>
+<translation id="4225355998815256469">Formularsteuerelemente</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Helles Schiefergrau</translation>
 <translation id="4231102694147661229">Entwickleroptionen aktivieren</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Satz</translation>
 <translation id="4623097797855662355">Kolophon</translation>
 <translation id="463135993322337640">Wenn Sie mehr über die neuen Funktionen von ChromeVox erfahren möchten, drücken Sie ChromeVox "O" und "N"</translation>
+<translation id="4646606380313237501">{"ar": "Arabisch",
+    "as": "Assamesisch",
+    "aw": "Awadhi",
+    "be": "Bengalisch",
+    "bg": "Bulgarisch",
+    "bh": "Bihari",
+    "bo": "Tibetisch",
+    "br": "Braj",
+    "ca": "Katalanisch",
+    "ckb": "Sorani",
+    "cs": "Tschechisch",
+    "cy": "Walisisch",
+    "da": "Dänisch",
+    "de": "Deutsch",
+    "de_CH": "Deutsch (Schweiz)",
+    "de_DE": "Deutsch (Deutschland)",
+    "dra": "Dravidisch",
+    "el": "Griechisch",
+    "en": "Englisch",
+    "en_CA": "Englisch (Kanada)",
+    "en_GB": "Englisch (Vereinigtes Königreich)",
+    "en_US": "Englisch (USA)",
+    "eo": "Esperanto",
+    "es": "Spanisch",
+    "et": "Estnisch",
+    "fa": "Persisch",
+    "fr": "Französisch",
+    "fr_CA": "Französisch (Kanada)",
+    "fr_FR": "Französisch (Frankreich)",
+    "fi": "Finnisch",
+    "ga": "Irisch",
+    "gd": "Gälisch",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Hebräisch",
+    "hi": "Hindi",
+    "hr": "Kroatisch",
+    "hu": "Ungarisch",
+    "hy": "Armenisch",
+    "is": "Isländisch",
+    "it": "Italienisch",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Koreanisch",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmiri",
+    "lt": "Litauisch",
+    "lv": "Lettisch",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Maltesisch",
+    "mwr": "Marwari",
+    "mn": "Mongolisch",
+    "mun": "Munda",
+    "nb": "Norwegisch (Bokmål)",
+    "ne": "Nepalesisch",
+    "nl": "Niederländisch",
+    "no": "Norwegisch",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Polnisch",
+    "pt": "Portugiesisch",
+    "pu": "Punjabi",
+    "ro": "Rumänisch",
+    "ru": "Russisch",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Singhalesisch",
+    "sk": "Slowakisch",
+    "sl": "Slowenisch",
+    "sr": "Serbisch",
+    "sv": "Schwedisch",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Türkisch",
+    "tsn": "Afrikaans",
+    "uk": "Ukrainisch",
+    "ur": "Urdu",
+    "vi": "Vietnamesisch",
+    "zh": "Chinesisch",
+    "zh_TW": "Chinesisch (Traditionelles Han)"}</translation>
 <translation id="4647836961514597010">Farbauswahl</translation>
 <translation id="4660783501463101648">Classic wurde entfernt. Die Tastaturschaltfläche für den Wechsel zu ChromeVox Classic wurde entfernt.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Fixierter Modus aktiviert</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{Komma}other{# Kommas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, Textfeld</translation>
+<translation id="532485153932049746">Textformatierung
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590">Link "<ph name="NAME" />"</translation>
 <translation id="5331522683003474486">Das Gerät lässt sich über einen oder zwei Schalter steuern.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Eine modale Benachrichtigung</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{Strichpunkt}other{# Strichpunkte}}</translation>
+<translation id="5420259671171615858">In Menüs suchen</translation>
 <translation id="5435274640623994081">Earcon-Protokollierung aktivieren</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{Kleiner-als-Zeichen}other{# Kleiner-als-Zeichen}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Rechtschreibfehler gefunden</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">Wagenrücklauf</translation>
+<translation id="7429415133937917139">Simuliert die Ausgabe einer aktualisierbaren Braillezeile
+    im ChromeVox-Bereich oben auf dem Bildschirm</translation>
 <translation id="7434509671034404296">Entwickler</translation>
 <translation id="743783356331413498">Beispiel</translation>
 <translation id="7439060726180460871">Verzeichnis</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Vorheriges Optionsfeld</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Kein nächstes Kombinationsfeld</translation>
+<translation id="772146615414628379">Glückwunsch! Jetzt kennen Sie die Grundlagen für die Nutzung von ChromeVox. Nicht vergessen: Sie können das Befehlsmenü von ChromeVox jederzeit öffnen, indem Sie "Suche + Punkt" drücken. Weitere Informationen zu ChromeVox und Chrome OS erhalten Sie in den folgenden Artikeln.
+    Wenn Sie die Anleitung abgeschlossen haben, gehen Sie mit ChromeVox zur Schaltfläche "Schließen" und klicken Sie darauf.</translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
 <translation id="7731785449856576010">Kein weiteres Medien-Widget</translation>
 <translation id="773906353055481349">Drücken Sie die Suchtaste + Strg + Alt und Pfeiltasten, um zwischen Zellen zu wechseln</translation>

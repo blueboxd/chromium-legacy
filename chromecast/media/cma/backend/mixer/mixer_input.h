@@ -53,6 +53,7 @@ class MixerInput {
     virtual bool primary() = 0;
     virtual const std::string& device_id() = 0;
     virtual AudioContentType content_type() = 0;
+    virtual AudioContentType focus_type() = 0;
     virtual int desired_read_size() = 0;
     virtual int playout_channel() = 0;
     // Returns true if the source is currently providing audio to be mixed.
@@ -103,6 +104,7 @@ class MixerInput {
   bool primary() const { return primary_; }
   const std::string& device_id() const { return device_id_; }
   AudioContentType content_type() const { return content_type_; }
+  AudioContentType focus_type() const { return source_->focus_type(); }
 
   // Adds/removes an output redirector. When the mixer asks for more audio data,
   // the lowest-ordered redirector (based on redirector->GetOrder()) is passed

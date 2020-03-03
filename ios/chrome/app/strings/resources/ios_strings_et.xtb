@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
 <translation id="2179182049312275900">Saate sünkroonimise seadetes alati sisse lülitada.</translation>
 <translation id="2198757192731523470">Google võib kasutada teie ajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks.</translation>
+<translation id="2218443599109088993">Suumi välja</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2239626343334228536">Sirvimisandmete kustutamine …</translation>
 <translation id="2257567812274161158">Sünkroonimine ei tööta.</translation>
@@ -417,6 +418,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6464071786529933911">Ava uuel inkognito lehel</translation>
 <translation id="6476800141292307438">Leht tõlgitakse <ph name="LANGUAGE" /> keelde. Valikud leiate ekraanikuva allosast.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on kustutatud</translation>
+<translation id="6561262006871132942">Suumi sisse</translation>
 <translation id="6610002944194042868">Tõlkimise valikud</translation>
 <translation id="6628106477656132239">Sobimatu aegumiskuupäev</translation>
 <translation id="6638511529934826365">Teksti suumimine …</translation>

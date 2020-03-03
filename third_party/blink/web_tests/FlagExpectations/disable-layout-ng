@@ -436,8 +436,7 @@ crbug.com/1016759 paint/invalidation/svg/animated-path-inside-transformed-html.x
 crbug.com/1016759 paint/invalidation/svg/circle-move-invalidation.svg [ Failure ]
 
 # display-locking
-crbug.com/591099 wpt_internal/display-lock/css-render-subtree/invisible-size-contained.html [ Failure ]
-crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/overflow-auto-with-overflow.html [ Failure ]
+crbug.com/591099 wpt_internal/display-lock/css-subtree-visibility/invisible-size-contained.html [ Failure ]
 
 # 10/02/2019 Mark tests as failing. Mostly shapes, slight image differences
 external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]

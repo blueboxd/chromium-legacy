@@ -104,9 +104,8 @@ TEST_F(LayoutThemeTest, SystemColorWithColorScheme) {
             style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhasesForTest();
 
   style = dark_element->GetComputedStyle();

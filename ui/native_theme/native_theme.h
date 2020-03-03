@@ -525,7 +525,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   bool UpdateSystemColorInfo(
       bool is_dark_mode,
       bool is_high_contrast,
-      PreferredColorScheme preferred_color_scheme,
       const base::flat_map<SystemThemeColor, uint32_t>& colors);
 
  protected:

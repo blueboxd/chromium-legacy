@@ -3234,7 +3234,8 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
   }
   scoped_refptr<gl::GLImage> image =
       decoder_->GetContextGroup()->image_factory()->CreateAnonymousImage(
-          size, buffer_format, gfx::BufferUsage::SCANOUT, &is_cleared);
+          size, buffer_format, gfx::BufferUsage::SCANOUT,
+          gpu::kNullSurfaceHandle, &is_cleared);
   if (!image)
     return false;
   DCHECK_EQ(format, image->GetDataFormat());
@@ -18788,7 +18789,7 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   scoped_refptr<gl::GLImage> image =
       GetContextGroup()->image_factory()->CreateAnonymousImage(
           gfx::Size(width, height), buffer_format, gfx_buffer_usage,
-          &is_cleared);
+          gpu::kNullSurfaceHandle, &is_cleared);
   if (!image || !image->BindTexImage(target)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
                        "Failed to create or bind GL Image");

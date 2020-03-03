@@ -3389,7 +3389,8 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage2DImageCHROMIUM(
   bool is_cleared;
   scoped_refptr<gl::GLImage> image =
       GetContextGroup()->image_factory()->CreateAnonymousImage(
-          gfx::Size(width, height), buffer_format, buffer_usage, &is_cleared);
+          gfx::Size(width, height), buffer_format, buffer_usage,
+          gpu::kNullSurfaceHandle, &is_cleared);
   if (!image || !image->BindTexImage(target)) {
     InsertError(GL_INVALID_OPERATION, "Failed to create or bind GL Image");
     return error::kNoError;

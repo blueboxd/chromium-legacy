@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Borrar o historial, as cookies, os datos dos sitios, a memoria caché…</translation>
 <translation id="129382876167171263">Os ficheiros gardados polos sitios web aparecen aquí</translation>
 <translation id="129553762522093515">Pechado recentemente</translation>
+<translation id="1303339473099049190">Non se puido atopar o contrasinal. Comproba a ortografía e téntao de novo.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Contido enviado desde <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Agrupar pestanas</translation>
 <translation id="1327257854815634930">O historial de navegación está aberto</translation>
@@ -323,6 +324,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3350687908700087792">Pecha todas as pestanas do modo de incógnito</translation>
 <translation id="3353615205017136254">Páxina en modo básico ofrecida por Google. Toca o botón de carga da versión orixinal para ver a páxina orixinal.</translation>
 <translation id="3367813778245106622">Inicia sesión de novo para comezar a sincronización</translation>
+<translation id="3373979091428520308">Para compartir esta páxina con outro dispositivo, activa a sincronización na configuración de Chrome dese dispositivo</translation>
 <translation id="3374023511497244703">Os marcadores, o historial, os contrasinais e outros datos de Chrome deixarán de sincronizarse coa túa Conta de Google</translation>
 <translation id="3384347053049321195">Compartir imaxe</translation>
 <translation id="3386292677130313581">Pregunta antes de permitir que os sitios coñezan a túa localización (recomendado)</translation>
@@ -672,6 +674,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5956665950594638604">Abrir o Centro de Axuda de Chrome nunha nova pestana</translation>
 <translation id="5958275228015807058">Atopa os ficheiros e as páxinas que descargaches na sección Descargas</translation>
 <translation id="5962718611393537961">Toca para contraer</translation>
+<translation id="5964805880140440652">Para compartir esta páxina con outro dispositivo, activa a sincronización na configuración de Chrome</translation>
 <translation id="6000066717592683814">Manter Google</translation>
 <translation id="6005538289190791541">Contrasinal suxerido</translation>
 <translation id="6036057147555329831">ICU extra</translation>

@@ -103,6 +103,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   bool primary() override;
   const std::string& device_id() override;
   AudioContentType content_type() override;
+  AudioContentType focus_type() override;
   int desired_read_size() override;
   int playout_channel() override;
   bool active() override;
@@ -155,6 +156,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
+  const AudioContentType focus_type_;
   const int playout_channel_;
 
   const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">החשבון מנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
 <translation id="3576141592585647168">שינוי אזור הזמן</translation>
+<translation id="3593646411856133110">כדי להציג את האפליקציות הפתוחות, מחליקים כלפי מעלה ולוחצים לחיצה ארוכה</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
 <translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">תאורת לילה נדלקת באופן אוטומטי בשעת השקיעה</translation>
 <translation id="5750765938512549687">‏Bluetooth כבוי</translation>
 <translation id="576453121877257266">תאורת הלילה פועלת.</translation>
+<translation id="5769373120130404283">מסך פרטיות</translation>
 <translation id="5777841717266010279">להפסיק את שיתוף המסך?</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5837036133683224804">הפסקת <ph name="ROUTE_TITLE" /> במכשיר <ph name="RECEIVER_NAME" /></translation>
@@ -403,6 +405,7 @@
 <translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
+<translation id="6381109794406942707">כדי לבטל את הנעילה של המכשיר, יש להזין את קוד האימות.</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" /></translation>
@@ -615,6 +618,7 @@
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> עד להתרוקנות הסוללה.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">כדי לחזור לדף הבית, מחליקים כלפי מעלה</translation>
 <translation id="9080206825613744995">המיקרופון נמצא בשימוש.</translation>
 <translation id="9084606467167974638">שינוי מיקום התפריט</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>

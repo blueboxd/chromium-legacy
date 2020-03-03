@@ -708,6 +708,17 @@
   {
     'name': 'chromium.android.fyi',
     'machines': {
+      'Android WebLayer P FYI (rel)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'weblayer_shell_wpt',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'Android WebView P Blink-CORS FYI (rel)': {
         'mixins': [
           'pie_fleet',
@@ -2417,7 +2428,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac Release (Intel) Code Coverage': {
@@ -2430,7 +2441,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac Retina Debug (AMD)': {
@@ -2453,7 +2464,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac Retina Release (AMD) Code Coverage': {
@@ -2466,7 +2477,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts_experimental',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Win10 x64 Debug (NVIDIA)': {

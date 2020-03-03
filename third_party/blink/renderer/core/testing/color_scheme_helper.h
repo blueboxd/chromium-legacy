@@ -12,6 +12,7 @@ namespace blink {
 
 class Document;
 class Page;
+class Settings;
 class WebThemeEngine;
 
 // ColorSchemeHelper is used to update the values of PreferredColorScheme and
@@ -19,20 +20,18 @@ class WebThemeEngine;
 // and ForcedColors back to their default values upon deconstruction.
 class ColorSchemeHelper {
  public:
-  ColorSchemeHelper();
+  ColorSchemeHelper(Document& document);
+  ColorSchemeHelper(Page& page);
   ~ColorSchemeHelper();
 
   void SetPreferredColorScheme(
-      Document& document,
-      const PreferredColorScheme preferred_color_scheme);
-  void SetPreferredColorScheme(
-      Page& page,
       const PreferredColorScheme preferred_color_scheme);
   void SetForcedColors(Document& document, const ForcedColors forced_colors);
   void SetForcedColors(Page& page, const ForcedColors forced_colors);
 
  private:
   WebThemeEngine* web_theme_engine_ = nullptr;
+  Settings& settings_;
   PreferredColorScheme default_preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
   ForcedColors default_forced_colors_ = ForcedColors::kNone;

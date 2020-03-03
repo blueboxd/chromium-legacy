@@ -1056,6 +1056,7 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore di testo è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
+<translation id="2509919237512982967">Usa i controlli modulo legacy fino alla versione M84.</translation>
 <translation id="2514328368635166290">Consente di specificare l'URL dell'icona preferita del provider di ricerca predefinito. Questa norma è facoltativa. Se non viene impostata, per il provider di ricerca non verrà visualizzata alcuna icona. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2516600974234263142">Consente di attivare la stampa in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
@@ -5055,6 +5056,13 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 
       Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
+<translation id="8937282917198525844"> A partire dalla versione M81, abbiamo rinnovato aspetto e design degli elementi di controllo modulo standard (ad esempio, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;), con una superiore accessibilità e una migliore uniformità della piattaforma. Questo criterio ripristina i precedenti controlli modulo "legacy" fino alla versione M84.
+
+      Se questo criterio viene impostato su True, gli elementi di controllo modulo "legacy" verranno utilizzati per tutti i siti.
+
+      Se questo criterio viene impostato su False o non viene impostato, gli elementi di controllo modulo verranno attivati come nel lancio delle versioni M81, M82 e M83.
+
+      Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
 <translation id="8938932171964587769">Ritirata in M69. Utilizza la norma OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza previste per le origini non sicure.

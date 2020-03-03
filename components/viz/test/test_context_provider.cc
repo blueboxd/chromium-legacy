@@ -127,7 +127,8 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    gpu::SurfaceHandle surface_handle) {
   base::AutoLock locked(lock_);
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   shared_images_.insert(mailbox);

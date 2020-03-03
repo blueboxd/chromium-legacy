@@ -316,6 +316,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2289385804009217824">Obrezivanje</translation>
 <translation id="2292556288342944218">Internetski je pristup blokiran</translation>
 <translation id="2297722699537546652">B5 (omotnica)</translation>
+<translation id="2300306941146563769">Nije preneseno</translation>
 <translation id="2310021320168182093">Chou2 (omotnica)</translation>
 <translation id="2315864634253056100">Naziv te web-lokacije sličan je nazivu <ph name="LOOKALIKE_DOMAIN" />. Napadači ponekad oponašaju web-lokacije unošenjem malih, teško uočljivih promjena u web-adresu.</translation>
 <translation id="2316887270356262533">Oslobodit će se manje od 1 MB. Neke bi se web-lokacije pri sljedećem otvaranju mogle sporije učitavati.</translation>
@@ -444,6 +445,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2909946352844186028">Otkrivena je promjena mreže.</translation>
 <translation id="2910133103376701357">Vašim uređajem i računom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID korisnika poslovnog računa</translation>
+<translation id="2915068235268646559">Rušenje: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zatvorite ostale programe</translation>
 <translation id="2922350208395188000">Certifikat poslužitelja nije moguće provjeriti.</translation>
 <translation id="2925673989565098301">Način dostave</translation>
@@ -452,6 +454,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2930577230479659665">Obreži nakon svake kopije</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov je sigurnosni certifikat s domene <ph name="DOMAIN2" />. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
+<translation id="2943895734390379394">Vrijeme prijenosa:</translation>
 <translation id="2948083400971632585">Možete onemogućiti sve proxyje konfigurirane za vezu sa stranice postavki.</translation>
 <translation id="2951588413176968965">Moj poštanski sandučić</translation>
 <translation id="295526156371527179">Upozorenje: pravilo nije spojeno kao rječnik prema uputama u pravilu jer se ne radi o rječniku.</translation>
@@ -1084,6 +1087,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="563324245173044180">Blokiran je obmanjujući sadržaj.</translation>
 <translation id="5644090287519800334">X-pomak 1. strane slike</translation>
 <translation id="5645854190134202180">Druga smjena</translation>
+<translation id="5654927323611874862">ID prenesenog izvješća o rušenju:</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5663614846592581799">9x11 (omotnica)</translation>
 <translation id="5663955426505430495">Administrator uređaja instalirao je proširenja za dodatne funkcije. Proširenja imaju pristup nekim vašim podacima.</translation>
@@ -1391,6 +1395,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="7079718277001814089">Ova web-lokacija sadrži zlonamjerni softver</translation>
 <translation id="7081308185095828845">Ta značajka nije dostupna na vašem uređaju</translation>
 <translation id="7083258188081898530">Ladica 9</translation>
+<translation id="7086090958708083563">Korisnik je zatražio prijenos</translation>
 <translation id="7087282848513945231">Država</translation>
 <translation id="7090678807593890770">Potražite upit <ph name="LINK" /> na Googleu</translation>
 <translation id="7108338896283013870">Sakrij preglednik</translation>
@@ -1553,6 +1558,7 @@ Dodatne pojedinosti:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Idi na web-lokaciju <ph name="SITE" /> (nije sigurno)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
 <translation id="7716147886133743102">Blokirao administrator</translation>
+<translation id="7716375162095500223">Još nije preneseno ili je zanemareno</translation>
 <translation id="7716424297397655342">Web-lokacija se ne može učitati iz predmemorije</translation>
 <translation id="7723047071702270851">Uredite karticu</translation>
 <translation id="7740996059027112821">Standardno</translation>
@@ -1697,6 +1703,7 @@ Dodatne pojedinosti:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ako ste svjesni sigurnosnih rizika, možete <ph name="BEGIN_LINK" />posjetiti ovu web-lokaciju<ph name="END_LINK" /> prije uklanjanja štetnih programa.</translation>
 <translation id="8349305172487531364">Traka oznaka</translation>
+<translation id="8355270400102541638">Lokalni kontekst rušenja:</translation>
 <translation id="8363502534493474904">isključite način rada u zrakoplovu</translation>
 <translation id="8364627913115013041">Nije postavljeno.</translation>
 <translation id="8368476060205742148">Google Play usluge</translation>
@@ -1717,6 +1724,7 @@ Dodatne pojedinosti:
 <translation id="8461694314515752532">Kriptiraj sinkronizirane podatke vlastitom šifrom za sinkronizaciju</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}few{# kreditne kartice}other{# kreditnih kartica}}</translation>
 <translation id="8473863474539038330">Adrese i više</translation>
+<translation id="8474910779563686872">Prikaži pojedinosti o razvojnom programeru</translation>
 <translation id="8479754468255770962">Spajanje pri dnu lijevo</translation>
 <translation id="8483780878231876732">Da biste upotrebljavali kartice sa svojeg Google računa, prijavite se na Chrome</translation>
 <translation id="8488350697529856933">Primjenjuje se na</translation>
@@ -1844,6 +1852,7 @@ Dodatne pojedinosti:
 i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chromium zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="9106062320799175032">Dodajte adresu za naplatu</translation>
 <translation id="9114524666733003316">Potvrđivanje kartice...</translation>
+<translation id="9119042192571987207">Preneseno</translation>
 <translation id="9128870381267983090">Povezivanje s mrežom</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9141013498910525015">Upravljanje adresama</translation>

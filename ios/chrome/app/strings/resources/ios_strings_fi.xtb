@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
 <translation id="2179182049312275900">Voit ottaa synkronoinnin käyttöön milloin tahansa asetuksista.</translation>
 <translation id="2198757192731523470">Google voi muokata Hakua, mainoksia ja muita Googlen palveluita historiasi perusteella.</translation>
+<translation id="2218443599109088993">Loitonna</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
 <translation id="2239626343334228536">Selaustietoja poistetaan…</translation>
 <translation id="2257567812274161158">Synkronointi ei toimi.</translation>
@@ -417,6 +418,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6464071786529933911">Avaa incognito-tilassa</translation>
 <translation id="6476800141292307438">Käännetään sivua kielelle <ph name="LANGUAGE" />. Vaihtoehdot näkyvät näytön alareunan lähellä.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta poistettu</translation>
+<translation id="6561262006871132942">Lähennä</translation>
 <translation id="6610002944194042868">Käännösasetukset</translation>
 <translation id="6628106477656132239">Virheellinen viimeinen voimassaolopäivä</translation>
 <translation id="6638511529934826365">Zoomaa tekstiä…</translation>

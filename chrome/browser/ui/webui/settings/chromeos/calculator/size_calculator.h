@@ -86,7 +86,7 @@ class SizeStatCalculator : public SizeCalculator {
   void PerformCalculation() override;
 
   // Updates disk space information.
-  void OnGetSizeStat(int64_t* total_size, int64_t* available_size);
+  void OnGetSizeStat(int64_t* total_bytes, int64_t* available_bytes);
 
   Profile* profile_;
   base::WeakPtrFactory<SizeStatCalculator> weak_ptr_factory_{this};

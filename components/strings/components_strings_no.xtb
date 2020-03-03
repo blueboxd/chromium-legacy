@@ -316,6 +316,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2289385804009217824">Beskjær</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
 <translation id="2297722699537546652">B5 (konvolutt)</translation>
+<translation id="2300306941146563769">Ikke lastet opp</translation>
 <translation id="2310021320168182093">Chou2 (konvolutt)</translation>
 <translation id="2315864634253056100">Navnet på dette nettstedet ligner på <ph name="LOOKALIKE_DOMAIN" />. Noen ganger etterligner angripere nettsteder ved å gjøre endringer i nettadressen som er vanskelige å se.</translation>
 <translation id="2316887270356262533">Frigjør mindre enn 1 MB. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
@@ -444,6 +445,7 @@ brukere av denne nettleseren.</translation>
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2910133103376701357">Enheten og kontoen din administreres av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Bruker-ID for jobbregnskap</translation>
+<translation id="2915068235268646559">Krasj fra <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Lukk andre programmer</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
 <translation id="2925673989565098301">Leveringsmåte</translation>
@@ -452,6 +454,7 @@ brukere av denne nettleseren.</translation>
 <translation id="2930577230479659665">Beskjær etter hver kopi</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat er fra <ph name="DOMAIN2" />. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
+<translation id="2943895734390379394">Opplastingstidspunkt:</translation>
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle proxy-tjenere for tilkoblinger.</translation>
 <translation id="2951588413176968965">Min postkasse</translation>
 <translation id="295526156371527179">Advarsel: Denne regelen ble ikke sammenslått som en regelspesifisert ordliste fordi den ikke er en ordliste.</translation>
@@ -1085,6 +1088,7 @@ brukere av denne nettleseren.</translation>
 <translation id="563324245173044180">Villedende innhold er blokkert.</translation>
 <translation id="5644090287519800334">X-forskyvning av bilde på side 1</translation>
 <translation id="5645854190134202180">Andre vakt</translation>
+<translation id="5654927323611874862">ID for opplastet programstopprapport:</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5663614846592581799">9x11 (konvolutt)</translation>
 <translation id="5663955426505430495">Enhetsadministratoren har installert utvidelser for tilleggsfunksjoner. Utvidelsene har tilgang til noen av dataene dine.</translation>
@@ -1392,6 +1396,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7079718277001814089">Dette nettstedet inneholder skadelig programvare</translation>
 <translation id="7081308185095828845">Denne funksjonen er ikke tilgjengelig på enheten din</translation>
 <translation id="7083258188081898530">Skuff 9</translation>
+<translation id="7086090958708083563">Opplasting forespurt av bruker</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="7090678807593890770">Søk på Google etter <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skjul</translation>
@@ -1553,6 +1558,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsett til <ph name="SITE" /> (usikker side)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikat</translation>
 <translation id="7716147886133743102">Blokkert av administratoren din</translation>
+<translation id="7716375162095500223">Ignorert eller ikke lastet opp ennå</translation>
 <translation id="7716424297397655342">Dette nettstedet kan ikke lastes inn fra bufferen</translation>
 <translation id="7723047071702270851">Endre kortet</translation>
 <translation id="7740996059027112821">Standard</translation>
@@ -1697,6 +1703,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
+<translation id="8355270400102541638">Lokal krasjkontekst:</translation>
 <translation id="8363502534493474904">Slå av flymodus</translation>
 <translation id="8364627913115013041">Ikke angitt.</translation>
 <translation id="8368476060205742148">Google Play-tjenester</translation>
@@ -1717,6 +1724,7 @@ Mer informasjon:
 <translation id="8461694314515752532">Kryptér synkroniserte data med din egen passordfrase for synkronisering</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredittkort}other{# kredittkort}}</translation>
 <translation id="8473863474539038330">Adresser med mer</translation>
+<translation id="8474910779563686872">Vis utviklerdetaljer</translation>
 <translation id="8479754468255770962">Stift nede til venstre</translation>
 <translation id="8483780878231876732">For å bruke kredittkort du har lagret i Google-kontoen din, logg på Chrome</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
@@ -1842,6 +1850,7 @@ Mer informasjon:
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
+<translation id="9119042192571987207">Opplastet</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9141013498910525015">Administrer adresser</translation>

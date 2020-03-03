@@ -11,6 +11,7 @@
 <translation id="151962892725702025">A Chromium OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="1524282610922162960">Chromium-lap megosztása</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{A rendszergazda előírta, hogy újra kell indítania a Chromiumot a frissítés alkalmazásához.}=1{A rendszergazda előírta, hogy újra kell indítania a Chromiumot a frissítés alkalmazásához. Az inkognitóablak nem fog újra megnyílni.}other{A rendszergazda előírta, hogy újra kell indítania a Chromiumot a frissítés alkalmazásához. A(z) # inkognitóablak nem fog újra megnyílni.}}</translation>
+<translation id="1663739491876737434">A Chromium nem tudja ellenőrizni a jelszavakat. Próbálkozzon újra holnap.</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
@@ -61,6 +62,7 @@
 <translation id="358997566136285270">Chromium embléma</translation>
 <translation id="3639635944603682591">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chromiumba a következő felhasználóként: <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Új Chromium-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép.}=1{Új Chromium-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép. Az inkognitóablak nem fog újra megnyílni.}other{Új Chromium-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép. A(z) # inkognitóablak nem fog újra megnyílni.}}</translation>
+<translation id="3685209450716071127">A Chromium nem tudja ellenőrizni a jelszavakat. Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Rendszergazdája arra kéri, hogy indítsa újra a Chromiumot a frissítés alkalmazásához.}=1{Rendszergazdája arra kéri, hogy indítsa újra a Chromiumot a frissítés alkalmazásához. Az inkognitóablak nem fog újra megnyílni.}other{Rendszergazdája arra kéri, hogy indítsa újra a Chromiumot a frissítés alkalmazásához. A(z) # inkognitóablak nem fog újra megnyílni.}}</translation>
 <translation id="3713809861844741608">Link megnyi&amp;tása új Chromium-lapon</translation>
 <translation id="3728336900324680424">A Chromium hozzáfér Drive-jához, hogy javaslatokat nyújthasson a címsávon.</translation>
@@ -92,7 +94,9 @@
 <translation id="4943838377383847465">A Chromium háttérmódban van.</translation>
 <translation id="4987820182225656817">A vendégek úgy használhatják a Chromiumot, hogy nem hagynak hátra semmit.</translation>
 <translation id="4994636714258228724">Adja hozzá magát a Chromiumban</translation>
+<translation id="5093066630040073147">Nincsenek mentett jelszavak. A Chromium akkor tudja ellenőrizni a jelszavakat, ha Ön menti őket Google-fiókjába.</translation>
 <translation id="5277894862589591112">A módosítások alkalmazásához indítsa újra a Chromiumot</translation>
+<translation id="5310059007469274549">A Chromium nem tudja ellenőrizni a jelszavakat, mert túl sok van belőlük</translation>
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">A Chromium frissítése (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Chromium-bejelentkezés engedélyezése</translation>
@@ -102,12 +106,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Béta</translation>
 <translation id="5479196819031988440">A Chromium OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="5480860683791598150">A Chromiumnak a helyadatokhoz való hozzáférésre van szüksége ahhoz, hogy megoszthassa az Ön tartózkodási helyét a webhellyel</translation>
+<translation id="5488573303232097702">Ismeretlen hiba történt, ezért a Chromium nem frissült. A Chrome frissítési problémáinak megoldása.</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Rendelkezésre áll egy Chromium-frissítés}=1{Rendelkezésre áll egy Chromium-frissítés}other{# napja rendelkezésre áll egy Chromium-frissítés}}</translation>
 <translation id="5631814766731275228">Chromium-név és -kép</translation>
 <translation id="5634636535844844681">A Chromium futtatásához Windows 7 vagy újabb verzió szükséges.</translation>
 <translation id="5653831366781983928">Indítsa újra a Chromiumot most</translation>
 <translation id="5698481217667032250">A Chromium megjelenítése ezen a nyelven</translation>
+<translation id="5814748786105822016">A Chromium nem tudja ellenőrizni a jelszavakat</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
@@ -123,6 +129,7 @@
 <translation id="6212496753309875659">A számítógépen már megtalálható a Chromium újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromiumot, majd próbálkozzon újra.</translation>
 <translation id="6219195342503754812">{0,plural, =0{A Chromium most újraindul}=1{A Chromium 1 másodpercen belül újraindul}other{A Chromium # másodpercen belül újraindul}}</translation>
 <translation id="6248213926982192922">Legyen a Chromium az alapértelmezett böngészőm</translation>
+<translation id="6266342355635466082">A Chromium nem tud frissítéseket keresni. Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="6268381023930128611">Kijelentkezik a Chromiumból?</translation>
 <translation id="6295779123002464101">A(z) <ph name="FILE_NAME" /> veszélyes lehet, ezért a Chromium letiltotta.</translation>
 <translation id="6309712487085796862">A Chromium használja a kamerát.</translation>
@@ -195,12 +202,14 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8417404458978023919">{0,plural, =1{A Chromiumot 1 napon belül újra kell indítani}other{A Chromiumot # napon belül újra kell indítani}}</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
+<translation id="8568283329061645092">A Chromium ellenőrizni tudja a mentett jelszavakat, ha Ön bejelentkezik Google-fiókjával</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8619360774459241877">Chromium indítása…</translation>
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="8682540261359803721">Ha valamelyik beállítás nem látható ezen az oldalon, keresse a <ph name="LINK_BEGIN" />Chromium böngésző beállításai<ph name="LINK_END" /> között</translation>
 <translation id="8697124171261953979">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor vagy a cím- és keresősávban indított kereséskor.</translation>
 <translation id="8704119203788522458">Ez az Ön Chromiumja</translation>
+<translation id="8774315820480073720">A Chromium frissítéseit a rendszergazda kezeli</translation>
 <translation id="8796602469536043152">A Chromiumnak engedélyre van szüksége ahhoz, hogy hozzáférjen a kamerához és a mikrofonhoz ennél a webhelynél</translation>
 <translation id="8803635938069941624">Chromium OS – Szerződési Feltételek</translation>
 <translation id="8821041990367117597">A Chromium nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>

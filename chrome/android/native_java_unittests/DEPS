@@ -2,6 +2,7 @@ include_rules = [
   "+components/embedder_support/android/java/src/org/chromium/components/embedder_support",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/search_engines/android/java/src/org/chromium/components/search_engines",
+  "+components/security_state/content/android/java/src/org/chromium/components/security_state",
 
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",

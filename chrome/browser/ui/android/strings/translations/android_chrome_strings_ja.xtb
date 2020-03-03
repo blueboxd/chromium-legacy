@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを削除…</translation>
 <translation id="129382876167171263">ウェブサイトによって保存されたファイルがここに表示されます</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="1303339473099049190">お探しのパスワードが見つかりません。誤字や脱字がないかご確認のうえ、もう一度お試しください。</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> から送信</translation>
 <translation id="1310482092992808703">タブをグループ化</translation>
 <translation id="1327257854815634930">ナビゲーション履歴が開いています</translation>
@@ -323,6 +324,7 @@
 <translation id="3350687908700087792">すべてのシークレット タブを閉じます</translation>
 <translation id="3353615205017136254">Google から提供されている軽量版のページです。元のページを読み込むには [元のサイトを表示] をタップしてください。</translation>
 <translation id="3367813778245106622">同期を開始するにはもう一度ログインします</translation>
+<translation id="3373979091428520308">このページを別のデバイスと共有するには、その別のデバイスの Chrome 設定で同期をオンにしてください</translation>
 <translation id="3374023511497244703">ブックマーク、履歴、パスワード、その他の Chrome データは、Google アカウントに同期されなくなります</translation>
 <translation id="3384347053049321195">画像を共有</translation>
 <translation id="3386292677130313581">サイトに現在地の認識を許可する前に確認する（推奨）</translation>
@@ -672,6 +674,7 @@
 <translation id="5956665950594638604">Chrome ヘルプセンターを新しいタブで開く</translation>
 <translation id="5958275228015807058">[ダウンロード] で自分のファイルやページを探すことができます</translation>
 <translation id="5962718611393537961">タップして折りたたむ</translation>
+<translation id="5964805880140440652">このページを別のデバイスと共有するには、Chrome 設定で同期をオンにしてください</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
 <translation id="6005538289190791541">推奨パスワード</translation>
 <translation id="6036057147555329831">その他の ICU</translation>

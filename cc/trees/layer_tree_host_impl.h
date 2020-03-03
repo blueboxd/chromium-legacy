@@ -603,7 +603,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void QueueSwapPromiseForMainThreadScrollUpdate(
       std::unique_ptr<SwapPromise> swap_promise);
 
-  bool IsActivelyScrolling() const;
+  // Returns true if there is an active scroll in progress.  "Active" here
+  // means that it's been latched (i.e. we have a CurrentlyScrollingNode()) but
+  // also that some ScrollUpdates have been received and their delta consumed
+  // for scrolling. These can differ significantly e.g. the page allows the
+  // touchstart but preventDefaults all the touchmoves. In that case, we latch
+  // and have a CurrentlyScrollingNode() but will never receive a ScrollUpdate.
+  //
+  // "Precision" means it's a non-animated scroll like a touchscreen or
+  // high-precision touchpad. The latter distinction is important for things
+  // like scheduling decisions which might schedule a wheel and a touch
+  // scrolling differently due to user perception.
+  bool IsActivelyPrecisionScrolling() const;
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
@@ -1123,9 +1134,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // time a CompositorFrame is generated.
   gfx::Vector2dF scroll_accumulated_this_frame_;
 
-  // Tracks the last scroll state received. At the moment, this is used to infer
-  // the most recent scroll type and direction for scroll snapping purposes.
-  base::Optional<ScrollState> last_scroll_state_;
+  // Tracks the last scroll update state received. Used to infer the most
+  // recent scroll type and direction.
+  base::Optional<ScrollState> last_scroll_update_state_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;

@@ -316,6 +316,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2289385804009217824">Obrezovanje</translation>
 <translation id="2292556288342944218">Internetni dostop je blokiran</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">Ni naloženo</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">Ime tega spletnega mesta je podobno imenu <ph name="LOOKALIKE_DOMAIN" />. Napadalci včasih poskušajo posnemati spletna mesta, tako da skoraj neopazno spremenijo spletni naslov.</translation>
 <translation id="2316887270356262533">Sprosti manj kot 1 MB. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
@@ -444,6 +445,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2910133103376701357">Napravo in račun upravlja domena <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID uporabnika za računovodstvo glede opravil</translation>
+<translation id="2915068235268646559">Zrušitev: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zaprite druge programe</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
 <translation id="2925673989565098301">Način dostave</translation>
@@ -452,6 +454,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2930577230479659665">Obrezovanje po vsakem izvodu</translation>
 <translation id="2934466151127459956">Government Letter</translation>
 <translation id="2941952326391522266">Strežniku ni uspelo dokazati, da je res <ph name="DOMAIN" />; njegovo varnostno potrdilo je od <ph name="DOMAIN2" />. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
+<translation id="2943895734390379394">Čas nalaganja:</translation>
 <translation id="2948083400971632585">Namestniške strežnike, konfigurirane za povezavo, lahko onemogočite na strani z nastavitvami.</translation>
 <translation id="2951588413176968965">Moj nabiralnik</translation>
 <translation id="295526156371527179">Opozorilo: ta pravilnik ni bil združen kot slovar, kot je določeno v pravilniku, ker ni slovar.</translation>
@@ -1085,6 +1088,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="563324245173044180">Zavajajoča vsebina blokirana.</translation>
 <translation id="5644090287519800334">Pomik slike na 1. strani v X</translation>
 <translation id="5645854190134202180">Druga izmena</translation>
+<translation id="5654927323611874862">Naloženi ID poročila o zrušitvah:</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">Skrbnik te naprave je namestil razširitve zaradi dodatnih funkcij. Razširitve imajo dostop do nekaterih vaših podatkov.</translation>
@@ -1392,6 +1396,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="7079718277001814089">To spletno mesto vsebuje zlonamerno programsko opremo</translation>
 <translation id="7081308185095828845">Ta funkcija ni na voljo v vaši napravi</translation>
 <translation id="7083258188081898530">Pladenj 9</translation>
+<translation id="7086090958708083563">Nalaganje je zahteval uporabnik</translation>
 <translation id="7087282848513945231">Okrožje</translation>
 <translation id="7090678807593890770">Iščite v Googlu s poizvedbo <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrij</translation>
@@ -1554,6 +1559,7 @@ Dodatne podrobnosti:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Nadaljuj na spletno mesto <ph name="SITE" /> (ni varno)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Potrdilo</translation>
 <translation id="7716147886133743102">Blokiral skrbnik</translation>
+<translation id="7716375162095500223">Ni še naloženo ali je prezrto</translation>
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
 <translation id="7723047071702270851">Urejanje kartice</translation>
 <translation id="7740996059027112821">Standardno</translation>
@@ -1698,6 +1704,7 @@ Dodatne podrobnosti:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Če se zavedate varnostnega tveganja, lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto<ph name="END_LINK" />, preden bodo škodljivi programi odstranjeni.</translation>
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>
+<translation id="8355270400102541638">Lokalni kontekst zrušitve:</translation>
 <translation id="8363502534493474904">izklopiti način za letalo</translation>
 <translation id="8364627913115013041">Ni nastavljen.</translation>
 <translation id="8368476060205742148">Storitve Google Play</translation>
@@ -1718,6 +1725,7 @@ Dodatne podrobnosti:
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}two{# kreditni kartici}few{# kreditne kartice}other{# kreditnih kartic}}</translation>
 <translation id="8473863474539038330">Naslovi in drugo</translation>
+<translation id="8474910779563686872">Pokaži podrobnosti o razvijalcu</translation>
 <translation id="8479754468255770962">Spenjanje spodaj levo</translation>
 <translation id="8483780878231876732">Če želite uporabljati kartice iz Google Računa, se prijavite v Chrome</translation>
 <translation id="8488350697529856933">Velja za</translation>
@@ -1843,6 +1851,7 @@ Dodatne podrobnosti:
 <translation id="9103872766612412690">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium pred izmenjavo podatkov prekinil povezavo.</translation>
 <translation id="9106062320799175032">Dodajanje naslova za izstavitev računa</translation>
 <translation id="9114524666733003316">Potrjevanje kartice …</translation>
+<translation id="9119042192571987207">Naloženo</translation>
 <translation id="9128870381267983090">Vzpostavi povezavo z omrežjem</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9141013498910525015">Upravljanje naslovov</translation>

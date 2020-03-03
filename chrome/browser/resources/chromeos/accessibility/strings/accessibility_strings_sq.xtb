@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1206619573307042055">tenda</translation>
 <translation id="1207086294218137981">Nuk ka titull tjetër të nivelit 4</translation>
+<translation id="1212770441379271564">Këto pak shkurtore të mëposhtme nuk janë komanda të ChromeVox, por gjithsesi mund të jenë shumë të dobishme për të shfrytëzuar Chrome në maksimum.
+Për të lundruar përpara përmes artikujve veprues si butonat dhe lidhjet, shtyp tastin Tab. Për të lundruar prapa, shtyp Shift+Tab. 
+Për të hyrë te kutia e adresave e shfletuesit Chrome, e quajtur gjithashtu "Omnibox", shtyp Control + L. 
+Për të hapur dhe për të shkuar te një skedë e re automatikisht, shtyp Control+T. Kursori do të jetë në "Omnibox". 
+Për të mbyllur një skedë, shtyp Control+W. 
+Për të lëvizur përpara mes skedave të hapura, përdor Control+Tab. 
+Për të hapur menynë e shfletuesit Chrome, shtyp Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - i jep zë Chrome</translation>
 <translation id="1225969361094801578">Gri rrasë e errët</translation>
 <translation id="1229276918471378188">Kalimi i mëparshëm</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">zgjedhësi i ngjyrave</translation>
 <translation id="4221012616705981690">Nuk ka asnjë listë të mëparshme</translation>
 <translation id="4221071177874897997">Trego të trashësuara:</translation>
+<translation id="4225355998815256469">Kontrollet e formave</translation>
 <translation id="4229646983878045487">data ora</translation>
 <translation id="4230834257931120629">Gri rrase e çelur</translation>
 <translation id="4231102694147661229">Aktivizo opsionet e zhvilluesit</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Fjalia</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Shtyp ChromeVox o, n për të zbuluar të rejat</translation>
+<translation id="4646606380313237501">{"ar": "Arabisht",
+    "as": "Asamezisht",
+    "aw": "Avadisht",
+    "be": "Bengalist",
+    "bg": "Bullgarisht",
+    "bh": "Biharisht",
+    "bo": "Tibetiane",
+    "br": "Brajisht",
+    "ca": "Katalonisht",
+    "ckb": "Sorani",
+    "cs": "Çekisht",
+    "cy": "Uellsish",
+    "da": "Danisht",
+    "de": "Gjermanisht",
+    "de_CH": "Gjermanisht (Zvicër)",
+    "de_DE": "Gjermanisht (Gjermani)",
+    "dra": "Dravidianisht",
+    "el": "Greqisht",
+    "en": "Anglisht",
+    "en_CA": "Anglisht (Kanada)",
+    "en_GB": "Anglisht (Mbretëria e Bashkuar)",
+    "en_US": "Anglisht (Shtetet e Bashkuara)",
+    "eo": "Esperanto",
+    "es": "Spanjisht",
+    "et": "Estonisht",
+    "fa": "Persisht",
+    "fr": "Frëngjisht",
+    "fr_CA": "Frëngjisht (Kanada)",
+    "fr_FR": "Frëngjisht (Francë)",
+    "fi": "Finlandisht",
+    "ga": "Irlandisht",
+    "gd": "Galisht",
+    "gon": "Gondisht",
+    "gu": "Gaxhuratisht",
+    "he": "Hebraisht",
+    "hi": "Hindisht",
+    "hr": "Kroatisht",
+    "hu": "Hungarisht",
+    "hy": "Armenisht",
+    "is": "Islandisht",
+    "it": "Italisht",
+    "iu": "Inuktitutisht",
+    "ka": "Kanadaisht",
+    "kh": "Kasisht",
+    "ko": "Koreanisht",
+    "kok": "Konkanisht",
+    "kru": "Kurukisht",
+    "ks": "Kashmirisht",
+    "lt": "Lituanisht",
+    "lv": "Letonisht",
+    "mao": "Maorisht",
+    "ml": "Malajalamisht",
+    "mt": "Maltisht",
+    "mwr": "Maruarisht",
+    "mn": "Mongolisht",
+    "mun": "Mundaisht",
+    "nb": "Norvegjisht Bokmål",
+    "ne": "Nepalisht",
+    "nl": "Holandisht",
+    "no": "Norvegjisht",
+    "or": "Orijaisht",
+    "pi": "Palisht",
+    "pl": "Polonisht",
+    "pt": "Portugalisht",
+    "pu": "Punxhabi",
+    "ro": "Rumanisht",
+    "ru": "Rusisht",
+    "sa": "Sanskritisht",
+    "si": "Sindisht",
+    "sin": "Sinhalaisht",
+    "sk": "Sllovakisht",
+    "sl": "Sllovenisht",
+    "sr": "Serbisht",
+    "sv": "Suedisht",
+    "ta": "Tamilisht",
+    "te": "Teluguisht",
+    "tr": "Turqisht",
+    "tsn": "Afrikanisht",
+    "uk": "Ukrainisht",
+    "ur": "Urduisht",
+    "vi": "Vietnamisht",
+    "zh": "Kinezisht",
+    "zh_TW": "Kinezisht (Tradicionale han)"}</translation>
 <translation id="4647836961514597010">Zgjedhësi i ngjyrave</translation>
 <translation id="4660783501463101648">Versioni klasik u hoq. Ndryshimi i tastierës për të kaluar përsëri te versioni klasik i ChromeVox është hequr.</translation>
 <translation id="4661075872484491155">pemë</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Modaliteti "i ngjitur" është aktivizuar</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{presje}other{# presje}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, kutia e tekstit</translation>
+<translation id="532485153932049746">Formatimi i tekstit
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, lidhja</translation>
 <translation id="5331522683003474486">Komandoje pajisjen me thjesht 1 ose 2 çelësa.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Një sinjalizim modaliteti</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{pikëpresje}other{# pikëpresje}}</translation>
+<translation id="5420259671171615858">Kërko në menytë</translation>
 <translation id="5435274640623994081">Aktivizo regjistrimin e tingujve të shkurtër</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{më pak se}other{# shenja "më pak se"}}</translation>
 <translation id="5444587279251314700">(aktive)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">U zbulua gabim drejtshkrimor</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">kthehu</translation>
+<translation id="7429415133937917139">Simulon daljen e një ekrani brejl të rifreskueshëm
+        në panelin e ChromeVox në krye të ekranit</translation>
 <translation id="7434509671034404296">Zhvilluesi</translation>
 <translation id="743783356331413498">Shembull</translation>
 <translation id="7439060726180460871">Direktoria</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Butoni i mëparshëm i radios</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Nuk ka kuti tjetër të kombinuar</translation>
+<translation id="772146615414628379">Urime! Ke mësuar me sukses bazat e përdorimit të ChromeVox. Ki parasysh se mund ta hapësh menynë e komandës së ChromeVox në çdo moment duke shtypur Kërko+Pikë. Për të mësuar edhe më shumë rreth ChromeVox dhe Chrome OS, vizito artikujt e mëposhtëm.
+    Nëse ke mbaruar me udhëzuesin, përdor ChromeVox për të naviguar te butoni "Mbyll" dhe kliko tek ai.</translation>
 <translation id="7724603315864178912">Prite</translation>
 <translation id="7731785449856576010">Nuk ka asnjë miniaplikacion tjetër të medias</translation>
 <translation id="773906353055481349">Shtyp Kërko+Ctrl+Alt me shigjetat për të naviguar në çdo qelizë</translation>

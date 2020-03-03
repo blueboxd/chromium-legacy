@@ -316,6 +316,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2289385804009217824">Beskär</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
 <translation id="2297722699537546652">B5 (kuvert)</translation>
+<translation id="2300306941146563769">Inte uppladdad</translation>
 <translation id="2310021320168182093">Chou2 (kuvert)</translation>
 <translation id="2315864634253056100">Webbplatsens namn liknar <ph name="LOOKALIKE_DOMAIN" />. Ibland försöker hackare efterlikna webbplatser genom att göra svårupptäckta ändringar i webbadressen.</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
@@ -444,6 +445,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2910133103376701357">Enheten och kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Användar-id för jobbkonto</translation>
+<translation id="2915068235268646559">Krasch från <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Stäng andra program</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
 <translation id="2925673989565098301">Leveranssätt</translation>
@@ -452,6 +454,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2930577230479659665">Beskär efter varje exemplar</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kommer från <ph name="DOMAIN2" />. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
+<translation id="2943895734390379394">Uppladdningstid:</translation>
 <translation id="2948083400971632585">Du kan inaktivera alla proxyservrar som har konfigurerats för en anslutning från sidan Inställningar.</translation>
 <translation id="2951588413176968965">Mitt postfack</translation>
 <translation id="295526156371527179">Varning: Den här principen kombinerades inte som en ordbok enligt principen eftersom den inte är en ordbok.</translation>
@@ -1085,6 +1088,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="563324245173044180">Bedrägligt innehåll har blockerats.</translation>
 <translation id="5644090287519800334">Sida 1 bild X – byte</translation>
 <translation id="5645854190134202180">andra skiftet</translation>
+<translation id="5654927323611874862">Uppladdat kraschrapport-id:</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5663614846592581799">9x11 (kuvert)</translation>
 <translation id="5663955426505430495">Administratören för enheten har installerat tillägg för ytterligare funktioner. Tilläggen har åtkomst till en del av din data.</translation>
@@ -1392,6 +1396,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="7079718277001814089">Webbplatsen innehåller skadlig programvara.</translation>
 <translation id="7081308185095828845">Funktionen är inte tillgänglig på din enhet</translation>
 <translation id="7083258188081898530">Fack 9</translation>
+<translation id="7086090958708083563">Uppladdningsbegäran från användare</translation>
 <translation id="7087282848513945231">Kommun</translation>
 <translation id="7090678807593890770">Sök efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Dölj</translation>
@@ -1554,6 +1559,7 @@ Mer information.
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsätt till <ph name="SITE" /> (osäkert)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certifikat</translation>
 <translation id="7716147886133743102">Blockerades av administratören</translation>
+<translation id="7716375162095500223">Ignorerad eller ännu inte uppladdad</translation>
 <translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7723047071702270851">Redigera kortet</translation>
 <translation id="7740996059027112821">Standard</translation>
@@ -1698,6 +1704,7 @@ Mer information.
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> innan de skadliga programmen har tagits bort.</translation>
 <translation id="8349305172487531364">Bokmärkesfältet</translation>
+<translation id="8355270400102541638">Kontext för lokal krasch:</translation>
 <translation id="8363502534493474904">inaktivera flygplansläget</translation>
 <translation id="8364627913115013041">Inte angiven.</translation>
 <translation id="8368476060205742148">Google Play-tjänster</translation>
@@ -1718,6 +1725,7 @@ Mer information:
 <translation id="8461694314515752532">Kryptera synkroniserad data med en egen lösenfras för synkronisering</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditkort}other{# kreditkort}}</translation>
 <translation id="8473863474539038330">Adresser och annat</translation>
+<translation id="8474910779563686872">Visa information om utvecklare</translation>
 <translation id="8479754468255770962">Häfta nere till vänster</translation>
 <translation id="8483780878231876732">Logga in i Chrome om du vill använda kort i Google-kontot</translation>
 <translation id="8488350697529856933">Gäller för</translation>
@@ -1844,6 +1852,7 @@ Mer information:
 <translation id="9103872766612412690">På <ph name="SITE" /> används normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="9106062320799175032">Lägg till faktureringsadress</translation>
 <translation id="9114524666733003316">Kortet kontrolleras …</translation>
+<translation id="9119042192571987207">Uppladdad</translation>
 <translation id="9128870381267983090">Anslut till ett nätverk</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9141013498910525015">Hantera adresser</translation>

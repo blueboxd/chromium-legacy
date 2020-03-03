@@ -40,7 +40,7 @@ size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) {
   switch (storage_type) {
     case kDirectory: {
       return base::ComputeDirectorySize(
-          root_directory_.AppendASCII(key.ascii_dirname));
+          root_directory_.AppendASCII(key.AsciiDirname()));
     }
     case kZip: {
       int64_t file_size = 0;
@@ -91,7 +91,7 @@ bool FileManager::CreateOrGetDirectory(const DirectoryKey& key,
   StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kNone: {
-      base::FilePath new_path = root_directory_.AppendASCII(key.ascii_dirname);
+      base::FilePath new_path = root_directory_.AppendASCII(key.AsciiDirname());
       base::File::Error error = base::File::FILE_OK;
       if (base::CreateDirectoryAndGetError(new_path, &error)) {
         *directory = new_path;
@@ -106,7 +106,7 @@ bool FileManager::CreateOrGetDirectory(const DirectoryKey& key,
       return true;
     }
     case kZip: {
-      base::FilePath dst_path = root_directory_.AppendASCII(key.ascii_dirname);
+      base::FilePath dst_path = root_directory_.AppendASCII(key.AsciiDirname());
       base::File::Error error = base::File::FILE_OK;
       if (!base::CreateDirectoryAndGetError(dst_path, &error)) {
         DVLOG(1) << "ERROR: failed to create directory: " << path
@@ -185,7 +185,7 @@ std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(
 FileManager::StorageType FileManager::GetPathForKey(const DirectoryKey& key,
                                                     base::FilePath* path) {
   base::FilePath directory_path =
-      root_directory_.AppendASCII(key.ascii_dirname);
+      root_directory_.AppendASCII(key.AsciiDirname());
   if (base::PathExists(directory_path)) {
     *path = directory_path;
     return kDirectory;

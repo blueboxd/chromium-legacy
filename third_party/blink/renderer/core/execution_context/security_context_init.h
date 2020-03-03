@@ -44,7 +44,13 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   ContentSecurityPolicy* GetCSP() const { return csp_; }
 
+  // Returns nullptr if SecurityContext is used for non-Document contexts(i.e.,
+  // workers and tests).
   std::unique_ptr<FeaturePolicy> CreateFeaturePolicy() const;
+  // Returns nullptr if SecurityContext is used for non-Document contexts(i.e.,
+  // workers and tests).
+  // Returns nullptr if there is no 'Feature-Policy-Report-Only' header present
+  // in http response.
   std::unique_ptr<FeaturePolicy> CreateReportOnlyFeaturePolicy() const;
 
   std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;

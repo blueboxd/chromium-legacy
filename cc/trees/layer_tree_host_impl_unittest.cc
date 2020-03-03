@@ -1192,25 +1192,92 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   EXPECT_TRUE(did_request_commit_);
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollActiveOnlyAfterScrollMovement) {
-  SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
+// Ensure correct semantics for the IsActivelyPrecisionScrolling method. This
+// method is used to determine scheduler policy so it wants to report true only
+// when real scrolling is occurring (i.e. the compositor is consuming scroll
+// delta, the page isn't handling the events itself). We also only consider
+// this signal for non-animated scrolls. This is partially historical but also
+// makes some sense since touchscreen/high-precision touchpad scrolling has a
+// physical metaphor (movement sticks to finger) so smoothness should be
+// prioritized.
+TEST_F(LayerTreeHostImplTest, ActivelyTouchScrollingOnlyAfterScrollMovement) {
+  SetupViewportLayersOuterScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
   DrawFrame();
 
-  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
-      BeginState(gfx::Point(), gfx::Vector2dF(0, 10), InputHandler::WHEEL)
-          .get(),
-      InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-            status.main_thread_scrolling_reasons);
+  // Ensure a touch scroll reports true but only after some delta has been
+  // consumed.
+  {
+    InputHandler::ScrollStatus status =
+        host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 10),
+                                           InputHandler::TOUCHSCREEN)
+                                    .get(),
+                                InputHandler::TOUCHSCREEN);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
 
-  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
-  host_impl_->ScrollUpdate(
-      UpdateState(gfx::Point(), gfx::Vector2d(0, 10), InputHandler::WHEEL)
-          .get());
-  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
-  host_impl_->ScrollEnd();
-  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
+    // There is no extent upwards so the scroll won't consume any delta.
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, -10),
+                                         InputHandler::TOUCHSCREEN)
+                                 .get());
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+
+    // This should scroll so ensure the bit flips to true.
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 10),
+                                         InputHandler::TOUCHSCREEN)
+                                 .get());
+    EXPECT_TRUE(host_impl_->IsActivelyPrecisionScrolling());
+    host_impl_->ScrollEnd();
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+  }
+
+  ASSERT_EQ(10, CurrentScrollOffset(OuterViewportScrollLayer()).y());
+
+  // Ensure an animated wheel scroll doesn't cause the bit to flip even when
+  // scrolling occurs.
+  {
+    InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+        BeginState(gfx::Point(), gfx::Vector2dF(0, 10), InputHandler::WHEEL)
+            .get(),
+        InputHandler::WHEEL);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+
+    host_impl_->ScrollUpdate(
+        AnimatedUpdateState(gfx::Point(), gfx::Vector2dF(0, 10)).get());
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+
+    base::TimeTicks cur_time =
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+    viz::BeginFrameArgs begin_frame_args =
+        viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+#define ANIMATE(time_ms)                                  \
+  cur_time += base::TimeDelta::FromMilliseconds(time_ms); \
+  begin_frame_args.frame_time = (cur_time);               \
+  begin_frame_args.frame_id.sequence_number++;            \
+  host_impl_->WillBeginImplFrame(begin_frame_args);       \
+  host_impl_->Animate();                                  \
+  host_impl_->UpdateAnimationState(true);                 \
+  host_impl_->DidFinishImplFrame(begin_frame_args);
+
+    // The animation is setup in the first frame so tick at least twice to
+    // actually animate it.
+    ANIMATE(0);
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+    ANIMATE(200);
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+    ANIMATE(1000);
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+
+#undef ANIMATE
+
+    ASSERT_EQ(20, CurrentScrollOffset(OuterViewportScrollLayer()).y());
+
+    host_impl_->ScrollEnd();
+    EXPECT_FALSE(host_impl_->IsActivelyPrecisionScrolling());
+  }
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollWithoutRootLayer) {
@@ -1294,7 +1361,6 @@ TEST_F(LayerTreeHostImplTest, ActivateTreeScrollingNodeDisappeared) {
       UpdateState(gfx::Point(), gfx::Vector2d(0, 10), InputHandler::WHEEL)
           .get());
   EXPECT_TRUE(host_impl_->active_tree()->CurrentlyScrollingNode());
-  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
 
   // Create the pending tree containing only the root layer.
   CreatePendingTree();
@@ -1307,7 +1373,6 @@ TEST_F(LayerTreeHostImplTest, ActivateTreeScrollingNodeDisappeared) {
 
   // The scroll should stop.
   EXPECT_FALSE(host_impl_->active_tree()->CurrentlyScrollingNode());
-  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {

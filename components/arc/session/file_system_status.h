@@ -79,7 +79,6 @@ class FileSystemStatus {
   static bool IsAndroidDebuggable(const base::FilePath& json_path);
 
   static bool IsHostRootfsWritable();
-  static base::FilePath SelectDlcOrBuiltin(const base::FilePath& file);
 
   // https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout
   // Super block starts from block 0, offset 0x400.

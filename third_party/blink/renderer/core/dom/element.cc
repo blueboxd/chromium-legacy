@@ -4412,7 +4412,7 @@ bool Element::IsAutofocusable() const {
 }
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
-  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
       GetDocument().LockedDisplayLockCount() ==
           GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
@@ -4449,7 +4449,7 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
 
 bool Element::DisplayLockPreventsActivation(
     DisplayLockActivationReason reason) const {
-  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
     return false;
 
   if (GetDocument().LockedDisplayLockCount() == 0)
@@ -4828,7 +4828,7 @@ Element::EnsureResizeObserverData() {
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {
-  if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
+  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
     return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;

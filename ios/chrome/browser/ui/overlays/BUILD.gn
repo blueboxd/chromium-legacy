@@ -24,6 +24,7 @@ source_set("overlays") {
   friend = [
     ":unit_tests",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
+    "//ios/chrome/browser/ui/overlays/test",
   ]
 
   deps = [

@@ -104,6 +104,28 @@ void StorageHandler::OnJavascriptDisallowed() {
   StopObservingEvents();
 }
 
+int64_t StorageHandler::RoundByteSize(int64_t bytes) {
+  if (bytes < 0) {
+    NOTREACHED() << "Negative bytes value";
+    return -1;
+  }
+
+  // Subtract one to the original number of bytes.
+  bytes--;
+  // Set all the lower bits to 1.
+  bytes |= bytes >> 1;
+  bytes |= bytes >> 2;
+  bytes |= bytes >> 4;
+  bytes |= bytes >> 8;
+  bytes |= bytes >> 16;
+  bytes |= bytes >> 32;
+  // Add one. The one bit beyond the highest set bit is set to 1. All the lower
+  // bits are set to 0.
+  bytes++;
+
+  return bytes;
+}
+
 void StorageHandler::HandleUpdateAndroidEnabled(
     const base::ListValue* unused_args) {
   // OnJavascriptAllowed() calls ArcSessionManager::AddObserver() later.
@@ -235,13 +257,14 @@ void StorageHandler::UpdateStorageItem(const std::string& event_name,
 void StorageHandler::UpdateSizeStat(const std::string& event_name,
                                     int64_t total_bytes,
                                     int64_t available_bytes) {
-  int64_t in_use_total_bytes_ = total_bytes - available_bytes;
+  int64_t rounded_total_bytes = RoundByteSize(total_bytes);
+  int64_t in_use_total_bytes_ = rounded_total_bytes - available_bytes;
 
   base::DictionaryValue size_stat;
   size_stat.SetString("availableSize", ui::FormatBytes(available_bytes));
   size_stat.SetString("usedSize", ui::FormatBytes(in_use_total_bytes_));
-  size_stat.SetDouble("usedRatio",
-                      static_cast<double>(in_use_total_bytes_) / total_bytes);
+  size_stat.SetDouble("usedRatio", static_cast<double>(in_use_total_bytes_) /
+                                       rounded_total_bytes);
   int storage_space_state =
       static_cast<int>(StorageSpaceState::kStorageSpaceNormal);
   if (available_bytes < kSpaceCriticallyLowBytes)

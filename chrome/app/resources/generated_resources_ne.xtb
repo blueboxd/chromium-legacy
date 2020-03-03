@@ -2682,7 +2682,6 @@
 <translation id="4737715515457435632">कृपया नेटवर्कमा जडान गर्नुहोस्।</translation>
 <translation id="473775607612524610">अद्यावधिक गर्नुहोस्</translation>
 <translation id="4739639199548674512">टिकटहरू</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> र थप १ पृष्ठ}other{<ph name="PAGE_TITLE" /> र थप # पृष्ठहरू}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />अनुप्रयोगहरू अद्यावधिक गर्ने तरिका सिक्नुहोस्‌<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{साइट अनम्युट गर्नुहोस्}other{साइटहरू अनम्युट गर्नुहोस्}}</translation>
 <translation id="4746351372139058112">सन्देशहरू</translation>
@@ -5183,7 +5182,6 @@
 <translation id="8214489666383623925">फाइल खोल्नुहोस्...</translation>
 <translation id="8214962590150211830">यो व्यक्तिलाई हटाउनुहोस्</translation>
 <translation id="8215295261562449873">Linux को स्तरवृद्धि गर्नुअघि मेरा अनुप्रयोग र फाइलहरू डाउनलोड नामक फोल्डरमा ब्याकअप गर्नुहोस्।</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> र थप १ पृष्ठ}other{<ph name="PAGE_TITLE" /> र थप # पृष्ठहरू}}</translation>
 <translation id="8217399928341212914">बहुवुध फाइलहरूको स्वचालित डाउनलोड रोक्न जारी राख्नुहोस्</translation>
 <translation id="8218847192766059983">भाषाहरू थप्नुहोस् वा सूचीको क्रम मिलाउनुहोस्। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">तपाईं सामान्यतया सूचनाहरूमाथि रोक लगाउनुहुन्छ। यो साइटलाई तपाईंलाई सूचना पठाउन अनुमति दिन यहाँ क्लिक गर्नुहोस्।</translation>
@@ -5394,6 +5392,7 @@
 <translation id="851263357009351303">छविहरू देखाउन <ph name="HOST" /> लाई सधैँ अनुमति दिनुहोस्</translation>
 <translation id="8513108775083588393">स्वतः परिक्रमा</translation>
 <translation id="8514746246728959655">कुनै अर्को सुरक्षा साँचो प्रयोग गरी हेर्नुहोस्</translation>
+<translation id="8517041960877371778">खुला हुँदा तपाईँको <ph name="DEVICE_TYPE" /> चार्ज नहुन सक्छ।</translation>
 <translation id="8521475323816527629">आफ्ना अनुप्रयोगहरू छिटो प्राप्त गर्नुहोस्</translation>
 <translation id="8523493869875972733">परिवर्तनहरू कायम राख्नुहोस्</translation>
 <translation id="8523849605371521713">नीतिद्वारा थपिएको</translation>
@@ -5514,6 +5513,7 @@
 <translation id="8673383193459449849">सर्भर समस्या</translation>
 <translation id="8675354002693747642">पहिलै साझा गरिएको साँचो</translation>
 <translation id="8676374126336081632">आगत मेटाउनुहोस्</translation>
+<translation id="8676770494376880701">अल्प-पावर चार्जर जडित</translation>
 <translation id="8677212948402625567">सबै संकुचित पार्नुहोस्...</translation>
 <translation id="8678648549315280022">डाउनलोड सेटिङहरू व्यवस्थापन गर्नुहोस्...</translation>
 <translation id="8678933587484842200">तपाईं यो अनुप्रयोग कसरी सुरु होस् भन्ने चाहनुहुन्छ?</translation>

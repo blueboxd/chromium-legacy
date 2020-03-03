@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Rekening word bestuur deur <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Verander terug na "<ph name="FROM_LOCALE" />" (vereis herbegin)</translation>
 <translation id="3576141592585647168">Verander tydsone</translation>
+<translation id="3593646411856133110">Swiep op en hou om oop programme te sien</translation>
 <translation id="3595596368722241419">Battery is vol</translation>
 <translation id="3604801046548457007">Lessenaar <ph name="DESK_TITILE" /> is geskep</translation>
 <translation id="3606978283550408104">Braille-skerm gekoppel.</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">Oudio-instellings</translation>
 <translation id="3626281679859535460">Helderheid</translation>
 <translation id="3631369015426612114">Laat kennisgewings van die volgende af toe</translation>
+<translation id="3638400994746983214">Wissel privaatheidskerm. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Vang area vas</translation>
 <translation id="371370241367527062">Voorste mikrofoon</translation>
@@ -244,6 +246,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="3995138139523574647">USB C-toestel (agterste poort aan regterkant)</translation>
 <translation id="4017989525502048489">Laserwyser</translation>
 <translation id="4021716437419160885">Rollees af</translation>
+<translation id="402772165574991617">Gebruik gebare om vinnig tussen programme te wissel en met jou Chromebook interaksie te hê in tabletmodus.</translation>
 <translation id="4028481283645788203">Wagwoord word vereis vir meer sekuriteit</translation>
 <translation id="4042660782729322247">Jy deel tans jou skerm</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Af vir 'n program}other{Af vir # programme}}</translation>
@@ -292,6 +295,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4659419629803378708">ChromeVox is geaktiveer</translation>
 <translation id="4665114317261903604">Wissel Moenie Steur Nie. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Ontsluit toestel met ouerkode</translation>
+<translation id="4702647871202761252">Privaatheidskerm is af</translation>
 <translation id="4710243778082831592">IME-instellings</translation>
 <translation id="4731797938093519117">Ouertoegang</translation>
 <translation id="4734965478015604180">Horisontaal</translation>
@@ -363,6 +367,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5745612484876805746">Aandbeligting skakel met sondsondergang outomaties aan</translation>
 <translation id="5750765938512549687">Bluetooth is af</translation>
 <translation id="576453121877257266">Aandbeligting is aan.</translation>
+<translation id="5769373120130404283">Privaatheidskerm</translation>
 <translation id="5777841717266010279">Stop skermdeling?</translation>
 <translation id="5820394555380036790">Chromium-bedryfstelsel</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> op <ph name="RECEIVER_NAME" /></translation>
@@ -404,6 +409,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6297287540776456956">Gebruik die stilus om 'n area te kies</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is na <ph name="ROTATION" /> gedraai</translation>
 <translation id="6376931439017688372">Bluetooth is aan</translation>
+<translation id="6381109794406942707">Voer jou PIN in om die toestel te ontsluit.</translation>
 <translation id="639644700271529076">HOOFLETTERSLOT is af</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
@@ -426,6 +432,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6559976592393364813">Vra administrateur</translation>
 <translation id="6585808820553845416">Sessie eindig oor <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
+<translation id="6614169507485700968">Privaatheidskerm is aan</translation>
 <translation id="6627638273713273709">Soek+Shift+K</translation>
 <translation id="6637729079642709226">Verander tyd</translation>
 <translation id="6650933572246256093">Bluetooth-toestel "<ph name="DEVICE_NAME" />" soek toestemming om saam te bind. Voer asseblief hierdie wagsleutel op daardie toestel in: <ph name="PASSKEY" /></translation>
@@ -440,6 +447,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6715542151869432661">Geen mobiele toestelle gekry nie.</translation>
 <translation id="6723839937902243910">Intensiteit</translation>
 <translation id="6727969043791803658">Gekoppel, <ph name="BATTERY_PERCENTAGE" />% batterykrag</translation>
+<translation id="6751052314767925245">Afgedwing deur jou administrateur</translation>
 <translation id="6751826523481687655">Werkverrigtingnasporing is aangeskakel</translation>
 <translation id="6752912906630585008">Lessenaar <ph name="REMOVED_DESK" /> is verwyder en met lessenaar <ph name="RECEIVE_DESK" /> saamgevoeg</translation>
 <translation id="6777216307882431711">Gee tans krag aan gekoppelde USB-C-toestelle</translation>
@@ -527,6 +535,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8000066093800657092">Geen netwerk nie</translation>
 <translation id="8029629653277878342">PIN of wagwoord word vereis vir meer sekuriteit</translation>
 <translation id="8030169304546394654">Ontkoppel</translation>
+<translation id="8042024183333293953">Probeer nuwe gebaarnavigasie</translation>
 <translation id="8048123526339889627">Bluetooth-instellings</translation>
 <translation id="8054466585765276473">Bereken tans batterytyd.</translation>
 <translation id="8061464966246066292">Hoë kontras</translation>
@@ -614,6 +623,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> totdat battery leeg is.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Swiep op om na die tuisskerm toe te gaan</translation>
 <translation id="9080206825613744995">Mikrofoon word gebruik.</translation>
 <translation id="9084606467167974638">Wissel kieslysposisie</translation>
 <translation id="9089416786594320554">Invoermetodes</translation>

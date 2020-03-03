@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Абрэзка</translation>
 <translation id="2292556288342944218">Доступ да інтэрнэту заблакіраваны</translation>
 <translation id="2297722699537546652">B5 (канверт)</translation>
+<translation id="2300306941146563769">Не запампавана</translation>
 <translation id="2310021320168182093">Chou2 (канверт)</translation>
 <translation id="2315864634253056100">Назва гэтага сайта падобная да <ph name="LOOKALIKE_DOMAIN" />. Зламыснікі часам імітуюць сайты, уносячы амаль непрыкметныя змяненні ў вэб-адрас.</translation>
 <translation id="2316887270356262533">Вызваліцца да 1 МБ. Некаторыя сайты могуць загружацца павальней пры наступным наведванні.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">Выканана падключэнне да іншай сеткі.</translation>
 <translation id="2910133103376701357">Ваша прылада і ўліковы запіс знаходзяцца пад кіраваннем дамена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Ідэнтыфікатар карыстальніка ўліковага запісу задання</translation>
+<translation id="2915068235268646559">Час збою: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Закрыйце іншыя праграмы.</translation>
 <translation id="2922350208395188000">Немагчыма праверыць сертыфікат сервера.</translation>
 <translation id="2925673989565098301">Спосаб дастаўкі</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">Абрэзка пасля кожнай копіі</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />: яго сертыфікат бяспекі паходзіць з <ph name="DOMAIN2" />. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
+<translation id="2943895734390379394">Час запампоўкі:</translation>
 <translation id="2948083400971632585">На старонцы налад можна выключыць усе проксі-серверы, зададзеныя для падключэння.</translation>
 <translation id="2951588413176968965">Мая паштовая скрынка</translation>
 <translation id="295526156371527179">Увага: гэта палітыка не была аб'яднана як слоўнік згодна з параметрамі, бо яна не з'яўляецца слоўнікам.</translation>
@@ -1084,6 +1087,7 @@
 <translation id="563324245173044180">Падманлівае змесціва заблакіравана.</translation>
 <translation id="5644090287519800334">Зрух відарыса па восі X, бок 1</translation>
 <translation id="5645854190134202180">Другая змена</translation>
+<translation id="5654927323611874862">Ідэнтыфікатар запампаванай справаздачы аб збоях:</translation>
 <translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5663614846592581799">9x11 (канверт)</translation>
 <translation id="5663955426505430495">Адміністратар гэтай прылады ўсталяваў пашырэнні для дадатковых функцый. Пашырэнні маюць доступ да некаторых вашых даных.</translation>
@@ -1391,6 +1395,7 @@
 <translation id="7079718277001814089">Гэты сайт мае шкоднае змесціва</translation>
 <translation id="7081308185095828845">На жаль, гэта функцыя на прыладзе недаступная</translation>
 <translation id="7083258188081898530">Латок 9</translation>
+<translation id="7086090958708083563">Запампоўка запытана карыстальнікам</translation>
 <translation id="7087282848513945231">Акруга</translation>
 <translation id="7090678807593890770">Шукаць <ph name="LINK" /> у Google</translation>
 <translation id="7108338896283013870">Схаваць</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перайсці на сайт <ph name="SITE" /> (небяспечна)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Сертыфікат</translation>
 <translation id="7716147886133743102">Заблакіравана адміністратарам</translation>
+<translation id="7716375162095500223">Яшчэ не запампавана або праігнаравана</translation>
 <translation id="7716424297397655342">Не ўдалося загрузіць сайт з кэша</translation>
 <translation id="7723047071702270851">Рэдагаваць картку</translation>
 <translation id="7740996059027112821">Стандартны</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Калі вы разумееце рызыкі бяспекі, можаце <ph name="BEGIN_LINK" />наведаць гэты сайт<ph name="END_LINK" /> да таго, як шкодныя праграмы будуць выдалены.</translation>
 <translation id="8349305172487531364">Панэль закладак</translation>
+<translation id="8355270400102541638">Лакальны ідэнтыфікатар збою:</translation>
 <translation id="8363502534493474904">Выключыць рэжым палёту</translation>
 <translation id="8364627913115013041">Не зададзена</translation>
 <translation id="8368476060205742148">Сэрвісы Google Play</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">Зашыфраваць сінхранізаваныя даныя з дапамогай фразы-пароля.</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 крэдытная картка}one{# крэдытная картка}few{# крэдытныя карткі}many{# крэдытных картак}other{# крэдытнай карткі}}</translation>
 <translation id="8473863474539038330">Адрасы і іншае</translation>
+<translation id="8474910779563686872">Паказаць падрабязныя звесткі пра распрацоўшчыка</translation>
 <translation id="8479754468255770962">Скаба знізу злева</translation>
 <translation id="8483780878231876732">Каб выкарыстоўваць карткі з Уліковага запісу Google, увайдзіце ў Chrome</translation>
 <translation id="8488350697529856933">Аб'ект прымянення</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> звычайна выкарыстоўвае шыфраванне для абароны вашай інфармацыі. Пры спробе Chromium падключыцца да <ph name="SITE" />, вэб-сайт адправіў незнаёмыя і няправільныя ўліковыя даныя. Гэта можа адбывацца, калі зламыснік спрабуе выдаць сябе за <ph name="SITE" />, або экран уваходу ў сетцы Wi-Fi перарваў падключэнне. Ваша інфармацыя ўсё роўна абаронена, паколькі Chromium перарваў падключэнне да абмену данымі.</translation>
 <translation id="9106062320799175032">Дадаць адрас для выстаўлення рахункаў</translation>
 <translation id="9114524666733003316">Пацвярджаюцца даныя карткі...</translation>
+<translation id="9119042192571987207">Запампавана</translation>
 <translation id="9128870381267983090">Падключыцеся да сеткі</translation>
 <translation id="9137013805542155359">Паказаць арыгінал</translation>
 <translation id="9141013498910525015">Кіраваць адрасамі</translation>

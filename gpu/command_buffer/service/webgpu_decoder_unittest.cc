@@ -156,7 +156,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   gpu::Mailbox mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_TRUE(factory_->CreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, {1, 1},
-      gfx::ColorSpace::CreateSRGB(), SHARED_IMAGE_USAGE_WEBGPU));
+      gfx::ColorSpace::CreateSRGB(), gfx::kNullAcceleratedWidget,
+      SHARED_IMAGE_USAGE_WEBGPU));
 
   // Error case: invalid mailbox
   {
@@ -242,7 +243,8 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   gpu::Mailbox mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_TRUE(factory_->CreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, {1, 1},
-      gfx::ColorSpace::CreateSRGB(), SHARED_IMAGE_USAGE_WEBGPU));
+      gfx::ColorSpace::CreateSRGB(), kNullSurfaceHandle,
+      SHARED_IMAGE_USAGE_WEBGPU));
 
   // Associate a mailbox so we can later dissociate it.
   {

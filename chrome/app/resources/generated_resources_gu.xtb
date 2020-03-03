@@ -2682,7 +2682,6 @@
 <translation id="4737715515457435632">કૃપા કરીને નેટવર્કથી કનેક્ટ કરો</translation>
 <translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="4739639199548674512">ટિકિટ</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> અને વધુ 1 પેજ}one{<ph name="PAGE_TITLE" /> અને વધુ # પેજ}other{<ph name="PAGE_TITLE" /> અને વધુ # પેજ}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ઍપ્લિકેશનો કેવી રીતે અપલોડ કરવી તે જાણો<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{સાઇટને અનમ્યૂટ કરો}one{સાઇટને અનમ્યૂટ કરો}other{સાઇટને અનમ્યૂટ કરો}}</translation>
 <translation id="4746351372139058112">સંદેશા</translation>
@@ -5181,7 +5180,6 @@ USB ડિવાઇસ</translation>
 <translation id="8214489666383623925">ફાઇલ ખોલો...</translation>
 <translation id="8214962590150211830">આ વ્યક્તિને દૂર કરો</translation>
 <translation id="8215295261562449873">Linuxને અપગ્રેડ કરતા પહેલાં મારી ઍપ અને ફાઇલોનું ડાઉનલોડ ફોલ્ડરમાં બૅકઅપ લો.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> અને વધુ 1 પેજ}one{<ph name="PAGE_TITLE" /> અને વધુ # પેજ}other{<ph name="PAGE_TITLE" /> અને વધુ # પેજ}}</translation>
 <translation id="8217399928341212914">બહુવિધ ફાઇલો આપમેળે ડાઉનલોડ કરવું અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="8218847192766059983">ભાષાઓ ઉમેરો અથવા સૂચિને પુનઃક્રમાંકિત કરો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">તમે સામાન્ય રીતે નોટિફિકેશનને બ્લૉક કરો છો. આ સાઇટને તમને નોટિફિકેશન આપવાની મંજૂરી આપવા માટે, અહીં ક્લિક કરો.</translation>
@@ -5392,6 +5390,7 @@ USB ડિવાઇસ</translation>
 <translation id="851263357009351303"><ph name="HOST" /> ને હંમેશા છબી બતાવવાની મંજૂરી આપો</translation>
 <translation id="8513108775083588393">ઑટો રોટેટ</translation>
 <translation id="8514746246728959655">અલગ સુરક્ષા કોડ અજમાવી જુઓ</translation>
+<translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8521475323816527629">તમારી ઍપ સુધી ઝડપથી પહોંચો</translation>
 <translation id="8523493869875972733">ફેરફારો રાખો</translation>
 <translation id="8523849605371521713">નીતિ દ્વારા ઉમેરાયેલ</translation>
@@ -5512,6 +5511,7 @@ USB ડિવાઇસ</translation>
 <translation id="8673383193459449849">સર્વર સમસ્યા</translation>
 <translation id="8675354002693747642">પહેલેથી-શેર કરેલી કી</translation>
 <translation id="8676374126336081632">ઇનપુટ સાફ કરો</translation>
+<translation id="8676770494376880701">નિમ્ન-પાવર ચાર્જર કનેક્ટ કર્યું છે</translation>
 <translation id="8677212948402625567">બધાને સંકુચિત કરો...</translation>
 <translation id="8678648549315280022">ડાઉનલોડ સેટિંગ્સ સંચાલિત કરો ...</translation>
 <translation id="8678933587484842200">તમે આ ઍપ્લિકેશન કેવી રીતે લૉન્ચ કરવાનું પસંદ કરશો?</translation>

@@ -22,6 +22,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -433,6 +434,21 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Removes |view| from this view. The view's parent will change to null.
   void RemoveChildView(View* view);
+
+  // Removes |view| from this view and transfers ownership back to the caller in
+  // the form of a std::unique_ptr<T>.
+  // TODO(kylixrd): Rename back to RemoveChildView() once the code is refactored
+  //                to eliminate the uses of the old RemoveChildView().
+  template <typename T>
+  std::unique_ptr<T> RemoveChildViewT(T* view) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client doesn't already have "
+           "ownership of |view|.";
+    DCHECK(std::find(children_.cbegin(), children_.cend(), view) !=
+           children_.cend());
+    RemoveChildView(view);
+    return base::WrapUnique(view);
+  }
 
   // Removes all the children from this view. If |delete_children| is true,
   // the views are deleted, unless marked as not parent owned.

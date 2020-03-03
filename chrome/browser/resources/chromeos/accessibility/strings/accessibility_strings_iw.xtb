@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">אין עוד כותרות מרמה 4</translation>
+<translation id="1212770441379271564">‏מקשי הקיצור הבאים אינם פקודות ChromeVox, אבל הם עדיין שימושיים מאוד אם רוצים לנצל את כל היתרונות של Chrome.
+    כדי לנווט קדימה בין פריטים שמאפשרים לבצע פעולה, כמו לחצנים וקישורים, מקישים על המקש Tab. כדי לנווט אחורה, מקישים על Shift+Tab.
+    כדי לעבור אל תיבת הכתובות בדפדפן Chrome, שנקראת גם סרגל הכתובות, מקישים על Control+L.
+    כדי לפתוח באופן אוטומטי כרטיסייה חדשה ולעבור אליה, מקישים על Control+T. הסמן יופיע בסרגל הכתובות.
+    כדי לסגור כרטיסייה, מקישים על Control+W.
+    כדי לדפדף קדימה בין כרטיסיות פתוחות, מקישים על Control+Tab.
+    כדי לפתוח את התפריט של דפדפן Chrome, מקישים על Alt+F.</translation>
 <translation id="1213216066620407844">‏ChromeVox - מתן קול ל-Chrome</translation>
 <translation id="1225969361094801578">אפור תכלת כהה</translation>
 <translation id="1229276918471378188">הדילוג הקודם</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">color picker</translation>
 <translation id="4221012616705981690">אין רשימה קודמת</translation>
 <translation id="4221071177874897997">חיווי אותיות מודגשות:</translation>
+<translation id="4225355998815256469">פקדי טופס</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">אפור תכלת בהיר</translation>
 <translation id="4231102694147661229">הפעלת אפשרויות למפתחים</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">משפט</translation>
 <translation id="4623097797855662355">קולופון</translation>
 <translation id="463135993322337640">‏לחיצה על ChromeVox+o+n תציג את העדכונים</translation>
+<translation id="4646606380313237501">‏{"ar": "ערבית",
+    "as": "אסאמית",
+    "aw": "אוואדית",
+    "be": "בנגלית",
+    "bg": "בולגרית",
+    "bh": "ביהרית",
+    "bo": "טיבטית",
+    "br": "בראז'ית",
+    "ca": "קטלאנית",
+    "ckb": "סוראנית",
+    "cs": "צ'כית",
+    "cy": "וולשית",
+    "da": "דנית",
+    "de": "גרמנית",
+    "de_CH": "גרמנית (שווייץ)",
+    "de_DE": "גרמנית (גרמניה)",
+    "dra": "דראווידית",
+    "el": "יוונית",
+    "en": "אנגלית",
+    "en_CA": "אנגלית (קנדה)",
+    "en_GB": "אנגלית (בריטניה)",
+    "en_US": "אנגלית (ארצות הברית)",
+    "eo": "אספרנטו",
+    "es": "ספרדית",
+    "et": "אסטונית",
+    "fa": "פרסית",
+    "fr": "צרפתית",
+    "fr_CA": "צרפתית (קנדה)",
+    "fr_FR": "צרפתית (צרפת)",
+    "fi": "פינית",
+    "ga": "אירית",
+    "gd": "גיילית",
+    "gon": "גונדית",
+    "gu": "גוג'ראטית",
+    "he": "עברית",
+    "hi": "הינדי",
+    "hr": "קרואטית",
+    "hu": "הונגרית",
+    "hy": "ארמנית",
+    "is": "איסלנדית",
+    "it": "איטלקית",
+    "iu": "אינוקטיטוט",
+    "ka": "קאנדה",
+    "kh": "קהאסי",
+    "ko": "קוריאנית",
+    "kok": "קונקאני",
+    "kru": "קורוך",
+    "ks": "קשמירית",
+    "lt": "ליטאית",
+    "lv": "לטבית",
+    "mao": "מאורית",
+    "ml": "מלאיאלאם",
+    "mt": "מלטית",
+    "mwr": "מרווארית",
+    "mn": "מונגולית",
+    "mun": "מונדה",
+    "nb": "נורווגית ספרותית",
+    "ne": "נפאלית",
+    "nl": "הולנדית",
+    "no": "נורווגית",
+    "or": "אורייה",
+    "pi": "פאלי",
+    "pl": "פולנית",
+    "pt": "פורטוגזית",
+    "pu": "פנג'אבי",
+    "ro": "רומנית",
+    "ru": "רוסית",
+    "sa": "סנסקריט",
+    "si": "סינדהי",
+    "sin": "סינהלית",
+    "sk": "סלובקית",
+    "sl": "סלובנית",
+    "sr": "סרבית",
+    "sv": "שוודית",
+    "ta": "טמילית",
+    "te": "טלוגו",
+    "tr": "טורקית",
+    "tsn": "אפריקאנס",
+    "uk": "אוקראינית",
+    "ur": "אורדו",
+    "vi": "וייטנאמית",
+    "zh": "סינית",
+    "zh_TW": "סינית (האן מסורתית)"}</translation>
 <translation id="4647836961514597010">בוחר צבעים</translation>
 <translation id="4660783501463101648">‏הגירסה הקלאסית הוסרה. לחצן החלפת המצב במקלדת למעבר חזרה אל הגירסה הקלאסית של ChromeVox הוסר.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">מצב דביק מופעל</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{פסיק}two{# פסיקים}many{# פסיקים}other{# פסיקים}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, תיבת טקסט</translation>
+<translation id="532485153932049746">עיצוב טקסט
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, קישור</translation>
 <translation id="5331522683003474486">אפשר לשלוט במכשיר בעזרת מתג אחד או שניים בלבד.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">ברייל</translation>
 <translation id="5402791055281059602">התראה שמוצגת בחלון קופץ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{נקודה ופסיק}two{# סימני נקודה ופסיק}many{# סימני נקודה ופסיק}other{# סימני נקודה ופסיק}}</translation>
+<translation id="5420259671171615858">חיפוש בתפריטים</translation>
 <translation id="5435274640623994081">הפעלת רישום ביומן של צלילי התראה</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{סימן ‘קטן מ‘}two{# סימני ‘קטן מ‘}many{# סימני ‘קטן מ‘}other{# סימני ‘קטן מ‘}}</translation>
 <translation id="5444587279251314700">(פעיל)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">זוהתה טעות באיות</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">חזרה</translation>
+<translation id="7429415133937917139">‏מדמה את הפלט של צג ברייל ניתן לרענון
+    בחלונית ChromeVox שנמצאת בחלק העליון של המסך</translation>
 <translation id="7434509671034404296">למפתחים</translation>
 <translation id="743783356331413498">דוגמה</translation>
 <translation id="7439060726180460871">ספריה</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">לחצן הבחירה הקודם</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">אין עוד תיבות משולבות</translation>
+<translation id="772146615414628379">‏מזל טוב! למדת את כל המידע הבסיסי שיאפשר לך להשתמש ב-ChromeVox. חשוב לזכור שאפשר לפתוח את תפריט הפקודות של ChromeVox בכל שלב על ידי הקשה על Search+מקש הנקודה. כדי לקבל מידע נוסף על ChromeVox ו-Chrome OS, אפשר לעיין במאמרים הבאים.
+    אם סיימת עם המדריך, אפשר להשתמש ב-ChromeVox כדי לנווט ללחצן 'סגירה' וללחוץ עליו.</translation>
 <translation id="7724603315864178912">חתוך</translation>
 <translation id="7731785449856576010">אין עוד ווידג'טים של מדיה</translation>
 <translation id="773906353055481349">‏כדי לנווט לפי תא, יש להקיש על Search+Ctrl+Alt ביחד עם מקשי החיצים</translation>

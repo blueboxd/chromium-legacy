@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
 <translation id="129382876167171263">Датотеките зачувани од веб-сајтовите се појавуваат тука</translation>
 <translation id="129553762522093515">Неодамна затворено</translation>
+<translation id="1303339473099049190">Лозинката не може да се најде. Проверете го правописот и обидете се повторно.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Испратено од <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Групирај картички</translation>
 <translation id="1327257854815634930">Отворена е историјата на навигација</translation>
@@ -187,7 +188,7 @@
 <translation id="2369533728426058518">отворени картички</translation>
 <translation id="2387895666653383613">Скалирање текст</translation>
 <translation id="2394602618534698961">Датотеките што ќе ги преземете ќе се појават тука</translation>
-<translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
+<translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2407481962792080328">Функцијава е вклучена кога ќе се најавите на сметката на Google</translation>
 <translation id="2410754283952462441">Изберете сметка</translation>
 <translation id="2414886740292270097">Темна</translation>
@@ -277,7 +278,7 @@
 <translation id="2996809686854298943">Потребен е URL</translation>
 <translation id="300526633675317032">Ова ќе ги избрише сите <ph name="SIZE_IN_KB" /> од просторот на веб-сајтот.</translation>
 <translation id="3016635187733453316">Проверете дали уредов е поврзан на интернет</translation>
-<translation id="3029613699374795922">Преземени <ph name="KBS" /> КБ</translation>
+<translation id="3029613699374795922">Преземени <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Лозинките-фрази не се совпаѓаат</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Побарајте помош<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Локацијата е исклучена, вклучете ја во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
@@ -323,6 +324,7 @@
 <translation id="3350687908700087792">Затвори ги сите инкогнито картички</translation>
 <translation id="3353615205017136254">Lite-страница овозможена од Google. Допрете го копчето за вчитување на оригиналот за да се вчита оригиналната страница.</translation>
 <translation id="3367813778245106622">Најавете се повторно за да започнете со синхронизација</translation>
+<translation id="3373979091428520308">За да ја споделите страницава со друг уред, исклучете ја синхронизацијата во поставките за Chrome на другиот уред</translation>
 <translation id="3374023511497244703">Обележувачите, историјата, лозинките и другите податоци на Chrome веќе нема да се синхронизираат со вашата сметка на Google</translation>
 <translation id="3384347053049321195">Сподели ја сликата</translation>
 <translation id="3386292677130313581">Прашај пред да дозволиш сајтовите да ја дознаат локацијата (се препорачува)</translation>
@@ -340,7 +342,7 @@
 <translation id="3522247891732774234">Достапно е ажурирање. Повеќе опции</translation>
 <translation id="3524138585025253783">Кориснички интерфејс за програмери</translation>
 <translation id="3527085408025491307">Папка</translation>
-<translation id="3542235761944717775">Достапни се <ph name="KILOBYTES" /> КБ</translation>
+<translation id="3542235761944717775">Достапни се <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Пребарајте ја историјата</translation>
 <translation id="3557336313807607643">Додај во контакти</translation>
 <translation id="3566923219790363270">Chrome сѐ уште се подготвува за VR. Рестартирајте го Chrome подоцна.</translation>
@@ -589,7 +591,7 @@
 <translation id="5403644198645076998">Дозволи само одредени сајтови</translation>
 <translation id="5414836363063783498">Се проверува…</translation>
 <translation id="5423934151118863508">Најпосетуваните страници ќе се појават тука</translation>
-<translation id="5424588387303617268">Достапни се <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="5424588387303617268">Достапни се <ph name="GIGABYTES" /> GB</translation>
 <translation id="543338862236136125">Измени ја лозинката</translation>
 <translation id="5433691172869980887">Корисничкото име е копирано</translation>
 <translation id="543509235395288790">Се преземаат <ph name="COUNT" /> датотеки (<ph name="MEGABYTES" />).</translation>
@@ -672,6 +674,7 @@
 <translation id="5956665950594638604">Отвори „Центар за помош на Chrome“ во нова картичка</translation>
 <translation id="5958275228015807058">Вашите датотеки и страници ќе ги најдете во „Преземања“</translation>
 <translation id="5962718611393537961">Допрете за да се собере</translation>
+<translation id="5964805880140440652">За да ја споделите страницава на друг уред, вклучете ја синхронизацијата во поставките за Chrome</translation>
 <translation id="6000066717592683814">Задржи го Google</translation>
 <translation id="6005538289190791541">Предложена лозинка</translation>
 <translation id="6036057147555329831">Дополнителен ICU</translation>
@@ -729,7 +732,7 @@
 <translation id="6406506848690869874">Синхронизација</translation>
 <translation id="6410973561433500075">Дали да се влезе во AR од <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Печати...</translation>
-<translation id="6416782512398055893">Преземени <ph name="MBS" /> МБ</translation>
+<translation id="6416782512398055893">Преземени <ph name="MBS" /> MB</translation>
 <translation id="6427112570124116297">Преведете го интернетот</translation>
 <translation id="6433501201775827830">Изберете пребарувач</translation>
 <translation id="6437478888915024427">Информации за страницата</translation>
@@ -747,7 +750,7 @@
 <translation id="6508722015517270189">Рестартирајте го Chrome</translation>
 <translation id="6532866250404780454">Сајтовите што ги посетувате во Chrome нема да се прикажуваат. Сите тајмери за сајтови ќе се избришат.</translation>
 <translation id="6534565668554028783">На Google му требаше премногу време да одговори</translation>
-<translation id="6538442820324228105">Преземени <ph name="GBS" /> ГБ</translation>
+<translation id="6538442820324228105">Преземени <ph name="GBS" /> GB</translation>
 <translation id="6539092367496845964">Нешто тргна наопаку. Обидете се повторно подоцна.</translation>
 <translation id="6545017243486555795">Избриши ги сите податоци</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
@@ -761,7 +764,7 @@
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
-<translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
+<translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
 <translation id="6627583120233659107">Уредувај папка</translation>
 <translation id="6643016212128521049">Исчисти</translation>
@@ -830,7 +833,7 @@
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Вчитај ја оригиналната страница<ph name="END_LINK" /> од <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Изминатите 24 часа</translation>
 <translation id="7173114856073700355">Отвори „Поставки“</translation>
-<translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
+<translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Може да го промените ова подоцна во „Поставки“</translation>
 <translation id="7180611975245234373">Освежи</translation>
 <translation id="7189372733857464326">Се чека да заврши ажурирањето на „Услугите на Google Play“</translation>
@@ -946,7 +949,7 @@
 <translation id="8037750541064988519">Останаа <ph name="DAYS" /> дена</translation>
 <translation id="804335162455518893">SD-картичката не е најдена</translation>
 <translation id="805047784848435650">Врз основа на вашата историја на прелистување</translation>
-<translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> МБ</translation>
+<translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Отвори во нова Chrome картичка</translation>
 <translation id="8063895661287329888">Не успеа да се додаде обележувачот.</translation>
 <translation id="806745655614357130">Не поврзувај ги податоците</translation>

@@ -41,6 +41,7 @@
 <translation id="1900795423379050516">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
       подешавањима Chrome прегледача<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Дозволи пријављивање у Chrome</translation>
+<translation id="1983547493073464667">Chrome не може да вам проверава лозинке</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
 <translation id="2094919256425865063">Желите ли ипак да затворите Chrome?</translation>
 <translation id="2120620239521071941">Овим ћете избрисати <ph name="ITEMS_COUNT" /> ставке(и) са овог уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
@@ -56,15 +57,19 @@
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
+<translation id="2559627601176023786">Нема сачуваних лозинки. Chrome може да вам проверава лозинке када их сачувате на Google налогу.</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2586406160782125153">Овим ћете избрисати податке прегледања са уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome логотип</translation>
+<translation id="261226884343006626">Chrome не може да вам проверава лозинке. Пробајте поново сутра.</translation>
+<translation id="2622559029861875898">Chrome не може да тражи ажурирања. Пробајте да проверите интернет везу.</translation>
 <translation id="2644798301485385923">Систем Chrome ОС</translation>
 <translation id="2652691236519827073">Отвори линк у новој Chrome &amp;картици</translation>
 <translation id="2665296953892887393">Помозите нам да побољшамо Google Chrome тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Овај додатак је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="2765403129283291972">Chrome тражи дозволу да приступи микрофону за овај сајт</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
+<translation id="2775140325783767197">Chrome не може да вам проверава лозинке. Пробајте да проверите интернет везу.</translation>
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2847461019998147611">Приказуј Google Chrome на овом језику</translation>
 <translation id="2857540653560290388">Покреће се Chrome...</translation>
@@ -80,6 +85,7 @@
 <translation id="3395323229510056640">Пронађите помоћ за Chrome OS</translation>
 <translation id="3396977131400919238">Током инсталације је дошло до грешке у оперативном систему. Преузмите Google Chrome поново.</translation>
 <translation id="3398288718845740432">Сакриј у Chrome менију</translation>
+<translation id="3434246496373299699">Chrome може да вам проверава лозинке када се пријавите помоћу Google налога</translation>
 <translation id="3451115285585441894">Додавање у Chrome...</translation>
 <translation id="345171907106878721">Додајте себе у Chrome</translation>
 <translation id="34857402635545079">Обриши податке и из Chrome-а (<ph name="URL" />)</translation>
@@ -95,6 +101,7 @@
 <translation id="386202838227397562">Затворите све прозоре Google Chrome прегледача и покушајте поново.</translation>
 <translation id="3873044882194371212">Отвори линк у Chrome прозору без архи&amp;вирања</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
+<translation id="3943605108614542032">Администратор управља ажурирањима Chrome-а</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="4053720452172726777">Прилагодите и контролишите Google Chrome</translation>
 <translation id="4143243756087420366">Назив и слика Chrome профила</translation>
@@ -208,6 +215,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7808348361785373670">Уклони из Chrome-а...</translation>
 <translation id="7825851276765848807">Инсталација није успела услед неутврђене грешке. Преузмите Google Chrome поново.</translation>
 <translation id="7855730255114109580">Google Chrome је актуелан</translation>
+<translation id="7888686278524752658">Chrome се није ажурирао. Дошло је до грешке. Отклоните проблеме са ажурирањем Chrome-а и неуспела ажурирања.</translation>
 <translation id="7890208801193284374">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе.</translation>
 <translation id="7896673875602241923">Неко се претходно пријавио на Chrome на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Направите новог корисника Chrome-а да би информације биле раздвојене.</translation>
 <translation id="7916016681687251387">Chrome ОС није успео да синхронизује податке. Решите проблем.</translation>
@@ -238,6 +246,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Пробајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
 <translation id="8914504000324227558">Поново покрени Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ажурирање за Chrome је доступно}=1{Ажурирање за Chrome је доступно}one{Ажурирање за Chrome је доступно већ # дан}few{Ажурирање за Chrome је доступно већ # дана}other{Ажурирање за Chrome је доступно већ # дана}}</translation>
+<translation id="9025321516765676895">Chrome не може да вам проверава лозинке јер их има превише</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="9067395829937117663">За Google Chrome је потребан Windows 7 или новија верзија.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>

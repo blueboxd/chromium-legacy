@@ -219,15 +219,13 @@ bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
   if (try_catch.HasCaught())
     return false;
 
-  // To report InvalidStateError Exception, when the constructor returns some
-  // different object
+  // Report a TypeError Exception if the constructor returns a different object.
   if (result != &element) {
     const String& message =
         "custom element constructors must call super() first and must "
         "not return a different object";
-    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateOrEmpty(
-        script_state_->GetIsolate(), DOMExceptionCode::kInvalidStateError,
-        message);
+    v8::Local<v8::Value> exception =
+        V8ThrowException::CreateTypeError(script_state_->GetIsolate(), message);
     if (!exception.IsEmpty())
       V8ScriptRunner::ReportException(isolate, exception);
     return false;

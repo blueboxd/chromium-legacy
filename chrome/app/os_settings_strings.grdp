@@ -2201,5 +2201,16 @@
   <message name="IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT" desc="In Device Settings > Displays, the sublabel for initiating touch calibration.">
     Set up and adjust the accuracy of your touchscreen
   </message>
+  
+  <!-- Smart Lock Page (OS settings) -->
+  <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
+    Smart Lock
+  </message>
+  <message name="IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_ONLY" desc="This option lets the user unlock their Chromebook from their phone if they're logged in. It will unlock their Chromebook but will not sign them in.">
+    Unlock device only
+  </message>
+  <message name="IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_AND_ALLOW_SIGNIN" desc="This option lets the user unlock their Chromebook from their phone as well as log into their Chromebook without a password if their phone is nearby and unlocked.">
+    Unlock device and sign in to Google Account
+  </message>
 </if>
 </grit-part>

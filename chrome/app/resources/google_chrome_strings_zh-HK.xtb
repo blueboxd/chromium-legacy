@@ -40,7 +40,7 @@
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="1900795423379050516">如果此頁面沒有顯示設定，請前往 <ph name="LINK_BEGIN" />Chrome 瀏覽器設定<ph name="LINK_END" />。</translation>
 <translation id="1919130412786645364">允許登入 Chrome</translation>
-<translation id="1983547493073464667">Chrome 無法檢查你的密碼</translation>
+<translation id="1983547493073464667">Chrome 無法檢查密碼</translation>
 <translation id="2063848847527508675">必須重新啟動 Chrome 作業系統，才能套用更新。</translation>
 <translation id="2094919256425865063">仍要退出 Chrome 嗎？</translation>
 <translation id="2120620239521071941">這會刪除此裝置上的 <ph name="ITEMS_COUNT" /> 個項目。如果日後想擷取資料，請以 <ph name="USER_EMAIL" /> 的身分登入 Chrome。</translation>
@@ -56,19 +56,19 @@
 <translation id="2467438592969358367">Google Chrome 想匯出您的密碼。請輸入 Windows 密碼以允許此操作。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2534507159460261402">Google Pay (已複製至 Chrome)</translation>
-<translation id="2559627601176023786">未儲存任何密碼。如果你將密碼儲存在 Google 帳戶中，Chrome 可以檢查你的密碼。</translation>
+<translation id="2559627601176023786">沒有已儲存的密碼。當您將密碼儲存在 Google 帳戶時，Chrome 可以檢查您的密碼。</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome，然後再試一次。</translation>
 <translation id="2586406160782125153">這會刪除此裝置上的瀏覽資料。如果日後想擷取資料，請以 <ph name="USER_EMAIL" /> 的身分登入 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 標誌</translation>
-<translation id="261226884343006626">Chrome 無法檢查你的密碼，請明天再試。</translation>
-<translation id="2622559029861875898">Chrome 無法檢查更新，請查看你的網際網路連線狀態。</translation>
+<translation id="261226884343006626">Chrome 無法檢查密碼，請明天再試。</translation>
+<translation id="2622559029861875898">Chrome 無法檢查更新，請檢查互聯網連線。</translation>
 <translation id="2644798301485385923">Chrome 作業系統</translation>
 <translation id="2652691236519827073">在 Chrome 的新分頁中開啟連結(&amp;T)</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
 <translation id="2689103672227170538">擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="2765403129283291972">Chrome 需要取得權限，才能讓這個網站存取您的麥克風</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
-<translation id="2775140325783767197">Chrome 無法檢查你的密碼，請查看你的網際網路連線狀態。</translation>
+<translation id="2775140325783767197">Chrome 無法檢查密碼，請檢查互聯網連線。</translation>
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2847461019998147611">以此語言顯示 Google Chrome</translation>
 <translation id="2857540653560290388">正在啟動 Chrome…</translation>
@@ -84,7 +84,7 @@
 <translation id="3395323229510056640">取得 Chrome 作業系統相關說明</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>
 <translation id="3398288718845740432">隱藏在 Chrome 選單中</translation>
-<translation id="3434246496373299699">如果你使用 Google 帳戶登入，Chrome 可以檢查你的密碼</translation>
+<translation id="3434246496373299699">Chrome 可在您使用 Google 帳戶登入時檢查密碼</translation>
 <translation id="3451115285585441894">正在新增至 Chrome…</translation>
 <translation id="345171907106878721">新增為 Chrome 使用者</translation>
 <translation id="34857402635545079">一併清除 Chrome 的資料 (<ph name="URL" />)</translation>
@@ -100,7 +100,7 @@
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，然後再試一次。</translation>
 <translation id="3873044882194371212">在 Chrome 無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="3889417619312448367">解除安裝 Google Chrome</translation>
-<translation id="3943605108614542032">系統管理員會管理 Chrome 更新</translation>
+<translation id="3943605108614542032">管理員會管理 Chrome 更新</translation>
 <translation id="4050175100176540509">最新版本提供重大保安改良和新功能。</translation>
 <translation id="4053720452172726777">自訂及控制 Google Chrome</translation>
 <translation id="4143243756087420366">Chrome 名稱和相片</translation>
@@ -244,7 +244,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝程式。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發佈 # 天}}</translation>
-<translation id="9025321516765676895">你的密碼過多，因此 Chrome 無法檢查你的密碼</translation>
+<translation id="9025321516765676895">您的密碼過多，因此 Chrome 無法檢查</translation>
 <translation id="9026991721384951619">您的帳戶登入詳情尚未更新，因此 Chrome 作業系統無法同步處理您的數據。</translation>
 <translation id="9067395829937117663">Google Chrome 只能在 Windows 7 或以上作業系統中執行。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽數據嗎？</translation>

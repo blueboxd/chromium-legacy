@@ -49,6 +49,7 @@
 <translation id="1303339473099049190">Can’t find that password. Check your spelling and try again.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Sent from <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Group tabs</translation>
+<translation id="1311657260431405215">This QR code is not a URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Navigation history is opened</translation>
 <translation id="1331212799747679585">Chrome can’t update. More options</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>

@@ -64,7 +64,7 @@
 <translation id="2908441821576996758">Внесете листа на адреси на е-пошта одвоени со запирка.</translation>
 <translation id="2940813599313844715">објект</translation>
 <translation id="3040011195152428237">врска</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">Внесете важечка вредност. Полето е нецелосно или има неважечки датум.</translation>
 <translation id="3078740164268491126">табела</translation>
 <translation id="3086746722712840547">забелешка</translation>
@@ -79,7 +79,7 @@
 <translation id="3706100364254443312">прекинувач</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3754210790023674521">Излези од „Слика во слика“</translation>
-<translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">термин</translation>
 <translation id="3822383571486410024">Продолжете го текстот на <ph name="MIN_CHARACTERS" /> знаци или повеќе (во моментов користите <ph name="CURRENT_LENGTH" /> знаци).</translation>
 <translation id="383465348367842624">Дел по кој следува „<ph name="ATSIGN" />“ не треба да го содржи симболот „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -260,7 +260,7 @@
 <translation id="8845239796550121995">Сега се емитува на вашиот TV</translation>
 <translation id="8851136666856101339">главно</translation>
 <translation id="8875657656876809964">Грешка при репродукција на видео</translation>
-<translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">тековно време во секунди</translation>
 <translation id="901834265349196618">е-пошта</translation>

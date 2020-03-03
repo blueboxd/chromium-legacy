@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Kəsin</translation>
 <translation id="2292556288342944218">İnternet girişiniz blok edilib</translation>
 <translation id="2297722699537546652">B5 (Zərf)</translation>
+<translation id="2300306941146563769">Yüklənməyib</translation>
 <translation id="2310021320168182093">Chou2 (Zərf)</translation>
 <translation id="2315864634253056100">Bu saytın adı <ph name="LOOKALIKE_DOMAIN" /> ilə oxşar görünür. Hücum edənlər bəzən veb ünvana kiçik, çətin sezilə bilən dəyişikliklər etməklə saytları təqlid edir.</translation>
 <translation id="2316887270356262533">Maksimum 1 MB boşaldılır. Növbəti dəfə daxil olarkən bəzi saytlar daha yavaş yüklənə bilər.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">Şəbəkə dəyişikliyi aşkarlandı.</translation>
 <translation id="2910133103376701357">Cihaz və hesabınızı <ph name="ENROLLMENT_DOMAIN" /> idarə edir.</translation>
 <translation id="2911973620368911614">İş hesabının istifadəçi ID'si</translation>
+<translation id="2915068235268646559">Xəta tarixi: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Digər proqramları bağlayın</translation>
 <translation id="2922350208395188000">Server sertifikatı yoxlana bilmədi.</translation>
 <translation id="2925673989565098301">Çatdırılma Üsulu</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">Hər kopyadan sonra kəsin</translation>
 <translation id="2934466151127459956">Hökumət Məktubu</translation>
 <translation id="2941952326391522266">Server <ph name="DOMAIN" /> olmasını sübut edə bilmədi; güvənlik sertifikatı <ph name="DOMAIN2" /> domenindəndir.</translation>
+<translation id="2943895734390379394">Yükləmə Vaxtı:</translation>
 <translation id="2948083400971632585">Ayarlar səhifəsindən bağlantı üçün sazlanmış istənilən proksini deaktiv edə bilərsiniz.</translation>
 <translation id="2951588413176968965">Poçt qutum</translation>
 <translation id="295526156371527179">Xəbərdarlıq: Bu siyasətin göstərdiyi siyasət lüğət olmadığına görə lüğət kimi birləşdirilmədi.</translation>
@@ -1081,6 +1084,7 @@
 <translation id="563324245173044180">Aldadıcı kontent blok edildi.</translation>
 <translation id="5644090287519800334">Şəklin 1-ci tərəfinin X oxu üzrə yerdəyişməsi</translation>
 <translation id="5645854190134202180">İkinci növbə</translation>
+<translation id="5654927323611874862">Xəta Hesabatı ID'si yükləndi:</translation>
 <translation id="5659593005791499971">E-poçt</translation>
 <translation id="5663614846592581799">9x11 (Zərf)</translation>
 <translation id="5663955426505430495">Bu cihazın administratoru əlavə funksiyalar üçün artırmalar quraşdırıb. Artırmalar datanın bir hissəsinə daxil ola bilər.</translation>
@@ -1388,6 +1392,7 @@
 <translation id="7079718277001814089">Bu saytda virus var</translation>
 <translation id="7081308185095828845">Bu xüsusiyyət cihazınızda əlçatan deyil</translation>
 <translation id="7083258188081898530">Qab 9</translation>
+<translation id="7086090958708083563">Yükləmə istifadəçi tərəfindən tələb edildi</translation>
 <translation id="7087282848513945231">Ölkə</translation>
 <translation id="7090678807593890770">Google'da <ph name="LINK" /> axtarın</translation>
 <translation id="7108338896283013870">Gizlədin</translation>
@@ -1550,6 +1555,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> ilə davam edin (güvənsiz)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Sertifikat</translation>
 <translation id="7716147886133743102">Administrator tərəfindən blok edildi</translation>
+<translation id="7716375162095500223">Hələ yüklənməyib, ya da nəzərə alınmayıb</translation>
 <translation id="7716424297397655342">Sayt keşdən yüklənə bilmədi</translation>
 <translation id="7723047071702270851">Kartı redaktə edin</translation>
 <translation id="7740996059027112821">Standart</translation>
@@ -1694,6 +1700,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Güvənliyinizə olan riskləri anlamaq üçün zərərverici proqramların silinməsindən öncə <ph name="BEGIN_LINK" />bu sayta daxil olun<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Əlfəcin paneli</translation>
+<translation id="8355270400102541638">Lokal Xəta Konteksti:</translation>
 <translation id="8363502534493474904">Təyyarə rejimi deaktiv edilir</translation>
 <translation id="8364627913115013041">Ayarlanmayıb</translation>
 <translation id="8368476060205742148">Google Play xidmətləri</translation>
@@ -1714,6 +1721,7 @@
 <translation id="8461694314515752532">Sinxronizasiya parolunuz ilə sinxronizasiya edilmiş datanı şifrələyin</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredit kartı}other{# kredit kartı}}</translation>
 <translation id="8473863474539038330">Ünvanlar və s.</translation>
+<translation id="8474910779563686872">Tərtibatçı detallarını göstərin</translation>
 <translation id="8479754468255770962">Aşağı soldan ştapel vurun</translation>
 <translation id="8483780878231876732">Google Hesabınızdan kartları istifadə etmək üçün, Chrome'a daxil olun</translation>
 <translation id="8488350697529856933">Tətbiq olunur</translation>
@@ -1839,6 +1847,7 @@
 <translation id="9103872766612412690">Məlumatınızı qorumaq üçün <ph name="SITE" /> adətən şifrələmə istifadə edir. Chromium bu dəfə <ph name="SITE" /> üzərinə qoşulmağa çalışanda sayt qeyri-adi və yanlış kredensialları qaytarmağa başladı. Bu, hücum edən özünü <ph name="SITE" /> kimi apardıqda, və ya Wi-Fi tərəfindən bağlantı kəsintisi olduqda baş verir. Məlumatınız hələ də güvənlidir, çünki Chromium datanın mübadiləsindən öncə bağlantını kəsib.</translation>
 <translation id="9106062320799175032">Faktura Ünvanı Əlavə Edin</translation>
 <translation id="9114524666733003316">Kart təsdiqlənir...</translation>
+<translation id="9119042192571987207">Yüklənib</translation>
 <translation id="9128870381267983090">Şəbəkəyə qoşulun</translation>
 <translation id="9137013805542155359">Originalı göstərin</translation>
 <translation id="9141013498910525015">Ünvanları idarə edin</translation>

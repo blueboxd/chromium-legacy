@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Geen volgende kop van niveau 4</translation>
+<translation id="1212770441379271564">De volgende snelkoppelingen zijn geen ChromeVox-opdrachten, maar wel handig om optimaal gebruik te maken van Chrome.
+    Als je vooruit door actiegerichte items (zoals knoppen en links) wilt navigeren, druk je op de Tab-toets. Als je terug wilt navigeren, druk je op Shift + Tab. 
+    Als je de cursor naar het adresvak van de Chrome-browser (ook wel omnibox genoemd) wilt verplaatsen, druk je op Ctrl + L.
+    Druk op Ctrl + T om automatisch naar een nieuw tabblad te gaan. Je cursor wordt in de omnibox geplaatst. 
+    Druk op Ctrl + W om een tabblad te sluiten. 
+    Gebruik Ctrl + Tab om vooruit door de geopende tabbladen te browsen. 
+    Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="1213216066620407844">ChromeVox - Geef Chrome een stem</translation>
 <translation id="1225969361094801578">Donker leisteengrijs</translation>
 <translation id="1229276918471378188">Vorige sprong</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">kleurkiezer</translation>
 <translation id="4221012616705981690">Geen vorige lijst</translation>
 <translation id="4221071177874897997">Vetgedrukt aangeven:</translation>
+<translation id="4225355998815256469">Formulierbesturingselementen</translation>
 <translation id="4229646983878045487">datum tijd</translation>
 <translation id="4230834257931120629">Licht leisteengrijs</translation>
 <translation id="4231102694147661229">Opties voor ontwikkelaars inschakelen</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Zin</translation>
 <translation id="4623097797855662355">Colofon</translation>
 <translation id="463135993322337640">Druk in ChromeVox op o en dan n voor meer informatie over wat er nieuw is</translation>
+<translation id="4646606380313237501">{"ar": "Arabisch",
+    "as": "Assamees",
+    "aw": "Awadhi",
+    "be": "Bengaals",
+    "bg": "Bulgaars",
+    "bh": "Bihari",
+    "bo": "Tibetaans",
+    "br": "Braj",
+    "ca": "Catalaans",
+    "ckb": "Soranî",
+    "cs": "Tsjechisch",
+    "cy": "Welsh",
+    "da": "Deens",
+    "de": "Duits",
+    "de_CH": "Duits (Zwitserland)",
+    "de_DE": "Duits (Duitsland)",
+    "dra": "Dravidisch",
+    "el": "Grieks",
+    "en": "Engels",
+    "en_CA": "Engels (Canada)",
+    "en_GB": "Engels (Verenigd Koninkrijk)",
+    "en_US": "Engels (Verenigde Staten)",
+    "eo": "Esperanto",
+    "es": "Spaans",
+    "et": "Estlands",
+    "fa": "Perzisch",
+    "fr": "Frans",
+    "fr_CA": "Frans (Canada)",
+    "fr_FR": "Frans (Frankrijk)",
+    "fi": "Fins",
+    "ga": "Iers",
+    "gd": "Gaelic",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Hebreeuws",
+    "hi": "Hindi",
+    "hr": "Kroatisch",
+    "hu": "Hongaars",
+    "hy": "Armeens",
+    "is": "IJslands",
+    "it": "Italiaans",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Koreaans",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmiri",
+    "lt": "Litouws",
+    "lv": "Lets",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Maltees",
+    "mwr": "Marwari",
+    "mn": "Mongools",
+    "mun": "Munda",
+    "nb": "Noors - Bokmål",
+    "ne": "Nepalees",
+    "nl": "Nederlands",
+    "no": "Noors",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Pools",
+    "pt": "Portugees",
+    "pu": "Punjabi",
+    "ro": "Roemeens",
+    "ru": "Russisch",
+    "sa": "Sanskriet",
+    "si": "Sindhi",
+    "sin": "Singalees",
+    "sk": "Slowaaks",
+    "sl": "Sloveens",
+    "sr": "Servisch",
+    "sv": "Zweeds",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Turks",
+    "tsn": "Afrikaans",
+    "uk": "Oekraïens",
+    "ur": "Urdu",
+    "vi": "Vietnamees",
+    "zh": "Chinees",
+    "zh_TW": "Chinees (Traditioneel Chinees)"}</translation>
 <translation id="4647836961514597010">Kleurenkiezer</translation>
 <translation id="4660783501463101648">De klassieke versie is verwijderd. Het is niet meer mogelijk om via het toetsenbord terug te schakelen naar de klassieke versie van ChromeVox.</translation>
 <translation id="4661075872484491155">structuur</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Modus voor vastzetten ingeschakeld</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komma's}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstvak</translation>
+<translation id="532485153932049746">Tekstopmaak
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Beheer het apparaat met slechts één of twee schakelaars.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Een melding die in een modaal dialoogvenster wordt weergegeven</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{puntkomma}other{# puntkomma's}}</translation>
+<translation id="5420259671171615858">Zoeken in de menu's</translation>
 <translation id="5435274640623994081">Earconregistratie inschakelen</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kleiner-dan-teken}other{# kleiner-dan-tekens}}</translation>
 <translation id="5444587279251314700">(actief)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Spelfout gedetecteerd</translation>
 <translation id="7408482676469142474">tabel</translation>
 <translation id="7425395583360211003">Enter-teken</translation>
+<translation id="7429415133937917139">Simuleert de uitvoer van een vernieuwbare brailleleesregel in het ChromeVox-venster bovenaan het scherm</translation>
 <translation id="7434509671034404296">Ontwikkelaar</translation>
 <translation id="743783356331413498">Voorbeeld</translation>
 <translation id="7439060726180460871">Directory</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Vorig keuzerondje</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Geen volgende keuzelijst met invoervak</translation>
+<translation id="772146615414628379">Je hebt de basisprincipes voor het gebruik van ChromeVox geleerd. Je kunt het ChromeVox-opdrachtmenu op elk gewenst moment openen door op Zoeken + punt te drukken. Ga naar de volgende artikelen voor nog meer informatie over ChromeVox en Chrome OS.
+    Als je klaar bent met de tutorial, gebruik je ChromeVox om naar de knop Sluiten te navigeren en klik je erop.</translation>
 <translation id="7724603315864178912">Knip</translation>
 <translation id="7731785449856576010">Geen volgende mediawidget</translation>
 <translation id="773906353055481349">Druk op Zoeken+Ctrl+Alt in combinatie met de pijltoetsen om van cel naar cel te navigeren</translation>

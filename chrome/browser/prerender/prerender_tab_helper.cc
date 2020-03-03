@@ -20,10 +20,9 @@ using content::WebContents;
 namespace prerender {
 
 PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), origin_(ORIGIN_NONE) {}
+    : content::WebContentsObserver(web_contents) {}
 
-PrerenderTabHelper::~PrerenderTabHelper() {
-}
+PrerenderTabHelper::~PrerenderTabHelper() = default;
 
 void PrerenderTabHelper::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
@@ -33,40 +32,12 @@ void PrerenderTabHelper::DidFinishNavigation(
     return;
   }
 
-  url_ = navigation_handle->GetURL();
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
-  if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
+  if (prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr))
     return;
-  prerender_manager->RecordNavigation(url_);
-}
-
-void PrerenderTabHelper::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Determine the origin.
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager)
-    prerender_manager->IsWebContentsPrerendering(web_contents(), &origin_);
-
-  if (navigation_handle->IsSameDocument())
-    return;
-
-  if (!navigation_handle->IsInMainFrame())
-    return;
-
-  MainFrameUrlDidChange(navigation_handle->GetURL());
-}
-
-void PrerenderTabHelper::DidRedirectNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
-  MainFrameUrlDidChange(navigation_handle->GetURL());
-}
-
-void PrerenderTabHelper::MainFrameUrlDidChange(const GURL& url) {
-  url_ = url;
+  prerender_manager->RecordNavigation(navigation_handle->GetURL());
 }
 
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
@@ -90,7 +61,7 @@ bool PrerenderTabHelper::IsPrerendering() {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
-  return prerender_manager->IsWebContentsPrerendering(web_contents(), NULL);
+  return prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr);
 }
 
 void PrerenderTabHelper::PrerenderSwappedIn() {

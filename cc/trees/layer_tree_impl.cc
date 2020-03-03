@@ -2378,10 +2378,6 @@ void LayerTreeImpl::UpdateImageDecodingHints(
   host_impl_->UpdateImageDecodingHints(std::move(decoding_mode_map));
 }
 
-bool LayerTreeImpl::IsActivelyScrolling() const {
-  return host_impl_->IsActivelyScrolling();
-}
-
 int LayerTreeImpl::GetMSAASampleCountForRaster(
     const scoped_refptr<DisplayItemList>& display_list) {
   return host_impl_->GetMSAASampleCountForRaster(display_list);

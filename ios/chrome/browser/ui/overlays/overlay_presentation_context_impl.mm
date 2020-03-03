@@ -32,10 +32,19 @@ OverlayPresentationContextImpl::Container::~Container() = default;
 OverlayPresentationContextImpl*
 OverlayPresentationContextImpl::Container::PresentationContextForModality(
     OverlayModality modality) {
+  // Use TestOverlayPresentationContext to create presentation contexts for
+  // OverlayModality::kTesting.
+  // TODO(crbug.com/1056837): Remove requirement once modalities are converted
+  // to no longer use enums.
+  DCHECK_NE(modality, OverlayModality::kTesting);
+
   auto& ui_delegate = ui_delegates_[modality];
   if (!ui_delegate) {
+    OverlayRequestCoordinatorFactory* factory =
+        [OverlayRequestCoordinatorFactory factoryForBrowser:browser_
+                                                   modality:modality];
     ui_delegate = base::WrapUnique(
-        new OverlayPresentationContextImpl(browser_, modality));
+        new OverlayPresentationContextImpl(browser_, modality, factory));
   }
   return ui_delegate.get();
 }
@@ -44,14 +53,13 @@ OverlayPresentationContextImpl::Container::PresentationContextForModality(
 
 OverlayPresentationContextImpl::OverlayPresentationContextImpl(
     Browser* browser,
-    OverlayModality modality)
+    OverlayModality modality,
+    OverlayRequestCoordinatorFactory* factory)
     : presenter_(OverlayPresenter::FromBrowser(browser, modality)),
       shutdown_helper_(browser, presenter_),
       coordinator_delegate_(this),
       fullscreen_disabler_(browser, modality),
-      coordinator_factory_([OverlayRequestCoordinatorFactory
-          factoryForBrowser:browser
-                   modality:modality]),
+      coordinator_factory_(factory),
       weak_factory_(this) {
   DCHECK(presenter_);
   DCHECK(coordinator_factory_);

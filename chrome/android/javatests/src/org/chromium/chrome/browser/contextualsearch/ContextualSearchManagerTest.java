@@ -3230,12 +3230,11 @@ public class ContextualSearchManagerTest {
 
     @Test
     @SmallTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"ContextualSearch"})
     // clang-format off
     @Features.EnableFeatures("ContextualSearchLongpressResolve")
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-        message = "Flaky < M, https://crbug.com/1048827")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
+        message = "Flaky < P, https://crbug.com/1048827")
     public void testLongpressExtendinSelectionExactResolve() throws TimeoutException {
         // clang-format on
         // First test regular long-press.  It should not require an exact resolve.

@@ -381,6 +381,8 @@ namespace declarativeNetRequest {
     // Time interval within which <code>MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL
     // getMatchedRules</code> calls can be made, specified in minutes.
     // Additional calls will fail immediately and set $(ref:runtime.lastError).
+    // Note: <code>getMatchedRules</code> calls associated with a user gesture
+    // are exempt from the quota.
     [value=10] static long GETMATCHEDRULES_QUOTA_INTERVAL();
 
     // The number of times <code>getMatchedRules</code> can be called within a

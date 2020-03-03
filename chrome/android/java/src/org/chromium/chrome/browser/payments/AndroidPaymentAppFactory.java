@@ -38,7 +38,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryInterface {
         PackageManagerDelegate packageManagerDelegate = new PackageManagerDelegate();
         // Note that all Android payment apps must support org.chromium.intent.action.PAY action
         // without additional data to be detected.
-        Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
+        Intent payIntent = new Intent(WebPaymentIntentHelper.ACTION_PAY);
         return !packageManagerDelegate.getActivitiesThatCanRespondToIntent(payIntent).isEmpty();
     }
 
@@ -52,7 +52,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryInterface {
         Map<String, Pair<String, Drawable>> paymentAppsInfo = new HashMap<>();
 
         PackageManagerDelegate packageManagerDelegate = new PackageManagerDelegate();
-        Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
+        Intent payIntent = new Intent(WebPaymentIntentHelper.ACTION_PAY);
         List<ResolveInfo> matches =
                 packageManagerDelegate.getActivitiesThatCanRespondToIntent(payIntent);
         if (matches.isEmpty()) return paymentAppsInfo;

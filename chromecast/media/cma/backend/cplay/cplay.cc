@@ -112,6 +112,7 @@ class WavMixerInputSource : public MixerInput::Source {
   bool active() override { return true; }
   const std::string& device_id() override { return device_id_; }
   AudioContentType content_type() override { return AudioContentType::kMedia; }
+  AudioContentType focus_type() override { return AudioContentType::kMedia; }
   int desired_read_size() override { return kReadSize; }
   int playout_channel() override { return -1; }
 

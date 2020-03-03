@@ -2686,7 +2686,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4737715515457435632">Mangyaring kumonekta sa isang network.</translation>
 <translation id="473775607612524610">I-update</translation>
 <translation id="4739639199548674512">Mga Ticket</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> at 1 Pang Page}one{<ph name="PAGE_TITLE" /> at # Pang Page}other{<ph name="PAGE_TITLE" /> at # Pang Page}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Alamin kung paano i-update ang mga application<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{I-unmute ang site}one{I-unmute ang mga site}other{I-unmute ang mga site}}</translation>
 <translation id="4746351372139058112">Mga Mensahe</translation>
@@ -5189,7 +5188,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8214489666383623925">Open File...</translation>
 <translation id="8214962590150211830">Alisin ang Taong Ito</translation>
 <translation id="8215295261562449873">I-back up ang aking mga app at file sa folder na Mga Download bago i-upgrade ang Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> at 1 pang page}one{<ph name="PAGE_TITLE" /> at # pang page}other{<ph name="PAGE_TITLE" /> at # pang page}}</translation>
 <translation id="8217399928341212914">Patuloy na i-block ang mga awtomatikong pagda-download ng maraming file</translation>
 <translation id="8218847192766059983">Magdagdag ng mga wika o baguhin ang pagkakasunud-sunod ng listahan. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Kadalasan mong bina-block ang mga notification. Para hayaan ang site na itong abisuhan ka, mag-click dito.</translation>
@@ -5401,6 +5399,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="851263357009351303">Palaging hayaan ang <ph name="HOST" /> na magpakita ng mga larawan</translation>
 <translation id="8513108775083588393">I-auto rotate</translation>
 <translation id="8514746246728959655">Sumubok ng ibang security key</translation>
+<translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
 <translation id="8521475323816527629">Mabilis na makapunta sa iyong mga app</translation>
 <translation id="8523493869875972733">Panatilihin ang Mga Pagbabago</translation>
 <translation id="8523849605371521713">Idinagdag ng patakaran</translation>
@@ -5521,6 +5520,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8673383193459449849">Problema sa server</translation>
 <translation id="8675354002693747642">Pre-shared key:</translation>
 <translation id="8676374126336081632">I-clear ang input</translation>
+<translation id="8676770494376880701">Nakakabit ang low-power charger</translation>
 <translation id="8677212948402625567">Tiklupin lahat...</translation>
 <translation id="8678648549315280022">Pamahalaan ang mga setting ng pagda-download...</translation>
 <translation id="8678933587484842200">Paano mo gustong ilunsad ang application na ito?</translation>

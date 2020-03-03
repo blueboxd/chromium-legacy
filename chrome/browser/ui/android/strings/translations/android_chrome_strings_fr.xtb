@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
 <translation id="129382876167171263">Les fichiers enregistrés par des sites Web sont répertoriés ici</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1303339473099049190">Ce mot de passe est introuvable. Vérifiez l'orthographe, puis réessayez.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> (envoyé depuis <ph name="DEVICE_NAME" />)</translation>
 <translation id="1310482092992808703">Regrouper les onglets</translation>
 <translation id="1327257854815634930">Historique de navigation ouvert</translation>
@@ -323,6 +324,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="3350687908700087792">Fermer tous les onglets de navigation privée</translation>
 <translation id="3353615205017136254">Page simplifiée fournie par Google. Appuyez sur le bouton "Charger le site d'origine" pour charger la page d'origine.</translation>
 <translation id="3367813778245106622">Connectez-vous de nouveau à votre compte pour démarrer la synchronisation.</translation>
+<translation id="3373979091428520308">Pour partager cette page avec un autre appareil, activez la synchronisation dans les paramètres Chrome de ce second appareil</translation>
 <translation id="3374023511497244703">Vos favoris, votre historique, vos mots de passe et d'autres données Chrome ne seront plus synchronisés avec votre compte Google</translation>
 <translation id="3384347053049321195">Partager l'image</translation>
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à accéder à ma position (recommandé)</translation>
@@ -672,6 +674,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5956665950594638604">Ouvrir le centre d'aide dans un nouvel onglet</translation>
 <translation id="5958275228015807058">Recherchez vos fichiers et vos pages dans la section "Téléchargements"</translation>
 <translation id="5962718611393537961">Appuyer pour réduire</translation>
+<translation id="5964805880140440652">Pour partager cette page avec un autre appareil, activez la synchronisation dans les paramètres Chrome</translation>
 <translation id="6000066717592683814">Conserver Google</translation>
 <translation id="6005538289190791541">Mot de passe suggéré</translation>
 <translation id="6036057147555329831">ICU supplémentaire</translation>

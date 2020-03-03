@@ -22,7 +22,6 @@ namespace {
 
 constexpr const char kArcVmConfigJsonPath[] = "/usr/share/arcvm/config.json";
 constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
-constexpr const char kDlcPath[] = "/run/imageloader/arcvm-dlc/package/root";
 constexpr const char kFstab[] = "fstab";
 constexpr const char kKernel[] = "vmlinux";
 constexpr const char kRootFs[] = "system.raw.img";
@@ -39,10 +38,10 @@ FileSystemStatus::FileSystemStatus()
     : is_android_debuggable_(
           IsAndroidDebuggable(base::FilePath(kArcVmConfigJsonPath))),
       is_host_rootfs_writable_(IsHostRootfsWritable()),
-      system_image_path_(SelectDlcOrBuiltin(base::FilePath(kRootFs))),
-      vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
-      guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
-      fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))),
+      system_image_path_(base::FilePath(kBuiltinPath).Append(kRootFs)),
+      vendor_image_path_(base::FilePath(kBuiltinPath).Append(kVendorImage)),
+      guest_kernel_path_(base::FilePath(kBuiltinPath).Append(kKernel)),
+      fstab_path_(base::FilePath(kBuiltinPath).Append(kFstab)),
       is_system_image_ext_format_(IsSystemImageExtFormat(system_image_path_)) {}
 
 // static
@@ -90,17 +89,6 @@ bool FileSystemStatus::IsHostRootfsWritable() {
   const bool rw = !(buf.f_flag & ST_RDONLY);
   VLOG(1) << "Host's rootfs is " << (rw ? "rw" : "ro");
   return rw;
-}
-
-// static
-base::FilePath FileSystemStatus::SelectDlcOrBuiltin(
-    const base::FilePath& file) {
-  const base::FilePath dlc_path = base::FilePath(kDlcPath).Append(file);
-  if (base::PathExists(dlc_path)) {
-    VLOG(1) << "arcvm-dlc will be used for " << file.value();
-    return dlc_path;
-  }
-  return base::FilePath(kBuiltinPath).Append(file);
 }
 
 // static

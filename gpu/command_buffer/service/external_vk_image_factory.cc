@@ -37,6 +37,7 @@ ExternalVkImageFactory::~ExternalVkImageFactory() {
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     const Mailbox& mailbox,
     viz::ResourceFormat format,
+    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,

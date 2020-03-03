@@ -22,7 +22,10 @@ LITEPAGES_REGEXP = r'https://\w+\.litepages\.googlezip\.net/.*'
 class HttpsPreviews(IntegrationTest):
 
   def EnableLitePageServerPreviewsAndInit(self, t):
-    t.EnableChromeFeature('Previews')
+    t.AddChromeArg('--force-fieldtrials=Previews/Enabled')
+    # Skip optimization guide models to trigger lite page redirect preview.
+    t.AddChromeArg('--force-fieldtrial-params='
+                   'Previews.Enabled:override_should_show_preview_check/true')
     t.EnableChromeFeature('LitePageServerPreviews')
 
     # RLH and NoScript may disable use of LitePageRedirect Previews.
@@ -34,6 +37,8 @@ class HttpsPreviews(IntegrationTest):
     t.AddChromeArg('--ignore-previews-blacklist')
     t.AddChromeArg('--force-effective-connection-type=2G')
     t.AddChromeArg('--ignore-litepage-redirect-optimization-blacklist')
+    t.AddChromeArg('--litepage_redirect_overrides_page_hints')
+
     t.SetExperiment('external_chrome_integration_test')
 
     # Wait for the server probe to complete before starting the test, otherwise

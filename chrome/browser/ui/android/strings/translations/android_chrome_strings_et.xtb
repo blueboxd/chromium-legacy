@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Ajaloo, küpsiste, saidiandmete, vahemälu kustutamine …</translation>
 <translation id="129382876167171263">Veebisaitide salvestatud failid kuvatakse siin</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
+<translation id="1303339473099049190">Seda parooli ei leita. Kontrollige õigekirja ja proovige uuesti.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – saadetud seadmest <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Vahelehtede grupeerimine</translation>
 <translation id="1327257854815634930">Navigeerimisajalugu on avatud</translation>
@@ -323,6 +324,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3350687908700087792">Kõigi inkognito vahelehtede sulgemine</translation>
 <translation id="3353615205017136254">Lihtsustatud lehte pakub Google. Algse lehe laadimiseks puudutage nuppu Laadi algne.</translation>
 <translation id="3367813778245106622">Sünkroonimise alustamiseks logige uuesti sisse</translation>
+<translation id="3373979091428520308">Selle lehe jagamiseks teise seadmega lülitage sünkroonimine teise seadme Chome'i seadetes sisse</translation>
 <translation id="3374023511497244703">Teie järjehoidjaid, ajalugu, paroole ja muid Chrome'i andmeid ei sünkroonita enam teie Google'i kontoga</translation>
 <translation id="3384347053049321195">Jaga kujutist</translation>
 <translation id="3386292677130313581">Küsi enne saitidele minu asukoha avaldamist (soovitatav)</translation>
@@ -672,6 +674,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5956665950594638604">Chrome'i abikeskuse avamine uuel vahelehel</translation>
 <translation id="5958275228015807058">Leidke oma failid ja lehed jaotisest Allalaadimised</translation>
 <translation id="5962718611393537961">Ahendamiseks puudutage</translation>
+<translation id="5964805880140440652">Selle lehe jagamiseks teise seadmega lülitage sünkroonimine Chrome'i seadetes sisse</translation>
 <translation id="6000066717592683814">Säilita Google</translation>
 <translation id="6005538289190791541">Soovitatud parool</translation>
 <translation id="6036057147555329831">Täiendav ICU</translation>

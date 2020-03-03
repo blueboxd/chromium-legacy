@@ -70,7 +70,8 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    SurfaceHandle surface_handle) {
   gfx::BufferFormat buffer_format = viz::BufferFormat(format);
   gfx::BufferUsage buffer_usage = GetBufferUsage(usage);
   VkDevice vk_device = VK_NULL_HANDLE;
@@ -83,8 +84,7 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
   ui::SurfaceFactoryOzone* surface_factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   scoped_refptr<gfx::NativePixmap> pixmap = surface_factory->CreateNativePixmap(
-      gfx::kNullAcceleratedWidget, vk_device, size, buffer_format,
-      buffer_usage);
+      surface_handle, vk_device, size, buffer_format, buffer_usage);
   if (!pixmap) {
     return nullptr;
   }

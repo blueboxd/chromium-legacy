@@ -55,24 +55,24 @@ button {
 }
 
 #options {
-  background-image: url(/images/options-19.png);
+  background-image: url(/chromevox/images/options-19.png);
   height: 19px;
   margin: 8px 0;
   width: 19px;
 }
 
 #options:hover {
-  background-image: url(/images/options-hover-19.png);
+  background-image: url(/chromevox/images/options-hover-19.png);
 }
 
 #close {
-  background-image: url(/images/close-19.png);
+  background-image: url(/chromevox/images/close-19.png);
   height: 19px;
   width: 19px;
 }
 
 #close:hover {
-  background-image: url(/images/close-hover-19.png);
+  background-image: url(/chromevox/images/close-hover-19.png);
 }
 
 #caption {
@@ -299,7 +299,7 @@ button {
 }
 
 #close_tutorial {
-  background-image: url(/images/close-19.png);
+  background-image: url(/chromevox/images/close-19.png);
   height: 19px;
   position: fixed;
   right: 0;
@@ -308,7 +308,7 @@ button {
 }
 
 #close:hover {
-  background-image: url(/images/close-hover-19.png);
+  background-image: url(/chromevox/images/close-hover-19.png);
 }
 
 #tutorial_main {

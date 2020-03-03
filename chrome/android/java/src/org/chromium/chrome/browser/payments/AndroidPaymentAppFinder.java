@@ -189,7 +189,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     /* package */ void findAndroidPaymentApps() {
         List<ResolveInfo> allInstalledPaymentApps =
                 mPackageManagerDelegate.getActivitiesThatCanRespondToIntentWithMetaData(
-                        new Intent(AndroidPaymentApp.ACTION_PAY));
+                        new Intent(WebPaymentIntentHelper.ACTION_PAY));
         if (allInstalledPaymentApps.isEmpty()) {
             onAllAppsFoundAndValidated();
             return;

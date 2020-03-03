@@ -9,11 +9,7 @@
  */
 
 select,
-select:-internal-list-box{
-  background-color: #ffffff;
-  border-color: #767676;
-}
-
+select:-internal-list-box,
 input,
 textarea {
   background-color: -internal-light-dark-color(#ffffff, #3B3B3B);

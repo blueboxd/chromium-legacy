@@ -11,6 +11,7 @@
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="1524282610922162960">Jaa Chromium-välilehti</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Ylläpitäjä vaatii Chromiumin uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön.}=1{Ylläpitäjä vaatii Chromiumin uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön. Incognito-ikkunaasi ei avata uudelleen.}other{Ylläpitäjä vaatii Chromiumin uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön. # incognito-ikkunaasi ei avata uudelleen.}}</translation>
+<translation id="1663739491876737434">Chromium ei voi tarkistaa salasanojasi. Yritä uudelleen huomenna.</translation>
 <translation id="1708666629004767631">Chromiumista on saatavilla uusi, turvallisempi versio.</translation>
 <translation id="1774152462503052664">Jätä Chromium käyntiin taustalle</translation>
 <translation id="1779356040007214683">Paransimme Chromiumin turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja jotka on voitu lisätä ilman lupaasi.</translation>
@@ -61,6 +62,7 @@
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3639635944603682591">Käyttäjän selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Uusi Chromium-päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen.}=1{Uusi Chromium-päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen. Incognito-ikkunaasi ei avata uudelleen.}other{Uusi Chromium-päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen. # incognito-ikkunaasi ei avata uudelleen.}}</translation>
+<translation id="3685209450716071127">Chromium ei voi tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Ylläpitäjä pyytää Chromiumin uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön.}=1{Ylläpitäjä pyytää Chromiumin uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön. Incognito-ikkunaasi ei avata uudelleen.}other{Ylläpitäjä pyytää Chromiumin uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön. # incognito-ikkunaasi ei avata uudelleen.}}</translation>
 <translation id="3713809861844741608">Avaa linkki uudella Chromiumin välilehdellä</translation>
 <translation id="3728336900324680424">Chromium käyttää Drivea antaakseen ehdotuksia osoitepalkissa</translation>
@@ -92,7 +94,9 @@
 <translation id="4943838377383847465">Chromium on käynnissä taustalla</translation>
 <translation id="4987820182225656817">Vierailijat voivat käyttää Chromiumia jälkiä jättämättä.</translation>
 <translation id="4994636714258228724">Lisää itsesi Chromiumiin</translation>
+<translation id="5093066630040073147">Ei tallennettuja salasanoja. Chromium voi tarkistaa salasanasi, kun tallennat ne Google-tilillesi.</translation>
 <translation id="5277894862589591112">Ota muutokset käyttöön käynnistämällä Chromium uudelleen</translation>
+<translation id="5310059007469274549">Chromium ei voi tarkistaa salasanojasi, koska niitä on liian monta</translation>
 <translation id="5358375970380395591">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Päivitetään Chromiumia (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Salli Chromium-kirjautuminen</translation>
@@ -102,12 +106,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="5480860683791598150">Chromium tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
+<translation id="5488573303232097702">Chromiumia ei päivitetty, jotain meni pieleen. Korjaa Chromen päivitysongelmat ja epäonnistuneet päivitykset.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium-päivitys on saatavilla}=1{Chromium-päivitys on saatavilla}other{Chromium-päivitys on ollut saatavilla # vuorokauden ajan}}</translation>
 <translation id="5631814766731275228">Chromiumin nimi ja kuva</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>
 <translation id="5653831366781983928">Käynnistä Chromium uudelleen nyt</translation>
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
+<translation id="5814748786105822016">Chromium ei voi tarkistaa salasanojasi</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
@@ -123,6 +129,7 @@
 <translation id="6212496753309875659">Tälle tietokoneelle on jo asennettu Chromiumin uudempi versio. Jos Chromium ei toimi, poista sen asennus ja yritä uudelleen.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium käynnistetään uudelleen nyt}=1{Chromium käynnistetään uudelleen 1 sekunnin kuluttua}other{Chromium käynnistetään uudelleen # sekunnin kuluttua}}</translation>
 <translation id="6248213926982192922">Tee Chromiumista oletusselain</translation>
+<translation id="6266342355635466082">Chromium ei voi tarkistaa päivityksiä. Tarkista internetyhteytesi.</translation>
 <translation id="6268381023930128611">Kirjaudutaanko ulos?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> voi olla vaarallinen, joten Chromium on estänyt sen.</translation>
 <translation id="6309712487085796862">Chromium käyttää kameraasi.</translation>
@@ -198,6 +205,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käynnistä Chromium uudelleen vuorokauden kuluessa}other{Käynnistä Chromium uudelleen # vuorokauden kuluessa}}</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
+<translation id="8568283329061645092">Chromium voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8619360774459241877">Käynnistetään Chromiumia…</translation>
 <translation id="8621669128220841554">Asennus epäonnistui määrittelemättömän virheen vuoksi. Lataa Chromium uudelleen.</translation>
@@ -205,6 +213,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
     Chromiumin selainasetuksiin<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Määrittää myös Chromiumin ja omnibox-hakujen aloitussivun.</translation>
 <translation id="8704119203788522458">Tämä on oma Chromiumisi</translation>
+<translation id="8774315820480073720">Järjestelmänvalvojasi ylläpitää Chromium-päivityksiä</translation>
 <translation id="8796602469536043152">Chromium tarvitsee oikeuden käyttää kameraasi ja mikrofoniasi tällä sivustolla.</translation>
 <translation id="8803635938069941624">Chromium-käyttöjärjestelmän käyttöehdot</translation>
 <translation id="8821041990367117597">Chromium ei voinut synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>

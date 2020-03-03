@@ -231,7 +231,7 @@ class WebStateList {
   // Makes the WebState at the specified index the active WebState.
   //
   // Assumes that the WebStateList is locked.
-  void ActivateWebStateAtImpl(int index);
+  void ActivateWebStateAtImpl(int index, int reason);
 
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.

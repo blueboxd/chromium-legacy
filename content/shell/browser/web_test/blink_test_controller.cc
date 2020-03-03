@@ -616,6 +616,12 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   } else {
     ApplyWebTestDefaultPreferences(prefs);
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDarkMode)) {
+    prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+  } else {
+    prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  }
 }
 
 void BlinkTestController::OpenURL(const GURL& url) {

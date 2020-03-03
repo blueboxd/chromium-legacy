@@ -1012,7 +1012,7 @@ public class ChromeFullscreenManager extends FullscreenManager
             int bottomControlsOffset, int topContentOffset, int topControlsMinHeightOffset,
             int bottomControlsMinHeightOffset) {
         if (isInVr()) {
-            rawTopContentOffsetChangedForVr(topContentOffset);
+            rawTopContentOffsetChangedForVr();
             // The dip scale of java UI and WebContents are different while in VR, leading to a
             // mismatch in size in pixels when converting from dips. Since we hide the controls in
             // VR anyways, just set the offsets to what they're supposed to be with the controls
@@ -1101,8 +1101,13 @@ public class ChromeFullscreenManager extends FullscreenManager
         return VrModuleProvider.getDelegate().bootsToVr();
     }
 
-    protected void rawTopContentOffsetChangedForVr(int topContentOffset) {
-        VrModuleProvider.getDelegate().rawTopContentOffsetChanged(topContentOffset);
+    protected void rawTopContentOffsetChangedForVr() {
+        // TODO(https://crbug.com/1055619): VR wants to wait until the controls are fully hidden, as
+        // otherwise there may be a brief race where the omnibox is rendered over the webcontents.
+        // However, something seems to be happening in the case where the browser is launched on the
+        // NTP, such that the top content offset is never set to 0. If we can figure out what that
+        // is, we should be passing the TopContentOffset into this method again.
+        VrModuleProvider.getDelegate().rawTopContentOffsetChanged(0);
     }
 
     @Override

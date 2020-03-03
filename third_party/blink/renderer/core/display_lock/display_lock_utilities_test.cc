@@ -14,17 +14,17 @@
 namespace blink {
 
 class DisplayLockUtilitiesTest : public RenderingTest,
-                                 private ScopedCSSRenderSubtreeForTest {
+                                 private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
  public:
   DisplayLockUtilitiesTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedCSSRenderSubtreeForTest(true) {}
+        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
 
   void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("render-subtree: invisible");
-    if (!activatable)
-      value.Append(" skip-activation");
+    value.Append("subtree-visibility: hidden");
+    if (activatable)
+      value.Append("-matchable");
     element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());
     UpdateAllLifecyclePhasesForTest();
   }

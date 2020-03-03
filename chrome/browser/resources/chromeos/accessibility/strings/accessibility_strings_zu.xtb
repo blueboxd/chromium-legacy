@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Okulandelayo</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Asikho isihloko esilandelayo seleveli engu-4</translation>
+<translation id="1212770441379271564">Izinqamuleli ezimbalwa ezilandelayo akuyona imiyalo ye-ChromeVox, kodwa zisengasebenziseka kakhulu ukuze kutholwe okuningi kusukela ku-Chrome.
+    Ukuze kuzulazulwe kuyiwe phambili ngezinto zesenzo ezifana nezinkinobho nezixhumanisi, cindezela ukhiye othi Ithebhu. Ukuze uzulazule uye emuva, cindezela okuthi Shift+Tab.
+    Ukuze ufake ibhokisi lekheli lesiphequluli se-Chrome, eliphinda libizwe nge-omnibox, cindezela ku-Control + L.
+    Ukuze uvule uphinde uye kuthebhu entsha ngokuzenzakalelayo, cindezela ku-Control+T. I-cursor yakho izoba ku-omnibox.
+    Ukuze uvale ithebhu, cindezela ku-Control+W.
+    Ukuze uye phambili phakathi kwamathebhu avuliwe, sebenzisa i-Control+Tab.
+    Ukuze uvule imenyu yesiphequluli se-Chrome, cindezela ku-Alt+F.</translation>
 <translation id="1213216066620407844">I-ChromeVox - Inikeza izwi ku-Chrome</translation>
 <translation id="1225969361094801578">Okumpunga kakhulu kwe-slate</translation>
 <translation id="1229276918471378188">Ukweqa kwangaphambilini</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">isikhethi sombala</translation>
 <translation id="4221012616705981690">Alikho uhlu oludlule</translation>
 <translation id="4221071177874897997">Bonisa ukugqama:</translation>
+<translation id="4225355998815256469">Okuvela Ezilawulini</translation>
 <translation id="4229646983878045487">idethi isikhathi</translation>
 <translation id="4230834257931120629">I-Light Slate Grey</translation>
 <translation id="4231102694147661229">Nika amandla izinketho zonjiniyela</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Umusho</translation>
 <translation id="4623097797855662355">I-Colophon</translation>
 <translation id="463135993322337640">Cindezela i-ChromeVox o, n ukuze uthole okusha</translation>
+<translation id="4646606380313237501">{"ar": "Arabic",
+    "as": "Assamese",
+    "aw": "Awadhi",
+    "be": "Bengali",
+    "bg": "Bulgarian",
+    "bh": "Bihari",
+    "bo": "Tibetan",
+    "br": "Braj",
+    "ca": "Catalan",
+    "ckb": "Sorani",
+    "cs": "Czech",
+    "cy": "Welsh",
+    "da": "Danish",
+    "de": "German",
+    "de_CH": "German (Switzerland)",
+    "de_DE": "German (Germany)",
+    "dra": "Dravidian",
+    "el": "Greek",
+    "en": "English",
+    "en_CA": "English (Canada)",
+    "en_GB": "English (United Kingdom)",
+    "en_US": "English (United States)",
+    "eo": "Esperanto",
+    "es": "Spanish",
+    "et": "Estonian",
+    "fa": "Persian",
+    "fr": "French",
+    "fr_CA": "French (Canada)",
+    "fr_FR": "French (France)",
+    "fi": "Finnish",
+    "ga": "Irish",
+    "gd": "Gaelic",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Hebrew",
+    "hi": "Hindi",
+    "hr": "Croatian",
+    "hu": "Hungarian",
+    "hy": "Armenian",
+    "is": "Icelandic",
+    "it": "Italian",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Korean",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmiri",
+    "lt": "Lithuanian",
+    "lv": "Latvian",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Maltese",
+    "mwr": "Marwari",
+    "mn": "Mongolian",
+    "mun": "Munda",
+    "nb": "Norwegian Bokmål",
+    "ne": "Nepali",
+    "nl": "Dutch",
+    "no": "Norwegian",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Polish",
+    "pt": "Portuguese",
+    "pu": "Punjabi",
+    "ro": "Romanian",
+    "ru": "Russian",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Sinhala",
+    "sk": "Slovak",
+    "sl": "Slovenian",
+    "sr": "Serbian",
+    "sv": "Swedish",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Turkish",
+    "tsn": "Afrikaans",
+    "uk": "Ukrainian",
+    "ur": "Urdu",
+    "vi": "Vietnamese",
+    "zh": "Chinese",
+    "zh_TW": "Chinese (Traditional Han)"}</translation>
 <translation id="4647836961514597010">Isikhethi sombala</translation>
 <translation id="4660783501463101648">Okwakudala kususiwe. Ukushintsha kwekhibhodi emuva ku-ChromeVox yakudala kususiwe.</translation>
 <translation id="4661075872484491155">isihlahla</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Kunikwe amandla imodi enamathelayo</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ukhefana}one{# okhefana}other{# okhefana}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, ibhokisi lombhalo</translation>
+<translation id="532485153932049746">Ukufomethwa kombhalo
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, isixhumanisi</translation>
 <translation id="5331522683003474486">Lawula idivayisi ngokushintsha okungu-1 noma okungu-2 nje.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">I-Braille</translation>
 <translation id="5402791055281059602">Isexwayiso se-modal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{ikhefanangqi}one{# amakhefanangqi}other{# amakhefanangqi}}</translation>
+<translation id="5420259671171615858">Sesha amamenyu</translation>
 <translation id="5435274640623994081">Nika amandla ukungena ngemvume kwe-earcon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ingaphansi kwe}one{# ingaphansi kwezimpawu}other{# ingaphansi kwezimpawu}}</translation>
 <translation id="5444587279251314700">(kuyasebenza)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Kutholwe iphutha lokupeleta</translation>
 <translation id="7408482676469142474">i-tbl</translation>
 <translation id="7425395583360211003">buyisela</translation>
+<translation id="7429415133937917139">Ilingisa okukhishwayo kwesibonisi se-braille esivuselelekayo
+           kuphaneli ye-ChromeVox ngaphezulu kwesikrini</translation>
 <translation id="7434509671034404296">Unjiniyela</translation>
 <translation id="743783356331413498">Isibonelo</translation>
 <translation id="7439060726180460871">Uhla lwemibhalo</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Inkinobho yerediyo yangaphambilini</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Alikho ibhokisi lokuhlangene elilandelayo</translation>
+<translation id="772146615414628379">Halala! Usufunde ukubaluleka kokusebenzisa i-ChromeVox ngempumelelo. Khumbula ukuthi ungavula imenyu yomyalo ye-ChromeVox nganoma yisiphi isikhahti ngokucindezela Sesha+Isikhathi. Ukuze ufunde nakabanzi nge-ChromeVox ne-Chrome OS, vakashela lama athikili alandelayo.
+    Uma usuqedile ngalesi sifundo, sebenzisa i-ChromeVox ukuzulela kwinkinobho Yokuvala bese uyayichofoza.</translation>
 <translation id="7724603315864178912">Sika</translation>
 <translation id="7731785449856576010">Ayikho iwijethi yemidiya elandelayo</translation>
 <translation id="773906353055481349">Cindezela okuthi Sesha+Ctrl+Alt nemicibisholo ukuze uzulazule ngeseli</translation>

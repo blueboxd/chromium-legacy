@@ -581,9 +581,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   ScopedCSSColorSchemeForTest enable_color_scheme(true);
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(*(web_view->GetPage()),
-                                              PreferredColorScheme::kLight);
+  ColorSchemeHelper color_scheme_helper(*(web_view->GetPage()));
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -595,8 +594,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrame()->View();
   EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
 
-  color_scheme_helper.SetPreferredColorScheme(*(web_view->GetPage()),
-                                              PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
 
@@ -606,8 +604,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
 
-  color_scheme_helper.SetPreferredColorScheme(*(web_view->GetPage()),
-                                              PreferredColorScheme::kLight);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
 }

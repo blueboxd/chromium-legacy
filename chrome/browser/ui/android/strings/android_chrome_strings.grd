@@ -1015,10 +1015,10 @@ Your Google account may have other forms of browsing history like searches and a
         Block sites from playing protected content
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AR_ASK" desc="Summary text explaining that sites need to ask for permission before using AR and that it is the recommended setting.">
-        Ask before allowing sites to track your camera position or map your room (recommended)
+        Ask before allowing sites to create a 3D map of your surroundings or track camera position (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AR_BLOCKED" desc="Summary text explaining that sites are blocked from using AR.">
-        Block sites from tracking your camera position or mapping your room
+        Block sites from creating a 3D map of your surroundings or tracking camera position
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_ASK" desc="Summary text explaining that sites need to ask for permission before using NFC and that it is the recommended setting.">
         Ask before allowing sites to send and receive info when you tap NFC devices (recommended)

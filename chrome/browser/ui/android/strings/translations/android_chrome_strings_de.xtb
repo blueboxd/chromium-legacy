@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
 <translation id="129382876167171263">Hier werden von Websites gespeicherte Dateien angezeigt</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
+<translation id="1303339473099049190">Dieses Passwort wurde nicht gefunden. Überprüfen Sie die Schreibweise und versuchen Sie es noch einmal.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" />: gesendet von <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Tabs gruppieren</translation>
 <translation id="1327257854815634930">Der Navigationsverlauf ist geöffnet</translation>
@@ -323,6 +324,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3350687908700087792">Alle Inkognito-Tabs schließen</translation>
 <translation id="3353615205017136254">Lite-Modus-Seite von Google bereitgestellt. Zum Laden der Originalseite auf die Schaltfläche "Original laden" tippen.</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
+<translation id="3373979091428520308">Wenn Sie diese Seite mit einem anderen Gerät teilen möchten, aktivieren Sie auf dem anderen Gerät in den Chrome-Einstellungen die Synchronisierung</translation>
 <translation id="3374023511497244703">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Chrome-Daten werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
 <translation id="3386292677130313581">Nachfragen, bevor Websites mein Standort angezeigt wird (empfohlen)</translation>
@@ -672,6 +674,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
 <translation id="5958275228015807058">Ihre Dateien und Seiten finden Sie unter "Downloads"</translation>
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
+<translation id="5964805880140440652">Wenn Sie diese Seite mit einem anderen Gerät teilen möchten, aktivieren Sie in den Chrome-Einstellungen die Synchronisierung</translation>
 <translation id="6000066717592683814">Google beibehalten</translation>
 <translation id="6005538289190791541">Vorgeschlagenes Passwort</translation>
 <translation id="6036057147555329831">Extra ICU</translation>

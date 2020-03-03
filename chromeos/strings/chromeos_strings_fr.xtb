@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1195447618553298278">Erreur inconnue</translation>
+<translation id="1468664791493211953">Offres</translation>
 <translation id="1482734542997480527">Il est possible que <ph name="ENROLLMENT_DOMAIN" />, qui gère cet appareil, puisse surveiller votre activité.</translation>
 <translation id="150962533380566081">Clé PUK incorrecte.</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
@@ -42,6 +43,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7690294790491645610">Confirmer le nouveau mot de passe</translation>
 <translation id="808894953321890993">Modifier le mot de passe</translation>
+<translation id="8208861521865154048">Avantages</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
 <translation id="910415269708673980">Actualiser le ticket associé à <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Déverrouiller</translation>

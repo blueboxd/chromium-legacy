@@ -586,9 +586,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // scheme is used to opt-out of forced darkening.
   Member<const CSSValue> meta_color_scheme_;
 
-  // The preferred color scheme is set in WebThemeEngine, but may be overridden
-  // by the ForceDarkMode setting where the preferred_color_scheme_ will be set
-  // to kNoPreference to avoid dark styling to be applied before auto darkening.
+  // The preferred color scheme is set in settings, but may be overridden by the
+  // ForceDarkMode setting where the preferred_color_scheme_ will be set to
+  // kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
 

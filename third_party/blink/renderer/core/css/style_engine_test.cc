@@ -1493,9 +1493,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -1512,8 +1511,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1522,9 +1520,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorSchemeForcedDarkMode) {
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -1589,7 +1586,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  ColorSchemeHelper color_scheme_helper;
+  ColorSchemeHelper color_scheme_helper(GetDocument());
   color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
@@ -1624,18 +1621,16 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
   )HTML");
 
   // ForcedColors = kNone, PreferredColorScheme = kLight
-  ColorSchemeHelper color_scheme_helper;
+  ColorSchemeHelper color_scheme_helper(GetDocument());
   color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kNone);
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 0, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
   // ForcedColors = kNone, PreferredColorScheme = kDark
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1650,15 +1645,14 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
 
   // ForcedColors = kActive, PreferredColorScheme = kNoPreference
   color_scheme_helper.SetPreferredColorScheme(
-      GetDocument(), PreferredColorScheme::kNoPreference);
+      PreferredColorScheme::kNoPreference);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 255, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
   // ForcedColors = kActive, PreferredColorScheme = kLight
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 0, 255),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1666,11 +1660,10 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   EXPECT_EQ(PreferredColorScheme::kLight,
-            Platform::Current()->ThemeEngine()->PreferredColorScheme());
+            GetDocument().GetSettings()->GetPreferredColorScheme());
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -2130,9 +2123,8 @@ TEST_F(StyleEngineTest, NoCrashWhenMarkingPartiallyRemovedSubtree) {
 
 TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   ScopedCSSColorSchemeForTest enable_color_scheme(true);
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color::kWhite, GetDocument().View()->BaseBackgroundColor());
@@ -2148,9 +2140,8 @@ TEST_F(StyleEngineTest, ColorSchemeOverride) {
   ScopedCSSColorSchemeForTest enable_color_scheme(true);
   ScopedCSSColorSchemeUARenderingForTest enable_color_scheme_ua(true);
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
 
   GetDocument().documentElement()->SetInlineStyleProperty(
       CSSPropertyID::kColorScheme, "light dark");
@@ -2524,9 +2515,8 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
 
 TEST_F(StyleEngineTest, InitialColorChange) {
   // Set color scheme to light.
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kLight);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -2552,8 +2542,7 @@ TEST_F(StyleEngineTest, InitialColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
 
   document_element_style = GetDocument().documentElement()->GetComputedStyle();

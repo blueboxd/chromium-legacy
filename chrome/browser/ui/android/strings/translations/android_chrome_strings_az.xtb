@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Tarixçə, kuki, sayt datası və keşi təmizləyin…</translation>
 <translation id="129382876167171263">Veb saytların yadda saxladığı fayllar burada görünür</translation>
 <translation id="129553762522093515">Son qapadılan</translation>
+<translation id="1303339473099049190">Həmin parolu tapmaq olmur. Yazılışı yoxlayıb, yenidən cəhd edin.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> cihazından göndərilib</translation>
 <translation id="1310482092992808703">Tabları qruplaşdırın</translation>
 <translation id="1327257854815634930">Naviqasiya tarixçəsi açıqdır</translation>
@@ -323,6 +324,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3350687908700087792">Bütün inkoqnito vərəqələrini qapadın</translation>
 <translation id="3353615205017136254">Google'un təqdim etdiyi lite səhifəsi. Orijinal səhifəni yükləmək üçün orijinalı yükləyin düyməsinə klikləyin.</translation>
 <translation id="3367813778245106622">Sinxronizasiyanı başlamaq üçün yenidən daxil olun</translation>
+<translation id="3373979091428520308">Bu səhifəni başqa bir cihaz ilə paylaşmaq üçün digər cihazın Chrome ayarlarında sinxronlaşdırmanı yandırın</translation>
 <translation id="3374023511497244703">Əlfəcin, tarixçə, parol və digər Chrome datası artıq Google Hesabınıza sinxronizasiya edilməyəcək</translation>
 <translation id="3384347053049321195">Şəkli paylaşın</translation>
 <translation id="3386292677130313581">Saytlara məkanınızı bilmək icazəsi verməmişdən əvvəl soruşun (tövsiyə olunur)</translation>
@@ -672,6 +674,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5956665950594638604">Chrome Yardım Mərkəzini yeni paneldə açın</translation>
 <translation id="5958275228015807058">Fayl və səhifələri Endirilənlər bölməsində tapın</translation>
 <translation id="5962718611393537961">Yığcamlaşdırmaq üçün klikləyin</translation>
+<translation id="5964805880140440652">Bu səhifəni başqa bir cihaz ilə paylaşmaq üçün Chrome ayarlarında sinxronlaşdırmanı yandırın</translation>
 <translation id="6000066717592683814">Google'u saxlayın</translation>
 <translation id="6005538289190791541">Təklif edilən parol</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>

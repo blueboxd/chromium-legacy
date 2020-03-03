@@ -75,19 +75,8 @@ class StubWebThemeEngine : public WebThemeEngine {
     return painted_color_scheme_[part];
   }
 
-  blink::PreferredColorScheme PreferredColorScheme() const override {
-    return preferred_color_scheme_;
-  }
-
-  void SetPreferredColorScheme(
-      const blink::PreferredColorScheme preferred_color_scheme) override {
-    preferred_color_scheme_ = preferred_color_scheme;
-  }
-
  private:
   std::array<WebColorScheme, kPartProgressBar + 1> painted_color_scheme_;
-  blink::PreferredColorScheme preferred_color_scheme_ =
-      blink::PreferredColorScheme::kNoPreference;
 };
 
 constexpr int StubWebThemeEngine::kMinimumHorizontalLength;
@@ -2832,9 +2821,8 @@ TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
     </div>
   )HTML");
 
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
 
   Compositor().BeginFrame();
 

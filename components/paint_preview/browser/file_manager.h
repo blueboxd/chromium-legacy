@@ -5,18 +5,13 @@
 #ifndef COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 #define COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 
-#include <string>
-
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/paint_preview/browser/directory_key.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "url/gurl.h"
 
 namespace paint_preview {
-
-struct DirectoryKey {
-  const std::string ascii_dirname;
-};
 
 // Manages paint preview files associated with a root directory typically the
 // root directory is <profile_dir>/paint_previews/<feature>.

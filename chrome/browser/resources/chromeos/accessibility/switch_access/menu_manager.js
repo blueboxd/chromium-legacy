@@ -48,22 +48,10 @@ class MenuManager {
     this.inMenu_ = false;
 
     /**
-     * Keeps track of when there's a selection in the current node.
-     * @private {boolean}
-     */
-    this.selectionExists_ = false;
-
-    /**
      * A function to be called when the menu exits.
      * @private {?function()}
      */
     this.onExitCallback_ = null;
-
-    /**
-     * Keeps track of when the clipboard is empty.
-     * @private {boolean}
-     */
-    this.clipboardHasData_ = false;
 
     /**
      * A reference to the Switch Access Menu Panel class.
@@ -98,11 +86,6 @@ class MenuManager {
      * @private {!Array<SAConstants.MenuId>}
      */
     this.menuStack_ = [];
-
-    if (SwitchAccess.instance.improvedTextInputEnabled()) {
-      chrome.clipboard.onClipboardDataChanged.addListener(
-          this.updateClipboardHasData_.bind(this));
-    }
 
     if (window.menuPanel) {
       this.connectMenuPanel(window.menuPanel);
@@ -186,6 +169,14 @@ class MenuManager {
     return true;
   }
 
+  /** Reloads the menu, if it has changed. */
+  static reloadMenuIfNeeded() {
+    const manager = MenuManager.instance;
+    if (manager.menuOriginNode_) {
+      manager.openMenu_(manager.menuOriginNode_, SAConstants.MenuId.MAIN);
+    }
+  }
+
   /**
    * Perform the action indicated by the current button.
    * @return {boolean} Whether this function had any effect.
@@ -235,11 +226,9 @@ class MenuManager {
    */
   closeCurrentMenu_() {
     this.clearFocusRing_();
-    if (this.node_) {
-      this.node_ = null;
-    }
     this.menuPanel_.clear();
     this.actions_ = [];
+    this.node_ = null;
     this.menuNode_ = null;
   }
 
@@ -304,36 +293,16 @@ class MenuManager {
   getMainMenuActionsForNode_(node) {
     const actions = node.actions;
 
-    // Add text editing and navigation options.
-    // TODO(anastasi): Move these actions into the node.
-    const autoNode = node.automationNode;
-    if (autoNode && SwitchAccess.instance.improvedTextInputEnabled() &&
-        SwitchAccessPredicate.isTextInput(autoNode) &&
-        autoNode.state[StateType.FOCUSED]) {
-      actions.push(SAConstants.MenuAction.MOVE_CURSOR);
-      actions.push(SAConstants.MenuAction.SELECT_START);
-      if (TextNavigationManager.currentlySelecting()) {
-        actions.push(SAConstants.MenuAction.SELECT_END);
-      }
-      if (this.selectionExists_) {
-        actions.push(SAConstants.MenuAction.CUT);
-        actions.push(SAConstants.MenuAction.COPY);
-      }
-      if (this.clipboardHasData_) {
-        actions.push(SAConstants.MenuAction.PASTE);
-      }
-    }
-
     // If there is at most one available action, perform it by default.
     if (actions.length <= 1) {
       return null;
     }
 
-
     // Add global actions.
     actions.push(SAConstants.MenuAction.SETTINGS);
     return actions;
   }
+
 
   /**
    * Get the actions applicable for |navNode| from the menu with given
@@ -341,7 +310,7 @@ class MenuManager {
    * @param {!SAChildNode} navNode The currently selected node, for which the
    *     menu is being opened.
    * @param {SAConstants.MenuId} menuId
-   * @return {Array<SAConstants.MenuAction>}
+   * @return {Array<!SAConstants.MenuAction>}
    * @private
    */
   getMenuActions_(navNode, menuId) {
@@ -357,7 +326,7 @@ class MenuManager {
 
   /**
    * Get the actions in the text navigation submenu.
-   * @return {!Array<SAConstants.MenuAction>}
+   * @return {Array<!SAConstants.MenuAction>}
    * @private
    */
   getTextNavigationActions_() {
@@ -508,14 +477,6 @@ class MenuManager {
    */
   performAction(action) {
     SwitchAccessMetrics.recordMenuAction(action);
-    // Some actions involve navigation events. Handle those explicitly.
-    if (action === SAConstants.MenuAction.SELECT &&
-        this.menuOriginNode_.isGroup()) {
-      NavigationManager.enterGroup();
-      this.exit_();
-      return;
-    }
-
     // Handle global actions.
     if (action === SAConstants.MenuAction.SETTINGS) {
       chrome.accessibilityPrivate.openSettingsSubpage(
@@ -595,8 +556,8 @@ class MenuManager {
    */
   reloadMenuForSelectionChange_() {
     const newSelectionState = this.nodeHasSelection_();
-    if (this.selectionExists_ != newSelectionState) {
-      this.selectionExists_ = newSelectionState;
+    if (TextNavigationManager.selectionExists != newSelectionState) {
+      TextNavigationManager.selectionExists = newSelectionState;
       if (this.menuOriginNode_ && !TextNavigationManager.currentlySelecting()) {
         const currentMenuId = this.menuPanel_.currentMenuId();
         if (currentMenuId) {
@@ -625,19 +586,6 @@ class MenuManager {
       this.openMenu_(this.menuOriginNode_, parentMenuId);
     } else {
       this.exit_();
-    }
-  }
-
-  /**
-   * TODO(rosalindag): Add functionality to catch when clipboardHasData_ needs
-   * to be set to false.
-   * Set the clipboardHasData variable to true and reload the menu.
-   * @private
-   */
-  updateClipboardHasData_() {
-    this.clipboardHasData_ = true;
-    if (this.menuOriginNode_) {
-      this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
     }
   }
 

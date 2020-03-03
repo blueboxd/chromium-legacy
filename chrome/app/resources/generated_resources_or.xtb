@@ -2680,7 +2680,6 @@
 <translation id="4737715515457435632">ଦୟାକରି ଏକ ନେଟ୍‍ୱର୍କକୁ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="473775607612524610">ଅପ୍‍‍ଡେଟ୍</translation>
 <translation id="4739639199548674512">ଟିକେଟ୍‌ଗୁଡ଼ିକ</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> ଏବଂ ଅଧିକ 1ଟି ପୃଷ୍ଠା}other{<ph name="PAGE_TITLE" /> ଏବଂ ଅଧିକ #ଟି ପୃଷ୍ଠା}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" /> ଏହା ଜାଣନ୍ତୁ ଯେ କିପରି ଆପ୍ଲିକେସନ୍‌ଗୁଡ଼ିକୁ ଅପ୍‌ଡେଟ୍ କରିବେ<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{ସାଇଟ୍ ଅନ୍‌ମ୍ୟୁଟ୍ କରନ୍ତୁ}other{ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନ୍‌ମ୍ୟୁଟ୍ କରନ୍ତୁ}}</translation>
 <translation id="4746351372139058112">ମେସେଜ୍‌ଗୁଡ଼ିକ</translation>
@@ -5182,7 +5181,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8214489666383623925">ଫାଇଲ୍ ଖୋଲନ୍ତୁ...</translation>
 <translation id="8214962590150211830">ଏହି ବ୍ୟକ୍ତିଙ୍କୁ କାଢ଼ନ୍ତୁ</translation>
 <translation id="8215295261562449873">Linux ଅପଗ୍ରେଡ୍ କରିବା ପୂର୍ବରୁ ଡାଉନ୍‍‍ଲୋଡ୍ ଫୋଲ୍ଡର୍‍‍ରେ ମୋର ଆପ୍ ଓ ଫାଇଲ୍‍ଗୁଡ଼ିକର ବ୍ୟାକ୍ ଅପ୍ ନିଅନ୍ତୁ।</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> ଏବଂ ଅଧିକ 1ଟି ପୃଷ୍ଠା}other{<ph name="PAGE_TITLE" /> ଏବଂ ଅଧିକ #ଟି ପୃଷ୍ଠା}}</translation>
 <translation id="8217399928341212914">ଏକାଧିକ ଫାଇଲ୍‍କୁ ସ୍ୱଚାଳିତ ଡାଉନ୍‌ଲୋଡ୍‌ର ଅବରୋଧ କରିବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="8218847192766059983">ଭାଷାଗୁଡ଼ିକୁ ଯୋଗ କରନ୍ତୁ କିମ୍ବା ତାଲିକାକୁ ପୁନଃକ୍ରମରେ ରଖନ୍ତୁ। <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">ଆପଣ ସାଧାରଣତଃ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତି। ଏହି ସାଇଟ୍‌କୁ ଆପଣଙ୍କୁ ସୂଚିତ କରିବା ସୁବିଧା ଦେବା ପାଇଁ, ଏଠାରେ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
@@ -5393,6 +5391,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="851263357009351303">ଛବି ଦେଖାଇବା ପାଇଁ ସର୍ବଦା <ph name="HOST" />କୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="8513108775083588393">ସ୍ୱତଃ-ଘୂର୍ଣ୍ଣନ</translation>
 <translation id="8514746246728959655">ଗୋଟିଏ ଅଲଗା ସୁରକ୍ଷା କୀ ବ୍ୟବହାର କରି ଦେଖନ୍ତୁ</translation>
+<translation id="8517041960877371778">ଯେତେବେଳେ ଏହା ଚାଲୁ ଅଛି, ସେତେବେଳେ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଚାର୍ଜ ହୋ‍ଇନପାରେ।</translation>
 <translation id="8521475323816527629">ଆପଣଙ୍କର ଆପ୍ସକୁ ଶୀଘ୍ର ଯାଆନ୍ତୁ</translation>
 <translation id="8523493869875972733">ପରିବର୍ତ୍ତନ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="8523849605371521713">ନୀତି ଦ୍ୱାରା ଯୋଗ କରାଯାଇଛି</translation>
@@ -5513,6 +5512,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8673383193459449849">ସର୍ଭର୍‌ରେ ସମସ୍ୟା।</translation>
 <translation id="8675354002693747642">ପୂର୍ବରୁ-ସେୟାର୍ କରାଯାଇଥିବା କୀ</translation>
 <translation id="8676374126336081632">ଇନ୍‌ପୁଟ୍ ଖାଲି କରନ୍ତୁ</translation>
+<translation id="8676770494376880701">ନିମ୍ନ-ଶକ୍ତିର ଚାର୍ଜର୍ ସଂଯୋଗ କରାଯାଇଛି</translation>
 <translation id="8677212948402625567">ସମସ୍ତ ସଙ୍କୁଚିତ କରନ୍ତୁ...</translation>
 <translation id="8678648549315280022">ଡାଉନ୍‌ଲୋଡ୍‌ ସେଟିଂସ୍‌ ପରିଚାଳନା କରନ୍ତୁ...</translation>
 <translation id="8678933587484842200">ଆପଣ ଏହି ଆପ୍ଲିକେସନ୍‌କୁ କିପରି ଲଞ୍ଚ କରିବାକୁ ଚାହିଁବେ?</translation>

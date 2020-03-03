@@ -850,6 +850,41 @@ TEST_F(StreamMixerTest, OneStreamIsScaledDownProperly) {
   mixer_.reset();
 }
 
+TEST_F(StreamMixerTest, FocusType) {
+  MockMixerSource input(kTestSamplesPerSecond);
+  input.set_content_type(AudioContentType::kMedia);
+  input.set_focus_type(AudioContentType::kCommunication);
+
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  mixer_->SetVolume(AudioContentType::kMedia, 0.75);  // This volume is used.
+  mixer_->SetOutputLimit(AudioContentType::kMedia, 0.5);  // Limit is not used.
+  WaitForMixer();
+
+  // Populate the stream with data.
+  const int kNumFrames = 32;
+  ASSERT_EQ(sizeof(kTestData[0]), kNumChannels * kNumFrames * kBytesPerSample);
+  input.SetData(GetTestData(0));
+
+  mock_output_->ClearData();
+
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
+
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(&input);
+  expected->Scale(0.75);
+  CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
+}
+
 TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperly) {
   // Create a group of input streams.
   std::vector<std::unique_ptr<MockMixerSource>> inputs;

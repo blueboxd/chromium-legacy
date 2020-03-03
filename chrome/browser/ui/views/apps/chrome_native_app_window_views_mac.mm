@@ -8,6 +8,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/views/apps/app_window_native_widget_mac.h"
 #import "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -165,9 +166,15 @@ void ChromeNativeAppWindowViewsMac::Restore() {
 }
 
 void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
-  apps::ExtensionAppShimHandler::Get()->RequestUserAttentionForWindow(
-      app_window(), flash ? chrome::mojom::AppShimAttentionType::kCritical
-                          : chrome::mojom::AppShimAttentionType::kCancel);
+  Profile* profile =
+      Profile::FromBrowserContext(app_window()->browser_context());
+  AppShimHost* shim_host = apps::ExtensionAppShimHandler::Get()->FindHost(
+      profile, app_window()->extension_id());
+  if (!shim_host)
+    return;
+  shim_host->GetAppShim()->SetUserAttention(
+      flash ? chrome::mojom::AppShimAttentionType::kCritical
+            : chrome::mojom::AppShimAttentionType::kCancel);
 }
 
 void ChromeNativeAppWindowViewsMac::OnWidgetCreated(views::Widget* widget) {

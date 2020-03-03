@@ -923,11 +923,9 @@
 "fieldtext"
 "canvas"
 "canvastext"
-"invisible"
-"skip-activation"
-"skip-viewport-activation"
 "jis-b5"
 "jis-b4"
+"hidden-matchable"
 
 # at-rules
 "@charset"
@@ -1280,7 +1278,6 @@
 "r"
 "range"
 "region-fragment"
-"render-subtree"
 "rest"
 "rest-after"
 "rest-before"
@@ -1360,6 +1357,7 @@
 "stroke-repeat"
 "stroke-size"
 "stroke-width"
+"subtree-visibility"
 "suffix"
 "symbols"
 "system"

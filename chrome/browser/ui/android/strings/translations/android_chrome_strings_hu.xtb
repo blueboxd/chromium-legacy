@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
 <translation id="129382876167171263">A webhelyek által elmentett fájlok itt jelennek meg</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="1303339473099049190">Ez a jelszó nem található. Ellenőrizze, hogy jól írta-e be.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – A(z) <ph name="DEVICE_NAME" /> eszközről</translation>
 <translation id="1310482092992808703">Lapok csoportosítása</translation>
+<translation id="1311657260431405215">Ez a QR-kód nem URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Megnyitotta a navigációs előzményeket</translation>
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
@@ -323,6 +325,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="3350687908700087792">Az összes inkognitólap bezárása</translation>
 <translation id="3353615205017136254">Egyszerű oldal a Google-tól. Az Eredeti betöltése gombra koppintva betöltheti az eredeti oldalt.</translation>
 <translation id="3367813778245106622">A szinkronizálás megkezdéséhez jelentkezzen be újra</translation>
+<translation id="3373979091428520308">Úgy oszthatja meg az oldalt más eszközzel, ha azon az eszközön bekapcsolja a szinkronizálást a Chrome beállításai között</translation>
 <translation id="3374023511497244703">Könyvjelzői, előzményei, jelszavai és más Chrome-adatai többé nem lesznek szinkronizálva a Google-fiókjával.</translation>
 <translation id="3384347053049321195">Kép megosztása</translation>
 <translation id="3386292677130313581">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a tartózkodási helyhez való hozzáférést (ajánlott)</translation>
@@ -672,6 +675,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5956665950594638604">A Chrome súgójának megnyitása új lapon</translation>
 <translation id="5958275228015807058">A fájlokat és oldalakat a Letöltések között találja meg</translation>
 <translation id="5962718611393537961">Koppintson az összecsukáshoz</translation>
+<translation id="5964805880140440652">Úgy oszthatja meg az oldalt más eszközzel, hogy bekapcsolja rajta a szinkronizálást a Chrome beállításai között</translation>
 <translation id="6000066717592683814">A Google megtartása</translation>
 <translation id="6005538289190791541">Javasolt jelszó</translation>
 <translation id="6036057147555329831">További ICU</translation>

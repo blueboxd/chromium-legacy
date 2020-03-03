@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
@@ -40,6 +40,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.URI;
@@ -402,7 +403,9 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     @VisibleForTesting
     @ConnectionSecurityLevel
     int getSecurityLevelFromStateModel(WebContents webContents) {
-        return SecurityStateModel.getSecurityLevelForWebContents(webContents);
+        int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
+                webContents, ChromeSecurityStateModelDelegate.getInstance());
+        return securityLevel;
     }
 
     @VisibleForTesting

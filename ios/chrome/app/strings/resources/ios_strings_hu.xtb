@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
 <translation id="2179182049312275900">A szinkronizálás bármikor bekapcsolható a beállításokban.</translation>
 <translation id="2198757192731523470">A Google felhasználhatja az Ön előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására.</translation>
+<translation id="2218443599109088993">Kicsinyítés</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
 <translation id="2239626343334228536">Böngészési adatok törlése…</translation>
 <translation id="2257567812274161158">A szinkronizálás nem működik.</translation>
@@ -417,6 +418,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
 <translation id="6476800141292307438">Az oldal lefordítása <ph name="LANGUAGE" /> nyelvre. A képernyő alján láthatók a rendelkezésre álló lehetőségek.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
+<translation id="6561262006871132942">Nagyítás</translation>
 <translation id="6610002944194042868">Fordítási beállítások</translation>
 <translation id="6628106477656132239">Érvénytelen lejárati dátum</translation>
 <translation id="6638511529934826365">Szöveg felnagyítása…</translation>

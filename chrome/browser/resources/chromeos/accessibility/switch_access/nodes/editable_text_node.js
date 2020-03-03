@@ -30,6 +30,22 @@ class EditableTextNode extends NodeWrapper {
     actions.push(SAConstants.MenuAction.OPEN_KEYBOARD);
     actions.push(SAConstants.MenuAction.DICTATION);
 
+    if (SwitchAccess.instance.improvedTextInputEnabled() &&
+        this.automationNode.state[StateType.FOCUSED]) {
+      actions.push(SAConstants.MenuAction.MOVE_CURSOR);
+      actions.push(SAConstants.MenuAction.SELECT_START);
+      if (TextNavigationManager.currentlySelecting()) {
+        actions.push(SAConstants.MenuAction.SELECT_END);
+      }
+      if (TextNavigationManager.selectionExists) {
+        actions.push(SAConstants.MenuAction.CUT);
+        actions.push(SAConstants.MenuAction.COPY);
+      }
+      if (TextNavigationManager.clipboardHasData) {
+        actions.push(SAConstants.MenuAction.PASTE);
+      }
+    }
+
     return actions;
   }
 

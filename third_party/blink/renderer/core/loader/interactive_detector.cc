@@ -27,6 +27,11 @@ int g_num_long_input_events = 0;
 constexpr base::TimeDelta kInputDelayTraceEventThreshold =
     base::TimeDelta::FromMilliseconds(250);
 
+// The threshold to emit the "Long First Input Delay" trace event is the 99th
+// percentile of the histogram on Windows Stable as of Feb 27, 2020.
+constexpr base::TimeDelta kFirstInputDelayTraceEventThreshold =
+    base::TimeDelta::FromMilliseconds(575);
+
 }  // namespace
 
 // Required length of main thread and network quiet window for determining
@@ -237,10 +242,20 @@ void InteractiveDetector::HandleForInputDelay(
   if (page_event_times_.first_input_delay.is_zero()) {
     page_event_times_.first_input_delay = delay;
     page_event_times_.first_input_timestamp = event_timestamp;
-  }
 
-  // Emit a trace event to highlight long input delays.
-  if (delay > kInputDelayTraceEventThreshold) {
+    if (delay > kFirstInputDelayTraceEventThreshold) {
+      // Emit a trace event to highlight long first input delays.
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+          "latency", "Long First Input Delay",
+          TRACE_ID_LOCAL(g_num_long_input_events), event_timestamp);
+      TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+          "latency", "Long First Input Delay",
+          TRACE_ID_LOCAL(g_num_long_input_events), event_timestamp + delay);
+      g_num_long_input_events++;
+    }
+  } else if (delay > kInputDelayTraceEventThreshold) {
+    // Emit a trace event to highlight long input delays from second input and
+    // onwards.
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
         "latency", "Long Input Delay", TRACE_ID_LOCAL(g_num_long_input_events),
         event_timestamp);

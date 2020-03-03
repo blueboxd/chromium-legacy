@@ -131,10 +131,8 @@ class BufferQueueTest : public ::testing::Test,
       std::unique_ptr<TestSharedImageInterface> sii) {
     context_provider_ = TestContextProvider::Create(std::move(sii));
     context_provider_->BindToCurrentThread();
-    gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
-    output_surface_.reset(
-        new BufferQueue(context_provider_->SharedImageInterface(),
-                        gpu_memory_buffer_manager_.get(), kFakeSurfaceHandle));
+    output_surface_.reset(new BufferQueue(
+        context_provider_->SharedImageInterface(), kFakeSurfaceHandle));
     output_surface_->SetSyncTokenProvider(this);
   }
 
@@ -214,7 +212,6 @@ class BufferQueueTest : public ::testing::Test,
   }
 
   scoped_refptr<TestContextProvider> context_provider_;
-  std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BufferQueue> output_surface_;
 };
 
@@ -227,15 +224,16 @@ const gfx::Rect overlapping_damage = gfx::Rect(gfx::Size(5, 20));
 class MockedSharedImageInterface : public TestSharedImageInterface {
  public:
   MockedSharedImageInterface() {
-    ON_CALL(*this, CreateSharedImage(_, _, _, _))
-        .WillByDefault(testing::Invoke(
-            this, &MockedSharedImageInterface::TestCreateSharedImage));
+    ON_CALL(*this, CreateSharedImage(_, _, _, _, _))
+        .WillByDefault(Return(gpu::Mailbox()));
+    // this, &MockedSharedImageInterface::TestCreateSharedImage));
   }
-  MOCK_METHOD4(CreateSharedImage,
-               gpu::Mailbox(gfx::GpuMemoryBuffer*,
-                            gpu::GpuMemoryBufferManager*,
-                            const gfx::ColorSpace&,
-                            uint32_t));
+  MOCK_METHOD5(CreateSharedImage,
+               gpu::Mailbox(ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage,
+                            gpu::SurfaceHandle surface_handle));
   MOCK_METHOD2(UpdateSharedImage,
                void(const gpu::SyncToken& sync_token,
                     const gpu::Mailbox& mailbox));
@@ -243,13 +241,13 @@ class MockedSharedImageInterface : public TestSharedImageInterface {
                void(const gpu::SyncToken& sync_token,
                     const gpu::Mailbox& mailbox));
   // Use this to call CreateSharedImage() defined in TestSharedImageInterface.
-  gpu::Mailbox TestCreateSharedImage(
-      gfx::GpuMemoryBuffer* gpu_memory_buffer,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage) {
+  gpu::Mailbox TestCreateSharedImage(ResourceFormat format,
+                                     const gfx::Size& size,
+                                     const gfx::ColorSpace& color_space,
+                                     uint32_t usage,
+                                     gpu::SurfaceHandle surface_handle) {
     return TestSharedImageInterface::CreateSharedImage(
-        gpu_memory_buffer, gpu_memory_buffer_manager, color_space, usage);
+        format, size, color_space, usage, surface_handle);
   }
 };
 
@@ -278,10 +276,9 @@ scoped_refptr<TestContextProvider> CreateMockedSharedImageInterfaceProvider(
 
 std::unique_ptr<BufferQueue> CreateBufferQueue(
     gpu::SharedImageInterface* sii,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BufferQueue::SyncTokenProvider* sync_token_provider) {
   std::unique_ptr<BufferQueue> buffer_queue(
-      new BufferQueue(sii, gpu_memory_buffer_manager, kFakeSurfaceHandle));
+      new BufferQueue(sii, kFakeSurfaceHandle));
   buffer_queue->SetSyncTokenProvider(sync_token_provider);
   return buffer_queue;
 }
@@ -290,13 +287,10 @@ TEST(BufferQueueStandaloneTest, BufferCreationAndDestruction) {
   MockedSharedImageInterface* sii;
   scoped_refptr<TestContextProvider> context_provider =
       CreateMockedSharedImageInterfaceProvider(&sii);
-  std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager(
-      new StubGpuMemoryBufferManager);
   std::unique_ptr<BufferQueue::SyncTokenProvider> sync_token_provider(
       new FakeSyncTokenProvider);
   std::unique_ptr<BufferQueue> output_surface = CreateBufferQueue(
-      context_provider->SharedImageInterface(), gpu_memory_buffer_manager.get(),
-      sync_token_provider.get());
+      context_provider->SharedImageInterface(), sync_token_provider.get());
 
   EXPECT_TRUE(output_surface->Reshape(screen_size, kBufferQueueColorSpace,
                                       kBufferQueueFormat));
@@ -305,9 +299,10 @@ TEST(BufferQueueStandaloneTest, BufferCreationAndDestruction) {
   {
     testing::InSequence dummy;
     EXPECT_CALL(*sii, CreateSharedImage(
-                          _, gpu_memory_buffer_manager.get(), _,
+                          _, _, _,
                           gpu::SHARED_IMAGE_USAGE_SCANOUT |
-                              gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT))
+                              gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
+                          _))
         .WillOnce(Return(expected_mailbox));
     EXPECT_CALL(*sii, DestroySharedImage(_, expected_mailbox));
   }
@@ -554,7 +549,6 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
 }
 
 TEST_F(BufferQueueTest, SwapAfterReshape) {
-  DCHECK_EQ(0u, gpu_memory_buffer_manager_->set_color_space_count());
   EXPECT_TRUE(output_surface_->Reshape(screen_size, kBufferQueueColorSpace,
                                        kBufferQueueFormat));
   const size_t kSwapCount = 3;
@@ -564,11 +558,9 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
         output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
     SwapBuffers();
   }
-  DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
   EXPECT_TRUE(output_surface_->Reshape(
       gfx::Size(10, 20), kBufferQueueColorSpace, kBufferQueueFormat));
-  DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
@@ -576,8 +568,6 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
         output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
     SwapBuffers();
   }
-  DCHECK_EQ(2 * kSwapCount,
-            gpu_memory_buffer_manager_->set_color_space_count());
   EXPECT_EQ(2 * kSwapCount, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
@@ -594,8 +584,6 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
     EXPECT_TRUE(displayed_frame());
   }
 
-  DCHECK_EQ(2 * kSwapCount,
-            gpu_memory_buffer_manager_->set_color_space_count());
   for (size_t i = 0; i < kSwapCount; ++i) {
     gpu::SyncToken creation_sync_token;
     EXPECT_FALSE(
@@ -603,29 +591,37 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
     SwapBuffers();
     output_surface_->PageFlipComplete();
   }
-  DCHECK_EQ(2 * kSwapCount,
-            gpu_memory_buffer_manager_->set_color_space_count());
 }
 
-TEST_F(BufferQueueTest, AllocateFails) {
+TEST_F(BufferQueueMockedSharedImageInterfaceTest, AllocateFails) {
+  const gpu::Mailbox expected_mailbox = gpu::Mailbox::GenerateForSharedImage();
   EXPECT_TRUE(output_surface_->Reshape(screen_size, kBufferQueueColorSpace,
                                        kBufferQueueFormat));
+  EXPECT_CALL(*sii_, CreateSharedImage(
+                         _, _, _,
+                         gpu::SHARED_IMAGE_USAGE_SCANOUT |
+                             gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
+                         _))
+      .WillOnce(Return(expected_mailbox))
+      .WillOnce(Return(gpu::Mailbox()))  // Fail the next surface allocation.
+      .WillRepeatedly(Return(expected_mailbox));
+
+  EXPECT_CALL(*sii_, DestroySharedImage(_, expected_mailbox)).Times(3);
 
   // Succeed in the two swaps.
   gpu::SyncToken creation_sync_token;
-  EXPECT_FALSE(
-      output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
+  const gpu::Mailbox result_mailbox =
+      output_surface_->GetCurrentBuffer(&creation_sync_token);
+  EXPECT_FALSE(result_mailbox.IsZero());
+  EXPECT_EQ(result_mailbox, expected_mailbox);
   EXPECT_TRUE(current_frame());
   SwapBuffers(screen_rect);
 
-  // Fail the next surface allocation.
-  gpu_memory_buffer_manager_->set_allocate_succeeds(false);
   EXPECT_TRUE(output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
   EXPECT_FALSE(current_frame());
   SwapBuffers(screen_rect);
   EXPECT_FALSE(current_frame());
 
-  gpu_memory_buffer_manager_->set_allocate_succeeds(true);
   EXPECT_FALSE(
       output_surface_->GetCurrentBuffer(&creation_sync_token).IsZero());
   SwapBuffers(small_damage);

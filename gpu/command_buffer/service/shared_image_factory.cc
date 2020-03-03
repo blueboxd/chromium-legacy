@@ -164,13 +164,15 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
+                                           gpu::SurfaceHandle surface_handle,
                                            uint32_t usage) {
   bool allow_legacy_mailbox = false;
   auto* factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox);
   if (!factory)
     return false;
-  auto backing = factory->CreateSharedImage(
-      mailbox, format, size, color_space, usage, IsSharedBetweenThreads(usage));
+  auto backing = factory->CreateSharedImage(mailbox, format, surface_handle,
+                                            size, color_space, usage,
+                                            IsSharedBetweenThreads(usage));
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 

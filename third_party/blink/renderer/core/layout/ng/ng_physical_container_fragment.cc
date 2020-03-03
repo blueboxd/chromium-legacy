@@ -6,10 +6,12 @@
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
@@ -111,6 +113,84 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
   }
 }
 
+void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
+    const NGPhysicalBoxFragment& container,
+    const ComputedStyle& container_style,
+    const NGFragmentItem& line,
+    bool has_hanging,
+    const NGInlineCursor& cursor,
+    PhysicalRect* overflow) const {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK(IsLineBox() || IsInlineBox());
+  DCHECK(cursor.Current().Item() &&
+         (cursor.Current().Item()->BoxFragment() == this ||
+          cursor.Current().Item()->LineBoxFragment() == this));
+  const WritingMode container_writing_mode = container_style.GetWritingMode();
+  const TextDirection container_direction = container_style.Direction();
+  for (NGInlineCursor descendants = cursor.CursorForDescendants();
+       descendants;) {
+    const NGFragmentItem* item = descendants.CurrentItem();
+    DCHECK(item);
+    if (item->IsText()) {
+      PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
+      if (UNLIKELY(has_hanging_)) {
+        AdjustScrollableOverflowForHanging(line.RectInContainerBlock(),
+                                           container_writing_mode,
+                                           &child_scroll_overflow);
+      }
+      overflow->Unite(child_scroll_overflow);
+      descendants.MoveToNextSkippingChildren();
+      continue;
+    }
+
+    if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
+      PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
+      if (child_box->IsInlineBox()) {
+        child_box->AddScrollableOverflowForInlineChild(
+            container, container_style, line, has_hanging, descendants,
+            &child_scroll_overflow);
+        child_box->AdjustScrollableOverflowForPropagation(
+            container, &child_scroll_overflow);
+      } else {
+        child_scroll_overflow =
+            child_box->ScrollableOverflowForPropagation(container);
+        child_scroll_overflow.offset += item->OffsetInContainerBlock();
+      }
+      child_scroll_overflow.offset +=
+          ComputeRelativeOffset(child_box->Style(), container_writing_mode,
+                                container_direction, container.Size());
+      overflow->Unite(child_scroll_overflow);
+      descendants.MoveToNextSkippingChildren();
+      continue;
+    }
+
+    // Add all children of a culled inline box; i.e., an inline box without
+    // margin/border/padding etc.
+    DCHECK_EQ(item->Type(), NGFragmentItem::kBox);
+    descendants.MoveToNext();
+  }
+}
+
+// Chop the hanging part from scrollable overflow. Children overflow in inline
+// direction should hang, which should not cause scroll.
+// TODO(kojii): Should move to text fragment to make this more accurate.
+void NGPhysicalContainerFragment::AdjustScrollableOverflowForHanging(
+    const PhysicalRect& rect,
+    const WritingMode container_writing_mode,
+    PhysicalRect* overflow) {
+  if (IsHorizontalWritingMode(container_writing_mode)) {
+    if (overflow->offset.left < rect.offset.left)
+      overflow->offset.left = rect.offset.left;
+    if (overflow->Right() > rect.Right())
+      overflow->ShiftRightEdgeTo(rect.Right());
+  } else {
+    if (overflow->offset.top < rect.offset.top)
+      overflow->offset.top = rect.offset.top;
+    if (overflow->Bottom() > rect.Bottom())
+      overflow->ShiftBottomEdgeTo(rect.Bottom());
+  }
+}
+
 // additional_offset must be offset from the containing_block because
 // LocalToAncestorRect returns rects wrt containing_block.
 void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
@@ -161,8 +241,6 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     // the LayoutInline needs to add rects for children and continuations
     // only.
     if (NGOutlineUtils::ShouldPaintOutline(*descendant_box)) {
-      // For inline fragments, don't accumulate |descendant.Offset()| because
-      // offsets are relative to its inline formatting context.
       descendant_layout_inline->AddOutlineRectsForChildrenAndContinuations(
           *outline_rects, additional_offset, outline_type);
     }
@@ -171,10 +249,9 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
 
   if (const auto* descendant_line_box =
           DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
-    // For inline fragments, don't accumulate |descendant.Offset()| because
-    // offsets are relative to its inline formatting context.
     descendant_line_box->AddOutlineRectsForNormalChildren(
-        outline_rects, additional_offset, outline_type, containing_block);
+        outline_rects, additional_offset + descendant.Offset(), outline_type,
+        containing_block);
 
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,

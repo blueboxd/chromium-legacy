@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1206619573307042055">نوشتار متحرک روی صفحه</translation>
 <translation id="1207086294218137981">عنوان سطح ۴ بعدی وجود ندارد</translation>
+<translation id="1212770441379271564">‏چند میان‌بر بعدی در میان فرمان‌های ChromeVox نیستند، اما برای استفاده بهتر از Chrome خیلی مفید هستند.
+برای پیمایش رو به‌جلو در بین موارد قابل کنش مثل دکمه‌ها و پیوندها، کلید Tab را فشار دهید. برای پیمایش رو به‌عقب، Shift+Tab را فشار دهید.
+برای وارد شدن به کادر نشانی مرورگر Chrome (که omnibox هم گفته می‌شود)، Control + L را فشار دهید.
+برای باز کردن و رفتن به برگه جدید به‌طور خودکار، Control+T را فشار دهید. نشانگر در omnibox قرار خواهد گرفت. 
+برای بستن برگه، Control+W را فشار دهید. 
+برای حرکت رو به‌جلو میان برگه‌های باز، از Control+Tab استفاده کنید. 
+برای باز کردن منوی مرورگر Chrome، کلیدهای Alt+F را فشار دهید.</translation>
 <translation id="1213216066620407844">‏ChromeVox - ارائه صدا به Chrome</translation>
 <translation id="1225969361094801578">سربی تیره</translation>
 <translation id="1229276918471378188">پرش قبلی</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">انتخابگر رنگ</translation>
 <translation id="4221012616705981690">فهرست قبلی وجود ندارد</translation>
 <translation id="4221071177874897997">نشان دادن به‌صورت سیاه:</translation>
+<translation id="4225355998815256469">کنترل‌های فرم</translation>
 <translation id="4229646983878045487">زمان تاریخ</translation>
 <translation id="4230834257931120629">سربی روشن</translation>
 <translation id="4231102694147661229">فعال کردن گزینه‌های برنامه‌نویس</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">جمله</translation>
 <translation id="4623097797855662355">انجامه</translation>
 <translation id="463135993322337640">‏برای آشنایی با موارد جدید،‌ به ترتیب کلیدهای ChromeVox،‏ n و o را فشار دهید</translation>
+<translation id="4646606380313237501">‏{"ar": "عربی",
+    "as": "آسامی",
+    "aw": "اودهی",
+    "be": "بنگالی",
+    "bg": "بلغاری",
+    "bh": "بیهاری",
+    "bo": "تبتی",
+    "br": "برج",
+    "ca": "کاتالان",
+    "ckb": "سورانی",
+    "cs": "چکی",
+    "cy": "ولزی",
+    "da": "دانمارکی",
+    "de": "آلمانی",
+    "de_CH": "آلمانی (سوئیس)",
+    "de_DE": "آلمانی (آلمان)",
+    "dra": "دراویدی",
+    "el": "یونانی",
+    "en": "انگلیسی",
+    "en_CA": "انگلیسی (کانادا)",
+    "en_GB": "انگلیسی (بریتانیا)",
+    "en_US": "انگلیسی (ایالات متحده)",
+    "eo": "اسپرانتو",
+    "es": "اسپانیایی",
+    "et": "استونیایی",
+    "fa": "فارسی",
+    "fr": "فرانسوی",
+    "fr_CA": "فرانسوی (کانادا)",
+    "fr_FR": "فرانسوی (فرانسه)",
+    "fi": "فنلاندی",
+    "ga": "ایرلندی",
+    "gd": "گیلیک",
+    "gon": "گندی",
+    "gu": "گجراتی",
+    "he": "عبری",
+    "hi": "هندی",
+    "hr": "کرواتی",
+    "hu": "مجاری",
+    "hy": "ارمنی",
+    "is": "ایسلندی",
+    "it": "ایتالیایی",
+    "iu": "اینوکتیتوت",
+    "ka": "کانارا",
+    "kh": "خاسی",
+    "ko": "کره‌ای",
+    "kok": "کونکانی",
+    "kru": "کوروخ",
+    "ks": "کشمیری",
+    "lt": "لیتوانیایی",
+    "lv": "لتونیایی",
+    "mao": "مائوری",
+    "ml": "مالایالم",
+    "mt": "مالتی",
+    "mwr": "مارواری",
+    "mn": "مغولی",
+    "mun": "موندا",
+    "nb": "بوکمال نروژی",
+    "ne": "نپالی",
+    "nl": "هلندی",
+    "no": "نروژی",
+    "or": "اوریا",
+    "pi": "پالی",
+    "pl": "لهستانی",
+    "pt": "پرتغالی",
+    "pu": "پنجابی",
+    "ro": "رومانیایی",
+    "ru": "روسی",
+    "sa": "سانسکریت",
+    "si": "سندی",
+    "sin": "سینهالی",
+    "sk": "اسلواکی",
+    "sl": "اسلونیایی",
+    "sr": "صربی",
+    "sv": "سوئدی",
+    "ta": "تامیلی",
+    "te": "تلوگو",
+    "tr": "ترکی",
+    "tsn": "آفریکانس",
+    "uk": "اوکراینی",
+    "ur": "اردو",
+    "vi": "ویتنامی",
+    "zh": "چینی",
+    "zh_TW": "چینی (هان سنتی)"}</translation>
 <translation id="4647836961514597010">انتخابگر رنگ</translation>
 <translation id="4660783501463101648">‏نسخه کلاسیک برداشته شد. تغییر حالت صفحه‌کلید برای تغییر برگشتن به ChromeVox Classic برداشته شد.</translation>
 <translation id="4661075872484491155">درخت</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">حالت چسبان فعال شد</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{کاما}one{# کاما}other{# کاما}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />، کادر نوشتاری</translation>
+<translation id="532485153932049746">قالب‌بندی نوشتار
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />، پیوند</translation>
 <translation id="5331522683003474486">کنترل دستگاه تنها با ۱ یا ۲ سوئیچ.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">بریل</translation>
 <translation id="5402791055281059602">هشدار کیفیتی</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{نقطه ویرگول}one{# نقطه ویرگول}other{# نقطه ویرگول}}</translation>
+<translation id="5420259671171615858">جستجوی منوها</translation>
 <translation id="5435274640623994081">فعال کردن گزارش‌گیری از نماد شنیداری</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامت کوچک‌تر}one{# علامت کوچک‌تر}other{# علامت کوچک‌تر}}</translation>
 <translation id="5444587279251314700">(فعال)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">غلط املایی شناسایی شد</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">بازگشت</translation>
+<translation id="7429415133937917139">‏خروجی صفحه‌نمایش بریل قابل‌بازخوانی را در
+    پانل ChromeVox در بالای صفحه شبیه‌سازی می‌کند</translation>
 <translation id="7434509671034404296">برنامه‌نویس</translation>
 <translation id="743783356331413498">مثال</translation>
 <translation id="7439060726180460871">فهرست راهنما</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">دکمه رادیویی قبلی</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">کادر ترکیبی بعدی وجود ندارد</translation>
+<translation id="772146615414628379">‏تبریک! اصول اولیه استفاده از ChromeVox را باموفقیت یاد گرفتید. به‌یاد داشته باشید هرزمان که بخواهید می‌توانید منوی فرمان ChromeVox را با فشار دادن Search+Period باز کنید. برای اینکه درباره ChromeVox و سیستم‌عامل Chrome از این هم بیشتر بدانید، مقاله‌های زیر را ببینید.
+    اگر آموزش گام‌به‌گام را به پایان رسانده‌اید، بااستفاده از ChromeVox به دکمه «بستن» پیمایش کنید و روی آن کلیک کنید.</translation>
 <translation id="7724603315864178912">برش</translation>
 <translation id="7731785449856576010">ابزارک رسانه بعدی وجود ندارد</translation>
 <translation id="773906353055481349">‏برای پیمایش سلول‌به‌سلول، «Search+Ctrl+Alt» را به‌همراه پیکان‌ها فشار دهید</translation>

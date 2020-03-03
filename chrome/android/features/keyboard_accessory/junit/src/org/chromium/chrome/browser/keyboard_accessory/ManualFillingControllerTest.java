@@ -298,7 +298,7 @@ public class ManualFillingControllerTest {
                 return false;
             }
             @Override
-            protected void rawTopContentOffsetChangedForVr(int topContentOffset) {}
+            protected void rawTopContentOffsetChangedForVr() {}
         };
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
         when(mMockActivity.getCompositorViewHolder()).thenReturn(mMockCompositorViewHolder);

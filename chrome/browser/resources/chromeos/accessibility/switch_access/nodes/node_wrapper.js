@@ -140,7 +140,11 @@ class NodeWrapper extends SAChildNode {
     let ancestor;
     switch (action) {
       case SAConstants.MenuAction.SELECT:
-        this.baseNode_.doDefault();
+        if (this.isGroup()) {
+          NavigationManager.enterGroup();
+        } else {
+          this.baseNode_.doDefault();
+        }
         return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();

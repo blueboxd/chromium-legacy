@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
 <translation id="129382876167171263">Fișierele salvate de site-uri apar aici</translation>
 <translation id="129553762522093515">Închise recent</translation>
+<translation id="1303339473099049190">Parola nu a fost găsită. Verifică dacă ai scris-o corect și încearcă din nou.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Trimis de la <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupează file</translation>
 <translation id="1327257854815634930">Istoricul de navigare este deschis</translation>
@@ -323,6 +324,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="3350687908700087792">Închide toate filele incognito</translation>
 <translation id="3353615205017136254">Pagină Lite oferită de Google. Atinge butonul de încărcare a originalului pentru a încărca pagina originală.</translation>
 <translation id="3367813778245106622">Conectează-te din nou pentru a începe sincronizarea</translation>
+<translation id="3373979091428520308">Ca să trimiți această pagină pe alt dispozitiv, activează sincronizarea în setările Chrome pe celălalt dispozitiv</translation>
 <translation id="3374023511497244703">Marcajele, istoricul, parolele și alte date Chrome nu vor mai fi sincronizate cu Contul Google</translation>
 <translation id="3384347053049321195">Trimite imaginea</translation>
 <translation id="3386292677130313581">Întreabă înainte de a permite site-urilor să afle locația (recomandat)</translation>
@@ -672,6 +674,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5956665950594638604">Deschide Centrul de ajutor Chrome într-o filă nouă</translation>
 <translation id="5958275228015807058">Găsește fișierele și paginile în Descărcări</translation>
 <translation id="5962718611393537961">Atinge pentru a restrânge</translation>
+<translation id="5964805880140440652">Ca să trimiți această pagină pe alt dispozitiv, activează sincronizarea în setările Chrome</translation>
 <translation id="6000066717592683814">Păstrează Google</translation>
 <translation id="6005538289190791541">Parola sugerată</translation>
 <translation id="6036057147555329831">ICU suplimentar</translation>

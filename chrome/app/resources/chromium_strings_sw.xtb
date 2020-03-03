@@ -13,6 +13,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="151962892725702025">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>
 <translation id="1524282610922162960">Shiriki kichupo cha Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho}=1{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho. Haitafungua upya dirisha fiche.}other{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho. Haitafungua upya madirisha # fiche.}}</translation>
+<translation id="1663739491876737434">Chromium imeshindwa kukagua manenosiri yako. Jaribu tena kesho.</translation>
 <translation id="1708666629004767631">Kuna toleo jipya, na salama linalopatikana la Chromium.</translation>
 <translation id="1774152462503052664">Acha Chromium iendeshe katika mandharinyuma</translation>
 <translation id="1779356040007214683">Ili kufanya Chromium salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
@@ -63,6 +64,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="358997566136285270">Nembo ya Chromium</translation>
 <translation id="3639635944603682591">Data ya kuvinjari ya mtu huyu itafutwa kwenye kifaa hiki. Ili kurejesha data, ingia katika Chromium ukitumia <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Sasisho jipya la Chromium linapatikana na litaanza kutumika pindi utakapofungua tena.}=1{Sasisho jipya la Chromium linapatikana na litaanza kutumika pindi utakapofungua tena. Haitafungua upya dirisha fiche.}other{Sasisho jipya la Chromium linapatikana na litaanza kutumika pindi utakapofungua tena. Haitafungua upya madirisha # fiche.}}</translation>
+<translation id="3685209450716071127">Chromium imeshindwa kukagua manenosiri yako. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili}=1{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili. Haitafungua upya dirisha fiche.}other{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili. Haitafungua upya madirisha # fiche.}}</translation>
 <translation id="3713809861844741608">Fungua kiungo katika kichupo kipya cha Chromium</translation>
 <translation id="3728336900324680424">Chromium itafikia Hifadhi yako ili itoe mapendekezo kwenye sehemu ya anwani</translation>
@@ -94,7 +96,9 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4943838377383847465">Chromium iko katika hali ya chini chini.</translation>
 <translation id="4987820182225656817">Walioalikwa wanaweza kutumia Chromium bila kuacha kitu chochote nyuma.</translation>
 <translation id="4994636714258228724">Jiongeze kwenye Chrome</translation>
+<translation id="5093066630040073147">Hakuna manenosiri yaliyohifadhiwa. Chromium inaweza kukagua manenosiri yako unapoyahifadhi kwenye Akaunti yako ya Google.</translation>
 <translation id="5277894862589591112">Ili utumie mabadiliko uliyofanya, fungua Chromium upya</translation>
+<translation id="5310059007469274549">Chromium haiwezi kukagua manenosiri yako kwa sababu ni mengi mno</translation>
 <translation id="5358375970380395591">Unaingia katika akaunti inayodhibitiwa na kumpa msimamizi wa akaunti hiyo udhibiti wa wasifu wako kwenye Chromium. Data yako ya Chromium, kama vile programu zako, alamisho, historia, manenosiri, na mipangilio miingine itahusishwa na <ph name="USER_NAME" /> kabisa. Utaweza kufuta data hii kupitia Dashibodi ya Akaunti za Google, lakini hutaweza  kuunganisha data hii na akaunti nyingine. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Inasasisha Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Ruhusu kuingia katika akaunti ya Chromium</translation>
@@ -104,12 +108,14 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Beta ya Chromium</translation>
 <translation id="5479196819031988440">Mfumo wa Uendeshaji wa Chromium hauwezi kufungua ukurasa huu.</translation>
 <translation id="5480860683791598150">Chromium inahitaji kufikia maelezo ya mahali ulipo ili kushiriki mahali ulipo na tovuti hii</translation>
+<translation id="5488573303232097702">Chromium haijasasishwa, hitilafu fulani imetokea. Rekebisha matatizo ya sasisho la Chrome na masasisho ambayo hayakuwekwa.</translation>
 <translation id="549669000822060376">Tafadhali subiri Chromium inaposakinisha sasisho mpya ya mfumo.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Sasisho la Chromium linapatikana}=1{Sasisho la Chromium linapatikana}other{Sasisho la Chromium limekuwepo kwa siku #}}</translation>
 <translation id="5631814766731275228">Jina na picha kwenye Chromium</translation>
 <translation id="5634636535844844681">Chromium inahitaji Windows 7 au toleo jipya zaidi.</translation>
 <translation id="5653831366781983928">Tafadhali zima kisha uwashe Chromium sasa</translation>
 <translation id="5698481217667032250">Onyesha Chromium katika lugha hii</translation>
+<translation id="5814748786105822016">Chromium haiwezi kukagua manenosiri yako</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
@@ -125,6 +131,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="6212496753309875659">Kompyuta hii tayari ina toleo la hivi punde la Chromium. Ikiwa programu haifanyikazi, tafadhali ondoa Chromium kisha ujaribu tena.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium itafunguka upya hivi sasa}=1{Chromium itafunguka upya ndani ya sekunde 1}other{Chromium itafunguka upya ndani ya sekunde #}}</translation>
 <translation id="6248213926982192922">Fanya Chromium kuwa kivinjari chaguomsingi</translation>
+<translation id="6266342355635466082">Chromium imeshindwa kukagua masasisho. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
 <translation id="6268381023930128611">Ungependa kuondoka kwenye Chromium?</translation>
 <translation id="6295779123002464101">Huenda <ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
 <translation id="6309712487085796862">Chromium inatumia kamera yako.</translation>
@@ -200,6 +207,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Fungua Chromium upya ndani ya siku moja}other{Fungua Chromium upya ndani ya siku #}}</translation>
 <translation id="8453117565092476964">Kumbukumbu ya kisakinishi imeharibika au ni batili. Tafadhali pakua Chromium tena.</translation>
 <translation id="8493179195440786826">Chromium Imepitwa na Wakati</translation>
+<translation id="8568283329061645092">Chromium inaweza kukagua manenosiri unapoingia ukitumia Akaunti yako ya Google</translation>
 <translation id="8586442755830160949">Hakimiliki <ph name="YEAR" /> Wasanidi wa Chromium. Haki zote zimehifadhiwa.</translation>
 <translation id="8619360774459241877">Inaanzisha Chromium...</translation>
 <translation id="8621669128220841554">Usakinishaji ulishindwa kwa sababu ya hitilafu isiyobainika. Tafadhali pakua Chromium tena.</translation>
@@ -207,6 +215,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
       mipangilio ya kivinjari kwenye Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium au unapotafuta kutoka Sanduku Kuu.</translation>
 <translation id="8704119203788522458">Hii ni Chromium yako</translation>
+<translation id="8774315820480073720">Msimamizi wako hudhibiti masasisho ya Chromium</translation>
 <translation id="8796602469536043152">Chromium inahitaji ruhusa ya kufikia kamera na maikrofoni yako katika tovuti hii</translation>
 <translation id="8803635938069941624">Masharti ya Chromium OS</translation>
 <translation id="8821041990367117597">Chromium haikuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>

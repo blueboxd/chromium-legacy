@@ -37,6 +37,7 @@
 <translation id="1900795423379050516">‏אם הגדרה מסוימת לא מופיעה בדף הזה, אפשר לחפש אותה <ph name="LINK_BEGIN" />
 בהגדרות של דפדפן Chrome<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">‏התרת כניסה אל Chrome</translation>
+<translation id="1983547493073464667">‏Chrome לא יכול לבדוק את הסיסמאות שלך</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
@@ -52,15 +53,19 @@
 <translation id="2467438592969358367">‏Google Chrome רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="2534507159460261402">‏Google Pay (‏הועתק ל-Chrome)</translation>
+<translation id="2559627601176023786">‏אין סיסמאות שמורות. Chrome יכול לבדוק את הסיסמאות כששומרים אותן בחשבון Google.</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="2586406160782125153">‏הפעולה תמחק את נתוני הגלישה מהמכשיר. כדי לאחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
+<translation id="261226884343006626">‏Chrome לא יכול לבדוק את הסיסמאות שלך. אפשר לנסות שוב מחר.</translation>
+<translation id="2622559029861875898">‏Chrome לא יכול לחפש עדכונים. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2644798301485385923">‏מערכת Chrome OS</translation>
 <translation id="2652691236519827073">‏פתח את הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
 <translation id="2665296953892887393">‏עזור לשפר את Google Chrome על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
 <translation id="2689103672227170538">‏התוסף הזה שינה את הדף שמוצג כש-Chrome מופעל.</translation>
 <translation id="2765403129283291972">‏Chrome זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
+<translation id="2775140325783767197">‏Chrome לא יכול לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="2847461019998147611">‏הצג את Google Chrome בשפה זו</translation>
 <translation id="2857540653560290388">‏הפעלת Chrome...</translation>
@@ -76,6 +81,7 @@
 <translation id="3395323229510056640">‏קבל עזרה בנושא מערכת ההפעלה של Chrome</translation>
 <translation id="3396977131400919238">‏במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Google Chrome.</translation>
 <translation id="3398288718845740432">‏הסתרה בתפריט Chrome</translation>
+<translation id="3434246496373299699">‏Chrome יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google</translation>
 <translation id="3451115285585441894">‏הוספה ל-‏Chrome...</translation>
 <translation id="345171907106878721">‏הוסף את עצמך ל-Chrome</translation>
 <translation id="34857402635545079">‏ניקוי נתונים גם מ-Chrome (<ph name="URL" />)</translation>
@@ -91,6 +97,7 @@
 <translation id="386202838227397562">‏סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
 <translation id="3873044882194371212">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chrome</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
+<translation id="3943605108614542032">‏מנהל המערכת שלך מטפל בעדכונים של Chrome</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
 <translation id="4143243756087420366">‏שם ותמונה ב-Chrome</translation>
@@ -200,6 +207,7 @@
 <translation id="7808348361785373670">‏הסר מ-Chrome...</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="7855730255114109580">‏Google Chrome מעודכן</translation>
+<translation id="7888686278524752658">‏Chrome לא התעדכן, משהו השתבש. יש לטפל בבעיות הקשורות לעדכון Chrome ולעדכונים שנכשלו.</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7896673875602241923">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chrome כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="7916016681687251387">‏מערכת Chrome OS לא הצליחה לסנכרן את הנתונים שלך. לפתרון הבעיה עכשיו.</translation>
@@ -230,6 +238,7 @@
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
 <translation id="8914504000324227558">‏הפעל מחדש את Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{‏יש עדכון זמין ל-Chrome}=1{‏יש עדכון זמין ל-Chrome}two{‏עדכון ל-Chrome זמין כבר # ימים}many{‏עדכון ל-Chrome זמין כבר # ימים}other{‏עדכון ל-Chrome זמין כבר # ימים}}</translation>
+<translation id="9025321516765676895">‏Chrome לא יכול לבדוק את הסיסמאות שלך, מאחר שיש יותר מדי סיסמאות</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9067395829937117663">‏כדי להשתמש ב-Google Chrome יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>

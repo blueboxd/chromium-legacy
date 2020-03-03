@@ -19,9 +19,9 @@
 namespace blink {
 
 class DisplayLockBudgetTest : public RenderingTest,
-                              private ScopedCSSRenderSubtreeForTest {
+                              private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
  public:
-  DisplayLockBudgetTest() : ScopedCSSRenderSubtreeForTest(true) {}
+  DisplayLockBudgetTest() : ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
   void SetUp() override {
     RenderingTest::SetUp();
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
@@ -46,7 +46,7 @@ class DisplayLockBudgetTest : public RenderingTest,
 
   void LockElement(Element& element) {
     element.setAttribute(html_names::kStyleAttr,
-                         "render-subtree: invisible skip-activation");
+                         "subtree-visibility: hidden");
     UpdateAllLifecyclePhasesForTest();
   }
 

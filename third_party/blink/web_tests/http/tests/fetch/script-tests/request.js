@@ -714,33 +714,33 @@ test(() => {
   // functionality here. We now generate RequestInit with the IDL compiler,
   // but it's still good to keep these around.
   const e = Error();
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get method() { throw e; }})}, 'method');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get headers() { throw e; }})}, 'headers');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get body() { throw e; }})}, 'body');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get referrer() { throw e; }})}, 'referrer');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get referrerPolicy() { throw e; }})}, 'referrerPolicy');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get mode() { throw e; }})}, 'mode');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get credentials() { throw e; }})}, 'credentials');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get cache() { throw e; }})}, 'cache');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get redirect() { throw e; }})}, 'redirect');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get integrity() { throw e; }})}, 'integrity');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get keepalive() { throw e; }})}, 'keepalive');
-  assert_throws(e, () => {
+  assert_throws_exactly(e, () => {
     new Request('/', {get signal() { throw e; }})}, 'signal');
 
   // Not implemented
-  // assert_throws(e, () => {
+  // assert_throws_exactly(e, () => {
   //  new Request('/', {get window() { throw e; }})}, 'window');
 }, 'Getter exceptions should not be silently ignored');
 
@@ -752,14 +752,13 @@ test(() => {
   // instead of `AbortSignal` due to a bug in the IDL compiler, and performed
   // conversions manually. This test ensures that conversion were carried out
   // properly.
-  const e = TypeError();
-  assert_throws(e, () => {
+  assert_throws_js(TypeError, () => {
     new Request('/', {signal: {}})},
     'An empty object as RequestInit\'s signal member should fail type conversion');
-  assert_throws(e, () => {
+  assert_throws_js(TypeError, () => {
     new Request('/', {signal: new Request('/')})},
     'A Request object as RequestInit\'s signal member should fail type conversion');
-  assert_throws(e, () => {
+  assert_throws_js(TypeError, () => {
     new Request('/', {signal: new Response('/')})},
     'A Response object as RequestInit\'s signal member should fail type conversion');
 }, 'TypeError should be thrown when RequestInit\'s signal member does not implement the AbortSignal interface');

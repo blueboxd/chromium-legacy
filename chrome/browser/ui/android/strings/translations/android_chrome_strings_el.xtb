@@ -49,6 +49,7 @@
 <translation id="1303339473099049190">Δεν είναι δυνατή η εύρεση αυτού του κωδικού πρόσβασης. Ελέγξτε για τυχόν ορθογραφικά λάθη και δοκιμάστε ξανά.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Στάλθηκε από <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Ομαδοποίηση καρτελών</translation>
+<translation id="1311657260431405215">Αυτός ο κωδικός QR δεν είναι URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Το ιστορικό περιήγησης έχει ανοίξει</translation>
 <translation id="1331212799747679585">Δεν είναι δυνατή η ενημέρωση του Chrome. Περισσότερες επιλογές</translation>
 <translation id="1332501820983677155">Συντομεύσεις λειτουργιών Google Chrome</translation>

@@ -76,7 +76,7 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-      RuntimeEnabledFeatures::CSSRenderSubtreeEnabled()) {
+      RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled()) {
     const EphemeralRangeInFlatTree range(match);
     if (InvisibleDOM::ActivateRangeIfNeeded(range) ||
         DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {

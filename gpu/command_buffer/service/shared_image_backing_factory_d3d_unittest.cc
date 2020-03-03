@@ -461,8 +461,10 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
   const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = shared_image_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   ASSERT_NE(backing, nullptr);
 
   GLenum expected_target = GL_TEXTURE_2D;
@@ -532,9 +534,11 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
   const auto format = viz::ResourceFormat::RGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   const uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_DISPLAY;
   auto backing = shared_image_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, usage,
+      false /* is_thread_safe */);
   ASSERT_NE(backing, nullptr);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =

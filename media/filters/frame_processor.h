@@ -32,8 +32,7 @@ class MEDIA_EXPORT FrameProcessor {
 
   // This must be called exactly once, before doing any track buffer creation or
   // frame processing.
-  void SetParseWarningCallback(
-      const SourceBufferParseWarningCB& parse_warning_cb);
+  void SetParseWarningCallback(SourceBufferParseWarningCB parse_warning_cb);
 
   // Get/set the current append mode, which if true means "sequence" and if
   // false means "segments".

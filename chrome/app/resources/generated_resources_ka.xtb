@@ -2685,7 +2685,6 @@
 <translation id="4737715515457435632">დაუკავშირდით ქსელს</translation>
 <translation id="473775607612524610">განახლება</translation>
 <translation id="4739639199548674512">ბილეთები</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> და 1 სხვა გვერდი}other{<ph name="PAGE_TITLE" /> და # სხვა გვერდი}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />შეიტყვეთ აპლიკაციების განახლების შესახებ<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{საიტის დადუმების მოხსნა}other{საიტების დადუმების მოხსნა}}</translation>
 <translation id="4746351372139058112">შეტყობინებები</translation>
@@ -5186,7 +5185,6 @@
 <translation id="8214489666383623925">ფაილის გახსნა…</translation>
 <translation id="8214962590150211830">ამ პირის ამოღება</translation>
 <translation id="8215295261562449873">Linux-ის ახალ ვერსიაზე გადასვლამდე ჩემი აპებისა და ფაილების სარეზერვო ასლების შექმნა „ჩამოტვირთვების“ საქაღალდეში.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> და 1 სხვა გვერდი}other{<ph name="PAGE_TITLE" /> და # სხვა გვერდი}}</translation>
 <translation id="8217399928341212914">გააგრძელეთ რამოდენიმე ფაილის ავტომატური ჩამოტვირთვის დაბლოკვა</translation>
 <translation id="8218847192766059983">დაამატეთ ენები, ან შეცვალეთ სიის მიმდევრობა. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">როგორც წესი, თქვენ ბლოკავთ შეტყობინებებს. ამ საიტისგან შეტყობინებების მისაღებად დააწკაპუნეთ აქ.</translation>
@@ -5397,6 +5395,7 @@
 <translation id="851263357009351303">ყოველთვის მიეცი ნება <ph name="HOST" />-ს, აჩვენოს გამოსახულებები</translation>
 <translation id="8513108775083588393">ავტომატური შეტრიალება</translation>
 <translation id="8514746246728959655">ცადეთ უსაფრთხოების სხვა გასაღები</translation>
+<translation id="8517041960877371778">თქვენი <ph name="DEVICE_TYPE" /> შეიძლება არ დაიტენოს, როცა ის ჩართულია.</translation>
 <translation id="8521475323816527629">იქონიეთ სწრაფი წვდომა თქვენს აპებზე</translation>
 <translation id="8523493869875972733">ცვლილებების შენარჩუნება</translation>
 <translation id="8523849605371521713">დამატებულია წესების მიხედვით</translation>
@@ -5517,6 +5516,7 @@
 <translation id="8673383193459449849">სერვერის პრობლემა</translation>
 <translation id="8675354002693747642">წინასწარ გაზიარებული გასაღები</translation>
 <translation id="8676374126336081632">შეყვანილი ტექსტის გასუფთავება</translation>
+<translation id="8676770494376880701">დაბალი სიმძლავრის დამტენი დაკავშირებულია</translation>
 <translation id="8677212948402625567">ყველას აკეცვა…</translation>
 <translation id="8678648549315280022">პარამეტრების ჩამოტვირთვის მართვა…</translation>
 <translation id="8678933587484842200">რა გზით გსურთ ამ აპლიკაციის გაშვება?</translation>

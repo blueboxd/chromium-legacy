@@ -104,11 +104,10 @@ StyleEngine::StyleEngine(Document& document)
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (IsMaster())
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
-  if (Platform::Current() && Platform::Current()->ThemeEngine()) {
-    preferred_color_scheme_ =
-        Platform::Current()->ThemeEngine()->PreferredColorScheme();
+  if (auto* settings = GetDocument().GetSettings())
+    preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  if (Platform::Current() && Platform::Current()->ThemeEngine())
     forced_colors_ = Platform::Current()->ThemeEngine()->GetForcedColors();
-  }
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -2037,7 +2036,7 @@ void StyleEngine::UpdateColorScheme() {
   forced_colors_ = web_theme_engine->GetForcedColors();
 
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
-  preferred_color_scheme_ = web_theme_engine->PreferredColorScheme();
+  preferred_color_scheme_ = settings->GetPreferredColorScheme();
   if (const auto* overrides =
           GetDocument().GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");

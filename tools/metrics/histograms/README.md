@@ -261,16 +261,20 @@ UMA_HISTOGRAM_PERCENTAGE macro provided in
 You can also easily emit any ratio as a linear histogram (for equally
 sized buckets).
 
-For such histograms, you should think carefully about _when_ the values are
-emitted.  Normally, you should emit values periodically at a set time interval,
-such as every 5 minutes.  Conversely, we strongly discourage emitting values
-based on event triggers.  For example, we do not recommend recording a ratio
-at the end of a video playback.
+For such histograms, you want each value recorded to cover approximately
+the same span of time.  This typically means emitting values periodically
+at a set time interval, such as every 5 minutes.  We do not recommend
+recording a ratio at the end of a video playback, as lengths of videos
+vary greatly.
 
-Why?  You typically cannot make decisions based on histograms whose values are
-recorded in response to an event, because such metrics can conflate heavy usage
-with light usage.  It's easier to reason about metrics that route around this
-source of bias.
+It is okay to emit at the end of an animation sequence when what's being
+animated is fixed / known.  In this case, each value will represent
+roughly the same span of time.
+
+Why?  You typically cannot make decisions based on histograms whose
+values are recorded in response to an event that varies in length,
+because such metrics can conflate heavy usage with light usage.  It's
+easier to reason about metrics that route around this source of bias.
 
 Many developers have been bitten by this.  For example, it was previously common
 to emit an actions-per-minute ratio whenever Chrome was backgrounded.

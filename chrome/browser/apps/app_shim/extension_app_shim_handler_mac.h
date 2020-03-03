@@ -35,7 +35,6 @@ class BrowserContext;
 }  // namespace content
 
 namespace extensions {
-class AppWindow;
 class Extension;
 }  // namespace extensions
 
@@ -65,10 +64,12 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
     // locked.
     virtual bool IsProfileLockedForPath(const base::FilePath& path);
 
-    // Return the app windows (not browser windows) for a legacy app.
-    virtual extensions::AppWindowRegistry::AppWindowList GetWindows(
-        Profile* profile,
-        const std::string& extension_id);
+    // Show all app windows (for non-PWA apps). Return true if there existed any
+    // windows.
+    virtual bool ShowAppWindows(Profile* profile, const std::string& app_id);
+
+    // Close all app windows (for non-PWA apps).
+    virtual void CloseAppWindows(Profile* profile, const std::string& app_id);
 
     // Look up an extension from its id.
     virtual const extensions::Extension* MaybeGetAppExtension(
@@ -78,7 +79,7 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
     // Return true if the specified app should use an app shim (false, e.g, for
     // bookmark apps that open in tabs).
     virtual bool AllowShimToConnect(Profile* profile,
-                                    const extensions::Extension* extension);
+                                    const std::string& app_id);
 
     // Create an AppShimHost for the specified parameters (intercept-able for
     // tests).
@@ -96,7 +97,7 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
     // Launch the app in Chrome. This will (often) create a new window.
     virtual void LaunchApp(Profile* profile,
-                           const extensions::Extension* extension,
+                           const std::string& app_id,
                            const std::vector<base::FilePath>& files);
 
     // Open the specified URL in a new Chrome window. This is the fallback when
@@ -108,7 +109,7 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
     // Launch the shim process for an app.
     virtual void LaunchShim(Profile* profile,
-                            const extensions::Extension* extension,
+                            const std::string& app_id,
                             bool recreate_shims,
                             ShimLaunchedCallback launched_callback,
                             ShimTerminatedCallback terminated_callback);
@@ -144,12 +145,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
       const std::string& extension_id);
 
   static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
-
-  // Instructs the shim to request user attention. Returns false if there is no
-  // shim for this window.
-  void RequestUserAttentionForWindow(
-      extensions::AppWindow* app_window,
-      chrome::mojom::AppShimAttentionType attention_type);
 
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
@@ -250,14 +245,12 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
       std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
   // Continuation of OnShimSelectedProfile, once the profile has loaded.
-  void OnShimSelectedProfileAndAppLoaded(
-      Profile* profile,
-      const extensions::Extension* extension);
+  void OnShimSelectedProfileAndAppLoaded(const std::string& app_id,
+                                         Profile* profile);
 
   // Load the specified profile and extension, and run |callback| with
   // the result. The callback's arguments may be nullptr on failure.
-  using LoadProfileAppCallback =
-      base::OnceCallback<void(Profile*, const extensions::Extension*)>;
+  using LoadProfileAppCallback = base::OnceCallback<void(Profile*)>;
   void LoadProfileAndApp(const base::FilePath& profile_path,
                          const std::string& app_id,
                          LoadProfileAppCallback callback);

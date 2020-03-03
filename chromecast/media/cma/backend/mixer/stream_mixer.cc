@@ -648,10 +648,11 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
   auto type = input->content_type();
   if (type != AudioContentType::kOther) {
     input->SetContentTypeVolume(volume_info_[type].volume);
-    if (input->primary()) {
-      input->SetOutputLimit(volume_info_[type].limit, kUseDefaultFade);
-    }
     input->SetMuted(volume_info_[type].muted);
+  }
+  if (input->primary() && input->focus_type() != AudioContentType::kOther) {
+    input->SetOutputLimit(volume_info_[input->focus_type()].limit,
+                          kUseDefaultFade);
   }
 
   for (auto& redirector : audio_output_redirectors_) {
@@ -920,7 +921,7 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   }
   for (const auto& input : inputs_) {
     // Volume limits don't apply to effects streams.
-    if (input.second->primary() && input.second->content_type() == type) {
+    if (input.second->primary() && input.second->focus_type() == type) {
       input.second->SetOutputLimit(limit, fade_ms);
     }
   }

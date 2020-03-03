@@ -453,15 +453,18 @@ void DisplayLockContext::CommitForActivationWithSignal(
   DCHECK(IsLocked());
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
 
-  document_->EnqueueDisplayLockActivationTask(
-      WTF::Bind(&DisplayLockContext::FireActivationEvent,
-                weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
+  // TODO(vmpstr): Remove this when we have a beforematch event.
+  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityActivationEventEnabled()) {
+    document_->EnqueueDisplayLockActivationTask(
+        WTF::Bind(&DisplayLockContext::FireActivationEvent,
+                  weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
+  }
 
   StartCommit();
 
   RecordActivationReason(reason_for_metrics);
   if (reason_for_metrics == DisplayLockActivationReason::kFindInPage)
-    document_->MarkHasFindInPageRenderSubtreeActiveMatch();
+    document_->MarkHasFindInPageSubtreeVisibilityActiveMatch();
 
   css_is_activated_ = true;
   // Since size containment depends on the activatability state, we should

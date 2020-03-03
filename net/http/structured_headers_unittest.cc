@@ -551,6 +551,77 @@ const struct ListTestCase {
      base::nullopt},
 };
 
+// For Structured Headers Draft 15
+const struct DictionaryTestCase {
+  const char* name;
+  const char* raw;
+  const base::Optional<Dictionary>
+      expected;           // nullopt if parse error is expected.
+  const char* canonical;  // nullptr if parse error is expected, or if canonical
+                          // format is identical to raw.
+} dictionary_test_cases[] = {
+    {"basic dictionary",
+     "en=\"Applepie\", da=:aGVsbG8=:",
+     {Dictionary{{{"en", {Item("Applepie"), {}}},
+                  {"da", {Item("hello", Item::kByteSequenceType), {}}}}}}},
+    {"empty dictionary", "", Dictionary()},
+    {"single item dictionary", "a=1", {Dictionary{{{"a", {Integer(1L), {}}}}}}},
+    {"list item dictionary",
+     "a=(1 2)",
+     {Dictionary{{{"a", {{{Integer(1L), {}}, {Integer(2L), {}}}, {}}}}}}},
+    {"single list item dictionary",
+     "a=(1)",
+     {Dictionary{
+         {{"a", {std::vector<ParameterizedItem>{{Integer(1L), {}}}, {}}}}}}},
+    {"empty list item dictionary",
+     "a=()",
+     {Dictionary{{{"a", {std::vector<ParameterizedItem>(), {}}}}}}},
+    {"no whitespace dictionary",
+     "a=1,b=2",
+     {Dictionary{{{"a", {Integer(1L), {}}}, {"b", {Integer(2L), {}}}}}},
+     "a=1, b=2"},
+    {"extra whitespace dictionary",
+     "a=1 ,  b=2",
+     {Dictionary{{{"a", {Integer(1L), {}}}, {"b", {Integer(2L), {}}}}}},
+     "a=1, b=2"},
+    {"tab separated dictionary", "a=1\t,\tb=2", base::nullopt},
+    {"leading whitespace dictionary",
+     "     a=1 ,  b=2",
+     {Dictionary{{{"a", {Integer(1L), {}}}, {"b", {Integer(2L), {}}}}}},
+     "a=1, b=2"},
+    {"whitespace before = dictionary", "a =1, b=2", base::nullopt},
+    {"whitespace after = dictionary", "a=1, b= 2", base::nullopt},
+    {"missing value dictionary",
+     "a=1, b, c=3",
+     {Dictionary{{{"a", {Integer(1L), {}}},
+                  {"b", {Item(true), {}}},
+                  {"c", {Integer(3L), {}}}}}}},
+    {"all missing value dictionary",
+     "a, b, c",
+     {Dictionary{{{"a", {Item(true), {}}},
+                  {"b", {Item(true), {}}},
+                  {"c", {Item(true), {}}}}}}},
+    {"start missing value dictionary",
+     "a, b=2",
+     {Dictionary{{{"a", {Item(true), {}}}, {"b", {Integer(2L), {}}}}}}},
+    {"end missing value dictionary",
+     "a=1, b",
+     {Dictionary{{{"a", {Integer(1L), {}}}, {"b", {Item(true), {}}}}}}},
+    {"missing value with params dictionary",
+     "a=1, b=?1;foo=9, c=3",
+     {Dictionary{{{"a", {Integer(1L), {}}},
+                  {"b", {Item(true), {Param("foo", 9)}}},
+                  {"c", {Integer(3L), {}}}}}}},
+    {"trailing comma dictionary", "a=1, b=2,", base::nullopt},
+    {"empty item dictionary", "a=1,,b=2,", base::nullopt},
+    {"duplicate key dictionary",
+     "a=1,b=2,a=3",
+     {Dictionary{{{"a", {Integer(3L), {}}}, {"b", {Integer(2L), {}}}}}},
+     "a=3, b=2"},
+    {"numeric key dictionary", "a=1,1b=2,a=1", base::nullopt},
+    {"uppercase key dictionary", "a=1,B=2,a=1", base::nullopt},
+    {"bad key dictionary", "a=1,b!=2,a=1", base::nullopt}};
+
 }  // namespace
 
 TEST(StructuredHeaderTest, ParseBareItem) {
@@ -711,6 +782,15 @@ TEST(StructuredHeaderTest, ParseList) {
   for (const auto& c : list_test_cases) {
     SCOPED_TRACE(c.name);
     base::Optional<List> result = ParseList(c.raw);
+    EXPECT_EQ(result, c.expected);
+  }
+}
+
+// For Structured Headers Draft 15
+TEST(StructuredHeaderTest, ParseDictionary) {
+  for (const auto& c : dictionary_test_cases) {
+    SCOPED_TRACE(c.name);
+    base::Optional<Dictionary> result = ParseDictionary(c.raw);
     EXPECT_EQ(result, c.expected);
   }
 }
@@ -921,6 +1001,40 @@ TEST(StructuredHeaderTest, UnserializableLists) {
   for (const auto& bad_list : bad_lists) {
     SCOPED_TRACE(bad_list.name);
     base::Optional<std::string> serialization = SerializeList(bad_list.value);
+    EXPECT_FALSE(serialization.has_value()) << *serialization;
+  }
+}
+
+TEST(StructuredHeaderTest, SerializeDictionary) {
+  for (const auto& c : dictionary_test_cases) {
+    SCOPED_TRACE(c.name);
+    if (c.expected) {
+      base::Optional<std::string> result = SerializeDictionary(*c.expected);
+      EXPECT_TRUE(result.has_value());
+      EXPECT_EQ(result.value(), std::string(c.canonical ? c.canonical : c.raw));
+    }
+  }
+}
+
+TEST(StructuredHeaderTest, UnserializableDictionary) {
+  static const struct UnserializableDictionary {
+    const char* name;
+    const Dictionary value;
+  } bad_dictionaries[] = {
+      {"Unserializable dict key", Dictionary{{{"ABC", {Token("abc"), {}}}}}},
+      {"Dictionary item is unserializable",
+       Dictionary{{{"abc", {Token("abc="), {}}}}}},
+      {"Param value is unserializable",
+       Dictionary{{{"abc", {Token("abc"), {{"a", Token("\n")}}}}}}},
+      {"Dictionary inner-list contains unserializable item",
+       Dictionary{
+           {{"abc",
+             {std::vector<ParameterizedItem>{{Token("abc="), {}}}, {}}}}}},
+  };
+  for (const auto& bad_dictionary : bad_dictionaries) {
+    SCOPED_TRACE(bad_dictionary.name);
+    base::Optional<std::string> serialization =
+        SerializeDictionary(bad_dictionary.value);
     EXPECT_FALSE(serialization.has_value()) << *serialization;
   }
 }

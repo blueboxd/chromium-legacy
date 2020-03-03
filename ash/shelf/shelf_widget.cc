@@ -574,8 +574,8 @@ DragHandle* ShelfWidget::GetDragHandle() {
   return delegate_view_->drag_handle();
 }
 
-void ShelfWidget::ShowDragHandleNudge() {
-  delegate_view_->drag_handle()->ShowDragHandleNudge();
+void ShelfWidget::ScheduleShowDragHandleNudge() {
+  delegate_view_->drag_handle()->ScheduleShowDragHandleNudge();
 }
 
 void ShelfWidget::HideDragHandleNudge() {

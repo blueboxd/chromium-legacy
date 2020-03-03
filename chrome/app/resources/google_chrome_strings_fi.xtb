@@ -37,6 +37,7 @@
 <translation id="1900795423379050516">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
     Chromen selainasetuksiin<ph name="LINK_END" />.</translation>
 <translation id="1919130412786645364">Salli Chrome-kirjautuminen</translation>
+<translation id="1983547493073464667">Chrome ei voi tarkistaa salasanojasi</translation>
 <translation id="2063848847527508675">Chrome-käyttöjärjestelmä täytyy käynnistää uudelleen, jotta päivitys voidaan ottaa käyttöön.</translation>
 <translation id="2094919256425865063">Suljetaanko Chrome silti?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
@@ -52,15 +53,19 @@
 <translation id="2467438592969358367">Google Chrome yrittää viedä salasanojasi tiedostoon. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2534507159460261402">Google Pay (kopioitu Chromeen)</translation>
+<translation id="2559627601176023786">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat ne Google-tilillesi.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="2586406160782125153">Selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
+<translation id="261226884343006626">Chrome ei voi tarkistaa salasanojasi. Yritä uudelleen huomenna.</translation>
+<translation id="2622559029861875898">Chrome ei voi tarkistaa päivityksiä. Tarkista internetyhteytesi.</translation>
 <translation id="2644798301485385923">Chrome-käyttöjärjestelmä</translation>
 <translation id="2652691236519827073">Avaa linkki uudella Chromen välilehdellä</translation>
 <translation id="2665296953892887393">Auta parantamaan Google Chromea lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
 <translation id="2689103672227170538">Tämä laajennus on vaihtanut Chromen aloitussivun.</translation>
 <translation id="2765403129283291972">Chrome tarvitsee oikeuden käyttää mikrofoniasi tällä sivustolla.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
+<translation id="2775140325783767197">Chrome ei voi tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="2799223571221894425">Käynnistä uudelleen</translation>
 <translation id="2847461019998147611">Näytä Google Chrome tällä kielellä</translation>
 <translation id="2857540653560290388">Käynnistetään Chromea…</translation>
@@ -76,6 +81,7 @@
 <translation id="3395323229510056640">Ohjeita Chrome-käyttöjärjestelmän käyttöön</translation>
 <translation id="3396977131400919238">Asennuksessa havaittiin käyttöjärjestelmävirhe. Lataa Google Chrome uudelleen.</translation>
 <translation id="3398288718845740432">Piilota Chrome-valikkoon</translation>
+<translation id="3434246496373299699">Chrome voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
 <translation id="3451115285585441894">Lisätään Chromeen...</translation>
 <translation id="345171907106878721">Lisää itsesi Chromeen</translation>
 <translation id="34857402635545079">Poista data myös Chromesta (<ph name="URL" />)</translation>
@@ -91,6 +97,7 @@
 <translation id="386202838227397562">Sulje kaikki Chrome-ikkunat ja yritä uudelleen.</translation>
 <translation id="3873044882194371212">Avaa linkki Chromen inco&amp;gnito-ikkunassa</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
+<translation id="3943605108614542032">Järjestelmänvalvojasi ylläpitää Chrome-päivityksiä</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
 <translation id="4143243756087420366">Chromen nimi ja kuva</translation>
@@ -200,6 +207,7 @@
 <translation id="7808348361785373670">Poista Chromesta…</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="7855730255114109580">Google Chrome on ajan tasalla</translation>
+<translation id="7888686278524752658">Chromea ei päivitetty, jotain meni pieleen. Korjaa Chromen päivitysongelmat ja epäonnistuneet päivitykset.</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
 <translation id="7896673875602241923">Joku on jo kirjautunut tällä tietokoneella Chromeen käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chrome-käyttäjä, jos haluat pitää tiedot erillään.</translation>
 <translation id="7916016681687251387">Chrome-käyttöjärjestelmä ei voinut synkronoida tietojasi. Korjaa nyt.</translation>
@@ -230,6 +238,7 @@
 <translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>
 <translation id="8914504000324227558">Käynnistä Chrome uudelleen</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome-päivitys on saatavilla}=1{Chrome-päivitys on saatavilla}other{Chrome-päivitys on ollut saatavilla # vuorokauden ajan}}</translation>
+<translation id="9025321516765676895">Chrome ei voi tarkistaa salasanojasi, koska niitä on liian monta</translation>
 <translation id="9026991721384951619">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="9067395829937117663">Google Chrome edellyttää Windows 7:ää tai uudempaa versiota.</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>

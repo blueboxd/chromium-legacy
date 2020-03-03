@@ -352,6 +352,7 @@
 <translation id="1487335504823219454">Спеціальні налаштування ввімкнено</translation>
 <translation id="1489664337021920575">Вибрати інший варіант</translation>
 <translation id="1493892686965953381">Очікування <ph name="LOAD_STATE_PARAMETER" />...</translation>
+<translation id="1494438840282430403">Також видалити дані веб-перегляду (<ph name="URL" />), що може призвести до виходу з облікового запису на веб-сайті Google.com.</translation>
 <translation id="1495486559005647033">Інші доступні пристрої: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="1495677929897281669">Назад на вкладку</translation>
 <translation id="1499271269825557605">Якщо ви не впізнаєте розширення або веб-переглядач працює неналежним чином, вимкніть чи налаштуйте розширення тут.</translation>
@@ -1173,7 +1174,9 @@
 <translation id="2586672484245266891">Введіть коротшу URL-адресу</translation>
 <translation id="2587922766792651800">Час очікування минув</translation>
 <translation id="2588636910004461974">Пристрої від <ph name="VENDOR_NAME" /></translation>
+<translation id="2593594315333286814">Налаштування спеціальних можливостей для навігації</translation>
 <translation id="2594999711683503743">Пошукайте в Google або введіть URL-адресу</translation>
+<translation id="2602501489742255173">Гортайте вгору, щоб почати</translation>
 <translation id="2603115962224169880">Очистити комп’ютер</translation>
 <translation id="2603463522847370204">Відкрити в &amp;анонімному вікні</translation>
 <translation id="2604255671529671813">Помилка з’єднання з мережею</translation>
@@ -1334,6 +1337,7 @@
 <translation id="2804043232879091219">Не вдалося відкрити альтернативний веб-переглядач</translation>
 <translation id="2804667941345577550">Ви вийдете з облікового запису на цьому сайті, зокрема у відкритих вкладках</translation>
 <translation id="2804680522274557040">Камеру вимкнено</translation>
+<translation id="2805539617243680210">Готово!</translation>
 <translation id="2805646850212350655">Система шифрування файлів Microsoft</translation>
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2805770823691782631">Додаткові відомості</translation>
@@ -1417,6 +1421,7 @@
 <translation id="2903457445916429186">Відкрити вибрані елементи</translation>
 <translation id="2903882649406874750">Завжди блокувати доступ до датчиків для хосту <ph name="HOST" /></translation>
 <translation id="2904456025988372123">Запитувати, якщо сайт намагається завантажити файли автоматично після першого файлу</translation>
+<translation id="2905990582795979495">Ви можете використовувати пристрій <ph name="DEVICE_TYPE" />. Отримуйте поради для пристрою <ph name="DEVICE_TYPE" /> та оновлення щодо продуктів Google, а також надсилайте відгуки. Ви можете будь-коли скасувати підписку.</translation>
 <translation id="2907619724991574506">URL-адреси автозавантаження</translation>
 <translation id="2907798539022650680">Не вдалося під’єднатися до мережі "<ph name="NAME" />": <ph name="DETAILS" />
     Повідомлення сервера: <ph name="SERVER_MSG" /></translation>
@@ -1688,6 +1693,7 @@
 <translation id="3308116878371095290">Цій сторінці було відмовлено в збереженні файлів cookie.</translation>
 <translation id="3308134619352333507">Кнопка "Сховати"</translation>
 <translation id="3308852433423051161">Завантажується Google Асистент…</translation>
+<translation id="3311445899360743395">Дані, пов'язані з цим додатком, може бути видалено з пристрою.</translation>
 <translation id="3312424061798279731">Активні мови</translation>
 <translation id="3313622045786997898">Значення підпису сертифіката</translation>
 <translation id="3315158641124845231">Сховати <ph name="PRODUCT_NAME" /></translation>
@@ -1946,6 +1952,7 @@
 <translation id="3670229581627177274">Увімкніть Bluetooth</translation>
 <translation id="3672681487849735243">Виявлено заводську помилку</translation>
 <translation id="367645871420407123">залиште поле порожнім, якщо потрібно налаштувати кореневий пароль для значення тестового зображення за умовчанням</translation>
+<translation id="3677106374019847299">Введіть назву свого постачальника послуг</translation>
 <translation id="3677657024345889897">Найтихіше</translation>
 <translation id="3677911431265050325">Мобільний сайт</translation>
 <translation id="3678156199662914018">Розширення: <ph name="EXTENSION_NAME" /></translation>
@@ -2064,6 +2071,7 @@
 <translation id="3816118180265633665">Кольори Chrome</translation>
 <translation id="3817524650114746564">Відкрити налаштування проксі-сервера комп'ютера</translation>
 <translation id="3817579325494460411">Не вказано</translation>
+<translation id="381892968844315516">На пристрої заборонено використовувати Plugin VM. Зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Резервна копія</translation>
 <translation id="3819261658055281761">Системі не вдалося зберегти маркер довготривалого доступу API для цього пристрою.</translation>
 <translation id="3819800052061700452">&amp;На весь екран</translation>
@@ -2441,6 +2449,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4378551569595875038">Підключення…</translation>
 <translation id="4378556263712303865">Заявка пристрою</translation>
+<translation id="4379281552162875326">Видалити "<ph name="APP_NAME" />"?</translation>
 <translation id="4380648069038809855">Ви перейшли в повноекранний режим</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> і ще 1 обліковий запис}one{<ph name="EMAIL" /> і ще <ph name="EXTRA_ACCOUNTS" /> обліковий запис}few{<ph name="EMAIL" /> і ще <ph name="EXTRA_ACCOUNTS" /> облікові записи}many{<ph name="EMAIL" /> і ще <ph name="EXTRA_ACCOUNTS" /> облікових записів}other{<ph name="EMAIL" /> і ще <ph name="EXTRA_ACCOUNTS" /> облікового запису}}</translation>
 <translation id="4384312707950789900">Додати до рекомендованих</translation>
@@ -2686,7 +2695,6 @@
 <translation id="4737715515457435632">Під’єднайтеся до мережі</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="4739639199548674512">Квитки</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> і ще 1 сторінка}one{<ph name="PAGE_TITLE" /> і ще # сторінка}few{<ph name="PAGE_TITLE" /> і ще # сторінки}many{<ph name="PAGE_TITLE" /> і ще # сторінок}other{<ph name="PAGE_TITLE" /> і ще # сторінки}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Дізнайтеся, як оновити додатки<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Увімкнути звук на сайті}one{Увімкнути звук на сайтах}few{Увімкнути звук на сайтах}many{Увімкнути звук на сайтах}other{Увімкнути звук на сайтах}}</translation>
 <translation id="4746351372139058112">Повідомлення</translation>
@@ -3307,6 +3315,7 @@
 <translation id="5618075537869101857">На жаль, не вдалося запустити програму для терміналів.</translation>
 <translation id="5618333180342767515">(може тривати декілька хвилин)</translation>
 <translation id="56197088284879152">З’єднання з віддаленим пристроєм <ph name="DEVICE_NAME" /> перевантажене.</translation>
+<translation id="5620549857835247159">Показувати кнопки "Панель запуску", "Назад" і "Огляд" на полиці в режимі планшета.</translation>
 <translation id="5620568081365989559">Інструментам розробника потрібен повний доступ до папки <ph name="FOLDER_PATH" />. Переконайтеся, що ви не оприлюдните приватну інформацію.</translation>
 <translation id="5620612546311710611">статистика використання</translation>
 <translation id="5620655347161642930">Експортувати паролі…</translation>
@@ -3834,6 +3843,7 @@
 <translation id="6349101878882523185">Установіть додаток <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронізація не працює. Вийдіть з облікового запису та ввійдіть у нього знову.</translation>
 <translation id="6351063337294363751">Ви можете очистити дані веб-перегляду з цього меню</translation>
+<translation id="6352223293513723497">На вашому пристрої закінчується доступний обсяг пам'яті. Звільніть місце, щоб скористатися плагіном Plugin VM.</translation>
 <translation id="6352773953037195952">Найвищий</translation>
 <translation id="6354918092619878358">Еліптична крива SECG secp256r1 (також відома як ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не вимикайте пристрій</translation>
@@ -4111,12 +4121,14 @@
 <translation id="6758056191028427665">Поділіться з нами своїми враженнями.</translation>
 <translation id="6759193508432371551">Відновлення заводських налаштувань</translation>
 <translation id="6762833852331690540">Увімкнено</translation>
+<translation id="6764693078871405569">Також видалити дані веб-перегляду (<ph name="URL" />), що може призвести до виходу з облікового запису на веб-сайті <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Вибрати іншу мову…</translation>
 <translation id="6767639283522617719">Не вдається приєднатися до домену. Переконайтеся, що налаштування для організаційного підрозділу правильні.</translation>
 <translation id="6769712124046837540">Додавання принтера…</translation>
 <translation id="6770664076092644100">Підтвердити через NFC</translation>
 <translation id="6771503742377376720">Є Центром сертифікації</translation>
 <translation id="6772339735733515807">Керування розширеннями</translation>
+<translation id="6774271858705413900">Помилка. Зачекайте кілька хвилин і запустіть плагін Plugin VM ще раз.</translation>
 <translation id="6775163072363532304">Тут відображатимуться доступні пристрої.</translation>
 <translation id="6777817260680419853">Переспрямування заблоковано</translation>
 <translation id="6778737459546443941">Батьки ще не схвалили його</translation>
@@ -5189,7 +5201,6 @@
 <translation id="8214489666383623925">Відкрити файл...</translation>
 <translation id="8214962590150211830">Видалити цього користувача</translation>
 <translation id="8215295261562449873">Створити резервну копію додатків і файлів у папці "Завантаження", перш ніж оновлювати Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> і ще 1 сторінка}one{<ph name="PAGE_TITLE" /> і ще # сторінка}few{<ph name="PAGE_TITLE" /> і ще # сторінки}many{<ph name="PAGE_TITLE" /> і ще # сторінок}other{<ph name="PAGE_TITLE" /> і ще # сторінки}}</translation>
 <translation id="8217399928341212914">Надалі блокувати автоматичне завантаження декількох файлів</translation>
 <translation id="8218847192766059983">Додайте мови або змініть порядок у списку. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Зазвичай ви блокуєте сповіщення. Натисніть тут, щоб дозволити сайту показувати їх.</translation>
@@ -5400,6 +5411,7 @@
 <translation id="851263357009351303">Завжди дозволяти хосту <ph name="HOST" /> показувати зображення</translation>
 <translation id="8513108775083588393">Автообертання</translation>
 <translation id="8514746246728959655">Спробуйте інший ключ безпеки</translation>
+<translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8521475323816527629">Швидкий доступ до додатків</translation>
 <translation id="8523493869875972733">Залишити зміни</translation>
 <translation id="8523849605371521713">Додано політикою</translation>
@@ -5414,6 +5426,7 @@
 <translation id="8538358978858059843">Увімкнути хмарні сервіси для Cast?</translation>
 <translation id="8539727552378197395">Ні (HttpOnly)</translation>
 <translation id="8539766201049804895">Оновити</translation>
+<translation id="8540136935098276800">Введіть URL-адресу правильного формату</translation>
 <translation id="8540608333167683902">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%. Докладніше</translation>
 <translation id="8541462173655894684">На сервері друку немає принтерів</translation>
 <translation id="8542618328173222274">Запитувати, коли сайт хоче отримати доступ до даних або пристроїв віртуальної реальності</translation>
@@ -5430,6 +5443,7 @@
 <translation id="8551388862522347954">Ліцензії</translation>
 <translation id="8553342806078037065">Керувати іншими користувачами</translation>
 <translation id="8554899698005018844">Мову не вибрано</translation>
+<translation id="8556135141412663091">Перш ніж використовувати плагін Plugin VM, потрібно оновити пристрій.</translation>
 <translation id="8557022314818157177">Торкайтеся ключа безпеки, поки відбиток пальця не відсканується</translation>
 <translation id="855773602626431402">На цій сторінці заблоковано запуск плагіна з неізольованим програмним середовищем.</translation>
 <translation id="8557930019681227453">Маніфест</translation>
@@ -5520,6 +5534,7 @@
 <translation id="8673383193459449849">Проблема із сервером</translation>
 <translation id="8675354002693747642">Спільний ключ</translation>
 <translation id="8676374126336081632">Видалити введений текст</translation>
+<translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8677212948402625567">Згорнути все...</translation>
 <translation id="8678648549315280022">Керувати налаштуваннями завантаження…</translation>
 <translation id="8678933587484842200">Як запускати цей додаток?</translation>
@@ -5678,6 +5693,7 @@
 <translation id="8871696467337989339">Використовується непідтримувана позначка командного рядка: <ph name="BAD_FLAG" />. Стабільність і безпеку буде порушено.</translation>
 <translation id="8871974300055371298">Веб-контент</translation>
 <translation id="8872155268274985541">Знайдено недійсний зовнішній файл маніфесту оновлення термінала. Помилка оновлення додатка-термінала. Витягніть носій USB.</translation>
+<translation id="8872187374998143710">Перезапустіть пристрій, щоб скористатися плагіном Plugin VM.</translation>
 <translation id="8872777911145321141">Запитувати, коли сайт хоче отримати доступ до даних або пристроїв віртуальної реальності (рекомендовано)</translation>
 <translation id="8874184842967597500">Не під’єднано</translation>
 <translation id="8876307312329369159">Це налаштування не можна змінити в демонстраційному сеансі.</translation>

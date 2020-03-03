@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1195447618553298278">Nežinoma klaida.</translation>
+<translation id="1468664791493211953">Pasiūlymai</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> tvarko šį įrenginį ir gali stebėti jūsų veiklą.</translation>
 <translation id="150962533380566081">Netinkamas PUK.</translation>
 <translation id="1510238584712386396">Paleidimo priemonė</translation>
@@ -42,6 +43,7 @@ Palieskite mikrofoną, kad užduotumėte reikiamus klausimus.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7690294790491645610">Patvirtinkite naują slaptažodį</translation>
 <translation id="808894953321890993">Keisti slaptažodį</translation>
+<translation id="8208861521865154048">Privilegijos</translation>
 <translation id="8747900814994928677">Patvirtinti pakeitimą</translation>
 <translation id="910415269708673980">Atnaujinkite <ph name="PRINCIPAL_NAME" /> bilietą</translation>
 <translation id="9111102763498581341">Atrakinti</translation>

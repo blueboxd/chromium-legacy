@@ -63,6 +63,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         gpu::SurfaceHandle surface_handle,
                          uint32_t usage);
   bool CreateSharedImage(const Mailbox& mailbox,
                          viz::ResourceFormat format,

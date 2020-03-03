@@ -2438,7 +2438,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
   Node* node = &root;
   while (node) {
     if (auto* element = DynamicTo<Element>(node)) {
-      if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled() &&
+      if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() &&
           element->StyleRecalcBlockedByDisplayLock(
               DisplayLockLifecycleTarget::kChildren)) {
         node = FlatTreeTraversal::NextSkippingChildren(*node);
@@ -2728,7 +2728,7 @@ void Document::ApplyScrollRestorationLogic() {
   // This function in not re-entrant. However, the places that invoke this are
   // re-entrant. Specifically, UpdateStyleAndLayout() calls this, which in turn
   // can do a find-in-page for the scroll-to-text feature, which can cause
-  // UpdateStyleAndLayout to happen with render-subtree, which gets back here
+  // UpdateStyleAndLayout to happen with subtree-visibility, which gets back here
   // and recurses indefinitely. As a result, we ensure to early out from this
   // function if are currently in process of restoring scroll.
   if (applying_scroll_restoration_logic_)
@@ -2813,8 +2813,8 @@ void Document::MarkHasFindInPageRequest() {
   had_find_in_page_request_ = true;
 }
 
-void Document::MarkHasFindInPageRenderSubtreeActiveMatch() {
-  // Note that although find-in-page in render-subtree requests happen in
+void Document::MarkHasFindInPageSubtreeVisibilityActiveMatch() {
+  // Note that although find-in-page in subtree-visibility requests happen in
   // non-main frames, we only record the main frame results (per UKM policy).
   // Additionally, we only record the event once.
   if (had_find_in_page_render_subtree_active_match_ || !IsInMainFrame())
@@ -2823,6 +2823,7 @@ void Document::MarkHasFindInPageRenderSubtreeActiveMatch() {
   auto* recorder = UkmRecorder();
   DCHECK(recorder);
   DCHECK(UkmSourceID() != ukm::kInvalidSourceId);
+  // TODO(vmpstr): Rename UKM values if possible.
   ukm::builders::Blink_FindInPage(UkmSourceID())
       .SetDidHaveRenderSubtreeMatch(true)
       .Record(recorder);

@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 34
+// Next tag: 35
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -756,6 +756,11 @@ message SystemProfileProto {
   // Whether the client_id in the log matches the client_id we used to assign
   // field trials.
   optional bool client_id_was_used_for_trial_assignment = 33;
+
+  // The unhashed client_id for this report. This is a uuid in its canonical
+  // textual represetnation in the form 8-4-4-4-12 for a total of 36 characters.
+  // Used to simulate field trial assignments for the client.
+  optional string client_uuid = 34;
 
   // Information about the A/V output device(s) (typically just a TV).
   // However, a configuration may have one or more intermediate A/V devices

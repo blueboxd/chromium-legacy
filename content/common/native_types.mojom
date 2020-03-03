@@ -89,7 +89,4 @@ struct SyntheticTap;
 struct SyntheticPointerAction;
 
 [Native]
-enum PreferredColorScheme;
-
-[Native]
 enum SystemThemeColor;

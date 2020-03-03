@@ -611,6 +611,11 @@ void NetworkConfigurationHandler::SetPropertiesSuccessCallback(
   if (!network_state)
     return;  // Network no longer exists, do not notify or request update.
 
+  for (auto& observer : observers_) {
+    observer.OnConfigurationModified(service_path, network_state->guid(),
+                                     set_properties.get());
+  }
+
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 

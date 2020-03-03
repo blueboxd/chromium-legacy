@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3576141592585647168">Промените временску зону</translation>
+<translation id="3593646411856133110">Превуците нагоре и задржите да бисте видели отворене апликације</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
 <translation id="3604801046548457007">Радна површина <ph name="DESK_TITILE" /> је направљена</translation>
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">Подешавања звука</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3631369015426612114">Дозволи обавештења из следећих извора</translation>
+<translation id="3638400994746983214">Укључује/искључује екран за приватност. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Сними област</translation>
 <translation id="371370241367527062">Предњи микрофон</translation>
@@ -243,6 +245,7 @@
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
 <translation id="4021716437419160885">Помери надоле</translation>
+<translation id="402772165574991617">Користите покрете да бисте брзо прелазили са једне апликације на другу и вршили интеракцију са Chromebook-ом у режиму таблета.</translation>
 <translation id="4028481283645788203">Треба да унесете лозинку ради додатне безбедности</translation>
 <translation id="4042660782729322247">Делите екран</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
@@ -291,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
 <translation id="4665114317261903604">Укључите/искључите режим Не узнемиравај. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Откључајте уређај помоћу кода родитеља</translation>
+<translation id="4702647871202761252">Екран за приватност је искључен</translation>
 <translation id="4710243778082831592">Подешавања IME-а</translation>
 <translation id="4731797938093519117">Родитељски приступ</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
@@ -362,6 +366,7 @@
 <translation id="5745612484876805746">Ноћно светло се аутоматски укључује када сунце зађе</translation>
 <translation id="5750765938512549687">Bluetooth је искључен</translation>
 <translation id="576453121877257266">Ноћно светло је укључено.</translation>
+<translation id="5769373120130404283">Екран за приватност</translation>
 <translation id="5777841717266010279">Желите ли да прекинете дељење екрана?</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
 <translation id="5837036133683224804">Заустави <ph name="ROUTE_TITLE" /> на уређају <ph name="RECEIVER_NAME" /></translation>
@@ -403,6 +408,7 @@
 <translation id="6297287540776456956">Користите писаљку да бисте изабрали област</translation>
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME" /> је промењен у <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth је укључен</translation>
+<translation id="6381109794406942707">Да бисте откључали уређај, унесите PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
@@ -425,6 +431,7 @@
 <translation id="6559976592393364813">Питајте администратора</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
+<translation id="6614169507485700968">Екран за приватност је укључен</translation>
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6637729079642709226">Промените време</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
@@ -439,6 +446,7 @@
 <translation id="6715542151869432661">Није пронађен ниједан мобилни уређај.</translation>
 <translation id="6723839937902243910">Енергија</translation>
 <translation id="6727969043791803658">Повезано, ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">Примењује администратор</translation>
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
 <translation id="6752912906630585008">Радна површина <ph name="REMOVED_DESK" /> је уклоњена и спојена са радном површином <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Напаја повезане уређаје са USB прикључком типа C</translation>
@@ -526,6 +534,7 @@
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8029629653277878342">Треба да унесете PIN или лозинку ради додатне безбедности</translation>
 <translation id="8030169304546394654">Веза је прекинута</translation>
+<translation id="8042024183333293953">Испробајте нову навигацију помоћу покрета</translation>
 <translation id="8048123526339889627">Подешавања Bluetooth-а</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
@@ -613,6 +622,7 @@
 <translation id="9072519059834302790">Још <ph name="TIME_LEFT" /> и батерија ће бити празна.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Превуците нагоре да бисте отишли на почетни екран</translation>
 <translation id="9080206825613744995">Микрофон се користи.</translation>
 <translation id="9084606467167974638">Промените положај менија</translation>
 <translation id="9089416786594320554">Методи уноса</translation>

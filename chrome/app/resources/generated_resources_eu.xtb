@@ -2686,7 +2686,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4737715515457435632">Konektatu sare batera</translation>
 <translation id="473775607612524610">Eguneratu</translation>
 <translation id="4739639199548674512">Zerbitzu-eskaerak</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> eta beste orri bat}other{<ph name="PAGE_TITLE" /> eta beste # orri}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Lortu aplikazioak eguneratzeari buruzko informazioa<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Aktibatu webguneko audioa}other{Aktibatu webguneetako audioa}}</translation>
 <translation id="4746351372139058112">Mezuak</translation>
@@ -5188,7 +5187,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8214489666383623925">Ireki fitxategia…</translation>
 <translation id="8214962590150211830">Kendu pertsona hau</translation>
 <translation id="8215295261562449873">Linux bertsio-berritu aurretik, gorde aplikazio eta fitxategien babeskopia "Deskargak" karpetan.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> eta beste orri bat}other{<ph name="PAGE_TITLE" /> eta beste # orri}}</translation>
 <translation id="8217399928341212914">Jarraitu blokeatzen fitxategi bat baino gehiagoren deskarga automatikoa</translation>
 <translation id="8218847192766059983">Gehitu hizkuntzak edo aldatu zerrendako elementuen ordena. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Jakinarazpenak blokeatu ohi dituzu. Webgune honen jakinarazpenak jasotzeko, egin klik hemen.</translation>
@@ -5399,6 +5397,7 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="851263357009351303">Eman beti irudiak erakusteko baimena <ph name="HOST" /> webguneari</translation>
 <translation id="8513108775083588393">Biratu automatikoki</translation>
 <translation id="8514746246728959655">Erabili beste segurtasun-giltza bat</translation>
+<translation id="8517041960877371778">Baliteke <ph name="DEVICE_TYPE" /> gailua ez kargatzea piztuta dagoen bitartean.</translation>
 <translation id="8521475323816527629">Atzitu aplikazioak bizkor</translation>
 <translation id="8523493869875972733">Mantendu aldaketak</translation>
 <translation id="8523849605371521713">Gidalerroei jarraikiz gehitu da</translation>
@@ -5519,6 +5518,7 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8673383193459449849">Zerbitzariaren arazoa</translation>
 <translation id="8675354002693747642">Aurrez partekatutako gakoa</translation>
 <translation id="8676374126336081632">Garbitu idatzitakoa</translation>
+<translation id="8676770494376880701">Potentzia txikiko kargagailua konektatu da</translation>
 <translation id="8677212948402625567">Tolestu guztiak…</translation>
 <translation id="8678648549315280022">Kudeatu deskargen ezarpenak…</translation>
 <translation id="8678933587484842200">Nola abiarazi behar da aplikazio hau?</translation>

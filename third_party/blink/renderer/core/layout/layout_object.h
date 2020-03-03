@@ -2515,7 +2515,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool BeingDestroyed() const { return bitfields_.BeingDestroyed(); }
 
   DisplayLockContext* GetDisplayLockContext() const {
-    if (!RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
+    if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
       return nullptr;
     auto* element = DynamicTo<Element>(GetNode());
     if (!element)

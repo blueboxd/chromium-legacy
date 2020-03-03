@@ -10,6 +10,8 @@ source_set("browser") {
   sources = [
     "compositor_utils.cc",
     "compositor_utils.h",
+    "directory_key.cc",
+    "directory_key.h",
     "file_manager.cc",
     "file_manager.h",
     "hit_tester.cc",

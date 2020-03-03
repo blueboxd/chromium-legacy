@@ -13,13 +13,17 @@ import static android.support.test.espresso.intent.Intents.intending;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.anyIntent;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
+import static android.support.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.hasTextColor;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -30,6 +34,7 @@ import static org.hamcrest.Matchers.not;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTintColor;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withParentIndex;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
@@ -38,6 +43,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.MediumTest;
+import android.widget.RadioButton;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -128,13 +134,17 @@ public class AutofillAssistantFormActionTest {
                                         .setExpandText("Expand")))
                         .addInputs(FormInputProto.newBuilder().setSelection(
                                 SelectionInputProto.newBuilder()
-                                        .addChoices(
-                                                SelectionInputProto.Choice.newBuilder()
-                                                        .setLabel("Choice 1")
-                                                        .setDescriptionLine1("$10.00 per choice")
-                                                        .setDescriptionLine2(
-                                                                "<link1>Details</link1>"))
-                                        .setAllowMultiple(true)))
+                                        .addChoices(SelectionInputProto.Choice.newBuilder()
+                                                            .setLabel("Choice 1")
+                                                            .setDescriptionLine1("$10.00 option")
+                                                            .setDescriptionLine2(
+                                                                    "<link1>Details</link1>"))
+                                        .addChoices(SelectionInputProto.Choice.newBuilder()
+                                                            .setLabel("Choice 2")
+                                                            .setDescriptionLine1("$20.00 option")
+                                                            .setDescriptionLine2(
+                                                                    "<link1>Details</link1>"))
+                                        .setAllowMultiple(false)))
                         .addInputs(FormInputProto.newBuilder().setCounter(
                                 CounterInputProto.newBuilder().addCounters(
                                         CounterInputProto.Counter.newBuilder()
@@ -194,10 +204,25 @@ public class AutofillAssistantFormActionTest {
                        hasSibling(hasDescendant(withText("Counter 3")))))
                 .perform(click());
 
-        // Click on Choice 1, toggle to 'checked'.
-        onView(allOf(isDisplayed(), withId(R.id.checkbox),
-                       hasSibling(hasDescendant(withText("Choice 1")))))
+        // Click on Choice 1, then Choice 2, then back to Choice 1.
+        onView(allOf(withClassName(is(RadioButton.class.getName())), withParentIndex(0),
+                       withEffectiveVisibility(VISIBLE)))
                 .perform(click());
+        onView(allOf(withClassName(is(RadioButton.class.getName())), withParentIndex(3),
+                       withEffectiveVisibility(VISIBLE)))
+                .perform(click());
+        onView(allOf(withClassName(is(RadioButton.class.getName())), withParentIndex(0),
+                       withEffectiveVisibility(VISIBLE)))
+                .perform(click());
+
+        // Check that choice 1 is visually selected and choice 2 is de-selected.
+        onView(allOf(withClassName(is(RadioButton.class.getName())), withParentIndex(0),
+                       withEffectiveVisibility(VISIBLE)))
+                .check(matches(isChecked()));
+        onView(allOf(withClassName(is(RadioButton.class.getName())), withParentIndex(3),
+                       withEffectiveVisibility(VISIBLE)))
+                .check(matches(not(isChecked())));
+
         // Click on Counter 2 +, increase from 0 to 1.
         onView(allOf(isDisplayed(), withId(R.id.increase_button),
                        hasSibling(hasDescendant(withText("Counter 2")))))
@@ -240,8 +265,9 @@ public class AutofillAssistantFormActionTest {
         // Choice 1
         assertThat(formResult.get(1).getInputTypeCase(),
                 is(FormInputProto.Result.InputTypeCase.SELECTION));
-        assertThat(formResult.get(1).getSelection().getSelectedCount(), is(1));
+        assertThat(formResult.get(1).getSelection().getSelectedCount(), is(2));
         assertThat(formResult.get(1).getSelection().getSelected(0), is(true));
+        assertThat(formResult.get(1).getSelection().getSelected(1), is(false));
 
         // Counter 3
         assertThat(formResult.get(2).getInputTypeCase(),

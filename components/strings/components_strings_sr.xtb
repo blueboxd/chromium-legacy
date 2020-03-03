@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Скраћивање</translation>
 <translation id="2292556288342944218">Приступ интернету је блокиран</translation>
 <translation id="2297722699537546652">B5 (коверат)</translation>
+<translation id="2300306941146563769">Није отпремљено</translation>
 <translation id="2310021320168182093">Chou2 (коверат)</translation>
 <translation id="2315864634253056100">Назив овог сајта делује слично као <ph name="LOOKALIKE_DOMAIN" />. Нападачи понекад имитирају сајтове тако што скоро неприметно измене веб-адресу.</translation>
 <translation id="2316887270356262533">Ослобађа мање од 1 MB. Неки сајтови ће се можда спорије учитавати кад их следећи пут посетите.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">Откривена је промена на мрежи.</translation>
 <translation id="2910133103376701357">Уређајем и налогом управља <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ИД корисника за рачуноводствени задатак</translation>
+<translation id="2915068235268646559">Извештај о отказивању од <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворите друге програме</translation>
 <translation id="2922350208395188000">Није могуће проверити сертификат сервера.</translation>
 <translation id="2925673989565098301">Начин испоруке</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">Скрати после сваког копирања</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат је са домена <ph name="DOMAIN2" />. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
+<translation id="2943895734390379394">Време отпремања:</translation>
 <translation id="2948083400971632585">На страници Подешавања можете да онемогућите све проксије конфигурисане за везу.</translation>
 <translation id="2951588413176968965">Моје поштанско сандуче</translation>
 <translation id="295526156371527179">Упозорење: Ове смернице нису обједињене као речник како је наведено у смерницама јер нису речник.</translation>
@@ -1085,6 +1088,7 @@
 <translation id="563324245173044180">Обмањујући садржај је блокиран.</translation>
 <translation id="5644090287519800334">Померање слике 1. стране по X оси</translation>
 <translation id="5645854190134202180">Друга смена</translation>
+<translation id="5654927323611874862">ИД отпремљеног извештаја о отказивању:</translation>
 <translation id="5659593005791499971">Имејл</translation>
 <translation id="5663614846592581799">9x11 (коверат)</translation>
 <translation id="5663955426505430495">Администратор овог уређаја је инсталирао додатке за додатне функције. Додаци имају приступ некима од података.</translation>
@@ -1391,6 +1395,7 @@
 <translation id="7079718277001814089">Овај сајт садржи малвер</translation>
 <translation id="7081308185095828845">Ова функција није доступна на уређају</translation>
 <translation id="7083258188081898530">9. фиока</translation>
+<translation id="7086090958708083563">Корисник тражи отпремање</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7090678807593890770">Потражите <ph name="LINK" /> на Google-у</translation>
 <translation id="7108338896283013870">Сакриј</translation>
@@ -1553,6 +1558,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Настави на <ph name="SITE" /> (није безбедно)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Сертификат</translation>
 <translation id="7716147886133743102">Блокира администратор</translation>
+<translation id="7716375162095500223">Још није отпремљено или је игнорисано</translation>
 <translation id="7716424297397655342">Није могуће учитати овај сајт из кеша</translation>
 <translation id="7723047071702270851">Измените картицу</translation>
 <translation id="7740996059027112821">Стандардно</translation>
@@ -1697,6 +1703,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ако разумете безбедносне ризике, можете да <ph name="BEGIN_LINK" />посетите овај сајт<ph name="END_LINK" /> пре него што уклонимо штетне програме.</translation>
 <translation id="8349305172487531364">Трака са обележивачима</translation>
+<translation id="8355270400102541638">Контекст локалног отказивања:</translation>
 <translation id="8363502534493474904">да искључите режим рада у авиону</translation>
 <translation id="8364627913115013041">Није подешено.</translation>
 <translation id="8368476060205742148">Google Play услуге</translation>
@@ -1717,6 +1724,7 @@
 <translation id="8461694314515752532">Шифрујте синхронизоване податке помоћу сопствене приступне фразе за синхронизацију</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картица}one{# кредитна картица}few{# кредитне картице}other{# кредитних картица}}</translation>
 <translation id="8473863474539038330">Адресе и друго</translation>
+<translation id="8474910779563686872">Прикажи детаље о програмеру</translation>
 <translation id="8479754468255770962">Спајање у доњем левом углу</translation>
 <translation id="8483780878231876732">Да бисте користили картице са Google налога, пријавите се у Chrome</translation>
 <translation id="8488350697529856933">Односе се на</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>
 <translation id="9114524666733003316">Картица се потврђује...</translation>
+<translation id="9119042192571987207">Отпремљено</translation>
 <translation id="9128870381267983090">Повезивање са мрежом</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
 <translation id="9141013498910525015">Управљајте адресама</translation>

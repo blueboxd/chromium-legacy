@@ -63,6 +63,17 @@ void SmsService::Create(
 
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This flow relies on the delegate to display an infobar for user
+  // confirmation. Cancelling the call early if no delegate is available is
+  // easier to debug then silently dropping SMSes later on.
+  WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host());
+  if (!web_contents->GetDelegate()) {
+    std::move(callback).Run(SmsStatus::kCancelled, base::nullopt,
+                            base::nullopt);
+    return;
+  }
+
   if (callback_) {
     std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt,
                              base::nullopt);
@@ -70,7 +81,6 @@ void SmsService::Receive(ReceiveCallback callback) {
   }
 
   start_time_ = base::TimeTicks::Now();
-
   callback_ = std::move(callback);
 
   // |one_time_code_|, |sms_| and prompt are still present from the previous
@@ -126,6 +136,10 @@ void SmsService::NavigationEntryCommitted(
 void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
+  if (!web_contents->GetDelegate()) {
+    Process(SmsStatus::kCancelled, base::nullopt, base::nullopt);
+    return;
+  }
 
   prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(

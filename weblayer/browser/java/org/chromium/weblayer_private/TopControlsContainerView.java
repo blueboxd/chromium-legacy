@@ -265,6 +265,7 @@ class TopControlsContainerView extends FrameLayout {
         mLastHeight = getHeight();
         TopControlsContainerViewJni.get().setTopControlsSize(mNativeTopControlsContainerView,
                 TopControlsContainerView.this, mLastWidth, mLastHeight);
+        setTopControlsOffset(0, mLastHeight);
     }
 
     private void finishTopControlsScroll(int topContentOffsetY) {

@@ -316,10 +316,11 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
 
 PermissionService* ClipboardPromise::GetPermissionService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ExecutionContext* context = GetExecutionContext();
+  DCHECK(context);
   if (!permission_service_) {
     ConnectToPermissionService(
-        ExecutionContext::From(script_state_),
-        permission_service_.BindNewPipeAndPassReceiver());
+        context, permission_service_.BindNewPipeAndPassReceiver());
   }
   return permission_service_.get();
 }
@@ -333,7 +334,7 @@ void ClipboardPromise::RequestPermission(
   DCHECK(permission == mojom::blink::PermissionName::CLIPBOARD_READ ||
          permission == mojom::blink::PermissionName::CLIPBOARD_WRITE);
 
-  ExecutionContext* context = ExecutionContext::From(script_state_);
+  ExecutionContext* context = GetExecutionContext();
   if (!context)
     return;
   const Document& document = *Document::From(context);

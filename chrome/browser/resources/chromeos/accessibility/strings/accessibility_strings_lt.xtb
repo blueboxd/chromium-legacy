@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Kitas</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Nėra kitos 4 lygio antraštės</translation>
+<translation id="1212770441379271564">Toliau nurodyti keli spartieji klavišai nėra „ChromeVox“ komandos, bet jie vis tiek labai naudingi norint išnaudoti visas „Chrome“ galimybes.
+    Jei norite pereiti nuo vieno suaktyvinamo elemento, pvz., mygtuko ar nuorodos, prie kito, paspauskite tabuliavimo klavišą. Jei norite grįžti atgal, paspauskite „Shift“ ir tabuliavimo klavišą.
+    Jei norite pereiti į „Chrome“ naršyklės adreso laukelį, kuris dar vadinamas „Omnibox“, paspauskite „Control“ ir L.
+    Jei norite atidaryti ir automatiškai pereiti į naują skirtuką, paspauskite „Control“ ir T. Žymeklis bus laukelyje „Omnibox“.
+    Jei norite uždaryti skirtuką, paspauskite „Control“ ir W.
+    Jei norite pereiti nuo vieno atidaryto skirtuko prie kito, naudokite „Control“ ir tabuliavimo klavišą.
+    Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</translation>
 <translation id="1213216066620407844">„ChromeVox“ suteikia „Chrome“ balsą</translation>
 <translation id="1225969361094801578">Tamsiai pilka spalva su melsvu atspalviu</translation>
 <translation id="1229276918471378188">Ankstesnis perėjimas</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">spalvos parinkiklis</translation>
 <translation id="4221012616705981690">Nėra ankstesnio sąrašo</translation>
 <translation id="4221071177874897997">Pusjuodžio šrifto indikatorius:</translation>
+<translation id="4225355998815256469">Formos valdikliai</translation>
 <translation id="4229646983878045487">data ir laikas</translation>
 <translation id="4230834257931120629">Šviesiai pilka spalva su melsvu atspalviu</translation>
 <translation id="4231102694147661229">Įgalinti kūrėjo parinktis</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Sakinys</translation>
 <translation id="4623097797855662355">Informacija apie leidimą</translation>
 <translation id="463135993322337640">Paspauskite „ChromeVox“ o, n ir sužinokite, kas nauja</translation>
+<translation id="4646606380313237501">{"ar": "Arabų",
+    "as": "Asamų",
+    "aw": "Avadhi",
+    "be": "Bengalų",
+    "bg": "Bulgarų",
+    "bh": "Biharų",
+    "bo": "Tibetiečių",
+    "br": "Brajų",
+    "ca": "Katalonų",
+    "ckb": "Soranių",
+    "cs": "Čekų",
+    "cy": "Velsiečių",
+    "da": "Danų",
+    "de": "Vokiečių",
+    "de_CH": "Vokiečių (Šveicarija)",
+    "de_DE": "Vokiečių (Vokietija)",
+    "dra": "Dravidų",
+    "el": "Graikų",
+    "en": "Anglų",
+    "en_CA": "Anglų (Kanada)",
+    "en_GB": "Anglų (Jungtinė Karalystė)",
+    "en_US": "Anglų (Jungtinės Amerikos Valstijos)",
+    "eo": "Esperanto",
+    "es": "Ispanų",
+    "et": "Estų",
+    "fa": "Persų",
+    "fr": "Prancūzų",
+    "fr_CA": "Prancūzų (Kanada)",
+    "fr_FR": "Prancūzų (Prancūzija)",
+    "fi": "Suomių",
+    "ga": "Airių",
+    "gd": "Gėlų",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Hebrajų",
+    "hi": "Hindi",
+    "hr": "Kroatų",
+    "hu": "Vengrų",
+    "hy": "Armėnų",
+    "is": "Islandų",
+    "it": "Italų",
+    "iu": "Eskimų",
+    "ka": "Kanadų",
+    "kh": "Khasi",
+    "ko": "Korėjiečių",
+    "kok": "Konkanių",
+    "kru": "Kurukh",
+    "ks": "Kašmyrų",
+    "lt": "Lietuvių",
+    "lv": "Latvių",
+    "mao": "Maorių",
+    "ml": "Malajalių",
+    "mt": "Maltiečių",
+    "mwr": "Marwari",
+    "mn": "Mongolų",
+    "mun": "Mundų",
+    "nb": "Norvegų (bokmål)",
+    "ne": "Nepalų",
+    "nl": "Olandų",
+    "no": "Norvegų",
+    "or": "Orijų",
+    "pi": "Pali",
+    "pl": "Lenkų",
+    "pt": "Portugalų",
+    "pu": "Pendžabų",
+    "ro": "Rumunų",
+    "ru": "Rusų",
+    "sa": "Sanskrito",
+    "si": "Sindų",
+    "sin": "Sinhalų",
+    "sk": "Slovakų",
+    "sl": "Slovėnų",
+    "sr": "Serbų",
+    "sv": "Švedų",
+    "ta": "Tamilų",
+    "te": "Telugų",
+    "tr": "Turkų",
+    "tsn": "Afrikanso",
+    "uk": "Ukrainiečių",
+    "ur": "Urdų",
+    "vi": "Vietnamiečių",
+    "zh": "Kinų",
+    "zh_TW": "Kinų (tradicinė hanių)"}</translation>
 <translation id="4647836961514597010">Spalvos parinkiklis</translation>
 <translation id="4660783501463101648">Klasikinė versija pašalinta. Klaviatūros perjungimo jungiklis, skirtas grįžti į klasikinės versijos „ChromeVox“, pašalintas.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Fiksuojamasis režimas įgalintas</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{kablelis}one{# kablelis}few{# kableliai}many{# commas}other{# kablelių}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, teksto laukelis</translation>
+<translation id="532485153932049746">Teksto formatavimas
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, nuoroda</translation>
 <translation id="5331522683003474486">Valdykite įrenginį tik 1 ar 2 jungikliais.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Brailio rašmenys</translation>
 <translation id="5402791055281059602">Modalinis įspėjimas</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{kabliataškis}one{# kabliataškis}few{# kabliataškiai}many{# semicolons}other{# kabliataškių}}</translation>
+<translation id="5420259671171615858">Ieškoti meniu</translation>
 <translation id="5435274640623994081">Įgalinti garsinio ženklelio įrašymą į žurnalą</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ženklas mažiau}one{# ženklas mažiau}few{# ženklai mažiau}many{# less than signs}other{# ženklų mažiau}}</translation>
 <translation id="5444587279251314700">(aktyvus)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Aptikta rašybos klaida</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">grįžimas į eilutės pradžią</translation>
+<translation id="7429415133937917139">Imituojama atnaujinama Brailio rašmenų ekrano išvestis
+    „ChromeVox“ skydelyje ekrano viršuje</translation>
 <translation id="7434509671034404296">Vykdymo programa</translation>
 <translation id="743783356331413498">Pavyzdys</translation>
 <translation id="7439060726180460871">Katalogas</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Ankstesnė akutė</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Nėra kito jungtinio laukelio</translation>
+<translation id="772146615414628379">Sveikiname! Sužinojote pagrindus, kaip sėkmingai naudoti „ChromeVox“. Atminkite, kad bet kada galite atidaryti „ChromeVox“ komandų meniu paspausdami „Search“ ir taško klavišą. Jei norite sužinoti dar daugiau apie „ChromeVox“ ir „Chrome“ OS, žr. nurodytus straipsnius.
+    Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite prie uždarymo mygtuko ir spustelėkite jį.</translation>
 <translation id="7724603315864178912">Iškirpti</translation>
 <translation id="7731785449856576010">Nėra kito medijų valdiklio</translation>
 <translation id="773906353055481349">Jei norite naršyti po vieną langelį, paspauskite paieškos + „Ctrl“ + „Alt“ ir rodyklių klavišus</translation>

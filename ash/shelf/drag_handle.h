@@ -34,6 +34,9 @@ class ASH_EXPORT DragHandle : public views::View,
   // swiping up on will take the user back to the home screen.
   void ShowDragHandleNudge();
 
+  // Schedule showing the drag handle.
+  void ScheduleShowDragHandleNudge();
+
   // Immediately begins the animation to return the drag handle back to its
   // original position and hide the tooltip.
   void HideDragHandleNudge();
@@ -43,7 +46,15 @@ class ASH_EXPORT DragHandle : public views::View,
 
   bool ShowingNudge() { return showing_nudge_; }
 
-  bool HasHideTimerForTesting() {
+  bool has_show_drag_handle_timer_for_testing() {
+    return show_drag_handle_nudge_timer_.IsRunning();
+  }
+
+  void fire_show_drag_handle_timer_for_testing() {
+    show_drag_handle_nudge_timer_.FireNow();
+  }
+
+  bool has_hide_drag_handle_timer_for_testing() {
     return hide_drag_handle_nudge_timer_.IsRunning();
   }
 
@@ -68,6 +79,9 @@ class ASH_EXPORT DragHandle : public views::View,
 
   // Timer to hide drag handle nudge if it has a timed life.
   base::OneShotTimer hide_drag_handle_nudge_timer_;
+
+  // Timer to animate the drag handle and show the nudge.
+  base::OneShotTimer show_drag_handle_nudge_timer_;
 
   bool showing_nudge_ = false;
 

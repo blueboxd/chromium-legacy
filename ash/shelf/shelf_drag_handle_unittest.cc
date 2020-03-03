@@ -50,6 +50,74 @@ class DragHandleContextualNudgeTest : public ShelfLayoutManagerTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+TEST_F(DragHandleContextualNudgeTest, ShowDragHandleNudgeWithTimer) {
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  // The drag handle should be showing but the nudge should not. A timer to show
+  // the nudge should be initialized.
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  // Firing the timer should show the drag handle nudge.
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+}
+
+TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudgeHiddenOnMinimize) {
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  // The drag handle and nudge should be showing after the timer fires.
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+
+  // Minimizing the widget should hide the drag handle and nudge.
+  widget->Minimize();
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+}
+
+TEST_F(DragHandleContextualNudgeTest, DoNotShowNudgeWithoutDragHandle) {
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+
+  // Minimizing the widget should hide the drag handle and nudge.
+  widget->Minimize();
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+}
+
+TEST_F(DragHandleContextualNudgeTest,
+       ContinueShowingDragHandleNudgeOnActiveWidgetChanged) {
+  // Creates a widget that will become maximized in tablet mode.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+
+  // Maximizing and showing a different widget should not hide the drag handle
+  // or nudge.
+  views::Widget* new_widget = CreateTestWidget();
+  new_widget->Maximize();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+}
+
 TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   // Creates a widget that will become maximized in tablet mode.
   views::Widget* widget = CreateTestWidget();
@@ -58,46 +126,77 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownInAppShelf) {
   // Drag handle and nudge should not be shown in clamshell mode.
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-  TabletModeControllerTestApi().EnterTabletMode();
 
-  // Test that the first time a user transitioning into tablet mode a maximized
-  // window will show the drag handle nudge. This drag handle nudge should not
-  // have a timeout.
-  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
+  // Test that the first time a user transitions into tablet mode with a
+  // maximized window will show the drag nudge immedietly. The drag handle nudge
+  // should not be visible yet and the timer to show it should be set.
+  TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->HasHideTimerForTesting());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(GetShelfWidget()
+                  ->GetDragHandle()
+                  ->has_show_drag_handle_timer_for_testing());
 
-  // The nudge should remain visible until the shelf state changes.
+  // Firing the timer should show the nudge for the first time. The nudge should
+  // remain visible until the shelf state changes so the timer to hide it should
+  // not be set.
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(GetShelfWidget()
+                   ->GetDragHandle()
+                   ->has_hide_drag_handle_timer_for_testing());
+
+  // Leaving tablet mode should hide the nudge.
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
 
-  // Reentering tablet mode should show the drag handle but not the nudge.
+  // Reentering tablet mode should show the drag handle but the nudge should
+  // not. No timer should be set to show the nudge.
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(GetShelfWidget()
+                   ->GetDragHandle()
+                   ->has_show_drag_handle_timer_for_testing());
 
   // Advance time for more than a day (which should enable the nudge again).
   test_clock_.Advance(base::TimeDelta::FromHours(25));
+
+  // Reentering tablet mode with a maximized widget should immedietly show the
+  // drag handle and set a timer to show the nudge.
   TabletModeControllerTestApi().LeaveTabletMode();
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  // Firing the timer should show the nudge.
+  EXPECT_TRUE(GetShelfWidget()
+                  ->GetDragHandle()
+                  ->has_show_drag_handle_timer_for_testing());
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_FALSE(GetShelfWidget()
+                   ->GetDragHandle()
+                   ->has_show_drag_handle_timer_for_testing());
   // On subsequent shows, the nudge should be hidden after a timeout.
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->HasHideTimerForTesting());
+  EXPECT_TRUE(GetShelfWidget()
+                  ->GetDragHandle()
+                  ->has_hide_drag_handle_timer_for_testing());
 }
 
 TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
-  // Creates a widget that will become fullscreen in tablet mode.
+  // Creates a widget that will become maximized in tablet mode.
   views::Widget* widget = CreateTestWidget();
   widget->Maximize();
   TabletModeControllerTestApi().EnterTabletMode();
-  // The drag handle and nudge should be showing.
-  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(GetShelfWidget()
+                  ->GetDragHandle()
+                  ->has_show_drag_handle_timer_for_testing());
+  GetShelfWidget()->GetDragHandle()->fire_show_drag_handle_timer_for_testing();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
 
   // Exiting and re-entering tablet should hide the nudge and put the shelf into
@@ -106,50 +205,19 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeShownOnTap) {
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
   EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-  // Tapping the drag handle should show the drag handle nudge.
 
+  // Tapping the drag handle should show the drag handle nudge immedietly and
+  // the show nudge timer should be set.
   GetEventGenerator()->GestureTapAt(
       GetShelfWidget()->GetDragHandle()->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(GetShelfWidget()
+                   ->GetDragHandle()
+                   ->has_show_drag_handle_timer_for_testing());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
   EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->HasHideTimerForTesting());
-}
-
-TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudge) {
-  // Creates a widget that will become fullscreen in tablet mode.
-  views::Widget* widget = CreateTestWidget();
-  widget->Maximize();
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  // The drag handle and nudge should be showing.
-  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
-  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-
-  // Hiding the drag handle nudge should not affect the visibility of the drag
-  // handle.
-  GetShelfWidget()->GetDragHandle()->HideDragHandleNudge();
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-}
-
-TEST_F(DragHandleContextualNudgeTest, HideDragHandleNudgeHiddenOnMinimize) {
-  // Creates a widget that will become fullscreen in tablet mode.
-  views::Widget* widget = CreateTestWidget();
-  widget->Maximize();
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  // The drag handle and nudge should be showing.
-  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
-  EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_TRUE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
-
-  // Minimizing the widget should hide the drag handle and nudge.
-  widget->Minimize();
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
-  EXPECT_FALSE(GetShelfWidget()->GetDragHandle()->ShowingNudge());
+  EXPECT_TRUE(GetShelfWidget()
+                  ->GetDragHandle()
+                  ->has_hide_drag_handle_timer_for_testing());
 }
 
 }  // namespace ash

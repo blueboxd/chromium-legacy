@@ -2600,20 +2600,6 @@ class ComputedStyle : public ComputedStyleBase,
                                                WebColorScheme::kLight);
   }
 
-  // render-subtree helpers.
-  bool RenderSubtreeInvisible() const {
-    return static_cast<unsigned>(RenderSubtree()) &
-           static_cast<unsigned>(RenderSubtreeFlags::kInvisible);
-  }
-  bool RenderSubtreeSkipActivation() const {
-    return static_cast<unsigned>(RenderSubtree()) &
-           static_cast<unsigned>(RenderSubtreeFlags::kSkipActivation);
-  }
-  bool RenderSubtreeSkipViewportActivation() const {
-    return static_cast<unsigned>(RenderSubtree()) &
-           static_cast<unsigned>(RenderSubtreeFlags::kSkipViewportActivation);
-  }
-
   bool GeneratesMarkerImage() const {
     return Display() == EDisplay::kListItem && ListStyleImage() &&
            !ListStyleImage()->ErrorOccurred();

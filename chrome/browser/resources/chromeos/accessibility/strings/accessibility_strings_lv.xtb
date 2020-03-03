@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Tālāk</translation>
 <translation id="1206619573307042055">slīdošais teksts</translation>
 <translation id="1207086294218137981">Nav nākamā 4. līmeņa virsraksta.</translation>
+<translation id="1212770441379271564">Daži nākamie īsinājumtaustiņi nav ChromeVox komandas, taču tie ir ļoti noderīgi efektīvai Chrome izmantošanai.
+    Lai pārietu uz priekšu pa izmantojamiem vienumiem, piemēram, pogām un saitēm, nospiediet tabulēšanas taustiņu. Lai pārietu atpakaļ, vienlaikus nospiediet pārslēgšanas un tabulēšanas taustiņu.
+    Lai ievadītu tekstu pārlūkprogrammas Chrome adreses joslā, kas tiek saukta arī par universālo lodziņu, vienlaikus nospiediet vadības taustiņu un taustiņu L.
+    Lai atvērtu jaunu cilni un automātiski pārietu uz to, vienlaikus nospiediet vadības taustiņu un taustiņu T. Kursors atradīsies universālajā lodziņā.
+    Lai aizvērtu cilni, vienlaikus nospiediet vadības taustiņu un taustiņu W.
+    Lai pārvietotos uz priekšu pa atvērtām cilnēm, vienlaikus nospiediet vadības un tabulēšanas taustiņu.
+    Lai atvērtu Chrome pārlūkprogrammas izvēlni, vienlaikus nospiediet alternēšanas taustiņu un taustiņu F.</translation>
 <translation id="1213216066620407844">ChromeVox — balss piešķiršana pārlūkam Chrome</translation>
 <translation id="1225969361094801578">Tumši zilganpelēka</translation>
 <translation id="1229276918471378188">Iepriekšējais pārejas punkts</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">krāsu izvēle</translation>
 <translation id="4221012616705981690">Nav iepriekšējā saraksta.</translation>
 <translation id="4221071177874897997">Norādīt treknrakstu:</translation>
+<translation id="4225355998815256469">Veidlapas vadīklas</translation>
 <translation id="4229646983878045487">datums un laiks</translation>
 <translation id="4230834257931120629">Gaiši zilganpelēka</translation>
 <translation id="4231102694147661229">Iespējot izstrādātājiem paredzētās opcijas</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Teikums</translation>
 <translation id="4623097797855662355">Izdošanas ziņas</translation>
 <translation id="463135993322337640">Nospiediet ChromeVox “o”, “n”, lai uzzinātu par jaunajām funkcijām.</translation>
+<translation id="4646606380313237501">{"ar": "arābu",
+    "as": "asamiešu",
+    "aw": "avadhu",
+    "be": "bengāļu",
+    "bg": "bulgāru",
+    "bh": "biharu",
+    "bo": "tibetiešu",
+    "br": "bradžiešu",
+    "ca": "katalāņu",
+    "ckb": "kurdu (sorani)",
+    "cs": "čehu",
+    "cy": "velsiešu",
+    "da": "dāņu",
+    "de": "vācu",
+    "de_CH": "vācu (Šveice)",
+    "de_DE": "vācu (Vācija)",
+    "dra": "dravīdu",
+    "el": "grieķu",
+    "en": "angļu",
+    "en_CA": "angļu (Kanāda)",
+    "en_GB": "angļu (Apvienotā Karaliste)",
+    "en_US": "angļu (ASV)",
+    "eo": "esperanto",
+    "es": "spāņu",
+    "et": "igauņu",
+    "fa": "persiešu",
+    "fr": "franču",
+    "fr_CA": "franču (Kanāda)",
+    "fr_FR": "franču (Francija)",
+    "fi": "somu",
+    "ga": "īru",
+    "gd": "gēlu",
+    "gon": "gondu",
+    "gu": "gudžaratu",
+    "he": "ivrits",
+    "hi": "hindi",
+    "hr": "horvātu",
+    "hu": "ungāru",
+    "hy": "armēņu",
+    "is": "īslandiešu",
+    "it": "itāļu",
+    "iu": "inuītu",
+    "ka": "kannadu",
+    "kh": "khasu",
+    "ko": "korejiešu",
+    "kok": "konkanu",
+    "kru": "kuruhu",
+    "ks": "kašmiriešu",
+    "lt": "lietuviešu",
+    "lv": "latviešu",
+    "mao": "maoru",
+    "ml": "malajalu",
+    "mt": "maltiešu",
+    "mwr": "marvaru",
+    "mn": "mongoļu",
+    "mun": "mundu",
+    "nb": "norvēģu bukmols",
+    "ne": "nepāliešu",
+    "nl": "holandiešu",
+    "no": "norvēģu",
+    "or": "oriju",
+    "pi": "pāli",
+    "pl": "poļu",
+    "pt": "portugāļu",
+    "pu": "pandžabu",
+    "ro": "rumāņu",
+    "ru": "krievu",
+    "sa": "sanskrits",
+    "si": "sindhu",
+    "sin": "singāļu",
+    "sk": "slovāku",
+    "sl": "slovēņu",
+    "sr": "serbu",
+    "sv": "zviedru",
+    "ta": "tamilu",
+    "te": "telugu",
+    "tr": "turku",
+    "tsn": "afrikandu",
+    "uk": "ukraiņu",
+    "ur": "urdu",
+    "vi": "vjetnamiešu",
+    "zh": "ķīniešu",
+    "zh_TW": "ķīniešu (tradicionālā hanu)"}</translation>
 <translation id="4647836961514597010">Krāsu izvēle</translation>
 <translation id="4660783501463101648">Klasiskā versija ir noņemta. Tastatūras slēdzis, lai pārslēgtos atpakaļ uz ChromeVox klasisko versiju, ir noņemts.</translation>
 <translation id="4661075872484491155">koks</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Saistošais režīms iespējots</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komats}zero{# komatu}one{# komats}other{# komati}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstlodziņš</translation>
+<translation id="532485153932049746">Teksta formatējums
+        <ph name="FONT_SIZE_STRING" />
+        <ph name="COLOR_STRING" />
+        <ph name="BOLD_STRING" />
+        <ph name="ITALIC_STRING" />
+        <ph name="UNDERLINE_STRING" />
+        <ph name="LINE_THROUGH_STRING" />
+        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, saite</translation>
 <translation id="5331522683003474486">Kontrolējiet ierīci, izmantojot tikai 1–2 slēdžus.</translation>
 <translation id="5336381510091010269">iekļautā automātiskā pabeigšana un saraksts</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braila raksts</translation>
 <translation id="5402791055281059602">Modālie brīdinājumi</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikols}zero{# semikolu}one{# semikols}other{# semikoli}}</translation>
+<translation id="5420259671171615858">Meklēt izvēlnēs</translation>
 <translation id="5435274640623994081">Iespējot audio ikonas reģistrēšanu</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{zīme “mazāks par”}zero{# zīmju “mazāks par”}one{# zīme “mazāks par”}other{# zīmes “mazāks par”}}</translation>
 <translation id="5444587279251314700">(aktīva)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Konstatēta pareizrakstības kļūda</translation>
 <translation id="7408482676469142474">tabula</translation>
 <translation id="7425395583360211003">rindatgrieze</translation>
+<translation id="7429415133937917139">Simulē atsvaidzināma Braila displeja izvadi
+        ekrāna augšdaļā panelī ChromeVox.</translation>
 <translation id="7434509671034404296">Izstrādātājs</translation>
 <translation id="743783356331413498">Piemērs</translation>
 <translation id="7439060726180460871">Direktorijs</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Iepriekšējā radiopoga</translation>
 <translation id="7701196182766842984">automātiski pabeigts saraksts</translation>
 <translation id="7714340021005120797">Nav nākamā kombinētā lodziņa.</translation>
+<translation id="772146615414628379">Apsveicam! Esat veiksmīgi apguvis ChromeVox lietošanas pamatus. Jebkurā brīdī varat atvērt ChromeVox komandu izvēlni, vienlaikus nospiežot meklēšanas taustiņu un punkta taustiņu. Papildu informāciju par ChromeVox un Chrome OS skatiet tālāk norādītajos rakstos.
+    Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizvēršanas pogu un noklikšķinātu uz tās.</translation>
 <translation id="7724603315864178912">Izgriezt</translation>
 <translation id="7731785449856576010">Nav nākamā multivides logrīka.</translation>
 <translation id="773906353055481349">Lai pārvietotos pa vienai šūnai, vienlaicīgi ar kādu no bulttaustiņiem nospiediet meklēšanas, vadīšanas un alternēšanas taustiņu.</translation>

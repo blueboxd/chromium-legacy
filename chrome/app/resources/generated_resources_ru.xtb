@@ -2684,7 +2684,6 @@
 <translation id="4737715515457435632">Подключитесь к Интернету</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4739639199548674512">Билеты</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{"<ph name="PAGE_TITLE" />" и ещё 1 страница}one{"<ph name="PAGE_TITLE" />" и ещё # страница}few{"<ph name="PAGE_TITLE" />" и ещё # страницы}many{"<ph name="PAGE_TITLE" />" и ещё # страниц}other{"<ph name="PAGE_TITLE" />" и ещё # страницы}}</translation>
 <translation id="4743260470722568160">Подробнее о том, <ph name="BEGIN_LINK" />как обновлять приложения<ph name="END_LINK" />…</translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Включить звук на сайте}one{Включить звук на сайтах}few{Включить звук на сайтах}many{Включить звук на сайтах}other{Включить звук на сайтах}}</translation>
 <translation id="4746351372139058112">Сообщения</translation>
@@ -5186,7 +5185,6 @@
 <translation id="8214489666383623925">Открыть файл...</translation>
 <translation id="8214962590150211830">Удалить пользователя</translation>
 <translation id="8215295261562449873">Сохранить резервную копию моих приложений и файлов в папке скачанных файлов перед установкой обновления Linux</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{"<ph name="PAGE_TITLE" />" и ещё 1 страница}one{"<ph name="PAGE_TITLE" />" и ещё # страница}few{"<ph name="PAGE_TITLE" />" и ещё # страницы}many{"<ph name="PAGE_TITLE" />" и ещё # страниц}other{"<ph name="PAGE_TITLE" />" и ещё # страницы}}</translation>
 <translation id="8217399928341212914">Всегда блокировать автоскачивание нескольких файлов</translation>
 <translation id="8218847192766059983">Добавьте языки или измените порядок их расположения. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Обычно вы блокируете уведомления. Чтобы получать их с этого сайта, нажмите здесь.</translation>
@@ -5397,6 +5395,7 @@
 <translation id="851263357009351303">Всегда показывать изображения с сайта <ph name="HOST" /></translation>
 <translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8514746246728959655">Попробуйте применить другой электронный ключ</translation>
+<translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="8521475323816527629">Быстрый переход к приложениям</translation>
 <translation id="8523493869875972733">Закрыть</translation>
 <translation id="8523849605371521713">Добавлено по правилу</translation>
@@ -5517,6 +5516,7 @@
 <translation id="8673383193459449849">Неполадка сервера</translation>
 <translation id="8675354002693747642">Общий ключ</translation>
 <translation id="8676374126336081632">Очистить</translation>
+<translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
 <translation id="8677212948402625567">Свернуть все...</translation>
 <translation id="8678648549315280022">Настройки скачивания…</translation>
 <translation id="8678933587484842200">Как запустить это приложение?</translation>

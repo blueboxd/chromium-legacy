@@ -316,6 +316,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2289385804009217824">Przycięcie</translation>
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
 <translation id="2297722699537546652">B5 (koperta)</translation>
+<translation id="2300306941146563769">Nieprzesłany</translation>
 <translation id="2310021320168182093">Chou2 (koperta)</translation>
 <translation id="2315864634253056100">Ta nazwa witryny jest podobna do <ph name="LOOKALIKE_DOMAIN" />. Niektóre złośliwe strony podszywają się pod inne, używając bardzo podobnych adresów internetowych, które różnią się trudnymi do zauważenia szczegółami.</translation>
 <translation id="2316887270356262533">Zwolni się mniej niż 1 MB. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
@@ -444,6 +445,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
 <translation id="2910133103376701357">Twoim urządzeniem i kontem zarządza <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Identyfikator użytkownika konta zadania</translation>
+<translation id="2915068235268646559">Awaria od <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zamknij inne programy</translation>
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
 <translation id="2925673989565098301">Metoda dostawy</translation>
@@ -452,6 +454,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2930577230479659665">Przycięcie po każdej kopii</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat pochodzi z <ph name="DOMAIN2" />. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="2943895734390379394">Czas przesłania:</translation>
 <translation id="2948083400971632585">Możesz wyłączyć dowolne serwery proxy skonfigurowane dla połączenia na stronie ustawień.</translation>
 <translation id="2951588413176968965">Mój zestaw tac odbiorczych</translation>
 <translation id="295526156371527179">Ostrzeżenie: ta zasada nie została scalona jako słownik na podstawie zasady, ponieważ nie jest słownikiem.</translation>
@@ -1085,6 +1088,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="563324245173044180">Zablokowano treści wprowadzające w błąd.</translation>
 <translation id="5644090287519800334">Strona 1 – przesunięcie obrazu wzdłuż osi X</translation>
 <translation id="5645854190134202180">Druga zmiana</translation>
+<translation id="5654927323611874862">Identyfikator przesłanego raportu o awarii:</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5663614846592581799">9x11 (koperta)</translation>
 <translation id="5663955426505430495">Administrator urządzenia zainstalował rozszerzenia obsługujące dodatkowe funkcje. Rozszerzenia mają dostęp do niektórych Twoich danych.</translation>
@@ -1392,6 +1396,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
 <translation id="7081308185095828845">Ta funkcja jest niedostępna na Twoim urządzeniu</translation>
 <translation id="7083258188081898530">Taca 9</translation>
+<translation id="7086090958708083563">Użytkownik poprosił o przesłanie</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>
@@ -1554,6 +1559,7 @@ Dodatkowe informacje:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Otwórz stronę <ph name="SITE" /> (niebezpieczną)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certyfikat</translation>
 <translation id="7716147886133743102">Zablokowane przez administratora</translation>
+<translation id="7716375162095500223">Nieprzesłany lub zignorowany</translation>
 <translation id="7716424297397655342">Nie można załadować tej strony z pamięci podręcznej</translation>
 <translation id="7723047071702270851">Edytuj kartę</translation>
 <translation id="7740996059027112821">Standardowa</translation>
@@ -1698,6 +1704,7 @@ Dodatkowe informacje:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />wejść na tę stronę<ph name="END_LINK" />, zanim szkodliwe programy zostaną usunięte.</translation>
 <translation id="8349305172487531364">Pasek zakładek</translation>
+<translation id="8355270400102541638">Lokalny kontekst awarii:</translation>
 <translation id="8363502534493474904">Wyłącz tryb samolotowy</translation>
 <translation id="8364627913115013041">Nie ustawiono.</translation>
 <translation id="8368476060205742148">Usługi Google Play</translation>
@@ -1718,6 +1725,7 @@ Dodatkowe informacje:
 <translation id="8461694314515752532">Szyfruj synchronizowane dane własnym hasłem synchronizacji</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 karta kredytowa}few{# karty kredytowe}many{# kart kredytowych}other{# karty kredytowej}}</translation>
 <translation id="8473863474539038330">Adresy i ustawienia</translation>
+<translation id="8474910779563686872">Pokaż szczegóły dewelopera</translation>
 <translation id="8479754468255770962">Zszywka w lewym dolnym rogu</translation>
 <translation id="8483780878231876732">Aby użyć kart z konta Google, zaloguj się w Chrome</translation>
 <translation id="8488350697529856933">Dotyczy</translation>
@@ -1843,6 +1851,7 @@ Dodatkowe informacje:
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>
 <translation id="9114524666733003316">Sprawdzam kartę…</translation>
+<translation id="9119042192571987207">Przesłano</translation>
 <translation id="9128870381267983090">Połącz z siecią</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9141013498910525015">Zarządzaj adresami</translation>

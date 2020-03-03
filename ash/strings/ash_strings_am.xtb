@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">መለያው በ<ph name="MANAGER_EMAIL" /> ነው የሚቀናበረው</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE" />» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="3576141592585647168">የጊዜ ሰቅ ይለውጡ</translation>
+<translation id="3593646411856133110">ክፍት መተግበሪያዎችን ለመመልከት ወደ ላይ በጣት ጠርገው ይያዙ</translation>
 <translation id="3595596368722241419">ባትሪ ሙሉ ነው</translation>
 <translation id="3604801046548457007">ዴስክ <ph name="DESK_TITILE" /> ተፈጥሯል</translation>
 <translation id="3606978283550408104">የብሬይል ማሳያ ተገናኝቷል።</translation>
@@ -362,6 +363,7 @@
 <translation id="5745612484876805746">የሌሊት ብርሃን በፀሐይ መጥለቅ ጊዜ በራስሰር ይበራል</translation>
 <translation id="5750765938512549687">ብሉቱዝ ጠፍቷል</translation>
 <translation id="576453121877257266">የምሽት ብርሃን በርቷል።</translation>
+<translation id="5769373120130404283">የግላዊነት ማያ ገጽ</translation>
 <translation id="5777841717266010279">ማያ ገጽ ማጋራት ይቁም?</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ላይ <ph name="ROUTE_TITLE" />ን አስቁም</translation>
@@ -403,6 +405,7 @@
 <translation id="6297287540776456956">ክልል ለመምረጥ ስቲለሱን ይጠቀሙ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ወደ <ph name="ROTATION" /> ዞሯል</translation>
 <translation id="6376931439017688372">ብሉቱዝ በርቷል</translation>
+<translation id="6381109794406942707">መሣሪያውን ለመክፈት የእርስዎን ፒን ያስገቡ።</translation>
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
@@ -613,6 +616,7 @@
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> ባትሪ ባዶ እስከሚሆን ድረስ።</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9079731690316798640">Wi-Fi፦ <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">ወደ መነሻ ለመሄድ በጣት ወደ ላይ ይጥረጉ</translation>
 <translation id="9080206825613744995">ማይክሮፎን ስራ ላይ ነው።</translation>
 <translation id="9084606467167974638">የምናሌን ቦታ ቀይር</translation>
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>

@@ -11,6 +11,7 @@
 <translation id="151962892725702025">Chromium OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>
 <translation id="1524282610922162960">Chromium-Tab freigeben</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Laut Ihrem Administrator müssen Sie Chromium neu starten, um ein Update durchzuführen}=1{Laut Ihrem Administrator müssen Sie Chromium neu starten, um ein Update durchzuführen. Ihr Inkognitofenster wird nicht wieder geöffnet.}other{Laut Ihrem Administrator müssen Sie Chromium neu starten, um ein Update durchzuführen. Ihre # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
+<translation id="1663739491876737434">Chromium kann Ihre Passwörter nicht prüfen. Versuchen Sie es morgen noch einmal.</translation>
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
@@ -61,6 +62,7 @@
 <translation id="358997566136285270">Chromium-Logo</translation>
 <translation id="3639635944603682591">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Wenn Sie die Daten wiederherstellen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chromium an.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald Sie den Browser neu starten.}=1{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald Sie den Browser neu starten. Ihr Inkognitofenster wird nicht wieder geöffnet.}other{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald Sie den Browser neu starten. Ihre # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
+<translation id="3685209450716071127">Chromium kann Ihre Passwörter nicht prüfen. Überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Laut Ihrem Administrator sollten Sie Chromium neu starten, um dieses Update durchzuführen}=1{Laut Ihrem Administrator sollten Sie Chromium neu starten, um dieses Update durchzuführen. Ihr Inkognitofenster wird nicht wieder geöffnet.}other{Laut Ihrem Administrator sollten Sie Chromium neu starten, um dieses Update durchzuführen. Ihre # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="3713809861844741608">Link in neuem Chromium-Tab öffnen</translation>
 <translation id="3728336900324680424">Chromium greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
@@ -92,7 +94,9 @@
 <translation id="4943838377383847465">Chromium wird im Hintergrundmodus ausgeführt.</translation>
 <translation id="4987820182225656817">Gastnutzer können Chromium verwenden, ohne Daten zu hinterlassen.</translation>
 <translation id="4994636714258228724">Mich zu Chromium hinzufügen</translation>
+<translation id="5093066630040073147">Keine gespeicherten Passwörter. Chromium kann Ihre Passwörter nur dann prüfen, wenn Sie sie in Ihrem Google-Konto speichern.</translation>
 <translation id="5277894862589591112">Starten Sie Chromium neu, um die Änderungen zu übernehmen</translation>
+<translation id="5310059007469274549">Chromium kann Ihre Passwörter nicht prüfen, da es zu viele sind</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Anmeldung in Chromium zulassen</translation>
@@ -102,12 +106,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS kann diese Seite nicht öffnen.</translation>
 <translation id="5480860683791598150">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
+<translation id="5488573303232097702">Chrome wurde aufgrund eines Fehlers nicht aktualisiert. Beheben Sie Updateprobleme und Fehler bei der Aktualisierung von Chrome.</translation>
 <translation id="549669000822060376">Bitte warten Sie, bis die aktuellen Systemupdates von Chromium installiert wurden.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Ein Chromium-Update ist verfügbar}=1{Ein Chromium-Update ist verfügbar}other{Ein Chromium-Update ist seit # Tagen verfügbar}}</translation>
 <translation id="5631814766731275228">Chromium-Name und -Bild</translation>
 <translation id="5634636535844844681">Für Chromium ist Windows 7 oder höher erforderlich.</translation>
 <translation id="5653831366781983928">Starten Sie Chromium jetzt neu</translation>
 <translation id="5698481217667032250">Chromium in dieser Sprache anzeigen</translation>
+<translation id="5814748786105822016">Chromium kann Ihre Passwörter nicht prüfen</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
 <translation id="5895138241574237353">Neu starten</translation>
@@ -123,6 +129,7 @@
 <translation id="6212496753309875659">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium. Falls die Software nicht funktioniert, deinstallieren Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium wird jetzt neu gestartet}=1{Chromium wird in einer Sekunde neu gestartet}other{Chromium wird in # Sekunden neu gestartet}}</translation>
 <translation id="6248213926982192922">Chromium als Standardbrowser verwenden</translation>
+<translation id="6266342355635466082">Chromium kann nicht nach Updates suchen. Überprüfen Sie Ihre Internetverbindung.</translation>
 <translation id="6268381023930128611">Von Chromium abmelden?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chromium blockiert.</translation>
 <translation id="6309712487085796862">Chromium verwendet Ihre Kamera.</translation>
@@ -197,12 +204,14 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium innerhalb eines Tages neu starten}other{Chromium innerhalb von # Tagen neu starten}}</translation>
 <translation id="8453117565092476964">Das Installationsarchiv ist beschädigt oder ungültig. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
+<translation id="8568283329061645092">Chromium kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8682540261359803721">Wenn Sie auf dieser Seite eine Einstellung nicht finden können, sehen Sie in den <ph name="LINK_BEGIN" />Chromium-Browsereinstellungen<ph name="LINK_END" /> nach</translation>
 <translation id="8697124171261953979">Die Erweiterung legt auch fest, welche Seite beim Start von Chromium oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="8704119203788522458">Dies ist Ihr persönlicher Chromium-Browser</translation>
+<translation id="8774315820480073720">Ihr Administrator verwaltet Chromium-Updates</translation>
 <translation id="8796602469536043152">Chromium benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen</translation>
 <translation id="8803635938069941624">Chromium OS-Nutzungsbedingungen</translation>
 <translation id="8821041990367117597">Chromium konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>

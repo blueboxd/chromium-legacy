@@ -135,12 +135,12 @@ test(function() {
 
 test(function() {
     [0, 1, 100, 101, 199, 600, 700].forEach(function(status) {
-        assert_throws({name: 'RangeError'},
-                      function() {
-                        new Response(new Blob(), {status: status});
-                      },
-                      'new Response with status = ' + status +
-                      ' should throw');
+        assert_throws_js(RangeError,
+                         function() {
+                           new Response(new Blob(), {status: status});
+                         },
+                         'new Response with status = ' + status +
+                         ' should throw');
       });
 
     [204, 205, 304].forEach(function(status) {
@@ -153,13 +153,13 @@ test(function() {
       });
 
     [300, 0, 304, 305, 306, 309, 500].forEach(function(status) {
-        assert_throws({name: 'RangeError'},
-                      function() {
-                        Response.redirect('https://www.example.com/test.html',
-                                          status);
-                      },
-                      'Response.redirect() with invalid status = ' + status +
-                      ' should throw');
+        assert_throws_js(RangeError,
+                         function() {
+                           Response.redirect('https://www.example.com/test.html',
+                                             status);
+                         },
+                         'Response.redirect() with invalid status = ' + status +
+                         ' should throw');
       });
 
     assert_throws_js(

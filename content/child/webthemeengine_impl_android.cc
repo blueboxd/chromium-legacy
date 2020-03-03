@@ -177,17 +177,4 @@ void WebThemeEngineAndroid::SetForcedColors(
   ui::NativeTheme::GetInstanceForWeb()->set_high_contrast(
       forced_colors == blink::ForcedColors::kActive);
 }
-
-blink::PreferredColorScheme WebThemeEngineAndroid::PreferredColorScheme()
-    const {
-  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
-      ui::NativeTheme::GetInstanceForWeb()->GetPreferredColorScheme();
-  return WebPreferredColorScheme(preferred_color_scheme);
-}
-
-void WebThemeEngineAndroid::SetPreferredColorScheme(
-    const blink::PreferredColorScheme preferred_color_scheme) {
-  ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(
-      NativePreferredColorScheme(preferred_color_scheme));
-}
 }  // namespace content

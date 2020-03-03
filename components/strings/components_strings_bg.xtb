@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Отрязване</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
+<translation id="2300306941146563769">Не е качено</translation>
 <translation id="2310021320168182093">Chou2 (плик)</translation>
 <translation id="2315864634253056100">Името на този сайт наподобява това на <ph name="LOOKALIKE_DOMAIN" />. Понякога извършителите на атаки имитират сайтове, като правят труднозабележими промени в уеб адреса.</translation>
 <translation id="2316887270356262533">Ще освободите по-малко от 1 МБ. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
@@ -442,6 +443,7 @@
 <translation id="2909946352844186028">Установена бе промяна в мрежата.</translation>
 <translation id="2910133103376701357">Устройството и профилът ви се управляват от <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Потребителски идентификатор за отчитане на задания</translation>
+<translation id="2915068235268646559">Срив от <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворете другите програми.</translation>
 <translation id="2922350208395188000">Сертификатът на сървъра не може да бъде проверен.</translation>
 <translation id="2925673989565098301">Начин на бърза доставка</translation>
@@ -450,6 +452,7 @@
 <translation id="2930577230479659665">Отрязване след всяко копие</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност е от <ph name="DOMAIN2" />. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
+<translation id="2943895734390379394">Време на качване:</translation>
 <translation id="2948083400971632585">Можете да деактивирате всички конфигурирани за дадена връзка прокси сървъри от страницата „Настройки“.</translation>
 <translation id="2951588413176968965">Моята пощенска кутия</translation>
 <translation id="295526156371527179">Предупреждение: Това правило не бе обединено като речник според посоченото в правилото, тъй като не е речник.</translation>
@@ -1083,6 +1086,7 @@
 <translation id="563324245173044180">Блокирахме измамно съдържание.</translation>
 <translation id="5644090287519800334">Изместване на изображението от страна 1 по оста X</translation>
 <translation id="5645854190134202180">Втора смяна</translation>
+<translation id="5654927323611874862">Идентификатор на качения сигнал за срив:</translation>
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5663614846592581799">9 x 11 (плик)</translation>
 <translation id="5663955426505430495">Администраторът на това устройство е инсталирал разширения за допълнителни функции. Разширенията имат достъп до част от данните ви.</translation>
@@ -1390,6 +1394,7 @@
 <translation id="7079718277001814089">Този сайт съдържа злонамерен софтуер</translation>
 <translation id="7081308185095828845">Тази функция не е налице на устройството ви</translation>
 <translation id="7083258188081898530">Тава 9</translation>
+<translation id="7086090958708083563">Качване, заявено от потребител</translation>
 <translation id="7087282848513945231">Област</translation>
 <translation id="7090678807593890770">Потърсете „<ph name="LINK" />“ с Google</translation>
 <translation id="7108338896283013870">Скриване</translation>
@@ -1552,6 +1557,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Продължаване към <ph name="SITE" /> (опасно)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Сертификат</translation>
 <translation id="7716147886133743102">Блокирано от администратора ви</translation>
+<translation id="7716375162095500223">Още не е качено или пренебрегнато</translation>
 <translation id="7716424297397655342">Този сайт не може да се зареди от кеш паметта</translation>
 <translation id="7723047071702270851">Редактиране на картата</translation>
 <translation id="7740996059027112821">Стандартна</translation>
@@ -1696,6 +1702,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този сайт<ph name="END_LINK" /> преди премахването на опасните програми.</translation>
 <translation id="8349305172487531364">Лента на отметките</translation>
+<translation id="8355270400102541638">Локален контекст за срива:</translation>
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
 <translation id="8364627913115013041">Не е зададено.</translation>
 <translation id="8368476060205742148">Услуги за Google Play</translation>
@@ -1716,6 +1723,7 @@
 <translation id="8461694314515752532">Шифроване на синхронизираните данни със собствения ви пропуск за синхронизиране</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8473863474539038330">Адреси и др.</translation>
+<translation id="8474910779563686872">Показване на подробностите за програмисти</translation>
 <translation id="8479754468255770962">Телбодиране долу вляво</translation>
 <translation id="8483780878231876732">За да използвате картите от профила си в Google, влезте в Chrome</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
@@ -1841,6 +1849,7 @@
 <translation id="9103872766612412690">Обикновено <ph name="SITE" /> използва шифроване за защита на информацията ви. Когато Chromium опита да установи връзка с/ъс <ph name="SITE" /> този път, уебсайтът върна необичайни и неправилни идентификационни данни. Това може да се случи, когато извършител на атака пробва да се представи за <ph name="SITE" /> или връзката е прекъсната от екран за вход в Wi-Fi. Информацията ви продължава да е защитена, тъй като Chromium спря връзката, преди да бъдат обменени данни.</translation>
 <translation id="9106062320799175032">Добавяне на адрес за фактуриране</translation>
 <translation id="9114524666733003316">Картата се потвърждава...</translation>
+<translation id="9119042192571987207">Качено</translation>
 <translation id="9128870381267983090">Свързване към мрежа</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9141013498910525015">Управление на адресите</translation>

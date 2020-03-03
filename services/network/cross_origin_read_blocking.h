@@ -27,6 +27,10 @@ FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest,
 
 namespace network {
 
+namespace mojom {
+class NetworkServiceClient;
+}  // namespace mojom
+
 // CrossOriginReadBlocking (CORB) implements response blocking
 // policy for Site Isolation.  CORB will monitor network responses to a
 // renderer and block illegal responses so that a compromised renderer cannot
@@ -105,13 +109,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // whether |response| needs to be blocked.
     //
     // TODO(lukasza): https://crbug.com/920638: Remove
-    // |is_for_non_http_isolated_world| once we gather enough UMA data.
-    ResponseAnalyzer(const GURL& request_url,
-                     const base::Optional<url::Origin>& request_initiator,
-                     const network::mojom::URLResponseHead& response,
-                     base::Optional<url::Origin> request_initiator_site_lock,
-                     mojom::RequestMode request_mode,
-                     bool is_for_non_http_isolated_world);
+    // |isolated_world_origin| and |network_service_client| once we gather
+    // enough UMA and Rappor data.
+    ResponseAnalyzer(
+        const GURL& request_url,
+        const base::Optional<url::Origin>& request_initiator,
+        const network::mojom::URLResponseHead& response,
+        const base::Optional<url::Origin>& request_initiator_site_lock,
+        mojom::RequestMode request_mode,
+        const base::Optional<url::Origin>& isolated_world_origin,
+        mojom::NetworkServiceClient* network_service_client);
 
     ~ResponseAnalyzer();
 
@@ -275,12 +282,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     bool found_blockable_content_ = false;
 
     // State used for calculating the
-    // SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript UMA.
+    // SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript UMA
+    // and Extensions.CrossOriginFetchFromContentScript3 Rappor data.
     //
     // TODO(lukasza): https://crbug.com/920638: Remove the fields below once we
     // gather enough UMA data.
-    const bool is_for_non_http_isolated_world_ = false;
+    const base::Optional<url::Origin> isolated_world_origin_;
     bool is_cors_blocking_expected_ = false;
+    mojom::NetworkServiceClient* const network_service_client_;
 
     DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };

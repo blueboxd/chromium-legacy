@@ -11,6 +11,7 @@
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
 <translation id="1524282610922162960">Chromiumi vahekaardi jagamine</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administraator nõuab, et käivitaksite Chromiumi värskenduse rakendamiseks uuesti}=1{Administraator nõuab, et käivitaksite Chromiumi värskenduse rakendamiseks uuesti. Teie inkognito akent ei avata uuesti.}other{Administraator nõuab, et käivitaksite Chromiumi värskenduse rakendamiseks uuesti. Teie # inkognito akent ei avata uuesti.}}</translation>
+<translation id="1663739491876737434">Chromium ei saa teie paroole kontrollida. Proovige homme uuesti.</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
 <translation id="1779356040007214683">Chromiumi turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
@@ -61,6 +62,7 @@
 <translation id="358997566136285270">Chromiumi logo</translation>
 <translation id="3639635944603682591">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel.}=1{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel. Teie inkognito akent ei avata uuesti.}other{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel. Teie # inkognito akent ei avata uuesti.}}</translation>
+<translation id="3685209450716071127">Chromium ei saa teie paroole kontrollida. Kontrollige internetiühendust.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada}=1{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada. Teie inkognito akent ei avata uuesti.}other{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada. Teie # inkognito akent ei avata uuesti.}}</translation>
 <translation id="3713809861844741608">Ava link Chromiumi uuel &amp;vahekaardil</translation>
 <translation id="3728336900324680424">Chromium pääseb teie Drive'ile juurde, et aadressiribal soovitusi anda</translation>
@@ -92,7 +94,9 @@
 <translation id="4943838377383847465">Chromium on taustarežiimis.</translation>
 <translation id="4987820182225656817">Külastajad saavad kasutada Chromiumi jälgi jätmata.</translation>
 <translation id="4994636714258228724">Lisa Chromiumi</translation>
+<translation id="5093066630040073147">Salvestatud paroole ei ole. Chromium saab teie paroole kontrollida siis, kui salvestate need oma Google'i kontole.</translation>
 <translation id="5277894862589591112">Muudatuste rakendamiseks käivitage Chromium uuesti</translation>
+<translation id="5310059007469274549">Chromium ei saa teie paroole kontrollida, kuna neid on liiga palju</translation>
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromiumi värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Luba Chromiumisse sisselogimine</translation>
@@ -102,12 +106,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromiumi beetaversioon</translation>
 <translation id="5479196819031988440">Chromium OS ei saa seda lehte avada.</translation>
 <translation id="5480860683791598150">Chromium vajab juurdepääsu teie asukohale, et seda selle saidiga jagada</translation>
+<translation id="5488573303232097702">Chromiumit ei värskendatud, midagi läks valesti. Lahendage Chrome'i värskendamisprobleemid ja parandage ebaõnnestunud värskendused.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromiumi värskendus on saadaval}=1{Chromiumi värskendus on saadaval}other{Chromiumi värskendus on # päeva saadaval olnud}}</translation>
 <translation id="5631814766731275228">Chromiumi nimi ja pilt</translation>
 <translation id="5634636535844844681">Chromium vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
 <translation id="5653831366781983928">Käivitage Chromium kohe uuesti</translation>
 <translation id="5698481217667032250">Kuva Chromium selles keeles</translation>
+<translation id="5814748786105822016">Chromium ei saa teie paroole kontrollida</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
@@ -123,6 +129,7 @@
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium käivitatakse kohe uuesti}=1{Chromium käivitatakse uuesti 1 sekundi pärast}other{Chromium käivitatakse uuesti # sekundi pärast}}</translation>
 <translation id="6248213926982192922">Määra Chromium vaikebrauseriks</translation>
+<translation id="6266342355635466082">Chromium ei saa värskendusi otsida. Kontrollige internetiühendust.</translation>
 <translation id="6268381023930128611">Kas logida Chromiumist välja?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> võib olla ohtlik, mistõttu Chromium blokeeris selle.</translation>
 <translation id="6309712487085796862">Chromium kasutab teie kaamerat.</translation>
@@ -198,6 +205,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käivitage Chromium uuesti päeva jooksul}other{Käivitage Chromium uuesti # päeva jooksul}}</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
+<translation id="8568283329061645092">Chromium saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8619360774459241877">Chromiumi käivitamine …</translation>
 <translation id="8621669128220841554">Installimine ebaõnnestus tundmatu vea tõttu. Laadige Chromium uuesti alla.</translation>
@@ -205,6 +213,7 @@ Chromium ei saa teie seadeid taastada.</translation>
       Chromiumi brauseri seadeid<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel või omnikastikeses otsingu tegemisel.</translation>
 <translation id="8704119203788522458">See on teie Chromium</translation>
+<translation id="8774315820480073720">Chromiumi värskendusi haldab administraator</translation>
 <translation id="8796602469536043152">Chromium vajab selle saidi puhul luba, et teie kaamerale ja mikrofonile juurde pääseda</translation>
 <translation id="8803635938069941624">Chromium OS-i tingimused</translation>
 <translation id="8821041990367117597">Chromium ei saa andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>

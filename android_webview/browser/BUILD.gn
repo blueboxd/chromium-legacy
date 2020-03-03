@@ -253,7 +253,6 @@ source_set("browser") {
     "//third_party/crashpad/crashpad/client",
     "//ui/android",
     "//ui/gl",
-    "//ui/native_theme",
     "//ui/resources",
     "//ui/touch_selection",
   ]

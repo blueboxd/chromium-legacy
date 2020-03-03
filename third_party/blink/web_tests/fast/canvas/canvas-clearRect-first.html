@@ -1,0 +1,19 @@
+<html>
+<body>
+<canvas id="c" width=800 height=1000></canvas>
+<script>
+
+// Test Canvas content shows up correctly after a full repaint.
+var canvas = document.getElementById('c');
+let ctx = canvas.getContext("2d");
+
+function step() {
+  ctx.fillRect(50, 50, 50, 50);
+}
+
+ctx.clearRect(0, 0, 800, 1000);
+ctx.fillRect(5, 5, 50, 50);
+window.requestAnimationFrame(step);
+</script>
+</body>
+</html>

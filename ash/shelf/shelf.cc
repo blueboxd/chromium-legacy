@@ -20,6 +20,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -102,6 +103,65 @@ class HotseatWidgetAnimationMetricsReporter
  private:
   // The state to which the animation is transitioning.
   HotseatState target_state_;
+};
+
+// An animation metrics reporter for the shelf navigation widget.
+class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter,
+      public ShelfLayoutManagerObserver {
+ public:
+  explicit NavigationWidgetAnimationMetricsReporter(Shelf* shelf)
+      : shelf_(shelf) {
+    shelf_->shelf_layout_manager()->AddObserver(this);
+  }
+
+  ~NavigationWidgetAnimationMetricsReporter() override {
+    shelf_->shelf_layout_manager()->RemoveObserver(this);
+  }
+
+  NavigationWidgetAnimationMetricsReporter(
+      const NavigationWidgetAnimationMetricsReporter&) = delete;
+  NavigationWidgetAnimationMetricsReporter& operator=(
+      const NavigationWidgetAnimationMetricsReporter&) = delete;
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShownClamshell:
+      case HotseatState::kShownHomeLauncher:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  // ShelfLayoutManagerObserver:
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override {
+    target_state_ = new_state;
+  }
+
+ private:
+  Shelf* shelf_;
+  // The state to which the animation is transitioning.
+  HotseatState target_state_ = HotseatState::kShownHomeLauncher;
 };
 
 // Shelf::AutoHideEventHandler -----------------------------------------------
@@ -257,6 +317,8 @@ void Shelf::CreateNavigationWidget(aura::Window* container) {
   navigation_widget_ = std::make_unique<ShelfNavigationWidget>(
       this, hotseat_widget()->GetShelfView());
   navigation_widget_->Initialize(container);
+  navigation_widget_metrics_reporter_ =
+      std::make_unique<NavigationWidgetAnimationMetricsReporter>(this);
   Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
 }
 
@@ -540,10 +602,16 @@ ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter() {
   return hotseat_transition_metrics_reporter_.get();
 }
 
+ui::AnimationMetricsReporter*
+Shelf::GetNavigationWidgetAnimationMetricsReporter() {
+  return navigation_widget_metrics_reporter_.get();
+}
+
 void Shelf::WillDeleteShelfLayoutManager() {
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();
   auto_dim_event_handler_.reset();
+  navigation_widget_metrics_reporter_.reset();
 
   DCHECK(shelf_layout_manager_);
   shelf_layout_manager_->RemoveObserver(this);

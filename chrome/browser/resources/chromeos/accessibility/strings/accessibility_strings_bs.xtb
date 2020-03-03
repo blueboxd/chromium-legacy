@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1206619573307042055">pokretni tekst</translation>
 <translation id="1207086294218137981">Nema sljedećeg naslova 4. nivoa</translation>
+<translation id="1212770441379271564">Narednih nekoliko prečica nisu ChromeVox komande, ali su ipak veoma korisne da iskoristite prednosti Chromea.
+    Da idete naprijed kroz stavke radnje poput dugmadi i linkova, pritisnite tipku Tab. Da idete nazad, pritisnite Shift+Tab.
+    Da pristupite okviru za adrese preglednika Chrome, koja se još naziva i višenamjenski okvir, pritisnite Ctrl + L.
+    Da automatski otvorite i idete u novu karticu, pritisnite Ctrl+T. Kursor će se nalaziti u višenamjenskom okviru.
+    Da zatvorite karticu, pritisnite Ctrl+W.
+    Da se krećete otvorenim karticama prema naprijed, pritisnite Ctrl+Tab.
+    Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox – daje glas Chromeu</translation>
 <translation id="1225969361094801578">Veoma tamno siva</translation>
 <translation id="1229276918471378188">Skok na prethodno</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">birač boje</translation>
 <translation id="4221012616705981690">Nema prethodne liste</translation>
 <translation id="4221071177874897997">Naznači podebljano:</translation>
+<translation id="4225355998815256469">Kontrole obrazaca</translation>
 <translation id="4229646983878045487">datum vrijeme</translation>
 <translation id="4230834257931120629">Svijetlosiva</translation>
 <translation id="4231102694147661229">Omogući opcije za programere</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Rečenica</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Pritisnite ChromeVox + O + N da saznate šta je novo</translation>
+<translation id="4646606380313237501">{"ar": "arapski",
+    "as": "asamski",
+    "aw": "avadhi",
+    "be": "bengalski",
+    "bg": "bugarski",
+    "bh": "bihari",
+    "bo": "tibetanski",
+    "br": "braj",
+    "ca": "katalonski",
+    "ckb": "sorani",
+    "cs": "češki",
+    "cy": "velški",
+    "da": "danski",
+    "de": "njemački",
+    "de_CH": "njemački (Švicarska)",
+    "de_DE": "njemački (Njemačka)",
+    "dra": "dravidski",
+    "el": "grčki",
+    "en": "engleski",
+    "en_CA": "engleski (Kanada)",
+    "en_GB": "engleski (Ujedinjeno Kraljevstvo)",
+    "en_US": "engleski (Sjedinjene Američke Države)",
+    "eo": "esperanto",
+    "es": "španski",
+    "et": "estonski",
+    "fa": "perzijski",
+    "fr": "francuski",
+    "fr_CA": "francuski (Kanada)",
+    "fr_FR": "francuski (Francuska)",
+    "fi": "finski",
+    "ga": "irski",
+    "gd": "galski",
+    "gon": "gondi",
+    "gu": "gudžarati",
+    "he": "hebrejski",
+    "hi": "hindi",
+    "hr": "hrvatski",
+    "hu": "mađarski",
+    "hy": "armenski",
+    "is": "islandski",
+    "it": "italijanski",
+    "iu": "inuktitut",
+    "ka": "kanada",
+    "kh": "kasi",
+    "ko": "korejski",
+    "kok": "konkani",
+    "kru": "kuruški",
+    "ks": "kašmirski",
+    "lt": "litvanski",
+    "lv": "latvijski",
+    "mao": "maorski",
+    "ml": "malajalam",
+    "mt": "malteški",
+    "mwr": "marvari",
+    "mn": "mongolski",
+    "mun": "munda",
+    "nb": "norveški (Bokmal)",
+    "ne": "nepalski",
+    "nl": "holandski",
+    "no": "norveški",
+    "or": "oriya",
+    "pi": "pali",
+    "pl": "poljski",
+    "pt": "portugalski",
+    "pu": "pandžapski",
+    "ro": "rumunski",
+    "ru": "ruski",
+    "sa": "sanskrit",
+    "si": "sindi",
+    "sin": "sinhaleški",
+    "sk": "slovački",
+    "sl": "slovenski",
+    "sr": "srpski",
+    "sv": "švedski",
+    "ta": "tamilski",
+    "te": "telugu",
+    "tr": "turski",
+    "tsn": "afrikans",
+    "uk": "ukrajinski",
+    "ur": "urdu",
+    "vi": "vijetnamski",
+    "zh": "kineski",
+    "zh_TW": "kineski (tradicionalno pismo han)"}</translation>
 <translation id="4647836961514597010">Odabir boja</translation>
 <translation id="4660783501463101648">Uklonjena je verzija Classic. Uklonjeno je uključivanje/isključivanje na tastaturi za povratak na verziju ChromeVox Classic.</translation>
 <translation id="4661075872484491155">stablo</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Ljepljivi način rada je omogućen</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{zarez}one{# zarez}few{# zareza}other{# zareza}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, tekstualni okvir</translation>
+<translation id="532485153932049746">Formatiranje teksta
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Kontrolirajte uređaj sa samo 1 ili 2 prekidača.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Brailleovo pismo</translation>
 <translation id="5402791055281059602">Modalni alarm</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{tačka sa zarezom}one{# tačka sa zarezom}few{# tačke sa zarezom}other{# tačaka sa zarezom}}</translation>
+<translation id="5420259671171615858">Pretražite menije</translation>
 <translation id="5435274640623994081">Omogućavanje zapisivanja zvučnih ikona</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{manje od}one{# znak za manje od}few{# znaka za manje od}other{# znakova za manje od}}</translation>
 <translation id="5444587279251314700">(aktivno)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Otkrivene su greške u pravopisu</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">povrat</translation>
+<translation id="7429415133937917139">Simulira izlaz Brailleovog ekrana koji je moguće osvježiti
+    na ploči ChromeVoxa na vrhu ekrana</translation>
 <translation id="7434509671034404296">Programer</translation>
 <translation id="743783356331413498">Primjer</translation>
 <translation id="7439060726180460871">Direktorij</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Prethodno dugme za izbor</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Nema sljedećeg kombiniranog okvira</translation>
+<translation id="772146615414628379">Čestitamo! Uspješno ste naučili osnove korištenja ChromeVoxa. Upamtite da u bilo kojem trenutku možete otvoriti komandni meni na ChromeVoxu pritiskom na tipku za pretraživanje + tačka. Posjetite sljedeće članke da saznate više o ChromeVoxu i Chrome OS-u.
+    Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i kliknite na njega.</translation>
 <translation id="7724603315864178912">Izreži</translation>
 <translation id="7731785449856576010">Nema sljedećeg vidžeta za medije</translation>
 <translation id="773906353055481349">Za kretanje po ćelijama, pritisnite tipku za pretraživanje + Ctrl + Alt i strelice</translation>

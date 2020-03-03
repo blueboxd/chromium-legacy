@@ -97,6 +97,7 @@
 <translation id="2149973817440762519">Uredi zaznamek</translation>
 <translation id="2179182049312275900">Sinhronizacijo lahko kadarkoli vklopite v nastavitvah.</translation>
 <translation id="2198757192731523470">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>
+<translation id="2218443599109088993">Pomanjšaj</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2239626343334228536">Brisanje podatkov brskanja …</translation>
 <translation id="2257567812274161158">Sinhronizacija ne deluje</translation>
@@ -417,6 +418,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6476800141292307438">Prevajanje strani v ta jezik: <ph name="LANGUAGE" />. Možnosti so na voljo blizu dna zaslona.</translation>
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="6561262006871132942">Povečaj</translation>
 <translation id="6610002944194042868">Možnosti prevajanja</translation>
 <translation id="6628106477656132239">Datum poteka ni veljaven</translation>
 <translation id="6638511529934826365">Povečaj/pomanjšaj besedilo …</translation>

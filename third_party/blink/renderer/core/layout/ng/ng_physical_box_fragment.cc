@@ -268,7 +268,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
       const NGPhysicalLineBoxFragment* line_box = child.LineBoxFragment();
       DCHECK(line_box);
       PhysicalRect child_scrollable_overflow =
-          line_box->ScrollableOverflow(container, style, child, cursor);
+          line_box->ScrollableOverflowForLine(container, style, child, cursor);
       AddChild(child_scrollable_overflow);
     }
 

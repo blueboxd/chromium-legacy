@@ -39,6 +39,7 @@ namespace structured_headers {
 //  List: "foo", "bar", "It was the best of times."
 //        ("foo" "bar"), ("baz"), ("bat" "one"), ()
 //        abc;a=1;b=2; cde_456, (ghi jkl);q="9";r=w
+//  Dictionary: a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid=?0
 //
 // Functions are provided to parse each of these, which are intended to be
 // called with the complete value of an HTTP header (that is, any
@@ -167,6 +168,7 @@ struct NET_EXPORT ParameterizedMember {
 
   Parameters params;
 
+  ParameterizedMember();
   ParameterizedMember(const ParameterizedMember&);
   ParameterizedMember& operator=(const ParameterizedMember&);
   ParameterizedMember(std::vector<ParameterizedItem>,
@@ -183,6 +185,44 @@ inline bool operator==(const ParameterizedMember& lhs,
                        const ParameterizedMember& rhs) {
   return std::tie(lhs.member, lhs.member_is_inner_list, lhs.params) ==
          std::tie(rhs.member, rhs.member_is_inner_list, rhs.params);
+}
+
+using DictionaryMember = std::pair<std::string, ParameterizedMember>;
+
+// Structured Headers Draft 15 Dictionary.
+class NET_EXPORT Dictionary {
+ public:
+  using iterator = std::vector<DictionaryMember>::iterator;
+  using const_iterator = std::vector<DictionaryMember>::const_iterator;
+
+  Dictionary();
+  Dictionary(const Dictionary&);
+  explicit Dictionary(std::vector<DictionaryMember> members);
+  ~Dictionary();
+  Dictionary& operator=(const Dictionary&) = default;
+  iterator begin();
+  const_iterator begin() const;
+  iterator end();
+  const_iterator end() const;
+  ParameterizedMember& operator[](std::size_t idx);
+  ParameterizedMember& operator[](base::StringPiece key);
+  std::size_t size();
+  bool contains(base::StringPiece key);
+  friend bool operator==(const Dictionary& lhs, const Dictionary& rhs);
+  friend bool operator!=(const Dictionary& lhs, const Dictionary& rhs);
+
+ private:
+  // Uses a vector to hold pairs of key and dictionary member. This makes
+  // look up by index and serialization much easier.
+  std::vector<DictionaryMember> members_;
+};
+
+inline bool operator==(const Dictionary& lhs, const Dictionary& rhs) {
+  return lhs.members_ == rhs.members_;
+}
+
+inline bool operator!=(const Dictionary& lhs, const Dictionary& rhs) {
+  return !(lhs == rhs);
 }
 
 // Structured Headers Draft 09 Parameterised List.
@@ -223,11 +263,19 @@ NET_EXPORT base::Optional<ListOfLists> ParseListOfLists(base::StringPiece str);
 // Structured-Headers Draft 15 only.
 NET_EXPORT base::Optional<List> ParseList(base::StringPiece str);
 
+// Returns the result of parsing the header value as a general Dictionary, if it
+// can be parsed as one, or nullopt if it cannot. Structured-Headers Draft 15
+// only.
+NET_EXPORT base::Optional<Dictionary> ParseDictionary(
+    const base::StringPiece& str);
+
 // Serialization is implemented for Structured-Headers Draft 15 only.
 NET_EXPORT base::Optional<std::string> SerializeItem(const Item& value);
 NET_EXPORT base::Optional<std::string> SerializeItem(
     const ParameterizedItem& value);
 NET_EXPORT base::Optional<std::string> SerializeList(const List& value);
+NET_EXPORT base::Optional<std::string> SerializeDictionary(
+    const Dictionary& value);
 
 }  // namespace structured_headers
 }  // namespace net

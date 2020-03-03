@@ -2702,7 +2702,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4737715515457435632">Pripojte sa k sieti</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4739639199548674512">Tikety</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> a 1 ďalšia stránka}few{<ph name="PAGE_TITLE" /> a # ďalšie stránky}many{<ph name="PAGE_TITLE" /> a # ďalšej stránky}other{<ph name="PAGE_TITLE" /> a # ďalších stránok}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Ako aktualizovať aplikácie<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Zapnúť zvuk webu}few{Zapnúť zvuk webov}many{Zapnúť zvuk webov}other{Zapnúť zvuk webov}}</translation>
 <translation id="4746351372139058112">Správy</translation>
@@ -5214,7 +5213,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8214489666383623925">Otvoriť súbor...</translation>
 <translation id="8214962590150211830">Odstrániť túto osobu</translation>
 <translation id="8215295261562449873">Zálohovať moje aplikácie a súbory do priečinka Stiahnuté súbory ešte pred inováciou systému Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> a 1 ďalšia stránka}few{<ph name="PAGE_TITLE" /> a # ďalšie stránky}many{<ph name="PAGE_TITLE" /> and # more pages}other{<ph name="PAGE_TITLE" /> a # ďalších stránok}}</translation>
 <translation id="8217399928341212914">Naďalej blokovať automatické sťahovanie viacerých súborov súčasne</translation>
 <translation id="8218847192766059983">Pridajte jazyky alebo upravte poradie zoznamu. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Zvyčajne blokujete upozornenia. Ak chcete tomuto webu povoliť odosielanie upozornení, kliknite tu.</translation>
@@ -5427,6 +5425,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="851263357009351303">Vždy povoliť stránkam <ph name="HOST" /> zobrazovať obrázky</translation>
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8514746246728959655">Vyskúšajte iný bezpečnostný kľúč</translation>
+<translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8521475323816527629">Rýchlo získajte svoje aplikácie</translation>
 <translation id="8523493869875972733">Zachovať zmeny</translation>
 <translation id="8523849605371521713">Pridané pravidlom</translation>
@@ -5547,6 +5546,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8673383193459449849">Problém servera</translation>
 <translation id="8675354002693747642">Predzdieľaný kľúč</translation>
 <translation id="8676374126336081632">Vymazať vstup</translation>
+<translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
 <translation id="8677212948402625567">Zbaliť všetky...</translation>
 <translation id="8678648549315280022">Spravovať nastavenia sťahovania…</translation>
 <translation id="8678933587484842200">Ako sa má táto aplikácia spúšťať?</translation>

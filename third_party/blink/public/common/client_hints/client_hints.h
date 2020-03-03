@@ -8,7 +8,9 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/optional.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom-shared.h"
 
 namespace blink {
 
@@ -36,6 +38,17 @@ BLINK_COMMON_EXPORT extern const size_t kWebEffectiveConnectionTypeMappingCount;
 // https://tools.ietf.org/html/draft-west-lang-client-hint-00#section-2.1
 std::string BLINK_COMMON_EXPORT
 SerializeLangClientHint(const std::string& raw_language_list);
+
+// Tries to parse an Accept-CH header. Returns base::nullopt if parsing
+// failed and the header should be ignored; otherwise returns a (possibly
+// empty) list of hints to accept.
+//
+// Language hints will only be in the result if |permit_lang_hints| is true;
+// UA-related ones if |permit_ua_hints| is.
+base::Optional<std::vector<blink::mojom::WebClientHintsType>>
+    BLINK_COMMON_EXPORT ParseAcceptCH(const std::string& header,
+                                      bool permit_lang_hints,
+                                      bool permit_ua_hints);
 
 }  // namespace blink
 

@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129382876167171263">I file salvati dai siti web vengono mostrati qui</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
+<translation id="1303339473099049190">Impossibile trovare quella password. Verifica di averla scritta correttamente e riprova.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Inviato da <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Raggruppa schede</translation>
+<translation id="1311657260431405215">Questo codice QR non corrisponde a un URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">La cronologia di navigazione è aperta</translation>
 <translation id="1331212799747679585">Impossibile aggiornare Chrome. Altre opzioni</translation>
 <translation id="1332501820983677155">Scorciatoie delle funzioni di Google Chrome</translation>
@@ -323,6 +325,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3350687908700087792">Chiudi tutte le schede di navigazione in incognito</translation>
 <translation id="3353615205017136254">Pagina Lite fornita da Google. Tocca il pulsante Carica originale per caricare la pagina originale.</translation>
 <translation id="3367813778245106622">Accedi nuovamente per avviare la sincronizzazione</translation>
+<translation id="3373979091428520308">Per condividere questa pagina con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome sull'altro dispositivo</translation>
 <translation id="3374023511497244703">I preferiti, la cronologia, le password e altri dati di Chrome non verranno più sincronizzati con il tuo Account Google</translation>
 <translation id="3384347053049321195">Condividi immagine</translation>
 <translation id="3386292677130313581">Chiedi conferma prima di consentire ai siti di conoscere la tua posizione (opzione consigliata)</translation>
@@ -672,6 +675,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
 <translation id="5958275228015807058">Puoi trovare i tuoi file e le tue pagine nella cartella Download</translation>
 <translation id="5962718611393537961">Tocca per comprimere</translation>
+<translation id="5964805880140440652">Per condividere questa pagina con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
 <translation id="6036057147555329831">ICU extra</translation>

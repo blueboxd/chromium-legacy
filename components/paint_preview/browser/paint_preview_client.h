@@ -57,6 +57,9 @@ class PaintPreviewClient
 
   ~PaintPreviewClient() override;
 
+  // These methods do not need to be run on the UI thread, but do need to be run
+  // from a SequencedTaskRunner.
+
   // Captures a paint preview corresponding to the content of
   // |render_frame_host|. This will work for capturing entire documents if
   // passed the main frame or for just a specific subframe depending on
@@ -104,6 +107,7 @@ class PaintPreviewClient
 
     // Callback that is invoked on completion of data.
     PaintPreviewCallback callback;
+    scoped_refptr<base::SequencedTaskRunner> called_on_thread;
 
     // All the render frames that are still required.
     base::flat_set<base::UnguessableToken> awaiting_subframes;
@@ -148,7 +152,7 @@ class PaintPreviewClient
       base::File file);
 
   // Sets up for a capture of a frame on |render_frame_host| according to
-  // |params|.
+  // |params|. This should be called from the UI thread.
   void CapturePaintPreviewInternal(const PaintPreviewParams& params,
                                    content::RenderFrameHost* render_frame_host);
 

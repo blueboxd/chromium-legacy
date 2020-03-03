@@ -343,8 +343,8 @@ class ChunkDemuxerTest : public ::testing::Test {
     if (status == ChunkDemuxer::kOk) {
       demuxer_->SetTracksWatcher(source_id, init_segment_received_cb_);
       demuxer_->SetParseWarningCallback(
-          source_id, base::Bind(&ChunkDemuxerTest::OnParseWarningMock,
-                                base::Unretained(this)));
+          source_id, base::BindRepeating(&ChunkDemuxerTest::OnParseWarningMock,
+                                         base::Unretained(this)));
     }
     return status;
   }

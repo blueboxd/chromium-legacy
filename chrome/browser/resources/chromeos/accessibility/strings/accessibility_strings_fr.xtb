@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Aucun titre de niveau 4 suivant</translation>
+<translation id="1212770441379271564">Les quelques nouveaux raccourcis qui suivent ne sont pas des commandes ChromeVox, mais ils restent très utiles pour exploiter tout le potentiel de Chrome.
+    Pour passer à l'élément interactif suivant, comme un bouton ou un lien, appuyez sur la touche Tabulation. Pour revenir à l'élément précédent, appuyez sur Maj+Tabulation.
+    Pour accéder à la zone d'adresse du navigateur Chrome, appelée également "omnibox", appuyez sur Ctrl+L.
+    Pour créer et ouvrir un nouvel onglet automatiquement, appuyez sur Ctrl+T. Le curseur est alors placé dans l'omnibox.
+    Pour fermer un onglet, appuyez sur Ctrl+W.
+    Pour passer à l'onglet ouvert suivant, appuyez sur Ctrl+Tabulation.
+    Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox donne la parole à Google Chrome.</translation>
 <translation id="1225969361094801578">Gris ardoise foncé</translation>
 <translation id="1229276918471378188">Renvoi précédent</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">palette couleurs</translation>
 <translation id="4221012616705981690">Aucune liste précédente</translation>
 <translation id="4221071177874897997">Indiquer Gras :</translation>
+<translation id="4225355998815256469">Éléments de contrôle de formulaire</translation>
 <translation id="4229646983878045487">date heure</translation>
 <translation id="4230834257931120629">Gris ardoise clair</translation>
 <translation id="4231102694147661229">Activer les options pour les développeurs</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Navigation par phrase</translation>
 <translation id="4623097797855662355">Achevé d'imprimer</translation>
 <translation id="463135993322337640">Appuyez sur ChromeVox o, n pour découvrir les nouveautés</translation>
+<translation id="4646606380313237501">{"ar" : "Arabe",
+    "as" : "Assamais",
+    "aw" : "Awadhi",
+    "be" : "Bengali",
+    "bg" : "Bulgare",
+    "bh" : "Bihari",
+    "bo" : "Tibétain",
+    "br" : "Braj",
+    "ca" : "Catalan",
+    "ckb" : "Sorani",
+    "cs" : "Tchèque",
+    "cy" : "Gallois",
+    "da" : "Danois",
+    "de" : "Allemand",
+    "de_CH" : "Allemand (Suisse)",
+    "de_DE" : "Allemand (Allemagne)",
+    "dra" : "Dravidien",
+    "el" : "Grec",
+    "en" : "Anglais",
+    "en_CA" : "Anglais (Canada)",
+    "en_GB" : "Anglais (Royaume-Uni)",
+    "en_US" : "Anglais (États-Unis)",
+    "eo" : "Esperanto",
+    "es" : "Espagnol",
+    "et" : "Estonien",
+    "fa" : "Persan",
+    "fr" : "Français",
+    "fr_CA" : "Français (Canada)",
+    "fr_FR" : "Français (France)",
+    "fi" : "Finnois",
+    "ga" : "Irlandais",
+    "gd" : "Gaélique",
+    "gon" : "Gondi",
+    "gu" : "Gujarati",
+    "he" : "Hébreu",
+    "hi" : "Hindi",
+    "hr" : "Croate",
+    "hu" : "Hongrois",
+    "hy" : "Arménien",
+    "is" : "Islandais",
+    "it" : "Italien",
+    "iu" : "Inuktitut",
+    "ka" : "Kannada",
+    "kh" : "Khasi",
+    "ko" : "Coréen",
+    "kok" : "Konkani",
+    "kru" : "Kurukh",
+    "ks" : "Cachemiri",
+    "lt" : "Lituanien",
+    "lv" : "Letton",
+    "mao" : "Maori",
+    "ml" : "Malayalam",
+    "mt" : "Maltais",
+    "mwr" : "Marwari",
+    "mn" : "Mongol",
+    "mun" : "Munda",
+    "nb" : "Norvégien bokmål",
+    "ne" : "Népalais",
+    "nl" : "Néerlandais",
+    "no" : "Norvégien",
+    "or" : "Oriya",
+    "pi" : "Pali",
+    "pl" : "Polonais",
+    "pt" : "Portugais",
+    "pu" : "Panjabi",
+    "ro" : "Roumain",
+    "ru" : "Russe",
+    "sa" : "Sanskrit",
+    "si" : "Sindhî",
+    "sin" : "Cingalais",
+    "sk" : "Slovaque",
+    "sl" : "Slovène",
+    "sr" : "Serbe",
+    "sv" : "Suédois",
+    "ta" : "Tamoul",
+    "te" : "Telugu",
+    "tr" : "Turc",
+    "tsn" : "Afrikaans",
+    "uk" : "Ukrainien",
+    "ur" : "Ourdou",
+    "vi" : "Vietnamien",
+    "zh" : "Chinois",
+    "zh_TW" : "Chinois (traditionnel)"}</translation>
 <translation id="4647836961514597010">Palette couleurs</translation>
 <translation id="4660783501463101648">Version classique supprimée. Il est désormais impossible de basculer vers la version classique de ChromeVox par le biais de la touche du clavier initialement prévue à cet effet.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Mode persistant activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, zone de texte</translation>
+<translation id="532485153932049746">Formatage du texte
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, lien</translation>
 <translation id="5331522683003474486">Contrôlez l'appareil avec seulement 1 ou 2 commutateurs.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Une alerte modale</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{point-virgule}one{# point-virgule}other{# points-virgules}}</translation>
+<translation id="5420259671171615858">Effectuer des recherches dans les menus</translation>
 <translation id="5435274640623994081">Activer la journalisation des icônes sonores</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{signe inférieur à}one{# signe inférieur à}other{# signes inférieur à}}</translation>
 <translation id="5444587279251314700">(activé)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Faute d'orthographe détectée</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">Retour</translation>
+<translation id="7429415133937917139">Simule la sortie d'une plage braille actualisable
+    dans le panneau ChromeVox en haut de l'écran</translation>
 <translation id="7434509671034404296">Options pour les développeurs</translation>
 <translation id="743783356331413498">Exemple</translation>
 <translation id="7439060726180460871">Répertoire</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Case d'option précédente</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Aucune boîte combinée suivante</translation>
+<translation id="772146615414628379">Félicitations ! Vous avez appris les bases pour utiliser ChromeVox. N'oubliez pas que vous pouvez ouvrir le menu de commandes ChromeVox à tout moment en appuyant sur la touche de recherche et sur le point. Pour en savoir davantage sur ChromeVox et Chrome OS, consultez les articles ci-après.
+    Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fermeture, puis cliquez sur ce dernier.</translation>
 <translation id="7724603315864178912">Couper</translation>
 <translation id="7731785449856576010">Aucun widget de contenu multimédia suivant</translation>
 <translation id="773906353055481349">Appuyez simultanément sur Recherche+Ctrl+Alt et sur les flèches pour parcourir le contenu par cellule</translation>

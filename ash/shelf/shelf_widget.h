@@ -171,7 +171,7 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   DragHandle* GetDragHandle();
 
   // Starts the animation to show the drag handle nudge.
-  void ShowDragHandleNudge();
+  void ScheduleShowDragHandleNudge();
 
   // Starts the animation to hide the drag handle nudge.
   void HideDragHandleNudge();

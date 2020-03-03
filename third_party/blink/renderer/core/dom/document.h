@@ -1773,7 +1773,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ApplyScrollRestorationLogic();
 
   void MarkHasFindInPageRequest();
-  void MarkHasFindInPageRenderSubtreeActiveMatch();
+  void MarkHasFindInPageSubtreeVisibilityActiveMatch();
 
   void ScheduleFormSubmission(HTMLFormElement* form_element);
   void CancelFormSubmissions();

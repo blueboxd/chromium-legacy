@@ -12,6 +12,7 @@ enum class PreferredColorScheme {
   kNoPreference,
   kDark,
   kLight,
+  kMaxValue = kLight,
 };
 
 }  // namespace blink

@@ -75,9 +75,15 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   void HideOverlayUI(OverlayRequest* request) override;
   void CancelOverlayUI(OverlayRequest* request) override;
 
- private:
-  OverlayPresentationContextImpl(Browser* browser, OverlayModality modality);
+ protected:
+  // Constructor called by the Container to instantiate a presentation context
+  // for |browser| at |modality|, using |factory| to create
+  // OverlayRequestCoordinators.
+  OverlayPresentationContextImpl(Browser* browser,
+                                 OverlayModality modality,
+                                 OverlayRequestCoordinatorFactory* factory);
 
+ private:
   // Setter for |request_|.  Setting to a new value will attempt to
   // present the UI for |request|.
   void SetRequest(OverlayRequest* request);

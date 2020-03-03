@@ -298,7 +298,6 @@ position
 quotes
 r
 removeProperty
-renderSubtree
 resize
 right
 rotate
@@ -350,6 +349,7 @@ strokeLinejoin
 strokeMiterlimit
 strokeOpacity
 strokeWidth
+subtreeVisibility
 tabSize
 tableLayout
 textAlign

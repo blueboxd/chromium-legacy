@@ -22,7 +22,7 @@
       <ph name="URL">$1<ex>google.com</ex></ph> wants to use your virtual reality device and data
     </message>
     <message name="IDS_AR_INFOBAR_TEXT" desc="Text requesting permission for a site to use AR">
-      <ph name="URL">$1<ex>google.com</ex></ph> wants to track camera position and map your room
+      <ph name="URL">$1<ex>google.com</ex></ph> wants to create a 3D map of your surroundings and track camera position
     </message>
     <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE" desc="Text used as notification title when requesting permission for Web Notifications via a notification.">
       Notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph> are blocked
@@ -88,7 +88,7 @@
     Use virtual reality devices and data
   </message>
   <message name="IDS_AR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use AR. Follows a prompt: 'This site would like to:">
-    Track camera position and map your room
+    Create a 3D map of your surroundings and track camera position
   </message>
   <message name="IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site needs access to its data while it is embedded into another site. Follows a prompt: 'This site would like to:">
     Access cookies and site data.

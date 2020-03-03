@@ -65,7 +65,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // |gpu_memory_buffer_manager| and associates them with SharedImages using
   // |sii|.
   BufferQueue(gpu::SharedImageInterface* sii,
-              gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
               gpu::SurfaceHandle surface_handle);
   virtual ~BufferQueue();
 
@@ -117,19 +116,19 @@ class VIZ_SERVICE_EXPORT BufferQueue {
 
  private:
   friend class BufferQueueTest;
+  friend class BufferQueueMockedSharedImageInterfaceTest;
   FRIEND_TEST_ALL_PREFIXES(BufferQueueTest, AllocateFails);
+  FRIEND_TEST_ALL_PREFIXES(BufferQueueMockedSharedImageInterfaceTest,
+                           AllocateFails);
 
   // TODO(andrescj): consider renaming this to AllocatedBuffer because 'surface'
   // is an overloaded term (also problematic in the unit tests).
   struct VIZ_SERVICE_EXPORT AllocatedSurface {
-    AllocatedSurface(std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
-                     const gpu::Mailbox& mailbox,
-                     const gfx::Rect& rect);
+    AllocatedSurface(const gpu::Mailbox& mailbox, const gfx::Rect& rect);
     ~AllocatedSurface();
 
     // TODO(crbug.com/958670): if we can have a CreateSharedImage() that takes a
     // SurfaceHandle, we don't have to keep track of |buffer|.
-    std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
     gpu::Mailbox mailbox;
     gfx::Rect damage;  // This is the damage for this frame from the previous.
   };
@@ -165,7 +164,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // These have been swapped but are not displayed yet. Entries of this deque
   // may be nullptr, if they represent frames that have been destroyed.
   base::circular_deque<std::unique_ptr<AllocatedSurface>> in_flight_surfaces_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   gpu::SurfaceHandle surface_handle_;
   SyncTokenProvider* sync_token_provider_ = nullptr;
 

@@ -209,7 +209,7 @@
 <translation id="3513798432020909783">帳戶由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
 <translation id="3576141592585647168">變更時區</translation>
-<translation id="3593646411856133110">向上滑動並按住螢幕即可查看開啟的應用程式</translation>
+<translation id="3593646411856133110">向上滑動並按住螢幕，即可查看開啟的應用程式</translation>
 <translation id="3595596368722241419">電池已滿</translation>
 <translation id="3604801046548457007">已建立桌面 <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
@@ -363,7 +363,7 @@
 <translation id="5745612484876805746">「夜燈模式」會在日落時自動開啟</translation>
 <translation id="5750765938512549687">藍牙已關閉</translation>
 <translation id="576453121877257266">「夜燈模式」已開啟。</translation>
-<translation id="5769373120130404283">隱私保護畫面</translation>
+<translation id="5769373120130404283">私隱保護畫面</translation>
 <translation id="5777841717266010279">停止共用畫面？</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5837036133683224804">停止喺<ph name="RECEIVER_NAME" />投放 <ph name="ROUTE_TITLE" /></translation>
@@ -405,7 +405,7 @@
 <translation id="6297287540776456956">使用觸控筆選取區域</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到 <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">藍牙已開啟</translation>
-<translation id="6381109794406942707">如要解鎖裝置，請輸入你的 PIN 碼。</translation>
+<translation id="6381109794406942707">如要解鎖裝置，請輸入 PIN。</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" /></translation>

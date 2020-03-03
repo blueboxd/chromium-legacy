@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
@@ -36,6 +36,7 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -322,7 +323,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         public void onSSLStateUpdated() {
             if (mSheetContent == null) return;
             int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
-                    mPanelContent.getWebContents());
+                    mPanelContent.getWebContents(), ChromeSecurityStateModelDelegate.getInstance());
             mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
             mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
         }

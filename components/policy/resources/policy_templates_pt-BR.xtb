@@ -1076,6 +1076,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o destaque do cursor ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+<translation id="2509919237512982967">Usar controles de formulários legados até a M84.</translation>
 <translation id="2514328368635166290">Especifica o URL do ícone favorito do provedor de pesquisa padrão. Esta política é opcional. Se for deixada sem definição, nenhum ícone será exibido para o provedor de pesquisa. Esta política só é respeitada se a política de "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2516600974234263142">Permite a impressão em <ph name="PRODUCT_NAME" /> e impede os usuários de alterarem esta configuração.
 
@@ -5077,6 +5078,13 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       Se esta política não for definida, <ph name="PRINTERS_ALLOW_ALL" /> será adotada.
       </translation>
+<translation id="8937282917198525844"> A partir da versão M81, os elementos padrão de controle de formulários (por exemplo, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) foram atualizados para proporcionar melhor acessibilidade e uniformidade na plataforma. Esta política restaura os antigos elementos de controle de formulários "legados" até a M84.
+
+      Se esta política for definida como verdadeira, os elementos de controle de formulários "legados" serão usados para todos os sites.
+
+      Se ela for definida como falsa ou não for definida, os elementos de controle de formulário serão ativados conforme foram lançados nas versões M81, M82 e M83.
+
+      Esta política será removida após o Chrome 84.</translation>
 <translation id="8938932171964587769">Uso suspenso no M69. Em vez dela,
       use OverrideSecurityRestrictionsOnInsecureOrigin.
 

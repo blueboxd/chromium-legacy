@@ -3238,7 +3238,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebGLImageChromium,
     switches::kFileUrlPathAlias,
-    switches::kForceDarkMode,
     switches::kForceDeviceScaleFactor,
     switches::kForceDisableWebRtcApmInAudioService,
     switches::kForceDisplayColorProfile,

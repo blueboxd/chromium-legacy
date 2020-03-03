@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">برش دادن</translation>
 <translation id="2292556288342944218">دسترسی شما به اینترنت مسدود است</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
+<translation id="2300306941146563769">بارگذاری نشد</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2315864634253056100">نام این سایت شبیه به نام <ph name="LOOKALIKE_DOMAIN" /> است. گاهی‌اوقات مهاجمان با ایجاد تغییراتی بسیار جزئی در نشانی وب، سایت‌ها را جعل می‌کنند.</translation>
 <translation id="2316887270356262533">کمتر از ۱ مگابایت از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
@@ -442,6 +443,7 @@
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2910133103376701357">دستگاه و حسابتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="2911973620368911614">شناسه کاربر حسابداری کار</translation>
+<translation id="2915068235268646559">خرابی از <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
 <translation id="2925673989565098301">روش ارسال</translation>
@@ -450,6 +452,7 @@
 <translation id="2930577230479659665">برش زدن بعد از چاپ هر کپی</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن از <ph name="DOMAIN2" /> است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
+<translation id="2943895734390379394">زمان بارگذاری:</translation>
 <translation id="2948083400971632585">در صفحه تنظیمات می‌توانید همه پراکسی‌های پیکربندی شده برای هر اتصال را از کار بیاندازید.</translation>
 <translation id="2951588413176968965">صندوق پست من</translation>
 <translation id="295526156371527179">هشدار: این خط‌مشی طبق آنچه در خط‌مشی مشخص شده است به‌عنوان فهرست ادغام نشد، زیرا فهرست نیست.</translation>
@@ -1083,6 +1086,7 @@
 <translation id="563324245173044180">محتوای فریب‌دهنده مسدود شد.</translation>
 <translation id="5644090287519800334">‏روی ۱، تغییر جهت تصویر حول محور X</translation>
 <translation id="5645854190134202180">نوبت کاری دوم</translation>
+<translation id="5654927323611874862">شناسه گزارش خرابی بارگذاری‌شده:</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
 <translation id="5663955426505430495">سرپرست این دستگاه، افزونه‌هایی را برای عملکردهای اضافی نصب کرده است. افزونه‌ها به برخی از داده‌های شما دسترسی دارند.</translation>
@@ -1390,6 +1394,7 @@
 <translation id="7079718277001814089">این سایت حاوی بدافزار است</translation>
 <translation id="7081308185095828845">این ویژگی در دستگاهتان دردسترس نیست.</translation>
 <translation id="7083258188081898530">سینی ۹</translation>
+<translation id="7086090958708083563">بارگذاری درخواست‌شده توسط کاربر</translation>
 <translation id="7087282848513945231">بخش/شهرستان</translation>
 <translation id="7090678807593890770">‏جستجوی <ph name="LINK" /> در Google</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
@@ -1552,6 +1557,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">گواهی</translation>
 <translation id="7716147886133743102">توسط سرپرست مسدود شده است</translation>
+<translation id="7716375162095500223">هنوز بارگذاری نشده است یا رد شده است</translation>
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7723047071702270851">ویرایش کارت</translation>
 <translation id="7740996059027112821">استاندارد</translation>
@@ -1696,6 +1702,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">اگر خطرات امنیتی‌ای که متوجه شما هستند را درک می‌کنید، می‌توانید قبل از حذف شدن برنامه‌های خطرناک، <ph name="BEGIN_LINK" />از این سایت بازدید کنید<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>
+<translation id="8355270400102541638">بافت خرابی محلی:</translation>
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
@@ -1716,6 +1723,7 @@
 <translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{۱ کارت اعتباری}one{# کارت اعتباری}other{# کارت اعتباری}}</translation>
 <translation id="8473863474539038330">نشانی‌ها و سایر موارد</translation>
+<translation id="8474910779563686872">نمایش جزئیات برنامه‌نویس</translation>
 <translation id="8479754468255770962">منگنه در پایین سمت چپ</translation>
 <translation id="8483780878231876732">‏برای استفاده از کارت‌ها از حساب Google خود، به سیستم Chrome وارد شوید</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
@@ -1841,6 +1849,7 @@
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="9106062320799175032">افزودن نشانی صورت‌حساب</translation>
 <translation id="9114524666733003316">درحال تأیید کردن کارت…</translation>
+<translation id="9119042192571987207">بارگذاری‌شده</translation>
 <translation id="9128870381267983090">اتصال به شبکه</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9141013498910525015">مدیریت نشانی‌ها</translation>

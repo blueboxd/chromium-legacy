@@ -2687,7 +2687,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4737715515457435632">براہ کرم کسی نیٹ ورک سے منسلک ہوں</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4739639199548674512">ٹکٹیں</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> اور مزید 1 صفحہ}other{<ph name="PAGE_TITLE" /> اور مزید # صفحات}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ایپلیکیشنز کو اپ ڈیٹ کرنے کا طریقہ جانیں<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{سائٹ کی آواز چالو کریں}other{سائٹس کی آواز چالو کریں}}</translation>
 <translation id="4746351372139058112">پیغامات</translation>
@@ -5190,7 +5189,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8214489666383623925">فائل کھولیں…</translation>
 <translation id="8214962590150211830">اس شخص کو ہٹا دیں</translation>
 <translation id="8215295261562449873">‏Linux اپ گریڈ کرنے سے پہلے میری ایپس اور فائلز کا ڈاؤن لوڈز فولڈر میں بیک اپ لیں۔</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> اور مزید 1 صفحہ}other{<ph name="PAGE_TITLE" /> اور مزید # صفحات}}</translation>
 <translation id="8217399928341212914">متعدد فائلوں کے خودکار ڈاؤن لوڈز کو مسدود کرنا جاری رکھیں</translation>
 <translation id="8218847192766059983">زبانیں شامل کریں یا فہرست دوبارہ ترتیب دیں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">آپ عام طور پر اطلاعات کو مسدود کرتے ہیں۔ اس سائٹ کو آپ کو مطلع کرنے دینے کے لیے، یہاں کلک کریں۔</translation>
@@ -5401,6 +5399,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="851263357009351303"><ph name="HOST" /> کو تصاویر دکھانے کی ہمیشہ اجازت دیں</translation>
 <translation id="8513108775083588393">خود کار طور پر گھمائیں</translation>
 <translation id="8514746246728959655">کوئی مختلف سیکیورٹی کلید آزمائیں</translation>
+<translation id="8517041960877371778">ہو سکتا ہے کہ آپ کا <ph name="DEVICE_TYPE" /> آن ہونے کی صورت میں چارج نہ ہو۔</translation>
 <translation id="8521475323816527629">تیزی سے اپنی ایپس تک رسائی حاصل کریں</translation>
 <translation id="8523493869875972733">تبدیلیاں برقرار رکھیں</translation>
 <translation id="8523849605371521713">پالیسی کے ذریعے شامل کیا گیا</translation>
@@ -5521,6 +5520,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8673383193459449849">سرور کا مسئلہ</translation>
 <translation id="8675354002693747642">پہلے سے اشتراک کردہ کلید</translation>
 <translation id="8676374126336081632">ان پٹ صاف کریں</translation>
+<translation id="8676770494376880701">کم پاور چارجر منسلک ہوگیا</translation>
 <translation id="8677212948402625567">سبھی کو سکیڑیں…</translation>
 <translation id="8678648549315280022">ڈاؤن لوڈ کی ترتیبات کا نظم کریں…</translation>
 <translation id="8678933587484842200">آپ اس ایپلیکیشن کو کس طرح لانچ کرنا چاہیں گے؟</translation>

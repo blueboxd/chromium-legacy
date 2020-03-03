@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3576141592585647168">Badilisha saa za eneo</translation>
+<translation id="3593646411856133110">Telezesha kidole juu na ushikilie ili uone programu zilizofunguliwa</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
 <translation id="3604801046548457007">Kiolesura cha <ph name="DESK_TITILE" /> kimeanzishwa</translation>
 <translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">Mipangilio ya Sauti</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
 <translation id="3631369015426612114">Ruhusu arifa kutoka vyanzo hivi</translation>
+<translation id="3638400994746983214">Weka skrini ya faragha. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Piga eneo picha</translation>
 <translation id="371370241367527062">Maikrofoni ya mbele</translation>
@@ -243,6 +245,7 @@
 <translation id="3995138139523574647">Kifaa cha USB-C (mlango wa upande wa kulia nyuma)</translation>
 <translation id="4017989525502048489">Kielekezi cha leza</translation>
 <translation id="4021716437419160885">Sogeza chini</translation>
+<translation id="402772165574991617">Tumia ishara kubadilisha kwa haraka kati ya programu na utumie Chromebook katika hali ya kompyuta kibao.</translation>
 <translation id="4028481283645788203">Nenosiri linahitajika kwa usalama zaidi</translation>
 <translation id="4042660782729322247">Unashiriki skrini yako</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Imezimwa katika programu moja}other{Imezimwa katika programu #}}</translation>
@@ -291,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox imewashwa</translation>
 <translation id="4665114317261903604">Washa/zima 'Usinisumbue'. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Fungua kifaa ukitumia msimbo wa mzazi</translation>
+<translation id="4702647871202761252">Skrini ya faragha imezimwa</translation>
 <translation id="4710243778082831592">Mipangilio ya Programu Inayotambua Mbinu za Kuingiza Data (IME)</translation>
 <translation id="4731797938093519117">Idhini ya mzazi</translation>
 <translation id="4734965478015604180">Kimlalo</translation>
@@ -362,6 +366,7 @@
 <translation id="5745612484876805746">Kipengele cha Mwanga wa Usiku kitawaka kiotomatiki wakati wa machweo</translation>
 <translation id="5750765938512549687">Bluetooth imezimwa</translation>
 <translation id="576453121877257266">Umewasha Mwanga wa Usiku.</translation>
+<translation id="5769373120130404283">Skrini ya faragha</translation>
 <translation id="5777841717266010279">Je,ungependa kuacha kushiriki skrini?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Komesha <ph name="ROUTE_TITLE" /> kwenye <ph name="RECEIVER_NAME" /></translation>
@@ -403,6 +408,7 @@
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ilizungushwa hadi <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth imewashwa</translation>
+<translation id="6381109794406942707">Ili ufungue kifaa, weka PIN yako.</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
@@ -425,6 +431,7 @@
 <translation id="6559976592393364813">Mwulize Msimamizi</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />, Unadhibitiwa na Msimamizi wako</translation>
+<translation id="6614169507485700968">Skrini ya faragha imewashwa</translation>
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6637729079642709226">Badilisha wakati</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
@@ -439,6 +446,7 @@
 <translation id="6715542151869432661">Hakuna vifaa vya mkononi vilivyopatikana.</translation>
 <translation id="6723839937902243910">Nishati</translation>
 <translation id="6727969043791803658">Imeunganishwa, kiasi cha chaji ni <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">Kinadhibitiwa na msimamizi wako</translation>
 <translation id="6751826523481687655">Kipengele cha ufuatiliaji wa utendaji kimewashwa</translation>
 <translation id="6752912906630585008">Kiolesura cha <ph name="REMOVED_DESK" /> kimeondolewa na kimeunganishwa na Kiolesura cha <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Inawasha vifaa vya USB-C vilivyounganishwa</translation>
@@ -527,6 +535,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8029629653277878342">PIN au nenosiri linahitajika kwa usalama zaidi</translation>
 <translation id="8030169304546394654">Hujaunganishwa</translation>
+<translation id="8042024183333293953">Jaribu kipengele kipya cha usogezaji kwa kutumia ishara</translation>
 <translation id="8048123526339889627">Mipangilio ya Bluetooth</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8061464966246066292">Kilinganushi kikubwa</translation>
@@ -614,6 +623,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="9072519059834302790">Zimebaki <ph name="TIME_LEFT" /> kabla ya chaji ya betri kuisha.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Telezesha kidole juu ili urudi kwenye skrini ya kwanza</translation>
 <translation id="9080206825613744995">Maikrofoni inatumika</translation>
 <translation id="9084606467167974638">Badilisha nafasi ya menyu</translation>
 <translation id="9089416786594320554">Mbinu Ingizo</translation>

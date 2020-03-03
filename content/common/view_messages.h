@@ -78,8 +78,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::kScrollerStyleOverlay)
 #endif
 
-IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::PreferredColorScheme,
-                          ui::NativeTheme::PreferredColorScheme::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::NativeTheme::SystemThemeColor,
                           ui::NativeTheme::SystemThemeColor::kMaxValue)
 

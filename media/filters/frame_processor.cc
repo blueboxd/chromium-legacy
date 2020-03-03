@@ -32,7 +32,7 @@ class MseTrackBuffer {
  public:
   MseTrackBuffer(ChunkDemuxerStream* stream,
                  MediaLog* media_log,
-                 const SourceBufferParseWarningCB& parse_warning_cb);
+                 SourceBufferParseWarningCB parse_warning_cb);
   ~MseTrackBuffer();
 
   // Get/set |last_decode_timestamp_|.
@@ -190,10 +190,9 @@ class MseTrackBuffer {
   DISALLOW_COPY_AND_ASSIGN(MseTrackBuffer);
 };
 
-MseTrackBuffer::MseTrackBuffer(
-    ChunkDemuxerStream* stream,
-    MediaLog* media_log,
-    const SourceBufferParseWarningCB& parse_warning_cb)
+MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream,
+                               MediaLog* media_log,
+                               SourceBufferParseWarningCB parse_warning_cb)
     : last_decode_timestamp_(kNoDecodeTimestamp()),
       last_processed_decode_timestamp_(DecodeTimestamp()),
       pending_group_start_pts_(kNoTimestamp),
@@ -205,7 +204,7 @@ MseTrackBuffer::MseTrackBuffer(
       needs_random_access_point_(true),
       stream_(stream),
       media_log_(media_log),
-      parse_warning_cb_(parse_warning_cb) {
+      parse_warning_cb_(std::move(parse_warning_cb)) {
   DCHECK(stream_);
   DCHECK(parse_warning_cb_);
 }
@@ -350,10 +349,10 @@ FrameProcessor::~FrameProcessor() {
 }
 
 void FrameProcessor::SetParseWarningCallback(
-    const SourceBufferParseWarningCB& parse_warning_cb) {
+    SourceBufferParseWarningCB parse_warning_cb) {
   DCHECK(!parse_warning_cb_);
   DCHECK(parse_warning_cb);
-  parse_warning_cb_ = parse_warning_cb;
+  parse_warning_cb_ = std::move(parse_warning_cb);
 }
 
 void FrameProcessor::SetSequenceMode(bool sequence_mode) {

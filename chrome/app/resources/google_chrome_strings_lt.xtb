@@ -41,6 +41,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1900795423379050516">Jei nustatymai šiame puslapyje nerodomi, jų ieškokite <ph name="LINK_BEGIN" />
       naršyklės „Chrome“ nustatymuose<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Leisti „Chrome“ prisijungti</translation>
+<translation id="1983547493073464667">„Chrome“ negali patikrinti jūsų slaptažodžių</translation>
 <translation id="2063848847527508675">Kad būtų galima pritaikyti naujinį, „Chrome“ OS reikia paleisti iš naujo.</translation>
 <translation id="2094919256425865063">Vis tiek išeiti iš „Chrome“?</translation>
 <translation id="2120620239521071941">Atlikus šį veiksmą, iš šio įrenginio bus ištrinta tiek elementų: <ph name="ITEMS_COUNT" />. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip <ph name="USER_EMAIL" />.</translation>
@@ -56,15 +57,19 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2467438592969358367">„Google Chrome“ nori eksportuoti jūsų slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2534507159460261402">„Google Pay“ (nukopijuota į „Chrome“)</translation>
+<translation id="2559627601176023786">Nėra išsaugotų slaptažodžių. „Chrome“ gali tikrinti jūsų slaptažodžius, kai išsaugote juos „Google“ paskyroje.</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="2586406160782125153">Atlikus šį veiksmą bus ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">„Chrome“ logotipas</translation>
+<translation id="261226884343006626">„Chrome“ negali patikrinti jūsų slaptažodžių. Rytoj bandykite dar kartą.</translation>
+<translation id="2622559029861875898">„Chrome“ negali tikrinti naujinių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="2644798301485385923">„Chrome“ OS sistema</translation>
 <translation id="2652691236519827073">Atidaryti nuorodą naujame „Chrome“ &amp;skirtuke</translation>
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chrome“.</translation>
 <translation id="2765403129283291972">„Chrome“ reikia leidimo, kad galėtų naudoti mikrofoną šioje svetainėje</translation>
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
+<translation id="2775140325783767197">„Chrome“ negali patikrinti jūsų slaptažodžių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2847461019998147611">Pateikti „Google Chrome“ šia kalba</translation>
 <translation id="2857540653560290388">Pristatoma „Chrome“...</translation>
@@ -80,6 +85,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3395323229510056640">Gaukite pagalbos dėl „Chrome“ OS</translation>
 <translation id="3396977131400919238">Diegimo metu įvyko operacinės sistemos klaida. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="3398288718845740432">Paslėpti „Chrome“ meniu elementą</translation>
+<translation id="3434246496373299699">„Chrome“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą</translation>
 <translation id="3451115285585441894">Pridedama prie „Chrome“...</translation>
 <translation id="345171907106878721">Pridėkite save prie „Chrome“</translation>
 <translation id="34857402635545079">Taip pat išvalyti duomenis iš „Chrome“ (<ph name="URL" />)</translation>
@@ -95,6 +101,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="386202838227397562">Uždarykite visus „Google Chrome“ langus ir bandykite dar kartą.</translation>
 <translation id="3873044882194371212">Atidaryti nuorodą „Chrome“ inko&amp;gnito lange</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
+<translation id="3943605108614542032">Jūsų administratorius tvarko „Chrome“ naujinius</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
 <translation id="4143243756087420366">„Chrome“ pavadinimas ir paveikslėlis</translation>
@@ -208,6 +215,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>
+<translation id="7888686278524752658">Nepavyko atnaujinti „Chrome“, įvyko klaida. Pašalinkite „Chrome“ naujinimo problemas ir naujinių klaidas.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7896673875602241923">Kažkas anksčiau prisijungė prie „Chrome“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Sukurkite naują „Chrome“ naudotoją, kad apsaugotumėte savo informaciją.</translation>
 <translation id="7916016681687251387">„Chrome“ OS nepavyko sinchronizuoti jūsų duomenų. Ištaisykite dabar.</translation>
@@ -238,6 +246,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
 <translation id="8914504000324227558">Iš naujo paleisti „Chrome“</translation>
 <translation id="8999208279178790196">{0,plural, =0{Pasiekiamas „Chrome“ naujinys}=1{Pasiekiamas „Chrome“ naujinys}one{„Chrome“ naujinys pasiekiamas # dieną}few{„Chrome“ naujinys pasiekiamas # dienas}many{„Chrome“ naujinys pasiekiamas # dienos}other{„Chrome“ naujinys pasiekiamas # dienų}}</translation>
+<translation id="9025321516765676895">„Chrome“ negali patikrinti jūsų slaptažodžių, nes jų per daug</translation>
 <translation id="9026991721384951619">„Chrome“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="9067395829937117663">Kad būtų galima naudoti „Google Chrome“, reikalinga 7 ar naujesnės versijos „Windows“.</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>

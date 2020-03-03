@@ -1085,6 +1085,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist "Textcursor hervorheben" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="2509919237512982967">Verwenden Sie alte Formularsteuerelemente bis M84.</translation>
 <translation id="2514328368635166290">Gibt die Favicon-URL für den Standardsuchanbieter an. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so erscheint kein Symbol für den Suchanbieter. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="2516600974234263142">Aktiviert das Drucken in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
 
@@ -5084,6 +5085,13 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Wenn die Richtlinie nicht festgelegt wird, wird angenommen, dass <ph name="PRINTERS_ALLOW_ALL" /> ausgewählt ist.
       </translation>
+<translation id="8937282917198525844"> Ab M81 wurde für die Standard-Formularsteuerelemente (z. B. &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) ein überarbeitetes Design mit verbesserter Zugänglichkeit und einer vereinheitlichten Plattform entwickelt. Mit dieser Richtlinie werden die "alten" Formularsteuerelemente bis M84 wiederhergestellt.
+
+      Wenn diese Richtlinie auf "True" gesetzt wird, werden die "alten" Formularsteuerelemente für alle Websites verwendet.
+
+      Wird sie auf "False" gesetzt oder nicht konfiguriert, werden die Formularsteuerelemente bei ihrer Einführung in M81, M82 und M83 aktiviert.
+
+      Diese Richtlinie wird nach Chrome 84 entfernt.</translation>
 <translation id="8938932171964587769">Eingestellt in M69. Verwenden Sie stattdessen
       "OverrideSecurityRestrictionsOnInsecureOrigin".
 

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
@@ -53,6 +55,14 @@ void MarketingOptInScreenHandler::Initialize() {}
 void MarketingOptInScreenHandler::RegisterMessages() {
   AddCallback("login.MarketingOptInScreen.allSet",
               &MarketingOptInScreenHandler::HandleAllSet);
+}
+
+void MarketingOptInScreenHandler::GetAdditionalParameters(
+    base::DictionaryValue* parameters) {
+  parameters->SetBoolean("enableMarketingOptIn",
+                         base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             chromeos::switches::kEnableMarketingOptInScreen));
+  BaseScreenHandler::GetAdditionalParameters(parameters);
 }
 
 void MarketingOptInScreenHandler::HandleAllSet(

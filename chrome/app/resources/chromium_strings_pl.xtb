@@ -11,6 +11,7 @@
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="1524282610922162960">Udostępnij kartę Chromium</translation>
 <translation id="1607715478322902680">{COUNT,plural, =0{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację}=1{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator wymaga ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
+<translation id="1663739491876737434">Chromium nie może sprawdzić Twoich haseł. Spróbuj ponownie jutro.</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
@@ -59,6 +60,7 @@
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3639635944603682591">Dane przeglądania tej osoby zostaną usunięte z tego urządzenia. Aby je odzyskać, zaloguj się w Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Dostępna jest aktualizacja Chromium, która zostanie zastosowana natychmiast po ponownym uruchomieniu aplikacji.}=1{Dostępna jest aktualizacja Chromium, która zostanie zastosowana natychmiast po ponownym uruchomieniu aplikacji. Okno incognito nie otworzy się ponownie.}few{Dostępna jest aktualizacja Chromium, która zostanie zastosowana natychmiast po ponownym uruchomieniu aplikacji. # okna incognito nie otworzą się ponownie.}many{Dostępna jest aktualizacja Chromium, która zostanie zastosowana natychmiast po ponownym uruchomieniu aplikacji. # okien incognito nie otworzy się ponownie.}other{Dostępna jest aktualizacja Chromium, która zostanie zastosowana natychmiast po ponownym uruchomieniu aplikacji. # okna incognito nie otworzy się ponownie.}}</translation>
+<translation id="3685209450716071127">Chromium nie może sprawdzić Twoich haseł. Sprawdź połączenie z internetem.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację}=1{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator prosi o ponowne uruchomienie Chromium, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="3713809861844741608">O&amp;twórz link w nowej karcie Chromium</translation>
 <translation id="3728336900324680424">Chromium będzie mieć dostęp do Dysku, by wyświetlać podpowiedzi na pasku adresu</translation>
@@ -90,7 +92,9 @@
 <translation id="4943838377383847465">Chromium jest w trybie działania w tle</translation>
 <translation id="4987820182225656817">Goście mogą korzystać z Chromium, nie pozostawiając żadnych danych.</translation>
 <translation id="4994636714258228724">Dodaj siebie do Chromium</translation>
+<translation id="5093066630040073147">Brak zapisanych haseł. Chromium może sprawdzać hasła zapisane na Twoim koncie Google.</translation>
 <translation id="5277894862589591112">Aby zastosować zmiany, uruchom ponownie Chromium</translation>
+<translation id="5310059007469274549">Chromium nie może sprawdzić haseł, bo jest ich zbyt dużo</translation>
 <translation id="5358375970380395591">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Aktualizuję Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Zezwalaj na logowanie w Chromium</translation>
@@ -100,12 +104,14 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5479196819031988440">System operacyjny Chromium nie może otworzyć tej strony.</translation>
 <translation id="5480860683791598150">Chromium musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie</translation>
+<translation id="5488573303232097702">Coś poszło nie tak i nie udało się zaktualizować Chromium. Napraw nieudane aktualizacje Chrome i rozwiąż inne problemy z aktualizacjami.</translation>
 <translation id="549669000822060376">Poczekaj, aż Chromium zainstaluje najnowsze aktualizacje systemu.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Dostępna jest aktualizacja Chromium}=1{Dostępna jest aktualizacja Chromium}few{Aktualizacja Chromium jest dostępna od # dni}many{Aktualizacja Chromium jest dostępna od # dni}other{Aktualizacja Chromium jest dostępna od # dnia}}</translation>
 <translation id="5631814766731275228">Nazwa i zdjęcie w Chromium</translation>
 <translation id="5634636535844844681">Chromium wymaga systemu Windows 7 lub nowszego.</translation>
 <translation id="5653831366781983928">Uruchom Chromium ponownie</translation>
 <translation id="5698481217667032250">Wyświetlaj Chromium w tym języku</translation>
+<translation id="5814748786105822016">Chromium nie może sprawdzić Twoich haseł</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
@@ -121,6 +127,7 @@
 <translation id="6212496753309875659">Na tym komputerze jest już zainstalowana nowsza wersja Chromium. Jeśli program nie działa, odinstaluj go i spróbuj ponownie.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium uruchomi się ponownie teraz}=1{Chromium uruchomi się ponownie za 1 sekundę}few{Chromium uruchomi się ponownie za # sekundy}many{Chromium uruchomi się ponownie za # sekund}other{Chromium uruchomi się ponownie za # sekundy}}</translation>
 <translation id="6248213926982192922">Ustaw Chromium jako domyślną przeglądarkę</translation>
+<translation id="6266342355635466082">Chromium nie może sprawdzić dostępności aktualizacji. Sprawdź połączenie z internetem.</translation>
 <translation id="6268381023930128611">Wylogować z Chromium?</translation>
 <translation id="6295779123002464101">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
 <translation id="6309712487085796862">Chromium używa Twojej kamery.</translation>
@@ -195,12 +202,14 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Ponowne uruchomienie Chromium nastąpi w ciągu 1 dnia}few{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}many{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}other{Ponowne uruchomienie Chromium nastąpi w ciągu # dnia}}</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
+<translation id="8568283329061645092">Chromium może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8619360774459241877">Uruchamiam Chromium…</translation>
 <translation id="8621669128220841554">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Chromium ponownie.</translation>
 <translation id="8682540261359803721">Jeśli ustawienia nie widać na tej stronie, zajrzyj do <ph name="LINK_BEGIN" />ustawień przeglądarki Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium lub wyszukiwaniu w omniboksie.</translation>
 <translation id="8704119203788522458">Oto Twoja przeglądarka Chromium</translation>
+<translation id="8774315820480073720">Aktualizacjami Chromium zarządza administrator</translation>
 <translation id="8796602469536043152">Chromium potrzebuje uprawnień dostępu do aparatu i mikrofonu na tej stronie</translation>
 <translation id="8803635938069941624">Warunki korzystania z systemu operacyjnego Chromium</translation>
 <translation id="8821041990367117597">Chromium nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>

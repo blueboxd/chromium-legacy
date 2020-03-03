@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="1195447618553298278">Erro desconhecido.</translation>
+<translation id="1468664791493211953">Ofertas</translation>
 <translation id="1482734542997480527">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia este dispositivo e pode monitorar sua atividade.</translation>
 <translation id="150962533380566081">PUK inválida.</translation>
 <translation id="1510238584712386396">Iniciador</translation>
@@ -42,6 +43,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar nova senha</translation>
 <translation id="808894953321890993">Alterar senha</translation>
+<translation id="8208861521865154048">Benefícios</translation>
 <translation id="8747900814994928677">Confirmar alteração</translation>
 <translation id="910415269708673980">Atualizar tíquete para <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>

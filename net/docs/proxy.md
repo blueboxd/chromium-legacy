@@ -838,3 +838,83 @@ platforms:
   system's PAC implementation. This confusion can arise when users add
   `alert()` to debug PAC script logic, and then refer to output in `logcat` to
   try and diagnose a resolving issue in Android Chrome.
+
+## Downloading PAC scripts
+
+When a network context is configured to use a PAC script, proxy resolution will
+stall while downloading the PAC script.
+
+Fetches for PAC URLs are initiated by the network stack, and behave differently
+from ordinary web visible requests:
+
+* Must complete within 30 seconds.
+* Must complete with an HTTP response code of exactly 200.
+* Must have an uncompressed body smaller than 1 MB.
+* Do not follow ordinary HTTP caching semantics.
+* Are never fetched through a proxy
+* Are not visible to the WebRequest extension API, or to service workers.
+* Do not support HTTP authentication (ambient authentication may work, but
+  cannot prompt UI for credentials).
+* Do not support client certificates (including `AutoSelectCertificateForUrls`)
+* Do not support auxiliary certificate network fetches (will only used cached
+  OCSP, AIA, and CRL responses during certificate verification).
+
+### Caching of successful PAC fetches
+
+PAC URLs are always fetched from the network, and never from the HTTP cache.
+After a PAC URL is successfully fetched, its contents (which are used to create
+a long-lived Java Script context) will be assumed to be fresh until either:
+
+* The network changes (IP address changes, DNS configuration changes)
+* The response becomes older than 12 hours
+* A user explicitly invalidates PAC through `chrome://net-internals#proxy`
+
+Once considered stale, the PAC URL will be re-fetched the next time proxy
+resolution is requested.
+
+### Fallback for failed PAC fetches
+
+When the proxy settings are configured to use a PAC URL, and that PAC URL
+cannot be fetched, proxy resolution will fallback to the next option, which is
+often `DIRECT`:
+
+* If using system proxy settings, and the platform supports fallback to manual
+  proxy settings (e.g. Windows), the specified manual proxy servers will be
+  used after the PAC fetch fails.
+* If using Chrome's proxy settings, and the PAC script was marked as
+  [mandatory](https://developer.chrome.com/extensions/proxy), fallback to
+  `DIRECT` is not permitted. Subsequent network requests will fail proxy
+  resolution and complete with `ERR_MANDATORY_PROXY_CONFIGURATION_FAILED`.
+* Otherwise proxy resolution will silently fall back to `DIRECT`.
+
+### Recovering from failed PAC fetches
+
+When fetching an explicitly configured PAC URL fails, the browser will try to
+re-fetch it:
+
+* In exactly 8 seconds
+* 32 seconds after that
+* 2 minutes after that
+* Every 4 hours thereafter
+
+This background polling of the PAC URL is only initiated in response to an
+incoming proxy resolution request, so it will not trigger work when the browser
+is otherwise idle.
+
+Similarly to successful fetches, the PAC URL will be also be re-fetched
+whenever the network changes, the proxy settings change, or it was manually
+invalidated via `chrome://net-internals#proxy`.
+
+### Text encoding
+
+Note that UTF-8 is *not* the default interpretation of PAC response bodies.
+
+The priority for encoding is determined in this order:
+
+1. The `charset` property of the HTTP response's `Content-Type`
+2. Any BOM at the start of response body
+3. Otherwise defaults to ISO-8859-1.
+
+When setting the `Content-Type`, servers should prefer using a mime type of
+`application/x-ns-proxy-autoconfig` or `application/x-javascript-config`.
+However in practice, Chrome does not enforce the mime type.

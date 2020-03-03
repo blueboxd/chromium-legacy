@@ -316,6 +316,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2289385804009217824">Vágás</translation>
 <translation id="2292556288342944218">Az internethez való hozzáférést a rendszer letiltotta</translation>
 <translation id="2297722699537546652">B5 (boríték)</translation>
+<translation id="2300306941146563769">Nincs feltöltve</translation>
 <translation id="2310021320168182093">Chou2 (boríték)</translation>
 <translation id="2315864634253056100">Ennek a webhelynek a neve hasonló a következő webhelyéhez: <ph name="LOOKALIKE_DOMAIN" />. A támadók néha úgy próbálnak meg webhelyeket utánozni, hogy alig észrevehető változtatásokat végeznek a webhely címében.</translation>
 <translation id="2316887270356262533">1 MB-nál kevesebb hely szabadul fel. Előfordulhat, hogy egyes webhelyek lassabban töltődnek be, amikor legközelebb felkeresi őket.</translation>
@@ -442,6 +443,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2910133103376701357">Eszközét és fiókját a következő kezeli: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">Munkafiók felhasználói azonosítója</translation>
+<translation id="2915068235268646559">Összeomlás – <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zárja be a többi programot</translation>
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
 <translation id="2925673989565098301">Kézbesítési mód</translation>
@@ -450,6 +452,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2930577230479659665">Vágás minden példány után</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa a következőről származik: <ph name="DOMAIN2" />. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
+<translation id="2943895734390379394">Feltöltés ideje:</translation>
 <translation id="2948083400971632585">Bármelyik kapcsolatlétesítésre használt proxyt letilthatja a beállítások oldalon.</translation>
 <translation id="2951588413176968965">Saját postaládám</translation>
 <translation id="295526156371527179">Figyelem: Ezt a házirendet nem egyesítette a rendszer szótárként a házirend előírásainak megfelelően, mert nem szótár.</translation>
@@ -1081,6 +1084,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="563324245173044180">Megtévesztő tartalom letiltva.</translation>
 <translation id="5644090287519800334">1. oldali kép X-eltolása</translation>
 <translation id="5645854190134202180">Második műszak</translation>
+<translation id="5654927323611874862">Feltöltött hibajelentés azonosítója:</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5663614846592581799">9x11 (boríték)</translation>
 <translation id="5663955426505430495">Az eszköz rendszergazdája bővítményeket telepített további funkciók használata céljából. A bővítmények hozzáférhetnek az Ön bizonyos adataihoz.</translation>
@@ -1388,6 +1392,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="7079718277001814089">A webhely rosszindulatú programokat tartalmaz</translation>
 <translation id="7081308185095828845">Ez a funkció nem áll rendelkezésre az eszközén</translation>
 <translation id="7083258188081898530">9. tálca</translation>
+<translation id="7086090958708083563">Feltöltés kérve a felhasználó által</translation>
 <translation id="7087282848513945231">Megye</translation>
 <translation id="7090678807593890770">Keresés a Google-on a következőre: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Elrejtés</translation>
@@ -1550,6 +1555,7 @@ További részletek:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tovább a(z) <ph name="SITE" /> webhelyre (nem biztonságos)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Tanúsítvány</translation>
 <translation id="7716147886133743102">Rendszergazda tiltja</translation>
+<translation id="7716375162095500223">Még nincs feltöltve, vagy ki lett hagyva</translation>
 <translation id="7716424297397655342">A webhely nem tölthető be a gyorsítótárból</translation>
 <translation id="7723047071702270851">Kártya szerkesztése</translation>
 <translation id="7740996059027112821">Szokásos</translation>
@@ -1694,6 +1700,7 @@ További részletek:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ha tisztában van a biztonságát fenyegető kockázatokkal, a veszélyes programok eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti ezt a webhelyet<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
+<translation id="8355270400102541638">Összeomlás helyi kontextusa:</translation>
 <translation id="8363502534493474904">Repülős üzemmód kikapcsolása</translation>
 <translation id="8364627913115013041">Nincs beállítva.</translation>
 <translation id="8368476060205742148">Google Play-szolgáltatások</translation>
@@ -1714,6 +1721,7 @@ További részletek:
 <translation id="8461694314515752532">A szinkronizált adatok titkosítása saját összetett szinkronizálási jelszóval</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 hitelkártya}other{# hitelkártya}}</translation>
 <translation id="8473863474539038330">Címek és egyebek</translation>
+<translation id="8474910779563686872">Fejlesztői részletek megjelenítése</translation>
 <translation id="8479754468255770962">Kapocs balra lent</translation>
 <translation id="8483780878231876732">Jelentkezzen be a Chrome-ba, hogy használhassa a kártyákat Google-fiókjából.</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
@@ -1840,6 +1848,7 @@ További részletek:
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>
 <translation id="9114524666733003316">Kártya ellenőrzése…</translation>
+<translation id="9119042192571987207">Feltöltve</translation>
 <translation id="9128870381267983090">Csatlakozás hálózathoz</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9141013498910525015">Címek kezelése</translation>

@@ -634,11 +634,11 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
        "640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0},
       {"http://example.test",
-       "<meta http-equiv='accept-ch' content='dpr \t'><img srcset='bla.gif "
+       "<meta http-equiv='accept-ch' content='dpr  '><img srcset='bla.gif "
        "320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0, dpr},
       {"http://example.test",
-       "<meta http-equiv='accept-ch' content='bla,dpr \t'><img srcset='bla.gif "
+       "<meta http-equiv='accept-ch' content='bla,dpr  '><img srcset='bla.gif "
        "320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0, dpr},
       {"http://example.test",
@@ -663,7 +663,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
        viewport_width},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
-       "wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
+       "wutever, dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
        "640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 450, all},
   };
@@ -685,7 +685,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   const PreloadScannerTestCase expect_no_client_hint = {
       "http://example.test",
       "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
-      "wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
+      "wutever, dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
       "640w'>",
       "blabla.gif",
       "http://example.test/",
@@ -695,7 +695,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   const PreloadScannerTestCase expect_client_hint = {
       "http://example.test",
       "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
-      "wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
+      "wutever, dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
       "640w'>",
       "blabla.gif",
       "http://example.test/",

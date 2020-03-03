@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129382876167171263">Filer, der gemmes af websites, vises her</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
+<translation id="1303339473099049190">Adgangskoden blev ikke fundet. Tjek stavningen, og prøv igen.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – sendt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppér faner</translation>
+<translation id="1311657260431405215">Denne QR-kode er ikke en webadresse: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Navigationsoversigt er åbnet</translation>
 <translation id="1331212799747679585">Chrome kan ikke opdateres. Flere valgmuligheder</translation>
 <translation id="1332501820983677155">Funktionsgenveje i Google Chrome</translation>
@@ -323,6 +325,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3350687908700087792">Luk alle inkognitofaner</translation>
 <translation id="3353615205017136254">Lite-side leveret af Google. Tryk på knappen Indlæs original for at indlæse den originale side.</translation>
 <translation id="3367813778245106622">Log ind igen for at starte synkroniseringen</translation>
+<translation id="3373979091428520308">Hvis du vil dele denne side med en anden enhed, kan du aktivere synkronisering i indstillingerne for Chrome på den anden enhed</translation>
 <translation id="3374023511497244703">Din historik samt dine bogmærker, adgangskoder og andre Chrome-data synkroniseres ikke længere med din Google-konto</translation>
 <translation id="3384347053049321195">Del billede</translation>
 <translation id="3386292677130313581">Spørg, om websites må få adgang til din placering (anbefales)</translation>
@@ -672,6 +675,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5956665950594638604">Åbn Hjælp til Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Find dine filer og sider i Downloads</translation>
 <translation id="5962718611393537961">Tryk for at skjule</translation>
+<translation id="5964805880140440652">Hvis du vil dele denne side med en anden enhed, skal du aktivere synkronisering i indstillingerne for Chrome</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6005538289190791541">Foreslået adgangskode</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>

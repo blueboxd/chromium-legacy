@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Audio Settings</translation>
 <translation id="3626281679859535460">Brightness</translation>
 <translation id="3631369015426612114">Allow notifications from the following</translation>
+<translation id="3638400994746983214">Toggle privacy screen. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capture region</translation>
 <translation id="371370241367527062">Front microphone</translation>
@@ -244,6 +245,7 @@
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4021716437419160885">Scroll down</translation>
+<translation id="402772165574991617">Use gestures to quickly switch between apps and interact with your chromebook in tablet mode.</translation>
 <translation id="4028481283645788203">Password required for more security</translation>
 <translation id="4042660782729322247">You're sharing your screen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Off for an app}other{Off for # apps}}</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4665114317261903604">Toggle Do Not Disturb. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Unlock device with parent code</translation>
+<translation id="4702647871202761252">Privacy screen is off</translation>
 <translation id="4710243778082831592">IME settings</translation>
 <translation id="4731797938093519117">Parent access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -428,6 +431,7 @@
 <translation id="6559976592393364813">Ask administrator</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />, managed by your administrator</translation>
+<translation id="6614169507485700968">Privacy screen is on</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6637729079642709226">Change time</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
@@ -442,6 +446,7 @@
 <translation id="6715542151869432661">No mobile devices found.</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6727969043791803658">Connected, <ph name="BATTERY_PERCENTAGE" />% battery</translation>
+<translation id="6751052314767925245">Enforced by your administrator</translation>
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6752912906630585008">Desk <ph name="REMOVED_DESK" /> removed and merged with Desk <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Powering connected USB-C devices</translation>
@@ -529,6 +534,7 @@
 <translation id="8000066093800657092">No network</translation>
 <translation id="8029629653277878342">PIN or password required for more security</translation>
 <translation id="8030169304546394654">Disconnected</translation>
+<translation id="8042024183333293953">Try out new gesture navigation</translation>
 <translation id="8048123526339889627">Bluetooth settings</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8061464966246066292">High contrast</translation>

@@ -53,6 +53,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   void StartRecordingFunctionCalls() override;
   std::string StopRecordingAndGetRecordedFunctionCalls() override;
   std::size_t GetNumberOfAccounts() const override;
+  void SetSimulatedNumberOfNetworkFailures(int number_of_failures) override;
 
  private:
   using RepeatedAccountField =
@@ -108,7 +109,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   base::Optional<std::string> recorded_function_calls_;
 
   // Fake delay for any asynchronous operation.
-  base::TimeDelta mTaskDelay = base::TimeDelta::FromMilliseconds(100);
+  base::TimeDelta task_delay_ = base::TimeDelta::FromMilliseconds(100);
+
+  // The simulated number of network failures on |AcquireKerberosTgt()| (for
+  // testing).
+  int simulated_number_of_network_failures_ = 0;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
   KerberosTicketExpiringCallback kerberos_ticket_expiring_callback_;

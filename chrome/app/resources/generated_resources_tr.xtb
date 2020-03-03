@@ -2686,7 +2686,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4737715515457435632">Lütfen bir ağa bağlanın</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4739639199548674512">Biletler</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> ve 1 Sayfa Daha}other{<ph name="PAGE_TITLE" /> ve # Sayfa Daha}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Uygulamaların nasıl güncelleneceğini öğrenin<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Sitenin sesini aç}other{Sitelerin sesini aç}}</translation>
 <translation id="4746351372139058112">Mesajlar</translation>
@@ -5189,7 +5188,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8214489666383623925">Dosya Aç...</translation>
 <translation id="8214962590150211830">Bu kişiyi kaldır</translation>
 <translation id="8215295261562449873">Linux'ı yeni sürüme geçirmeden önce uygulamalarımı ve dosyalarımı İndirilenler klasörüne yedekle.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> ve 1 sayfa daha}other{<ph name="PAGE_TITLE" /> ve # sayfa daha}}</translation>
 <translation id="8217399928341212914">Otomatik olarak birden fazla dosya indirilmesini engellemeye devam et</translation>
 <translation id="8218847192766059983">Dil ekleyin veya listeyi yeniden sıralayın <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Genelde bildirimleri engelliyorsunuz. Bu sitenin size bildirim göndermesine izin vermek için burayı tıklayın.</translation>
@@ -5400,6 +5398,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="851263357009351303"><ph name="HOST" /> sitesindeki resimlerin gösterilmesine her zaman izin ver</translation>
 <translation id="8513108775083588393">Otomatik döndür</translation>
 <translation id="8514746246728959655">Başka bir güvenlik anahtarı deneyin</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8521475323816527629">Uygulamalarınıza hızlıca ulaşın</translation>
 <translation id="8523493869875972733">Değişiklikleri Koru</translation>
 <translation id="8523849605371521713">Politika tarafından eklendi</translation>
@@ -5520,6 +5519,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8673383193459449849">Sunucu sorunu</translation>
 <translation id="8675354002693747642">Önceden paylaşılan anahtar</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
+<translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="8677212948402625567">Tümünü daralt...</translation>
 <translation id="8678648549315280022">İndirme ayarlarını yönet...</translation>
 <translation id="8678933587484842200">Bu uygulamanın nasıl başlatılmasını istersiniz?</translation>

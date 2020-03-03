@@ -8,6 +8,7 @@
 
 #include "base/containers/adapters.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -17,11 +18,9 @@
 namespace viz {
 
 BufferQueue::BufferQueue(gpu::SharedImageInterface* sii,
-                         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
     : sii_(sii),
       allocated_count_(0),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {}
 
 BufferQueue::~BufferQueue() {
@@ -124,7 +123,6 @@ void BufferQueue::FreeSurface(std::unique_ptr<AllocatedSurface> surface,
     return;
   DCHECK(!surface->mailbox.IsZero());
   sii_->DestroySharedImage(sync_token, surface->mailbox);
-  surface->buffer.reset();
   allocated_count_--;
 }
 
@@ -141,21 +139,14 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
   // We don't want to allow anything more than triple buffering.
   DCHECK_LT(allocated_count_, max_buffers_);
 
-  // TODO(crbug.com/958670): if we can have a CreateSharedImage() that takes a
-  // SurfaceHandle, we don't have to create a GpuMemoryBuffer here.
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          size_, *format_, gfx::BufferUsage::SCANOUT, surface_handle_));
-  if (!buffer) {
-    LOG(ERROR) << "Failed to allocate GPU memory buffer";
-    return nullptr;
-  }
-  buffer->SetColorSpace(color_space_);
-
+  DCHECK(format_);
+  const ResourceFormat format = GetResourceFormat(format_.value());
   const gpu::Mailbox mailbox = sii_->CreateSharedImage(
-      buffer.get(), gpu_memory_buffer_manager_, color_space_,
+      format, size_, color_space_,
       gpu::SHARED_IMAGE_USAGE_SCANOUT |
-          gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT);
+          gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
+      surface_handle_);
+
   if (mailbox.IsZero()) {
     LOG(ERROR) << "Failed to create SharedImage";
     return nullptr;
@@ -163,18 +154,13 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
 
   allocated_count_++;
   *creation_sync_token = sii_->GenUnverifiedSyncToken();
-  return std::make_unique<AllocatedSurface>(std::move(buffer), mailbox,
-                                            gfx::Rect(size_));
+  return std::make_unique<AllocatedSurface>(mailbox, gfx::Rect(size_));
 }
 
-BufferQueue::AllocatedSurface::AllocatedSurface(
-    std::unique_ptr<gfx::GpuMemoryBuffer> buffer,
-    const gpu::Mailbox& mailbox,
-    const gfx::Rect& rect)
-    : buffer(buffer.release()), mailbox(mailbox), damage(rect) {}
+BufferQueue::AllocatedSurface::AllocatedSurface(const gpu::Mailbox& mailbox,
+                                                const gfx::Rect& rect)
+    : mailbox(mailbox), damage(rect) {}
 
-BufferQueue::AllocatedSurface::~AllocatedSurface() {
-  DCHECK(!buffer);
-}
+BufferQueue::AllocatedSurface::~AllocatedSurface() = default;
 
 }  // namespace viz

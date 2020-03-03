@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Pastro historikun, kukit, të dhënat e sajtit, memorien specifike…</translation>
 <translation id="129382876167171263">Skedarët e ruajtur nga sajtet e uebit shfaqen këtu</translation>
 <translation id="129553762522093515">Të mbyllura së fundi</translation>
+<translation id="1303339473099049190">Ai fjalëkalim nuk mund të gjendet. Kontrollo drejtshkrimin dhe provo përsëri.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Dërguar nga <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupo skedat</translation>
 <translation id="1327257854815634930">Historiku i navigimit është i hapur</translation>
@@ -323,6 +324,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3350687908700087792">Mbylli të gjitha skedat "e fshehta"</translation>
 <translation id="3353615205017136254">Faqja e lehtë ofrohet nga Google. Trokit butonin origjinal të ngarkimit për të ngarkuar faqen origjinale.</translation>
 <translation id="3367813778245106622">Identifikohu përsëri për të nisur sinkronizimin</translation>
+<translation id="3373979091428520308">Për të ndarë këtë faqe në një pajisje tjetër, aktivizo sinkronizimin në cilësimet e Chrome në pajisjen tjetër</translation>
 <translation id="3374023511497244703">Faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome nuk do të sinkronizohen më në "Llogarinë tënde të Google"</translation>
 <translation id="3384347053049321195">Shpërndaje imazhin</translation>
 <translation id="3386292677130313581">Pyet përpara se sajtet të lejohen të dinë vendndodhjen tënde (rekomandohet)</translation>
@@ -672,6 +674,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5956665950594638604">Hap "Qendrën e ndihmës së Chrome" në një skedë të re</translation>
 <translation id="5958275228015807058">Gjej skedarët dhe faqet e tua te "Shkarkimet"</translation>
 <translation id="5962718611393537961">Trokit për të palosur</translation>
+<translation id="5964805880140440652">Për ta ndarë këtë faqe në një pajisje tjetër, aktivizo sinkronizimin në cilësimet e Chrome</translation>
 <translation id="6000066717592683814">Mbaj Google</translation>
 <translation id="6005538289190791541">Fjalëkalimi i sugjeruar</translation>
 <translation id="6036057147555329831">Moduli shtesë ICU</translation>

@@ -316,6 +316,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2289385804009217824">Decupare</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
 <translation id="2297722699537546652">B5 (Plic)</translation>
+<translation id="2300306941146563769">Nu s-a încărcat</translation>
 <translation id="2310021320168182093">Chou2 (Plic)</translation>
 <translation id="2315864634253056100">Numele acestui site este similar cu cel al site-ului <ph name="LOOKALIKE_DOMAIN" />. Uneori, atacatorii imită site-uri aducând modificări greu de observat adresei web.</translation>
 <translation id="2316887270356262533">Eliberează mai puțin de 1 MB. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
@@ -442,6 +443,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2910133103376701357">Dispozitivul și contul sunt gestionate de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID-ul de utilizator al contului sarcinii</translation>
+<translation id="2915068235268646559">Blocarea de la <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
 <translation id="2925673989565098301">Metodă de livrare</translation>
@@ -450,6 +452,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2930577230479659665">Decupare după fiecare exemplar</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate provine de la <ph name="DOMAIN2" />. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
+<translation id="2943895734390379394">Ora încărcării:</translation>
 <translation id="2948083400971632585">Puteți să dezactivați serverele proxy configurate pentru o conexiune din pagina de setări.</translation>
 <translation id="2951588413176968965">Căsuța mea de e-mail</translation>
 <translation id="295526156371527179">Atenție: această politică nu a fost îmbinată ca dicționar așa cum este indicat de politică, deoarece nu este un dicționar.</translation>
@@ -1083,6 +1086,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="563324245173044180">Conținutul înșelător a fost blocat.</translation>
 <translation id="5644090287519800334">Deplasarea poziției X a imaginii de pe fața 1</translation>
 <translation id="5645854190134202180">A doua tură</translation>
+<translation id="5654927323611874862">ID-ul raportului de eroare încărcat:</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5663614846592581799">9x11 (Plic)</translation>
 <translation id="5663955426505430495">Administratorul acestui dispozitiv a instalat extensii pentru funcții suplimentare. Extensiile au acces la unele dintre datele tale.</translation>
@@ -1390,6 +1394,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="7079718277001814089">Acest site conține programe malware</translation>
 <translation id="7081308185095828845">Această funcție nu este disponibilă pe dispozitivul tău</translation>
 <translation id="7083258188081898530">Tava 9</translation>
+<translation id="7086090958708083563">Utilizatorul a solicitat încărcarea</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7090678807593890770">Caută <ph name="LINK" /> pe Google</translation>
 <translation id="7108338896283013870">Ascunde</translation>
@@ -1552,6 +1557,7 @@ Detalii suplimentare:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Accesați <ph name="SITE" /> (nesigur)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
 <translation id="7716147886133743102">Blocată de administrator</translation>
+<translation id="7716375162095500223">Nu s-a încărcat sau a fost ignorat</translation>
 <translation id="7716424297397655342">Acest site nu poate fi încărcat din memoria cache</translation>
 <translation id="7723047071702270851">Editează cardul</translation>
 <translation id="7740996059027112821">Standard</translation>
@@ -1696,6 +1702,7 @@ Detalii suplimentare:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site<ph name="END_LINK" /> înainte ca programele periculoase să fie eliminate.</translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
+<translation id="8355270400102541638">Contextul local al blocării:</translation>
 <translation id="8363502534493474904">să dezactivezi modul Avion;</translation>
 <translation id="8364627913115013041">Nesetată.</translation>
 <translation id="8368476060205742148">Servicii Google Play</translation>
@@ -1716,6 +1723,7 @@ Detalii suplimentare:
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
 <translation id="8473863474539038330">Adrese și altele</translation>
+<translation id="8474910779563686872">Afișează detaliile dezvoltatorului</translation>
 <translation id="8479754468255770962">Capsare în stânga jos</translation>
 <translation id="8483780878231876732">Pentru a folosi cardurile din Contul Google, conectează-te la Chrome</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
@@ -1842,6 +1850,7 @@ Detalii suplimentare:
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>
 <translation id="9114524666733003316">Se confirmă cardul…</translation>
+<translation id="9119042192571987207">Încărcat</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9141013498910525015">Gestionează adresele</translation>

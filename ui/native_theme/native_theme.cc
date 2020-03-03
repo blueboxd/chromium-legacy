@@ -119,7 +119,6 @@ void NativeTheme::set_system_colors(
 bool NativeTheme::UpdateSystemColorInfo(
     bool is_dark_mode,
     bool is_high_contrast,
-    PreferredColorScheme preferred_color_scheme,
     const base::flat_map<SystemThemeColor, uint32_t>& colors) {
   bool did_system_color_info_change = false;
   if (is_dark_mode != ShouldUseDarkColors()) {
@@ -129,10 +128,6 @@ bool NativeTheme::UpdateSystemColorInfo(
   if (is_high_contrast != UsesHighContrastColors()) {
     did_system_color_info_change = true;
     set_high_contrast(is_high_contrast);
-  }
-  if (preferred_color_scheme != GetPreferredColorScheme()) {
-    did_system_color_info_change = true;
-    set_preferred_color_scheme(preferred_color_scheme);
   }
   for (const auto& color : colors) {
     if (color.second != GetSystemThemeColor(color.first)) {

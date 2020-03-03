@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1195447618553298278">שגיאה לא ידועה.</translation>
+<translation id="1468664791493211953">מבצעים</translation>
 <translation id="1482734542997480527">הניהול של המכשיר הזה נעשה מהדומיין <ph name="ENROLLMENT_DOMAIN" /> וייתכן שאפשר יהיה לעקוב ממנו אחר הפעילות שלך.</translation>
 <translation id="150962533380566081">‏PUK לא חוקי.</translation>
 <translation id="1510238584712386396">מרכז האפליקציות</translation>
@@ -42,6 +43,7 @@
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7690294790491645610">אישור הסיסמה החדשה</translation>
 <translation id="808894953321890993">שינוי הסיסמה</translation>
+<translation id="8208861521865154048">הטבות</translation>
 <translation id="8747900814994928677">אישור השינוי</translation>
 <translation id="910415269708673980">רענון הכרטיס עבור <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">בטל נעילה</translation>

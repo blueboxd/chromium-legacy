@@ -316,6 +316,7 @@
 <translation id="2289385804009217824">Кратење</translation>
 <translation id="2292556288342944218">Вашиот пристап на интернет е блокиран</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
+<translation id="2300306941146563769">Не е прикачен</translation>
 <translation id="2310021320168182093">Chou 2 (плик)</translation>
 <translation id="2315864634253056100">Името на сајтов изгледа слично со <ph name="LOOKALIKE_DOMAIN" />. Напаѓачите понекогаш имитираат сајтови, така што вршат тешко забележливи промени во веб-адресата.</translation>
 <translation id="2316887270356262533">Ќе ослободи помалку од 1 MB. Некои сајтови може да се вчитуваат побавно при вашата следна посета.</translation>
@@ -444,6 +445,7 @@
 <translation id="2909946352844186028">Откривме промена на мрежа.</translation>
 <translation id="2910133103376701357">Уредот и сметката се управувани од <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2911973620368911614">ID на корисникот на работниот налог</translation>
+<translation id="2915068235268646559">Пад од <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворете ги другите програми</translation>
 <translation id="2922350208395188000">Не може да се провери сертификатот на серверот.</translation>
 <translation id="2925673989565098301">Начин на испорака</translation>
@@ -452,6 +454,7 @@
 <translation id="2930577230479659665">Кратење по секој примерок</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Серверот не можеше да докаже дека е <ph name="DOMAIN" />; неговиот сертификат е од <ph name="DOMAIN2" />. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
+<translation id="2943895734390379394">Време на прикачување:</translation>
 <translation id="2948083400971632585">Може да ги оневозможите проксијата конфигурирани за врска од страницата поставки.</translation>
 <translation id="2951588413176968965">Моето поштенско сандаче</translation>
 <translation id="295526156371527179">Предупредување: правилово не беше споено како речник како што е наведено во правилото бидејќи не е речник.</translation>
@@ -690,7 +693,7 @@
 <translation id="3987405730340719549">Chrome утврди дека сајтов може да е лажен или измамнички.
 
     Ако сметате дека ова ви се прикажува по грешка, одете на https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="3987940399970879459">Помалку од 1 МБ</translation>
+<translation id="3987940399970879459">Помалку од 1 MB</translation>
 <translation id="3990250421422698716">Офсет превиткување</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница во близина}one{# веб-страница во близина}other{# веб-страници во близина}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-документ со {COUNT} страница}one{PDF-документ со {COUNT} страница}other{PDF-документ со {COUNT} страници}}</translation>
@@ -1085,6 +1088,7 @@
 <translation id="563324245173044180">Лажните содржини се блокирани.</translation>
 <translation id="5644090287519800334">Промена на страната 1 на сликата X</translation>
 <translation id="5645854190134202180">Втора смена</translation>
+<translation id="5654927323611874862">Прикачен е извештај за пад со ID:</translation>
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5663614846592581799">9x11 (плик)</translation>
 <translation id="5663955426505430495">Администраторот на уредов инсталирал екстензии за дополнителни функции. Екстензиите имаат пристап до некои од податоците.</translation>
@@ -1392,6 +1396,7 @@
 <translation id="7079718277001814089">Сајтов содржи злонамерен софтвер</translation>
 <translation id="7081308185095828845">Функцијава не е достапна на вашиот уред</translation>
 <translation id="7083258188081898530">Фиока 9</translation>
+<translation id="7086090958708083563">Побарано е прикачување од корисникот</translation>
 <translation id="7087282848513945231">Округ</translation>
 <translation id="7090678807593890770">Пребарајте на Google за <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Сокриј</translation>
@@ -1554,6 +1559,7 @@
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Продолжете до <ph name="SITE" /> (небезбедно)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Сертификат</translation>
 <translation id="7716147886133743102">Блокирано од администраторот</translation>
+<translation id="7716375162095500223">Сѐ уште не е прикачен или е игнориран</translation>
 <translation id="7716424297397655342">Сајтот не може да се вчита од кешот</translation>
 <translation id="7723047071702270851">Изменете ја картичката</translation>
 <translation id="7740996059027112821">Стандарден</translation>
@@ -1698,6 +1704,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Доколку ги разбирате ризиците по безбедноста, може да ја <ph name="BEGIN_LINK" />посетите локацијата<ph name="END_LINK" /> пред да се отстранат штетните програми.</translation>
 <translation id="8349305172487531364">Лента со обележувачи</translation>
+<translation id="8355270400102541638">Контекст на локален пад:</translation>
 <translation id="8363502534493474904">Да го исклучите авионскиот режим</translation>
 <translation id="8364627913115013041">Не е поставено.</translation>
 <translation id="8368476060205742148">Услуги на Google Play</translation>
@@ -1718,6 +1725,7 @@
 <translation id="8461694314515752532">Шифрирајте ги синхронизираните податоци со сопствената лозинка за синхронизација</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картичка}one{# кредитна картичка}other{# кредитни картички}}</translation>
 <translation id="8473863474539038330">Адреси и друго</translation>
+<translation id="8474910779563686872">Прикажи ги деталите за програмерот</translation>
 <translation id="8479754468255770962">Спојување долу лево</translation>
 <translation id="8483780878231876732">За да ги користите картичките од вашата сметка на Google, најавете се на Chrome</translation>
 <translation id="8488350697529856933">Се однесува на</translation>
@@ -1843,6 +1851,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифрирање за да ги заштити вашите информации. Кога Chromium овој пат се обиде да се поврзе на <ph name="SITE" />, веб-сајтот врати невообичаени и неточни акредитиви. Ова може да се случи кога напаѓач се преправа дека е <ph name="SITE" /> или кога екран за најавување на Wi-Fi го прекинува поврзувањето. Вашите информации сѐ уште се безбедни, затоа што Chromium го запре поврзувањето пред да се разменат податоци.</translation>
 <translation id="9106062320799175032">Додајте адреса за наплата</translation>
 <translation id="9114524666733003316">Се потврдува картичката…</translation>
+<translation id="9119042192571987207">Прикачен</translation>
 <translation id="9128870381267983090">Поврзете се на мрежа</translation>
 <translation id="9137013805542155359">Покажи оригинална страница</translation>
 <translation id="9141013498910525015">Управувајте со адресите</translation>

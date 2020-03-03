@@ -2687,7 +2687,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4737715515457435632">Veuillez vous connecter à un réseau</translation>
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4740449729970973016">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> et 1 page de plus}one{<ph name="PAGE_TITLE" /> et # page de plus}other{<ph name="PAGE_TITLE" /> et # pages de plus}}</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Découvrir comment mettre à jour des applications<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Réactiver le son sur le site}one{Réactiver le son sur le site}other{Réactiver le son sur les sites}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -2893,7 +2892,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5038022729081036555">Tu pourras l'utiliser à nouveau demain pendant <ph name="TIME_LIMIT" />.</translation>
 <translation id="5038863510258510803">Activation en cours…</translation>
 <translation id="5039804452771397117">Autoriser</translation>
-<translation id="5040823038948176460">Paramètres de contenu supplémentaire</translation>
+<translation id="5040823038948176460">Paramètres de contenu supplémentaires</translation>
 <translation id="5042282098504489593">Ouvrez le menu Paramètres pour connecter <ph name="USB_DEVICE_NAME" /> à Linux</translation>
 <translation id="5043913660911154449">Ou encore, sélectionnez le fichier PPD de votre imprimante <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
@@ -4648,7 +4647,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7503191893372251637">Type de certificat Netscape</translation>
 <translation id="7503821294401948377">Échec de chargement de l'icône « <ph name="ICON" /> » pour une action du navigateur.</translation>
 <translation id="7503985202154027481">Une trace de votre visite sur ce site sera enregistrée sur votre clé de sécurité.</translation>
-<translation id="7504293978434250212">Votre organisation peut analyser des fichiers d'une taille maximale de 50 Mo. Essayez de téléverser un fichier d'une taille plus petite.</translation>
+<translation id="7504293978434250212">Votre organisation peut analyser les fichiers d'une taille maximale de 50 Mo. Essayez de téléverser un fichier de taille inférieure.</translation>
 <translation id="750509436279396091">Ouvrir le dossier des téléchargements</translation>
 <translation id="7506541170099744506">Votre <ph name="DEVICE_TYPE" /> est bien enregistré pour la gestion d'entreprise.</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
@@ -5189,7 +5188,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8214489666383623925">Ouvrir...</translation>
 <translation id="8214962590150211830">Supprimer cette personne</translation>
 <translation id="8215295261562449873">Sauvegarder mes applications et mes fichiers dans le dossier Téléchargements avant d'effectuer la mise à niveau de Linux.</translation>
-<translation id="8215601485412234631">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> et 1 page de plus}one{<ph name="PAGE_TITLE" /> et # page de plus}other{<ph name="PAGE_TITLE" /> et # pages de plus}}</translation>
 <translation id="8217399928341212914">Continuer à bloquer le téléchargement automatique de plusieurs fichiers</translation>
 <translation id="8218847192766059983">Ajoutez des langues ou réorganisez la liste. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Vous bloquez habituellement les notifications. Pour autoriser ce site à vous envoyer des notifications, cliquez ici.</translation>
@@ -5277,7 +5275,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8323167517179506834">Entrer une adresse URL</translation>
 <translation id="8326478304147373412">PKCS n° 7, chaîne de certificats</translation>
 <translation id="8327039559959785305">Erreur lors du montage des fichiers Linux. Veuillez réessayer.</translation>
-<translation id="8327676037044516220">Paramètres d'autorisations et de contenu</translation>
+<translation id="8327676037044516220">Autorisations et paramètres de contenu</translation>
 <translation id="8335587457941836791">Retirer de l'étagère</translation>
 <translation id="8336407002559723354">Les mises à jour cesseront en <ph name="MONTH_AND_YEAR" /></translation>
 <translation id="8336721153892716270">Redémarrer l'appareil pour que le texte du système soit en <ph name="LANGUAGE" /></translation>
@@ -5400,6 +5398,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="851263357009351303">Toujours autoriser <ph name="HOST" /> à afficher les images</translation>
 <translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8514746246728959655">Essayez une clé de sécurité différente</translation>
+<translation id="8517041960877371778">Il est possible que votre <ph name="DEVICE_TYPE" /> ne se charge pas lorsqu’il est allumé.</translation>
 <translation id="8521475323816527629">Accédez rapidement à vos applications</translation>
 <translation id="8523493869875972733">Conserver les modifications</translation>
 <translation id="8523849605371521713">Ajoutée par une règle</translation>
@@ -5520,6 +5519,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8673383193459449849">Problème de serveur</translation>
 <translation id="8675354002693747642">Clé prépartagée</translation>
 <translation id="8676374126336081632">Effacer l'entrée</translation>
+<translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="8677212948402625567">Tout réduire…</translation>
 <translation id="8678648549315280022">Gérer les paramètres de téléchargement…</translation>
 <translation id="8678933587484842200">Comment souhaitez-vous lancer cette application?</translation>
@@ -5770,7 +5770,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8996526648899750015">Ajouter un compte…</translation>
 <translation id="899657321862108550">Votre Chrome, partout</translation>
 <translation id="899676909165543803">Le capteur d'empreintes digitales se trouve sur la touche dans le coin inférieur droit de votre clavier. Touchez-le doucement avec n'importe quel doigt.</translation>
-<translation id="8998315123278494053">Afficher les applications ouvertes</translation>
+<translation id="8998315123278494053">Passer aux applications ouvertes</translation>
 <translation id="8999560016882908256">Erreur de syntaxe de section : <ph name="ERROR_LINE" /></translation>
 <translation id="9002878223019487115"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" /> <ph name="RECENT_PERMISSIONS_CHANGE_2" /></translation>
 <translation id="9003647077635673607">Autoriser sur tous les sites</translation>

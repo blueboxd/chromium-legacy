@@ -316,6 +316,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2289385804009217824">Recortar</translation>
 <translation id="2292556288342944218">O teu acceso a Internet está bloqueado</translation>
 <translation id="2297722699537546652">B5 (sobre)</translation>
+<translation id="2300306941146563769">Non se cargou</translation>
 <translation id="2310021320168182093">Chou2 (sobre)</translation>
 <translation id="2315864634253056100">O nome deste sitio é similar ao de <ph name="LOOKALIKE_DOMAIN" />. Ás veces, os atacantes crean copias de sitios introducindo cambios difíciles de ver no enderezo web.</translation>
 <translation id="2316887270356262533">Libera menos de 1 MB. É posible que algúns sitios carguen de forma máis lenta a próxima vez que os visites.</translation>
@@ -442,6 +443,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2909946352844186028">Detectouse un cambio de rede.</translation>
 <translation id="2910133103376701357"><ph name="ENROLLMENT_DOMAIN" /> xestiona o teu dispositivo e a conta.</translation>
 <translation id="2911973620368911614">ID de usuario de contabilidade de traballos</translation>
+<translation id="2915068235268646559">Fallo (<ph name="CRASH_TIME" />)</translation>
 <translation id="2916038427272391327">Pecha outros programas</translation>
 <translation id="2922350208395188000">Non se pode comprobar o certificado do servidor.</translation>
 <translation id="2925673989565098301">Método de entrega</translation>
@@ -450,6 +452,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2930577230479659665">Recorte despois de cada copia</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza é de <ph name="DOMAIN2" />. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
+<translation id="2943895734390379394">Momento da carga:</translation>
 <translation id="2948083400971632585">Podes desactivar os proxies configurados para unha conexión desde a páxina de configuración.</translation>
 <translation id="2951588413176968965">A miña caixa de correo</translation>
 <translation id="295526156371527179">Advertencia: Esta política non se combinou como un dicionario do xeito especificado na política porque non é un dicionario.</translation>
@@ -1083,6 +1086,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="563324245173044180">Bloqueouse contido enganoso.</translation>
 <translation id="5644090287519800334">Desprazamento do lado 1 da imaxe no eixe X</translation>
 <translation id="5645854190134202180">Segunda quenda</translation>
+<translation id="5654927323611874862">Código do informe de fallos cargado:</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5663614846592581799">9x11 (sobre)</translation>
 <translation id="5663955426505430495">O administrador deste dispositivo instalou extensións para poder utilizar funcións adicionais. As extensións teñen acceso a algúns dos teus datos.</translation>
@@ -1390,6 +1394,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="7079718277001814089">Este sitio contén software malicioso</translation>
 <translation id="7081308185095828845">Esta función non está dispoñible no teu dispositivo</translation>
 <translation id="7083258188081898530">Bandexa 9</translation>
+<translation id="7086090958708083563">O usuario solicitou a carga</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Busca <ph name="LINK" /> en Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -1552,6 +1557,7 @@ Detalles adicionais:
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Ir a <ph name="SITE" /> (non seguro)<ph name="END_LINK" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
 <translation id="7716147886133743102">Bloqueado polo administrador</translation>
+<translation id="7716375162095500223">Ignorouse ou aínda non se cargou</translation>
 <translation id="7716424297397655342">Este sitio non se pode cargar desde a memoria caché</translation>
 <translation id="7723047071702270851">Edita a tarxeta</translation>
 <translation id="7740996059027112821">Estándar</translation>
@@ -1696,6 +1702,7 @@ Detalles adicionais:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se aceptas os riscos para a túa seguranza, podes <ph name="BEGIN_LINK" />acceder a este sitio<ph name="END_LINK" /> antes de que se eliminen os programas prexudiciais.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
+<translation id="8355270400102541638">Contexto do fallo local:</translation>
 <translation id="8363502534493474904">Desactivar o modo avión</translation>
 <translation id="8364627913115013041">Sen configurar.</translation>
 <translation id="8368476060205742148">Servizos de Google Play</translation>
@@ -1716,6 +1723,7 @@ Detalles adicionais:
 <translation id="8461694314515752532">Encriptar os datos sincronizados coa túa propia frase de acceso de sincronización</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 tarxeta de crédito}other{# tarxetas de crédito}}</translation>
 <translation id="8473863474539038330">Enderezos e moito máis</translation>
+<translation id="8474910779563686872">Mostrar detalles do programador</translation>
 <translation id="8479754468255770962">Grampa na parte inferior esquerda</translation>
 <translation id="8483780878231876732">Para usar tarxetas da túa conta de Google, inicia sesión en Chrome</translation>
 <translation id="8488350697529856933">Aplícase a</translation>
@@ -1841,6 +1849,7 @@ Detalles adicionais:
 <translation id="9103872766612412690">Normalmente, <ph name="SITE" /> encripta a túa información para protexela. Nesta ocasión, cando Chromium tentou conectar con <ph name="SITE" />, o sitio web devolveu credenciais estrañas e incorrectas. É posible que un atacante tentase facerse pasar por <ph name="SITE" /> ou que a pantalla de inicio de sesión de wifi interrompese a conexión. Non obstante, a túa información segue a salvo porque Chromium detivo a conexión antes de intercambiar datos.</translation>
 <translation id="9106062320799175032">Engade un enderezo de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarxeta…</translation>
+<translation id="9119042192571987207">Cargouse</translation>
 <translation id="9128870381267983090">Conectarse á rede</translation>
 <translation id="9137013805542155359">Mostrar orixinal</translation>
 <translation id="9141013498910525015">Xestionar enderezos</translation>

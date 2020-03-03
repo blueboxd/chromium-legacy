@@ -2391,6 +2391,57 @@ WebSocket 'close' Event </td>
   </tr>
 
 </table>
+<h3>PPP_Instance</h3>
+<table>
+  <tr bgcolor="#77ccff" style="color:white; font-weight: bold;">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">PPAPI Method </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">Assumes Threads </td>
+    <td style="font-size: 11px; padding: 5px;">Emscripten </td>
+    <td style="font-size: 11px; padding: 5px;">Web API </td>
+    <td style="font-size: 11px; padding: 5px;">Limitations </td>
+  </tr>
+
+  <tr bgcolor="#fcfcfc">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">DidCreate </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td style="font-size: 11px; padding: 5px;">&lt;Element&gt;[key] </td>
+    <td style="font-size: 11px; padding: 5px;">General DOM access lets you fish out tag attributes </td>
+  </tr>
+
+  <tr bgcolor="#fcfcfc">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">DidDestroy </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td style="font-size: 11px; padding: 5px;">Not triggered for NaCl </td>
+  </tr>
+
+  <tr bgcolor="#fcfcfc">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">DidChangeView </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td style="font-size: 11px; padding: 5px;">Element 'resize' Event </td>
+    <td style="font-size: 11px; padding: 5px;"> </td>
+  </tr>
+
+  <tr bgcolor="#fcfcfc">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">DidChangeFocus </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td style="font-size: 11px; padding: 5px;">Element 'focus', 'focusin', 'focusout' Events </td>
+    <td style="font-size: 11px; padding: 5px;"> </td>
+  </tr>
+
+  <tr bgcolor="#fcfcfc">
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">HandleDocumentLoad </td>
+    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">N/A </td>
+    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP - No way to register as a mime type handler</td>
+    <td style="font-size: 11px; padding: 5px;">NaCl Modules via apps + a manifest entry can be set up to handle particular mime types. </td>
+  </tr>
+
+</table>
 <h3>PPP_MessageHandler</h3>
 <table>
   <tr bgcolor="#77ccff" style="color:white; font-weight: bold;">

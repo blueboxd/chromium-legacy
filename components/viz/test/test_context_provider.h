@@ -40,10 +40,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   TestSharedImageInterface();
   ~TestSharedImageInterface() override;
 
-  gpu::Mailbox CreateSharedImage(ResourceFormat format,
-                                 const gfx::Size& size,
-                                 const gfx::ColorSpace& color_space,
-                                 uint32_t usage) override;
+  gpu::Mailbox CreateSharedImage(
+      ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) override;
 
   gpu::Mailbox CreateSharedImage(ResourceFormat format,
                                  const gfx::Size& size,

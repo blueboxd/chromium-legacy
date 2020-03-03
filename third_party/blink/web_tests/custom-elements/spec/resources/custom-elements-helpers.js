@@ -70,3 +70,26 @@ function assert_reports(w, expected_error, func, description) {
   // accessed by throwing the error
   assert_throws(expected_error, () => { throw errors[0]; });
 }
+
+// Asserts that func synchronously invokes the error event handler in w
+// with the expected error.
+function assert_reports_js(w, expected_error, func, description) {
+  let old_onerror = w.onerror;
+  let errors = [];
+  w.onerror = (event, source, line_number, column_number, error) => {
+    errors.push(error);
+    return true;  // the error is handled
+  };
+  try {
+    func();
+  } catch (e) {
+    assert_unreached(`should report, not throw, an exception: ${e}`);
+  } finally {
+    w.onerror = old_onerror;
+  }
+  assert_equals(errors.length, 1, 'only one error should have been reported');
+  assert_true(
+      typeof errors[0] === 'object' && errors[0] !== null,
+      'got something other than an error');
+  assert_equals(expected_error.name, errors[0].name);
+}

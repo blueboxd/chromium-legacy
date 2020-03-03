@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">‏ניקוי ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129382876167171263">קבצים שנשמרו על ידי אתרים מופיעים כאן</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
+<translation id="1303339473099049190">לא ניתן למצוא את הסיסמה. יש לבדוק את האיות ולנסות שוב.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> — נשלחה מ-<ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">קיבוץ כרטיסיות</translation>
 <translation id="1327257854815634930">היסטוריית הניווט פתוחה</translation>
@@ -323,6 +324,7 @@
 <translation id="3350687908700087792">סגור את כל כרטיסיות הגלישה בסתר</translation>
 <translation id="3353615205017136254">‏גרסת Lite של הדף נוצרה על ידי Google. כדי לטעון את הגרסה המקורית, אפשר להקיש על לחצן טעינת המקור.</translation>
 <translation id="3367813778245106622">היכנס שוב כדי להתחיל בסנכרון</translation>
+<translation id="3373979091428520308">‏כדי לשתף את הדף הזה עם מכשיר אחר, יש להפעיל את הסנכרון בהגדרות של Chrome במכשיר האחר</translation>
 <translation id="3374023511497244703">‏הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים ב-Chrome כבר לא יסונכרנו עם חשבון Google</translation>
 <translation id="3384347053049321195">שיתוף תמונה</translation>
 <translation id="3386292677130313581">יש לשאול לפני שמאפשרים לאתרים לדעת מה המיקום שלך (מומלץ)</translation>
@@ -672,6 +674,7 @@
 <translation id="5956665950594638604">‏פתיחת מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
 <translation id="5958275228015807058">הקבצים והדפים שלך נמצאים ב'הורדות'</translation>
 <translation id="5962718611393537961">הקש כדי לכווץ</translation>
+<translation id="5964805880140440652">‏כדי לשתף את הדף הזה עם מכשיר אחר, יש להפעיל את הסנכרון בהגדרות של Chrome</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
 <translation id="6005538289190791541">הצעה לסיסמה</translation>
 <translation id="6036057147555329831">‏ICU נוסף</translation>

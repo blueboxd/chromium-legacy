@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Conta gerida por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3576141592585647168">Altere o fuso horário</translation>
+<translation id="3593646411856133110">Deslize rapidamente para cima sem soltar para ver as apps abertas.</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3604801046548457007">Foi criado o espaço de trabalho <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Visualização em braille ligada.</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">Definições de Áudio</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3631369015426612114">Permitir notificações das fontes seguintes:</translation>
+<translation id="3638400994746983214">Ative/desative o ecrã de privacidade. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capturar área</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
@@ -243,6 +245,7 @@
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
 <translation id="4021716437419160885">Deslocar para baixo</translation>
+<translation id="402772165574991617">Utilize gestos para alternar rapidamente entre apps e interagir com o Chromebook no modo de tablet.</translation>
 <translation id="4028481283645788203">É necessária uma palavra-passe para uma maior segurança.</translation>
 <translation id="4042660782729322247">Está a partilhar o seu ecrã</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
@@ -291,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4665114317261903604">Ative/desative o modo Não incomodar. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquear o dispositivo com o código parental</translation>
+<translation id="4702647871202761252">O ecrã de privacidade está desligado</translation>
 <translation id="4710243778082831592">Definições do IME</translation>
 <translation id="4731797938093519117">Acesso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -362,6 +366,7 @@
 <translation id="5745612484876805746">A Luz noturna ativa-se automaticamente ao pôr do sol</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
 <translation id="576453121877257266">A Luz noturna está ativada.</translation>
+<translation id="5769373120130404283">Ecrã de privacidade</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="5820394555380036790">SO Chromium</translation>
 <translation id="5837036133683224804">Parar o <ph name="ROUTE_TITLE" /> no recetor <ph name="RECEIVER_NAME" /></translation>
@@ -403,6 +408,7 @@
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
+<translation id="6381109794406942707">Para desbloquear este dispositivo, introduza o seu PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" /></translation>
@@ -425,6 +431,7 @@
 <translation id="6559976592393364813">Peça ao administrador.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, gerida pelo administrador</translation>
+<translation id="6614169507485700968">O ecrã de privacidade está ligado</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6637729079642709226">Altere a hora</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
@@ -439,6 +446,7 @@
 <translation id="6715542151869432661">Não foram encontrados dispositivos móveis.</translation>
 <translation id="6723839937902243910">Alimentação</translation>
 <translation id="6727969043791803658">Ligado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
+<translation id="6751052314767925245">Aplicada pelo seu administrador.</translation>
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
 <translation id="6752912906630585008">O espaço de trabalho <ph name="REMOVED_DESK" /> foi removido e unido ao espaço de trabalho <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Ligar os dispositivos USB-C ligados</translation>
@@ -526,6 +534,7 @@
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8029629653277878342">É necessário um PIN ou uma palavra-passe para uma maior segurança.</translation>
 <translation id="8030169304546394654">Desligado</translation>
+<translation id="8042024183333293953">Experimente a nova navegação por gestos</translation>
 <translation id="8048123526339889627">Definições de Bluetooth</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
@@ -613,6 +622,7 @@
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> até a bateria terminar.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Deslize rapidamente para cima para aceder à página inicial</translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>
 <translation id="9084606467167974638">Alternar a posição do menu</translation>
 <translation id="9089416786594320554">Métodos de introdução</translation>

@@ -209,6 +209,7 @@
 <translation id="3513798432020909783">Kontoen administreres af <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
 <translation id="3576141592585647168">Skift tidszone</translation>
+<translation id="3593646411856133110">Stryg opad, og hold fingeren nede for at se åbne apps</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="3604801046548457007">Skrivebord <ph name="DESK_TITILE" /> blev oprettet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
@@ -216,6 +217,7 @@
 <translation id="3621712662352432595">Lydindstillinger</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3631369015426612114">Tillad notifikationer fra følgende</translation>
+<translation id="3638400994746983214">Slå privatlivsskærmen til eller fra. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tag et screenshot af området</translation>
 <translation id="371370241367527062">Mikrofon på forsiden</translation>
@@ -243,6 +245,7 @@
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
 <translation id="4021716437419160885">Rul ned</translation>
+<translation id="402772165574991617">Brug bevægelser til hurtigt at skifte mellem apps og bruge din Chromebook i tablettilstand.</translation>
 <translation id="4028481283645788203">Der kræves en adgangskode som ekstra sikkerhed</translation>
 <translation id="4042660782729322247">Du deler din skærm</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Deaktiveret for én app}one{Deaktiveret for # app}other{Deaktiveret for # apps}}</translation>
@@ -291,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4665114317261903604">Slå Forstyr ikke til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
+<translation id="4702647871202761252">Privatlivsskærmen er slået fra</translation>
 <translation id="4710243778082831592">IME-indstillinger</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="4734965478015604180">Vandret</translation>
@@ -362,6 +366,7 @@
 <translation id="5745612484876805746">Nattelys aktiveres automatisk ved solopgang</translation>
 <translation id="5750765938512549687">Bluetooth er slået fra</translation>
 <translation id="576453121877257266">Nattelys er slået til.</translation>
+<translation id="5769373120130404283">Privatlivsskærm</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
@@ -404,6 +409,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6297287540776456956">Brug styluspennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
+<translation id="6381109794406942707">Angiv din pinkode for at låse enheden op.</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
@@ -426,6 +432,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6559976592393364813">Spørg din administrator</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" />, administreret af din administrator</translation>
+<translation id="6614169507485700968">Privatlivsskærmen er slået til</translation>
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6637729079642709226">Skift tidspunkt</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
@@ -440,6 +447,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6715542151869432661">Der blev ikke fundet nogen mobilenheder.</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6727969043791803658">Tilsluttet, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="6751052314767925245">Håndhæves af din administrator</translation>
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
 <translation id="6752912906630585008">Skrivebord <ph name="REMOVED_DESK" /> blev fjernet og slået sammen med Skrivebord <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Leverer strøm til tilsluttede USB-C-enheder</translation>
@@ -527,6 +535,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="8029629653277878342">Der kræves en pinkode eller adgangskode som ekstra sikkerhed</translation>
 <translation id="8030169304546394654">Afbrudt</translation>
+<translation id="8042024183333293953">Prøv vores nye navigation med bevægelser</translation>
 <translation id="8048123526339889627">Bluetooth-indstillinger</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
@@ -614,6 +623,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> til batteriet løber tør.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
+<translation id="9080132581049224423">Stryg opad for at gå til startsiden</translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>
 <translation id="9084606467167974638">Skift menuposition</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>

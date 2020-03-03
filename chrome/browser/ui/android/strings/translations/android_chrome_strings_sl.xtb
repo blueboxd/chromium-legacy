@@ -46,8 +46,10 @@
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
 <translation id="129382876167171263">Datoteke, ki jih shranijo spletna mesta, so prikazane tukaj</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="1303339473099049190">Tega gesla ni mogoče najti. Preverite črkovanje in poskusite znova.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – poslano iz naprave <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Združi zavihke</translation>
+<translation id="1311657260431405215">Ta koda QR ni URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">Zgodovina krmarjenja je odprta</translation>
 <translation id="1331212799747679585">Posodobitev Chroma ni mogoča. Več možnosti.</translation>
 <translation id="1332501820983677155">Bližnjice za funkcije Google Chroma</translation>
@@ -323,6 +325,7 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3350687908700087792">Zapri vse zavihke brez beleženja zgodovine</translation>
 <translation id="3353615205017136254">Stran v osnovnem načinu, ki jo je prikazal Google. Dotaknite se gumba za nalaganje izvirne strani, če želite naložiti izvirno stran.</translation>
 <translation id="3367813778245106622">Prijavite se znova, če želite začeti sinhronizacijo</translation>
+<translation id="3373979091428520308">Če želite to stran deliti z drugo napravo, v drugi napravi v nastavitvah Chroma vklopite sinhronizacijo</translation>
 <translation id="3374023511497244703">Vaši zaznamki, zgodovina, gesla in drugi podatki v Chromu ne bodo več sinhronizirani z računom za Google</translation>
 <translation id="3384347053049321195">Skupna raba slike</translation>
 <translation id="3386292677130313581">Prikaži poziv, preden se spletnim mestom razkrije vaša lokacija (priporočeno)</translation>
@@ -672,6 +675,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5956665950594638604">Odpiranje centra za pomoč za Chrome na nov. zavih.</translation>
 <translation id="5958275228015807058">Poiščite datoteke in strani v Prenosih</translation>
 <translation id="5962718611393537961">Dotik za strnitev</translation>
+<translation id="5964805880140440652">Če želite to stran deliti z drugo napravo, v nastavitvah Chroma vklopite sinhronizacijo</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
 <translation id="6036057147555329831">Dodatni modul ICU</translation>

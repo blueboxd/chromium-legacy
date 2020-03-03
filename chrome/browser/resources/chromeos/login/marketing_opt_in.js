@@ -15,6 +15,20 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * Whether the marketing opt in toggles should be shown, which will be the
+     * case only if marketing opt in feature is enabled.
+     * When this is false, the screen will only contain UI related to the
+     * tablet mode gestural navigation settings.
+     */
+    marketingOptInEnabled_: {
+      type: Boolean,
+      readOnly: true,
+      value() {
+        return loadTimeData.getBoolean('enableMarketingOptIn');
+      },
+    },
   },
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],

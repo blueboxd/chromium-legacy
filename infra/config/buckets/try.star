@@ -182,13 +182,15 @@ try_.chromium_android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_android_builder(
     name = 'android-10-arm64-rel',
+)
+
+try_.chromium_android_builder(
+    name = 'android-weblayer-pie-arm64-fyi-rel',
 )
 
 try_.chromium_android_builder(

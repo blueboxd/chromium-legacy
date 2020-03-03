@@ -1110,6 +1110,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, la mise en surbrillance du curseur de saisie est désactivée au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="2509919237512982967">Utiliser les anciens éléments de contrôle de formulaire jusqu'à la version M84.</translation>
 <translation id="2514328368635166290">Indique l'URL de l'icône favorite du moteur de recherche par défaut. 
 
 Cette règle est facultative. Si elle n'est pas définie, aucune icône ne sera présente pour le moteur de recherche. 
@@ -5219,6 +5220,13 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       Si cette règle n'est pas définie, <ph name="PRINTERS_ALLOW_ALL" /> est supposé s'appliquer.
       </translation>
+<translation id="8937282917198525844"> À partir de la version M81, les éléments de contrôle de formulaire (par exemple, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) font l'objet d'une remise à neuf améliorant leur accessibilité et l'uniformité de la plate-forme. Cette règle restaure les anciens éléments de contrôle de formulaire (jusqu'à la version M84).
+
+      Si cette règle est définie sur "True", les anciens éléments de contrôle de formulaire seront utilisés pour tous les sites.
+
+      Si cette règle est définie sur "False" ou n'est pas définie, les éléments de contrôle de formulaire seront activés à mesure de leur lancement pour les versions M81, M82 et M83.
+
+      Cette règle sera supprimée après Chrome 84.</translation>
 <translation id="8938932171964587769">Cette règle a été abandonnée dans la version M69. Veuillez utiliser la règle
       OverrideSecurityRestrictionsOnInsecureOrigin à la place.
 

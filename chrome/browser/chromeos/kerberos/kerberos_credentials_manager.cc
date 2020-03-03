@@ -56,6 +56,17 @@ constexpr char kDefaultKerberosConfig[] = R"([libdefaults]
   permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   forwardable = true)";
 
+// Backoff policy used to control managed accounts addition retries.
+const net::BackoffEntry::Policy kBackoffPolicyForManagedAccounts = {
+    0,               // Number of initial errors to ignore without backoff.
+    1 * 1000,        // Initial delay for backoff in ms: 1 second.
+    2,               // Factor to multiply for exponential backoff.
+    0,               // Fuzzing percentage.
+    10 * 60 * 1000,  // Maximum time to delay requests in ms: 10 minutes.
+    -1,              // Don't discard entry even if unused.
+    false            // Don't use initial delay unless the last was an error.
+};
+
 // If |principal_name| is "UsEr@realm.com", sets |principal_name| to
 // "user@REALM.COM". Returns false if the given name has no @ or one of the
 // parts is empty.
@@ -91,6 +102,13 @@ void LogError(const char* function_name, kerberos::ErrorType error) {
 // Returns true if |error| is |ERROR_NONE|.
 bool Succeeded(kerberos::ErrorType error) {
   return error == kerberos::ERROR_NONE;
+}
+
+bool ShouldRetry(kerberos::ErrorType error) {
+  // The error types that should trigger a managed accounts addition retry.
+  return error == kerberos::ERROR_NETWORK_PROBLEM ||
+         error == kerberos::ERROR_CONTACTING_KDC_FAILED ||
+         error == kerberos::ERROR_IN_PROGRESS;
 }
 
 }  // namespace
@@ -278,7 +296,8 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
       primary_profile_(primary_profile),
       kerberos_files_handler_(std::make_unique<KerberosFilesHandler>(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
-                              base::Unretained(this)))) {
+                              base::Unretained(this)))),
+      backoff_entry_for_managed_accounts_(&kBackoffPolicyForManagedAccounts) {
   DCHECK(primary_profile_);
   const user_manager::User* primary_user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
@@ -326,7 +345,7 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
   pref_change_registrar_->Add(
       prefs::kKerberosAccounts,
       base::BindRepeating(&KerberosCredentialsManager::UpdateAccountsFromPref,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(), false /* is_retry */));
 
   // Update accounts if policy is already available or start observing.
   policy_service_ =
@@ -335,7 +354,7 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
       policy_service_->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME);
   VLOG(1) << "Policy service initialized at startup: " << policy_initialized;
   if (policy_initialized)
-    UpdateAccountsFromPref();
+    UpdateAccountsFromPref(false /* is_retry */);
   else
     policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
@@ -398,7 +417,7 @@ void KerberosCredentialsManager::OnPolicyServiceInitialized(
   if (policy_service_->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME)) {
     VLOG(1) << "Policy service initialized";
     policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
-    UpdateAccountsFromPref();
+    UpdateAccountsFromPref(false /* is_retry */);
   }
 }
 
@@ -472,6 +491,18 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
 
 void KerberosCredentialsManager::OnAddManagedAccountRunnerDone(
     kerberos::ErrorType error) {
+  if (!managed_accounts_retry_timer_.IsRunning() && ShouldRetry(error)) {
+    backoff_entry_for_managed_accounts_.InformOfRequest(false);
+
+    if (backoff_entry_for_managed_accounts_.failure_count() <
+        kMaxFailureCountForManagedAccounts) {
+      managed_accounts_retry_timer_.Start(
+          FROM_HERE, backoff_entry_for_managed_accounts_.GetTimeUntilRelease(),
+          base::BindOnce(&KerberosCredentialsManager::UpdateAccountsFromPref,
+                         weak_factory_.GetWeakPtr(), true /* is_retry */));
+    }
+  }
+
   if (add_managed_account_callback_for_testing_) {
     add_managed_account_callback_for_testing_.Run(error);
   }
@@ -746,7 +777,7 @@ void KerberosCredentialsManager::UpdateEnabledFromPref() {
   if (IsKerberosEnabled()) {
     // Kerberos got enabled, re-populate managed accounts.
     VLOG(1) << "Kerberos got enabled, populating managed accounts";
-    UpdateAccountsFromPref();
+    UpdateAccountsFromPref(false /* is_retry */);
     return;
   }
 
@@ -781,7 +812,14 @@ void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
                               EmptyResultCallback()));
 }
 
-void KerberosCredentialsManager::UpdateAccountsFromPref() {
+void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
+  if (is_retry) {
+    VLOG(1) << "Retrying to update KerberosAccounts from Prefs";
+  } else {
+    // Refreshing backoff entry, since this call was triggered by prefs change.
+    backoff_entry_for_managed_accounts_.Reset();
+  }
+
   if (!IsKerberosEnabled()) {
     VLOG(1) << "Kerberos disabled";
     NotifyRequiresLoginPassword(false);

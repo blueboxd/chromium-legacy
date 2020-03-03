@@ -86,6 +86,27 @@ void CastComponent::StartComponent() {
       frame(),
       agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
           CastRunner::kAgentComponentUrl));
+
+  // Pass application permissions to the frame.
+  std::string origin = GURL(application_config_.web_url()).GetOrigin().spec();
+  if (application_config_.has_permissions()) {
+    for (auto& permission : application_config_.permissions()) {
+      fuchsia::web::PermissionDescriptor permission_clone;
+      zx_status_t status = permission.Clone(&permission_clone);
+      ZX_DCHECK(status == ZX_OK, status);
+      frame()->SetPermissionState(std::move(permission_clone), origin,
+                                  fuchsia::web::PermissionState::GRANTED);
+    }
+  } else {
+    // Grant PROTECTED_MEDIA_IDENTIFIER permission if permissions are not
+    // specified in the config. This is necessary for compatibility with older
+    // ApplicationConfigManager implementations that do not set permissions.
+    fuchsia::web::PermissionDescriptor eme_id_permission;
+    eme_id_permission.set_type(
+        fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER);
+    frame()->SetPermissionState(std::move(eme_id_permission), origin,
+                                fuchsia::web::PermissionState::GRANTED);
+  }
 }
 
 void CastComponent::DestroyComponent(int termination_exit_code,

@@ -280,7 +280,6 @@ All changes to this list should go through Blink's feature review process: http:
     position
     quotes
     r
-    render-subtree
     resize
     right
     rotate
@@ -324,6 +323,7 @@ All changes to this list should go through Blink's feature review process: http:
     stroke-miterlimit
     stroke-opacity
     stroke-width
+    subtree-visibility
     tab-size
     table-layout
     text-align

@@ -46,6 +46,7 @@
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
 <translation id="129382876167171263">Filer som nettsteder har lagret, vises her</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
+<translation id="1303339473099049190">Finner ikke det passordet. Kontrollér stavemåten, og prøv på nytt.</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – sendt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppér faner</translation>
 <translation id="1327257854815634930">Navigasjonsloggen er åpnet</translation>
@@ -323,6 +324,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3350687908700087792">Lukk alle inkognitofaner</translation>
 <translation id="3353615205017136254">Forenklet versjon av siden levert av Google. Trykk på knappen for å laste inn den opprinnelige siden.</translation>
 <translation id="3367813778245106622">Logg på igjen for å starte synkroniseringen</translation>
+<translation id="3373979091428520308">For å dele denne siden med en annen enhet, slå på synkronisering i Chrome-innstillingene på den andre enheten</translation>
 <translation id="3374023511497244703">Bokmerker, logg, passord og andre Chrome-data synkroniseres ikke lenger med Google-kontoen din.</translation>
 <translation id="3384347053049321195">Del bildet</translation>
 <translation id="3386292677130313581">Spør før nettsteder får vite posisjonen min (anbefales)</translation>
@@ -672,6 +674,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5956665950594638604">Åpne brukerstøtten for Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Du finner filene og sidene dine under Nedlastinger</translation>
 <translation id="5962718611393537961">Trykk for å skjule</translation>
+<translation id="5964805880140440652">For å dele denne siden med andre enheter, slå på synkronisering i Chrome-innstillingene</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>

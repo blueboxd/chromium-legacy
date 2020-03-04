@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
+#include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
@@ -204,7 +205,8 @@ class CastWebContents {
     // debugging interfaces.
     bool enabled_for_dev = false;
     // Chooses a media renderer for the WebContents.
-    bool use_cma_renderer = false;
+    content::mojom::RendererType renderer_type =
+        content::mojom::RendererType::DEFAULT_RENDERER;
     // Whether the WebContents is a root native window, or if it is embedded in
     // another WebContents (see Delegate::InnerContentsCreated()).
     bool is_root_window = false;

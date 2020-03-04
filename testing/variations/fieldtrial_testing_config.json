@@ -365,24 +365,6 @@
             ]
         }
     ],
-    "AndroidPasswordManagerOnboarding": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithSafetyStory",
-                    "params": {
-                        "story": "safety"
-                    },
-                    "enable_features": [
-                        "PasswordManagerOnboardingAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidPictureInPictureAPI": [
         {
             "platforms": [

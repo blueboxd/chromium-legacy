@@ -158,7 +158,7 @@ using SystemWebAppNonClientFrameViewBrowserTest =
     web_app::SystemWebAppManagerBrowserTest;
 
 // System Web Apps don't get the hosted app buttons.
-IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
                        HideHostedAppButtonContainer) {
   Browser* app_browser =
       WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
@@ -267,3 +267,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest, SaveCardIcon) {
   EXPECT_TRUE(app_frame_view_->Contains(icon));
   EXPECT_TRUE(icon->GetVisible());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppNonClientFrameViewBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

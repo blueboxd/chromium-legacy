@@ -160,7 +160,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Handlers for messages from the browser to the renderer.
   void OnPerformAction(const ui::AXActionData& data);
   void OnEventsAck(int ack_token);
-  void OnFatalError();
   void OnReset(int reset_token);
 
   void OnHitTest(const gfx::Point& point,

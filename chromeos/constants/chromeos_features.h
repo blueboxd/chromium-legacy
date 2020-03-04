@@ -132,6 +132,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettingsSync;
+// Visible for testing. Use IsSplitSyncConsentEnabled() to check the flag.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kSplitSyncConsent;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUnifiedMediaView;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -163,6 +166,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersRichUiEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsSyncEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSyncConsentEnabled();
 
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();

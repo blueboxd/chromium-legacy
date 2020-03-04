@@ -200,6 +200,7 @@ jumbo_source_set("common_sources") {
 
   public_deps = [
     ":interfaces",
+    ":renderer_type",
     ":service_names",
     "//content/common",
     "//ipc",
@@ -325,6 +326,10 @@ mojom("interfaces") {
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
   export_header = "content/common/content_export.h"
+}
+
+mojom("renderer_type") {
+  sources = [ "media_playback_renderer_type.mojom" ]
 }
 
 mojom("web_preferences_mojom") {

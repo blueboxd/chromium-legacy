@@ -46,6 +46,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   ~ManifestUpdateManager() override;
 
   void SetSubsystems(AppRegistrar* registrar,
+                     AppIconManager* icon_manager,
                      WebAppUiManager* ui_manager,
                      InstallManager* install_manager,
                      SystemWebAppManager* system_web_app_manager);
@@ -84,6 +85,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
 
   Profile* const profile_ = nullptr;
   AppRegistrar* registrar_ = nullptr;
+  AppIconManager* icon_manager_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallManager* install_manager_ = nullptr;
   SystemWebAppManager* system_web_app_manager_ = nullptr;

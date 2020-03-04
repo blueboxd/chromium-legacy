@@ -804,11 +804,7 @@ void HTMLSelectElement::SetSuggestedOption(HTMLOptionElement* option) {
     return;
   suggested_option_ = option;
 
-  select_type_->UpdateTextStyleAndContent();
-  if (GetLayoutObject())
-    ScrollToOption(option);
-  if (PopupIsVisible())
-    popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
+  select_type_->DidSetSuggestedOption(option);
 }
 
 void HTMLSelectElement::ScrollToOption(HTMLOptionElement* option) {
@@ -1530,12 +1526,7 @@ LayoutUnit HTMLSelectElement::ClientPaddingRight() const {
 }
 
 void HTMLSelectElement::PopupDidHide() {
-  SetPopupIsVisible(false);
-  UnobserveTreeMutation();
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-    if (GetLayoutObject() && UsesMenuList())
-      cache->DidHideMenuListPopup(GetLayoutObject());
-  }
+  select_type_->PopupDidHide();
 }
 
 void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
@@ -1597,11 +1588,7 @@ void HTMLSelectElement::HidePopup() {
 
 void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
-  if (change.ReattachLayoutTree())
-    return;
-  select_type_->UpdateTextStyle();
-  if (PopupIsVisible())
-    popup_->UpdateFromElement(PopupMenu::kByStyleChange);
+  select_type_->DidRecalcStyle(change);
 }
 
 void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
@@ -1623,11 +1610,7 @@ void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
 
 void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
   HTMLFormControlElementWithState::DetachLayoutTree(performing_reattach);
-  if (popup_)
-    popup_->DisconnectClient();
-  SetPopupIsVisible(false);
-  popup_ = nullptr;
-  UnobserveTreeMutation();
+  select_type_->DidDetachLayoutTree();
 }
 
 void HTMLSelectElement::ResetTypeAheadSessionForTesting() {
@@ -1716,6 +1699,7 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
 }
 
 void HTMLSelectElement::ChangeRendering() {
+  select_type_->DidDetachLayoutTree();
   UpdateUsesMenuList();
   select_type_->WillBeDestroyed();
   select_type_ = SelectType::Create(*this);

@@ -169,6 +169,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                                    ::features::kAppManagement));
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
+  html_source->AddBoolean("splitSyncConsent",
+                          chromeos::features::IsSplitSyncConsentEnabled());
 
   html_source->AddBoolean(
       "isSupportedArcVersion",

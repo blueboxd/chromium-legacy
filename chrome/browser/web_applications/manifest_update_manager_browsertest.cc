@@ -15,6 +15,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -681,6 +683,121 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppNotEligible, 1);
   EXPECT_EQ(GetProvider().registrar().GetAppDisplayMode(app_id),
             DisplayMode::kStandalone);
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
+                       CheckFindsIconContentChange) {
+  constexpr char kManifest[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": [
+        {
+          "src": "/web_apps/basic-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  )";
+  OverrideManifest(kManifest, {});
+  AppId app_id = InstallWebApp();
+
+  // Replace the contents of basic-192.png with blue-192.png without changing
+  // the URL.
+  content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
+      [this](content::URLLoaderInterceptor::RequestParams* params)
+          -> bool /*intercepted*/ {
+        if (params->url_request.url ==
+            http_server_.GetURL("/web_apps/basic-192.png")) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/web_apps/blue-192.png", params->client.get());
+          return true;
+        }
+        return false;
+      }));
+
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+
+  // Check that the installed icon is now blue.
+  base::RunLoop run_loop;
+  GetProvider().icon_manager().ReadIcons(
+      app_id, {192},
+      base::BindLambdaForTesting(
+          [&run_loop](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+            run_loop.Quit();
+            EXPECT_EQ(icon_bitmaps.at(192).getColor(0, 0), SK_ColorBLUE);
+          }));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
+                       CheckIgnoresIconDownloadFail) {
+  constexpr char kManifest[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": [
+        {
+          "src": "/web_apps/basic-48.png",
+          "sizes": "48x48",
+          "type": "image/png"
+        },
+        {
+          "src": "/web_apps/basic-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  )";
+  OverrideManifest(kManifest, {});
+  AppId app_id = InstallWebApp();
+
+  // Make basic-48.png fail to download.
+  // Replace the contents of basic-192.png with blue-192.png without changing
+  // the URL.
+  content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
+      [this](content::URLLoaderInterceptor::RequestParams* params)
+          -> bool /*intercepted*/ {
+        if (params->url_request.url ==
+            http_server_.GetURL("/web_apps/basic-48.png")) {
+          content::URLLoaderInterceptor::WriteResponse("malformed response", "",
+                                                       params->client.get());
+          return true;
+        }
+        if (params->url_request.url ==
+            http_server_.GetURL("/web_apps/basic-192.png")) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/web_apps/blue-192.png", params->client.get());
+          return true;
+        }
+        return false;
+      }));
+
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kIconDownloadFailed);
+  histogram_tester_.ExpectBucketCount(
+      kUpdateHistogramName, ManifestUpdateResult::kIconDownloadFailed, 1);
+
+  // Check that the installed icon is still black.
+  base::RunLoop run_loop;
+  GetProvider().icon_manager().ReadIcons(
+      app_id, {48, 192},
+      base::BindLambdaForTesting(
+          [&run_loop](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+            run_loop.Quit();
+            EXPECT_EQ(icon_bitmaps.at(48).getColor(0, 0), SK_ColorBLACK);
+            EXPECT_EQ(icon_bitmaps.at(192).getColor(0, 0), SK_ColorBLACK);
+          }));
+  run_loop.Run();
 }
 
 class ManifestUpdateManagerSystemAppBrowserTest

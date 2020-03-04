@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screens/marketing_opt_in_screen.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -33,6 +36,16 @@ void MarketingOptInScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_CHROMEBOOK_UPDATES);
   builder->Add("marketingOptInScreenAllSet",
                IDS_LOGIN_MARKETING_OPT_IN_SCREEN_ALL_SET);
+  builder->Add("marketingOptInA11yLinkLabel",
+               IDS_MARKETING_OPT_IN_ACCESSIBILITY_SETTINGS_LINK);
+  builder->Add("finalA11yPageTitle", IDS_MARKETING_OPT_IN_ACCESSIBILITY_TITLE);
+  builder->Add("finalA11yPageNavButtonSettingTitle",
+               IDS_MARKETING_OPT_IN_ACCESSIBILITY_NAV_BUTTON_SETTING_TITLE);
+  builder->Add(
+      "finalA11yPageNavButtonSettingDescription",
+      IDS_MARKETING_OPT_IN_ACCESSIBILITY_NAV_BUTTON_SETTING_DESCRIPTION);
+  builder->Add("finalA11yPageDoneButtonTitle",
+               IDS_MARKETING_OPT_IN_ACCESSIBILITY_DONE_BUTTON);
 }
 
 void MarketingOptInScreenHandler::Bind(MarketingOptInScreen* screen) {
@@ -50,11 +63,26 @@ void MarketingOptInScreenHandler::UpdateAllSetButtonVisibility(bool visible) {
   CallJS("login.MarketingOptInScreen.updateAllSetButtonVisibility", visible);
 }
 
+void MarketingOptInScreenHandler::UpdateA11ySettingsButtonVisibility(
+    bool shown) {
+  CallJS("login.MarketingOptInScreen.updateA11ySettingsButtonVisibility",
+         shown);
+}
+
+void MarketingOptInScreenHandler::UpdateA11yShelfNavigationButtonToggle(
+    bool enabled) {
+  CallJS("login.MarketingOptInScreen.updateA11yNavigationButtonToggle",
+         enabled);
+}
+
 void MarketingOptInScreenHandler::Initialize() {}
 
 void MarketingOptInScreenHandler::RegisterMessages() {
   AddCallback("login.MarketingOptInScreen.allSet",
               &MarketingOptInScreenHandler::HandleAllSet);
+  AddCallback(
+      "login.MarketingOptInScreen.setA11yNavigationButtonsEnabled",
+      &MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled);
 }
 
 void MarketingOptInScreenHandler::GetAdditionalParameters(
@@ -69,6 +97,13 @@ void MarketingOptInScreenHandler::HandleAllSet(
     bool play_communications_opt_in,
     bool tips_communications_opt_in) {
   screen_->OnAllSet(play_communications_opt_in, tips_communications_opt_in);
+}
+
+void MarketingOptInScreenHandler::HandleSetA11yNavigationButtonsEnabled(
+    bool enabled) {
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled,
+      enabled);
 }
 
 }  // namespace chromeos

@@ -25,16 +25,22 @@ class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
 
 // Test that the Help App installs and launches correctly. Runs some spot
 // checks on the manifest.
-IN_PROC_BROWSER_TEST_F(HelpAppIntegrationTest, HelpAppV2) {
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2) {
   const GURL url(chromeos::kChromeUIHelpAppURL);
   EXPECT_NO_FATAL_FAILURE(
       ExpectSystemWebAppValid(web_app::SystemAppType::HELP, url, "Discover"));
 }
 
 // Test that the Help App is searchable by additional strings.
-IN_PROC_BROWSER_TEST_F(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
   WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
   EXPECT_EQ(
       std::vector<std::string>({"Get Help", "Perks", "Offers"}),
       GetManager().GetAdditionalSearchTerms(web_app::SystemAppType::HELP));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HelpAppIntegrationTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

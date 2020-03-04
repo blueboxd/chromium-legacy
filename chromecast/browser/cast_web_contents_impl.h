@@ -26,6 +26,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
@@ -165,7 +166,7 @@ class CastWebContentsImpl : public CastWebContents,
   PageState page_state_;
   PageState last_state_;
   const bool enabled_for_dev_;
-  bool use_cma_renderer_;
+  content::mojom::RendererType renderer_type_;
   const bool handle_inner_contents_;
   BackgroundColor view_background_color_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;

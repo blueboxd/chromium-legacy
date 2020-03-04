@@ -290,14 +290,15 @@ INSTANTIATE_TEST_SUITE_P(All,
                          SyncConsentPolicyDisabledTest,
                          testing::Bool());
 
-// Tests of the consent dialog with the SplitSettingsSync flag enabled.
-class SyncConsentSplitSettingsSyncTest : public SyncConsentTest {
+// Tests of the consent dialog with the SplitSyncConsent flag enabled.
+class SyncConsentSplitSyncConsentTest : public SyncConsentTest {
  public:
-  SyncConsentSplitSettingsSyncTest() {
-    sync_feature_list_.InitAndEnableFeature(
-        chromeos::features::kSplitSettingsSync);
+  SyncConsentSplitSyncConsentTest() {
+    sync_feature_list_.InitWithFeatures({chromeos::features::kSplitSettingsSync,
+                                         chromeos::features::kSplitSyncConsent},
+                                        {});
   }
-  ~SyncConsentSplitSettingsSyncTest() override = default;
+  ~SyncConsentSplitSyncConsentTest() override = default;
 
  private:
   base::test::ScopedFeatureList sync_feature_list_;
@@ -309,7 +310,7 @@ class SyncConsentSplitSettingsSyncTest : public SyncConsentTest {
 #else
 #define MAYBE_DefaultFlow DefaultFlow
 #endif
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_DefaultFlow) {
   LoginToSyncConsentScreen();
 
   // OS sync is disabled by default.
@@ -364,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
 #else
 #define MAYBE_UserCanDisable UserCanDisable
 #endif
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_UserCanDisable) {
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_UserCanDisable) {
   LoginToSyncConsentScreen();
 
   // Wait for content to load.

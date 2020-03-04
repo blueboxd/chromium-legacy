@@ -57,10 +57,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
 
   int provider_id() const { return provider_id_; }
   int worker_process_id() const { return worker_process_id_; }
-
-  // This is nullptr when the worker is still starting up (until
-  // CompleteStartWorkerPreparation() is called).
-  ServiceWorkerVersion* running_hosted_version() const;
+  ServiceWorkerVersion* running_hosted_version() const {
+    return running_hosted_version_;
+  }
 
   // Completes initialization of this provider host. It is called once a
   // renderer process has been found to host the worker.

@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -80,7 +81,7 @@ using StyleSheetKey = AtomicString;
 
 // The StyleEngine class manages style-related state for the document. There is
 // a 1-1 relationship of Document to StyleEngine. The document calls the
-// StyleEngine when the the document is updated in a way that impacts styles.
+// StyleEngine when the document is updated in a way that impacts styles.
 class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                       public FontSelectorClient,
                                       public NameClient {
@@ -324,6 +325,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void ApplyUserRuleSetChanges(const ActiveStyleSheetVector& old_style_sheets,
                                const ActiveStyleSheetVector& new_style_sheets);
 
+  void VisionDeficiencyChanged();
+  void ApplyVisionDeficiencyStyle(
+      scoped_refptr<ComputedStyle> layout_view_style);
+
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 
   void CustomPropertyRegistered();
@@ -385,6 +390,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
  private:
   // FontSelectorClient implementation.
   void FontsNeedUpdate(FontSelector*) override;
+
+  void LoadVisionDeficiencyFilter();
 
  private:
   bool NeedsActiveStyleSheetUpdate() const {
@@ -537,6 +544,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool in_dom_removal_ = false;
   bool viewport_style_dirty_ = false;
   bool fonts_need_update_ = false;
+
+  VisionDeficiency vision_deficiency_ = VisionDeficiency::kNoVisionDeficiency;
+  Member<ReferenceFilterOperation> vision_deficiency_filter_;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;

@@ -94,6 +94,10 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
       const std::vector<base::string16>& data_list_values,
       const std::vector<base::string16>& data_list_labels);
 
+  // Inform the delegate that the text field editing has ended. This is
+  // used to help record the metrics of when a new popup is shown.
+  void DidEndTextFieldEditing();
+
   // Returns the delegate to its starting state by removing any page specific
   // values or settings.
   void Reset();

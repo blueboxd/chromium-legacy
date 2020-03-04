@@ -1018,6 +1018,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
 
+  // Whether the media in this frame is a remoting media.
+  //
+  // Remoting media is a special media that has the media streams are delivered
+  // to the browser directly from somewhere without any URL request
+  // (http, file, ...)
+  // When setting to true, a remoting renderer will be created as the remoting
+  // target in the client.
+  bool is_remoting_renderer_enabled_ = false;
+
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 
   // State for simplified watch time reporting.

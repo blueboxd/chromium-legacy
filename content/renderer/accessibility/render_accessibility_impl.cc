@@ -298,7 +298,6 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -863,10 +862,6 @@ void RenderAccessibilityImpl::OnEventsAck(int ack_token) {
   DCHECK(ack_pending_);
   ack_pending_ = false;
   SendPendingAccessibilityEvents();
-}
-
-void RenderAccessibilityImpl::OnFatalError() {
-  CHECK(false) << "Invalid accessibility tree.";
 }
 
 void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,

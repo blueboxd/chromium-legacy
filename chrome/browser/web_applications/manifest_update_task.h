@@ -7,7 +7,10 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -16,6 +19,7 @@ struct WebApplicationInfo;
 
 namespace web_app {
 
+class AppIconManager;
 class AppRegistrar;
 class WebAppUiManager;
 class InstallManager;
@@ -33,7 +37,9 @@ enum ManifestUpdateResult {
   kAppUpdateFailed = 7,
   kAppUpdated = 8,
   kAppIsSystemWebApp = 9,
-  kMaxValue = kAppIsSystemWebApp,
+  kIconDownloadFailed = 10,
+  kIconReadFromDiskFailed = 11,
+  kMaxValue = kIconReadFromDiskFailed,
 };
 
 // Checks whether the installed web app associated with a given WebContents has
@@ -64,6 +70,7 @@ class ManifestUpdateTask final
                      StoppedCallback stopped_callback,
                      bool hang_for_testing,
                      const AppRegistrar& registrar,
+                     const AppIconManager& icon_manager,
                      WebAppUiManager* ui_manager,
                      InstallManager* install_manager);
 
@@ -81,29 +88,41 @@ class ManifestUpdateTask final
   enum class Stage {
     kPendingPageLoad,
     kPendingInstallableData,
+    kPendingIconDownload,
+    kPendingIconReadFromDisk,
     kPendingWindowsClosed,
     kPendingInstallation,
   };
 
   void OnDidGetInstallableData(const InstallableData& data);
-  bool IsUpdateNeeded(const WebApplicationInfo& web_application_info) const;
-  void OnAllAppWindowsClosed(
-      std::unique_ptr<WebApplicationInfo> web_application_info);
+  bool IsUpdateNeededForManifest() const;
+  void LoadAndCheckIconContents();
+  void OnIconsDownloaded(bool success, IconsMap icons_map);
+  void OnAllIconsRead(IconsMap downloaded_icons_map,
+                      std::map<SquareSizePx, SkBitmap> disk_icon_bitmaps);
+  bool IsUpdateNeededForIconContents(
+      const std::map<SquareSizePx, SkBitmap>& disk_icon_bitmaps) const;
+  void UpdateAfterWindowsClose();
+  void OnAllAppWindowsClosed();
   void OnInstallationComplete(
-      std::unique_ptr<WebApplicationInfo> opt_web_application_info,
       const AppId& app_id,
       InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);
 
   const AppRegistrar& registrar_;
+  const AppIconManager& icon_manager_;
   WebAppUiManager& ui_manager_;
   InstallManager& install_manager_;
 
   Stage stage_;
+  base::Optional<WebApplicationInfo> web_application_info_;
+  base::Optional<WebAppIconDownloader> icon_downloader_;
+
   const GURL url_;
   const AppId app_id_;
   StoppedCallback stopped_callback_;
   bool hang_for_testing_ = false;
+
 #if DCHECK_IS_ON()
   bool* destructor_called_ptr_ = nullptr;
 #endif

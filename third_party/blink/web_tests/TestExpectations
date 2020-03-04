@@ -56,8 +56,6 @@ crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
-crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
-crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
 
 # The following tests would pass with User Activation Delegation.
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]

@@ -572,6 +572,17 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
                                           POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
 }
 
+// Test that the popup is hidden once we are done editing the autofill field.
+TEST_F(AutofillExternalDelegateUnitTest,
+       ExternalDelegateHidePopupAfterEditing) {
+  EXPECT_CALL(autofill_client_, ShowAutofillPopup);
+  test::GenerateTestAutofillPopup(external_delegate_.get());
+
+  EXPECT_CALL(autofill_client_,
+              HideAutofillPopup(autofill::PopupHidingReason::kEndEditing));
+  external_delegate_->DidEndTextFieldEditing();
+}
+
 // Test that the driver is directed to accept the data list after being notified
 // that the user accepted the data list suggestion.
 TEST_F(AutofillExternalDelegateUnitTest,

@@ -22,6 +22,30 @@
   };
 
   /**
+   * Waits for Quick View dialog to be open.
+   *
+   * @param {string} appId Files app windowId.
+   */
+  async function waitQuickViewOpen(appId) {
+    const caller = getCaller();
+
+    function checkQuickViewElementsDisplayBlock(elements) {
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return;
+    }
+
+    await repeatUntil(async () => {
+      const elements = ['#quick-view', '#dialog[open]'];
+      return checkQuickViewElementsDisplayBlock(
+          await remoteCall.callRemoteTestUtil(
+              'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+  }
+
+  /**
    * Waits for Quick View dialog to be closed.
    *
    * @param {string} appId Files app windowId.
@@ -53,16 +77,6 @@
    * @param {string} name File name.
    */
   async function openQuickView(appId, name) {
-    const caller = getCaller();
-
-    function checkQuickViewElementsDisplayBlock(elements) {
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return;
-    }
-
     // Select file |name| in the file list.
     chrome.test.assertTrue(
         !!await remoteCall.callRemoteTestUtil('selectFile', appId, [name]),
@@ -75,12 +89,7 @@
         'fakeKeyDown failed');
 
     // Check: the Quick View dialog should be shown.
-    await repeatUntil(async () => {
-      const elements = ['#quick-view', '#dialog[open]'];
-      return checkQuickViewElementsDisplayBlock(
-          await remoteCall.callRemoteTestUtil(
-              'deepQueryAllElements', appId, [elements, ['display']]));
-    });
+    return waitQuickViewOpen(appId);
   }
 
   /**
@@ -105,17 +114,7 @@
     await remoteCall.waitAndClickElement(appId, getInfoMenuItem);
 
     // Check: the Quick View dialog should be shown.
-    const caller = getCaller();
-    await repeatUntil(async () => {
-      const query = ['#quick-view', '#dialog[open]'];
-      const elements = await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [query, ['display']]);
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return true;
-    });
+    await waitQuickViewOpen(appId);
   }
 
   /**
@@ -126,16 +125,6 @@
    * @param {Array<string>} names File names.
    */
   async function openQuickViewMultipleSelection(appId, names) {
-    const caller = getCaller();
-
-    function checkQuickViewElementsDisplayBlock(elements) {
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return;
-    }
-
     // Get the file-list rows that are check-selected (multi-selected).
     const selectedRows = await remoteCall.callRemoteTestUtil(
         'deepQueryAllElements', appId, ['#file-list li[selected]']);
@@ -152,12 +141,7 @@
     await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
 
     // Check: the Quick View dialog should be shown.
-    await repeatUntil(async () => {
-      const elements = ['#quick-view', '#dialog[open]'];
-      return checkQuickViewElementsDisplayBlock(
-          await remoteCall.callRemoteTestUtil(
-              'deepQueryAllElements', appId, [elements, ['display']]));
-    });
+    await waitQuickViewOpen(appId);
   }
 
   /**
@@ -2222,25 +2206,12 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA),
         'Ctrl+A failed');
 
-    function checkQuickViewElementsDisplayBlock(elements) {
-      const haveElements = Array.isArray(elements) && elements.length !== 0;
-      if (!haveElements || elements[0].styles.display !== 'block') {
-        return pending(caller, 'Waiting for Quick View to open.');
-      }
-      return;
-    }
-
     // Open Quick View via its keyboard shortcut.
     const space = ['#file-list', ' ', false, false, false];
     await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
 
     // Check: the Quick View dialog should be shown.
-    await repeatUntil(async () => {
-      const elements = ['#quick-view', '#dialog[open]'];
-      return checkQuickViewElementsDisplayBlock(
-          await remoteCall.callRemoteTestUtil(
-              'deepQueryAllElements', appId, [elements, ['display']]));
-    });
+    await waitQuickViewOpen(appId);
 
     // Press the up arrow to go to the last file in the selection.
     const quickViewArrowUp = ['#quick-view', 'ArrowUp', false, false, false];

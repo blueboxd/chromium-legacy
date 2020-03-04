@@ -70,6 +70,9 @@ class MenuListSelectType final : public SelectType {
                        HTMLSelectElement::SelectOptionFlags flags,
                        bool should_update_popup) override;
   void DidBlur() override;
+  void DidDetachLayoutTree() override;
+  void DidRecalcStyle(const StyleRecalcChange change) override;
+  void DidSetSuggestedOption(HTMLOptionElement* option) override;
 
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
@@ -79,6 +82,7 @@ class MenuListSelectType final : public SelectType {
 
   void ShowPopup() override;
   void HidePopup() override;
+  void PopupDidHide() override;
 
  private:
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent& event);
@@ -290,6 +294,15 @@ void MenuListSelectType::HidePopup() {
     select_->popup_->Hide();
 }
 
+void MenuListSelectType::PopupDidHide() {
+  select_->SetPopupIsVisible(false);
+  select_->UnobserveTreeMutation();
+  if (AXObjectCache* cache = select_->GetDocument().ExistingAXObjectCache()) {
+    if (auto* layout_object = select_->GetLayoutObject())
+      cache->DidHideMenuListPopup(layout_object);
+  }
+}
+
 void MenuListSelectType::DidSelectOption(
     HTMLOptionElement* element,
     HTMLSelectElement::SelectOptionFlags flags,
@@ -338,6 +351,28 @@ void MenuListSelectType::DidBlur() {
   if (select_->PopupIsVisible())
     HidePopup();
   SelectType::DidBlur();
+}
+
+void MenuListSelectType::DidSetSuggestedOption(HTMLOptionElement*) {
+  UpdateTextStyleAndContent();
+  if (select_->PopupIsVisible())
+    select_->popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
+}
+
+void MenuListSelectType::DidDetachLayoutTree() {
+  if (select_->popup_)
+    select_->popup_->DisconnectClient();
+  select_->SetPopupIsVisible(false);
+  select_->popup_ = nullptr;
+  select_->UnobserveTreeMutation();
+}
+
+void MenuListSelectType::DidRecalcStyle(const StyleRecalcChange change) {
+  if (change.ReattachLayoutTree())
+    return;
+  UpdateTextStyle();
+  if (select_->PopupIsVisible())
+    select_->popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }
 
 String MenuListSelectType::UpdateTextStyleInternal() {
@@ -431,6 +466,7 @@ class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
   bool DefaultEventHandler(const Event& event) override;
+  void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void UpdateMultiSelectFocus() override;
   void SelectAll() override;
 
@@ -690,6 +726,11 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   return false;
 }
 
+void ListBoxSelectType::DidSetSuggestedOption(HTMLOptionElement* option) {
+  if (select_->GetLayoutObject())
+    select_->ScrollToOption(option);
+}
+
 void ListBoxSelectType::UpdateMultiSelectFocus() {
   if (!select_->is_multiple_)
     return;
@@ -772,6 +813,10 @@ void SelectType::DidBlur() {
   select_->last_on_change_selection_.clear();
 }
 
+void SelectType::DidDetachLayoutTree() {}
+
+void SelectType::DidRecalcStyle(const StyleRecalcChange) {}
+
 void SelectType::UpdateTextStyle() {}
 
 void SelectType::UpdateTextStyleAndContent() {}
@@ -792,6 +837,10 @@ void SelectType::ShowPopup() {
 }
 
 void SelectType::HidePopup() {
+  NOTREACHED();
+}
+
+void SelectType::PopupDidHide() {
   NOTREACHED();
 }
 

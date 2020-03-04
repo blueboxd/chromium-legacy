@@ -291,13 +291,6 @@ std::string BluetoothChooserContext::GetObjectName(const base::Value& object) {
   return *object.FindStringKey(kDeviceNameKey);
 }
 
-// static
-WebBluetoothDeviceId BluetoothChooserContext::GetObjectDeviceId(
-    const base::Value& object) {
-  std::string device_id_str = *object.FindStringKey(kWebBluetoothDeviceIdKey);
-  return WebBluetoothDeviceId(device_id_str);
-}
-
 bool BluetoothChooserContext::IsValidObject(const base::Value& object) {
   return object.FindStringKey(kDeviceAddressKey) &&
          object.FindStringKey(kDeviceNameKey) &&

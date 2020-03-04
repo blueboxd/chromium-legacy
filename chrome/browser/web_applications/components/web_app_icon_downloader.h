@@ -53,6 +53,8 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // |extra_favicon_urls| argument).
   void SkipPageFavicons();
 
+  void FailAllIfAnyFail();
+
   void Start();
 
  private:
@@ -85,8 +87,14 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   void DidUpdateFaviconURL(
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
+  void CancelDownloads();
+
   // Whether we need to fetch favicons from the renderer.
   bool need_favicon_urls_;
+
+  // Whether we consider all requests to have failed if any individual URL fails
+  // to load.
+  bool fail_all_if_any_fail_;
 
   // URLs that aren't given by WebContentsObserver::DidUpdateFaviconURL() that
   // should be used for this favicon. This is necessary in order to get touch

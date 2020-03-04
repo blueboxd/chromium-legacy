@@ -200,6 +200,9 @@
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [2020],
   },
+  "chrome/browser/resources/gaia_auth_host/gaia_auth_host_resources.grd": {
+    "includes": [2030],
+  },
   "chrome/browser/resources/invalidations/invalidations_resources.grd": {
     "includes": [2040],
   },

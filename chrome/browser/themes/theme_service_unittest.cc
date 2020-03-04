@@ -585,4 +585,25 @@ TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
   }
 }
 
+TEST_F(ThemeServiceTest, NativeIncreasedContrastChanged) {
+  theme_service_->UseDefaultTheme();
+
+  native_theme_.SetUsesHighContrastColors(true);
+  theme_service_->OnNativeThemeUpdated(&native_theme_);
+  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
+  bool using_increased_contrast =
+      theme_service_->GetThemeSupplier() &&
+      theme_service_->GetThemeSupplier()->get_theme_type() ==
+          CustomThemeSupplier::ThemeType::INCREASED_CONTRAST;
+  bool expecting_increased_contrast =
+      theme_service_->theme_helper_for_testing()
+          .ShouldUseIncreasedContrastThemeSupplier(&native_theme_);
+  EXPECT_EQ(using_increased_contrast, expecting_increased_contrast);
+
+  native_theme_.SetUsesHighContrastColors(false);
+  theme_service_->OnNativeThemeUpdated(&native_theme_);
+  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
+  EXPECT_EQ(theme_service_->GetThemeSupplier(), nullptr);
+}
+
 }  // namespace theme_service_internal

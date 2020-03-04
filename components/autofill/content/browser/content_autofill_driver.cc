@@ -285,6 +285,10 @@ void ContentAutofillDriver::DidPreviewAutofillFormData() {
   autofill_handler_->OnDidPreviewAutofillFormData();
 }
 
+void ContentAutofillDriver::DidEndTextFieldEditing() {
+  autofill_handler_->OnDidEndTextFieldEditing();
+}
+
 void ContentAutofillDriver::SetDataList(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {

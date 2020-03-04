@@ -35,6 +35,7 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_stretch_data.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -142,6 +143,17 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                                     unsigned start_index,
                                                     unsigned length,
                                                     float width);
+  static scoped_refptr<ShapeResult> CreateForStretchyMathOperator(
+      const Font*,
+      TextDirection,
+      OpenTypeMathStretchData::StretchAxis,
+      Glyph,
+      float stretch_size);
+  static scoped_refptr<ShapeResult> CreateForStretchyMathOperator(
+      const Font*,
+      TextDirection,
+      OpenTypeMathStretchData::StretchAxis,
+      const OpenTypeMathStretchData::AssemblyParameters&);
   ~ShapeResult();
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,
@@ -495,6 +507,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class ShapeResultBloberizer;
   friend class ShapeResultView;
   friend class ShapeResultTest;
+  friend class StretchyOperatorShaper;
 
   template <bool has_non_zero_glyph_offsets>
   float ForEachGlyphImpl(float initial_advance,

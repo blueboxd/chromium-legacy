@@ -137,7 +137,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       page_state_(PageState::IDLE),
       last_state_(PageState::IDLE),
       enabled_for_dev_(init_params.enabled_for_dev),
-      use_cma_renderer_(init_params.use_cma_renderer),
+      renderer_type_(init_params.renderer_type),
       handle_inner_contents_(init_params.handle_inner_contents),
       view_background_color_(init_params.background_color),
       remote_debugging_server_(
@@ -175,8 +175,9 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   }
 
   // TODO(yucliu): Change the flag name to kDisableCmaRenderer in a latter diff.
-  if (GetSwitchValueBoolean(switches::kDisableMojoRenderer, false)) {
-    use_cma_renderer_ = false;
+  if (GetSwitchValueBoolean(switches::kDisableMojoRenderer, false) &&
+      renderer_type_ == content::mojom::RendererType::MOJO_RENDERER) {
+    renderer_type_ = content::mojom::RendererType::DEFAULT_RENDERER;
   }
 
   // Provides QueryableDataHostCast if the new QueryableData bindings is not
@@ -482,7 +483,7 @@ void CastWebContentsImpl::RenderFrameCreated(
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
-  media_playback_options->SetUseCmaRenderer(use_cma_renderer_);
+  media_playback_options->SetRendererType(renderer_type_);
 
   // Send queryable values
   mojo::Remote<chromecast::shell::mojom::QueryableDataStore>

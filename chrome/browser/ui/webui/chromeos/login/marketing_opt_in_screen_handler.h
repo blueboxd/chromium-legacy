@@ -31,6 +31,13 @@ class MarketingOptInScreenView {
 
   // Shows or hides the screen's all set (next) button visibility.
   virtual void UpdateAllSetButtonVisibility(bool visible) = 0;
+
+  // Sets whether the a11y Settings button is visible.
+  virtual void UpdateA11ySettingsButtonVisibility(bool shown) = 0;
+
+  // Sets whether the a11y setting for showing shelf navigation buttons is
+  // toggled on or off.
+  virtual void UpdateA11yShelfNavigationButtonToggle(bool enabled) = 0;
 };
 
 // The sole implementation of the MarketingOptInScreenView, using WebUI.
@@ -51,6 +58,8 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   void Show() override;
   void Hide() override;
   void UpdateAllSetButtonVisibility(bool visible) override;
+  void UpdateA11ySettingsButtonVisibility(bool shown) override;
+  void UpdateA11yShelfNavigationButtonToggle(bool enabled) override;
 
  private:
   // BaseScreenHandler:
@@ -61,6 +70,7 @@ class MarketingOptInScreenHandler : public BaseScreenHandler,
   // WebUI event handler.
   void HandleAllSet(bool play_communications_opt_in,
                     bool tips_communications_opt_in);
+  void HandleSetA11yNavigationButtonsEnabled(bool enabled);
 
   MarketingOptInScreen* screen_ = nullptr;
 

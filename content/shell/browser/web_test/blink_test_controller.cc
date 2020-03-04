@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
-#include <queue>
 #include <set>
 #include <utility>
 #include <vector>
@@ -576,7 +575,6 @@ bool BlinkTestController::ResetAfterWebTest() {
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHost();
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
-  WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();
   navigation_history_dump_ = "";
   pixel_dump_.reset();
   actual_pixel_hash_ = "";

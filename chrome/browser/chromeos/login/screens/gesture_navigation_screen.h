@@ -23,9 +23,6 @@ class GestureNavigationScreen : public BaseScreen {
   GestureNavigationScreen(const GestureNavigationScreen&) = delete;
   GestureNavigationScreen operator=(const GestureNavigationScreen&) = delete;
 
-  // Returns whether the gesture navigation screen should be shown.
-  static bool ShouldSkipGestureNavigationScreen();
-
   void set_exit_callback_for_testing(
       const base::RepeatingClosure& exit_callback) {
     exit_callback_ = exit_callback;

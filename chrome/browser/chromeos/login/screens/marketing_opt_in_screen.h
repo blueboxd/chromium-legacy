@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace chromeos {
 
@@ -61,6 +62,8 @@ class MarketingOptInScreen : public BaseScreen,
   // gestures.
   void ClearLoginShelfGestureHandler();
 
+  void OnA11yShelfNavigationButtonPrefChanged();
+
   MarketingOptInScreenView* const view_;
 
   // Whether the screen is shown and exit callback has not been run.
@@ -73,6 +76,8 @@ class MarketingOptInScreen : public BaseScreen,
 
   ScopedObserver<ash::ShelfConfig, ash::ShelfConfig::Observer>
       shelf_config_observer_{this};
+
+  std::unique_ptr<PrefChangeRegistrar> active_user_pref_change_registrar_;
 
   base::WeakPtrFactory<MarketingOptInScreen> weak_factory_{this};
 

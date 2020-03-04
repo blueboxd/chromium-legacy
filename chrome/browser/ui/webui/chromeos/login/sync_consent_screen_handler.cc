@@ -110,7 +110,7 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
                          builder);
 
-  // SplitSettingsSync strings. The version of the dialog to show is chosen
+  // SplitSyncConsent strings. The version of the dialog to show is chosen
   // after the WebUI is loaded, so always supply both sets of strings.
   RememberLocalizedValue("osSyncConsentTitle", IDS_LOGIN_OS_SYNC_CONSENT_TITLE,
                          builder);
@@ -152,15 +152,15 @@ void SyncConsentScreenHandler::RegisterMessages() {
 
 void SyncConsentScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
-  parameters->SetBoolean("splitSettingsSync",
-                         chromeos::features::IsSplitSettingsSyncEnabled());
+  parameters->SetBoolean("splitSyncConsent",
+                         chromeos::features::IsSplitSyncConsentEnabled());
   BaseScreenHandler::GetAdditionalParameters(parameters);
 }
 
 void SyncConsentScreenHandler::HandleContinueAndReview(
     const login::StringList& consent_description,
     const std::string& consent_confirmation) {
-  DCHECK(!chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(!chromeos::features::IsSplitSyncConsentEnabled());
   std::vector<int> consent_description_ids;
   int consent_confirmation_id;
   GetConsentIDs(known_string_ids_, consent_description, consent_confirmation,
@@ -179,7 +179,7 @@ void SyncConsentScreenHandler::HandleContinueAndReview(
 void SyncConsentScreenHandler::HandleContinueWithDefaults(
     const login::StringList& consent_description,
     const std::string& consent_confirmation) {
-  DCHECK(!chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(!chromeos::features::IsSplitSyncConsentEnabled());
   std::vector<int> consent_description_ids;
   int consent_confirmation_id;
   GetConsentIDs(known_string_ids_, consent_description, consent_confirmation,
@@ -199,7 +199,7 @@ void SyncConsentScreenHandler::HandleOsSyncAcceptAndContinue(
     const login::StringList& consent_description,
     const std::string& consent_confirmation,
     bool enable_os_sync) {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSplitSyncConsentEnabled());
   std::vector<int> consent_description_ids;
   int consent_confirmation_id;
   GetConsentIDs(known_string_ids_, consent_description, consent_confirmation,

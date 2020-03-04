@@ -4,6 +4,7 @@
 
 :host {
   --marketing-opt-in-dialog-list-item-border: 1px solid var(--google-grey-200);
+  --oobe-a11y-dialog-list-item-border: 1px solid var(--google-grey-200);
 }
 
 .marketing-option {
@@ -22,4 +23,23 @@
   --iron-icon-width: 20px;
   --iron-icon-fill-color: var(--google-blue-600);
   padding-inline-end: 16px;
+}
+
+#finalAccessibilityLink {
+  align-self: flex-end;
+}
+
+#finalAccessibilityLinkContainer {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+
+#finalAccessibilityPage oobe-a11y-option {
+  border-top: var(--oobe-a11y-dialog-list-item-border);
+  min-height: 64px;
+}
+
+#finalAccessibilityPage oobe-a11y-option:last-of-type {
+  border-bottom: var(--oobe-a11y-dialog-list-item-border);
 }

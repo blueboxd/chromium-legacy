@@ -79,8 +79,6 @@ class BluetoothChooserContext : public ChooserContextBase {
 
   // Returns the human readable string representing the given object.
   static std::string GetObjectName(const base::Value& object);
-  static blink::WebBluetoothDeviceId GetObjectDeviceId(
-      const base::Value& object);
 
  protected:
   // ChooserContextBase implementation;

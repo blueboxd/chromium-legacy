@@ -89,12 +89,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   container_host_.reset();
 }
 
-ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
-    const {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  return running_hosted_version_;
-}
-
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>

@@ -35,10 +35,11 @@ class MEDIA_EXPORT EsAdapterVideo {
  public:
   using NewVideoConfigCB =
       base::RepeatingCallback<void(const VideoDecoderConfig&)>;
-  typedef base::Callback<void(scoped_refptr<StreamParserBuffer>)> EmitBufferCB;
+  using EmitBufferCB =
+      base::RepeatingCallback<void(scoped_refptr<StreamParserBuffer>)>;
 
   EsAdapterVideo(NewVideoConfigCB new_video_config_cb,
-                 const EmitBufferCB& emit_buffer_cb);
+                 EmitBufferCB emit_buffer_cb);
   ~EsAdapterVideo();
 
   // Force the emission of the pending video buffers.

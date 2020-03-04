@@ -737,6 +737,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
   viewport_style->SetOverflowX(EOverflow::kAuto);
   viewport_style->SetOverflowY(EOverflow::kAuto);
 
+  document.GetStyleEngine().ApplyVisionDeficiencyStyle(viewport_style);
+
   return viewport_style;
 }
 

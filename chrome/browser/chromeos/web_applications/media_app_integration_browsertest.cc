@@ -161,7 +161,7 @@ content::EvalJsResult ClearOpenedImage(content::WebContents* web_ui) {
 
 // Test that the Media App installs and launches correctly. Runs some spot
 // checks on the manifest.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaApp) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaApp) {
   const GURL url(chromeos::kChromeUIMediaAppURL);
   EXPECT_NO_FATAL_FAILURE(
       ExpectSystemWebAppValid(web_app::SystemAppType::MEDIA, url, "Media App"));
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaApp) {
 
 // Test that the MediaApp successfully loads a file passed in on its launch
 // params.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
   WaitForTestSystemAppInstall();
   auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
 
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
 
 // Ensures that chrome://media-app is available as a file task for the ChromeOS
 // file manager and eligible for opening appropriate files / mime types.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
   constexpr bool kIsDirectory = false;
   const extensions::EntryInfo image_entry(TestFile(kFilePng800x600),
                                           "image/png", kIsDirectory);
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
 // End-to-end test to ensure that the MediaApp successfully registers as a file
 // handler with the ChromeOS file manager on startup and acts as the default
 // handler for a given file.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
                        FileOpenUsesMediaApp) {
   WaitForTestSystemAppInstall();
   Browser* test_browser = chrome::FindBrowserWithActiveWindow();
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
 
 // Test that the MediaApp can navigate other files in the directory of a file
 // that was opened.
-IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
                        FileOpenCanTraverseDirectory) {
   WaitForTestSystemAppInstall();
 
@@ -310,3 +310,15 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationWithFilesAppTest,
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
   EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaAppIntegrationTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaAppIntegrationWithFilesAppTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

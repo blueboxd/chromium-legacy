@@ -288,6 +288,14 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Introduces a new OOBE dialog for the OS sync feature. Uses the same browser
+// sync consent dialog as Windows/Mac/Linux. Allows the user to fully opt-out of
+// browser sync, including marking the signin primary account as unconsented.
+// Requires SplitSettingsSync.
+// NOTE: Use IsSplitSyncConsentEnabled() to test the flag, see implementation.
+const base::Feature kSplitSyncConsent{"SplitSyncConsent",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables unified media view in Files app to browse recently-modified media
 // files from local local, Google Drive, and Android.
 const base::Feature kUnifiedMediaView{"UnifiedMediaView",
@@ -363,6 +371,12 @@ bool IsQuickAnswersRichUiEnabled() {
 
 bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
+}
+
+bool IsSplitSyncConsentEnabled() {
+  // SplitSyncConsent requires SplitSettingsSync.
+  return base::FeatureList::IsEnabled(kSplitSettingsSync) &&
+         base::FeatureList::IsEnabled(kSplitSyncConsent);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

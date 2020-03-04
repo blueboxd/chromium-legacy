@@ -646,10 +646,11 @@ cr.define('settings_people_page', function() {
       });
     });
 
-    suite('Chrome OS with SplitSettingsSync', function() {
+    suite('Chrome OS with SplitSyncConsent', function() {
       suiteSetup(function() {
         loadTimeData.overrideValues({
           splitSettingsSyncEnabled: true,
+          splitSyncConsent: true,
         });
       });
 

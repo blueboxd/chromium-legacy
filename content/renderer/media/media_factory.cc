@@ -349,7 +349,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   auto factory_selector = CreateRendererFactorySelector(
       media_log.get(), use_media_player_renderer,
       render_frame_->GetRenderFrameMediaPlaybackOptions()
-          .is_mojo_renderer_enabled,
+          .is_mojo_renderer_enabled(),
       GetDecoderFactory(),
       std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
       &media_observer);
@@ -432,6 +432,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
               .is_background_video_playback_enabled,
           render_frame_->GetRenderFrameMediaPlaybackOptions()
               .is_background_video_track_optimization_supported,
+          render_frame_->GetRenderFrameMediaPlaybackOptions()
+              .is_remoting_renderer_enabled(),
           std::move(power_status_helper)));
 
   std::unique_ptr<media::VideoFrameCompositor> vfc =

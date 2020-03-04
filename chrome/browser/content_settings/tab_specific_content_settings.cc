@@ -753,10 +753,6 @@ void TabSpecificContentSettings::DidStartNavigation(
   }
 
   ClearNavigationRelatedContentSettings();
-  ClearGeolocationContentSettings();
-  ClearMidiContentSettings();
-  ClearPendingProtocolHandler();
-  ClearContentSettingsChangedViaPageInfo();
 }
 
 void TabSpecificContentSettings::ReadyToCommitNavigation(
@@ -794,10 +790,11 @@ void TabSpecificContentSettings::DidFinishNavigation(
     return;
   }
 
-  // Clear "blocked" flags.
   ClearContentSettingsExceptForNavigationRelatedSettings();
   GeolocationDidNavigate(navigation_handle);
   MidiDidNavigate(navigation_handle);
+  ClearPendingProtocolHandler();
+  ClearContentSettingsChangedViaPageInfo();
 
   if (web_contents()->GetVisibleURL().SchemeIsHTTPOrHTTPS()) {
     content_settings::RecordPluginsAction(
@@ -833,26 +830,20 @@ void TabSpecificContentSettings::NotifySiteDataObservers() {
     observer.OnSiteDataAccessed();
 }
 
-void TabSpecificContentSettings::ClearGeolocationContentSettings() {
-  geolocation_usages_state_.ClearStateMap();
-}
-
-void TabSpecificContentSettings::ClearMidiContentSettings() {
-  midi_usages_state_.ClearStateMap();
-}
-
 void TabSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
   content_settings_changed_via_page_info_.clear();
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
     content::NavigationHandle* navigation_handle) {
+  geolocation_usages_state_.ClearStateMap();
   geolocation_usages_state_.DidNavigate(navigation_handle->GetURL(),
                                         navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::MidiDidNavigate(
     content::NavigationHandle* navigation_handle) {
+  midi_usages_state_.ClearStateMap();
   midi_usages_state_.DidNavigate(navigation_handle->GetURL(),
                                  navigation_handle->GetPreviousURL());
 }

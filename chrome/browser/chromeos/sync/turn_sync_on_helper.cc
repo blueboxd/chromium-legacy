@@ -86,7 +86,7 @@ TurnSyncOnHelper::TurnSyncOnHelper(Profile* profile,
       delegate_(std::move(delegate)) {
   DCHECK(profile_);
   DCHECK(identity_manager_);
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSplitSyncConsentEnabled());
   Init();
 }
 

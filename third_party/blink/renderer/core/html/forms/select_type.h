@@ -29,6 +29,9 @@ class SelectType : public GarbageCollected<SelectType> {
                                bool should_update_popup);
 
   virtual void DidBlur();
+  virtual void DidDetachLayoutTree();
+  virtual void DidRecalcStyle(const StyleRecalcChange change);
+  virtual void DidSetSuggestedOption(HTMLOptionElement* option) = 0;
 
   // Update style of text in the CSS box on style or selected OPTION change.
   virtual void UpdateTextStyle();
@@ -46,6 +49,7 @@ class SelectType : public GarbageCollected<SelectType> {
 
   virtual void ShowPopup();
   virtual void HidePopup();
+  virtual void PopupDidHide();
 
   enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
   CORE_EXPORT HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;

@@ -360,7 +360,7 @@ Polymer({
       return false;
     }
     // <if expr="chromeos">
-    if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+    if (!loadTimeData.getBoolean('splitSyncConsent')) {
       return false;
     }
     // </if>

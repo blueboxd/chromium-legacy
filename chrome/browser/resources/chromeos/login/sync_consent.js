@@ -65,8 +65,8 @@ Polymer({
    * Reacts to changes in loadTimeData.
    */
   updateLocalizedContent() {
-    if (loadTimeData.getBoolean('splitSettingsSync')) {
-      // SplitSettingsSync version.
+    if (loadTimeData.getBoolean('splitSyncConsent')) {
+      // SplitSyncConsent version.
       this.showScreen_('osSyncConsentDialog');
     } else {
       // Regular version.
@@ -96,7 +96,7 @@ Polymer({
    * @private
    */
   onOsSyncAcceptAndContinue_(event) {
-    assert(loadTimeData.getBoolean('splitSettingsSync'));
+    assert(loadTimeData.getBoolean('splitSyncConsent'));
     assert(event.path);
     let enableOsSync = !!this.$.enableOsSyncToggle.checked;
     chrome.send('login.SyncConsentScreen.osSyncAcceptAndContinue', [

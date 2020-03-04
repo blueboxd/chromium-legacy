@@ -116,10 +116,10 @@ void EsParserAdts::SkipAdtsFrame(const AdtsFrame& adts_frame) {
 }
 
 EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
-                           const EmitBufferCB& emit_buffer_cb,
+                           EmitBufferCB emit_buffer_cb,
                            bool sbr_in_mimetype)
     : new_audio_config_cb_(new_audio_config_cb),
-      emit_buffer_cb_(emit_buffer_cb),
+      emit_buffer_cb_(std::move(emit_buffer_cb)),
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
       get_decrypt_config_cb_(),
       init_encryption_scheme_(EncryptionScheme::kUnencrypted),
@@ -129,13 +129,13 @@ EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
 EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
-                           const EmitBufferCB& emit_buffer_cb,
-                           const GetDecryptConfigCB& get_decrypt_config_cb,
+                           EmitBufferCB emit_buffer_cb,
+                           GetDecryptConfigCB get_decrypt_config_cb,
                            EncryptionScheme init_encryption_scheme,
                            bool sbr_in_mimetype)
     : new_audio_config_cb_(new_audio_config_cb),
-      emit_buffer_cb_(emit_buffer_cb),
-      get_decrypt_config_cb_(get_decrypt_config_cb),
+      emit_buffer_cb_(std::move(emit_buffer_cb)),
+      get_decrypt_config_cb_(std::move(get_decrypt_config_cb)),
       init_encryption_scheme_(init_encryption_scheme),
       sbr_in_mimetype_(sbr_in_mimetype) {}
 #endif

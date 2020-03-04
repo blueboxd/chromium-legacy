@@ -69,6 +69,9 @@ interface AutofillDriver {
   // Sent when a form is previewed with Autofill suggestions.
   DidPreviewAutofillFormData();
 
+  // Sent when a text field is done editing.
+  DidEndTextFieldEditing();
+
   // Informs browser of data list values for the current field.
   SetDataList(array<mojo_base.mojom.String16> values,
               array<mojo_base.mojom.String16> labels);

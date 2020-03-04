@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js2gtest("login_unitjs_tests") {
   # These could be unit tests, except they need a browser context in order
@@ -23,4 +25,96 @@ js2gtest("login_unitjs_tests") {
 source_set("browser_tests") {
   testonly = true
   deps = [ ":login_unitjs_tests" ]
+}
+
+js_type_check("closure_compile") {
+  uses_js_modules = true
+  deps = [
+    ":authenticator.m",
+    ":channel.m",
+    ":post_message_channel.m",
+    ":saml_handler.m",
+    ":saml_password_attributes.m",
+    ":saml_timestamps.m",
+    ":webview_event_manager.m",
+  ]
+}
+
+js_library("channel.m") {
+  sources =
+      [ "$root_gen_dir/chrome/browser/resources/gaia_auth_host/channel.m.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("webview_event_manager.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/gaia_auth_host/webview_event_manager.m.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("post_message_channel.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/gaia_auth_host/post_message_channel.m.js" ]
+  deps = [ ":channel.m" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("saml_password_attributes.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/gaia_auth_host/saml_password_attributes.m.js" ]
+  deps = [ ":saml_timestamps.m" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("saml_timestamps.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/gaia_auth_host/saml_timestamps.m.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("saml_handler.m") {
+  sources = [
+    "$root_gen_dir/chrome/browser/resources/gaia_auth_host/saml_handler.m.js",
+  ]
+  deps = [
+    ":channel.m",
+    ":post_message_channel.m",
+    ":webview_event_manager.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("authenticator.m") {
+  sources = [
+    "$root_gen_dir/chrome/browser/resources/gaia_auth_host/authenticator.m.js",
+  ]
+  deps = [
+    ":saml_handler.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js/cr:event_target.m",
+  ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/webview_tag.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_modulizer("modulize") {
+  input_files = [
+    "authenticator.js",
+    "channel.js",
+    "post_message_channel.js",
+    "saml_handler.js",
+    "saml_password_attributes.js",
+    "saml_timestamps.js",
+    "webview_event_manager.js",
+  ]
+  namespace_rewrites = [
+    "DOMWindow|Object",
+    "cr.EventTarget|EventTarget",
+    "cr.login.SamlHandler|SamlHandler",
+    "samlPasswordAttributes.PasswordAttributes|PasswordAttributes",
+    "samlPasswordAttributes.readPasswordAttributes|readPasswordAttributes",
+    "samlTimestamps.decodeTimestamp|decodeTimestamp",
+    "XMLDocument|Object",
+  ]
 }

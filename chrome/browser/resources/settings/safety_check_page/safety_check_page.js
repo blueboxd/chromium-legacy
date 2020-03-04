@@ -503,6 +503,19 @@ Polymer({
     }
   },
 
+  /**
+   * @private
+   * @return {string}
+   */
+  getPasswordsButtonClass_: function() {
+    switch (this.passwordsStatus_) {
+      case settings.SafetyCheckPasswordsStatus.COMPROMISED:
+        return 'action-button';
+      default:
+        return '';
+    }
+  },
+
   /** @private */
   onPasswordsButtonClick_: function() {
     switch (this.passwordsStatus_) {
@@ -634,6 +647,19 @@ Polymer({
             this.badExtensionsCount_);
       default:
         assertNotReached();
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getExtensionsButtonClass_: function() {
+    switch (this.extensionsStatus_) {
+      case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:
+        return 'action-button';
+      default:
+        return '';
     }
   },
 });

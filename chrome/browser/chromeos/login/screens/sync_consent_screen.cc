@@ -127,7 +127,7 @@ void SyncConsentScreen::OnAcceptAndContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
     bool enable_os_sync) {
-  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  DCHECK(chromeos::features::IsSplitSyncConsentEnabled());
   // The user only consented to the feature if they left the toggle on.
   RecordConsent(enable_os_sync ? CONSENT_GIVEN : CONSENT_NOT_GIVEN,
                 consent_description, consent_confirmation);

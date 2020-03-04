@@ -67504,6 +67504,8 @@ Full version information for the fingerprint enum values:
   <int value="7" label="App update failed"/>
   <int value="8" label="App updated"/>
   <int value="9" label="App is system web app"/>
+  <int value="10" label="Icon download failed"/>
+  <int value="11" label="Icon read from disk failed"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

@@ -114,19 +114,25 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTest, MarketingTogglesHidden) {
   test::OobeJS().ExpectHiddenPath(
       {"marketing-opt-in", "marketing-opt-in-subtitle"});
   test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggles"});
+      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
+  test::OobeJS().ExpectHiddenPath(
+      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   test::OobeJS().ExpectHiddenPath(
       {"marketing-opt-in", "marketing-opt-in-subtitle"});
   test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggles"});
+      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
+  test::OobeJS().ExpectHiddenPath(
+      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
 
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   test::OobeJS().ExpectHiddenPath(
       {"marketing-opt-in", "marketing-opt-in-subtitle"});
   test::OobeJS().ExpectHiddenPath(
-      {"marketing-opt-in", "marketing-opt-in-toggles"});
+      {"marketing-opt-in", "marketing-opt-in-toggle-1"});
+  test::OobeJS().ExpectHiddenPath(
+      {"marketing-opt-in", "marketing-opt-in-toggle-2"});
 }
 
 // Tests that fling from shelf exits the screen in tablet mode.

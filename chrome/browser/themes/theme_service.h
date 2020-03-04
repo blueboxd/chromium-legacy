@@ -154,6 +154,8 @@ class ThemeService : public content::NotificationObserver,
   std::unique_ptr<ThemeService::ThemeReinstaller>
   BuildReinstallerForCurrentTheme();
 
+  const ThemeHelper& theme_helper_for_testing() const { return theme_helper_; }
+
  protected:
   // Set a custom default theme instead of the normal default theme.
   virtual void SetCustomDefaultTheme(

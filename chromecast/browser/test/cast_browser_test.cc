@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 
@@ -60,7 +61,9 @@ content::WebContents* CastBrowserTest::CreateWebView() {
   CastWebView::CreateParams params;
   params.delegate = weak_factory_.GetWeakPtr();
   params.web_contents_params.delegate = weak_factory_.GetWeakPtr();
-  params.web_contents_params.use_cma_renderer = true;
+  // MOJO_RENDERER is CMA renderer on Chromecast
+  params.web_contents_params.renderer_type =
+      content::mojom::RendererType::MOJO_RENDERER;
   params.web_contents_params.enabled_for_dev = true;
   params.window_params.delegate = weak_factory_.GetWeakPtr();
   cast_web_view_ =

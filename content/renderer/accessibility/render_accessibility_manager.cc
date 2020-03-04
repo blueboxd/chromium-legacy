@@ -22,6 +22,12 @@ void RenderAccessibilityManager::BindReceiver(
     mojo::PendingAssociatedReceiver<mojom::RenderAccessibility> receiver) {
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      [](RenderAccessibilityManager* impl) {
+        impl->receiver_.reset();
+        impl->SetMode(0);
+      },
+      base::Unretained(this)));
 }
 
 RenderAccessibilityImpl*
@@ -56,6 +62,10 @@ void RenderAccessibilityManager::SetMode(uint32_t ax_mode) {
   // make update Blink and emit the relevant events back to the browser process
   // according to change in the accessibility mode being made.
   render_frame_->NotifyAccessibilityModeChange(new_mode);
+}
+
+void RenderAccessibilityManager::FatalError() {
+  CHECK(false) << "Invalid accessibility tree.";
 }
 
 }  // namespace content

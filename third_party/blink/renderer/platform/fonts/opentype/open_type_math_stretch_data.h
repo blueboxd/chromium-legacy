@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -27,6 +28,15 @@ class PLATFORM_EXPORT OpenTypeMathStretchData {
     float end_connector_length;
     float full_advance;
     bool is_extender;
+  };
+
+  // https://mathml-refresh.github.io/mathml-core/#the-glyphassembly-table
+  struct AssemblyParameters {
+    float connector_overlap{0};
+    unsigned repetition_count{0};
+    unsigned glyph_count{0};
+    float stretch_size{0};
+    Vector<GlyphPartRecord> parts;
   };
 };
 

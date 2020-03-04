@@ -11,7 +11,11 @@
 
 // <include src="channel.js">
 
-const PostMessageChannel = (function() {
+// clang-format off
+// #import {Channel} from './channel.m.js';
+// clang-format on
+
+/* #export */ const PostMessageChannel = (function() {
   /**
    * Allowed origins of the hosting page.
    * @type {Array<string>}
@@ -37,6 +41,7 @@ const PostMessageChannel = (function() {
 
   /**
    * A simple event target.
+   * @constructor
    */
   function EventTarget() {
     this.listeners_ = [];
@@ -136,7 +141,8 @@ const PostMessageChannel = (function() {
     createPort(channelId, channelName, opt_targetWindow, opt_targetOrigin) {
       const port = new PostMessagePort(channelId, channelName);
       if (opt_targetWindow) {
-        port.setTarget(opt_targetWindow, opt_targetOrigin);
+        port.setTarget(
+            opt_targetWindow, /** @type {string} */ (opt_targetOrigin));
       }
       this.channels_[channelId] = port;
       return port;
@@ -169,13 +175,13 @@ const PostMessageChannel = (function() {
     /**
      * Creates a connecting port to the daemon and request connection.
      * @param {string} name
-     * @return {PostMessagePort}
+     * @return {?PostMessagePort}
      */
     connectToDaemon(name) {
       if (this.isDaemon) {
         console.error(
             'Error: Connecting from the daemon page is not supported.');
-        return;
+        return null;
       }
 
       const port = this.createPort(this.createChannelId_(), name);
@@ -270,6 +276,7 @@ const PostMessageChannel = (function() {
   /**
    * A HTML5 postMessage based port that provides the same port interface
    * as the messaging API port.
+   * @constructor
    * @param {number} channelId
    * @param {string} name
    */
@@ -362,7 +369,6 @@ const PostMessageChannel = (function() {
   return PostMessageChannel;
 })();
 
-/** @override */
 Channel.create = function() {
   return new PostMessageChannel();
 };

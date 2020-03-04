@@ -3,6 +3,27 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+
+<iron-iconset-svg name="marketing-opt-in-32" size="32">
+    <svg>
+        <defs>
+          <g id="accessibility" fill-rule="evenodd">
+            <path d="M16 2.667c1.467 0 2.667 1.184 2.667 2.633 0 1.448-1.2 2.632-2.667 2.632-1.467 0-2.667-1.184-2.667-2.632 0-1.45 1.2-2.633 2.667-2.633zm4 9.215v16.785h-3v-7.9h-2v7.9h-3V11.882H4V8.92h24v2.962h-8z"></path>
+          </g>
+        </defs>
+      </svg>
+</iron-iconset-svg>
+
+<iron-iconset-svg name="marketing-opt-in-64" size="64">
+    <svg>
+        <defs>
+          <g id="accessibility" fill-rule="evenodd">
+            <path d="M32 5.333c2.933 0 5.333 2.415 5.333 5.367 0 2.95-2.4 5.366-5.333 5.366-2.933 0-5.333-2.415-5.333-5.366 0-2.952 2.4-5.367 5.333-5.367zM40 24v35h-5V43h-6v16.006h-5V24H8v-4.915h48V24H40z"></path>
+          </g>
+        </defs>
+      </svg>
+</iron-iconset-svg>
 
 <dom-module id="marketing-opt-in">
   <template>
@@ -10,6 +31,7 @@
     <link rel="stylesheet" href="marketing_opt_in.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="marketingOptInOverviewDialog" role="dialog" has-buttons
+        hidden="[[isAccessibilitySettingsShown_]]"
         title-key="marketingOptInScreenTitle"
         aria-label$="[[i18nDynamic(locale, 'marketingOptInScreenTitle')]]">
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:checkmark"
@@ -19,9 +41,10 @@
           hidden="[[!marketingOptInEnabled_]]">
         [[i18nRecursive(locale, 'marketingOptInScreenSubtitle', 'productName')]]
       </div>
-      <div slot="footer" class="layout vertical" id="marketing-opt-in-toggles"
-          hidden="[[!marketingOptInEnabled_]]">
-        <div class="marketing-option layout horizontal center">
+      <div slot="footer" class="layout vertical flex">
+        <div class="marketing-option layout horizontal center"
+            hidden="[[!marketingOptInEnabled_]]"
+            id="marketing-opt-in-toggle-1">
           <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
           </hd-iron-icon>
           <div id="playUpdatesOptionLabel" class="flex">
@@ -31,7 +54,9 @@
               aria-labelledby="usageStatsLabel">
           </cr-toggle>
         </div>
-        <div class="marketing-option layout horizontal center">
+        <div class="marketing-option layout horizontal center"
+            hidden="[[!marketingOptInEnabled_]]"
+            id="marketing-opt-in-toggle-2">
           <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
           </hd-iron-icon>
           <div id="chromebookUpdatesOptionLabel" class="flex">
@@ -42,12 +67,50 @@
               aria-labelledby="chromebookUpdatesOption">
           </cr-toggle>
         </div>
+        <div hidden="[[!isA11ySettingsButtonVisible_]]"
+            id="finalAccessibilityLinkContainer">
+          <a class="oobe-local-link"
+              id="finalAccessibilityLink" on-tap="onToggleAccessibilityPage_">
+           [[i18nDynamic(locale, 'marketingOptInA11yLinkLabel')]]
+          </a>
+        </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button on-tap="onAllSet_" class="focus-on-show" inverse
             text-key="marketingOptInScreenAllSet"
             hidden="[[!allSetButtonVisible_]]"
             id="marketing-opt-in-next-button">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="finalAccessibilityPage" role="dialog" has-buttons
+        hidden="[[!isAccessibilitySettingsShown_]]"
+        title-key="finalA11yPageTitle"
+        aria-label$="[[i18nDynamic(locale, 'finalA11yPageTitle')]]">>
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="marketing-opt-in-32:accessibility"
+          icon2x="marketing-opt-in-64:accessibility">
+      </hd-iron-icon>
+      <div slot="footer" class="layout vertical">
+        <oobe-a11y-option id="a11yNavButtonToggle"
+            on-change="onA11yNavButtonsSettingChanged_">
+          <span slot="title">
+            [[i18nDynamic(locale, 'finalA11yPageNavButtonSettingTitle')]]
+          </span>
+          <span slot="checked-value">
+            [[i18nDynamic(locale, 'finalA11yPageNavButtonSettingDescription')]]
+          </span>
+          <span slot="unchecked-value">
+            [[i18nDynamic(locale, 'finalA11yPageNavButtonSettingDescription')]]
+          </span>
+        </oobe-a11y-option>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal justified">
+        <oobe-back-button on-tap="onToggleAccessibilityPage_"
+            id="final-accessibility-back-button"></oobe-back-button>
+        <oobe-text-button on-tap="onAllSet_" class="focus-on-show" inverse
+            text-key="finalA11yPageDoneButtonTitle">
         </oobe-text-button>
       </div>
     </oobe-dialog>

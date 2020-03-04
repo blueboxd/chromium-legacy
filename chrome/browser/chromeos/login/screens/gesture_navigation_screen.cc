@@ -5,9 +5,12 @@
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -16,20 +19,6 @@ namespace {
 constexpr const char kUserActionExitPressed[] = "exit";
 
 }  // namespace
-
-// static
-bool GestureNavigationScreen::ShouldSkipGestureNavigationScreen() {
-  // TODO(mmourgos): If clamshell mode is enabled and device is detachable, then
-  // show the gesture navigation flow.
-
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  return (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-          !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
-          !ash::TabletMode::Get()->InTabletMode() ||
-          accessibility_manager->IsSpokenFeedbackEnabled() ||
-          accessibility_manager->IsAutoclickEnabled() ||
-          accessibility_manager->IsSwitchAccessEnabled());
-}
 
 GestureNavigationScreen::GestureNavigationScreen(
     GestureNavigationScreenView* view,
@@ -47,7 +36,16 @@ GestureNavigationScreen::~GestureNavigationScreen() {
 }
 
 void GestureNavigationScreen::ShowImpl() {
-  if (ShouldSkipGestureNavigationScreen()) {
+  // TODO(mmourgos): If clamshell mode is enabled and device is detachable, then
+  // show the gesture navigation flow.
+
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
+      !ash::features::IsHideShelfControlsInTabletModeEnabled() ||
+      !ash::TabletMode::Get()->InTabletMode() ||
+      accessibility_manager->IsSpokenFeedbackEnabled() ||
+      accessibility_manager->IsAutoclickEnabled() ||
+      accessibility_manager->IsSwitchAccessEnabled()) {
     exit_callback_.Run();
     return;
   }
@@ -60,6 +58,10 @@ void GestureNavigationScreen::HideImpl() {
 
 void GestureNavigationScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionExitPressed) {
+    // Make sure the user does not see a notification about the new gestures
+    // since they have already gone through this gesture education screen.
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+        ash::prefs::kGestureEducationNotificationShown, true);
     exit_callback_.Run();
   } else {
     BaseScreen::OnUserAction(action_id);

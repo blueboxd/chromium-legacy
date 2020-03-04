@@ -23,7 +23,8 @@ enum class PopupType {
 enum class PopupHidingReason {
   kAcceptSuggestion,        // A suggestion was accepted.
   kAttachInterstitialPage,  // An interstitial page displaces the popup.
-  kFocusChanged,            // Focus removed from field.
+  kEndEditing,    // A field isn't edited anymore but remains focused for now.
+  kFocusChanged,  // Focus removed from field. Follows kEndEditing.
   kContentAreaMoved,  // Scrolling or zooming into the page displaces popup.
   kNavigation,        // A navigation on page or frame level.
   kNoSuggestions,     // The popup is or would become empty.

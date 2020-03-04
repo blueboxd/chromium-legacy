@@ -78,8 +78,9 @@ void CastMediaPlaybackOptions::SetBackgroundVideoPlaybackEnabled(bool enabled) {
       renderer_media_playback_options_);
 }
 
-void CastMediaPlaybackOptions::SetUseCmaRenderer(bool enable) {
-  renderer_media_playback_options_.is_mojo_renderer_enabled = enable;
+void CastMediaPlaybackOptions::SetRendererType(
+    content::mojom::RendererType type) {
+  renderer_media_playback_options_.renderer_type = type;
   render_frame()->SetRenderFrameMediaPlaybackOptions(
       renderer_media_playback_options_);
 }

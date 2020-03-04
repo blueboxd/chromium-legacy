@@ -74,10 +74,12 @@ ManifestUpdateManager::~ManifestUpdateManager() = default;
 
 void ManifestUpdateManager::SetSubsystems(
     AppRegistrar* registrar,
+    AppIconManager* icon_manager,
     WebAppUiManager* ui_manager,
     InstallManager* install_manager,
     SystemWebAppManager* system_web_app_manager) {
   registrar_ = registrar;
+  icon_manager_ = icon_manager;
   ui_manager_ = ui_manager;
   install_manager_ = install_manager;
   system_web_app_manager_ = system_web_app_manager;
@@ -125,8 +127,8 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
                   url, app_id, web_contents,
                   base::Bind(&ManifestUpdateManager::OnUpdateStopped,
                              base::Unretained(this)),
-                  hang_update_checks_for_testing_, *registrar_, ui_manager_,
-                  install_manager_));
+                  hang_update_checks_for_testing_, *registrar_, *icon_manager_,
+                  ui_manager_, install_manager_));
 }
 
 // AppRegistrarObserver:

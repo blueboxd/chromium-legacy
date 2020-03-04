@@ -41,7 +41,7 @@
 
 namespace web_app {
 
-SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
+SystemWebAppManagerBrowserTestBase::SystemWebAppManagerBrowserTestBase(
     bool install_mock) {
   scoped_feature_list_.InitWithFeatures(
       {features::kSystemWebApps, blink::features::kNativeFileSystemAPI,
@@ -53,18 +53,19 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
   }
 }
 
-SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() = default;
+SystemWebAppManagerBrowserTestBase::~SystemWebAppManagerBrowserTestBase() =
+    default;
 
-SystemWebAppManager& SystemWebAppManagerBrowserTest::GetManager() {
+SystemWebAppManager& SystemWebAppManagerBrowserTestBase::GetManager() {
   return WebAppProvider::Get(browser()->profile())->system_web_app_manager();
 }
 
-SystemAppType SystemWebAppManagerBrowserTest::GetMockAppType() {
+SystemAppType SystemWebAppManagerBrowserTestBase::GetMockAppType() {
   DCHECK(maybe_installation_);
   return maybe_installation_->GetType();
 }
 
-void SystemWebAppManagerBrowserTest::WaitForTestSystemAppInstall() {
+void SystemWebAppManagerBrowserTestBase::WaitForTestSystemAppInstall() {
   // Wait for the System Web Apps to install.
   if (maybe_installation_) {
     maybe_installation_->WaitForAppInstall();
@@ -73,7 +74,7 @@ void SystemWebAppManagerBrowserTest::WaitForTestSystemAppInstall() {
   }
 }
 
-Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
+Browser* SystemWebAppManagerBrowserTestBase::WaitForSystemAppInstallAndLaunch(
     SystemAppType system_app_type) {
   WaitForTestSystemAppInstall();
   apps::AppLaunchParams params = LaunchParamsForApp(system_app_type);
@@ -84,7 +85,7 @@ Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
   return browser;
 }
 
-apps::AppLaunchParams SystemWebAppManagerBrowserTest::LaunchParamsForApp(
+apps::AppLaunchParams SystemWebAppManagerBrowserTestBase::LaunchParamsForApp(
     SystemAppType system_app_type) {
   base::Optional<AppId> app_id =
       GetManager().GetAppIdForSystemApp(system_app_type);
@@ -95,7 +96,7 @@ apps::AppLaunchParams SystemWebAppManagerBrowserTest::LaunchParamsForApp(
       apps::mojom::AppLaunchSource::kSourceTest);
 }
 
-content::WebContents* SystemWebAppManagerBrowserTest::LaunchApp(
+content::WebContents* SystemWebAppManagerBrowserTestBase::LaunchApp(
     const apps::AppLaunchParams& params) {
   // Use apps::LaunchService::OpenApplication() to get the most coverage. E.g.,
   // this is what is invoked by file_manager::file_tasks::ExecuteWebTask() on
@@ -104,24 +105,20 @@ content::WebContents* SystemWebAppManagerBrowserTest::LaunchApp(
       ->OpenApplication(params);
 }
 
-content::EvalJsResult EvalJs(content::WebContents* web_contents,
-                             const std::string& script) {
-  // Set world_id = 1 to bypass Content Security Policy restriction.
-  return content::EvalJs(web_contents, script,
-                         content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                         1 /*world_id*/);
-}
-
-::testing::AssertionResult ExecJs(content::WebContents* web_contents,
-                                  const std::string& script) {
-  // Set world_id = 1 to bypass Content Security Policy restriction.
-  return content::ExecJs(web_contents, script,
-                         content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                         1 /*world_id*/);
+SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
+    bool install_mock)
+    : SystemWebAppManagerBrowserTestBase(install_mock) {
+  if (GetParam() == ProviderType::kWebApps) {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsWithoutExtensions);
+  } else if (GetParam() == ProviderType::kBookmarkApps) {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDesktopPWAsWithoutExtensions);
+  }
 }
 
 // Test that System Apps install correctly with a manifest.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
 
   AppId app_id = app_browser->app_controller()->GetAppId();
@@ -158,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
 // scheme but is shown off the chrome:// scheme.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
                        ToolbarVisibilityForSystemWebApp) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
   // In scope, the toolbar should not be visible.
@@ -187,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 // Check launch files are passed to application.
 // Note: This test uses ExecuteScriptXXX instead of ExecJs and EvalJs because of
 // some quirks surrounding origin trials and content security policies.
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
                        LaunchFilesForSystemWebApp) {
   WaitForTestSystemAppInstall();
   apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
@@ -263,11 +260,11 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 }
 
 class SystemWebAppManagerLaunchFilesBrowserTest
-    : public SystemWebAppManagerBrowserTest,
+    : public SystemWebAppManagerBrowserTestBase,
       public testing::WithParamInterface<std::vector<base::Feature>> {
  public:
   SystemWebAppManagerLaunchFilesBrowserTest()
-      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+      : SystemWebAppManagerBrowserTestBase(/*install_mock=*/false) {
     scoped_feature_list_.InitWithFeatures(GetParam(), {});
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory();
@@ -278,7 +275,7 @@ class SystemWebAppManagerLaunchFilesBrowserTest
 };
 
 // Launching behavior for apps that do not want to received launch directory are
-// tested in |SystemWebAppManagerBrowserTest.LaunchFilesForSystemWebApp|.
+// tested in |SystemWebAppManagerBrowserTestBase.LaunchFilesForSystemWebApp|.
 // Note: This test uses ExecuteScriptXXX instead of ExecJs and EvalJs because of
 // some quirks surrounding origin trials and content security policies.
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
@@ -457,16 +454,23 @@ class SystemWebAppManagerNotShownInLauncherTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerNotShownInLauncherTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
                        NotShownInLauncher) {
+  // TODO(crbug.com/1054195): Make the expectation unconditional.
+  const web_app::ProviderType provider = provider_type();
+
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
+      app_id, [provider](const apps::AppUpdate& update) {
+        if (provider == ProviderType::kWebApps) {
+          EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
+        } else {
+          EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
+        }
       });
 }
 
@@ -480,17 +484,26 @@ class SystemWebAppManagerAdditionalSearchTermsTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerAdditionalSearchTermsTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
                        AdditionalSearchTerms) {
+  // TODO(crbug.com/1054195): Make the expectation unconditional.
+  const web_app::ProviderType provider = provider_type();
+
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(std::vector<std::string>({"Security"}),
-                  update.AdditionalSearchTerms());
+      app_id, [provider](const apps::AppUpdate& update) {
+        // TODO(crbug.com/1054195): Unconditionally expect "Security".
+        if (provider == ProviderType::kBookmarkApps) {
+          EXPECT_EQ(std::vector<std::string>({"Security"}),
+                    update.AdditionalSearchTerms());
+        } else {
+          EXPECT_EQ(std::vector<std::string>({}),
+                    update.AdditionalSearchTerms());
+        }
       });
 }
 
@@ -504,7 +517,7 @@ class SystemWebAppManagerChromeUntrustedTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SystemWebAppManagerChromeUntrustedTest, Install) {
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerChromeUntrustedTest, Install) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
   EXPECT_EQ(app_id, app_browser->app_controller()->GetAppId());
@@ -523,12 +536,45 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerChromeUntrustedTest, Install) {
             app_id);
 }
 
+// We test with and without enabling kDesktopPWAsWithoutExtensions.
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
 INSTANTIATE_TEST_SUITE_P(
     PermissionContext,
     SystemWebAppManagerLaunchFilesBrowserTest,
     testing::Values(
         /*default_enabled_permission_context*/ std::vector<base::Feature>(),
-        /*origin_scoped_permission_context*/ std::vector<base::Feature>(
-            {features::kNativeFileSystemOriginScopedPermissions})));
+        /*origin_scoped_permission_context*/
+        std::vector<base::Feature>(
+            {features::kNativeFileSystemOriginScopedPermissions}),
+        /*default_enabled_permission_context*/
+        std::vector<base::Feature>({features::kDesktopPWAsWithoutExtensions}),
+        /*origin_scoped_permission_context*/
+        std::vector<base::Feature>(
+            {features::kNativeFileSystemOriginScopedPermissions,
+             features::kDesktopPWAsWithoutExtensions})));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerNotShownInLauncherTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerAdditionalSearchTermsTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerChromeUntrustedTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

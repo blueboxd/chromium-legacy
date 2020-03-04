@@ -32,7 +32,7 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
   typedef base::Callback<void(const AudioDecoderConfig&)> NewAudioConfigCB;
 
   EsParserMpeg1Audio(const NewAudioConfigCB& new_audio_config_cb,
-                     const EmitBufferCB& emit_buffer_cb,
+                     EmitBufferCB emit_buffer_cb,
                      MediaLog* media_log);
   ~EsParserMpeg1Audio() override;
 

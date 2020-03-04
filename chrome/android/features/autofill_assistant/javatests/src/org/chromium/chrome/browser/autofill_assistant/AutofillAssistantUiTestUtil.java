@@ -222,26 +222,6 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
-    public static Matcher<View> withParentIndex(int parentIndex) {
-        return new TypeSafeMatcher<View>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("withParentIndex: " + parentIndex);
-            }
-
-            @Override
-            public boolean matchesSafely(View view) {
-                ViewParent parent = view.getParent();
-                if (!(parent instanceof ViewGroup)) {
-                    return false;
-                } else {
-                    ViewGroup parentGroup = (ViewGroup) parent;
-                    return parentGroup.getChildAt(parentIndex) == view;
-                }
-            }
-        };
-    }
-
     public static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override

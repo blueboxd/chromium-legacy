@@ -1353,7 +1353,7 @@ void UserSessionManager::InitProfilePreferences(
               ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
                   gaia_id);
       DCHECK(account_info.has_value());
-      if (features::IsSplitSettingsSyncEnabled()) {
+      if (features::IsSplitSyncConsentEnabled()) {
         if (is_new_profile) {
           if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
             // Set the account without recording browser sync consent.
@@ -1368,7 +1368,7 @@ void UserSessionManager::InitProfilePreferences(
             gaia_id);
       } else {
         // Set a primary account here because the profile might have been
-        // created with the feature SplitSettingsSync enabled. Then the
+        // created with the feature SplitSyncConsent enabled. Then the
         // profile might only have an unconsented primary account.
         identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_info->account_id);
@@ -1677,7 +1677,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   // If needed, create browser observer to display first run OOBE Goodies page.
   first_run::GoodiesDisplayer::Init();
 
-  if (chromeos::features::IsSplitSettingsSyncEnabled() &&
+  if (chromeos::features::IsSplitSyncConsentEnabled() &&
       ProfileSyncServiceFactory::IsSyncAllowed(profile)) {
     turn_sync_on_helper_ = std::make_unique<TurnSyncOnHelper>(profile);
   }

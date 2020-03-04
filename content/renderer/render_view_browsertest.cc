@@ -2352,6 +2352,26 @@ TEST_F(RenderViewImplTest, SetAccessibilityMode) {
   ASSERT_TRUE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
 }
 
+TEST_F(RenderViewImplTest, AccessibilityModeOnClosingConnection) {
+  // Force the RenderAccessibilityManager to bind a pending receiver so that we
+  // can test what happens after closing the remote endpoint.
+  mojo::AssociatedRemote<mojom::RenderAccessibility> remote;
+  GetRenderAccessibilityManager()->BindReceiver(
+      remote.BindNewEndpointAndPassReceiver());
+
+  GetRenderAccessibilityManager()->SetMode(ui::kAXModeWebContentsOnly.mode());
+  ASSERT_TRUE(GetAccessibilityMode() == ui::kAXModeWebContentsOnly);
+  ASSERT_TRUE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
+
+  // Closing the remote endpoint of the mojo pipe gets accessibility disabled
+  // for the frame and the RenderAccessibility object deleted.
+  remote.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(GetRenderAccessibilityManager());
+  ASSERT_TRUE(GetAccessibilityMode().is_mode_off());
+  ASSERT_FALSE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
+}
+
 // Checks that when a navigation starts in the renderer, |navigation_start| is
 // recorded at an appropriate time and is passed in the corresponding message.
 TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {

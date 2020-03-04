@@ -319,6 +319,7 @@ void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
       password_generation_agent_->ShouldIgnoreBlur()) {
     return;
   }
+  GetAutofillDriver()->DidEndTextFieldEditing();
   password_autofill_agent_->DidEndTextFieldEditing();
   if (password_generation_agent_)
     password_generation_agent_->DidEndTextFieldEditing(element);

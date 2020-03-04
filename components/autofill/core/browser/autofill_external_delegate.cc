@@ -311,6 +311,10 @@ bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
   return false;
 }
 
+void AutofillExternalDelegate::DidEndTextFieldEditing() {
+  manager_->client()->HideAutofillPopup(PopupHidingReason::kEndEditing);
+}
+
 void AutofillExternalDelegate::ClearPreviewedForm() {
   driver_->RendererShouldClearPreviewedForm();
 }

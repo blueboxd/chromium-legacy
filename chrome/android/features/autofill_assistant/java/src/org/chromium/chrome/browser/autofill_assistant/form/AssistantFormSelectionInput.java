@@ -15,7 +15,6 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** A form input that allows to choose between multiple choices. */
@@ -29,7 +28,6 @@ class AssistantFormSelectionInput extends AssistantFormInput {
     private final List<AssistantFormSelectionChoice> mChoices;
     private final boolean mAllowMultipleChoices;
     private final Delegate mDelegate;
-    private final List<View> mChoiceViews = new ArrayList<>();
 
     public AssistantFormSelectionInput(String label, List<AssistantFormSelectionChoice> choices,
             boolean allowMultipleChoices, Delegate delegate) {
@@ -58,7 +56,6 @@ class AssistantFormSelectionInput extends AssistantFormInput {
 
         ViewGroup checkboxList = root.findViewById(R.id.checkbox_list);
         AssistantChoiceList radiobuttonList = root.findViewById(R.id.radiobutton_list);
-        radiobuttonList.setAllowMultipleChoices(false);
         for (int i = 0; i < mChoices.size(); i++) {
             AssistantFormSelectionChoice choice = mChoices.get(i);
 
@@ -82,24 +79,10 @@ class AssistantFormSelectionInput extends AssistantFormInput {
 
                 radiobuttonList.addItem(choiceView, /* hasEditButton= */ false,
                         (isChecked)
-                                -> {
-                            mDelegate.onChoiceSelectionChanged(index, isChecked);
-                            // Workaround for radio buttons in FormAction: de-select all other
-                            // items. This is needed because the current selection state is not part
-                            // of AssistantFormModel (but it should be). TODO(b/150201921).
-                            if (isChecked) {
-                                for (View view : mChoiceViews) {
-                                    if (view == choiceView) {
-                                        continue;
-                                    }
-                                    radiobuttonList.setChecked(view, false);
-                                }
-                            }
-                        },
+                                -> mDelegate.onChoiceSelectionChanged(index, isChecked),
                         /* itemEditedListener= */ null);
                 radiobuttonList.setChecked(choiceView, choice.isInitiallySelected());
             }
-            mChoiceViews.add(choiceView);
 
             TextView choiceLabel = choiceView.findViewById(R.id.label);
             TextView descriptionLine1 = choiceView.findViewById(R.id.description_line_1);

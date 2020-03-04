@@ -297,7 +297,8 @@ TEST_F(OpenTypeMathSupportTest, MathVariantsWithTable) {
   auto over_brace = math.PrimaryFont()->GlyphForCharacter(kOverBraceCodePoint);
 
   // Calculate glyph indices from the last unicode character in the font.
-  // TODO(fwang): Find a better way to access these glyph indices.
+  // TODO(https://crbug.com/1057596): Find a better way to access these glyph
+  // indices.
   auto v0 = math.PrimaryFont()->GlyphForCharacter(
                 kArabicMathOperatorHahWithDalCodePoint) +
             1;

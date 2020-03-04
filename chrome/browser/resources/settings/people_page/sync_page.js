@@ -709,7 +709,7 @@ Polymer({
    */
   shouldShowSyncAccountControl_() {
     // <if expr="chromeos">
-    if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+    if (!loadTimeData.getBoolean('splitSyncConsent')) {
       return false;
     }
     // </if>

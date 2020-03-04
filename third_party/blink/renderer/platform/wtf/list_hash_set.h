@@ -516,13 +516,6 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg, AllocatorArg> {
 
   template <typename VisitorDispatcher, typename A = NodeAllocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
-    if (visitor->ConcurrentTracingBailOut(
-            {this, [](blink::Visitor* visitor, void* object) {
-               reinterpret_cast<ListHashSetNode<ValueArg, AllocatorArg>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
-      return;
     // The conservative stack scan can find nodes that have been removed
     // from the set and destructed. We don't need to trace these, and it
     // would be wrong to do so, because the class will not expect the trace
@@ -1206,13 +1199,6 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
-  if (visitor->ConcurrentTracingBailOut(
-          {this, [](blink::Visitor* visitor, void* object) {
-             reinterpret_cast<ListHashSet<T, inlineCapacity, U, V>*>(object)
-                 ->Trace(visitor);
-           }}))
-    return;
-
   static_assert(!IsWeak<T>::value,
                 "HeapListHashSet does not support weakness, consider using "
                 "HeapLinkedHashSet instead.");

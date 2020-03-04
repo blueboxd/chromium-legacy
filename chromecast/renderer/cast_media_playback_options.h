@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/sequence_checker.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
+#include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -49,7 +50,7 @@ class CastMediaPlaybackOptions
   // MediaPlaybackOptions implementation
   void SetMediaLoadingBlocked(bool blocked) override;
   void SetBackgroundVideoPlaybackEnabled(bool enabled) override;
-  void SetUseCmaRenderer(bool enable) override;
+  void SetRendererType(content::mojom::RendererType type) override;
 
   void OnMediaPlaybackOptionsAssociatedReceiver(
       mojo::PendingAssociatedReceiver<

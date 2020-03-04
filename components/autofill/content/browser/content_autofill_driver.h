@@ -116,6 +116,7 @@ class ContentAutofillDriver : public AutofillDriver,
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;
+  void DidEndTextFieldEditing() override;
   void SetDataList(const std::vector<base::string16>& values,
                    const std::vector<base::string16>& labels) override;
   void SelectFieldOptionsDidChange(const FormData& form) override;

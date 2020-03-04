@@ -1787,12 +1787,12 @@ void RenderFrameHostImpl::AccessibilityReset() {
 
 void RenderFrameHostImpl::AccessibilityFatalError() {
   browser_accessibility_manager_.reset(nullptr);
-  if (accessibility_reset_token_)
+  if (accessibility_reset_token_ || !render_accessibility_)
     return;
 
   accessibility_reset_count_++;
   if (accessibility_reset_count_ >= kMaxAccessibilityResets) {
-    Send(new AccessibilityMsg_FatalError(routing_id_));
+    render_accessibility_->FatalError();
   } else {
     accessibility_reset_token_ = g_next_accessibility_reset_token++;
     Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
@@ -6192,10 +6192,19 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
   if (!IsRenderFrameCreated())
     return;
 
-  if (!render_accessibility_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&render_accessibility_);
-
   ui::AXMode ax_mode = delegate_->GetAccessibilityMode();
+  if (!ax_mode.has_mode(ui::AXMode::kWebContents)) {
+    // Resetting the Remote signals the renderer to shutdown accessibility
+    // in the renderer.
+    render_accessibility_.reset();
+    return;
+  }
+
+  if (!render_accessibility_) {
+    // Render accessibility is not enabled yet, so bind the interface first.
+    GetRemoteAssociatedInterfaces()->GetInterface(&render_accessibility_);
+  }
+
   render_accessibility_->SetMode(ax_mode.mode());
 }
 

@@ -146,10 +146,6 @@ IPC_MESSAGE_ROUTED1(AccessibilityMsg_EventBundle_ACK, int /* ack_token */)
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_Reset,
                     int /* reset token */)
 
-// Kill the renderer because we got a fatal error in the accessibility tree
-// and we've already reset too many times.
-IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
-
 // Request a one-time snapshot of the accessibility tree without
 // enabling accessibility if it wasn't already enabled. The passed id
 // will be returned in the AccessibilityHostMsg_SnapshotResponse message.

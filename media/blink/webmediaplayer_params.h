@@ -84,6 +84,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool is_background_suspend_enabled,
       bool is_background_video_play_enabled,
       bool is_background_video_track_optimization_supported,
+      bool is_remoting_renderer_enabled,
       std::unique_ptr<PowerStatusHelper> power_status_helper);
 
   ~WebMediaPlayerParams();
@@ -167,6 +168,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return is_background_video_track_optimization_supported_;
   }
 
+  bool IsRemotingRendererEnabled() const {
+    return is_remoting_renderer_enabled_;
+  }
+
   std::unique_ptr<PowerStatusHelper> TakePowerStatusHelper() {
     return std::move(power_status_helper_);
   }
@@ -199,6 +204,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool is_background_video_playback_enabled_ = true;
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
+  // Whether the media in this frame is a remoting media.
+  bool is_remoting_renderer_enabled_ = false;
 
   std::unique_ptr<PowerStatusHelper> power_status_helper_;
 

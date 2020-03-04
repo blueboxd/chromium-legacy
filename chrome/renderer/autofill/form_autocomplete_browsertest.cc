@@ -105,6 +105,8 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void DidPreviewAutofillFormData() override {}
 
+  void DidEndTextFieldEditing() override {}
+
   void SetDataList(const std::vector<base::string16>& values,
                    const std::vector<base::string16>& labels) override {}
 

@@ -54,6 +54,7 @@ class CONTENT_EXPORT RenderAccessibilityManager
 
   // mojom::RenderAccessibility implementation.
   void SetMode(uint32_t ax_mode) override;
+  void FatalError() override;
 
  private:
   // The RenderFrameImpl that owns us.

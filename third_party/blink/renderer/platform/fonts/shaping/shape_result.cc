@@ -1450,6 +1450,96 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
   return result;
 }
 
+scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
+    const Font* font,
+    TextDirection direction,
+    OpenTypeMathStretchData::StretchAxis stretch_axis,
+    Glyph glyph_variant,
+    float stretch_size) {
+  bool is_horizontal_assembly =
+      stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal;
+  unsigned start_index = 0;
+  unsigned num_characters = 1;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, start_index, num_characters, direction);
+
+  hb_direction_t hb_direction =
+      is_horizontal_assembly ? HB_DIRECTION_LTR : HB_DIRECTION_TTB;
+  unsigned glyph_index = 0;
+  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
+      font->PrimaryFont(), hb_direction, CanvasRotationInVertical::kRegular,
+      HB_SCRIPT_COMMON, start_index, 1 /* num_glyph */, num_characters);
+  run->glyph_data_[glyph_index] = {glyph_variant, 0 /* character index */,
+                                   true /* IsSafeToBreakBefore */,
+                                   stretch_size};
+  run->width_ = std::max(0.0f, stretch_size);
+
+  result->width_ = run->width_;
+  result->num_glyphs_ = run->NumGlyphs();
+  result->runs_.push_back(std::move(run));
+
+  return result;
+}
+
+scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
+    const Font* font,
+    TextDirection direction,
+    OpenTypeMathStretchData::StretchAxis stretch_axis,
+    const OpenTypeMathStretchData::AssemblyParameters& assembly_parameters) {
+  DCHECK(!assembly_parameters.parts.IsEmpty());
+  DCHECK_LE(assembly_parameters.glyph_count, HarfBuzzRunGlyphData::kMaxGlyphs);
+
+  bool is_horizontal_assembly =
+      stretch_axis == OpenTypeMathStretchData::StretchAxis::Horizontal;
+  unsigned start_index = 0;
+  unsigned num_characters = 1;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, start_index, num_characters, direction);
+
+  hb_direction_t hb_direction =
+      is_horizontal_assembly ? HB_DIRECTION_LTR : HB_DIRECTION_TTB;
+  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
+      font->PrimaryFont(), hb_direction, CanvasRotationInVertical::kRegular,
+      HB_SCRIPT_COMMON, start_index, assembly_parameters.glyph_count,
+      num_characters);
+
+  float overlap = assembly_parameters.connector_overlap;
+  unsigned part_index = 0;
+  for (const auto& part : assembly_parameters.parts) {
+    unsigned repetition_count =
+        part.is_extender ? assembly_parameters.repetition_count : 1;
+    if (!repetition_count)
+      continue;
+    DCHECK(part_index < assembly_parameters.glyph_count);
+    for (unsigned repetition_index = 0; repetition_index < repetition_count;
+         repetition_index++) {
+      unsigned glyph_index =
+          is_horizontal_assembly
+              ? part_index
+              : assembly_parameters.glyph_count - 1 - part_index;
+      float full_advance = glyph_index == assembly_parameters.glyph_count - 1
+                               ? part.full_advance
+                               : part.full_advance - overlap;
+      run->glyph_data_[glyph_index] = {part.glyph, 0 /* character index */,
+                                       !glyph_index /* IsSafeToBreakBefore */,
+                                       full_advance};
+      if (!is_horizontal_assembly) {
+        GlyphOffset glyph_offset(
+            0, -assembly_parameters.stretch_size + part.full_advance);
+        run->glyph_data_.SetOffsetAt(glyph_index, glyph_offset);
+        result->has_vertical_offsets_ |= (glyph_offset.Height() != 0);
+      }
+      part_index++;
+    }
+  }
+  run->width_ = std::max(0.0f, assembly_parameters.stretch_size);
+
+  result->width_ = run->width_;
+  result->num_glyphs_ = run->NumGlyphs();
+  result->runs_.push_back(std::move(run));
+  return result;
+}
+
 void ShapeResult::ToString(StringBuilder* output) const {
   output->Append("#chars=");
   output->AppendNumber(num_characters_);

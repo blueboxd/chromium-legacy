@@ -1416,6 +1416,10 @@ void AutofillManager::OnCreditCardFetched(bool did_succeed,
                      credit_card_field_, *credit_card, cvc);
 }
 
+void AutofillManager::OnDidEndTextFieldEditing() {
+  external_delegate_->DidEndTextFieldEditing();
+}
+
 bool AutofillManager::IsAutofillEnabled() const {
   return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
 }

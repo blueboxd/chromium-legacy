@@ -381,12 +381,6 @@ class TabSpecificContentSettings
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();
 
-  // Clears the Geolocation settings.
-  void ClearGeolocationContentSettings();
-
-  // Clears the MIDI settings.
-  void ClearMidiContentSettings();
-
   // Clears settings changed by the user via PageInfo since the last navigation.
   void ClearContentSettingsChangedViaPageInfo();
 

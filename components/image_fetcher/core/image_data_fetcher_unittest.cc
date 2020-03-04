@@ -60,7 +60,7 @@ class ImageDataFetcherTest : public testing::Test {
                void(const std::string&, const RequestMetadata&));
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -115,17 +115,16 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithDataUrl) {
       "wn4GBgYGJAQoAHhgCAh6X4CYAAAAASUVORK5CYII=";
   std::string data_url = "data:image/png;base64," + data;
 
+  RequestMetadata expected_metadata;
+  std::string expected;
+  base::Base64Decode(data, &expected);
+  EXPECT_CALL(*this, OnImageDataFetched(expected, expected_metadata));
+
   image_data_fetcher_.FetchImageData(
       GURL(data_url),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
       ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
-
-  RequestMetadata expected_metadata;
-  std::string expected;
-  base::Base64Decode(data, &expected);
-  EXPECT_CALL(*this, OnImageDataFetched(expected, expected_metadata));
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageDataFetcherTest, FetchImageDataTrafficAnnotationOnly) {

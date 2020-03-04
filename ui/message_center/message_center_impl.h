@@ -49,6 +49,7 @@ class MessageCenterImpl : public MessageCenter,
   size_t NotificationCount() const override;
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
+  bool IsSpokenFeedbackEnabled() const override;
   Notification* FindVisibleNotificationById(const std::string& id) override;
   NotificationList::Notifications FindNotificationsByAppId(
       const std::string& app_id) override;
@@ -78,6 +79,7 @@ class MessageCenterImpl : public MessageCenter,
   void DisplayedNotification(const std::string& id,
                              const DisplaySource source) override;
   void SetQuietMode(bool in_quiet_mode) override;
+  void SetSpokenFeedbackEnabled(bool enabled) override;
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void RestartPopupTimers() override;
   void PausePopupTimers() override;
@@ -115,6 +117,7 @@ class MessageCenterImpl : public MessageCenter,
 
   bool visible_ = false;
   bool has_message_center_view_ = true;
+  bool spoken_feedback_enabled_ = false;
 
   base::string16 system_notification_app_name_;
 

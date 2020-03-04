@@ -160,4 +160,10 @@ interface ExternalNavigationDelegate {
      * @return Whether the package is a valid WebAPK package.
      */
     boolean isValidWebApk(String packageName);
+
+    /**
+     * Gives the embedder a chance to handle the intent via the autofill assistant.
+     */
+    boolean handleWithAutofillAssistant(
+            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl);
 }

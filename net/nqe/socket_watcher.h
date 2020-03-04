@@ -30,12 +30,13 @@ class AddressList;
 
 namespace {
 
-typedef base::Callback<void(SocketPerformanceWatcherFactory::Protocol protocol,
-                            const base::TimeDelta& rtt,
-                            const base::Optional<nqe::internal::IPHash>& host)>
+typedef base::RepeatingCallback<void(
+    SocketPerformanceWatcherFactory::Protocol protocol,
+    const base::TimeDelta& rtt,
+    const base::Optional<nqe::internal::IPHash>& host)>
     OnUpdatedRTTAvailableCallback;
 
-typedef base::Callback<bool(base::TimeTicks)> ShouldNotifyRTTCallback;
+typedef base::RepeatingCallback<bool(base::TimeTicks)> ShouldNotifyRTTCallback;
 
 }  // namespace
 

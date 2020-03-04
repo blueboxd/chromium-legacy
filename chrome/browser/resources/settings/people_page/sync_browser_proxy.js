@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * @typedef {{fullName: (string|undefined),
@@ -30,14 +34,14 @@ cr.define('settings', function() {
    *            syncSystemEnabled: (boolean|undefined)}}
    * @see chrome/browser/ui/webui/settings/people_handler.cc
    */
-  let SyncStatus;
+  /* #export */ let SyncStatus;
 
   /**
    * Must be kept in sync with the return values of getSyncErrorAction in
    * chrome/browser/ui/webui/settings/people_handler.cc
    * @enum {string}
    */
-  const StatusAction = {
+  /* #export */ const StatusAction = {
     NO_ACTION: 'noAction',             // No action to take.
     REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
     SIGNOUT_AND_SIGNIN:
@@ -88,7 +92,7 @@ cr.define('settings', function() {
   let SyncPrefs;
 
   /** @enum {string} */
-  const PageStatus = {
+  /* #export */ const PageStatus = {
     SPINNER: 'spinner',      // Before the page has loaded.
     CONFIGURE: 'configure',  // Preferences ready to be configured.
     DONE: 'done',            // Sync subpage can be closed now.
@@ -107,7 +111,7 @@ cr.define('settings', function() {
   const PROMO_IMPRESSION_COUNT_KEY = 'signin-promo-count';
 
   /** @interface */
-  class SyncBrowserProxy {
+  /* #export */ class SyncBrowserProxy {
     // <if expr="not chromeos">
     /**
      * Starts the signin process for the user. Does nothing if the user is
@@ -232,7 +236,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.SyncBrowserProxy}
    */
-  class SyncBrowserProxyImpl {
+  /* #export */ class SyncBrowserProxyImpl {
     // <if expr="not chromeos">
     /** @override */
     startSignIn() {

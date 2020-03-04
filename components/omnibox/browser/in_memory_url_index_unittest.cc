@@ -96,7 +96,7 @@ void StringToTerms(const char* search_string,
 // Observer class so the unit tests can wait while the cache is being saved.
 class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
  public:
-  explicit CacheFileSaverObserver(const base::Closure& task);
+  explicit CacheFileSaverObserver(const base::RepeatingClosure& task);
 
   bool succeeded() { return succeeded_; }
 
@@ -104,16 +104,15 @@ class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
   // SaveCacheObserver implementation.
   void OnCacheSaveFinished(bool succeeded) override;
 
-  base::Closure task_;
+  base::RepeatingClosure task_;
   bool succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheFileSaverObserver);
 };
 
-CacheFileSaverObserver::CacheFileSaverObserver(const base::Closure& task)
-    : task_(task),
-      succeeded_(false) {
-}
+CacheFileSaverObserver::CacheFileSaverObserver(
+    const base::RepeatingClosure& task)
+    : task_(task), succeeded_(false) {}
 
 void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
   succeeded_ = succeeded;

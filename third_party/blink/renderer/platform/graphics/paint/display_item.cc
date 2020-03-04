@@ -160,13 +160,8 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     DEBUG_STRING_CASE(ScrollHitTest);
     DEBUG_STRING_CASE(ResizerScrollHitTest);
     DEBUG_STRING_CASE(PluginScrollHitTest);
-    DEBUG_STRING_CASE(LayerChunkWhole);
-    DEBUG_STRING_CASE(LayerChunkBackground);
-    DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);
-    DEBUG_STRING_CASE(LayerChunkDescendantBackgrounds);
-    DEBUG_STRING_CASE(LayerChunkFloat);
+    DEBUG_STRING_CASE(LayerChunk);
     DEBUG_STRING_CASE(LayerChunkForeground);
-    DEBUG_STRING_CASE(LayerChunkNormalFlowAndPositiveZOrderChildren);
     DEBUG_STRING_CASE(ScrollbarHorizontal);
     DEBUG_STRING_CASE(ScrollbarVertical);
     DEBUG_STRING_CASE(UninitializedType);

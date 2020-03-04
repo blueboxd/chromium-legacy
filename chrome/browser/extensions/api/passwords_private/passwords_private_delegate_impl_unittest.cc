@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -112,6 +115,7 @@ std::unique_ptr<KeyedService> BuildPasswordsPrivateEventRouter(
 
 autofill::PasswordForm CreateSampleForm() {
   autofill::PasswordForm form;
+  form.signon_realm = "http://abc1.com";
   form.origin = GURL("http://abc1.com");
   form.username_value = base::ASCIIToUTF16("test@gmail.com");
   form.password_value = base::ASCIIToUTF16("test");
@@ -403,6 +407,69 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthFailedOnExport) {
 
   EXPECT_CALL(callback, Run(ReauthPurpose::EXPORT)).WillOnce(Return(false));
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
+}
+
+// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword
+// fails if the re-auth fails.
+TEST_F(PasswordsPrivateDelegateImplTest,
+       TestReauthOnGetPlaintextCompromisedPasswordFails) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  MockReauthCallback reauth_callback;
+  delegate.set_os_reauth_call(reauth_callback.Get());
+
+  base::MockCallback<
+      PasswordsPrivateDelegate::PlaintextCompromisedPasswordCallback>
+      credential_callback;
+
+  EXPECT_CALL(reauth_callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(false));
+  EXPECT_CALL(credential_callback, Run(Eq(base::nullopt)));
+
+  delegate.GetPlaintextCompromisedPassword(
+      api::passwords_private::CompromisedCredential(),
+      api::passwords_private::PLAINTEXT_REASON_VIEW, nullptr,
+      credential_callback.Get());
+}
+
+// Verifies that PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword
+// succeeds if the re-auth succeeds and there is a matching compromised
+// credential in the store.
+TEST_F(PasswordsPrivateDelegateImplTest,
+       TestReauthOnGetPlaintextCompromisedPassword) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  autofill::PasswordForm form = CreateSampleForm();
+  password_manager::CompromisedCredentials compromised_credentials;
+  compromised_credentials.signon_realm = form.signon_realm;
+  compromised_credentials.username = form.username_value;
+  store_->AddLogin(form);
+  store_->AddCompromisedCredentials(compromised_credentials);
+  base::RunLoop().RunUntilIdle();
+
+  api::passwords_private::CompromisedCredential credential = std::move(
+      delegate.GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+
+  MockReauthCallback reauth_callback;
+  delegate.set_os_reauth_call(reauth_callback.Get());
+
+  base::MockCallback<
+      PasswordsPrivateDelegate::PlaintextCompromisedPasswordCallback>
+      credential_callback;
+
+  base::Optional<api::passwords_private::CompromisedCredential> opt_credential;
+  EXPECT_CALL(reauth_callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(true));
+  EXPECT_CALL(credential_callback, Run).WillOnce(MoveArg(&opt_credential));
+
+  delegate.GetPlaintextCompromisedPassword(
+      std::move(credential), api::passwords_private::PLAINTEXT_REASON_VIEW,
+      nullptr, credential_callback.Get());
+
+  ASSERT_TRUE(opt_credential.has_value());
+  EXPECT_EQ(form.signon_realm, opt_credential->signon_realm);
+  EXPECT_EQ(form.username_value, base::UTF8ToUTF16(opt_credential->username));
+  EXPECT_EQ(form.password_value, base::UTF8ToUTF16(*opt_credential->password));
 }
 
 }  // namespace extensions

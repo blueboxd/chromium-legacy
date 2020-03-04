@@ -162,6 +162,10 @@ constexpr uint32_t kFakeTotalMemory = 1287312;
 constexpr uint32_t kFakeFreeMemory = 981239;
 constexpr uint32_t kFakeAvailableMemory = 98719321;
 constexpr uint32_t kFakePageFaults = 896123761;
+// Backlight test values:
+constexpr char kFakeBacklightPath[] = "/sys/class/backlight/fake_backlight";
+constexpr uint32_t kFakeMaxBrightness = 769;
+constexpr uint32_t kFakeBrightness = 124;
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -462,10 +466,14 @@ void GetFakeCrosHealthdData(
                                                             kTimezoneRegion);
   chromeos::cros_healthd::mojom::MemoryInfo memory_info(
       kFakeTotalMemory, kFakeFreeMemory, kFakeAvailableMemory, kFakePageFaults);
+  std::vector<chromeos::cros_healthd::mojom::BacklightInfoPtr> backlight_vector;
+  chromeos::cros_healthd::mojom::BacklightInfo backlight_info(
+      kFakeBacklightPath, kFakeMaxBrightness, kFakeBrightness);
+  backlight_vector.push_back(backlight_info.Clone());
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
       cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone(),
-      memory_info.Clone());
+      memory_info.Clone(), std::move(backlight_vector));
 
   // Create fake SampledData.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -2513,9 +2521,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&GetFakeCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If kReportDeviceMemoryInfo, kReportDeviceCpuInfo, kReportDevicePowerStatus,
-  // kReportDeviceStorageStatus, and kReportDeviceTimezoneInfo are false, expect
-  // that the data from cros_healthd isn't present in the protobuf.
+  // If none of the relevant policies are set, expect that the data from
+  // cros_healthd isn't present in the protobuf.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceBacklightInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceMemoryInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2532,10 +2541,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_timezone_info());
   EXPECT_FALSE(device_status_.has_memory_info());
 
-  // When kReportDeviceMemoryInfo, kReportDeviceCpuInfo,
-  // kReportDevicePowerStatus, kReportDeviceStorageStatus, and
-  // kReportDeviceTimezoneInfo are set, expect the protobuf to have the data
-  // from cros_healthd.
+  // When all of the relevant policies are set, expect the protobuf to have the
+  // data from cros_healthd.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceBacklightInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceMemoryInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -2611,6 +2620,13 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
             kFakeAvailableMemory);
   EXPECT_EQ(device_status_.memory_info().page_faults_since_last_boot(),
             kFakePageFaults);
+
+  // Verify the backlight info.
+  ASSERT_EQ(device_status_.backlight_info_size(), 1);
+  const auto& backlight = device_status_.backlight_info(0);
+  EXPECT_EQ(backlight.path(), kFakeBacklightPath);
+  EXPECT_EQ(backlight.max_brightness(), kFakeMaxBrightness);
+  EXPECT_EQ(backlight.brightness(), kFakeBrightness);
 }
 
 // Fake device state.

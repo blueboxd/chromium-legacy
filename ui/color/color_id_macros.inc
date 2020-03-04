@@ -20,21 +20,11 @@
 #define D2(enum_name, enum_value) enum_name = enum_value
 #endif  // defined(STRINGIZE_COLOR_IDS)
 // Select which token in the declaration is the assigned value.
-#if BUILDFLAG(USE_COLOR_PIPELINE)
 // Use first and optional third token, ignore optional second.
 #define E1(enum_name) D1(enum_name)
 #define E2(enum_name, old_enum_name) D1(enum_name)
 #define E3(enum_name, old_enum_name, enum_value) D2(enum_name, enum_value)
 #define E_CPONLY(...) E(__VA_ARGS__)
-#else
-// Use first and mandatory second token, ignore optional third.
-#define E1(enum_name) \
-  static_assert(false, "New-style color compiled for !USE_COLOR_PIPELINE")
-#define E2(enum_name, old_enum_name) D2(enum_name, old_enum_name)
-#define E3(enum_name, old_enum_name, enum_value) D2(enum_name, old_enum_name)
-// Ignore any new color id defined only for color pipeline enabled.
-#define E_CPONLY(...)
-#endif  // BUILDFLAG(USE_COLOR_PIPELINE)
 #define GET_E(_1, _2, _3, macro_name, ...) macro_name
 #define E(...) GET_E(__VA_ARGS__, E3, E2, E1)(__VA_ARGS__),
 #else

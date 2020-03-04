@@ -1,0 +1,47 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_UPDATER_APP_APP_H_
+#define CHROME_UPDATER_APP_APP_H_
+
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+
+namespace updater {
+
+// An App is a main processing mode for the updater.
+class App : public base::RefCountedThreadSafe<App> {
+ public:
+  // Starts the thread pool and task executor, then runs a runloop on the main
+  // sequence until Shutdown() is called. Returns the exit code for the
+  // program.
+  int Run();
+
+ protected:
+  friend class base::RefCountedThreadSafe<App>;
+  App();
+  virtual ~App();
+
+  // Triggers program shutdown. Must be called on the main sequence. The program
+  // will exit with the specified code.
+  void Shutdown(int exitCode);
+
+ private:
+  // Implementations of App can override this to perform work on the main
+  // sequence while blocking is still allowed. The default implementation does
+  // nothing.
+  virtual void Initialize();
+
+  // Concrete implementations of App can execute their first task in this
+  // method. It is called on the main sequence. Blocking is not allowed. It may
+  // call Shutdown.
+  virtual void FirstTaskRun() = 0;
+
+  // A callback that quits the main sequence runloop.
+  base::OnceCallback<void(int)> quit_;
+};
+
+}  // namespace updater
+
+#endif  // CHROME_UPDATER_APP_APP_H_

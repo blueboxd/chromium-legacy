@@ -101,11 +101,15 @@ source_set("internal") {
 
 if (is_android) {
   android_library("internal_java") {
-    sources = [ "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java",
+      "android/java/src/org/chromium/components/download/DownloadDelegate.java",
+    ]
 
     deps = [
       "//base:base_java",
       "//base:jni_java",
+      "//third_party/android_provider:android_provider_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }

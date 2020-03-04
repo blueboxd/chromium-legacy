@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

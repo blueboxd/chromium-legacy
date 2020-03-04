@@ -21,6 +21,16 @@
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [0, 0, 500, 500],
           "reason": "paint property change"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV",
+          "rect": [55, 55, 445, 445],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='to-be-removed'",
+          "rect": [0, 0, 50, 50],
+          "reason": "chunk disappeared"
         }
       ],
       "transform": 1

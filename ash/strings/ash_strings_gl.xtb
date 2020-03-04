@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Configuración do audio</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3631369015426612114">Permitir notificacións das seguintes fontes:</translation>
+<translation id="3638400994746983214">Activar/desactivar a pantalla de privacidade. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capturar área</translation>
 <translation id="371370241367527062">Micrófono frontal</translation>
@@ -245,6 +246,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porto dereito posterior)</translation>
 <translation id="4017989525502048489">Punteiro láser</translation>
 <translation id="4021716437419160885">Desprazarse cara abaixo</translation>
+<translation id="402772165574991617">Utiliza xestos para cambiar de aplicación rapidamente e interactuar co teu Chromebook no modo de tableta.</translation>
 <translation id="4028481283645788203">É necesario escribir o contrasinal para obter seguranza adicional</translation>
 <translation id="4042660782729322247">Estás compartindo a pantalla</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Opción desactivada para unha aplicación}other{Opción desactivada para # aplicacións}}</translation>
@@ -293,6 +295,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4659419629803378708">Activouse ChromeVox</translation>
 <translation id="4665114317261903604">Activar/desactivar o modo Non molestar. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquea o dispositivo co código parental</translation>
+<translation id="4702647871202761252">A pantalla de privacidade está desactivada</translation>
 <translation id="4710243778082831592">Configuración de IME</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -429,6 +432,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6559976592393364813">Pedirllo ao administrador</translation>
 <translation id="6585808820553845416">A sesión finaliza dentro de <ph name="SESSION_TIME_REMAINING" /> .</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" />, xestionada polo teu administrador</translation>
+<translation id="6614169507485700968">A pantalla de privacidade está activada</translation>
 <translation id="6627638273713273709">Buscar+Maiús+K</translation>
 <translation id="6637729079642709226">Cambiar hora</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Introduce esta clave de acceso nese dispositivo: <ph name="PASSKEY" /></translation>
@@ -443,6 +447,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6715542151869432661">Non se atoparon dispositivos móbiles.</translation>
 <translation id="6723839937902243910">A</translation>
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
+<translation id="6751052314767925245">Función aplicada polo teu administrador</translation>
 <translation id="6751826523481687655">O rastrexo do rendemento está activado</translation>
 <translation id="6752912906630585008">Quitouse o escritorio <ph name="REMOVED_DESK" /> e combinouse co escritorio <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Alimentando dispositivos USB-C conectados</translation>
@@ -530,6 +535,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8000066093800657092">Sen rede</translation>
 <translation id="8029629653277878342">Como medida adicional de seguranza debes escribir o PIN ou o contrasinal</translation>
 <translation id="8030169304546394654">Desconectado</translation>
+<translation id="8042024183333293953">Proba a nova función de navegación con xestos</translation>
 <translation id="8048123526339889627">Configuración de Bluetooth</translation>
 <translation id="8054466585765276473">Calculando o tempo da batería.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>

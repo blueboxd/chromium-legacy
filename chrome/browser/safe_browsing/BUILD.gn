@@ -99,6 +99,7 @@ jumbo_static_library("safe_browsing") {
     ]
     deps += [
       ":url_lookup_service_factory",
+      ":verdict_cache_manager_factory",
       "//chrome/browser/engagement:mojo_bindings",
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing/content",
@@ -279,9 +280,26 @@ source_set("url_lookup_service_factory") {
   ]
 
   deps = [
+    ":verdict_cache_manager_factory",
     "//components/keyed_service/content",
     "//components/safe_browsing/core/realtime:url_lookup_service",
     "//components/signin/public/identity_manager",
+    "//content/public/browser",
+  ]
+}
+
+source_set("verdict_cache_manager_factory") {
+  sources = [
+    "verdict_cache_manager_factory.cc",
+    "verdict_cache_manager_factory.h",
+  ]
+
+  deps = [
+    "//components/content_settings/core/browser",
+    "//components/history/core/browser",
+    "//components/keyed_service/content",
+    "//components/prefs",
+    "//components/safe_browsing/core:verdict_cache_manager",
     "//content/public/browser",
   ]
 }

@@ -17,6 +17,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -464,6 +465,43 @@ TEST_F(DialogDelegateCloseTest,
 
   EXPECT_TRUE(accepted);
   EXPECT_FALSE(closed);
+}
+
+class TestDialogDelegateView : public DialogDelegateView {
+ public:
+  TestDialogDelegateView(bool* accepted, bool* cancelled)
+      : accepted_(accepted), cancelled_(cancelled) {}
+  ~TestDialogDelegateView() override = default;
+
+ private:
+  bool Accept() override {
+    *(accepted_) = true;
+    return true;
+  }
+  bool Cancel() override {
+    *(cancelled_) = true;
+    return true;
+  }
+
+  bool* accepted_;
+  bool* cancelled_;
+};
+
+TEST_F(DialogDelegateCloseTest, OldClosePathDoesNotDoubleClose) {
+  bool accepted = false;
+  bool cancelled = false;
+
+  auto* dialog = new TestDialogDelegateView(&accepted, &cancelled);
+  Widget* widget =
+      DialogDelegate::CreateDialogWidget(dialog, GetContext(), nullptr);
+  widget->Show();
+
+  views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
+  dialog->AcceptDialog();
+  destroyed_waiter.Wait();
+
+  EXPECT_TRUE(accepted);
+  EXPECT_FALSE(cancelled);
 }
 
 }  // namespace views

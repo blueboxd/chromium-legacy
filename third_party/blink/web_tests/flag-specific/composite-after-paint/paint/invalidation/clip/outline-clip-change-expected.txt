@@ -9,22 +9,12 @@
         {
           "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
           "rect": [48, 88, 90, 25],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
-          "rect": [48, 107, 90, 6],
-          "reason": "incremental"
+          "reason": "chunk appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'Lorem Ipsum'",
           "rect": [48, 88, 86, 19],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) A id='link' class='updated'",
-          "rect": [134, 88, 4, 19],
-          "reason": "incremental"
+          "reason": "disappeared"
         }
       ]
     }

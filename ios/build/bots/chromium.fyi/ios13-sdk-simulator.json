@@ -22,7 +22,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -30,7 +30,7 @@
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -38,7 +38,7 @@
       "include": "common_tests.json",
       "device type": "iPhone 6s",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30
     },
@@ -46,7 +46,7 @@
       "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30,
       "xcode parallelization": true
@@ -55,7 +55,7 @@
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30,
       "xcode parallelization": true
@@ -64,7 +64,7 @@
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30,
       "xcode parallelization": true
@@ -73,7 +73,7 @@
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30,
       "xcode parallelization": true
@@ -82,7 +82,7 @@
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "13.3",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6",
       "priority": 30,
       "xcode parallelization": true
@@ -102,7 +102,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone X",
       "os": "12.4",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -110,7 +110,7 @@
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
       "os": "12.4",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -118,14 +118,14 @@
       "device type": "iPhone X",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -133,7 +133,7 @@
       "device type": "iPad Pro (12.9-inch)",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -141,7 +141,7 @@
       "device type": "iPhone X",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -149,7 +149,7 @@
       "device type": "iPad Air (3rd generation)",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -157,21 +157,21 @@
       "device type": "iPhone 6s Plus",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone X",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     }
   ]
 }

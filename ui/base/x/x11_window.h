@@ -371,13 +371,13 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool pending_counter_value_is_extended_ = false;
   bool configure_counter_value_is_extended_ = false;
 
-  base::CancelableOnceCallback<void()> delayed_resize_task_;
+  base::CancelableOnceClosure delayed_resize_task_;
 
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;
   std::array<XID, 4> pointer_barriers_;
 
-  base::WeakPtrFactory<XWindow> weak_factory_{this};
+  base::WeakPtrFactory<XWindow> resize_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(XWindow);
 };

@@ -125,6 +125,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
+  // CheckUserVerification implements the first, common steps of
+  // makeCredential and getAssertion from the CTAP2 spec.
+  base::Optional<CtapDeviceResponseCode> CheckUserVerification(
+      bool is_make_credential,
+      const AuthenticatorSupportedOptions& options,
+      const base::Optional<std::vector<uint8_t>>& pin_auth,
+      const base::Optional<uint8_t>& pin_protocol,
+      base::span<const uint8_t> pin_token,
+      base::span<const uint8_t> client_data_hash,
+      UserVerificationRequirement user_verification,
+      bool* out_user_verified);
   base::Optional<CtapDeviceResponseCode> OnMakeCredential(
       base::span<const uint8_t> request,
       std::vector<uint8_t>* response);

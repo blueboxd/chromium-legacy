@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Cilësimet e audios</translation>
 <translation id="3626281679859535460">Ndriçimi</translation>
 <translation id="3631369015426612114">Lejo njoftimet nga më poshtë</translation>
+<translation id="3638400994746983214">Ndrysho ekranin e privatësisë. <ph name="STATE_TEXT" /></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Regjistro sektorin</translation>
 <translation id="371370241367527062">Mikrofoni i përparmë</translation>
@@ -244,6 +245,7 @@
 <translation id="3995138139523574647">Pajisja USB-C (porta e pasme, djathtas)</translation>
 <translation id="4017989525502048489">Treguesi me lazer</translation>
 <translation id="4021716437419160885">Lëviz poshtë</translation>
+<translation id="402772165574991617">Përdor gjestet për të kaluar me shpejtësi mes aplikacioneve dhe bashkëvepro me pajisjen tënde Chromebook në modalitetin e tabletit.</translation>
 <translation id="4028481283645788203">Kërkohet fjalëkalimi për më shumë siguri</translation>
 <translation id="4042660782729322247">Po ndan ekranin</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Joaktiv për një aplikacion}other{Joaktiv për # aplikacione}}</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox është aktivizuar</translation>
 <translation id="4665114317261903604">Aktivizo/çaktivizo modalitetin "Mos shqetëso". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Shkyç pajisjen me kodin e prindit</translation>
+<translation id="4702647871202761252">Ekrani i privatësisë është joaktiv</translation>
 <translation id="4710243778082831592">Cilësimet e redaktorit IME</translation>
 <translation id="4731797938093519117">Qasja e prindit</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -428,6 +431,7 @@
 <translation id="6559976592393364813">Pyet administratorin</translation>
 <translation id="6585808820553845416">Sesioni përfundon për <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />, menaxhuar nga administratori yt</translation>
+<translation id="6614169507485700968">Ekrani i privatësisë është aktiv</translation>
 <translation id="6627638273713273709">Kërko+Shift+K</translation>
 <translation id="6637729079642709226">Ndrysho kohën</translation>
 <translation id="6650933572246256093">Pajisja me Bluetooth "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Fut çelësin e kalimit në atë pajisje: <ph name="PASSKEY" /></translation>
@@ -442,6 +446,7 @@
 <translation id="6715542151869432661">Nuk u gjet asnjë pajisje celulare.</translation>
 <translation id="6723839937902243910">Energjia</translation>
 <translation id="6727969043791803658">E lidhur, bateria <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">E zbatuar nga administratori yt</translation>
 <translation id="6751826523481687655">Gjurmimi i cilësisë së funksionimit është aktivizuar</translation>
 <translation id="6752912906630585008">Tavolina e punës <ph name="REMOVED_DESK" /> u hoq dhe u shkri me tavolinën e punës <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Po furnizon me energji pajisjet e lidhura USB-C</translation>
@@ -529,6 +534,7 @@
 <translation id="8000066093800657092">Nuk ka rrjet</translation>
 <translation id="8029629653277878342">Kërkohet kodi PIN ose fjalëkalimi për më shumë siguri</translation>
 <translation id="8030169304546394654">I shkëputur</translation>
+<translation id="8042024183333293953">Provo navigimin me gjeste</translation>
 <translation id="8048123526339889627">Cilësimet e Bluetooth-it</translation>
 <translation id="8054466585765276473">Po llogarit kohën e baterisë.</translation>
 <translation id="8061464966246066292">Kontrast i lartë</translation>

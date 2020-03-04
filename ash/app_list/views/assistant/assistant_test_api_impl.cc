@@ -91,6 +91,10 @@ views::View* AssistantTestApiImpl::keyboard_input_toggle() {
   return page_view()->GetViewByID(AssistantViewID::kKeyboardInputToggle);
 }
 
+views::View* AssistantTestApiImpl::opt_in_view() {
+  return page_view()->GetViewByID(AssistantViewID::kOptInView);
+}
+
 aura::Window* AssistantTestApiImpl::window() {
   return main_view()->GetWidget()->GetNativeWindow();
 }
@@ -116,6 +120,18 @@ void AssistantTestApiImpl::SetAssistantEnabled(bool value) {
 
 void AssistantTestApiImpl::SetTabletMode(bool enable) {
   TabletMode::Get()->SetEnabledForTest(enable);
+}
+
+void AssistantTestApiImpl::SetConsentStatus(
+    chromeos::assistant::prefs::ConsentStatus consent_status) {
+  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetInteger(
+      chromeos::assistant::prefs::kAssistantConsentStatus, consent_status);
+
+  // Ensure the value has taken effect.
+  ASSERT_EQ(GetAssistantState()->consent_status(), consent_status)
+      << "Changing this preference did not take effect immediately, which will "
+         "cause timing issues in this test. If this trace is seen we must add "
+         "a waiter here to wait for the new state to take effect.";
 }
 
 void AssistantTestApiImpl::SetPreferVoice(bool value) {

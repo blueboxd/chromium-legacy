@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1195447618553298278">Lỗi chưa biết.</translation>
+<translation id="1468664791493211953">Ưu đãi</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> quản lý thiết bị này và có thể giám sát hoạt động của bạn.</translation>
 <translation id="150962533380566081">PUK không hợp lệ.</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
@@ -42,6 +43,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
+<translation id="8208861521865154048">Đặc quyền</translation>
 <translation id="8747900814994928677">Xác nhận thay đổi</translation>
 <translation id="910415269708673980">Làm mới phiếu cho <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>

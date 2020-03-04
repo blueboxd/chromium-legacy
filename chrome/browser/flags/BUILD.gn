@@ -17,6 +17,7 @@ android_library("java") {
     "//base:jni_java",
     "//chrome/browser/preferences:java",
   ]
+  srcjar_deps = [ ":chrome_android_java_switches_srcjar" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -24,6 +25,11 @@ generate_jni("jni_headers") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   ]
+}
+
+java_cpp_strings("chrome_android_java_switches_srcjar") {
+  sources = [ "//chrome/common/chrome_switches.cc" ]
+  template = "android/java_templates/ChromeSwitches.java.tmpl"
 }
 
 java_library("flags_junit_tests") {

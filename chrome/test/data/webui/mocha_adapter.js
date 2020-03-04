@@ -77,6 +77,14 @@ window.runMochaTest = function(suiteName, testName) {
   mocha.grep(new RegExp('^' + suiteName + ' ' + escapedTestName + '$')).run();
 };
 
+/**
+ * Helper function provided to make running a single Mocha suite more robust.
+ * @param {string} suiteName
+ */
+window.runMochaSuite = function(suiteName) {
+  mocha.grep(new RegExp('^' + suiteName + ' ')).run();
+};
+
 // Configure mocha.
 mocha.setup({
   // Use TDD interface instead of BDD.

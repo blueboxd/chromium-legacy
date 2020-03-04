@@ -104,6 +104,8 @@ test("device_unittests") {
     "fido/u2f_command_constructor_unittest.cc",
     "fido/u2f_register_operation_unittest.cc",
     "fido/u2f_sign_operation_unittest.cc",
+    "fido/virtual_ctap2_device_unittest.cc",
+    "fido/virtual_u2f_device_unittest.cc",
     "fido/win/type_conversions_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/dualshock4_controller_unittest.cc",

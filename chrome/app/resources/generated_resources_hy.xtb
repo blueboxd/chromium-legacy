@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">Միացված է – անհատականացված կարգավորումներ</translation>
 <translation id="1489664337021920575">Ընտրեք մեկ այլ տարբերակ</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />-ի սպասում…</translation>
+<translation id="1494438840282430403">Ջնջել նաև այցելությունների պատմությունը (<ph name="URL" />), ինչի արդյունքում հնարավոր է դուրս գրվեք Google հաշվից</translation>
 <translation id="1495486559005647033">Եվս <ph name="NUM_PRINTERS" /> մատչելի սարք:</translation>
 <translation id="1495677929897281669">Վերադառնալ ներդիր</translation>
 <translation id="1499271269825557605">Եթե ընդլայնումը ձեզ անծանոթ է, կամ եթե ձեր դիտարկիչը սխալներով է աշխատում, կարող եք անջատել կամ կարգավորել ընդլայնումներն այստեղ։</translation>
@@ -1179,7 +1180,9 @@
 <translation id="2586672484245266891">Մուտքագրեք ավելի կարճ URL</translation>
 <translation id="2587922766792651800">Ժամանակը սպառվել է</translation>
 <translation id="2588636910004461974">Սարքեր <ph name="VENDOR_NAME" /> մատակարարից</translation>
+<translation id="2593594315333286814">Հատուկ գործառույթների կարգավորումներ՝ նավարկման համար</translation>
 <translation id="2594999711683503743">Որոնեք Google-ում կամ մուտքագրեք հասցեն</translation>
+<translation id="2602501489742255173">Սկսելու համար մատը սահեցրեք վերև</translation>
 <translation id="2603115962224169880">Մաքրեք համակարգիչը</translation>
 <translation id="2603463522847370204">Բացել &amp;ինկոգնիտո պատուհանում</translation>
 <translation id="2604255671529671813">Ցանցի միացման սխալ</translation>
@@ -1341,6 +1344,7 @@
 <translation id="2804043232879091219">Չհաջողվեց բացել այլընտրանքային դիտարկիչը</translation>
 <translation id="2804667941345577550">Դուք դուրս կգրվեք հաշվից այս կայքում և բաց ներդիրներում</translation>
 <translation id="2804680522274557040">Տեսախցիկն անջատած է</translation>
+<translation id="2805539617243680210">Պատրաստ է</translation>
 <translation id="2805646850212350655">Microsoft-ի գաղտնագրված ֆայլային համակարգ</translation>
 <translation id="2805756323405976993">Հավելվածներ</translation>
 <translation id="2805770823691782631">Լրացուցիչ տեղեկություններ</translation>
@@ -1424,6 +1428,7 @@
 <translation id="2903457445916429186">Բացեք ընտրված տարրերը</translation>
 <translation id="2903882649406874750">Միշտ արգելել <ph name="HOST" />-ին օգտագործել տվիչները</translation>
 <translation id="2904456025988372123">Հարցնել, երբ կայքն ուզում է առաջին ֆայլից հետո լրացուցիչ ֆայլեր ներբեռնել</translation>
+<translation id="2905990582795979495"><ph name="DEVICE_TYPE" /> սարքը պատրաստ է օգտագործման։ Ստացեք <ph name="DEVICE_TYPE" />-ի հետ կապված հուշումներ և Google-ի արտադրանքների վերաբերյալ նորություններ, ինչպես նաև հայտնեք կարծիքներ։ Դուք ցանկացած պահի կարող եք չեղարկել բաժանորդագրությունը։</translation>
 <translation id="2907619724991574506">Մեկնարկի URL-հասցեներ</translation>
 <translation id="2907798539022650680">Չհաջողվեց միանալ «<ph name="NAME" />»-ին՝ <ph name="DETAILS" />
     Սերվերի հաղորդագրությունը՝ <ph name="SERVER_MSG" /></translation>
@@ -1697,6 +1702,7 @@
 <translation id="3308116878371095290">Կանխվել է այս էջի կողմից քուքիները պահելու փորձը:</translation>
 <translation id="3308134619352333507">Թաքցնել կոճակը</translation>
 <translation id="3308852433423051161">Google Օգնականի բեռնում...</translation>
+<translation id="3311445899360743395">Այս հավելվածի հետ առնչվող տվյալները կարող են հեռացվել այս սարքից:</translation>
 <translation id="3312424061798279731">Միացված լեզուները</translation>
 <translation id="3313622045786997898">Վկայագրի ստորագրության արժեքը</translation>
 <translation id="3315158641124845231">Hide <ph name="PRODUCT_NAME" /></translation>
@@ -1883,7 +1889,6 @@
 <translation id="3586806079541226322">Չհաջողվեց բացել ֆայլը</translation>
 <translation id="3586931643579894722">Թաքցնել մանրամասները</translation>
 <translation id="3587482841069643663">Բոլորը</translation>
-<translation id="358796204584394954">Զուգավորելու համար մուտքագրեք այս կոդը «<ph name="DEVICE_NAME" />»-ում`</translation>
 <translation id="3589766037099229847">Վտանգավոր բովանդակությունն արգելափակված է</translation>
 <translation id="3590194807845837023">Ապակողպել պրոֆիլը և վերագործարկել</translation>
 <translation id="3590295622232282437">Մուտք կառավարվող աշխատաշրջան</translation>
@@ -1957,6 +1962,7 @@
 <translation id="3670229581627177274">Միացնել Bluetooth-ը</translation>
 <translation id="3672681487849735243">Հայտնաբերվել է գործարանային սխալ</translation>
 <translation id="367645871420407123">մի լրացրեք, եթե ուզում եք կայել արմատային գաղտնաբառը կանխադրված փորձնական պատկերի արժեքի</translation>
+<translation id="3677106374019847299">Նշեք հատուկ մատակարարին</translation>
 <translation id="3677657024345889897">Ամենացածր</translation>
 <translation id="3677911431265050325">Բջջային տարբերակ</translation>
 <translation id="3678156199662914018">Ընդլայնում` <ph name="EXTENSION_NAME" /></translation>
@@ -2048,6 +2054,7 @@
 <translation id="3780211714699334884">Քանի դեռ այս ներդիրը բացված է, <ph name="ORIGIN" /> կայքը կարող է փոփոխել <ph name="FOLDERNAME" /> պանակի ֆայլերը։</translation>
 <translation id="3780827508782506612">Այս էջը թարգմանվել է</translation>
 <translation id="378312418865624974">Դիտել այս համակարգչի եզակի նույնացուցիչը</translation>
+<translation id="3784372983762739446">Bluetooth-ով սարքեր</translation>
 <translation id="3784472333786002075">Քուքիները ֆայլեր են, որոնք ստեղծվում են կայքերի կողմից։ Քուքիների երկու տեսակ կա. առաջին կողմի քուքիները ստեղծվում են ձեր այցելած կայքի կողմից։ Կայքը ցուցադրվում է հասցեագոտում։ Երրորդ կողմի քուքիները ստեղծվում են այլ կայքերի կողմից։ Այս կայքերն ունեն որոշակի բովանդակություն, օր․՝ գովազդ կամ պատկերներ, որոնք դուք տեսնում եք ձեր այցելած կայքում։</translation>
 <translation id="3785308913036335955">Ցուցադրել հավելվածների դյուրանցումը</translation>
 <translation id="3785727820640310185">Այս կայքի պահված գաղտնաբառերը</translation>
@@ -2077,6 +2084,7 @@
 <translation id="3816118180265633665">Chrome-ի գույներ</translation>
 <translation id="3817524650114746564">Ձեր համակարգչում բացեք միջնորդ սերվերի կարգավորումները</translation>
 <translation id="3817579325494460411">Չի տրամադրվել</translation>
+<translation id="381892968844315516">Plugin VM-ը թույլատրված չէ այս սարքում: Դիմեք կազմակերպության սարքի ադմինիստրատորին։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="3819257035322786455">Պահուստավորում</translation>
 <translation id="3819261658055281761">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API-ի մուտքի թոքենը:</translation>
 <translation id="3819800052061700452">&amp;Լիաէկրան</translation>
@@ -2459,6 +2467,7 @@
 <translation id="4378154925671717803">Հեռախոս</translation>
 <translation id="4378551569595875038">Միացում…</translation>
 <translation id="4378556263712303865">Սարքի հայտ</translation>
+<translation id="4379281552162875326">Ապատեղադրե՞լ <ph name="APP_NAME" /> հավելվածը</translation>
 <translation id="4380648069038809855">Մուտք լիաէկրան ռեժիմ</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> ու ևս 1 հաշիվ}one{<ph name="EMAIL" /> ու ևս <ph name="EXTRA_ACCOUNTS" /> հաշիվ}other{<ph name="EMAIL" /> ու ևս <ph name="EXTRA_ACCOUNTS" /> հաշիվ}}</translation>
 <translation id="4384312707950789900">Դարձնել նախընտրելի</translation>
@@ -2774,7 +2783,6 @@
 <translation id="4850669014075537160">Ոլորում</translation>
 <translation id="4850886885716139402">Տեսք</translation>
 <translation id="4853020600495124913">Բացել &amp;նոր պատուհանում</translation>
-<translation id="4854262617951518520">Հարցնել, երբ որևէ կայք ուզում է հետագծել տեսախցիկի դիրքը և կազմել սենյակի հատակագիծը (խորհուրդ է տրվում)</translation>
 <translation id="485480310608090163">Այլ կարգավորումներ և թույլտվություններ</translation>
 <translation id="4856478137399998590">Բջջային ցանցերում տվյալների փոխանցման ծառայությունն ակտիվացված է և պատրաստ օգտագործման</translation>
 <translation id="4856855265648545577">Ցուցադրել «Հետ», «Համատեսք» և «Գործարկել» կոճակները պլանշետի ռեժիմի դարակում։ Ակտիվացած է, երբ ChromeVox-ը (ձայնային ուղեկցումը) կամ Switch Access-ը միացված է։</translation>
@@ -3328,6 +3336,7 @@
 <translation id="5618075537869101857">Չհաջողվեց գործարկել kiosk հավելվածը:</translation>
 <translation id="5618333180342767515">(սա կարող է մի քանի րոպե տևել)</translation>
 <translation id="56197088284879152">Կապուղին զբաղեցված է հետևյալ հեռակա սարքի կողմից՝ «<ph name="DEVICE_NAME" />»:</translation>
+<translation id="5620549857835247159">Ցուցադրել «Հետ», «Համատեսք» և «Գործարկել» կոճակները պլանշետի ռեժիմի դարակում։</translation>
 <translation id="5620568081365989559">Մշակողի գործիքները պահանջում են ամբողջական մուտք <ph name="FOLDER_PATH" /> գրացուցակ: Համոզվեք, որ նրանում գաղտնի տվյալներ չկան:</translation>
 <translation id="5620612546311710611">օգտագործման վիճակագրություն</translation>
 <translation id="5620655347161642930">Գաղտնաբառերի արտահանում</translation>
@@ -3859,6 +3868,7 @@
 <translation id="6349101878882523185">Տեղադրել <ph name="APP_NAME" /> հավելվածը</translation>
 <translation id="6349170655202535379">Համաժամացումը չի աշխատում։ Դուրս եկեք հաշվից ու նորից մուտք գործեք։</translation>
 <translation id="6351063337294363751">Ձեր այցելությունների պատմությունը կարող եք ջնջել այս ընտրացանկից</translation>
+<translation id="6352223293513723497">Սարքի հիշողությունը սպառվում է։ Տարածք ազատեք՝ Plugin VM-ն օգտագործելու համար։</translation>
 <translation id="6352773953037195952">Ամենաբարձր</translation>
 <translation id="6354918092619878358">SECG օվալաձև կոր secp256r1 (հայտնի է նաև որպես ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Սարքը մի՛ անջատեք</translation>
@@ -4137,12 +4147,14 @@
 <translation id="6758056191028427665">Կիսվեք մեզ հետ ձեր տպավորություններով:</translation>
 <translation id="6759193508432371551">Գործարանային կարգավորումների վերականգնում</translation>
 <translation id="6762833852331690540">Միացված է</translation>
+<translation id="6764693078871405569">Ջնջել նաև այցելությունների պատմությունը (<ph name="URL" />), ինչի արդյունքում հնարավոր է դուրս գրվեք <ph name="DOMAIN" /> հաշվից</translation>
 <translation id="6767566652486411142">Ընտրել մեկ այլ լեզու...</translation>
 <translation id="6767639283522617719">Չհաջողվեց միանալ տիրույթին: Համոզվեք, որ ստորաբաժանման կարգավորումները ճիշտ են:</translation>
 <translation id="6769712124046837540">Տպիչի ավելացում…</translation>
 <translation id="6770664076092644100">Հաստատել NFC-ի միջոցով</translation>
 <translation id="6771503742377376720">Հավաստագրման կենտրոն է</translation>
 <translation id="6772339735733515807">Կառավարեք ձեր ընդլայնումները</translation>
+<translation id="6774271858705413900">Սխալ առաջացավ։ Սպասեք մի քանի րոպե և նորից գործարկեք Plugin VM-ը։</translation>
 <translation id="6774402201608588477">Դուք 1 վտանգավոր ընդլայնում նորից եք միացրել</translation>
 <translation id="6775163072363532304">Այստեղ կցուցադրվեն հասանելի սարքերը</translation>
 <translation id="6777817260680419853">Վերահասցեավորումն արգելափակված է</translation>
@@ -5117,7 +5129,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Պահուստավորված տվյալները տեղ չեն զբաղեցնում ձեր երեխայի Google Drive-ի հիշողությունում:<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Այս ծառայությունը կարող եք անջատել Կարգավորումներում:<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Թույլատրել վերջերս փակված կայքերին ավարտել տվյալների ուղարկումն ու ստացումը</translation>
-<translation id="8075388906473569293">Հարցնել, երբ որևէ կայք ուզում է հետագծել տեսախցիկի դիրքը և կազմել սենյակի հատակագիծը</translation>
 <translation id="8076492880354921740">Ներդիրներ</translation>
 <translation id="8076835018653442223">Ադմինիստրատորն արգելափակել է ձեր սարքի տեղային ֆայլերի օգտագործումը</translation>
 <translation id="808089508890593134">Google</translation>
@@ -5399,7 +5410,6 @@
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> փլագինն աշխատեցնելու համար հարկավոր է ձեր թույլտվությունը</translation>
 <translation id="8466417995783206254">Այս ներդիրում նվագարկվում է տեսանյութ «նկար նկարի մեջ» ռեժիմում։</translation>
 <translation id="8467326454809944210">Ընտրել մեկ այլ լեզու</translation>
-<translation id="8468750959626135884">Ապակողպեք ձեր <ph name="DEVICE_TYPE" /> սարքը Android հեռախոսի օգնությամբ։</translation>
 <translation id="8470214316007448308">Այլ մարդիկ</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> կայքի պահված գաղտնաբառերը</translation>
 <translation id="8472623782143987204">պահանջվում է սարքակազմ</translation>
@@ -5444,6 +5454,7 @@
 <translation id="8538358978858059843">Միացնե՞լ հեռարձակումը ամպային ծառայություններ</translation>
 <translation id="8539727552378197395">Ոչ (HttpOnly)</translation>
 <translation id="8539766201049804895">Նորացնել</translation>
+<translation id="8540136935098276800">Մուտքագրեք ճիշտ ձևաչափի URL</translation>
 <translation id="8540608333167683902">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մանրամասներ</translation>
 <translation id="8541462173655894684">Տպման սերվերում որևէ տպիչ չի գտնվել</translation>
 <translation id="8542618328173222274">Հարցնել, երբ որևէ կայք ուզում է օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները</translation>
@@ -5460,6 +5471,7 @@
 <translation id="8551388862522347954">Լիցենզիաներ</translation>
 <translation id="8553342806078037065">Կառավարել այլ օգտատերերի</translation>
 <translation id="8554899698005018844">Լեզու նշված չէ</translation>
+<translation id="8556135141412663091">Plugin VM-ն օգտագործելու համար թարմացրեք ձեր սարքը։</translation>
 <translation id="8557022314818157177">Հպեք անվտանգության բանալուն և պահեք, մինչև ձեր մատնահետքն ավելացվի:</translation>
 <translation id="855773602626431402">Կասեցվել է պաշտպանված միջավայրից դուրս փլագինի գործարկումն այս էջի վրա:</translation>
 <translation id="8557930019681227453">Մանիֆեստ</translation>
@@ -5711,6 +5723,7 @@
 <translation id="8871696467337989339">Դուք օգտագործում եք հրամանատողի չաջակցվող դրոշ՝ <ph name="BAD_FLAG" />: Կայունությունն ու անվտանգությունը կխախտվեն:</translation>
 <translation id="8871974300055371298">Բովանդակության կարգավորումներ</translation>
 <translation id="8872155268274985541">Գտնվել է Kiosk հավելվածի արտաքին թարմացման մանիֆեստի սխալ ֆայլ: Չհաջողվեց թարմացնել Kiosk հավելվածը: Հեռացրեք USB հիշողությունը:</translation>
+<translation id="8872187374998143710">Վերագործարկեք սարքը՝ Plugin VM-ն օգտագործելու համար։</translation>
 <translation id="8872777911145321141">Հարցնել, երբ որևէ կայք ուզում է օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="8874184842967597500">Կապ չկա</translation>
 <translation id="8876307312329369159">Այս կարգավորումը հնարավոր չէ փոխել ցուցադրական աշխատաշրջանում:</translation>
@@ -5900,7 +5913,6 @@
 <translation id="9128870381267983090">Կապակցեք ցանցին</translation>
 <translation id="9130015405878219958">Սխալ ռեժիմ է նշված:</translation>
 <translation id="9131487537093447019">Ուղարկել և ստանալ հաղորդագրություններ Bluetooth սարքերից:</translation>
-<translation id="9133485532850464138">Արգելել կայքերին հետագծել տեսախցիկի դիրքը և կազմել սենյակի հատակագիծը</translation>
 <translation id="9137013805542155359">Ցույց տալ բնօրինակը</translation>
 <translation id="9137157311132182254">Նախընտրած որոնիչ</translation>
 <translation id="9137248913990643158">Մուտք գործեք Chrome՝ նախքան հավելվածն օգտագործելը։</translation>

@@ -86,4 +86,54 @@ void MediaHistoryKeyedService::OnURLsDeleted(
   // should remove data by URL.
 }
 
+void MediaHistoryKeyedService::SavePlayback(
+    const content::MediaPlayerWatchTime& watch_time) {
+  media_history_store_->SavePlayback(watch_time);
+}
+
+void MediaHistoryKeyedService::GetMediaHistoryStats(
+    base::OnceCallback<void(mojom::MediaHistoryStatsPtr)> callback) {
+  media_history_store_->GetMediaHistoryStats(std::move(callback));
+}
+
+void MediaHistoryKeyedService::GetOriginRowsForDebug(
+    base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
+        callback) {
+  media_history_store_->GetOriginRowsForDebug(std::move(callback));
+}
+
+void MediaHistoryKeyedService::GetMediaHistoryPlaybackRowsForDebug(
+    base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
+        callback) {
+  media_history_store_->GetMediaHistoryPlaybackRowsForDebug(
+      std::move(callback));
+}
+
+void MediaHistoryKeyedService::GetPlaybackSessions(
+    base::Optional<unsigned int> num_sessions,
+    base::Optional<GetPlaybackSessionsFilter> filter,
+    base::OnceCallback<
+        void(std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback) {
+  media_history_store_->GetPlaybackSessions(num_sessions, filter,
+                                            std::move(callback));
+}
+
+void MediaHistoryKeyedService::SavePlaybackSession(
+    const GURL& url,
+    const media_session::MediaMetadata& metadata,
+    const base::Optional<media_session::MediaPosition>& position,
+    const std::vector<media_session::MediaImage>& artwork) {
+  media_history_store_->SavePlaybackSession(url, metadata, position, artwork);
+}
+
+void MediaHistoryKeyedService::GetURLsInTableForTest(
+    const std::string& table,
+    base::OnceCallback<void(std::set<GURL>)> callback) {
+  media_history_store_->GetURLsInTableForTest(table, std::move(callback));
+}
+
+void MediaHistoryKeyedService::SaveMediaFeed(const GURL& url) {
+  media_history_store_->SaveMediaFeed(url);
+}
+
 }  // namespace media_history

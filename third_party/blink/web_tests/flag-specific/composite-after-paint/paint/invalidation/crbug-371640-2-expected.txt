@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-          "rect": [348, 88, 100, 100],
-          "reason": "chunk disappeared"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV id='keep' class='item'",
           "rect": [348, 88, 100, 100],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow DIV id='to_remove' class='item'",
+          "rect": [348, 88, 100, 100],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutNGBlockFlow DIV id='keep' class='item'",

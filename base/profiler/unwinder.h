@@ -37,9 +37,9 @@ class Unwinder {
  public:
   virtual ~Unwinder() = default;
 
-  // Invoked to allow the unwinder to add any non-native modules it recognizes
-  // to the ModuleCache.
-  virtual void AddNonNativeModules(ModuleCache* module_cache) {}
+  // Invoked to allow the unwinder to add any modules it recognizes to the
+  // ModuleCache.
+  virtual void AddInitialModules(ModuleCache* module_cache) {}
 
   // Returns true if the unwinder recognizes the code referenced by
   // |current_frame| as code from which it should be able to unwind. When

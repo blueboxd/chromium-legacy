@@ -63,14 +63,6 @@ void BreadcrumbManagerTabHelper::LogEvent(const std::string& event) {
       ->AddEvent(event_log);
 }
 
-void BreadcrumbManagerTabHelper::WasShown(web::WebState* web_state) {
-  LogEvent("WasShown");
-}
-
-void BreadcrumbManagerTabHelper::WasHidden(web::WebState* web_state) {
-  LogEvent("WasHidden");
-}
-
 void BreadcrumbManagerTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
@@ -174,7 +166,6 @@ void BreadcrumbManagerTabHelper::RenderProcessGone(web::WebState* web_state) {
 }
 
 void BreadcrumbManagerTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  LogEvent("WebStateDestroyed");
   web_state->RemoveObserver(this);
 }
 

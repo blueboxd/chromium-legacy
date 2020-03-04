@@ -3329,7 +3329,7 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 3,
         },
       },
       'angle_deqp_gles31_tests': {
@@ -3339,7 +3339,7 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 6,
+          'shards': 4,
         },
       },
       'angle_deqp_gles3_tests': {
@@ -3349,7 +3349,7 @@
           '--test-launcher-retry-limit=0',
         ],
         'swarming': {
-          'shards': 29,
+          'shards': 9,
         },
       },
       'angle_deqp_khr_gles2_tests': {
@@ -3368,7 +3368,7 @@
       },
       'angle_end2end_tests': {
         'args': [
-          '--gtest_filter=\*Vulkan_SwiftShader',
+          '--gtest_filter=*Vulkan_SwiftShader',
           '--test-launcher-batch-limit=512',
           '--test-launcher-retry-limit=0',
         ],
@@ -4440,6 +4440,7 @@
     ],
 
     'mojo_linux_gtests': [
+      'storage_service_gtests',
     ],
 
     'mojo_windows_gtests': [

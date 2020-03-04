@@ -94,9 +94,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
     ~SwapClosure();
 
     base::OnceClosure closure;
-#ifndef NDEBUG
     ShmSeg shmseg;
-#endif
   };
 
   // XEventDispatcher:

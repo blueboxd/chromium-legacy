@@ -28,14 +28,14 @@
       "device type": "iPhone X",
       "os": "12.4",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "13.3",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     }
   ]
 }

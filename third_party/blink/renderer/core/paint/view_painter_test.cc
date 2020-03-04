@@ -181,8 +181,6 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
     <div id='child'></div>
   )HTML");
 
-  auto& html =
-      To<LayoutBlock>(*GetDocument().documentElement()->GetLayoutObject());
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The scroll hit test should be before the scrolled contents to ensure the
@@ -208,14 +206,10 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
               PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
               GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
               scroll_hit_test_data),
-          IsPaintChunk(1, 2,
+          IsPaintChunk(1, 3,
                        PaintChunk::Id(ViewScrollingBackgroundClient(),
                                       kDocumentBackgroundType),
-                       view_contents_properties),
-          IsPaintChunk(
-              2, 3,
-              PaintChunk::Id(*html.Layer(), DisplayItem::kLayerChunkWhole),
-              html.FirstFragment().ContentsProperties())));
+                       view_contents_properties)));
 
   // The scroll hit test should not be scrolled and should not be clipped.
   const auto& scroll_hit_test_chunk = RootPaintController().PaintChunks()[0];
@@ -227,7 +221,7 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
             scroll_hit_test_clip.ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
-  const auto& contents_chunk = RootPaintController().PaintChunks()[2];
+  const auto& contents_chunk = RootPaintController().PaintChunks()[1];
   const auto& contents_transform = contents_chunk.properties.Transform();
   const auto* contents_scroll = contents_transform.ScrollNode();
   EXPECT_EQ(IntSize(800, 2000), contents_scroll->ContentsSize());
@@ -277,20 +271,14 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
   const auto& scrolling_client = ViewScrollingBackgroundClient();
   auto scrolling_properties =
       GetLayoutView().FirstFragment().ContentsProperties();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    HitTestData view_hit_test_data;
-    view_hit_test_data.touch_action_rects.push_back(
-        LayoutRect(0, 0, 800, 3000));
-    auto* html =
-        To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
-    HitTestData html_hit_test_data;
-    html_hit_test_data.touch_action_rects.emplace_back(
-        LayoutRect(0, 0, 800, 3000));
-    html_hit_test_data.touch_action_rects.emplace_back(
-        LayoutRect(0, 0, 800, 3000));
+  HitTestData view_hit_test_data;
+  view_hit_test_data.touch_action_rects.push_back(LayoutRect(0, 0, 800, 3000));
+  view_hit_test_data.touch_action_rects.push_back(LayoutRect(0, 0, 800, 3000));
+  view_hit_test_data.touch_action_rects.push_back(LayoutRect(0, 0, 800, 3000));
 
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     HitTestData non_scrolling_hit_test_data;
-    non_scrolling_hit_test_data.touch_action_rects.emplace_back(
+    non_scrolling_hit_test_data.touch_action_rects.push_back(
         LayoutRect(0, 0, 800, 600));
     HitTestData scroll_hit_test_data;
     scroll_hit_test_data.SetScrollHitTest(&scrolling_properties.Transform(),
@@ -301,7 +289,7 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
             IsPaintChunk(
                 0, 1,
                 PaintChunk::Id(*GetLayoutView().Layer(),
-                               DisplayItem::kLayerChunkBackground),
+                               DisplayItem::kLayerChunk),
                 GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
                 non_scrolling_hit_test_data),
             IsPaintChunk(
@@ -310,21 +298,9 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
                 GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
                 scroll_hit_test_data),
             IsPaintChunk(
-                2, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
-                scrolling_properties, view_hit_test_data),
-            IsPaintChunk(
-                4, 6,
-                PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunkWhole),
-                scrolling_properties, html_hit_test_data)));
+                2, 6, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+                scrolling_properties, view_hit_test_data)));
   } else {
-    HitTestData view_hit_test_data;
-    view_hit_test_data.touch_action_rects.push_back(
-        LayoutRect(0, 0, 800, 3000));
-    view_hit_test_data.touch_action_rects.push_back(
-        LayoutRect(0, 0, 800, 3000));
-    view_hit_test_data.touch_action_rects.push_back(
-        LayoutRect(0, 0, 800, 3000));
-
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(IsPaintChunk(
@@ -356,15 +332,14 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
   auto non_scrolling_properties =
       view->FirstFragment().LocalBorderBoxProperties();
   HitTestData view_hit_test_data;
-  view_hit_test_data.touch_action_rects.emplace_back(
-      LayoutRect(0, 0, 800, 600));
+  view_hit_test_data.touch_action_rects.push_back(LayoutRect(0, 0, 800, 600));
   auto* html =
       To<LayoutBlock>(GetDocument().documentElement()->GetLayoutObject());
   auto scrolling_properties = view->FirstFragment().ContentsProperties();
   HitTestData scrolling_hit_test_data;
-  scrolling_hit_test_data.touch_action_rects.emplace_back(
+  scrolling_hit_test_data.touch_action_rects.push_back(
       LayoutRect(0, 0, 800, 3000));
-  scrolling_hit_test_data.touch_action_rects.emplace_back(
+  scrolling_hit_test_data.touch_action_rects.push_back(
       LayoutRect(0, 0, 800, 3000));
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     HitTestData scroll_hit_test_data;
@@ -373,16 +348,14 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
-            IsPaintChunk(0, 2,
-                         PaintChunk::Id(*view->Layer(),
-                                        DisplayItem::kLayerChunkBackground),
-                         non_scrolling_properties, view_hit_test_data),
+            IsPaintChunk(
+                0, 2, PaintChunk::Id(*view->Layer(), DisplayItem::kLayerChunk),
+                non_scrolling_properties, view_hit_test_data),
             IsPaintChunk(2, 3,
                          PaintChunk::Id(*view, DisplayItem::kScrollHitTest),
                          non_scrolling_properties, scroll_hit_test_data),
             IsPaintChunk(
-                3, 5,
-                PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunkWhole),
+                3, 5, PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunk),
                 scrolling_properties, scrolling_hit_test_data)));
   } else {
     auto& non_scrolling_paint_controller =
@@ -390,14 +363,12 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
     EXPECT_THAT(
         non_scrolling_paint_controller.PaintChunks(),
         ElementsAre(IsPaintChunk(
-            0, 2,
-            PaintChunk::Id(*view->Layer(), kNonScrollingBackgroundChunkType),
+            0, 2, PaintChunk::Id(*view->Layer(), DisplayItem::kLayerChunk),
             non_scrolling_properties, view_hit_test_data)));
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(IsPaintChunk(
-            0, 2,
-            PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
+            0, 2, PaintChunk::Id(*html->Layer(), DisplayItem::kLayerChunk),
             scrolling_properties, scrolling_hit_test_data)));
   }
 }

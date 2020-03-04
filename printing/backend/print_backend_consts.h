@@ -17,4 +17,12 @@ PRINTING_EXPORT extern const char kLocationTagName[];
 PRINTING_EXPORT extern const char kValueFalse[];
 PRINTING_EXPORT extern const char kValueTrue[];
 
+// CUPS destination option names.
+PRINTING_EXPORT extern const char kCUPSOptDeviceUri[];
+PRINTING_EXPORT extern const char kCUPSOptPrinterInfo[];
+PRINTING_EXPORT extern const char kCUPSOptPrinterLocation[];
+PRINTING_EXPORT extern const char kCUPSOptPrinterMakeAndModel[];
+PRINTING_EXPORT extern const char kCUPSOptPrinterState[];
+PRINTING_EXPORT extern const char kCUPSOptPrinterType[];
+
 #endif  // PRINTING_BACKEND_PRINT_BACKEND_CONSTS_H_

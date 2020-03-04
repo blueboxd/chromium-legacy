@@ -132,3 +132,8 @@ def PrettifyXML(original_xml):
   """
   config = UKM_XML_TYPE.Parse(original_xml)
   return UKM_XML_TYPE.PrettyPrint(config)
+
+
+def IsNotObsolete(node):
+  """Checks if the given node contains a child <obsolete> node."""
+  return _OBSOLETE_TYPE.tag not in node

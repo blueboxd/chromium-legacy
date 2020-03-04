@@ -1507,6 +1507,7 @@ void AccessibilityControllerImpl::UpdateSpokenFeedbackFromPref() {
     return;
 
   spoken_feedback_enabled_ = enabled;
+  message_center::MessageCenter::Get()->SetSpokenFeedbackEnabled(enabled);
 
   NotifyAccessibilityStatusChanged();
 

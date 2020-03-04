@@ -54,9 +54,9 @@ void AssistantSetupController::OnDeepLinkReceived(
 }
 
 void AssistantSetupController::OnOptInButtonPressed() {
+  using chromeos::assistant::prefs::ConsentStatus;
   if (AssistantState::Get()->consent_status().value_or(
-          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
-      chromeos::assistant::prefs::ConsentStatus::kUnauthorized) {
+          ConsentStatus::kUnknown) == ConsentStatus::kUnauthorized) {
     assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(
         kGSuiteAdministratorInstructionsUrl));
   } else {
@@ -69,20 +69,20 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
   if (!assistant_setup)
     return;
 
-  if (relaunch) {
-    assistant_setup->StartAssistantOptInFlow(
-        type, base::BindOnce(&AssistantSetupController::OnOptInFlowFinished,
-                             weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
+  assistant_controller_->ui_controller()->CloseUi(
+      chromeos::assistant::mojom::AssistantExitPoint::kSetup);
 
-  assistant_setup->StartAssistantOptInFlow(type, base::DoNothing());
+  assistant_setup->StartAssistantOptInFlow(
+      type, base::BindOnce(&AssistantSetupController::OnOptInFlowFinished,
+                           weak_ptr_factory_.GetWeakPtr(), relaunch));
 }
 
-void AssistantSetupController::OnOptInFlowFinished(bool completed) {
-  if (completed)
+void AssistantSetupController::OnOptInFlowFinished(bool relaunch,
+                                                   bool completed) {
+  if (relaunch && completed) {
     assistant_controller_->ui_controller()->ShowUi(
         chromeos::assistant::mojom::AssistantEntryPoint::kSetup);
+  }
 }
 
 }  // namespace ash

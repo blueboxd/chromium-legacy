@@ -635,20 +635,13 @@ aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
                    Shell::Get()->cursor_manager()->GetDisplay().id());
 }
 
-gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
-    const {
-  return is_touch_dragging_
-             ? screen_util::
-                   GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-                       item_->root_window())
-             : Shell::Get()->cursor_manager()->GetDisplay().work_area();
-}
-
 SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::PointF& location_in_screen) const {
   DCHECK(item_);
   DCHECK(should_allow_split_view_);
-  gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
+  gfx::Rect area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          GetRootWindowBeingDraggedIn());
 
   // If split view mode is active at the moment, and dragging an overview window
   // to snap it to a position that already has a snapped window in place, we

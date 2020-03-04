@@ -248,6 +248,17 @@ VirtualFidoDevice::RegistrationData* VirtualFidoDevice::FindRegistrationData(
   return &it->second;
 }
 
+bool VirtualFidoDevice::SimulatePress() {
+  if (!state_->simulate_press_callback)
+    return true;
+
+  auto weak_this = GetWeakPtr();
+  bool result = state_->simulate_press_callback.Run(this);
+  // |this| might have been destroyed at this point - accessing state from the
+  // object without checking weak_this is dangerous.
+  return weak_this && result;
+}
+
 void VirtualFidoDevice::TryWink(base::OnceClosure cb) {
   std::move(cb).Run();
 }

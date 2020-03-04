@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/ukm_demographic_metrics_provider.h"
@@ -164,7 +165,22 @@ void PurgeExtensionDataFromUnsentLogStore(
   }
 }
 
+// Enable the reporting of the user noised birth year gender by default in UKM
+// for the platforms that have browser testing.
+#if defined(OS_IOS)
+constexpr auto kReportUserNoisedUserBirthYearAndGenderDefaultState =
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#else
+constexpr auto kReportUserNoisedUserBirthYearAndGenderDefaultState =
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#endif
+
 }  // namespace
+
+// static
+const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
+    "UkmReportNoisedUserBirthYearAndGender",
+    kReportUserNoisedUserBirthYearAndGenderDefaultState};
 
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client,
@@ -402,8 +418,5 @@ void UkmService::SetInitializationCompleteCallbackForTesting(base::OnceClosure c
     initialization_complete_callback_ = std::move(callback);
   }
 }
-
-const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
-    "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ukm

@@ -366,11 +366,13 @@ VerdictCacheManager::VerdictCacheManager(
     history_service_observer_.Add(history_service);
 }
 
-VerdictCacheManager::~VerdictCacheManager() {
+void VerdictCacheManager::Shutdown() {
   CleanUpExpiredVerdicts();
   history_service_observer_.RemoveAll();
   weak_factory_.InvalidateWeakPtrs();
 }
+
+VerdictCacheManager::~VerdictCacheManager() {}
 
 void VerdictCacheManager::CachePhishGuardVerdict(
     LoginReputationClientRequest::TriggerType trigger_type,

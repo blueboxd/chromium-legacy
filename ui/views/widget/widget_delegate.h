@@ -132,13 +132,22 @@ class VIEWS_EXPORT WidgetDelegate {
   // Default is true.
   virtual bool ShouldRestoreWindowSize() const;
 
-  // Called when the window closes. The delegate MUST NOT delete itself during
-  // this call, since it can be called afterwards. See DeleteDelegate().
+  // Hooks for the end of the Widget/Window lifecycle. As of this writing, these
+  // callbacks happen like so:
+  //   1. Client code calls Widget::CloseWithReason()
+  //   2. WidgetDelegate::WindowWillClose() is called
+  //   3. NativeWidget teardown (maybe async) starts OR the operating system
+  //      abruptly closes the backing native window
+  //   4. WidgetDelegate::WindowClosing() is called
+  //   5. NativeWidget teardown completes, Widget teardown starts
+  //   6. WidgetDelegate::DeleteDelegate() is called
+  //   7. Widget teardown finishes, Widget is deleted
+  // At step 3, the "maybe async" is controlled by whether the close is done via
+  // Close() or CloseNow().
+  // Important note: for OS-initiated window closes, steps 1 and 2 don't happen
+  // - i.e, WindowWillClose() is never invoked.
+  virtual void WindowWillClose() {}
   virtual void WindowClosing() {}
-
-  // Called when the window is destroyed. No events must be sent or received
-  // after this point. The delegate can use this opportunity to delete itself at
-  // this time if necessary.
   virtual void DeleteDelegate() {}
 
   // Called when the user begins/ends to change the bounds of the window.

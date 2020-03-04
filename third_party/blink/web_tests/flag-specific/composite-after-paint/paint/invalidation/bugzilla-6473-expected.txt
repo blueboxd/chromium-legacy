@@ -9,32 +9,17 @@
         {
           "object": "LayoutNGBlockFlow (relative positioned) P",
           "rect": [8, 152, 784, 20],
-          "reason": "geometry"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) P",
           "rect": [8, 136, 784, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) P",
-          "rect": [8, 156, 784, 16],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) P",
-          "rect": [8, 136, 784, 16],
-          "reason": "incremental"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'SUCCESS'",
-          "rect": [8, 152, 71, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'SUCCESS'",
           "rect": [8, 136, 71, 19],
-          "reason": "geometry"
+          "reason": "appeared"
         }
       ]
     }

@@ -159,9 +159,8 @@ bool StreamTexture::HasTextureOwner() const {
   return !!texture_owner_;
 }
 
-gles2::Texture* StreamTexture::GetTexture() const {
-  DCHECK(texture_owner_);
-  return gles2::Texture::CheckedCast(texture_owner_->GetTextureBase());
+TextureBase* StreamTexture::GetTextureBase() const {
+  return texture_owner_->GetTextureBase();
 }
 
 void StreamTexture::NotifyOverlayPromotion(bool promotion,

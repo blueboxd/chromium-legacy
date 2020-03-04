@@ -18,7 +18,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -62,37 +61,7 @@ PasswordProtectionService* ServicesDelegate::GetPasswordProtectionService(
                                                       : nullptr;
 }
 
-void ServicesDelegate::CreateVerdictCacheManager(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  DCHECK(it == cache_manager_map_.end());
-  auto cache_manager = std::make_unique<VerdictCacheManager>(
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      HostContentSettingsMapFactory::GetForProfile(profile));
-  cache_manager_map_[profile] = std::move(cache_manager);
-}
-
-void ServicesDelegate::RemoveVerdictCacheManager(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  if (it != cache_manager_map_.end())
-    cache_manager_map_.erase(it);
-}
-
-VerdictCacheManager* ServicesDelegate::GetVerdictCacheManager(
-    Profile* profile) const {
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  return it != cache_manager_map_.end() ? it->second.get() : nullptr;
-}
-
 void ServicesDelegate::ShutdownServices() {
-  // Delete the VerdictCacheManager instances
-  cache_manager_map_.clear();
-
   // Delete the ChromePasswordProtectionService instances.
   password_protection_service_map_.clear();
 }

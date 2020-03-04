@@ -12,7 +12,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container' class='fixed blue'",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 208, 100, 100],
           "reason": "chunk appeared"
         }

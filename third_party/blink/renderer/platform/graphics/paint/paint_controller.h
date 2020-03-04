@@ -77,11 +77,19 @@ class PLATFORM_EXPORT PaintController {
   // the id of the paint chunk if needed.
   void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
                                          const PropertyTreeState&);
-
-  void ForceNewChunk(const DisplayItemClient&, DisplayItem::Type);
-
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return new_paint_chunks_.CurrentPaintChunkProperties();
+  }
+  // See PaintChunker for documentation of the following methods.
+  wtf_size_t NumNewChunks() const { return new_paint_chunks_.size(); }
+  void SetForceNewChunk(bool force) {
+    new_paint_chunks_.SetForceNewChunk(force);
+  }
+  bool WillForceNewChunk() const {
+    return new_paint_chunks_.WillForceNewChunk();
+  }
+  const IntRect& LastChunkBounds() const {
+    return new_paint_chunks_.LastChunk().bounds;
   }
 
   template <typename DisplayItemClass, typename... Args>

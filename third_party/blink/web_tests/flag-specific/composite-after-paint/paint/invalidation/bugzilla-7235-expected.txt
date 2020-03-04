@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='t'",
           "rect": [8, 176, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment '\u00A0'",

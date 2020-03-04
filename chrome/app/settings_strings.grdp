@@ -2903,91 +2903,9 @@
     <message name="IDS_SETTINGS_DEVICE_TITLE" desc="Name of the settings page which displays device and peripheral settings.">
       Device
     </message>
-    <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title of the keyboard settings subpage.">
-      Keyboard
-    </message>
     <!-- Touchpad -->
     <message name="IDS_SETTINGS_SCROLL_LABEL" desc="In Device Settings, the title above the radio buttons to choose the scrolling behavior.">
       Scrolling
-    </message>
-    <!-- Keyboard -->
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_SEARCH" desc="In Device Settings, the label and dropdown list item for the Search key.">
-      Search
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER" desc="In Device Settings, the label and dropdown list item for the Search key on keyboard layouts of newer Chromebooks.">
-      Launcher
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL" desc="In Device Settings, the label and dropdown list item for the Ctrl key.">
-      Ctrl
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT" desc="In Device Settings, the label and dropdown list item for the Alt key.">
-      Alt
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_CAPS_LOCK" desc="In Device Settings, the label and dropdown list item for the Caps Lock key.">
-      Caps Lock
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_DIAMOND" desc="In Device Settings, the label for the Diamond key.">
-      Diamond
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_ESCAPE" desc="In Device Settings, the dropdown list item for the Escape key.">
-      Escape
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE" desc="In Device Settings, the dropdown list item for the Backspace key.">
-      Backspace
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_ASSISTANT" desc="In Device Settings, the label and dropdown list item for the Assistant key.">
-      Assistant
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_DISABLED" desc="In Device Settings, the dropdown list item for a disabled key.">
-      Disabled
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_COMMAND" desc="In Device Settings, the dropdown list item for the external Command key on Apple keyboards.">
-      External Command
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_COMMAND" desc="In Device Settings, the dropdown list item for the external Command key on Apple keyboards when there's no internal keyboard on the device.">
-      Command
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_META" desc="In Device Settings, the dropdown list item for the external Meta key (Search key on ChromeOS keyboards, and Windows key on Windows keyboards).">
-      External Meta
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_KEY_META" desc="In Device Settings, the dropdown list item for the external Meta key (Search key on ChromeOS keyboards, and Windows key on Windows keyboards) when there's no internal keyboard on the device.">
-      Meta
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS" desc="In Device Settings, the checkbox label for interpreting the top-row keys as function keys instead.">
-      Treat top-row keys as function keys
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
-      Hold the Search key to switch the behavior of the top-row keys
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION" desc="In Device Settings, when device uses 2017 keyboard layout, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
-      Hold the Launcher key to switch the behavior of the top-row keys
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE" desc="The checkbox label for enabling keyboard auto-repeat.">
-      Enable auto-repeat
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY" desc="The label for the slider for the delay before auto-repeat begins. The delay is the amount of time a key must be held down before auto-repeating begins.">
-      Delay before repeat
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY_LONG" desc="The label for the beginning of the auto-repeat delay slider, representing a long delay.">
-      Long
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_DELAY_SHORT" desc="The label for the end of the auto-repeat delay slider, representing a short delay.">
-      Short
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE" desc="The label for the slider for the auto-repeat rate. The rate is how many times a key repeats per second once auto-repeating has begun.">
-      Repeat rate
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE_SLOW" desc="The label for the beginning of the auto-repeat rate slider, representing a slow repeat rate.">
-      Slow
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST" desc="The label for the end of the auto-repeat rate slider, representing a fast repeat rate.">
-      Fast
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER" desc="The link to open the keyboard shortut viewer.">
-      View keyboard shortcuts
-    </message>
-    <message name="IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT" desc="The link to navigate to the language and input method settings.">
-      Change language and input settings
     </message>
 
     <!-- Storage -->

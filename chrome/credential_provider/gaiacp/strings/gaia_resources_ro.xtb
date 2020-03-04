@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">A apărut o problemă la sincronizarea parolei contului de serviciu cu profilul Windows. Contactează administratorul.</translation>
 <translation id="2515346402363002066">Sesiunea a expirat. Conectează-te folosind contul de serviciu.</translation>
 <translation id="2844349213149998955">Pe acest dispozitiv nu este permisă conectarea folosind un cont personal. Conectează-te cu un cont de serviciu.</translation>
-<translation id="2954423647682729023">Conectează-te folosind contul de serviciu.</translation>
 <translation id="3217145568844727893">Dacă vei continua fără să introduci parola pentru Windows actuală, este posibil să pierzi definitiv date de pe acest dispozitiv.</translation>
 <translation id="3285576391135346912">Poți să te conectezi numai cu o adresă de e-mail care se termină cu: <ph name="EMAIL_DOMAINS" />. Încearcă din nou folosind un cont de serviciu.</translation>
 <translation id="3306357053520292004">Un utilizator de pe acest computer a fost deja adăugat cu acest cont. Conectați-vă cu un alt cont.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Administratorul nu îți permite să te conectezi folosind acest cont. Încearcă un alt cont.</translation>
 <translation id="8639729688781680518">Am uitat parola pentru Windows</translation>
 <translation id="866458870819756755">Nu s-a putut crea un utilizator.</translation>
-<translation id="8875753657315897487">Conectează-te folosind contul de serviciu</translation>
 <translation id="9055998212250844221">Cont de utilizator creat de Furnizorul de date de conectare Google pentru Windows</translation>
 </translationbundle>

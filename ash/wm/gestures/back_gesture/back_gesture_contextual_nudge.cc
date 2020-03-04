@@ -234,8 +234,8 @@ class BackGestureContextualNudge::ContextualNudgeView
         return;
 
       if (current_animation_times_ < (kSuggestionAnimationRepeatTimes - 1)) {
-        ScheduleBounceAnimation();
         current_animation_times_++;
+        ScheduleBounceAnimation();
       } else {
         nudge_view_->ScheduleStartPositionToOffScreenAnimation();
       }

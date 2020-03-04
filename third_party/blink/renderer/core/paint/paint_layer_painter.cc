@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_hint.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -462,57 +462,37 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         !is_painting_overlay_overflow_controls;
     bool is_video = IsA<LayoutVideo>(paint_layer_.GetLayoutObject());
 
-    base::Optional<ScopedPaintChunkProperties>
-        subsequence_forced_chunk_properties;
-    bool force_paint_chunks_for_phases =
-        should_create_subsequence &&
-        paint_layer_.HasSelfPaintingLayerDescendant();
-    if (force_paint_chunks_for_phases ||
-        (should_paint_content &&
-         RuntimeEnabledFeatures::CompositeAfterPaintEnabled())) {
-      // Prepare for forced paint chunks to ensure chunk id stability to avoid
-      // unnecessary full chunk raster invalidations on changed chunk ids.
-      subsequence_forced_chunk_properties.emplace(
-          context.GetPaintController(),
-          paint_layer_.GetLayoutObject()
-              .FirstFragment()
-              .LocalBorderBoxProperties(),
-          paint_layer_, DisplayItem::kUninitializedType);
-      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-          !force_paint_chunks_for_phases) {
-        // This is a heuristic to allow more fine-grained layerization and more
-        // efficient merging in PaintArtifactCompositor. It emulates
-        // layerization decisions from pre-CompositeAfterPaint. This is not
-        // strictly necessary for correct rendering but improves layerization
-        // performance.
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkWhole);
-      }
+    base::Optional<ScopedPaintChunkHint> paint_chunk_hint;
+    if (should_paint_content) {
+      paint_chunk_hint.emplace(context.GetPaintController(),
+                               paint_layer_.GetLayoutObject()
+                                   .FirstFragment()
+                                   .LocalBorderBoxProperties(),
+                               paint_layer_, DisplayItem::kLayerChunk);
     }
 
     if (should_paint_background) {
-      if (force_paint_chunks_for_phases) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkBackground);
-      }
       PaintBackgroundForFragments(layer_fragments, context, local_painting_info,
                                   paint_flags);
     }
 
     if (should_paint_neg_z_order_list) {
-      if (force_paint_chunks_for_phases) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkNegativeZOrderChildren);
-      }
       if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
                         paint_flags) == kMayBeClippedByCullRect)
         result = kMayBeClippedByCullRect;
     }
 
     if (should_paint_own_contents) {
+      base::Optional<ScopedPaintChunkHint> paint_chunk_hint_foreground;
+      if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
+        // Hint a foreground chunk if we have created any chunks, to give the
+        // paint chunk after the previous forced paint chunks a stable id.
+        paint_chunk_hint_foreground.emplace(context.GetPaintController(),
+                                            paint_layer_,
+                                            DisplayItem::kLayerChunkForeground);
+      }
       PaintForegroundForFragments(layer_fragments, context, local_painting_info,
-                                  selection_only, force_paint_chunks_for_phases,
-                                  paint_flags);
+                                  selection_only, paint_flags);
     }
 
     if (!is_video && should_paint_self_outline) {
@@ -521,11 +501,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
-      if (force_paint_chunks_for_phases) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_,
-            DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
-      }
       if (PaintChildren(kNormalFlowAndPositiveZOrderChildren, context,
                         painting_info, paint_flags) == kMayBeClippedByCullRect)
         result = kMayBeClippedByCullRect;
@@ -777,17 +752,12 @@ void PaintLayerPainter::PaintForegroundForFragments(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     bool selection_only,
-    bool force_paint_chunks_for_phases,
     PaintLayerFlags paint_flags) {
   if (selection_only) {
     PaintForegroundForFragmentsWithPhase(PaintPhase::kSelection,
                                          layer_fragments, context,
                                          local_painting_info, paint_flags);
   } else {
-    if (force_paint_chunks_for_phases) {
-      context.GetPaintController().ForceNewChunk(
-          paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
-    }
     PaintForegroundForFragmentsWithPhase(
         PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
         local_painting_info, paint_flags);
@@ -800,18 +770,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseFloat()) {
-      if (force_paint_chunks_for_phases) {
-        context.GetPaintController().ForceNewChunk(
-            paint_layer_, DisplayItem::kLayerChunkFloat);
-      }
       PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
                                            context, local_painting_info,
                                            paint_flags);
-    }
-
-    if (force_paint_chunks_for_phases) {
-      context.GetPaintController().ForceNewChunk(
-          paint_layer_, DisplayItem::kLayerChunkForeground);
     }
 
     PaintForegroundForFragmentsWithPhase(PaintPhase::kForeground,

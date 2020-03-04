@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Налады аўдыя</translation>
 <translation id="3626281679859535460">Яркасць</translation>
 <translation id="3631369015426612114">Дазволіць апавяшчэнні з наступных крыніц</translation>
+<translation id="3638400994746983214">Уключыць або выключыць экран прыватнасці. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Вобласць здымкі</translation>
 <translation id="371370241367527062">Пярэдні мікрафон</translation>
@@ -244,6 +245,7 @@
 <translation id="3995138139523574647">Прылада USB-C (задні порт справа)</translation>
 <translation id="4017989525502048489">Лазерная ўказка</translation>
 <translation id="4021716437419160885">Прагартаць уніз</translation>
+<translation id="402772165574991617">З дапамогай жэстаў можна хутка пераключацца паміж праграмамі і выкарыстоўваць Chromebook у планшэтным рэжыме.</translation>
 <translation id="4028481283645788203">Для забеспячэння больш высокага ўзроўню бяспекі патрабуецца пароль</translation>
 <translation id="4042660782729322247">Вы абагульваеце экран</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Выключана для адной праграмы}one{Выключана для # праграмы}few{Выключана для # праграм}many{Выключана для # праграм}other{Выключана для # праграмы}}</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox уключаны</translation>
 <translation id="4665114317261903604">Уключэнне рэжыму "Не турбаваць". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Разблакіруйце прыладу бацькоўскім кодам</translation>
+<translation id="4702647871202761252">Экран прыватнасці выключаны</translation>
 <translation id="4710243778082831592">Налады IME</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="4734965478015604180">Гарызантальна</translation>
@@ -428,6 +431,7 @@
 <translation id="6559976592393364813">Спытайце адміністратара</translation>
 <translation id="6585808820553845416">Сеанс скончыцца праз <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />, знаходзіцца пад кіраваннем адміністратара</translation>
+<translation id="6614169507485700968">Экран прыватнасці ўключаны</translation>
 <translation id="6627638273713273709">Пошук+Shift+K</translation>
 <translation id="6637729079642709226">Змена часу</translation>
 <translation id="6650933572246256093">Прылада Bluetooth "<ph name="DEVICE_NAME" />" запытвае дазволу на спалучэнне. Увядзіце на прыладзе наступны ключ доступу: <ph name="PASSKEY" /></translation>
@@ -442,6 +446,7 @@
 <translation id="6715542151869432661">Мабільныя прылады не знойдзены.</translation>
 <translation id="6723839937902243910">Кнопка сілкавання</translation>
 <translation id="6727969043791803658">Прылада падключана. Зарад акумулятара: <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="6751052314767925245">Гэтай функцыяй кіруе адміністратар</translation>
 <translation id="6751826523481687655">Трасіроўка прадукцыйнасці ўключана</translation>
 <translation id="6752912906630585008">Стол <ph name="REMOVED_DESK" /> быў выдалены і аб'яднаны са Сталом <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Сілкуе падключаныя прылады USB-C</translation>
@@ -529,6 +534,7 @@
 <translation id="8000066093800657092">Няма сеткі</translation>
 <translation id="8029629653277878342">Для забеспячэння больш высокага ўзроўню бяспекі патрабуецца пароль або PIN-код</translation>
 <translation id="8030169304546394654">Адключана</translation>
+<translation id="8042024183333293953">Паспрабуйце новую навігацыю жэстамі</translation>
 <translation id="8048123526339889627">Налады Bluetooth</translation>
 <translation id="8054466585765276473">Разлічваецца час да разрадкі акумулятара.</translation>
 <translation id="8061464966246066292">Высокая кантраснасць</translation>

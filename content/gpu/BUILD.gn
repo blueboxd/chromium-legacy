@@ -52,7 +52,6 @@ target(link_target_type, "gpu_sources") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/tracing",
     "//components/viz/service",
     "//content:export",
     "//content/child",
@@ -91,7 +90,10 @@ target(link_target_type, "gpu_sources") {
   ]
 
   if (is_android) {
-    deps += [ "//media" ]
+    deps += [
+      "//components/tracing:graphics_provider",
+      "//media",
+    ]
   }
 
   if (is_linux) {

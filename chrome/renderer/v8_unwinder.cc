@@ -51,7 +51,7 @@ V8Unwinder::V8Unwinder(const v8::UnwindState& unwind_state)
 
 V8Unwinder::~V8Unwinder() = default;
 
-void V8Unwinder::AddNonNativeModules(base::ModuleCache* module_cache) {
+void V8Unwinder::AddInitialModules(base::ModuleCache* module_cache) {
   std::vector<std::unique_ptr<const base::ModuleCache::Module>> modules;
   modules.emplace_back(std::make_unique<V8Module>(
       unwind_state_.embedded_code_range, kV8EmbeddedCodeRangeBuildId,

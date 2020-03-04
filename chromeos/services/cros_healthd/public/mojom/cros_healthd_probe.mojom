@@ -26,6 +26,7 @@ enum ProbeCategoryEnum {
   kCpu,
   kTimezone,
   kMemory,
+  kBacklight,
 };
 
 // Information related to a Smart Battery, as defined in
@@ -121,11 +122,24 @@ struct MemoryInfo {
   uint32 page_faults_since_last_boot;
 };
 
+// Backlight information.
+struct BacklightInfo {
+  // Path to this backlight on the system. Useful if the caller needs to
+  // correlate with other information.
+  string path;
+  // Maximum brightness for the backlight.
+  uint32 max_brightness;
+  // Current brightness of the backlight, between 0 and max_brightness.
+  uint32 brightness;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
 // fields corresponding to the categories passed to the ProbeTelemetryInfo
-// request.
+// request. All optional array members will be null if cros_healthd did not
+// attempt to fetch that information, and size zero if cros_healthd did attempt
+// to fetch that information, but was unable to.
 struct TelemetryInfo {
   // Information about the device's main battery. Only present when kBattery was
   // included in the categories input to ProbeTelemetryInfo.
@@ -146,4 +160,7 @@ struct TelemetryInfo {
   // Information about the system's memory. Only present when kMemory was
   // included in the categories input to ProbeTelemetryInfo.
   MemoryInfo? memory_info;
+  // Information about all of the device's backlights. Only present when
+  // kBacklight was included in the categories input to ProbeTelemetryInfo.
+  array<BacklightInfo>? backlight_info;
 };

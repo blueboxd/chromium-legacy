@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
@@ -550,6 +551,15 @@ void WebUITabStripContainerView::ShowContextMenuAtPoint(
   context_menu_runner_->RunMenuAt(
       GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
       views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
+}
+
+void WebUITabStripContainerView::ShowEditDialogForGroupAtPoint(
+    gfx::Point point,
+    gfx::Rect rect,
+    tab_groups::TabGroupId group) {
+  ConvertPointToScreen(this, &point);
+  rect.set_origin(point);
+  TabGroupEditorBubbleView::ShowWithRect(browser_, group, rect);
 }
 
 TabStripUILayout WebUITabStripContainerView::GetLayout() {

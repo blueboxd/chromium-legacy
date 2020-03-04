@@ -20,6 +20,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
@@ -424,9 +425,11 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
 
 TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+#if defined(OS_IOS)
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
       UkmService::kReportUserNoisedUserBirthYearAndGender);
+#endif
 
   int number_of_invocations = 0;
   int test_birth_year = 1983;
@@ -482,9 +485,11 @@ TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
 TEST_F(UkmServiceTest,
        DontAddUserDemograhicsWhenNotAvailableAndFeatureEnabled) {
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+#if defined(OS_IOS)
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
       UkmService::kReportUserNoisedUserBirthYearAndGender);
+#endif
 
   auto provider = std::make_unique<MockDemographicMetricsProvider>();
   EXPECT_CALL(*provider,
@@ -516,6 +521,11 @@ TEST_F(UkmServiceTest,
 
 TEST_F(UkmServiceTest, DontAddUserDemograhicsWhenFeatureDisabled) {
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+#if !defined(OS_IOS)
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndDisableFeature(
+      UkmService::kReportUserNoisedUserBirthYearAndGender);
+#endif
 
   // The demographics provider should not be called.
   auto provider = std::make_unique<MockDemographicMetricsProvider>();

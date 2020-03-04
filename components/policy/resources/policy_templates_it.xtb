@@ -721,21 +721,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2151831603578119302">Attiva le scorciatoie delle funzioni di accessibilità</translation>
 <translation id="2156132677421487971">Consente di configurare le norme per <ph name="PRODUCT_NAME" />, una funzione che permette agli utenti di inviare i contenuti di schede, siti o del desktop dal browser a schermi remoti e sistemi audio.</translation>
 <translation id="2156755242840687300">Server di stampa esterni attivi</translation>
-<translation id="2159024114213303519">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
-
-      L'autenticazione ambientale è l'autenticazione http con credenziali predefinite, se non sono fornite credenziali esplicite tramite schemi NTLM/Kerberos/Negotiate challenge/response.
-
-      L'impostazione di <ph name="REGULAR_ONLY_OPTION_NAME" /> (valore 0) consente l'autenticazione ambientale solo per le sessioni standard. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito.
-
-      L'impostazione di <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valore 1) consente l'autenticazione ambientale per le sessioni standard e in modalità in incognito. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni Ospite.
-
-      L'impostazione di <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valore 2) consente l'autenticazione ambientale per le sessioni standard e Ospite. Non sarà consentito eseguire l'autenticazione ambientale con le sessioni in modalità in incognito.
-
-      L'impostazione di <ph name="ALL_OPTION_NAME" /> (valore 3) consente l'autenticazione ambientale per tutte le sessioni.
-
-      Tieni presente che l'autenticazione ambientale è sempre consentita per i profili standard.
-
-      Se il criterio non viene impostato, nelle release future di <ph name="PRODUCT_NAME" /> non sarà possibile eseguire l'autenticazione ambientale con le sessioni Ospite e in modalità in incognito, dal momento che non saranno più consentite.</translation>
 <translation id="2160336427036785721">Consente di configurare la quantità di memoria che una singola istanza di <ph name="PRODUCT_NAME" /> può utilizzare prima che le schede vengano eliminate (ossia la memoria utilizzata dalla scheda verrà liberata e la scheda dovrà essere ricaricata quando l'utente la seleziona) per risparmiare memoria.
 
       Se il criterio viene impostato, una volta superato il limite il browser inizierà a eliminare le schede per risparmiare memoria. Non vi è, tuttavia, alcuna garanzia che il browser venga sempre eseguito al di sotto di tale limite. Qualsiasi valore inferiore a 1024 verrà arrotondato per eccesso a 1024.
@@ -2854,7 +2839,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5306186200045823863">Considera attendibile l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="5311275381462687162">Impostazione del comportamento precedente predefinito <ph name="ATTRIBUTE_SAMESITE_NAME" /> per i cookie</translation>
-<translation id="5313116350102437846">Questo criterio consente di controllare se gli utenti iscritti al programma di protezione avanzata possono inviare i loro download a Google per la scansione di malware. Se il criterio viene impostato su true o non viene impostato, agli utenti registrati verrà richiesto di inviare i propri file a Google per la scansione approfondita. Se l'utente seleziona "Scansiona", il file scaricato verrà inviato a Google. Se il criterio viene impostato su false, agli utenti non verrà richiesto di inviare i file scaricati a Google.</translation>
 <translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
 <translation id="5321755462836179869">Consente le notifiche native</translation>
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.

@@ -138,13 +138,11 @@ class PLATFORM_EXPORT DisplayItem {
     // Used to prevent composited scrolling on plugins with wheel handlers.
     kPluginScrollHitTest,
 
-    kLayerChunkWhole,
-    kLayerChunkBackground,
-    kLayerChunkNegativeZOrderChildren,
-    kLayerChunkDescendantBackgrounds,
-    kLayerChunkFloat,
+    // These are for paint chunks that are forced for layers.
+    kLayerChunk,
+    // This is used if a layer has any negative-z-index children. Otherwise the
+    // foreground is in the kLayerChunk chunk.
     kLayerChunkForeground,
-    kLayerChunkNormalFlowAndPositiveZOrderChildren,
 
     // The following 2 types are For ScrollbarDisplayItem.
     kScrollbarHorizontal,

@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
 
 namespace content {
 

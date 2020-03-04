@@ -62,8 +62,6 @@ import java.util.regex.Pattern;
         sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
 @Features.EnableFeatures({ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING,
         ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE})
-@Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
-        ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
 public class ExternalNavigationHandlerTest {
     // clang-format on
     @Rule
@@ -1594,11 +1592,8 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
-    public void
-    testAssistantAutofillIntent_catchNavigationFromGoogleSearch() {
-        mDelegate.setIsSerpReferrer(true);
+    public void testAutofillAssistantIntent_handledByDelegate() {
+        mDelegate.setHandleIntentWithAutofillAssistant(true);
 
         checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
@@ -1608,46 +1603,11 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
-    public void
-    testAssistantAutofillIntent_doNotCatchNavigationInIncognito() {
-        mDelegate.setIsSerpReferrer(true);
+    public void testAutofillAssistantIntent_notHandledByDelegate() {
+        mDelegate.setHandleIntentWithAutofillAssistant(false);
 
         checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
                 .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
-
-        Assert.assertNotNull(mDelegate.startActivityIntent);
-        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
-    }
-
-    @Test
-    @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
-    public void
-    testAssistantAutofillIntent_doNotCatchNavigationFromDifferentOrigin() {
-        mDelegate.setIsSerpReferrer(false);
-
-        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
-
-        Assert.assertNotNull(mDelegate.startActivityIntent);
-        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
-    }
-
-    @Test
-    @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
-    public void
-    testAssistantAutofillIntent_doNotCatchNavigationForNonEnabledFeature() {
-        mDelegate.setIsSerpReferrer(true);
-
-        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
@@ -1950,6 +1910,12 @@ public class ExternalNavigationHandlerTest {
             return false;
         }
 
+        @Override
+        public boolean handleWithAutofillAssistant(
+                ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
+            return mHandleWithAutofillAssistant;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
@@ -1993,6 +1959,10 @@ public class ExternalNavigationHandlerTest {
             mCanHandleWithInstantApp = value;
         }
 
+        public void setHandleIntentWithAutofillAssistant(boolean value) {
+            mHandleWithAutofillAssistant = value;
+        }
+
         public void setIsSerpReferrer(boolean value) {
             mIsSerpReferrer = value;
         }
@@ -2018,6 +1988,7 @@ public class ExternalNavigationHandlerTest {
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         private boolean mCanHandleWithInstantApp;
+        private boolean mHandleWithAutofillAssistant;
         private boolean mIsSerpReferrer;
         private String mPreviousUrl;
         public boolean mCalledWithProxy;

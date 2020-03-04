@@ -41,7 +41,6 @@ struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
 struct V4ProtocolConfig;
-class VerdictCacheManager;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
 // This helper class should be owned by a SafeBrowsingService, and it handles
@@ -130,10 +129,6 @@ class ServicesDelegate {
   virtual void CreateTelemetryService(Profile* profile) {}
   virtual void RemoveTelemetryService(Profile* profile) {}
 
-  virtual void CreateVerdictCacheManager(Profile* profile);
-  virtual void RemoveVerdictCacheManager(Profile* profile);
-  virtual VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
-
   virtual void CreateBinaryUploadService(Profile* profile) = 0;
   virtual void RemoveBinaryUploadService(Profile* profile) = 0;
   virtual BinaryUploadService* GetBinaryUploadService(
@@ -154,10 +149,6 @@ class ServicesDelegate {
   base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
-  // Tracks existing Profiles, and their corresponding VerdictCacheManager
-  // instances. Accessed on UI thread.
-  base::flat_map<Profile*, std::unique_ptr<VerdictCacheManager>>
-      cache_manager_map_;
 };
 
 }  // namespace safe_browsing

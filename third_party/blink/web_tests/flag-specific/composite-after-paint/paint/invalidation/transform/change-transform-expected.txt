@@ -12,6 +12,16 @@
           "reason": "disappeared"
         },
         {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
+          "rect": [35, 35, 50, 50],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
+          "rect": [35, 35, 50, 50],
+          "reason": "chunk appeared"
+        },
+        {
           "object": "LayoutNGBlockFlow DIV id='square'",
           "rect": [35, 35, 50, 50],
           "reason": "chunk appeared"

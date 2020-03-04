@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='absolute red'",
           "rect": [100, 150, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative green'",

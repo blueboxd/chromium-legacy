@@ -98,9 +98,9 @@ bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
   if (key->Create(rootkey, subkey, KEY_NOTIFY) != ERROR_SUCCESS)
     return false;
 
-  if (!key->StartWatching(base::Bind(&ProxyConfigServiceWin::OnObjectSignaled,
-                                     base::Unretained(this),
-                                     base::Unretained(key.get())))) {
+  if (!key->StartWatching(base::BindOnce(
+          &ProxyConfigServiceWin::OnObjectSignaled, base::Unretained(this),
+          base::Unretained(key.get())))) {
     return false;
   }
 
@@ -117,9 +117,9 @@ void ProxyConfigServiceWin::OnObjectSignaled(base::win::RegKey* key) {
   DCHECK(it != keys_to_watch_.end());
 
   // Keep watching the registry key.
-  if (!key->StartWatching(base::Bind(&ProxyConfigServiceWin::OnObjectSignaled,
-                                     base::Unretained(this),
-                                     base::Unretained(key)))) {
+  if (!key->StartWatching(
+          base::BindOnce(&ProxyConfigServiceWin::OnObjectSignaled,
+                         base::Unretained(this), base::Unretained(key)))) {
     keys_to_watch_.erase(it);
   }
 

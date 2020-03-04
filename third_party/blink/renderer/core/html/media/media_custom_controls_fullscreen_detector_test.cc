@@ -13,16 +13,6 @@
 
 namespace blink {
 
-namespace {
-
-struct VideoTestParam {
-  String description;
-  IntRect target_rect;
-  bool expected_result;
-};
-
-}  // anonymous namespace
-
 class MediaCustomControlsFullscreenDetectorTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -60,11 +50,44 @@ class MediaCustomControlsFullscreenDetectorTest : public testing::Test {
     return false;
   }
 
+  static bool IsFullscreen(IntRect target, IntRect screen) {
+    IntRect intersection = Intersection(target, screen);
+    return MediaCustomControlsFullscreenDetector::
+        IsFullscreenVideoOfDifferentRatioForTesting(
+            target.Size(), screen.Size(), intersection.Size());
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
   std::unique_ptr<DummyPageHolder> new_page_holder_;
   Persistent<HTMLVideoElement> video_;
 };
+
+TEST_F(MediaCustomControlsFullscreenDetectorTest, heuristicForAspectRatios) {
+  IntRect screen(0, 0, 1920, 1080);
+
+  EXPECT_TRUE(IsFullscreen({0, 130, 1920, 820}, screen))
+      << "Ultrawide screen (21:9)";
+  EXPECT_TRUE(IsFullscreen({240, 0, 1440, 1080}, screen))
+      << "Standard TV (4:3)";
+  EXPECT_TRUE(IsFullscreen({656, 0, 607, 1080}, screen))
+      << "Full HD, but portrait (9:16)";
+
+  EXPECT_TRUE(IsFullscreen({0, -100, 1920, 1080}, screen))
+      << "Normal fullscreen video but scrolled a bit up.";
+  EXPECT_TRUE(IsFullscreen({100, 0, 1920, 1080}, screen))
+      << "Normal fullscreen video but scrolled a bit right.";
+
+  EXPECT_FALSE(IsFullscreen({0, -300, 1920, 1080}, screen))
+      << "Normal fullscreen video but scrolled a great deal up.";
+  EXPECT_FALSE(IsFullscreen({490, 0, 1920, 1080}, screen))
+      << "Normal fullscreen video but scrolled a great deal right.";
+
+  EXPECT_FALSE(IsFullscreen({0, 0, 800, 600}, screen)) << "Small video";
+  EXPECT_FALSE(IsFullscreen({500, 100, 1024, 768}, screen))
+      << "Another small video";
+  EXPECT_FALSE(IsFullscreen({0, 0, 0, 0}, screen)) << "Hidden video";
+}
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasNoListenersBeforeAddingToDocument) {

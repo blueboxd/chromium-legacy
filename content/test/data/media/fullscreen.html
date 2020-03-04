@@ -14,6 +14,13 @@
       width: 70vw;
       height: 70vh;
     }
+    .portrait {
+      width: 18vw;
+      height: 99vh;
+    }
+    .hide {
+       display: none;
+    }
   </style>
 </head>
 <body>
@@ -38,6 +45,12 @@
     }
     function makeSmall(id) {
       document.getElementById(id).className = "small";
+    }
+    function makePortrait(id) {
+      document.getElementById(id).className = "portrait";
+    }
+    function hide(id) {
+      document.getElementById(id).className = "hide";
     }
     function detach(id) {
       let e = document.getElementById(id);

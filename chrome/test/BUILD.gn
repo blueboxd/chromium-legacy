@@ -5036,6 +5036,7 @@ test("unit_tests") {
       "../browser/safe_browsing/local_two_phase_testserver.h",
       "../browser/safe_browsing/safe_browsing_navigation_observer_unittest.cc",
       "../browser/safe_browsing/signature_evaluator_mac_unittest.cc",
+      "../browser/safe_browsing/verdict_cache_manager_factory_unittest.cc",
       "../common/safe_browsing/binary_feature_extractor_mac_unittest.cc",
       "../common/safe_browsing/binary_feature_extractor_unittest.cc",
       "../common/safe_browsing/binary_feature_extractor_win_unittest.cc",
@@ -5332,6 +5333,7 @@ test("unit_tests") {
       "../browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc",
       "../browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
+      "../browser/ui/views/content_setting_bubble_contents_unittest.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
       "../browser/ui/views/device_chooser_content_view_unittest.cc",
       "../browser/ui/views/download/download_item_view_unittest.cc",
@@ -6123,7 +6125,6 @@ test("chrome_app_unittests") {
     "//components/flags_ui:switches",
     "//components/gwp_asan/buildflags",
     "//components/safe_browsing:buildflags",
-    "//components/tracing",
   ]
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.

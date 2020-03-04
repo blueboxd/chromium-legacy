@@ -84,9 +84,12 @@ chrome.passwordsPrivate.PasswordExportProgress;
 
 /**
  * @typedef {{
+ *   id: number,
  *   formattedOrigin: string,
  *   changePasswordUrl: (string|undefined),
+ *   signonRealm: string,
  *   username: string,
+ *   password: (string|undefined),
  *   elapsedTimeSinceCompromise: string,
  *   compromiseType: !chrome.passwordsPrivate.CompromiseType
  * }}
@@ -205,6 +208,19 @@ chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
  *     callback
  */
 chrome.passwordsPrivate.getCompromisedCredentialsInfo = function(callback) {};
+
+/**
+ * Requests the plaintext password for |credential|. |callback| gets invoked
+ * with the same |credential|, whose |password| field will be set.
+ * @param {!chrome.passwordsPrivate.CompromisedCredential} credential The
+ *     compromised credential whose password is being retrieved.
+ * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
+ *     plaintext password is requested.
+ * @param {function(!chrome.passwordsPrivate.CompromisedCredential):void}
+ *     callback The callback that gets invoked with the result.
+ */
+chrome.passwordsPrivate.getPlaintextCompromisedPassword = function(
+    credential, reason, callback) {};
 
 /**
  * Fired when the saved passwords list has changed, meaning that an entry has

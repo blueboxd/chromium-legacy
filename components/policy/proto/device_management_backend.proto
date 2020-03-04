@@ -1060,6 +1060,17 @@ message MemoryInfo {
   optional uint32 page_faults_since_last_boot = 4;
 }
 
+// Information about the device's backlights.
+message BacklightInfo {
+  // Path to this backlight on the system. Useful if the caller needs to
+  // correlate with other information.
+  optional string path = 1;
+  // Maximum brightness for the backlight.
+  optional uint32 max_brightness = 2;
+  // Current brightness of the backlight, between 0 and max_brightness.
+  optional uint32 brightness = 3;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1166,6 +1177,9 @@ message DeviceStatusReportRequest {
 
   // Information about the device's memory.
   optional MemoryInfo memory_info = 36;
+
+  // Information about the device's backlights.
+  repeated BacklightInfo backlight_info = 37;
 }
 
 message OsUpdateStatus {

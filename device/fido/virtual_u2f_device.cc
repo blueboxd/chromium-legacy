@@ -130,9 +130,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
   }
 
-  if (mutable_state()->simulate_press_callback) {
-    if (!mutable_state()->simulate_press_callback.Run(this))
-      return base::nullopt;
+  if (!SimulatePress()) {
+    return base::nullopt;
   }
 
   auto challenge_param = data.first<32>();
@@ -211,9 +210,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
 
-  if (mutable_state()->simulate_press_callback) {
-    if (!mutable_state()->simulate_press_callback.Run(this))
-      return base::nullopt;
+  if (!SimulatePress()) {
+    return base::nullopt;
   }
 
   if (data.size() < 32 + 32 + 1)

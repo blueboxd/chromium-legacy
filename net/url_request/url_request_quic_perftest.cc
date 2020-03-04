@@ -240,7 +240,7 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
       base::trace_event::MemoryDumpLevelOfDetail::LIGHT};
 
   auto on_memory_dump_done =
-      [](base::Closure quit_closure, const URLRequestContext* context,
+      [](base::OnceClosure quit_closure, const URLRequestContext* context,
          bool success, uint64_t dump_guid,
          std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
         ASSERT_TRUE(success);
@@ -275,7 +275,7 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
             reinterpret_cast<uintptr_t>(
                 context->http_transaction_factory()->GetSession()));
         ASSERT_EQ(0u, allocator_dumps.count(stream_factory_dump_name));
-        quit_closure.Run();
+        std::move(quit_closure).Run();
       };
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
       args,

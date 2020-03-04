@@ -309,15 +309,15 @@ class RegistryWatcher {
     if (key_.Open(HKEY_LOCAL_MACHINE, key, KEY_NOTIFY) != ERROR_SUCCESS)
       return false;
 
-    return key_.StartWatching(base::Bind(&RegistryWatcher::OnObjectSignaled,
-                                         base::Unretained(this)));
+    return key_.StartWatching(base::BindOnce(&RegistryWatcher::OnObjectSignaled,
+                                             base::Unretained(this)));
   }
 
   void OnObjectSignaled() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!callback_.is_null());
-    if (key_.StartWatching(base::Bind(&RegistryWatcher::OnObjectSignaled,
-                                      base::Unretained(this)))) {
+    if (key_.StartWatching(base::BindOnce(&RegistryWatcher::OnObjectSignaled,
+                                          base::Unretained(this)))) {
       callback_.Run(true);
     } else {
       key_.Close();

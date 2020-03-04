@@ -23,7 +23,12 @@
         {
           "object": "LayoutNGBlockFlow (positioned) SPAN class='child embiggen'",
           "rect": [0, 0, 50, 50],
-          "reason": "background"
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) SPAN class='child'",
+          "rect": [0, 0, 40, 40],
+          "reason": "disappeared"
         }
       ]
     }

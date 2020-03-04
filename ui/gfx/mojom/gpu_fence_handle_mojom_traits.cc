@@ -9,15 +9,15 @@
 
 namespace mojo {
 
-mojo::ScopedHandle StructTraits<
+mojo::PlatformHandle StructTraits<
     gfx::mojom::GpuFenceHandleDataView,
     gfx::GpuFenceHandle>::native_fd(const gfx::GpuFenceHandle& handle) {
 #if defined(OS_POSIX)
   if (handle.type != gfx::GpuFenceHandleType::kAndroidNativeFenceSync)
-    return mojo::ScopedHandle();
-  return mojo::WrapPlatformFile(handle.native_fd.fd);
+    return mojo::PlatformHandle();
+  return mojo::PlatformHandle(base::ScopedFD(handle.native_fd.fd));
 #else
-  return mojo::ScopedHandle();
+  return mojo::PlatformHandle();
 #endif
 }
 
@@ -28,12 +28,9 @@ bool StructTraits<gfx::mojom::GpuFenceHandleDataView, gfx::GpuFenceHandle>::
 
   if (out->type == gfx::GpuFenceHandleType::kAndroidNativeFenceSync) {
 #if defined(OS_POSIX)
-    base::PlatformFile platform_file;
-    if (mojo::UnwrapPlatformFile(data.TakeNativeFd(), &platform_file) !=
-        MOJO_RESULT_OK)
-      return false;
     constexpr bool auto_close = true;
-    out->native_fd = base::FileDescriptor(platform_file, auto_close);
+    out->native_fd =
+        base::FileDescriptor(data.TakeNativeFd().ReleaseFD(), auto_close);
     return true;
 #else
     NOTREACHED();

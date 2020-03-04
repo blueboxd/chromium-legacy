@@ -230,4 +230,41 @@ ResponseAction PasswordsPrivateGetCompromisedCredentialsInfoFunction::Run() {
           GetDelegate(browser_context())->GetCompromisedCredentialsInfo())));
 }
 
+// PasswordsPrivateGetPlaintextCompromisedPasswordFunction:
+PasswordsPrivateGetPlaintextCompromisedPasswordFunction::
+    ~PasswordsPrivateGetPlaintextCompromisedPasswordFunction() = default;
+
+ResponseAction PasswordsPrivateGetPlaintextCompromisedPasswordFunction::Run() {
+  auto parameters =
+      api::passwords_private::GetPlaintextCompromisedPassword::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  GetDelegate(browser_context())
+      ->GetPlaintextCompromisedPassword(
+          std::move(parameters->credential), parameters->reason,
+          GetSenderWebContents(),
+          base::BindOnce(
+              &PasswordsPrivateGetPlaintextCompromisedPasswordFunction::
+                  GotCredential,
+              this));
+
+  // GotCredential() might respond before we reach this point.
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void PasswordsPrivateGetPlaintextCompromisedPasswordFunction::GotCredential(
+    base::Optional<api::passwords_private::CompromisedCredential> credential) {
+  if (!credential) {
+    Respond(Error(
+        "Could not obtain plaintext compromised password. Either the user is "
+        "not authenticated or no matching password could be found."));
+    return;
+  }
+
+  Respond(ArgumentList(
+      api::passwords_private::GetPlaintextCompromisedPassword::Results::Create(
+          *credential)));
+}
+
 }  // namespace extensions

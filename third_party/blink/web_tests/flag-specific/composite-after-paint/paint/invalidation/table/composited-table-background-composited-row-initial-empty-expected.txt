@@ -15,7 +15,12 @@
         {
           "object": "LayoutTableRow TR id='target'",
           "rect": [0, 0, 186, 64],
-          "reason": "full layer"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutTableRow TR id='target'",
+          "rect": [0, 0, 132, 19],
+          "reason": "paint property change"
         }
       ]
     },

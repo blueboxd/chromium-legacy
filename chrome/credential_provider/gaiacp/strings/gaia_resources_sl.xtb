@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Pri sinhronizaciji službenega računa s profilom za Windows je prišlo do težave. Obrnite se na skrbnika.</translation>
 <translation id="2515346402363002066">Seja je potekla. Prijavite se s službenim računom.</translation>
 <translation id="2844349213149998955">Prijava z osebnim računom v tej napravi ni dovoljena. Prijavite se s službenim računom.</translation>
-<translation id="2954423647682729023">Prijavite se s službenim računom.</translation>
 <translation id="3217145568844727893">Če boste nadaljevali brez vnosa trenutnega gesla za Windows, lahko pride do trajne izgube podatkov v tej napravi.</translation>
 <translation id="3285576391135346912">Prijavite se lahko samo z e-poštnim naslovom, ki se konča tako: <ph name="EMAIL_DOMAINS" />. Poskusite znova s službenim računom.</translation>
 <translation id="3306357053520292004">V tem računalniku je že bil dodan uporabnik s tem računom. Prijavite se z drugim računom.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Skrbnik vam ne omogoča prijave s tem računom. Poskusite z drugim računom.</translation>
 <translation id="8639729688781680518">Pozabljeno geslo za Windows</translation>
 <translation id="866458870819756755">Uporabnika ni bilo mogoče ustvariti.</translation>
-<translation id="8875753657315897487">Prijavite se s službenim računom</translation>
 <translation id="9055998212250844221">Uporabniški račun, ki ga je ustvaril Googlov ponudnik poverilnic za Windows</translation>
 </translationbundle>

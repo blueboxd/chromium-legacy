@@ -216,6 +216,7 @@
 <translation id="3621712662352432595">Mga Setting ng Audio</translation>
 <translation id="3626281679859535460">Tingkad</translation>
 <translation id="3631369015426612114">Payagan ang mga notification mula sa mga sumusunod</translation>
+<translation id="3638400994746983214">I-toggle ang privacy screen. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">I-capture ang rehiyon</translation>
 <translation id="371370241367527062">Mikropono sa harap</translation>
@@ -243,6 +244,7 @@
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4021716437419160885">Mag-scroll pababa</translation>
+<translation id="402772165574991617">Gamitin ang mga galaw para mabilis na magpalipat-lipat sa mga app at magamit ang iyong chromebook sa tablet mode.</translation>
 <translation id="4028481283645788203">Kinakailangan ang password para sa higit pang seguridad</translation>
 <translation id="4042660782729322247">Ibinabahagi mo ang iyong screen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Naka-off para sa isang app}one{Naka-off para sa # app}other{Naka-off para sa # na app}}</translation>
@@ -291,6 +293,7 @@
 <translation id="4659419629803378708">Na-enable ang ChromeVox</translation>
 <translation id="4665114317261903604">I-toggle ang Huwag istorbohin. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">I-unlock ang device gamit ang parent code</translation>
+<translation id="4702647871202761252">Naka-off ang privacy screen</translation>
 <translation id="4710243778082831592">Mga Setting ng IME</translation>
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -425,6 +428,7 @@
 <translation id="6559976592393364813">Magtanong sa Administrator</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Pinapamahalaan ng iyong Administrator</translation>
+<translation id="6614169507485700968">Naka-on ang privacy screen</translation>
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6637729079642709226">Baguhin ang oras</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
@@ -439,6 +443,7 @@
 <translation id="6715542151869432661">Walang nahanap na mobile device.</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6727969043791803658">Nakakonekta, <ph name="BATTERY_PERCENTAGE" />% ang baterya</translation>
+<translation id="6751052314767925245">Ipinapatupad ng iyong administrator</translation>
 <translation id="6751826523481687655">Naka-on ang pag-trace ng performance</translation>
 <translation id="6752912906630585008">Inalis ang Desk na <ph name="REMOVED_DESK" /> at isinama sa Desk na <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Pinapagana ang mga nakakonektang USB-C device</translation>
@@ -526,6 +531,7 @@
 <translation id="8000066093800657092">Walang network</translation>
 <translation id="8029629653277878342">Kinakailangan ang PIN o password para sa higit pang seguridad</translation>
 <translation id="8030169304546394654">Naalis sa pagkakakonekta</translation>
+<translation id="8042024183333293953">Subukan ang bagong navigation gamit ang galaw</translation>
 <translation id="8048123526339889627">Mga Setting ng Bluetooth</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
 <translation id="8061464966246066292">Mataas na contrast</translation>

@@ -32,6 +32,9 @@ void FakeRemoteFrame::EnforceInsecureNavigationsSet(
 void FakeRemoteFrame::SetFrameOwnerProperties(
     blink::mojom::FrameOwnerPropertiesPtr properties) {}
 
+void FakeRemoteFrame::EnforceInsecureRequestPolicy(
+    blink::mojom::InsecureRequestPolicy policy) {}
+
 void FakeRemoteFrame::SetReplicatedOrigin(
     const url::Origin& origin,
     bool is_potentially_trustworthy_unique_origin) {}

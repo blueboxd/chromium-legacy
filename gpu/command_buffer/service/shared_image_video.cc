@@ -497,14 +497,24 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageVideo::ProduceSkia(
   }
 
   DCHECK(context_state->GrContextIsGL());
-  auto* texture = stream_texture_sii_->GetTexture();
-  DCHECK(texture);
+  auto* texture_base = stream_texture_sii_->GetTextureBase();
+  DCHECK(texture_base);
 
-  // In GL mode, create the SharedImageRepresentationGLTextureVideo
+  // In GL mode, create the SharedImageRepresentationGLTexture*Video
   // representation to use with SharedImageRepresentationVideoSkiaGL.
-  auto gl_representation =
-      std::make_unique<SharedImageRepresentationGLTextureVideo>(
-          manager, this, tracker, texture);
+  std::unique_ptr<gpu::SharedImageRepresentationGLTextureBase>
+      gl_representation;
+  if (texture_base->GetType() == gpu::TextureBase::Type::kValidated) {
+    gl_representation =
+        std::make_unique<SharedImageRepresentationGLTextureVideo>(
+            manager, this, tracker, gles2::Texture::CheckedCast(texture_base));
+  } else {
+    gl_representation =
+        std::make_unique<SharedImageRepresentationGLTexturePassthroughVideo>(
+            manager, this, tracker,
+            gles2::TexturePassthrough::CheckedCast(texture_base));
+  }
+
   return SharedImageRepresentationSkiaGL::Create(std::move(gl_representation),
                                                  std::move(context_state),
                                                  manager, this, tracker);

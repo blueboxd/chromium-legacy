@@ -212,8 +212,6 @@ class TestWebWidgetClient : public WebWidgetClient {
 
   // WebWidgetClient implementation.
   void ScheduleAnimation() override { animation_scheduled_ = true; }
-  void RegisterSelection(const cc::LayerSelection& selection) override;
-  void SetBackgroundColor(SkColor color) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,
@@ -223,20 +221,7 @@ class TestWebWidgetClient : public WebWidgetClient {
                                 ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
-  void SetHaveScrollEventHandlers(bool) override;
-  void SetEventListenerProperties(
-      cc::EventListenerClass event_class,
-      cc::EventListenerProperties properties) override;
-  cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass event_class) const override;
-  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
-      override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
-  void SetBrowserControlsShownRatio(float top_ratio,
-                                    float bottom_ratio) override;
-  void SetBrowserControlsParams(cc::BrowserControlsParams) override;
   viz::FrameSinkId GetFrameSinkId() override;
 
   cc::LayerTreeHost* layer_tree_host() {
@@ -250,8 +235,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
 
-  // Returns the last value given to SetHaveScrollEventHandlers().
-  bool HaveScrollEventHandlers() const { return have_scroll_event_handlers_; }
+  bool HaveScrollEventHandlers() const;
 
   int VisuallyNonEmptyLayoutCount() const {
     return visually_non_empty_layout_count_;
@@ -273,7 +257,6 @@ class TestWebWidgetClient : public WebWidgetClient {
   LayerTreeViewFactory layer_tree_view_factory_;
   Vector<InjectedScrollGestureData> injected_scroll_gesture_data_;
   bool animation_scheduled_ = false;
-  bool have_scroll_event_handlers_ = false;
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;

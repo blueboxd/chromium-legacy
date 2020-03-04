@@ -1032,11 +1032,19 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
   if (!did_move_or_resize_ || details().window_component != HTCAPTION)
     return;
 
-  const display::Display& display =
-      details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH
-          ? display::Screen::GetScreen()->GetDisplayNearestWindow(GetTarget())
-          : Shell::Get()->cursor_manager()->GetDisplay();
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display;
+  if (details().source == ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
+    display = screen->GetDisplayNearestWindow(GetTarget());
+  } else {
+    // The |Display| object returned by |CursorManager::GetDisplay| may be
+    // stale, but will have the correct id.
+    // TODO(oshima): Change the API so |GetDisplay| just returns a display id.
+    screen->GetDisplayWithDisplayId(
+        Shell::Get()->cursor_manager()->GetDisplay().id(), &display);
+  }
   SnapType last_type = snap_type_;
+  DCHECK(display.is_valid());
   snap_type_ = GetSnapType(display, location_in_screen);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();

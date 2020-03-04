@@ -25,7 +25,7 @@
       "device type": "iPhone X",
       "os": "13.3",
       "xcode build version": "11c29",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -34,7 +34,7 @@
       "device type": "iPhone 7",
       "os": "13.3",
       "xcode build version": "11c29",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -43,7 +43,7 @@
       "device type": "iPad (6th generation)",
       "os": "13.3",
       "xcode build version": "11c29",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -52,7 +52,7 @@
       "device type": "iPhone X",
       "os": "12.4",
       "xcode build version": "11c29",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -61,7 +61,7 @@
       "device type": "iPad (6th generation)",
       "os": "12.4",
       "xcode build version": "11c29",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "host os": "Mac-10.14.6"
     },
     {
@@ -70,7 +70,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "eg_cq_tests.json",
@@ -78,7 +78,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -87,7 +87,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -96,7 +96,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -105,7 +105,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -114,7 +114,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -122,7 +122,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -130,7 +130,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "app": "ios_crash_xcuitests_module",
@@ -140,7 +140,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "common_tests.json",
@@ -148,7 +148,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "eg_cq_tests.json",
@@ -156,7 +156,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -165,7 +165,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -174,7 +174,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -183,7 +183,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "xcode parallelization": true
     },
     {
@@ -192,7 +192,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -200,7 +200,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     },
     {
       "include": "screen_size_dependent_tests.json",
@@ -208,7 +208,7 @@
       "os": "12.4",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
+      "pool":"chromium.tests.template"
     }
   ]
 }

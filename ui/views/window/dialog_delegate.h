@@ -129,6 +129,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   DialogDelegate* AsDialogDelegate() override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  void WindowWillClose() override;
 
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
 
@@ -225,16 +226,19 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   //    lazy layout system in View::InvalidateLayout
   std::unique_ptr<View> DisownExtraView();
 
-  // Externally or accept the dialog. These methods:
+  // Accept or cancel the dialog, as though the user had pressed the
+  // Accept/Cancel buttons. These methods:
   // 1) Invoke the DialogDelegate's Cancel or Accept methods
   // 2) Depending on their return value, close the dialog's widget.
   // Neither of these methods can be called before the dialog has been
   // initialized.
-  void CancelDialog();
   void AcceptDialog();
+  void CancelDialog();
 
-  // Deprecated, for compatibility with a few remaining unit tests.
-  // TODO(https://crbug.com/1011446): Delete this method.
+  // This method invokes the behavior that *would* happen if this dialog's
+  // containing widget were closed. It is present only as a compatibility shim
+  // for unit tests; do not add new calls to it.
+  // TODO(https://crbug.com/1011446): Delete this.
   bool Close();
 
   // Reset the dialog's shown timestamp, for tests that are subject to the
@@ -269,10 +273,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   const DialogClientView* GetDialogClientView() const;
   DialogClientView* GetDialogClientView();
 
-  // Implements the default close behavior, as described in the comment on
-  // Close() above.
-  bool DefaultClose();
-
   // Runs a close callback, ensuring that at most one close callback is ever
   // run.
   void RunCloseCallback(base::OnceClosure callback);
@@ -303,8 +303,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   base::OnceClosure cancel_callback_;
   base::OnceClosure close_callback_;
 
-  // Whether any of the three callbacks just above has been delivered yet.
-  bool callback_delivered_ = false;
+  // Whether any of the three callbacks just above has been delivered yet, *or*
+  // one of the Accept/Cancel methods have been called and returned true.
+  bool already_started_close_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };

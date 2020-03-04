@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='border-image'",
           "rect": [10, 10, 200, 200],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

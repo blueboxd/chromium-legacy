@@ -55,20 +55,28 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
     double GetDecayedRateAverage(base::TimeTicks when) const;
 
     // The length of a sampling interval in seconds.
-    static constexpr size_t kSecondsPerSamplingInterval = 5;
+    static constexpr base::TimeDelta kSamplingInterval =
+        base::TimeDelta::FromSeconds(5);
+
+    // Returns the start of the sampling interval after the interval that
+    // |when| falls into.
+    static base::TimeTicks GetNextSamplingIntervalForTesting(
+        base::TimeTicks when);
 
    private:
     // A new sample is weighed at this rate into the average, whereas the old
-    // average is weighed at (1-kSampleWeight)^age;
+    // average is weighed at kDecayFactor^age; Note that
+    // (kSampleWeight + kDecayFactor) == 1.0.
     static constexpr double kSampleWeight = 0.5;
+    static constexpr double kDecayFactor = (1 - kSampleWeight);
 
-    // The event count for the current or most recent sampling interval.
+    // The event count for the current or most recent sampling interval and
+    // the ordinal sampling interval they correspond to.
     size_t events_ = 0;
     int64_t events_sampling_interval_;
 
-    // The so-far accrued average and the sampling interval it covers.
+    // The so-far accrued average to |events_sampling_interval_|.
     double decayed_average_ = 0.0;
-    int64_t decayed_average_sampling_interval_;
   };
 
   // Returns a new instance if this invocation has been sampled for quota

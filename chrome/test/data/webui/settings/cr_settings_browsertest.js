@@ -933,11 +933,6 @@ CrSettingsPrivacyPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTests', function() {
-  settings_privacy_page.registerClearBrowsingDataTests();
-  mocha.run();
-});
-
 TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   settings_privacy_page.registerPrivacyPageTests();
   mocha.run();
@@ -955,11 +950,6 @@ TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
   mocha.run();
 });
 
-TEST_F('CrSettingsPrivacyPageTest', 'InstalledAppsTests', () => {
-  settings_privacy_page.registerInstalledAppsTests();
-  mocha.run();
-});
-
 GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
 TEST_F(
@@ -970,11 +960,46 @@ TEST_F(
     });
 GEN('#endif');
 
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/clear_browsing_data_dialog/
+ *     clear_browsing_data_dialog.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsClearBrowsingDataTest() {}
+
+CrSettingsClearBrowsingDataTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/clear_browsing_data_dialog/' +
+      'clear_browsing_data_dialog.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/promise_resolver.js',
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'clear_browsing_data_test.js',
+    'test_sync_browser_proxy.js',
+  ]),
+};
+
+TEST_F(
+    'CrSettingsClearBrowsingDataTest', 'ClearBrowsingDataAllPlatforms',
+    function() {
+      runMochaSuite('ClearBrowsingDataAllPlatforms');
+    });
+
+TEST_F('CrSettingsClearBrowsingDataTest', 'InstalledApps', () => {
+  runMochaSuite('InstalledApps');
+});
+
 GEN('#if !defined(OS_CHROMEOS)');
 TEST_F(
-    'CrSettingsPrivacyPageTest', 'ClearBrowsingDataTestsDesktop', function() {
-      settings_privacy_page.registerClearBrowsingDataTestsDesktop();
-      mocha.run();
+    'CrSettingsClearBrowsingDataTest', 'ClearBrowsingDataDesktop', function() {
+      runMochaSuite('ClearBrowsingDataDesktop');
     });
 GEN('#endif');
 

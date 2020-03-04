@@ -755,7 +755,8 @@ Document::Document(const DocumentInit& initializer,
       isolated_world_csp_map_(
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
-      permission_service_(this->ToExecutionContext()) {
+      permission_service_(this->ToExecutionContext()),
+      font_preload_manager_(*this) {
   // TODO(crbug.com/1029822): SecurityContextInit will eventually not be
   // passed to the Document constructor. These will need to move.
   security_initializer.ApplyPendingDataToDocument(*this);
@@ -6699,6 +6700,7 @@ void Document::BeginLifecycleUpdatesIfRenderingReady() {
     return;
   if (!HaveRenderBlockingResourcesLoaded())
     return;
+  font_preload_manager_.WillBeginRendering();
   View()->BeginLifecycleUpdates();
 }
 
@@ -7599,7 +7601,8 @@ bool Document::HaveScriptBlockingStylesheetsLoaded() const {
 
 bool Document::HaveRenderBlockingResourcesLoaded() const {
   return HaveImportsLoaded() &&
-         style_engine_->HaveRenderBlockingStylesheetsLoaded();
+         style_engine_->HaveRenderBlockingStylesheetsLoaded() &&
+         !font_preload_manager_.HasPendingRenderBlockingFonts();
 }
 
 Locale& Document::GetCachedLocale(const AtomicString& locale) {
@@ -8197,6 +8200,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(display_lock_activation_observer_);
   visitor->Trace(form_to_pending_submission_);
   visitor->Trace(permission_service_);
+  visitor->Trace(font_preload_manager_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8747,6 +8751,19 @@ void Document::ExecuteFormSubmission(HTMLFormElement* form_element) {
 
 void Document::CancelFormSubmissions() {
   form_to_pending_submission_.clear();
+}
+
+void Document::FontPreloadingFinishedOrTimedOut() {
+  DCHECK(!font_preload_manager_.HasPendingRenderBlockingFonts());
+  if (IsA<HTMLDocument>(this) && body()) {
+    // For HTML, we resume only when we're past the body tag, so that we should
+    // have something to paint now.
+    BeginLifecycleUpdatesIfRenderingReady();
+  } else if (!IsA<HTMLDocument>(this) && documentElement()) {
+    // For non-HTML there is no body so resume as soon as font preloading is
+    // done or has timed out.
+    BeginLifecycleUpdatesIfRenderingReady();
+  }
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

@@ -663,7 +663,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
     fake_page_scale_animation_use_anchor_ = use_anchor;
     fake_page_scale_animation_page_scale_factor_ = new_scale;
   } else {
-    MainFrameImpl()->FrameWidgetImpl()->Client()->StartPageScaleAnimation(
+    MainFrameImpl()->FrameWidgetImpl()->StartPageScaleAnimation(
         static_cast<gfx::Vector2d>(target_position), use_anchor, new_scale,
         duration);
   }
@@ -1330,11 +1330,10 @@ void WebViewImpl::DidUpdateBrowserControls() {
   if (!main_frame)
     return;
 
-  WebWidgetClient* client = main_frame->LocalRootFrameWidget()->Client();
-  DCHECK(client);
-  client->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
+  WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+  widget->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
                                        GetBrowserControls().BottomShownRatio());
-  client->SetBrowserControlsParams(GetBrowserControls().Params());
+  widget->SetBrowserControlsParams(GetBrowserControls().Params());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
@@ -1618,8 +1617,7 @@ void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
 
   // There is no background color for non-composited WebViews (eg printing).
   if (does_composite_) {
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetBackgroundColor(
-        BackgroundColor());
+    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
   }
 
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
@@ -2050,14 +2048,15 @@ void WebViewImpl::DidAttachLocalMainFrame() {
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
     // When attaching a local main frame, set up any state on the compositor.
-    widget_client->SetBackgroundColor(BackgroundColor());
+    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
     auto& viewport = GetPage()->GetVisualViewport();
     widget_client->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
     // Prevent main frame updates while the main frame is loading until enough
     // progress is made and BeginMainFrames are explicitly asked for.
-    scoped_defer_main_frame_update_ = widget_client->DeferMainFrameUpdate();
+    scoped_defer_main_frame_update_ =
+        MainFrameImpl()->FrameWidgetImpl()->DeferMainFrameUpdate();
   }
 }
 
@@ -3066,8 +3065,7 @@ void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
   background_color_override_enabled_ = true;
   background_color_override_ = color;
   if (MainFrameImpl()) {
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetBackgroundColor(
-        BackgroundColor());
+    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
   }
 }
 
@@ -3076,8 +3074,7 @@ void WebViewImpl::ClearBackgroundColorOverride() {
 
   background_color_override_enabled_ = false;
   if (MainFrameImpl()) {
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetBackgroundColor(
-        BackgroundColor());
+    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
   }
 }
 
@@ -3162,8 +3159,6 @@ void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
   if (root_layer_exists) {
     UpdateDeviceEmulationTransform();
   } else {
-    WebWidgetClient* widget_client =
-        MainFrameImpl()->FrameWidgetImpl()->Client();
     // When the document in an already-attached main frame is being replaced by
     // a navigation then DidChangeRootLayer(false) will be called. Since we are
     // navigating, defer BeginMainFrames until the new document is ready for
@@ -3171,7 +3166,8 @@ void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
     //
     // TODO(crbug.com/936696): This should not be needed once we always swap
     // frames when swapping documents.
-    scoped_defer_main_frame_update_ = widget_client->DeferMainFrameUpdate();
+    scoped_defer_main_frame_update_ =
+        MainFrameImpl()->FrameWidgetImpl()->DeferMainFrameUpdate();
   }
 }
 
@@ -3296,9 +3292,7 @@ void WebViewImpl::UpdateDeviceEmulationTransform() {
     // pick ideal raster scales.
     // TODO(wjmaclean): This is only done on the main frame's widget currently,
     // it should update all local frames.
-    WebWidgetClient* widget_client =
-        MainFrameImpl()->FrameWidgetImpl()->Client();
-    widget_client->ForceRecalculateRasterScales();
+    MainFrameImpl()->FrameWidgetImpl()->SetNeedsRecalculateRasterScales();
   }
 }
 

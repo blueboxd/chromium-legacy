@@ -14,7 +14,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [79, 129, 142, 142],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [114, 129, 107, 36],
+          "reason": "paint property change"
         }
       ]
     }

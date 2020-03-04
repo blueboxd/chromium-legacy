@@ -196,16 +196,18 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       // (i.e., base::ThreadTaskRunnerHandle::Get()).
       // Use WeakPtr() to avoid crashes where the socket watcher is destroyed
       // after |this| is destroyed.
-      base::Bind(&NetworkQualityEstimator::OnUpdatedTransportRTTAvailable,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &NetworkQualityEstimator::OnUpdatedTransportRTTAvailable,
+          weak_ptr_factory_.GetWeakPtr()),
       // ShouldSocketWatcherNotifyRTT() below is called by only the socket
       // watchers that live on the same thread as the current thread
       // (i.e., base::ThreadTaskRunnerHandle::Get()). Also, network quality
       // estimator is destroyed after network contexts and URLRequestContexts.
       // It's safe to use base::Unretained() below since the socket watcher
       // (owned by sockets) would be destroyed before |this|.
-      base::Bind(&NetworkQualityEstimator::ShouldSocketWatcherNotifyRTT,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &NetworkQualityEstimator::ShouldSocketWatcherNotifyRTT,
+          base::Unretained(this)),
       tick_clock_));
 
   GatherEstimatesForNextConnectionType();

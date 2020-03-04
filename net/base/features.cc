@@ -101,8 +101,7 @@ const base::Feature kCertVerifierBuiltinFeature {
 #endif
 
 const base::Feature kAppendFrameOriginToNetworkIsolationKey{
-    "AppendFrameOriginToNetworkIsolationKey",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppendFrameOriginToNetworkIsolationKey", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseRegistrableDomainInNetworkIsolationKey{
     "UseRegistrableDomainInNetworkIsolationKey",

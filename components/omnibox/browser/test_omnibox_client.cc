@@ -48,7 +48,8 @@ TestOmniboxClient::CreateAutocompleteProviderClient() {
           nullptr /* PrefService */,
           std::unique_ptr<SearchTermsData>(new SearchTermsData),
           nullptr /* KeywordWebDataService */,
-          std::unique_ptr<TemplateURLServiceClient>(), base::Closure()));
+          std::unique_ptr<TemplateURLServiceClient>(),
+          base::RepeatingClosure()));
 
   // Save a reference to the created TemplateURLService for test use.
   template_url_service_ = template_url_service.get();

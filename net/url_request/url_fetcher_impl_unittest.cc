@@ -853,8 +853,8 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactory) {
   delegate.CreateFetcher(test_server_->GetURL("/echo"), URLFetcher::POST,
                          CreateSameThreadContextGetter());
   delegate.fetcher()->SetUploadStreamFactory(
-      "text/plain",
-      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+      "text/plain", base::BindRepeating(&URLFetcherTest::CreateUploadStream,
+                                        base::Unretained(this)));
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
@@ -872,8 +872,8 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
   delegate.fetcher()->SetAutomaticallyRetryOn5xx(true);
   delegate.fetcher()->SetMaxRetriesOn5xx(1);
   delegate.fetcher()->SetUploadStreamFactory(
-      "text/plain",
-      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+      "text/plain", base::BindRepeating(&URLFetcherTest::CreateUploadStream,
+                                        base::Unretained(this)));
   delegate.StartFetcherAndWait();
 
   EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());

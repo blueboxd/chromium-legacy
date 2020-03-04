@@ -5,12 +5,22 @@
 import 'chrome://tab-strip/tab.js';
 import 'chrome://tab-strip/tab_group.js';
 
+import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
+
 suite('TabGroup', () => {
+  const groupId = 'my-group-id';
+
   let tabGroupElement;
+  let testTabStripEmbedderProxy;
 
   setup(() => {
+    testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
+    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+
     document.body.innerHTML = '';
     tabGroupElement = document.createElement('tabstrip-tab-group');
+    tabGroupElement.dataset.groupId = groupId;
     tabGroupElement.appendChild(document.createElement('tabstrip-tab'));
     document.body.appendChild(tabGroupElement);
   });
@@ -54,5 +64,18 @@ suite('TabGroup', () => {
     assertEquals(originalChipRect.top, newChipRect.top);
     assertEquals(originalChipRect.right, newChipRect.right);
     assertEquals(originalChipRect.bottom, newChipRect.bottom);
+  });
+
+  test('ChipOpensEditDialog', async () => {
+    const chip = tabGroupElement.$('#chip');
+    const chipRect = chip.getBoundingClientRect();
+    chip.click();
+    const [calledGroupId, locationX, locationY, width, height] =
+        await testTabStripEmbedderProxy.whenCalled('showEditDialogForGroup');
+    assertEquals(groupId, calledGroupId);
+    assertEquals(chipRect.left, locationX);
+    assertEquals(chipRect.top, locationY);
+    assertEquals(chipRect.width, width);
+    assertEquals(chipRect.height, height);
   });
 });

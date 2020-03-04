@@ -122,7 +122,7 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
   // have been created yet, wait for one to be created before returning the
   // Closure. This method should be called the same number of times as
   // MOCK_TRIGGERABLE_CLIENT_SOCKETs are created in the test.
-  base::Closure WaitForTriggerableSocketCreation();
+  base::OnceClosure WaitForTriggerableSocketCreation();
 
  private:
   NetLog* net_log_;
@@ -132,8 +132,8 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
   int client_socket_index_;
   int client_socket_index_max_;
   base::TimeDelta delay_;
-  base::queue<base::Closure> triggerable_sockets_;
-  base::Closure run_loop_quit_closure_;
+  base::queue<base::OnceClosure> triggerable_sockets_;
+  base::OnceClosure run_loop_quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransportClientSocketFactory);
 };

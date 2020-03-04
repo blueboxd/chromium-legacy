@@ -7,12 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='box'",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [176, 218, 394, 185],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='box'",
+          "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [176, 218, 388, 203],
           "reason": "paint property change"
         },

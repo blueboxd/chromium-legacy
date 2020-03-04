@@ -32,7 +32,7 @@ class UploadUserData : public base::SupportsUserData::Data {
  public:
   static net::URLFetcher::CreateDataCallback CreateCreateDataCallback(
       int depth) {
-    return base::Bind(&UploadUserData::CreateUploadUserData, depth);
+    return base::BindRepeating(&UploadUserData::CreateUploadUserData, depth);
   }
 
   static const void* const kUserDataKey;

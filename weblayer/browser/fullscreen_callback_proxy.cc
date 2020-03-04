@@ -35,6 +35,9 @@ void FullscreenCallbackProxy::EnterFullscreen(base::OnceClosure exit_closure) {
 
 void FullscreenCallbackProxy::ExitFullscreen() {
   TRACE_EVENT0("weblayer", "Java_FullscreenCallbackProxy_exitFullscreen");
+  // If the web contents initiated the fullscreen exit, the closure will still
+  // be valid, so clean it up now.
+  exit_fullscreen_closure_.Reset();
   Java_FullscreenCallbackProxy_exitFullscreen(AttachCurrentThread(),
                                               java_delegate_);
 }

@@ -83,7 +83,6 @@ class CORE_EXPORT PaintLayerPainter {
                                    GraphicsContext&,
                                    const PaintLayerPaintingInfo&,
                                    bool selection_only,
-                                   bool force_paint_chunks_for_phases,
                                    PaintLayerFlags);
   void PaintForegroundForFragmentsWithPhase(PaintPhase,
                                             const PaintLayerFragments&,

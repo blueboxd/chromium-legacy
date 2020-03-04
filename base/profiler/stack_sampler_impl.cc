@@ -36,7 +36,7 @@ StackSamplerImpl::~StackSamplerImpl() = default;
 
 void StackSamplerImpl::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
   aux_unwinder_ = std::move(unwinder);
-  aux_unwinder_->AddNonNativeModules(module_cache_);
+  aux_unwinder_->AddInitialModules(module_cache_);
 }
 
 void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,

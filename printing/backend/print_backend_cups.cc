@@ -26,14 +26,6 @@
 
 namespace printing {
 
-namespace {
-
-const char kCUPSPrinterInfoOpt[] = "printer-info";
-const char kCUPSPrinterStateOpt[] = "printer-state";
-const char kCUPSPrinterTypeOpt[] = "printer-type";
-
-}  // namespace
-
 PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
                                    http_encryption_t encryption,
                                    bool blocking,
@@ -50,7 +42,7 @@ bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
   // CUPS can have 'printers' that are actually scanners. (not MFC)
   // At least on Mac. Check for scanners and skip them.
   const char* type_str =
-      cupsGetOption(kCUPSPrinterTypeOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterType, printer.num_options, printer.options);
   if (type_str) {
     int type;
     if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
@@ -61,15 +53,15 @@ bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
   printer_info->is_default = printer.is_default;
 
   const char* info =
-      cupsGetOption(kCUPSPrinterInfoOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterInfo, printer.num_options, printer.options);
 
   const char* state =
-      cupsGetOption(kCUPSPrinterStateOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterState, printer.num_options, printer.options);
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info =
-      cupsGetOption(kDriverNameTagName, printer.num_options, printer.options);
+  const char* drv_info = cupsGetOption(kCUPSOptPrinterMakeAndModel,
+                                       printer.num_options, printer.options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
 

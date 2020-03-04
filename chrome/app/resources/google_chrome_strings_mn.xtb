@@ -41,6 +41,7 @@
 <translation id="1900795423379050516">Хэрэв энэ хуудсан дээр тохиргоог харуулахгүй байгаа бол <ph name="LINK_BEGIN" />
       Chrome хөтчийнхөө тохиргоо<ph name="LINK_END" /> дотроос хайна уу</translation>
 <translation id="1919130412786645364">Chromium-д нэвтрэхийг зөвшөөрөх</translation>
+<translation id="1983547493073464667">Chrome таны нууц үгсийг шалгах боломжгүй байна</translation>
 <translation id="2063848847527508675">Шинэчлэлтийг хэрэгжүүлэхийн тулд Chrome үйлдлийн системийг дахин эхлүүлнэ үү.</translation>
 <translation id="2094919256425865063">Ямар ч байсан Chrome-с гарах уу?</translation>
 <translation id="2120620239521071941">Энэ нь төхөөрөмжөөс <ph name="ITEMS_COUNT" /> зүйлийг устгана. Дараа нь өгөгдлөө сэргээхийн тулд Chrome-д <ph name="USER_EMAIL" />-р нэвтэрнэ үү.</translation>
@@ -56,15 +57,19 @@
 <translation id="2467438592969358367">Google Chrome таны нууц үгийг экспортлох хүсэлтэй байна. Үүнийг зөвшөөрч байгаа бол Windows-н нууц үгээ оруулна уу.</translation>
 <translation id="2485422356828889247">Устгах</translation>
 <translation id="2534507159460261402">Google Pay (Chrome-д хуулсан)</translation>
+<translation id="2559627601176023786">Хадгалсан ямар ч нууц үг байхгүй байна. Chrome нь таныг нууц үгсээ Google Бүртгэлдээ хадгалах үед тэднийг шалгах боломжтой.</translation>
 <translation id="2580411288591421699">Одоо ажиллаж байгаа Google Chrome-ийн хувилбарыг суурьлуулах боломжгүй. Google Chrome-оо хаагаад, дахин оролдоно уу.</translation>
 <translation id="2586406160782125153">Энэ нь төхөөрөмжөөс таны хайлтын өгөгдлийг устгах болно. Өгөгдлөө дараа нь сэргээхийн тулд Chrome-д <ph name="USER_EMAIL" />-р нэвтэрнэ үү.</translation>
 <translation id="2588322182880276190">Chrome лого</translation>
+<translation id="261226884343006626">Chrome таны нууц үгсийг шалгах боломжгүй байна. Маргааш дахин оролдоно уу.</translation>
+<translation id="2622559029861875898">Chrome нь шинэчлэлтийг шалгах боломжгүй байна. Интернэт холболтоо шалгаж үзнэ үү.</translation>
 <translation id="2644798301485385923">Chrome OS-н систем</translation>
 <translation id="2652691236519827073">Холбоосыг шинэ Chrome-н чихтэй хуудсанд нээх</translation>
 <translation id="2665296953892887393">Google рүү эвдрэлийн тайлан болон <ph name="UMA_LINK" />-ыг илгээх замаар Google Chrome-ыг сайжруулахад туслаач</translation>
 <translation id="2689103672227170538">Энэ өргөтгөл нь таныг Chrome-г эхлүүлэх үед хуудсанд харагдах зүйлийг өөрчилсөн.</translation>
 <translation id="2765403129283291972">Энэ сайтыг ашиглахын тулд Chrome-д таны микрофонд хандах зөвшөөрөл шаардлагатай</translation>
 <translation id="2770231113462710648">Стандарт вэб хөтчийг дараах руу өөрчил:</translation>
+<translation id="2775140325783767197">Chrome таны нууц үгсийг шалгах боломжгүй байна. Интернэт холболтоо шалгаж үзнэ үү.</translation>
 <translation id="2799223571221894425">Дахин эхлүүлэх</translation>
 <translation id="2847461019998147611">Google Chrome-г энэ хэлээр харуулах</translation>
 <translation id="2857540653560290388">Chrome-г эхлүүлж байна...</translation>
@@ -80,6 +85,7 @@
 <translation id="3395323229510056640">Chrome үйлдлийн системээс тусламж авах</translation>
 <translation id="3396977131400919238">Суулгах явцад үйлдлийн системд алдаа гарлаа. Google Chrome-ыг дахин татаж авна уу.</translation>
 <translation id="3398288718845740432">Chrome-ын цэсэнд нуух</translation>
+<translation id="3434246496373299699">Chrome нь таныг Google Бүртгэлээрээ нэвтрэх үед таны нууц үгсийг шалгах боломжтой</translation>
 <translation id="3451115285585441894">Chrome руу нэмж байна...</translation>
 <translation id="345171907106878721">Chrome-д өөрийгөө нэмэх</translation>
 <translation id="34857402635545079">Chrome-н (<ph name="URL" />) өгөгдлийг мөн адил устгах</translation>
@@ -95,6 +101,7 @@
 <translation id="386202838227397562">Бүх Google Chrome-ын цонхнуудыг хааж дахин оролдоно уу.</translation>
 <translation id="3873044882194371212">Холбоосыг Chrome-н нууцлалтай цонхонд нээх</translation>
 <translation id="3889417619312448367">Google Chrome-ыг устгах</translation>
+<translation id="3943605108614542032">Таны администратор Chrome-н шинэчлэлтийг удирддаг</translation>
 <translation id="4050175100176540509">Хамгийн сүүлийн хувилбар дээр аюулгүй байдлын чухал сайжруулалт болон шинэ функцийг санал болгож байна.</translation>
 <translation id="4053720452172726777">Google Chrome-ыг өөртөө тохируулан хянах</translation>
 <translation id="4143243756087420366">Chrome-н нэр болон зураг</translation>
@@ -208,6 +215,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7808348361785373670">Кромоос хасах</translation>
 <translation id="7825851276765848807">Тодорхой бус шалтгаанаар суурьлуулалт амжилтгүй боллоо. Google Chrome-ыг дахин татаж авна уу.</translation>
 <translation id="7855730255114109580">Google Chrome-г шинэчилсэн байна</translation>
+<translation id="7888686278524752658">Chrome-г шинэчлээгүй, ямар нэг алдаа гарлаа. Chrome-г шинэчлэхтэй холбоотой асуудлууд болон амжилтгүй болсон шинэчлэлтүүдийг засна уу.</translation>
 <translation id="7890208801193284374">Нэг компьютерыг олон хэрэглэгч хуваан хэрэглэж байгаа тохиолдолд хэрэглэгч бүр өөрийн хүссэнээр Chrome-ыг тохируулж, хайлт хийх боломжтой.</translation>
 <translation id="7896673875602241923">Өмнө нь хэн нэгэн энэ компьютероос Chrome-д <ph name="ACCOUNT_EMAIL_LAST" /> бүртгэлээр нэвтэрсэн байна. Мэдээллээ тусaд нь байлгахын тулд Chrome-н шинэ хэрэглэгч үүсгэнэ үү.</translation>
 <translation id="7916016681687251387">Chrome үйлдлийн систем таны өгөгдлийг синк хийж чадсангүй. Одоо засна уу.</translation>
@@ -238,6 +246,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="8862326446509486874">Танд системийн түвшинд суулгах зохих эрх байхгүй байна. Суулгагчийг админы хувиар дахин ажиллуулахыг оролдож үзнэ үү.</translation>
 <translation id="8914504000324227558">Chrome-г дахин эхлүүлэх</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome-н шинэчлэлт боломжтой байна}=1{Chrome-н шинэчлэлт боломжтой байна}other{Chromium-н шинэчлэлт # хоногийн турш боломжтой байсаар байна}}</translation>
+<translation id="9025321516765676895">Таны нууц үг хэт олон байгаа учир Chrome тэднийг шалгах боломжгүй байна</translation>
 <translation id="9026991721384951619">Таны бүртгэлийн мэдээлэл хуучирсан учраас Chrome OS нь таны өгөгдлийг sync хийж чадсангүй.</translation>
 <translation id="9067395829937117663">Google Chrome-д Windows 7 болон үүнээс дээших хувилбарууд шаардлагатай.</translation>
 <translation id="911206726377975832">Хайлтын мэдээллээ бас устгамаар байна уу?</translation>

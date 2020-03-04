@@ -229,7 +229,46 @@ var availableTests = [
     };
 
     chrome.passwordsPrivate.getCompromisedCredentialsInfo(callback);
-  }
+  },
+
+  function getPlaintextCompromisedPassword() {
+    var compromisedCredential = {
+      id: 0,
+      formattedOrigin: 'example.com',
+      signonRealm: 'https://example.com',
+      username: 'alice',
+      elapsedTimeSinceCompromise: '3 days ago',
+      compromiseType: 'LEAKED',
+    };
+
+    chrome.passwordsPrivate.getPlaintextCompromisedPassword(
+        compromisedCredential, chrome.passwordsPrivate.PlaintextReason.VIEW,
+        credentialWithPassword => {
+          chrome.test.assertEq('plaintext', credentialWithPassword.password);
+          chrome.test.succeed();
+        });
+  },
+
+  function getPlaintextCompromisedPasswordFails() {
+    var compromisedCredential = {
+      id: 0,
+      formattedOrigin: 'example.com',
+      signonRealm: 'https://example.com',
+      username: 'alice',
+      elapsedTimeSinceCompromise: '3 days ago',
+      compromiseType: 'LEAKED',
+    };
+
+    chrome.passwordsPrivate.getPlaintextCompromisedPassword(
+        compromisedCredential, chrome.passwordsPrivate.PlaintextReason.VIEW,
+        credentialWithPassword => {
+          chrome.test.assertLastError(
+              'Could not obtain plaintext compromised password. Either the ' +
+              'user is not authenticated or no matching password could be ' +
+              'found.');
+          chrome.test.succeed();
+        });
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

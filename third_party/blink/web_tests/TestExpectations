@@ -6748,3 +6748,6 @@ crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/ti
 
 # Sheriff 2020-03-04
 crbug.com/1058244 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]
+
+# Ecosystem-Infra Sheriff 2020-03-04
+crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/suspended-context-messageport.https.html [ Failure ]

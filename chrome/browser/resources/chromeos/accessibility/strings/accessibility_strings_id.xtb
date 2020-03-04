@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Tidak ada judul level 4 berikutnya</translation>
+<translation id="1212770441379271564">Beberapa pintasan berikutnya bukanlah perintah ChromeVox, tetapi pintasan tersebut tetap berguna untuk mengoptimalkan Chrome.
+    Untuk memilih navigasi maju melalui item tindakan seperti tombol dan link, tekan tombol Tab. Untuk memilih navigasi mundur, tekan Shift+Tab.
+    Untuk memasukkan kotak alamat browser Chrome, yang juga disebut omnibox, tekan Control + L.
+    Untuk membuka tab baru secara otomatis, tekan Control+T. Kursor akan berada dalam omnibox.
+    Untuk menutup tab, tekan Control+W.
+    Untuk berpindah antara tab yang terbuka, gunakan Control+Tab.
+    Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara untuk Chrome</translation>
 <translation id="1225969361094801578">Dark Slate Grey</translation>
 <translation id="1229276918471378188">Lompatan sebelumnya</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">pemilih warna</translation>
 <translation id="4221012616705981690">Tidak ada daftar sebelumnya</translation>
 <translation id="4221071177874897997">Indikasikan cetak tebal:</translation>
+<translation id="4225355998815256469">Kontrol Formulir</translation>
 <translation id="4229646983878045487">tanggal dan waktu</translation>
 <translation id="4230834257931120629">Light Slate Grey</translation>
 <translation id="4231102694147661229">Aktifkan Opsi Developer</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Kalimat</translation>
 <translation id="4623097797855662355">Kolofon</translation>
 <translation id="463135993322337640">Tekan ChromeVox o, n untuk melihat apa saja yang baru</translation>
+<translation id="4646606380313237501">{"ar": "Arab",
+    "as": "Assam",
+    "aw": "Awadhi",
+    "be": "Bengali",
+    "bg": "Bulgaria",
+    "bh": "Bihari",
+    "bo": "Tibet",
+    "br": "Braj",
+    "ca": "Katala",
+    "ckb": "Sorani",
+    "cs": "Ceko",
+    "cy": "Wales",
+    "da": "Denmark",
+    "de": "Jerman",
+    "de_CH": "Jerman (Swiss)",
+    "de_DE": "Jerman (Jerman)",
+    "dra": "Dravidia",
+    "el": "Yunani",
+    "en": "Inggris",
+    "en_CA": "Inggris (Kanada)",
+    "en_GB": "Inggris (Inggris Raya)",
+    "en_US": "Inggris (Amerika Serikat)",
+    "eo": "Esperanto",
+    "es": "Spanyol",
+    "et": "Estonia",
+    "fa": "Persia",
+    "fr": "Prancis",
+    "fr_CA": "Prancis (Kanada)",
+    "fr_FR": "Prancis (Prancis)",
+    "fi": "Finlandia",
+    "ga": "Irlandia",
+    "gd": "Gaelig",
+    "gon": "Gondi",
+    "gu": "Gujarati",
+    "he": "Ibrani",
+    "hi": "Hindi",
+    "hr": "Kroasia",
+    "hu": "Hungaria",
+    "hy": "Armenia",
+    "is": "Islandia",
+    "it": "Italia",
+    "iu": "Inuktitut",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Korea",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Kashmiri",
+    "lt": "Lituania",
+    "lv": "Latvia",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Malta",
+    "mwr": "Marwari",
+    "mn": "Mongolia",
+    "mun": "Munda",
+    "nb": "Bokmål Norwegia",
+    "ne": "Nepali",
+    "nl": "Belanda",
+    "no": "Norwegia",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Polandia",
+    "pt": "Portugis",
+    "pu": "Punjabi",
+    "ro": "Rumania",
+    "ru": "Rusia",
+    "sa": "Sanskrit",
+    "si": "Sindhi",
+    "sin": "Sinhala",
+    "sk": "Slovakia",
+    "sl": "Slovenia",
+    "sr": "Serbia",
+    "sv": "Swedia",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "tr": "Turki",
+    "tsn": "Afrika",
+    "uk": "Ukraina",
+    "ur": "Urdu",
+    "vi": "Vietnam",
+    "zh": "China",
+    "zh_TW": "China (Han Tradisional)"}</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
 <translation id="4660783501463101648">Versi Classic dihapus. Tombol keyboard untuk beralih kembali ke ChromeVox Classic telah dihapus.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Mode lekat diaktifkan</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, kotak teks</translation>
+<translation id="532485153932049746">Pemformatan teks
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5331522683003474486">Kontrol perangkat hanya dengan satu atau dua tombol.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Notifikasi modal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{titik koma}other{# titik koma}}</translation>
+<translation id="5420259671171615858">Telusuri menu</translation>
 <translation id="5435274640623994081">Aktifkan pencatatan earcon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang dari}other{# tanda kurang dari}}</translation>
 <translation id="5444587279251314700">(aktif)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Kesalahan ejaan terdeteksi</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">kembali</translation>
+<translation id="7429415133937917139">Menyimulasikan keluaran tampilan braille yang dapat diperbarui
+        di panel ChromeVox pada bagian atas layar.</translation>
 <translation id="7434509671034404296">Pengembang</translation>
 <translation id="743783356331413498">Contoh</translation>
 <translation id="7439060726180460871">Direktori</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Tombol radio sebelumnya</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Tidak ada kotak kombinasi berikutnya</translation>
+<translation id="772146615414628379">Selamat! Anda telah berhasil mempelajari dasar-dasar menggunakan ChromeVox. Ingat bahwa Anda dapat membuka menu perintah ChromeVox kapan saja dengan menekan tombol Penelusuran+Titik. Untuk mempelajari ChromeVox dan Chrome OS lebih lanjut, buka artikel berikut ini.
+    Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk memilih tombol Tutup, lalu klik tombolnya.</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7731785449856576010">Tidak ada widget media berikutnya</translation>
 <translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tombol panah untuk memilih sel</translation>

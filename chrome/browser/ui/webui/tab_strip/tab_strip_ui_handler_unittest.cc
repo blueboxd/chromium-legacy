@@ -47,6 +47,10 @@ class StubTabStripUIEmbedder : public TabStripUIEmbedder {
   void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override {}
+  void ShowEditDialogForGroupAtPoint(gfx::Point point,
+                                     gfx::Rect rect,
+                                     tab_groups::TabGroupId group_id) override {
+  }
   TabStripUILayout GetLayout() override { return TabStripUILayout(); }
   SkColor GetColor(int id) const override { return SK_ColorWHITE; }
 };

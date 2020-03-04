@@ -437,8 +437,14 @@ Response InspectorOverlayAgent::setShowDebugBorders(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowDebugBorders(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    if (show)
+      debug_state.show_debug_borders.set();
+    else
+      debug_state.show_debug_borders.reset();
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
   return Response::OK();
 }
 
@@ -453,8 +459,11 @@ Response InspectorOverlayAgent::setShowFPSCounter(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowFPSCounter(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    debug_state.show_fps_counter = show;
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
   return Response::OK();
 }
 
@@ -469,8 +478,11 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowPaintRects(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    debug_state.show_paint_rects = show;
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
@@ -487,8 +499,12 @@ Response InspectorOverlayAgent::setShowLayoutShiftRegions(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowLayoutShiftRegions(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    debug_state.show_layout_shift_regions = show;
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
+
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
@@ -505,8 +521,15 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowScrollBottleneckRects(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    debug_state.show_touch_event_handler_rects = show;
+    debug_state.show_wheel_event_handler_rects = show;
+    debug_state.show_non_fast_scrollable_rects = show;
+    debug_state.show_main_thread_scrolling_reason_rects = show;
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
+
   return Response::OK();
 }
 
@@ -521,8 +544,11 @@ Response InspectorOverlayAgent::setShowHitTestBorders(bool show) {
   WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
   // While a frame is being detached the inspector will shutdown and
   // turn off debug overlays, but the WebFrameWidget is already gone.
-  if (widget_impl)
-    widget_impl->Client()->SetShowHitTestBorders(show);
+  if (widget_impl) {
+    cc::LayerTreeDebugState debug_state = widget_impl->GetLayerTreeDebugState();
+    debug_state.show_hit_test_borders = show;
+    widget_impl->SetLayerTreeDebugState(debug_state);
+  }
   return Response::OK();
 }
 

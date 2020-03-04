@@ -8,7 +8,7 @@ namespace blink {
 
 PaintChunker::PaintChunker()
     : current_properties_(PropertyTreeState::Uninitialized()),
-      force_new_chunk_(false) {}
+      force_new_chunk_(true) {}
 
 PaintChunker::~PaintChunker() = default;
 
@@ -37,31 +37,30 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
   current_properties_ = properties;
 }
 
-void PaintChunker::ForceNewChunk() {
-  force_new_chunk_ = true;
-  // Always use a new chunk id for a forced chunk which may be for a subsequence
-  // which needs the chunk id to be independence with previous chunks.
-  next_chunk_id_ = base::nullopt;
-}
-
 void PaintChunker::AppendByMoving(PaintChunk&& chunk) {
   wtf_size_t next_chunk_begin_index =
       chunks_.IsEmpty() ? 0 : LastChunk().end_index;
   chunks_.emplace_back(next_chunk_begin_index, std::move(chunk));
 }
 
-void PaintChunker::CreateNewChunk() {
+PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
 #if DCHECK_IS_ON()
   // If this DCHECKs are hit we are missing a call to update the properties.
   // See: ScopedPaintChunkProperties.
   DCHECK(!IsInInitialState());
   // At this point we should have all of the properties given to us.
   DCHECK(current_properties_.IsInitialized());
-  DCHECK(next_chunk_id_);
 #endif
-  wtf_size_t begin = chunks_.IsEmpty() ? 0 : LastChunk().end_index;
-  chunks_.emplace_back(begin, begin, *next_chunk_id_, current_properties_);
-  next_chunk_id_ = base::nullopt;
+
+  if (WillForceNewChunk() || current_properties_ != LastChunk().properties) {
+    if (!next_chunk_id_)
+      next_chunk_id_.emplace(id);
+    wtf_size_t begin = chunks_.IsEmpty() ? 0 : LastChunk().end_index;
+    chunks_.emplace_back(begin, begin, *next_chunk_id_, current_properties_);
+    next_chunk_id_ = base::nullopt;
+    force_new_chunk_ = false;
+  }
+  return LastChunk();
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
@@ -69,41 +68,28 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
                                item.IsGraphicsLayerWrapper() ||
                                item.IsScrollHitTest() || item.IsScrollbar();
   if (item_forces_new_chunk)
-    ForceNewChunk();
+    SetForceNewChunk(true);
 
-  if (!chunks_.IsEmpty() && !force_new_chunk_ &&
-      current_properties_ == LastChunk().properties) {
-    // Continue the last chunk as the current chunk.
-    AddItemToCurrentChunk(item);
-    // We don't create a new chunk when UpdateCurrentPaintChunkProperties()
-    // just changed |next_chunk_id_| but not |current_properties_|. Clear
-    // |next_chunk_id_| which has been ignored.
-    next_chunk_id_ = base::nullopt;
-    return false;
-  }
+  auto previous_size = size();
+  auto& chunk = EnsureCurrentChunk(item.GetId());
+  bool created_new_chunk = size() > previous_size;
 
-  // Use the first display item's id as the chunk id if it's not set explicitly.
-  if (!next_chunk_id_)
-    next_chunk_id_.emplace(item.GetId());
-  CreateNewChunk();
-  AddItemToCurrentChunk(item);
-
-  // When forcing a new chunk, we still need to force new chunk for the next
-  // display item. Otherwise reset force_new_chunk_ to false.
-  if (!item_forces_new_chunk)
-    force_new_chunk_ = false;
-
-  return true;
-}
-
-void PaintChunker::AddItemToCurrentChunk(const DisplayItem& item) {
-  auto& chunk = LastChunk();
   chunk.bounds.Unite(item.VisualRect());
   if (item.DrawsContent())
     chunk.drawable_bounds.Unite(item.VisualRect());
   chunk.outset_for_raster_effects =
       std::max(chunk.outset_for_raster_effects, item.OutsetForRasterEffects());
   chunk.end_index++;
+
+  // When forcing a new chunk, we still need to force new chunk for the next
+  // display item. Otherwise reset force_new_chunk_ to false.
+  DCHECK(!force_new_chunk_);
+  if (item_forces_new_chunk) {
+    DCHECK(created_new_chunk);
+    SetForceNewChunk(true);
+  }
+
+  return created_new_chunk;
 }
 
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {

@@ -9,6 +9,7 @@ mojom_component("mojom") {
   macro_prefix = "TRACING_MOJOM"
 
   sources = [
+    "background_tracing_agent.mojom",
     "traced_process.mojom",
     "tracing_service.mojom",
   ]

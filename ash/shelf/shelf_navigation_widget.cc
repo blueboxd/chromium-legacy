@@ -400,7 +400,9 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
                                              ShelfView* shelf_view)
     : shelf_(shelf),
       delegate_(new ShelfNavigationWidget::Delegate(shelf, shelf_view)),
-      bounds_animator_(std::make_unique<views::BoundsAnimator>(delegate_)),
+      bounds_animator_(
+          std::make_unique<views::BoundsAnimator>(delegate_,
+                                                  /*use_transforms=*/true)),
       back_button_metrics_reporter_(
           std::make_unique<NavigationButtonAnimationMetricsReporter>(
               shelf,

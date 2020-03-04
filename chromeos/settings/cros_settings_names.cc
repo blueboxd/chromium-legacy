@@ -114,6 +114,11 @@ const char kReportDeviceTimezoneInfo[] =
 // be included in status reports to the device management server.
 const char kReportDeviceMemoryInfo[] = "cros.device_status.report_memory_info";
 
+// A boolean pref that determines whether the device backlight information
+// should be included in status reports to the device management server.
+const char kReportDeviceBacklightInfo[] =
+    "cros.device_status.report_backlight_info";
+
 // A boolean pref that indicates whether the current location should be reported
 // along with device policy requests.
 const char kReportDeviceLocation[] = "cros.device_status.report_location";

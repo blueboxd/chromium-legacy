@@ -59,6 +59,7 @@ class BaseTest : public testing::Test {
   BaseTest() : profile_manager_(TestingBrowserProcess::GetGlobal()) {
     EXPECT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
+    DeepScanningDialogDelegate::DisableUIForTesting();
   }
 
   void EnableFeatures(const std::vector<base::Feature>& features) {

@@ -14,7 +14,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
           "rect": [100, 100, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         }
       ]
     }

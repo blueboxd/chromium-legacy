@@ -9,6 +9,7 @@ import doctest
 import itertools
 import os
 import plistlib
+import re
 import subprocess
 import sys
 
@@ -67,8 +68,20 @@ def FillXcodeVersion(settings, developer_dir):
 
 def FillMachineOSBuild(settings):
   """Fills OS build number into |settings|."""
-  settings['machine_os_build'] = subprocess.check_output(
-      ['sw_vers', '-buildVersion']).strip()
+  machine_os_build = subprocess.check_output(['sw_vers',
+                                              '-buildVersion']).strip()
+  settings['machine_os_build'] = machine_os_build
+
+  # The reported build number is made up from the kernel major version number,
+  # a minor version represented as a letter, and a build number.
+  #
+  # For example, the macOS 10.15.3 GM build is 19D76.
+  # - 19 is the Darwin kernel that ships with 10.15.
+  # - D is minor version 4. 10.15.0 builds had minor version 1.
+  # - 76 is the build number. 75 other builds were stamped before GM came out.
+  build_match = re.match(r'^(\d+)([A-Z])(\d+)$', machine_os_build)
+  assert build_match, "Unexpected macOS build format: %r" % machine_os_build
+  settings['machine_os_build_major'] = int(build_match.group(1), 10)
 
 
 def FillSDKPathAndVersion(settings, platform, xcode_version):

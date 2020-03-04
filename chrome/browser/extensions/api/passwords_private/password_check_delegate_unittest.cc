@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -43,6 +44,8 @@ constexpr char kExampleApp[] = "com.example.app";
 
 constexpr char kUsername1[] = "alice";
 constexpr char kUsername2[] = "bob";
+
+constexpr char kPassword[] = "s3cre3t";
 
 using api::passwords_private::CompromisedCredential;
 using api::passwords_private::CompromisedCredentialsInfo;
@@ -103,10 +106,12 @@ password_manager::CompromisedCredentials MakeCompromised(
 }
 
 PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
-                               base::StringPiece username) {
+                               base::StringPiece username,
+                               base::StringPiece password = "") {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
   form.username_value = base::ASCIIToUTF16(username);
+  form.password_value = base::ASCIIToUTF16(password);
   return form;
 }
 
@@ -260,6 +265,79 @@ TEST_F(PasswordCheckDelegateTest, OnGetCompromisedCredentialsInfo) {
   RunUntilIdle();
   EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED,
             event_router_observer().events().at(kEventName)->histogram_value);
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       GetPlaintextCompromisedPasswordRejectsWrongId) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  CompromisedCredential credential = std::move(
+      delegate().GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+  EXPECT_EQ(0, credential.id);
+
+  // Purposefully set a wrong id and verify that trying to get a plaintext
+  // password fails.
+  credential.id = 1;
+  EXPECT_EQ(base::nullopt,
+            delegate().GetPlaintextCompromisedPassword(std::move(credential)));
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       GetPlaintextCompromisedPasswordRejectsWrongSignonRealm) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  CompromisedCredential credential = std::move(
+      delegate().GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+  EXPECT_EQ(kExampleCom, credential.signon_realm);
+
+  // Purposefully set a wrong signon realm and verify that trying to get a
+  // plaintext password fails.
+  credential.signon_realm = kExampleOrg;
+  EXPECT_EQ(base::nullopt,
+            delegate().GetPlaintextCompromisedPassword(std::move(credential)));
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       GetPlaintextCompromisedPasswordRejectsWrongUsername) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  CompromisedCredential credential = std::move(
+      delegate().GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+  EXPECT_EQ(kUsername1, credential.username);
+
+  // Purposefully set a wrong username and verify that trying to get a
+  // plaintext password fails.
+  credential.signon_realm = kUsername2;
+  EXPECT_EQ(base::nullopt,
+            delegate().GetPlaintextCompromisedPassword(std::move(credential)));
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       GetPlaintextCompromisedPasswordReturnsCorrectPassword) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  CompromisedCredential credential = std::move(
+      delegate().GetCompromisedCredentialsInfo().compromised_credentials.at(0));
+  EXPECT_EQ(0, credential.id);
+  EXPECT_EQ(kExampleCom, credential.signon_realm);
+  EXPECT_EQ(kUsername1, credential.username);
+  EXPECT_EQ(nullptr, credential.password);
+
+  base::Optional<CompromisedCredential> opt_credential =
+      delegate().GetPlaintextCompromisedPassword(std::move(credential));
+  ASSERT_TRUE(opt_credential.has_value());
+  EXPECT_EQ(0, opt_credential->id);
+  EXPECT_EQ(kExampleCom, opt_credential->signon_realm);
+  EXPECT_EQ(kUsername1, opt_credential->username);
+  EXPECT_EQ(kPassword, *opt_credential->password);
 }
 
 }  // namespace extensions

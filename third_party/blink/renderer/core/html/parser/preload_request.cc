@@ -145,8 +145,7 @@ Resource* PreloadRequest::Start(Document* document) {
     params.SetLazyImagePlaceholder();
   }
 
-  return PreloadHelper::StartPreload(resource_type_, params,
-                                     document->Fetcher());
+  return PreloadHelper::StartPreload(resource_type_, params, *document);
 }
 
 }  // namespace blink

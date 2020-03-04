@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Настройки за звука</translation>
 <translation id="3626281679859535460">Яркост</translation>
 <translation id="3631369015426612114">Разрешаване на известията от следните източници</translation>
+<translation id="3638400994746983214">Превключване на екрана за поверителност. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Заснемане на област</translation>
 <translation id="371370241367527062">Преден микрофон</translation>
@@ -244,6 +245,7 @@
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
 <translation id="4021716437419160885">Превъртане надолу</translation>
+<translation id="402772165574991617">Използвайте жестове за бързо превключване между приложения и за взаимодействие с вашия Chromebook в режим на таблет.</translation>
 <translation id="4028481283645788203">За по-висока сигурност се изисква парола</translation>
 <translation id="4042660782729322247">Споделяте екрана си</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Изключено за едно приложение}other{Изключено за # приложения}}</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
 <translation id="4665114317261903604">Превключване на режима „Не безпокойте“. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Отключване на устройството с код на родител</translation>
+<translation id="4702647871202761252">Екранът за поверителност е изключен</translation>
 <translation id="4710243778082831592">Настройки за редактора за метод на въвеждане</translation>
 <translation id="4731797938093519117">Достъп на родител</translation>
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
@@ -428,6 +431,7 @@
 <translation id="6559976592393364813">Попитайте администратора</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />, управлява се от администратора ви</translation>
+<translation id="6614169507485700968">Екранът за поверителност е включен</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
 <translation id="6637729079642709226">Промяна на часа</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
@@ -442,6 +446,7 @@
 <translation id="6715542151869432661">Няма намерени мобилни устройства.</translation>
 <translation id="6723839937902243910">Захранване</translation>
 <translation id="6727969043791803658">Свързано, <ph name="BATTERY_PERCENTAGE" />% батерия</translation>
+<translation id="6751052314767925245">Наложено от администратора ви</translation>
 <translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
 <translation id="6752912906630585008">Работен кът <ph name="REMOVED_DESK" /> е премахнат и е обединен с работен кът <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Свързаните устройства с USB-C се захранват</translation>
@@ -529,6 +534,7 @@
 <translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8029629653277878342">За по-висока сигурност се изисква парола или ПИН</translation>
 <translation id="8030169304546394654">Няма връзка</translation>
+<translation id="8042024183333293953">Изпробвайте новото навигиране с жестове</translation>
 <translation id="8048123526339889627">Настройки за Bluetooth</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8061464966246066292">Висок контраст</translation>

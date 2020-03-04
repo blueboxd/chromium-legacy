@@ -31,8 +31,6 @@ namespace safe_browsing {
 
 class DeepScanningDialogViews;
 
-extern const base::Feature kDeepScanningOfUploadsUI;
-
 // A tab modal dialog delegate that informs the user of a background deep
 // scan happening in the given tab with an option to cancel the operation.
 //
@@ -201,6 +199,9 @@ class DeepScanningDialogDelegate {
   // DeepScanningDialogDelegates.
   static void SetFactoryForTesting(Factory factory);
   static void ResetFactoryForTesting();
+
+  // Showing the UI is not possible in unit tests, call this to disable it.
+  static void DisableUIForTesting();
 
   // Determines if a request result should be used to allow a data use or to
   // block it.

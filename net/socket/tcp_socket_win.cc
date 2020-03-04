@@ -489,9 +489,9 @@ int TCPSocketWin::Read(IOBuffer* buf,
   DCHECK(!core_->read_iobuffer_.get());
   // base::Unretained() is safe because RetryRead() won't be called when |this|
   // is gone.
-  int rv =
-      ReadIfReady(buf, buf_len,
-                  base::Bind(&TCPSocketWin::RetryRead, base::Unretained(this)));
+  int rv = ReadIfReady(
+      buf, buf_len,
+      base::BindOnce(&TCPSocketWin::RetryRead, base::Unretained(this)));
   if (rv != ERR_IO_PENDING)
     return rv;
   read_callback_ = std::move(callback);
@@ -932,7 +932,7 @@ void TCPSocketWin::RetryRead(int rv) {
     // |this| is gone.
     rv = ReadIfReady(
         core_->read_iobuffer_.get(), core_->read_buffer_length_,
-        base::Bind(&TCPSocketWin::RetryRead, base::Unretained(this)));
+        base::BindOnce(&TCPSocketWin::RetryRead, base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
   }

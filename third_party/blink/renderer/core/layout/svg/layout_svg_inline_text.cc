@@ -68,10 +68,9 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   LayoutText::StyleDidChange(diff, old_style);
   UpdateScaledFont();
 
-  bool new_preserves =
-      Style() ? StyleRef().WhiteSpace() == EWhiteSpace::kPre : false;
+  bool new_preserves = StyleRef().WhiteSpace() == EWhiteSpace::kPre;
   bool old_preserves =
-      old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
+      old_style && old_style->WhiteSpace() == EWhiteSpace::kPre;
   if (old_preserves != new_preserves) {
     ForceSetText(OriginalText());
     return;

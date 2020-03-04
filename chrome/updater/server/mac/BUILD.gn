@@ -2,18 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("mac") {
-  sources = [
-    "server.h",
-    "server.mm",
-    "service_delegate.h",
-    "service_delegate.mm",
-    "service_protocol.h",
-  ]
+source_set("protocol") {
+  sources = [ "service_protocol.h" ]
 
-  deps = [
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater:version_header",
-  ]
+  deps = [ "//chrome/updater:base" ]
 }

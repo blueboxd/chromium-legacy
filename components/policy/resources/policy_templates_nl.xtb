@@ -756,21 +756,6 @@
 <translation id="2151831603578119302">Snelkoppelingen voor toegankelijkheidsfuncties inschakelen</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2156755242840687300">Ingeschakelde externe afdrukservers</translation>
-<translation id="2159024114213303519">Als je dit beleid configureert, wordt Ambient-verificatie voor incognito- en gastprofielen toegestaan/niet toegestaan in <ph name="PRODUCT_NAME" />.
-
-      Ambient-verificatie is HTTP-verificatie met standaardgegevens als er geen expliciete gegevens worden verstrekt via uitdaging/reactie-schema's van NTLM/Kerberos/Negotiate.
-
-      Als je <ph name="REGULAR_ONLY_OPTION_NAME" /> (waarde 0) instelt, is Ambient-verificatie alleen toegestaan voor normale sessies. Ambient-verificatie is dan niet toegestaan voor incognito- en gastsessies.
-
-      Als je <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (waarde 1) instelt, is Ambient-verificatie toegestaan voor normale en incognitosessies. Ambient-verificatie is dan niet toegestaan voor gastsessies.
-
-      Als je <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (waarde 2) instelt, is Ambient-verificatie toegestaan voor normale en gastsessies. Ambient-verificatie is dan niet toegestaan voor incognitosessies.
-
-      Als je <ph name="ALL_OPTION_NAME" /> (waarde 3) instelt, is Ambient-verificatie toegestaan voor alle sessies.
-
-      Ambient-verificatie is altijd toegestaan voor normale profielen.
-
-      Als het beleid niet is ingesteld, kan Ambient-verificatie niet worden gebruikt voor incognito- en gastsessies in toekomstige releases van <ph name="PRODUCT_NAME" />, omdat ze niet zijn toegestaan.</translation>
 <translation id="2160336427036785721">Hiermee configureer je de hoeveelheid geheugen die één instantie van <ph name="PRODUCT_NAME" /> kan gebruiken voordat tabbladen worden verwijderd om geheugen te besparen (dit houdt in dat het geheugen dat voor het tabblad wordt gebruikt, wordt vrijgemaakt en dat het tabblad opnieuw moet worden geladen als de gebruiker naar dit tabblad schakelt).
 
       Als het beleid is ingesteld, worden tabbladen in de browser verwijderd om geheugen te besparen als de limiet wordt bereikt. Er is geen garantie dat de browser altijd onder de limiet wordt uitgevoerd. Elke waarde lager dan 1024 wordt afgerond naar 1024.
@@ -2942,7 +2927,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5306186200045823863">De verouderde PKI-infrastructuur van Symantec Corporation vertrouwen</translation>
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5311275381462687162">Instelling voor standaardgedrag voor verouderde cookies van <ph name="ATTRIBUTE_SAMESITE_NAME" /></translation>
-<translation id="5313116350102437846">Met dit beleid wordt bepaald of gebruikers die zijn ingeschreven voor 'Geavanceerde beveiliging' hun downloads naar Google mogen sturen om ze te laten scannen. Als dit beleid is ingesteld op True of niet is ingesteld, wordt ingeschreven gebruikers gevraagd hun bestanden naar Google te sturen voor een uitgebreide scan. Als gebruikers 'Scannen' selecteren, worden hun downloads naar Google gestuurd. Als dit beleid is ingesteld op False, ontvangen gebruikers geen melding en worden hun downloads niet naar Google gestuurd.</translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
 <translation id="5321755462836179869">Staat native meldingen toe</translation>
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.

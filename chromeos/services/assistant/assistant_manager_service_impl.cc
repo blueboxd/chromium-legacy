@@ -59,11 +59,9 @@
     return;                                                                 \
   }
 
-using assistant_client::ActionModule;
-using assistant_client::MediaStatus;
-using media_session::mojom::MediaSessionAction;
-using media_session::mojom::MediaSessionInfo;
+using ActionModule = assistant_client::ActionModule;
 using Resolution = assistant_client::ConversationStateListener::Resolution;
+using MediaStatus = assistant_client::MediaStatus;
 using CommunicationErrorType =
     chromeos::assistant::AssistantManagerService::CommunicationErrorType;
 
@@ -157,52 +155,6 @@ std::vector<std::pair<std::string, std::string>> ToAuthTokensOrEmpty(
 
 }  // namespace
 
-class AssistantManagerServiceImpl::AssistantMediaSessionObserver
-    : public media_session::mojom::MediaSessionObserver {
- public:
-  AssistantMediaSessionObserver(
-      AssistantManagerServiceImpl* assistant_manager_service,
-      AssistantMediaSession* media_session)
-      : service_(assistant_manager_service) {
-    media_session->AddObserver(session_receiver_.BindNewPipeAndPassRemote());
-  }
-  AssistantMediaSessionObserver(const AssistantMediaSessionObserver& observer) =
-      delete;
-  AssistantMediaSessionObserver operator=(
-      const AssistantMediaSessionObserver& observer) = delete;
-
-  // media_session::mojom::MediaSessionObserver overrides:
-  void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr info) override {
-    if (!info)
-      return;
-
-    if (info->state == MediaSessionInfo::SessionState::kSuspended)
-      service_->UpdateInternalMediaPlayerStatus(MediaSessionAction::kPause);
-    else if (info->state == MediaSessionInfo::SessionState::kActive)
-      service_->UpdateInternalMediaPlayerStatus(MediaSessionAction::kPlay);
-  }
-
-  void MediaSessionMetadataChanged(
-      const base::Optional<::media_session::MediaMetadata>& metadata) override {
-  }
-  void MediaSessionActionsChanged(
-      const std::vector<MediaSessionAction>& action) override {}
-  void MediaSessionImagesChanged(
-      const base::flat_map<media_session::mojom::MediaSessionImageType,
-                           std::vector<::media_session::MediaImage>>& images)
-      override {}
-  void MediaSessionPositionChanged(
-      const base::Optional<::media_session::MediaPosition>& position) override {
-  }
-
- private:
-  AssistantManagerServiceImpl* service_;
-
-  mojo::Receiver<media_session::mojom::MediaSessionObserver> session_receiver_{
-      this};
-};
-
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::Client* client,
     ServiceContext* context,
@@ -211,10 +163,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
         pending_url_loader_factory,
     base::Optional<std::string> s3_server_uri_override)
     : client_(client),
-      media_session_(std::make_unique<AssistantMediaSession>(client_)),
-      media_session_observer_(std::make_unique<AssistantMediaSessionObserver>(
-          this,
-          media_session_.get())),
+      media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
@@ -330,8 +279,6 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
 
 void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
     media_session::mojom::MediaSessionAction action) {
-  if (!assistant_manager_)
-    return;
   auto* media_manager = assistant_manager_->GetMediaManager();
   if (!media_manager)
     return;
@@ -763,11 +710,6 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
 
   for (auto& it : interaction_subscribers_)
     it->OnOpenUrlResponse(gurl, is_background);
-}
-
-void AssistantManagerServiceImpl::OnPlaybackStateChange(
-    const MediaStatus& status) {
-  media_session_->NotifyMediaSessionMetadataChanged(status);
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -1412,6 +1354,12 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
   UpdateMediaState();
 }
 
+void AssistantManagerServiceImpl::OnPlaybackStateChange(
+    const MediaStatus& status) {
+  if (media_session_)
+    media_session_->NotifyMediaSessionMetadataChanged(status);
+}
+
 void AssistantManagerServiceImpl::OnAlarmTimerStateChanged() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnAlarmTimerStateChanged);
   // Currently, we only handle ringing events here. After some AlarmTimerManager
@@ -1653,8 +1601,8 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
   // media provider) will trigger media state change event. Only update the
   // external media status if the state changes is triggered by external
   // providers.
-  if (media_session_->internal_audio_focus_id() ==
-      media_session_audio_focus_id_) {
+  if (media_session_ && media_session_->internal_audio_focus_id() ==
+                            media_session_audio_focus_id_) {
     return;
   }
 

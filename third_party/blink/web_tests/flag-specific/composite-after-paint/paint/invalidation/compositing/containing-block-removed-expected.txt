@@ -13,9 +13,9 @@
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='container'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full layer"
+          "object": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
+          "rect": [50, 50, 75, 75],
+          "reason": "chunk disappeared"
         }
       ],
       "transform": 1

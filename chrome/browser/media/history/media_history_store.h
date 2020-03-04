@@ -49,6 +49,13 @@ class MediaHistoryStore {
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   ~MediaHistoryStore();
 
+  using GetPlaybackSessionsFilter =
+      base::RepeatingCallback<bool(const base::TimeDelta& duration,
+                                   const base::TimeDelta& position)>;
+
+ protected:
+  friend class MediaHistoryKeyedService;
+
   // Saves a playback from a single player in the media history store.
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
@@ -71,9 +78,6 @@ class MediaHistoryStore {
   // be ordered by most recent first and be limited to the first |num_sessions|.
   // For each session it calls |filter| and if that returns |true| then that
   // session will be included in the results.
-  using GetPlaybackSessionsFilter =
-      base::RepeatingCallback<bool(const base::TimeDelta& duration,
-                                   const base::TimeDelta& position)>;
   void GetPlaybackSessions(
       base::Optional<unsigned int> num_sessions,
       base::Optional<GetPlaybackSessionsFilter> filter,
@@ -91,10 +95,6 @@ class MediaHistoryStore {
   void SaveMediaFeed(const GURL& url);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
-
- protected:
-  friend class MediaHistoryKeyedService;
-  friend class MediaHistoryKeyedServiceTest;
 
   void EraseDatabaseAndCreateNew();
   void DeleteAllOriginData(const std::set<url::Origin>& origins);

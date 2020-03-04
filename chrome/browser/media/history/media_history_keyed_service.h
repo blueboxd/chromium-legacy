@@ -12,6 +12,12 @@
 
 class Profile;
 
+namespace media_session {
+struct MediaImage;
+struct MediaMetadata;
+struct MediaPosition;
+}  // namespace media_session
+
 namespace history {
 class HistoryService;
 }  // namespace history
@@ -29,16 +35,59 @@ class MediaHistoryKeyedService : public KeyedService,
   // Returns the instance attached to the given |profile|.
   static MediaHistoryKeyedService* Get(Profile* profile);
 
-  MediaHistoryStore* GetMediaHistoryStore() {
-    return media_history_store_.get();
-  }
-
   // Overridden from KeyedService:
   void Shutdown() override;
 
   // Overridden from history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
+
+  // Saves a playback from a single player in the media history store.
+  void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
+
+  void GetMediaHistoryStats(
+      base::OnceCallback<void(mojom::MediaHistoryStatsPtr)> callback);
+
+  // Returns all the rows in the origin table. This should only be used for
+  // debugging because it is very slow.
+  void GetOriginRowsForDebug(
+      base::OnceCallback<void(std::vector<mojom::MediaHistoryOriginRowPtr>)>
+          callback);
+
+  // Returns all the rows in the playback table. This is only used for
+  // debugging because it loads all rows in the table.
+  void GetMediaHistoryPlaybackRowsForDebug(
+      base::OnceCallback<void(std::vector<mojom::MediaHistoryPlaybackRowPtr>)>
+          callback);
+
+  // Gets the playback sessions from the media history store. The results will
+  // be ordered by most recent first and be limited to the first |num_sessions|.
+  // For each session it calls |filter| and if that returns |true| then that
+  // session will be included in the results.
+  using GetPlaybackSessionsFilter =
+      base::RepeatingCallback<bool(const base::TimeDelta& duration,
+                                   const base::TimeDelta& position)>;
+  void GetPlaybackSessions(
+      base::Optional<unsigned int> num_sessions,
+      base::Optional<GetPlaybackSessionsFilter> filter,
+      base::OnceCallback<void(
+          std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback);
+
+  // Saves a playback session in the media history store.
+  void SavePlaybackSession(
+      const GURL& url,
+      const media_session::MediaMetadata& metadata,
+      const base::Optional<media_session::MediaPosition>& position,
+      const std::vector<media_session::MediaImage>& artwork);
+
+  // Saves a newly discovered media feed in the media history store.
+  void SaveMediaFeed(const GURL& url);
+
+ protected:
+  friend class MediaHistoryKeyedServiceTest;
+
+  void GetURLsInTableForTest(const std::string& table,
+                             base::OnceCallback<void(std::set<GURL>)> callback);
 
  private:
   std::unique_ptr<MediaHistoryStore> media_history_store_;

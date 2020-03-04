@@ -17,7 +17,6 @@ static_library("ipc_message_lib") {
     "//components/safe_browsing/core/common",
     "//components/spellcheck/common",
     "//components/subresource_filter/content/common",
-    "//components/tracing",
     "//content/child",
     "//content/public/child",
     "//gpu/ipc/common",

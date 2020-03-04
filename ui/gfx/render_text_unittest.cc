@@ -1464,7 +1464,8 @@ const RunListCase kBasicsRunListCases[] = {
     {"phone", L"1-(800)-xxx-xxxx", "[0][1][2][3->5][6][7][8->10][11][12->15]"},
     {"dev_ZWS", L"क\u200Bख", "[0][1][2]"},
     {"numeric", L"1 2 3 4", "[0][1][2][3][4][5][6]"},
-    {"joiners", L"1\u200C2\u200C3\u200C4", "[0->6]"},
+    {"joiners1", L"1\u200C2\u200C3\u200C4", "[0->6]"},
+    {"joiners2", L"\u060F\u200C\u060F", "[0->2]"},
     {"combining_accents1", L"a\u0300e\u0301", "[0->3]"},
     {"combining_accents2", L"\u0065\u0308\u0435\u0308", "[0->1][2->3]"},
     {"picto_title", L"☞☛test☚☜", "[0->1][2->5][6->7]"},
@@ -6387,6 +6388,24 @@ TEST_F(RenderTextTest, CJKFontWithLocale) {
   }
 }
 #endif  // defined(OS_WIN)
+
+TEST_F(RenderTextTest, SameFontAccrossIgnorableCodepoints) {
+  RenderText* render_text = GetRenderText();
+
+  render_text->SetText(WideToUTF16(L"\u060F"));
+  const std::vector<FontSpan> spans1 = GetFontSpans();
+  ASSERT_EQ(1u, spans1.size());
+  Font font1 = spans1[0].first;
+
+  render_text->SetText(WideToUTF16(L"\u060F\u200C\u060F"));
+  const std::vector<FontSpan> spans2 = GetFontSpans();
+  ASSERT_EQ(1u, spans2.size());
+  Font font2 = spans2[0].first;
+
+  // Ensures the same font is used with or without the joiners
+  // (see http://crbug.com/1036652).
+  EXPECT_EQ(font1.GetFontName(), font2.GetFontName());
+}
 
 TEST_F(RenderTextTest, ZeroWidthCharacters) {
   static const wchar_t* kEmptyText[] = {

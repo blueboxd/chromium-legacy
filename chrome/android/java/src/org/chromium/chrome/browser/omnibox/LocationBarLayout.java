@@ -862,7 +862,7 @@ public class LocationBarLayout extends FrameLayout
 
         // Profile may be null if switching to a tab that has not yet been initialized.
         Profile profile = mToolbarDataProvider.getProfile();
-        if (profile != null) mOmniboxPrerender.clear(profile);
+        if (profile != null && mOmniboxPrerender != null) mOmniboxPrerender.clear(profile);
     }
 
     /**

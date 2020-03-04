@@ -9,12 +9,12 @@
         {
           "object": "LayoutImage IMG",
           "rect": [704, 0, 214, 232],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutImage IMG",
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
           "rect": [454, 0, 214, 232],
-          "reason": "geometry"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutImage IMG",
@@ -24,12 +24,12 @@
         {
           "object": "InlineTextBox '\n'",
           "rect": [700, 217, 4, 19],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
           "rect": [450, 217, 4, 19],
-          "reason": "geometry"
+          "reason": "chunk appeared"
         }
       ]
     },

@@ -14,9 +14,10 @@
 
 namespace metrics {
 
-// Enable UMA Demogrpahics by default for desktop platforms but NOT mobile.
+// Enable the reporting of the user noised birth year gender in UMA by default
+// for the platforms that have browser testing.
 namespace {
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
 constexpr auto default_feature_state = base::FEATURE_DISABLED_BY_DEFAULT;
 #else
 constexpr auto default_feature_state = base::FEATURE_ENABLED_BY_DEFAULT;

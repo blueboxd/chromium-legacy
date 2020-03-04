@@ -124,12 +124,23 @@ mojom::MemoryInfoPtr MakeMemoryInfo() {
                                 43264 /* page_faults_since_last_boot */);
 }
 
+base::Optional<std::vector<mojom::BacklightInfoPtr>> MakeBacklightInfo() {
+  std::vector<mojom::BacklightInfoPtr> backlight_info;
+  backlight_info.push_back(mojom::BacklightInfo::New(
+      "path_1" /* path */, 6537 /* max_brightness */, 987 /* brightness */));
+  backlight_info.push_back(mojom::BacklightInfo::New(
+      "path_2" /* path */, 3242 /* max_brightness */, 65 /* brightness */));
+  return backlight_info;
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
       MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */,
-      MakeTimezoneInfo() /* timezone_info */, MakeMemoryInfo() /* memory_info */
+      MakeTimezoneInfo() /* timezone_info */,
+      MakeMemoryInfo() /* memory_info */,
+      MakeBacklightInfo() /* backlight_info */
   );
 }
 

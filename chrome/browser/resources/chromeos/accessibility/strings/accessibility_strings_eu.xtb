@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Ez dago laugarren mailako beste goibururik honen ondoren</translation>
+<translation id="1212770441379271564">Ondoren aipatzen diren lasterbideak ez dira ChromeVox-eko aginduak, baina oso erabilgarriak dira Chrome-ri etekinik handiena ateratzeko.
+Saka daitekeen hurrengo elementura joateko (besteak beste, botoiak eta estekak), sakatu tabuladorea; aurrekora joateko, berriz, sakatu Maius eta tabuladorea.
+Chrome arakatzailearen helbide-barran sartzeko (arakatzaileko barra ere esaten zaio), sakatu Ktrl tekla eta L.
+Fitxa berriak irekitzeko eta haietara automatikoki joateko, sakatu Ktrl tekla eta T. Kurtsorea arakatzaileko barran egongo da.
+Fitxak ixteko, sakatu Ktrl tekla eta W.
+Irekitako hurrengo fitxara joateko, erabili Ktrl tekla eta tabuladorea.
+Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome-ri ahotsa ematen</translation>
 <translation id="1225969361094801578">Arbel-gris iluna</translation>
 <translation id="1229276918471378188">Aurreko saltoa</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">kolore-hautatzailea</translation>
 <translation id="4221012616705981690">Ez dago beste zerrendarik honen aurretik</translation>
 <translation id="4221071177874897997">Adierazi letra lodia:</translation>
+<translation id="4225355998815256469">Inprimakien aukerak</translation>
 <translation id="4229646983878045487">data ordua</translation>
 <translation id="4230834257931120629">Arbel-gris argia</translation>
 <translation id="4231102694147661229">Gaitu Garatzaileentzako aukerak</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Esaldika</translation>
 <translation id="4623097797855662355">Azken oharra</translation>
 <translation id="463135993322337640">Berritasunak jakiteko, sakatu ChromeVox, O eta N</translation>
+<translation id="4646606380313237501">{"ar": "arabiera",
+    "as": "assamera",
+    "aw": "awadhiera",
+    "be": "bengalera",
+    "bg": "bulgariera",
+    "bh": "biharera",
+    "bo": "tibetera",
+    "br": "brajera",
+    "ca": "katalana",
+    "ckb": "sorania",
+    "cs": "txekiera",
+    "cy": "galesa",
+    "da": "daniera",
+    "de": "alemana",
+    "de_CH": "alemana (Suitza)",
+    "de_DE": "alemana (Alemania)",
+    "dra": "dravidera",
+    "el": "greziera",
+    "en": "ingelesa",
+    "en_CA": "ingelesa (Kanada)",
+    "en_GB": "ingelesa (Erresuma Batua)",
+    "en_US": "ingelesa (Ameriketako Estatu Batuak)",
+    "eo": "esperantoa",
+    "es": "gaztelania",
+    "et": "estoniera",
+    "fa": "persiera",
+    "fr": "frantsesa",
+    "fr_CA": "frantsesa (Kanada)",
+    "fr_FR": "frantsesa (Frantzia)",
+    "fi": "finlandiera",
+    "ga": "irlandera",
+    "gd": "gaelikoa",
+    "gon": "gondia",
+    "gu": "gurjarrera",
+    "he": "hebreera",
+    "hi": "hindia",
+    "hr": "kroaziera",
+    "hu": "hungariera",
+    "hy": "armeniera",
+    "is": "islandiera",
+    "it": "italiera",
+    "iu": "inuitera",
+    "ka": "kannada",
+    "kh": "khasiera",
+    "ko": "koreera",
+    "kok": "konkanera",
+    "kru": "kurukhera",
+    "ks": "kaxmirera",
+    "lt": "lituaniera",
+    "lv": "letoniera",
+    "mao": "maoriera",
+    "ml": "malabarera",
+    "mt": "maltera",
+    "mwr": "marwarera",
+    "mn": "mongoliera",
+    "mun": "mundera",
+    "nb": "norvegiako bokmåla",
+    "ne": "nepalera",
+    "nl": "nederlandera",
+    "no": "norvegiera",
+    "or": "oriya",
+    "pi": "paliera",
+    "pl": "poloniera",
+    "pt": "portugesa",
+    "pu": "punjabera",
+    "ro": "errumaniera",
+    "ru": "errusiera",
+    "sa": "sanskritoa",
+    "si": "sindhia",
+    "sin": "sinhala",
+    "sk": "eslovakiera",
+    "sl": "esloveniera",
+    "sr": "serbiera",
+    "sv": "suediera",
+    "ta": "tamilera",
+    "te": "telugua",
+    "tr": "turkiera",
+    "tsn": "afrikaansa",
+    "uk": "ukrainera",
+    "ur": "urdua",
+    "vi": "vietnamera",
+    "zh": "txinera",
+    "zh_TW": "txinera (idazkera txinatar tradizionala)"}</translation>
 <translation id="4647836961514597010">Kolore-hautatzailea</translation>
 <translation id="4660783501463101648">Bertsio klasikoa kendu da. ChromeVox-en bertsio klasikora itzultzea ahalbidetzen zuen tekla kendu da.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Modu itsaskorra aktibatuta dago</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, testu-koadroa</translation>
+<translation id="532485153932049746">Testuaren formatua
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" /> esteka</translation>
 <translation id="5331522683003474486">Etengailu bat edo bi erabilita kontrolatu ahal izango duzu gailua.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braillea</translation>
 <translation id="5402791055281059602">Alerta modal bat</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{puntu eta koma}other{# puntu eta koma}}</translation>
+<translation id="5420259671171615858">Bilatu menuetan</translation>
 <translation id="5435274640623994081">Gaitu tonuak erregistratzeko aukera</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{baino gutxiago ikurra}other{# baino gutxiago ikur}}</translation>
 <translation id="5444587279251314700">(aktibo)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Ortografia-akatsa hauteman da</translation>
 <translation id="7408482676469142474">table</translation>
 <translation id="7425395583360211003">itzuli</translation>
+<translation id="7429415133937917139">Etengabe freskatzen den braille-pantaila baten idazketa simulatzen du pantailaren goialdeko ChromeVox-en panelean.</translation>
 <translation id="7434509671034404296">Garatzailea</translation>
 <translation id="743783356331413498">Adibidea</translation>
 <translation id="7439060726180460871">Direktorioa</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Aurreko irrati-botoia</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Ez dago beste koadro konbinaturik honen ondoren</translation>
+<translation id="772146615414628379">Zorionak! Lortu dituzu ChromeVox erabiltzeko oinarrizko ezagutzak. Gogoratu: ChromeVox-eko agindu-menua irekitzeko, sakatu bilaketa-tekla eta puntuaren tekla. ChromeVox eta Chrome OS-ri buruzko informazio gehiago lortzeko, irakurri artikulu hauek.
+    Tutoriala amaitu baduzu, erabili ChromeVox Itxi botoira joan, eta hura sakatzeko.</translation>
 <translation id="7724603315864178912">Ebaki</translation>
 <translation id="7731785449856576010">Ez dago beste multimedia-widgetik honen ondoren</translation>
 <translation id="773906353055481349">Gelaxka batetik bestera nabigatzeko, sakatu Bilaketa + Ktrl + Alt eta gezi-teklak</translation>
@@ -1133,7 +1236,7 @@
 <translation id="8882002077197914455">Errenkadaren goiburua</translation>
 <translation id="8883850400338911892">urled 8puntu</translation>
 <translation id="8896479570570613387">Bizitasun ertaineko morea</translation>
-<translation id="8897030325301866860">Letra-tipoa: <ph name="FONT_FAMILY" /></translation>
+<translation id="8897030325301866860">Letra: <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Errepikatu puntuazio-oihartzuna</translation>
 <translation id="8900148057318340779">Aurrizki-tekla</translation>
 <translation id="8908714597367957477">colhdr</translation>

@@ -399,8 +399,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
 }
 
 ExtensionsUI::~ExtensionsUI() {
-  if (timer_.has_value() &&
-      base::FeatureList::IsEnabled(extensions_features::kExtensionsCheckup))
+  if (timer_.has_value())
     UMA_HISTOGRAM_LONG_TIMES("Extensions.Checkup.TimeSpent", timer_->Elapsed());
 }
 

@@ -140,8 +140,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
   event_dispatched_ = true;
 #endif
   if (GetEvent().GetEventPath().IsEmpty()) {
-    // eventPath() can be empty if event path is shrinked by relataedTarget
-    // retargeting.
+    // eventPath() can be empty if relatedTarget retargeting has shrunk the
+    // path.
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;

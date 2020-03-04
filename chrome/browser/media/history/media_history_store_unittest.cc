@@ -14,11 +14,16 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -38,6 +43,16 @@ namespace {
 // might be equal but it might be close too.
 const int kTimeErrorMargin = 10000;
 
+base::FilePath g_temp_history_dir;
+
+std::unique_ptr<KeyedService> BuildTestHistoryService(
+    content::BrowserContext* context) {
+  std::unique_ptr<history::HistoryService> service(
+      new history::HistoryService());
+  service->Init(history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
+  return service;
+}
+
 }  // namespace
 
 class MediaHistoryStoreUnitTest : public testing::Test {
@@ -48,13 +63,15 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
     profile_builder.SetPath(temp_dir_.GetPath());
+    g_temp_history_dir = temp_dir_.GetPath();
+
+    profile_ = profile_builder.Build();
+
+    HistoryServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), base::BindRepeating(&BuildTestHistoryService));
 
     // Set up the media history store.
-    scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner =
-        base::ThreadPool::CreateUpdateableSequencedTaskRunner(
-            {base::MayBlock(), base::WithBaseSyncPrimitives()});
-    media_history_store_ = std::make_unique<MediaHistoryStore>(
-        profile_builder.Build().get(), task_runner);
+    service_ = std::make_unique<MediaHistoryKeyedService>(profile_.get());
 
     // Sleep the thread to allow the media history store to asynchronously
     // create the database and tables before proceeding with the tests and
@@ -67,13 +84,17 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     ASSERT_TRUE(db_.Open(db_file));
   }
 
-  void TearDown() override { content::RunAllTasksUntilIdle(); }
+  void TearDown() override {
+    service_->Shutdown();
+
+    content::RunAllTasksUntilIdle();
+  }
 
   mojom::MediaHistoryStatsPtr GetStatsSync() {
     base::RunLoop run_loop;
     mojom::MediaHistoryStatsPtr stats_out;
 
-    GetMediaHistoryStore()->GetMediaHistoryStats(
+    service()->GetMediaHistoryStats(
         base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
           stats_out = std::move(stats);
           run_loop.Quit();
@@ -87,7 +108,7 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryOriginRowPtr> out;
 
-    GetMediaHistoryStore()->GetOriginRowsForDebug(base::BindLambdaForTesting(
+    service()->GetOriginRowsForDebug(base::BindLambdaForTesting(
         [&](std::vector<mojom::MediaHistoryOriginRowPtr> rows) {
           out = std::move(rows);
           run_loop.Quit();
@@ -101,20 +122,17 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryPlaybackRowPtr> out;
 
-    GetMediaHistoryStore()->GetMediaHistoryPlaybackRowsForDebug(
-        base::BindLambdaForTesting(
-            [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> rows) {
-              out = std::move(rows);
-              run_loop.Quit();
-            }));
+    service()->GetMediaHistoryPlaybackRowsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<mojom::MediaHistoryPlaybackRowPtr> rows) {
+          out = std::move(rows);
+          run_loop.Quit();
+        }));
 
     run_loop.Run();
     return out;
   }
 
-  MediaHistoryStore* GetMediaHistoryStore() {
-    return media_history_store_.get();
-  }
+  MediaHistoryKeyedService* service() const { return service_.get(); }
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -125,7 +143,8 @@ class MediaHistoryStoreUnitTest : public testing::Test {
 
  private:
   sql::Database db_;
-  std::unique_ptr<MediaHistoryStore> media_history_store_;
+  std::unique_ptr<MediaHistoryKeyedService> service_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
@@ -146,11 +165,11 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   content::MediaPlayerWatchTime watch_time(url, url.GetOrigin(),
                                            base::TimeDelta::FromSeconds(60),
                                            base::TimeDelta(), true, false);
-  GetMediaHistoryStore()->SavePlayback(watch_time);
+  service()->SavePlayback(watch_time);
   const auto now_after_a = base::Time::Now().ToJsTime();
 
   // Save the watch time a second time.
-  GetMediaHistoryStore()->SavePlayback(watch_time);
+  service()->SavePlayback(watch_time);
 
   // Wait until the playbacks have finished saving.
   content::RunAllTasksUntilIdle();
@@ -203,7 +222,7 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     content::MediaPlayerWatchTime watch_time(
         url, url.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
         base::TimeDelta::FromMilliseconds(321), true, false);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
   }
 
   {
@@ -229,12 +248,12 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   }
 
   // Save a couple of sessions on different URLs.
-  GetMediaHistoryStore()->SavePlaybackSession(
-      url_a, media_session::MediaMetadata(), base::nullopt,
-      std::vector<media_session::MediaImage>());
-  GetMediaHistoryStore()->SavePlaybackSession(
-      url_b, media_session::MediaMetadata(), base::nullopt,
-      std::vector<media_session::MediaImage>());
+  service()->SavePlaybackSession(url_a, media_session::MediaMetadata(),
+                                 base::nullopt,
+                                 std::vector<media_session::MediaImage>());
+  service()->SavePlaybackSession(url_b, media_session::MediaMetadata(),
+                                 base::nullopt,
+                                 std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
   content::RunAllTasksUntilIdle();
@@ -251,9 +270,9 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   }
 
   // Save a session on the first URL.
-  GetMediaHistoryStore()->SavePlaybackSession(
-      url_a, media_session::MediaMetadata(), base::nullopt,
-      std::vector<media_session::MediaImage>());
+  service()->SavePlaybackSession(url_a, media_session::MediaMetadata(),
+                                 base::nullopt,
+                                 std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
   content::RunAllTasksUntilIdle();
@@ -282,7 +301,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::MediaPlayerWatchTime watch_time(
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
     content::RunAllTasksUntilIdle();
   }
 
@@ -291,7 +310,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::MediaPlayerWatchTime watch_time(
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(60),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
     content::RunAllTasksUntilIdle();
   }
 
@@ -300,7 +319,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::MediaPlayerWatchTime watch_time(
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), false /* has_video */, true /* has_audio */);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
     content::RunAllTasksUntilIdle();
   }
 
@@ -309,7 +328,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::MediaPlayerWatchTime watch_time(
         url, url.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, false /* has_audio */);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
     content::RunAllTasksUntilIdle();
   }
 
@@ -320,7 +339,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
     content::MediaPlayerWatchTime watch_time(
         url_alt, url_alt.GetOrigin(), base::TimeDelta::FromSeconds(30),
         base::TimeDelta(), true /* has_video */, true /* has_audio */);
-    GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
     content::RunAllTasksUntilIdle();
   }
 
@@ -355,7 +374,7 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
 }
 
 TEST_F(MediaHistoryStoreUnitTest, SaveMediaFeed_Noop) {
-  GetMediaHistoryStore()->SaveMediaFeed(GURL("https://www.google.com/feed"));
+  service()->SaveMediaFeed(GURL("https://www.google.com/feed"));
   content::RunAllTasksUntilIdle();
 
   {
@@ -387,8 +406,8 @@ TEST_F(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
   GURL url_b("https://www.google.co.uk/feed");
   GURL url_c("https://www.google.com/feed2");
 
-  GetMediaHistoryStore()->SaveMediaFeed(url_a);
-  GetMediaHistoryStore()->SaveMediaFeed(url_b);
+  service()->SaveMediaFeed(url_a);
+  service()->SaveMediaFeed(url_b);
   content::RunAllTasksUntilIdle();
 
   {
@@ -397,7 +416,7 @@ TEST_F(MediaHistoryStoreFeedsTest, SaveMediaFeed) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
   }
 
-  GetMediaHistoryStore()->SaveMediaFeed(url_c);
+  service()->SaveMediaFeed(url_c);
   content::RunAllTasksUntilIdle();
 
   {

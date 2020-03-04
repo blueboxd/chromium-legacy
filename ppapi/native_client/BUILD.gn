@@ -13,7 +13,6 @@ if (is_nacl) {
   executable("nacl_irt") {
     deps = [
       "//base",
-      "//components/tracing",
       "//gpu/command_buffer/client",
       "//gpu/command_buffer/client:gles2_implementation",
       "//gpu/command_buffer/common",

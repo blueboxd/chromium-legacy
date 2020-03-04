@@ -91,7 +91,7 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> out;
 
-    GetMediaHistoryStore()->GetPlaybackSessions(
+    GetMediaHistoryService()->GetPlaybackSessions(
         max_sessions, std::move(filter),
         base::BindLambdaForTesting(
             [&](std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
@@ -108,7 +108,7 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     mojom::MediaHistoryStatsPtr stats_out;
 
-    GetMediaHistoryStore()->GetMediaHistoryStats(
+    GetMediaHistoryService()->GetMediaHistoryStats(
         base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
           stats_out = std::move(stats);
           run_loop.Quit();
@@ -213,9 +213,8 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return content::MediaSession::Get(GetWebContents());
   }
 
-  MediaHistoryStore* GetMediaHistoryStore() {
-    return MediaHistoryKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->GetMediaHistoryStore();
+  MediaHistoryKeyedService* GetMediaHistoryService() {
+    return MediaHistoryKeyedServiceFactory::GetForProfile(browser()->profile());
   }
 
  private:

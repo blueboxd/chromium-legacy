@@ -20,7 +20,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -31,7 +31,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -42,7 +42,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -53,7 +53,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -64,7 +64,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -75,7 +75,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -86,7 +86,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]
@@ -97,7 +97,7 @@
       "os": "13.3",
       "xcode build version": "11c29",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests",
+      "pool":"chromium.tests.template",
       "test args": [
         "--run-with-custom-webkit"
       ]

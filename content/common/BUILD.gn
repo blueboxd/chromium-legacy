@@ -246,7 +246,6 @@ source_set("common") {
     "//build/util:webkit_version",
     "//components/discardable_memory/common",
     "//components/services/filesystem/public/mojom",
-    "//components/tracing",
     "//components/tracing:startup_tracing",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
@@ -485,7 +484,6 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//cc/mojom",
-    "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:web_preferences_mojom",
     "//ipc:mojom",
@@ -496,6 +494,7 @@ mojom("mojo_bindings") {
     "//services/audio/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
+    "//services/tracing/public/mojom",
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",

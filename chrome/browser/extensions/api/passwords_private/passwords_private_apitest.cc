@@ -190,6 +190,22 @@ class TestDelegate : public PasswordsPrivateDelegate {
     return info;
   }
 
+  void GetPlaintextCompromisedPassword(
+      api::passwords_private::CompromisedCredential credential,
+      api::passwords_private::PlaintextReason reason,
+      content::WebContents* web_contents,
+      PlaintextCompromisedPasswordCallback callback) override {
+    // Return a mocked password value.
+    if (!plaintext_password()) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    credential.password =
+        std::make_unique<std::string>(base::UTF16ToUTF8(*plaintext_password()));
+    std::move(callback).Run(std::move(credential));
+  }
+
   void SetOptedInForAccountStorage(bool opted_in) {
     is_opted_in_for_account_storage_ = opted_in;
   }
@@ -370,6 +386,19 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, IsOptedInForAccountStorage) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetCompromisedCredentialsInfo) {
   EXPECT_TRUE(RunPasswordsSubtest("getCompromisedCredentialsInfo")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       GetPlaintextCompromisedPassword) {
+  EXPECT_TRUE(RunPasswordsSubtest("getPlaintextCompromisedPassword"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       GetPlaintextCompromisedPasswordFails) {
+  plaintext_password().reset();
+  EXPECT_TRUE(RunPasswordsSubtest("getPlaintextCompromisedPasswordFails"))
+      << message_;
 }
 
 }  // namespace extensions

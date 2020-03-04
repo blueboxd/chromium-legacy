@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Hi ha hagut un problema en sincronitzar la contrasenya del compte de la feina amb el teu perfil de Windows. Contacta amb l'administrador.</translation>
 <translation id="2515346402363002066">La sessió ha caducat. Inicia la sessió amb el teu compte de la feina.</translation>
 <translation id="2844349213149998955">No es permet iniciar la sessió amb un compte personal en aquest dispositiu. Utilitza un compte de la feina.</translation>
-<translation id="2954423647682729023">Inicia la sessió amb el teu compte de la feina.</translation>
 <translation id="3217145568844727893">Si continues sense introduir la contrasenya actual de Windows, pot ser que perdis dades d'aquest dispositiu permanentment.</translation>
 <translation id="3285576391135346912">Només pots iniciar la sessió amb una adreça electrònica que acabi en <ph name="EMAIL_DOMAINS" />. Torna-ho a provar utilitzant un compte de la feina.</translation>
 <translation id="3306357053520292004">Ja s'ha afegit un usuari a l'ordinador amb aquest compte. Inicia la sessió amb un altre compte.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">L'administrador no et permet iniciar la sessió amb aquest compte. Prova-ho amb un altre.</translation>
 <translation id="8639729688781680518">He oblidat la contrasenya de Windows</translation>
 <translation id="866458870819756755">No s'ha pogut crear cap usuari.</translation>
-<translation id="8875753657315897487">Inicia la sessió amb el compte de la feina</translation>
 <translation id="9055998212250844221">Compte d'usuari creat per un proveïdor de credencials de Google per a Windows</translation>
 </translationbundle>

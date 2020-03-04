@@ -162,8 +162,12 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
                                    [variations componentsJoinedByString:@","]];
   }
 
-  NSArray<NSString*>* arguments =
-      @[ enabledString, disabledString, variationString ];
+  NSMutableArray<NSString*>* arguments = [NSMutableArray
+      arrayWithObjects:enabledString, disabledString, variationString, nil];
+
+  for (const std::string& arg : configuration.additional_args) {
+    [arguments addObject:base::SysUTF8ToNSString(arg)];
+  }
 
   [self ensureAppLaunchedWithArgs:arguments
                    relaunchPolicy:configuration.relaunch_policy];

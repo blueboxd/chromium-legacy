@@ -27,7 +27,7 @@ class PaintController;
 // to the subsequence have been invalidated.
 //
 class SubsequenceRecorder final {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   static bool UseCachedSubsequenceIfPossible(GraphicsContext& context,

@@ -58,9 +58,9 @@ const RequestPriority kDefaultPriority = LOW;
 // RunLoop doesn't support this natively but it is easy to emulate.
 void RunLoopForTimePeriod(base::TimeDelta period) {
   base::RunLoop run_loop;
-  base::Closure quit_closure(run_loop.QuitClosure());
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, quit_closure,
-                                                       period);
+  base::OnceClosure quit_closure(run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(quit_closure), period);
   run_loop.Run();
 }
 
@@ -795,13 +795,13 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   ASSERT_FALSE(handle.socket());
 
-  base::Closure ipv6_connect_trigger =
+  base::OnceClosure ipv6_connect_trigger =
       client_socket_factory_.WaitForTriggerableSocketCreation();
-  base::Closure ipv4_connect_trigger =
+  base::OnceClosure ipv4_connect_trigger =
       client_socket_factory_.WaitForTriggerableSocketCreation();
 
-  ipv4_connect_trigger.Run();
-  ipv6_connect_trigger.Run();
+  std::move(ipv4_connect_trigger).Run();
+  std::move(ipv6_connect_trigger).Run();
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   ASSERT_TRUE(handle.socket());
@@ -1096,10 +1096,10 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
 
   EXPECT_THAT(StartRequest(kDefaultPriority), IsError(ERR_IO_PENDING));
 
-  base::Closure connect_trigger =
+  base::OnceClosure connect_trigger =
       client_socket_factory_.WaitForTriggerableSocketCreation();
 
-  connect_trigger.Run();  // Calls InvokeUserCallbackLater()
+  std::move(connect_trigger).Run();  // Calls InvokeUserCallbackLater()
 
   request(0)->handle()->Reset();  // calls CancelRequest()
 

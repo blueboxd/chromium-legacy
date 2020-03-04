@@ -178,9 +178,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenDetectionTest, VideoTagSizeChange) {
   recorder.Wait(3);
   EXPECT_EQ(recorder.event(2), FullscreenTestEvent::kNotEffectivelyFullscreen);
 
-  ASSERT_TRUE(content::ExecJs(web_contents, "exitFullscreen()"));
+  ASSERT_TRUE(content::ExecJs(web_contents, "makePortrait('small_video')"));
   recorder.Wait(4);
-  EXPECT_EQ(recorder.event(3), FullscreenTestEvent::kLeaveFullscreen);
+  EXPECT_EQ(recorder.event(3), FullscreenTestEvent::kEffectivelyFullscreen);
+
+  ASSERT_TRUE(content::ExecJs(web_contents, "exitFullscreen()"));
+  recorder.Wait(5);
+  EXPECT_EQ(recorder.event(4), FullscreenTestEvent::kLeaveFullscreen);
 }
 
 // Test how attaching/detaching the <video> affects its fullscreen status.
@@ -202,6 +206,35 @@ IN_PROC_BROWSER_TEST_F(FullscreenDetectionTest, DetachAttachDuringFullscreen) {
   EXPECT_EQ(recorder.event(2), FullscreenTestEvent::kNotEffectivelyFullscreen);
 
   ASSERT_TRUE(content::ExecJs(web_contents, "attach_to('big_div')"));
+  recorder.Wait(4);
+  EXPECT_EQ(recorder.event(3), FullscreenTestEvent::kEffectivelyFullscreen);
+
+  ASSERT_TRUE(content::ExecJs(web_contents, "exitFullscreen()"));
+  recorder.Wait(6);
+  EXPECT_EQ(recorder.event(4), FullscreenTestEvent::kLeaveFullscreen);
+  EXPECT_EQ(recorder.event(5), FullscreenTestEvent::kNotEffectivelyFullscreen);
+}
+
+// The test changes visibility of the <video> and observes
+// how it gets and loses effectively-fullscreen status.
+IN_PROC_BROWSER_TEST_F(FullscreenDetectionTest, HideVideoTag) {
+  auto* web_contents = shell()->web_contents();
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/media/fullscreen.html")));
+
+  FullscreenEventsRecorder recorder(web_contents);
+
+  ASSERT_TRUE(content::ExecJs(web_contents, "makeFullscreen('big_div')"));
+
+  recorder.Wait(2);
+  EXPECT_EQ(recorder.event(0), FullscreenTestEvent::kEnterFullscreen);
+  EXPECT_EQ(recorder.event(1), FullscreenTestEvent::kEffectivelyFullscreen);
+
+  ASSERT_TRUE(content::ExecJs(web_contents, "hide('big_video')"));
+  recorder.Wait(3);
+  EXPECT_EQ(recorder.event(2), FullscreenTestEvent::kNotEffectivelyFullscreen);
+
+  ASSERT_TRUE(content::ExecJs(web_contents, "makeBig('big_video')"));
   recorder.Wait(4);
   EXPECT_EQ(recorder.event(3), FullscreenTestEvent::kEffectivelyFullscreen);
 

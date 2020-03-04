@@ -137,52 +137,22 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 bool DialogDelegate::Cancel() {
+  DCHECK(!already_started_close_);
   if (cancel_callback_)
     RunCloseCallback(std::move(cancel_callback_));
   return true;
 }
 
 bool DialogDelegate::Accept() {
+  DCHECK(!already_started_close_);
   if (accept_callback_)
     RunCloseCallback(std::move(accept_callback_));
   return true;
 }
 
-bool DialogDelegate::Close() {
-  // Test for callback_delivered_ here, because it indicates that:
-  // 1) A new-style callback used to be present in one of these slots
-  // 2) It has already been invoked and therefore the slot is now empty
-  if (callback_delivered_ || close_callback_ || cancel_callback_ ||
-      accept_callback_) {
-    if (close_callback_)
-      RunCloseCallback(std::move(close_callback_));
-    return true;
-  } else {
-    return DefaultClose();
-  }
-}
-
-bool DialogDelegate::DefaultClose() {
-  DCHECK(!close_callback_);
-  DCHECK(!cancel_callback_);
-  DCHECK(!accept_callback_);
-  int buttons = GetDialogButtons();
-  if ((buttons & ui::DIALOG_BUTTON_CANCEL) ||
-      (buttons == ui::DIALOG_BUTTON_NONE)) {
-    return Cancel();
-  }
-  return Accept();
-}
-
 void DialogDelegate::RunCloseCallback(base::OnceClosure callback) {
-  // TODO(ellyjones): It would be better if this instead was:
-  //   DCHECK(!callback_delivered_);
-  // i.e., it was enforced by Views that client code does not cause the
-  // DialogDelegate to be closed from within a closure handler. Unfortunately a
-  // lot of client code does not behave that way right now.
-  if (callback_delivered_)
-    return;
-  callback_delivered_ = true;
+  DCHECK(!already_started_close_);
+  already_started_close_ = true;
   std::move(callback).Run();
 }
 
@@ -221,6 +191,36 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
     return CreateDialogFrameView(widget);
 
   return WidgetDelegate::CreateNonClientFrameView(widget);
+}
+
+void DialogDelegate::WindowWillClose() {
+  if (already_started_close_)
+    return;
+
+  bool new_callback_present =
+      close_callback_ || cancel_callback_ || accept_callback_;
+
+  if (close_callback_)
+    RunCloseCallback(std::move(close_callback_));
+
+  if (new_callback_present)
+    return;
+
+  // Old-style close behavior: if the only button was Ok, call Accept();
+  // otherwise call Cancel(). Note that in this case the window is already going
+  // to close, so the return values of Accept()/Cancel(), which normally say
+  // whether the window should close, are ignored.
+  int buttons = GetDialogButtons();
+  if (buttons == ui::DIALOG_BUTTON_OK)
+    Accept();
+  else
+    Cancel();
+
+  // This is set here instead of before the invocations of Accept()/Cancel() so
+  // that those methods can DCHECK that !already_started_close_. Otherwise,
+  // client code could (eg) call Accept() from inside the cancel callback, which
+  // could lead to multiple callbacks being delivered from this class.
+  already_started_close_ = true;
 }
 
 // static
@@ -325,12 +325,9 @@ std::unique_ptr<View> DialogDelegate::DisownExtraView() {
   return std::move(extra_view_);
 }
 
-void DialogDelegate::CancelDialog() {
-  GetDialogClientView()->CancelWindow();
-}
-
-void DialogDelegate::AcceptDialog() {
-  GetDialogClientView()->AcceptWindow();
+bool DialogDelegate::Close() {
+  WindowWillClose();
+  return true;
 }
 
 void DialogDelegate::ResetViewShownTimeStampForTesting() {
@@ -339,6 +336,24 @@ void DialogDelegate::ResetViewShownTimeStampForTesting() {
 
 void DialogDelegate::SetButtonRowInsets(const gfx::Insets& insets) {
   GetDialogClientView()->SetButtonRowInsets(insets);
+}
+
+void DialogDelegate::AcceptDialog() {
+  if (already_started_close_ || !Accept())
+    return;
+
+  already_started_close_ = true;
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kAcceptButtonClicked);
+}
+
+void DialogDelegate::CancelDialog() {
+  if (already_started_close_ || !Cancel())
+    return;
+
+  already_started_close_ = true;
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCancelButtonClicked);
 }
 
 DialogDelegate::~DialogDelegate() {

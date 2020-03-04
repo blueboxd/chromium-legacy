@@ -29,9 +29,7 @@ constexpr base::TimeDelta kSuccessTimeout =
 DeepScanningBrowserTestBase::DeepScanningBrowserTestBase() {
   // Enable every deep scanning features.
   scoped_feature_list_.InitWithFeatures(
-      {kContentComplianceEnabled, kMalwareScanEnabled,
-       kDeepScanningOfUploadsUI},
-      {});
+      {kContentComplianceEnabled, kMalwareScanEnabled}, {});
 
   // Change the time values of the upload UI to smaller ones to make tests
   // showing it run faster.

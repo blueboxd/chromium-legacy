@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1195447618553298278">Невідома помилка.</translation>
+<translation id="1468664791493211953">Пропозиції</translation>
 <translation id="1482734542997480527">Сайт <ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і може відстежувати ваші дії.</translation>
 <translation id="150962533380566081">Недійсний PUK-код.</translation>
 <translation id="1510238584712386396">Панель запуску</translation>
@@ -42,6 +43,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>
 <translation id="808894953321890993">Змінити пароль</translation>
+<translation id="8208861521865154048">Бонуси</translation>
 <translation id="8747900814994928677">Підтвердити зміни</translation>
 <translation id="910415269708673980">Оновити квиток для користувача <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Розблокувати</translation>

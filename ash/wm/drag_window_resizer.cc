@@ -128,15 +128,19 @@ void DragWindowResizer::EndDragImpl() {
   if (details().source == wm::WINDOW_MOVE_SOURCE_TOUCH)
     return;
   aura::Window* root_window = GetTarget()->GetRootWindow();
-  const display::Display dst_display =
-      Shell::Get()->cursor_manager()->GetDisplay();
-  if (dst_display.id() ==
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window).id()) {
+  // The |Display| object returned by |CursorManager::GetDisplay| may be stale,
+  // but will have the correct id.
+  // TODO(oshima): Change the API so |GetDisplay| just returns a display id.
+  const int64_t dst_display_id =
+      Shell::Get()->cursor_manager()->GetDisplay().id();
+  display::Screen* screen = display::Screen::GetScreen();
+  if (dst_display_id == screen->GetDisplayNearestWindow(root_window).id())
     return;
-  }
 
   // Adjust the size and position so that it doesn't exceed the size of work
   // area.
+  display::Display dst_display;
+  screen->GetDisplayWithDisplayId(dst_display_id, &dst_display);
   const gfx::Size& size = dst_display.work_area().size();
   gfx::Rect bounds = GetTarget()->bounds();
   if (bounds.width() > size.width()) {

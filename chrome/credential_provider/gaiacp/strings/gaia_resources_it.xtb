@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Si è verificato un problema durante la sincronizzazione della password del tuo account di lavoro con il tuo profilo Windows. Contatta l'amministratore.</translation>
 <translation id="2515346402363002066">La sessione è scaduta. Accedi con il tuo account di lavoro.</translation>
 <translation id="2844349213149998955">Su questo dispositivo non è consentito l'accesso con un account personale. Accedi con un account di lavoro.</translation>
-<translation id="2954423647682729023">Accedi con il tuo account di lavoro.</translation>
 <translation id="3217145568844727893">Se continui senza inserire l'attuale password di Windows, potresti perdere in modo irreversibile i dati su questo dispositivo.</translation>
 <translation id="3285576391135346912">Puoi accedere solo con un indirizzo email che termina come segue: <ph name="EMAIL_DOMAINS" />. Riprova usando un account di lavoro.</translation>
 <translation id="3306357053520292004">Su questo computer è stato già aggiunto un utente usando questo account. Accedi con un altro account.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">L'amministratore non consente di accedere con questo account. Prova con un altro account.</translation>
 <translation id="8639729688781680518">Password di Windows dimenticata</translation>
 <translation id="866458870819756755">Impossibile creare un utente.</translation>
-<translation id="8875753657315897487">Accedi con il tuo account di lavoro</translation>
 <translation id="9055998212250844221">Account utente creato tramite Provider di credenziali Google per Windows</translation>
 </translationbundle>

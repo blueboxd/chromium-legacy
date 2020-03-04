@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/loader/font_preload_manager.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -1789,6 +1790,9 @@ class CORE_EXPORT Document : public ContainerNode,
                                  unsigned new_length);
   void NotifyChangeChildren(const ContainerNode& container);
 
+  FontPreloadManager& GetFontPreloadManager() { return font_preload_manager_; }
+  void FontPreloadingFinishedOrTimedOut();
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2356,6 +2360,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Mojo remote used to determine if the document has permission to access
   // storage or not.
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+
+  FontPreloadManager font_preload_manager_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

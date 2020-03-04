@@ -856,6 +856,7 @@
         'ReportDeviceCpuInfo',
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
+        'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -7971,6 +7972,27 @@
 
       If the policy is set to false or left unset, the information will not be reported.
       If set to true, the device's memory information will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceBacklightInfo',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:82-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 686,
+      'caption': '''Report backlight info''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report information about a device's backlights.
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the device's backlight information will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -20603,6 +20625,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceCpuInfo': 'device_reporting.report_cpu_info',
     'ReportDeviceTimezoneInfo': 'device_reporting.report_timezone_info',
     'ReportDeviceMemoryInfo': 'device_reporting.report_memory_info',
+    'ReportDeviceBacklightInfo': 'device_reporting.report_backlight_info',
     'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
     'ReportDevicePowerStatus': 'device_reporting.report_power_status',
     'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
@@ -21005,6 +21028,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceCpuInfo',
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
+        'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportUploadFrequency',
@@ -21078,6 +21102,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 685,
+  'highest_id_currently_used': 686,
   'highest_atomic_group_id_currently_used': 38
 }

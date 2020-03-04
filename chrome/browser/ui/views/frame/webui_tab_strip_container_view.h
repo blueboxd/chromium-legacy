@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/common/buildflags.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
@@ -112,6 +113,9 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override;
+  void ShowEditDialogForGroupAtPoint(gfx::Point point,
+                                     gfx::Rect rect,
+                                     tab_groups::TabGroupId group) override;
   TabStripUILayout GetLayout() override;
   SkColor GetColor(int id) const override;
 

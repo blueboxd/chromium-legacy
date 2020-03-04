@@ -97,6 +97,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
+    "//services/tracing/public/cpp/background_tracing:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/perfetto/include/perfetto/protozero:protozero",

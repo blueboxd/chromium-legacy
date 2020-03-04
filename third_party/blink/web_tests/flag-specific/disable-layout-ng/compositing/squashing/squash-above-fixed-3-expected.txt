@@ -151,7 +151,7 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
         {
           "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
           "rect": [100, 0, 100, 100],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ],
       "transform": 1

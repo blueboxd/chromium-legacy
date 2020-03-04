@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">Уключана – карыстальніцкія налады</translation>
 <translation id="1489664337021920575">Выбраць іншы варыянт</translation>
 <translation id="1493892686965953381">Чакаецца <ph name="LOAD_STATE_PARAMETER" />...</translation>
+<translation id="1494438840282430403">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта можа прывесці да выхаду з уліковага запісу на дамене Google.com.)</translation>
 <translation id="1495486559005647033">Іншых даступных прылад: <ph name="NUM_PRINTERS" />.</translation>
 <translation id="1495677929897281669">Вярнуцца на ўкладку</translation>
 <translation id="1499271269825557605">Тут вы можаце наладжваць пашырэнні або выключаць іх – у тым выпадку, калі вы не пазнаяце нейкае пашырэнне або калі браўзер перастае працаваць належным чынам.</translation>
@@ -1178,7 +1179,9 @@
 <translation id="2586672484245266891">Увядзіце карацейшы URL-адрас</translation>
 <translation id="2587922766792651800">Праверка пратэрмінавана</translation>
 <translation id="2588636910004461974">Прылады ад пастаўшчыка "<ph name="VENDOR_NAME" />"</translation>
+<translation id="2593594315333286814">Налады спецыяльных магчымасцей для навігацыі</translation>
 <translation id="2594999711683503743">Увядзіце URL-адрас або пошукавы запыт у Google</translation>
+<translation id="2602501489742255173">Каб пачаць, правядзіце пальцам уверх</translation>
 <translation id="2603115962224169880">Ачыстка камп'ютара</translation>
 <translation id="2603463522847370204">Адкрыць у &amp;акне ў рэжыме інкогніта</translation>
 <translation id="2604255671529671813">Памылка падключэння да сеткі</translation>
@@ -1340,6 +1343,7 @@
 <translation id="2804043232879091219">Не ўдалося адкрыць альтэрнатыўны браўзер</translation>
 <translation id="2804667941345577550">Будзе выкананы выхад з гэтага сайта, у тым ліку на адкрытых укладках</translation>
 <translation id="2804680522274557040">Камера выключана</translation>
+<translation id="2805539617243680210">Усё гатова!</translation>
 <translation id="2805646850212350655">Шыфраваная файлавая сістэма Microsoft</translation>
 <translation id="2805756323405976993">Праграмы</translation>
 <translation id="2805770823691782631">Падрабязныя звесткі</translation>
@@ -1423,6 +1427,7 @@
 <translation id="2903457445916429186">Адкрыць выбраныя элементы?</translation>
 <translation id="2903882649406874750">Заўсёды блакіраваць хосту <ph name="HOST" /> доступ да датчыкаў</translation>
 <translation id="2904456025988372123">Пытацца, калі сайт спрабуе пасля першага файла аўтаматычна спампаваць яшчэ файлы</translation>
+<translation id="2905990582795979495">Цяпер вы можаце выкарыстоўваць <ph name="DEVICE_TYPE" />. Атрымлівайце парады па прыладах <ph name="DEVICE_TYPE" />, абнаўленні прадуктаў Google і давайце водгукі. Адпісацца можна ў любы час.</translation>
 <translation id="2907619724991574506">Пачатковыя URL-адрасы</translation>
 <translation id="2907798539022650680">Не ўдалося падключыцца да "<ph name="NAME" />": <ph name="DETAILS" />
     Паведамленне сервера: <ph name="SERVER_MSG" /></translation>
@@ -1696,6 +1701,7 @@
 <translation id="3308116878371095290">Быў прадухілены запіс файлаў cookie гэтай старонкай.</translation>
 <translation id="3308134619352333507">Кнопка "Схаваць"</translation>
 <translation id="3308852433423051161">Загрузка Памочніка Google...</translation>
+<translation id="3311445899360743395">Даныя, звязаныя з гэтай праграмай, могуць быць выдалены з гэтай прылады.</translation>
 <translation id="3312424061798279731">Уключаныя мовы</translation>
 <translation id="3313622045786997898">Значэнне подпісу сертыфіката</translation>
 <translation id="3315158641124845231">Схаваць: <ph name="PRODUCT_NAME" /></translation>
@@ -1882,7 +1888,6 @@
 <translation id="3586806079541226322">Не ўдалося адкрыць гэты файл</translation>
 <translation id="3586931643579894722">Схаваць падрабязнасці</translation>
 <translation id="3587482841069643663">Усе</translation>
-<translation id="358796204584394954">Увядзіце гэты код на прыладзе "<ph name="DEVICE_NAME" />", каб спалучыць:</translation>
 <translation id="3589766037099229847">Небяспечнае змесціва заблакіравана</translation>
 <translation id="3590194807845837023">Разблакіраваць профіль і перазапусціць</translation>
 <translation id="3590295622232282437">Выконваецца ўваход у сеанс пад кіраваннем.</translation>
@@ -1956,6 +1961,7 @@
 <translation id="3670229581627177274">Уключыць Bluetooth</translation>
 <translation id="3672681487849735243">Выяўлена заводская памылка</translation>
 <translation id="367645871420407123">каб задаць для root-пароля стандартнае для тэставага вобраза значэнне, пакіньце гэта поле пустым</translation>
+<translation id="3677106374019847299">Увядзіце назву свайго пастаўшчыка</translation>
 <translation id="3677657024345889897">Самая ціхая</translation>
 <translation id="3677911431265050325">Запытаць мабільную версію сайта</translation>
 <translation id="3678156199662914018">Пашырэнне: <ph name="EXTENSION_NAME" /></translation>
@@ -2047,6 +2053,7 @@
 <translation id="3780211714699334884">Сайт <ph name="ORIGIN" /> зможа змяняць усе файлы ў папцы <ph name="FOLDERNAME" />, пакуль вы не закрыеце ўкладку</translation>
 <translation id="3780827508782506612">Гэта старонка была перакладзена</translation>
 <translation id="378312418865624974">Чытаць унікальны ідэнтыфікатар для гэтага камп'ютара</translation>
+<translation id="3784372983762739446">Прылады Bluetooth</translation>
 <translation id="3784472333786002075">Файлы cookie – гэта файлы, якія ствараюцца вэб-сайтамі. Ёсць два віды файлаў cookie. Асноўныя файлы cookie ствараюцца самім сайтам, які вы наведваеце. Ён паказваецца ў адрасным радку. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва (напрыклад рэклама або відарысы), размешчанае на вэб-сайце, які вы наведваеце.</translation>
 <translation id="3785308913036335955">Паказваць ярлыкі праграм</translation>
 <translation id="3785727820640310185">Захаваныя паролі для гэтага сайта</translation>
@@ -2076,6 +2083,7 @@
 <translation id="3816118180265633665">Колеры Chrome</translation>
 <translation id="3817524650114746564">Адкрыць налады проксі-сервера для камп'ютара</translation>
 <translation id="3817579325494460411">URL-адрас не ўказаны</translation>
+<translation id="381892968844315516">На жаль, на гэтай прыладзе нельга выкарыстоўваць Plugin VM. Звярніцеся да адміністратара прылад вашай арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Рэзервовае капіраванне</translation>
 <translation id="3819261658055281761">Сістэме не ўдалося захаваць доўгатэрміновы маркер доступу API для гэтай прылады.</translation>
 <translation id="3819800052061700452">&amp;Поўнаэкранны рэжым</translation>
@@ -2458,6 +2466,7 @@
 <translation id="4378154925671717803">Тэлефон</translation>
 <translation id="4378551569595875038">Ідзе падключэнне...</translation>
 <translation id="4378556263712303865">Заяўка на прыладу</translation>
+<translation id="4379281552162875326">Выдаліць праграму "<ph name="APP_NAME" />"?</translation>
 <translation id="4380648069038809855">Уключаны поўнаэкранны рэжым</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> і яшчэ 1 уліковы запіс}one{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковы запіс}few{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковыя запісы}many{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковых запісаў}other{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковага запісу}}</translation>
 <translation id="4384312707950789900">Дадаць у прыярытэтныя</translation>
@@ -2773,7 +2782,6 @@
 <translation id="4850669014075537160">Прагортка</translation>
 <translation id="4850886885716139402">Праглядзець</translation>
 <translation id="4853020600495124913">Адкрыць у &amp;новым акне</translation>
-<translation id="4854262617951518520">Пытацца, калі сайт запытвае дазвол адсочваць становішча камеры або ствараць карту памяшкання (рэкамендуецца)</translation>
 <translation id="485480310608090163">Іншыя налады і дазволы</translation>
 <translation id="4856478137399998590">Сэрвіс мабільнай перадачы даных уключаны і гатовы для выкарыстання</translation>
 <translation id="4856855265648545577">Паказваць кнопкі "Панэль запуску", "Назад", "Агляд" на паліцы ў планшэтным рэжыме. Налада ўключаецца, калі ўключаны ChromeVox (галасавая зваротная сувязь) або доступ праз пераключальнікі.</translation>
@@ -3324,6 +3332,7 @@
 <translation id="5618075537869101857">Не ўдалося запусціць праграму-кіёск.</translation>
 <translation id="5618333180342767515">(гэта можа заняць некалькі хвілін)</translation>
 <translation id="56197088284879152">Падключэнне да аддаленай прылады перагружанае: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="5620549857835247159">Паказваць кнопкі "Панэль запуску", "Назад", "Агляд" на паліцы ў планшэтным рэжыме.</translation>
 <translation id="5620568081365989559">Інструменты распрацоўшчыка запытваюць поўны доступ да папкі "<ph name="FOLDER_PATH" />". Упэўніцеся, што канфідэнцыяльная інфармацыя не будзе раскрыта.</translation>
 <translation id="5620612546311710611">статыстыка выкарыстання</translation>
 <translation id="5620655347161642930">Экспарт пароляў...</translation>
@@ -3855,6 +3864,7 @@
 <translation id="6349101878882523185">Усталяваць праграму "<ph name="APP_NAME" />"</translation>
 <translation id="6349170655202535379">Сінхранізацыя не працуе. Паспрабуйце выйсці і ўвайсці зноў.</translation>
 <translation id="6351063337294363751">Праз гэта меню можна выдаліць гісторыю праглядаў</translation>
+<translation id="6352223293513723497">У сховішчы прылады мала месца. Вызваліце месца, каб выкарыстоўваць Plugin VM.</translation>
 <translation id="6352773953037195952">Найвышэйшы</translation>
 <translation id="6354918092619878358">SECG эліптычны secp256r1 (іншая назва – ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Не выключайце прыладу.</translation>
@@ -4133,12 +4143,14 @@
 <translation id="6758056191028427665">Паведаміце нам, што вы думаеце пра наш прадукт.</translation>
 <translation id="6759193508432371551">Скід да заводскіх налад</translation>
 <translation id="6762833852331690540">Уключана</translation>
+<translation id="6764693078871405569">Таксама выдаліць гісторыю праглядаў сайта (<ph name="URL" />). (Гэта прывядзе да выхаду з уліковага запісу на дамене <ph name="DOMAIN" />.)</translation>
 <translation id="6767566652486411142">Выбраць іншую мову...</translation>
 <translation id="6767639283522617719">Не ўдаецца далучыцца да дамена. Праверце правільнасць налад арганізацыйнай адзінкі.</translation>
 <translation id="6769712124046837540">Дадаецца прынтар...</translation>
 <translation id="6770664076092644100">Спраўдзіць праз NFC</translation>
 <translation id="6771503742377376720">З'яўляецца цэнтрам сертыфікацыі</translation>
 <translation id="6772339735733515807">Кіраванне пашырэннямі</translation>
+<translation id="6774271858705413900">Нешта пайшло не так. Пачакайце некалькі хвілін і запусціце Plugin VM зноў.</translation>
 <translation id="6774402201608588477">Вы зноў уключылі адно няправільнае пашырэнне.</translation>
 <translation id="6775163072363532304">Тут будуць з'яўляцца даступныя прылады.</translation>
 <translation id="6777817260680419853">Перанакіраванне заблакіравана</translation>
@@ -5114,7 +5126,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Даныя рэзервовай копіі не будуць улічвацца ў квоце сховішча вашага дзіцяці на Дыску.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Гэты сэрвіс можна выключыць у Наладах.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Дазволіць нядаўна закрытым сайтам завяршаць перадачу і прыём даных</translation>
-<translation id="8075388906473569293">Пытацца, калі сайт запытвае дазвол адсочваць становішча камеры або ствараць карту памяшкання</translation>
 <translation id="8076492880354921740">Укладкі</translation>
 <translation id="8076835018653442223">Доступ да лакальных файлаў на прыладзе адключаны адміністратарам</translation>
 <translation id="808089508890593134">Google</translation>
@@ -5396,7 +5407,6 @@
 <translation id="8465444703385715657">Убудове "<ph name="PLUGIN_NAME" />" для запуску патрабуецца ваш дазвол</translation>
 <translation id="8466417995783206254">Гэта ўкладка прайграе відэа ў рэжыме "відарыс у відарысе".</translation>
 <translation id="8467326454809944210">Выбраць іншую мову</translation>
-<translation id="8468750959626135884">Разблакіраваць прыладу <ph name="DEVICE_TYPE" /> з дапамогай вашага тэлефона Android.</translation>
 <translation id="8470214316007448308">Іншыя людзі</translation>
 <translation id="8470513973197838199">Захаваныя паролі для сайта <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">патрабуюцца апаратныя сродкі</translation>
@@ -5441,6 +5451,7 @@
 <translation id="8538358978858059843">Уключыць воблачныя сэрвісы для трансляцыі?</translation>
 <translation id="8539727552378197395">Не (HttpOnly)</translation>
 <translation id="8539766201049804895">Абнавіць</translation>
+<translation id="8540136935098276800">Увядзіце URL-адрас у правільным фармаце</translation>
 <translation id="8540608333167683902">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падрабязныя звесткі</translation>
 <translation id="8541462173655894684">На серверы друку прынтараў не знойдзена</translation>
 <translation id="8542618328173222274">Пытацца, калі сайт запытвае дазвол выкарыстоўваць даныя і прылады віртуальнай рэальнасці</translation>
@@ -5457,6 +5468,7 @@
 <translation id="8551388862522347954">Ліцэнзіі</translation>
 <translation id="8553342806078037065">Іншыя карыстальнікі</translation>
 <translation id="8554899698005018844">Мова не выбрана</translation>
+<translation id="8556135141412663091">Каб выкарыстоўваць Plugin VM, прыладу трэба абнавіць.</translation>
 <translation id="8557022314818157177">Каб дадаць адбітак пальца, націскайце на ключ бяспекі</translation>
 <translation id="855773602626431402">Прадухілены запуск не змешчанай у пясочніцу ўбудовы на гэтай старонцы.</translation>
 <translation id="8557930019681227453">Маніфест</translation>
@@ -5708,6 +5720,7 @@
 <translation id="8871696467337989339">Вы выкарыстоўваеце эксперыментальны параметр каманднага радка, які не падтрымліваецца: <ph name="BAD_FLAG" />. Стабільнасць і бяспека пагоршацца.</translation>
 <translation id="8871974300055371298">Налады змесціва</translation>
 <translation id="8872155268274985541">Знойдзены недапушчальны файл маніфеста знешняга абнаўлення кіёска. Не ўдалося абнавіць праграму-кіёск. Выміце USB-сховішча.</translation>
+<translation id="8872187374998143710">Каб выкарыстоўваць Plugin VM, перазапусціце прыладу.</translation>
 <translation id="8872777911145321141">Пытацца, калі сайт запытвае дазвол выкарыстоўваць даныя і прылады віртуальнай рэальнасці (рэкамендуецца)</translation>
 <translation id="8874184842967597500">Няма падключэння</translation>
 <translation id="8876307312329369159">Гэту наладу нельга змяніць у дэманстрацыйным сеансе.</translation>
@@ -5897,7 +5910,6 @@
 <translation id="9128870381267983090">Падключыцеся да сеткі</translation>
 <translation id="9130015405878219958">Уведзены няправільны рэжым.</translation>
 <translation id="9131487537093447019">Адпраўка і атрыманне паведамленняў з прылад Bluetooth.</translation>
-<translation id="9133485532850464138">Не дазваляць сайтам адсочваць становішча камеры або ствараць карту памяшкання</translation>
 <translation id="9137013805542155359">Паказаць арыгінал</translation>
 <translation id="9137157311132182254">Прыярытэтная пошукавая сістэма</translation>
 <translation id="9137248913990643158">Каб карыстацца гэтай праграмай, запусціце Chrome і ўвайдзіце ў свой уліковы запіс.</translation>

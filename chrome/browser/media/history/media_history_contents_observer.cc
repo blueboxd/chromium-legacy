@@ -62,7 +62,7 @@ void MediaHistoryContentsObserver::WebContentsDestroyed() {
 void MediaHistoryContentsObserver::MediaWatchTimeChanged(
     const content::MediaPlayerWatchTime& watch_time) {
   if (service_)
-    service_->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service_->SavePlayback(watch_time);
 }
 
 void MediaHistoryContentsObserver::MediaSessionInfoChanged(
@@ -112,8 +112,8 @@ void MediaHistoryContentsObserver::MaybeCommitMediaSession() {
     return;
   }
 
-  service_->GetMediaHistoryStore()->SavePlaybackSession(
-      current_url_, *cached_metadata_, cached_position_, cached_artwork_);
+  service_->SavePlaybackSession(current_url_, *cached_metadata_,
+                                cached_position_, cached_artwork_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaHistoryContentsObserver)

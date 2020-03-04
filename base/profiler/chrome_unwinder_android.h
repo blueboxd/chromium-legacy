@@ -26,7 +26,7 @@ class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
   void SetExpectedChromeModuleIdForTesting(const std::string& chrome_module_id);
 
   // Unwinder:
-  void AddNonNativeModules(ModuleCache* module_cache) override;
+  void AddInitialModules(ModuleCache* module_cache) override;
   bool CanUnwindFrom(const Frame* current_frame) const override;
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,

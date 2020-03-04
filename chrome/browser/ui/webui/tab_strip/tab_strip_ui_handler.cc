@@ -37,6 +37,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace {
 
@@ -376,6 +377,10 @@ void TabStripUIHandler::RegisterMessages() {
       base::Bind(&TabStripUIHandler::HandleShowBackgroundContextMenu,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "showEditDialogForGroup",
+      base::Bind(&TabStripUIHandler::HandleShowEditDialogForGroup,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "showTabContextMenu",
       base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
                  base::Unretained(this)));
@@ -690,6 +695,34 @@ void TabStripUIHandler::HandleShowBackgroundContextMenu(
       gfx::ToRoundedPoint(point),
       std::make_unique<WebUIBackgroundContextMenu>(
           browser_, embedder_->GetAcceleratorProvider()));
+}
+
+void TabStripUIHandler::HandleShowEditDialogForGroup(
+    const base::ListValue* args) {
+  const std::string group_id_string = args->GetList()[0].GetString();
+  base::Optional<tab_groups::TabGroupId> group_id =
+      tab_strip_ui::GetTabGroupIdFromString(
+          browser_->tab_strip_model()->group_model(), group_id_string);
+  if (!group_id.has_value()) {
+    return;
+  }
+
+  gfx::Point point;
+  {
+    double x = args->GetList()[1].GetDouble();
+    double y = args->GetList()[2].GetDouble();
+    point = gfx::Point(x, y);
+  }
+
+  gfx::Rect rect;
+  {
+    double width = args->GetList()[3].GetDouble();
+    double height = args->GetList()[4].GetDouble();
+    rect = gfx::Rect(width, height);
+  }
+
+  DCHECK(embedder_);
+  embedder_->ShowEditDialogForGroupAtPoint(point, rect, group_id.value());
 }
 
 void TabStripUIHandler::HandleShowTabContextMenu(const base::ListValue* args) {

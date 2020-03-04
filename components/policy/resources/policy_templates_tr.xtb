@@ -756,21 +756,6 @@
 <translation id="2151831603578119302">Erişilebilirlik özellikleri kısayollarını etkinleştir</translation>
 <translation id="2156132677421487971">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan <ph name="PRODUCT_NAME" /> özelliğine ilişkin politikaları yapılandırın.</translation>
 <translation id="2156755242840687300">Harici yazdırma sunucuları etkin</translation>
-<translation id="2159024114213303519">Bu politika yapılandırıldığında <ph name="PRODUCT_NAME" /> içindeki Gizli profiller ve Misafir profilleri için ambiyans kimlik doğrulamasına izin verilir/verilmez.
-
-      Ambiyans Kimlik Doğrulaması, NTLM/Kerberos/Negotiate görev/yanıt şemaları üzerinden açık kimlik bilgileri sağlanmadığında varsayılan kimlik bilgileriyle gerçekleştirilen http kimlik doğrulamasıdır.
-
-      <ph name="REGULAR_ONLY_OPTION_NAME" /> (0 değeri) ayarlanırsa ambiyans kimlik doğrulaması yalnızca Normal oturumlarda gerçekleştirilebilir. Gizli oturumlar ve Misafir oturumları ambiyans kimlik doğrulaması gerçekleştiremez.
-
-      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (1 değeri) ayarlanırsa Gizli ve Normal oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir. Misafir oturumları ambiyans kimlik doğrulaması gerçekleştiremez.
-
-      <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (2 değeri) ayarlanırsa Misafir oturumlarında ve Normal oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir. Gizli oturumlar ambiyans kimlik doğrulaması gerçekleştiremez.
-
-      <ph name="ALL_OPTION_NAME" /> (3 değeri) ayarlanırsa tüm oturumlarda ambiyans kimlik doğrulaması gerçekleştirilebilir.
-
-      Normal profillerde ambiyans kimlik doğrulamasına her zaman izin verildiğini unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa Gizli oturumlar ve Misafir oturumları, izin verilmeyeceği için gelecekteki <ph name="PRODUCT_NAME" /> sürümlerinde ambiyans kimlik doğrulaması gerçekleştiremez.</translation>
 <translation id="2160336427036785721">Bellekten tasarruf etmek için sekmelerin silinmeye başlamasından önce (sekme tarafından kullanılan bellek serbest kalır ve sekmeye geçiş yapıldığında sekmenin yeniden yüklenmesi gerekir) tek bir <ph name="PRODUCT_NAME" /> örneğinin kullanabileceği bellek miktarını yapılandırır.
 
       Politika ayarlanırsa tarayıcı, sınır geçildikten sonra bellekten tasarruf etmek için sekmeleri silmeye başlar. Bununla birlikte, tarayıcının her zaman sınırın altında çalışacağına dair herhangi bir garanti yoktur. 1024'ün altındaki değerler 1024'e yuvarlanır.
@@ -1094,6 +1079,7 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa metin imlecini vurgulama başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="2509919237512982967">M84'e kadar Eski Form Kontrollerini kullanın.</translation>
 <translation id="2514328368635166290">Varsayılan arama sağlayıcının favori simge URL'sini belirtir.
 
           Bu politika isteğe bağlıdır. Ayarlanmazsa, arama sağlayıcı için herhangi bir simge sunulmaz.
@@ -2948,7 +2934,6 @@ politikayı geçersiz kılamaz.
 <translation id="5306186200045823863">Symantec Corporation'ın Eski PKI Altyapısına güveni etkinleştir</translation>
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5311275381462687162">Varsayılan eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> çerez davranışı ayarı</translation>
-<translation id="5313116350102437846">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcıların indirdikleri dosyaları kötü amaçlı yazılıma karşı taranmak üzere Google'a göndermelerine izin verilip verilmeyeceğini kontrol eder. Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılardan dosyalarını ayrıntılı tarama için Google'a göndermeleri istenir. Kullanıcı "Tara" öğesini seçerse indirdiği dosya Google'a gönderilir. Bu politika False (Yanlış) değerine ayarlanırsa kullanıcılardan istekte bulunulmaz ve indirdikleri dosyalar Google'a gönderilmez.</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
 <translation id="5321755462836179869">Yerel bildirimlere izin verir</translation>
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> kullanarak içeriğin cihaza yayınlanmasına izin verin.
@@ -5187,6 +5172,13 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Bu politika ayarlanmazsa <ph name="PRINTERS_ALLOW_ALL" /> uygulanır.
       </translation>
+<translation id="8937282917198525844"> M81'den başlayarak, standart form kontrol öğelerine (ör. &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) iyileştirilmiş erişilebilirlik ve daha iyi platform bütünlüğü ile yenilenmiş bir görünüm ve tarz sağlandı. Bu politika, M84'e kadar "eski" form kontrol öğelerini geri yükler.
+
+      Bu politika True (Doğru) değerine ayarlanırsa tüm siteler için "eski" form kontrol öğeleri kullanılır.
+
+      Bu politika False (Yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa form kontrol öğeleri M81, M82 ve M83'te kullanıma sunulduğu şekilde etkinleştirilir.
+
+      Bu politika Chrome 84'ten sonra kaldırılacaktır.</translation>
 <translation id="8938932171964587769">M69 sürümünde kullanımdan kaldırılmıştır. Bunun yerine OverrideSecurityRestrictionsOnInsecureOrigin politikasını kullanın.
 
       Bu politika, güvenli olmayan başlangıç noktalarında güvenlik kısıtlamalarının uygulanmayacağı başlangıç noktalarının (URL'ler) veya ana makine adı kalıplarının (örneğin, "*.example.com") bir listesini belirtir. 

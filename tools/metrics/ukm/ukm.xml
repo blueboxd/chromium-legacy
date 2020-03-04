@@ -1696,13 +1696,11 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
-    <obsolete>
-      Removed February 2020 in favor of separate metrics for the wait time and
-      the actual commit time.
-    </obsolete>
     <summary>
       The time spent committing main thread to impl layer tree information,
       between navigation and First Contentful Paint, in microseconds.
+      TODO(crbug.com/1058065): Should be obsolete. Removed February 2020 in
+      favor of separate metrics for the wait time and the actual commit time.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
@@ -2394,13 +2392,11 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="ProxyCommit">
-    <obsolete>
-      Removed February 2020 in favor of separate metrics for the wait time and
-      the actual commit time.
-    </obsolete>
     <summary>
       The time taken for the proxy to commit to the impl thread in microseconds
-      during the sampled frame.
+      during the sampled frame. TODO(crbug.com/1058065): Should be obsolete.
+      Removed February 2020 in favor of separate metrics for the wait time and
+      the actual commit time.
     </summary>
     <aggregation>
       <history>
@@ -2412,13 +2408,11 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="ProxyCommitPercentage">
-    <obsolete>
-      Removed February 2020 in favor of separate metrics for the wait time and
-      the actual commit time.
-    </obsolete>
     <summary>
       The percentage of the main frame time used to commit to the impl thread.
-      An int in the range [0,100].
+      An int in the range [0,100]. TODO(crbug.com/1058065): Should be obsolete.
+      Removed February 2020 in favor of separate metrics for the wait time and
+      the actual commit time.
     </summary>
   </metric>
   <metric name="ScrollingCoordinator">
@@ -7470,13 +7464,12 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Net.CacheBytes">
-    <obsolete>
-      Deprecated 06/2019 in favor of Net.CacheBytes2.
-    </obsolete>
     <summary>
       The total number of body bytes loaded from cache for all resources on the
       page. This is rounded down to the nearest exponential bucket (with a
-      bucket spacing factor of 1.3).
+      bucket spacing factor of 1.3). TODO(crbug.com/1058065): Should be
+      obsolete. Deprecated 06/2019 in favor of Net.CacheBytes2. (seems to be
+      used in Clang)
     </summary>
   </metric>
   <metric name="Net.CacheBytes2">

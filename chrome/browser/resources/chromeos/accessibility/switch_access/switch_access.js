@@ -15,7 +15,6 @@ class SwitchAccess {
       AutoScanManager.initialize();
       NavigationManager.initialize(desktop);
 
-      BackButtonNode.findAutomationNode();
       Commands.initialize();
       KeyboardRootNode.startWatchingVisibility();
       MenuManager.initialize();

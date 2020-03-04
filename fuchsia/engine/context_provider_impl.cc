@@ -462,9 +462,6 @@ void ContextProviderImpl::Create(
             .value_or(false);
     if (force_protected_video_buffers) {
       launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
-      // TODO(crbug.com/1019212): We observed flicker and buffer issues when
-      // using accelerated canvas with protected memory.
-      launch_command.AppendSwitch(switches::kDisableAccelerated2dCanvas);
     }
   }
 

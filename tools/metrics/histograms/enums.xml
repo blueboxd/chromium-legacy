@@ -15041,7 +15041,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="32" label="Account Chooser"/>
   <int value="33" label="Arc App"/>
   <int value="34" label="Auto Signin First Run"/>
-  <int value="35" label="Bookmark App Confirmation"/>
+  <int value="35" label="Web App Confirmation"/>
   <int value="36" label="Chooser Ui"/>
   <int value="37" label="Chooser"/>
   <int value="38" label="Collected Cookies"/>
@@ -19807,6 +19807,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="683" label="UseLegacyFormControls"/>
   <int value="684" label="SafeBrowsingEnhancedProtection"/>
   <int value="685" label="AdvancedProtectionExtraSecurityAllowed"/>
+  <int value="686" label="ReportDeviceBacklightInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22461,6 +22462,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1450" label="WEBCAMPRIVATE_SET_CAMERA_PRESET"/>
   <int value="1451" label="PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO"/>
   <int value="1452" label="INPUTMETHODPRIVATE_HIDEINPUTVIEW"/>
+  <int value="1453" label="PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD"/>
 </enum>
 
 <enum name="ExtensionIconState">

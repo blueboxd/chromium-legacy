@@ -322,7 +322,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<CrosPlatformApi> platform_api_;
-  std::unique_ptr<AssistantMediaSessionObserver> media_session_observer_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   ChromiumApiDelegate chromium_api_delegate_;
   // NOTE: |display_connection_| is used by |assistant_manager_| and must be

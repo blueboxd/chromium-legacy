@@ -10,10 +10,7 @@
 
 namespace gpu {
 class TextureOwner;
-
-namespace gles2 {
-class Texture;
-}  // namespace gles2
+class TextureBase;
 
 // This class is a specialized GLImage that lets SharedImageVideo draw video
 // frames.
@@ -32,7 +29,7 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
   // texture.
   virtual void UpdateAndBindTexImage() = 0;
   virtual bool HasTextureOwner() const = 0;
-  virtual gles2::Texture* GetTexture() const = 0;
+  virtual TextureBase* GetTextureBase() const = 0;
 
   // Notify the texture of overlay decision, When overlay promotion is true,
   // this also sets the bounds of where the overlay is.

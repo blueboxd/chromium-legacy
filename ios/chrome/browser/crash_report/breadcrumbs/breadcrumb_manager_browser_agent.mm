@@ -114,34 +114,24 @@ void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
     web::WebState* new_web_state,
     int active_index,
     int reason) {
-  int old_web_state_id = -1;
-  if (old_web_state) {
-    old_web_state_id =
-        BreadcrumbManagerTabHelper::FromWebState(old_web_state)->GetUniqueId();
-  }
-  int new_web_state_id = -1;
-  if (new_web_state) {
-    new_web_state_id =
-        BreadcrumbManagerTabHelper::FromWebState(new_web_state)->GetUniqueId();
+  if (!(reason & WebStateListObserver::CHANGE_REASON_ACTIVATED)) {
+    return;
   }
 
-  const char* change_reason_string = nullptr;
-  switch (reason) {
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_NONE:
-      change_reason_string = "with";
-      break;
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_REPLACED:
-      change_reason_string = "replaced";
-      break;
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_ACTIVATED:
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_CLOSED:
-    case WebStateListObserver::ChangeReason::CHANGE_REASON_INSERTED:
-      change_reason_string = "for user action";
-      break;
+  std::vector<std::string> event = {"Switch"};
+  if (old_web_state) {
+    event.push_back(base::StringPrintf(
+        "from Tab%d", BreadcrumbManagerTabHelper::FromWebState(old_web_state)
+                          ->GetUniqueId()));
   }
-  LogEvent(base::StringPrintf("Activated Tab%d %s Tab%d at %d",
-                              old_web_state_id, change_reason_string,
-                              new_web_state_id, active_index));
+  if (new_web_state) {
+    event.push_back(base::StringPrintf(
+        "to Tab%d at %d",
+        BreadcrumbManagerTabHelper::FromWebState(new_web_state)->GetUniqueId(),
+        active_index));
+  }
+
+  LogEvent(base::JoinString(event, " "));
 }
 
 void BreadcrumbManagerBrowserAgent::WillBeginBatchOperation(

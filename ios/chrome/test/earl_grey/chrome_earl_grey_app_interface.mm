@@ -5,6 +5,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "base/test/ios/wait_util.h"
 
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -679,6 +680,11 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 + (BOOL)isAutofillCompanyNameEnabled {
   return base::FeatureList::IsEnabled(
       autofill::features::kAutofillEnableCompanyName);
+}
+
++ (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      base::SysNSStringToUTF8(launchSwitch));
 }
 
 + (BOOL)isCustomWebKitLoadedIfRequested {

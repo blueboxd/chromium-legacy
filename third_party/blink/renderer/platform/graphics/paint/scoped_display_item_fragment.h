@@ -13,7 +13,7 @@
 namespace blink {
 
 class ScopedDisplayItemFragment final {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   ScopedDisplayItemFragment(GraphicsContext& context, unsigned fragment)

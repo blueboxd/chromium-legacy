@@ -5,19 +5,14 @@
 #ifndef CHROME_UPDATER_SERVER_WIN_SERVER_H_
 #define CHROME_UPDATER_SERVER_WIN_SERVER_H_
 
-#include <windows.h>
-
 #include <wrl/implements.h>
 #include <wrl/module.h>
-#include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/updater/server/win/updater_idl.h"
 
 namespace updater {
-
-class UpdateService;
 
 // This class implements the IUpdater interface and exposes it as a COM object.
 class UpdaterImpl
@@ -41,45 +36,9 @@ class UpdaterImpl
   ~UpdaterImpl() override = default;
 };
 
-// This class is responsible for the lifetime of the COM server, as well as
-// class factory registration.
-class ComServer {
- public:
-  ComServer();
-  ComServer(const ComServer&) = delete;
-  ComServer& operator=(const ComServer&) = delete;
-  ~ComServer() = default;
+class App;
 
-  // Main entry point for the COM server.
-  int RunComServer();
-
- private:
-  // Registers and unregisters the out-of-process COM class factories.
-  HRESULT RegisterClassObject();
-  void UnregisterClassObject();
-
-  // Waits until the last COM object is released.
-  void WaitForExitSignal();
-
-  // Called when the last object is released.
-  void SignalExit();
-
-  // Creates an out-of-process WRL Module.
-  void CreateWRLModule();
-
-  // Handles object registration, message loop, and unregistration. Returns
-  // when all registered objects are released.
-  HRESULT Run();
-
-  // Identifier of registered class objects used for unregistration.
-  DWORD cookies_[1] = {};
-
-  // This event is signaled when the last COM instance is released.
-  base::WaitableEvent exit_signal_;
-};
-
-// Sets up and runs the server.
-int RunServer(std::unique_ptr<UpdateService> update_service);
+scoped_refptr<App> MakeAppServer();
 
 }  // namespace updater
 

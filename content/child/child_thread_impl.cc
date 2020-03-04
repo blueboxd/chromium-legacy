@@ -41,8 +41,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/child/background_tracing_agent_impl.h"
-#include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "content/child/browser_exposed_child_interfaces.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
@@ -74,6 +72,8 @@
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/tracing/public/cpp/background_tracing/background_tracing_agent_impl.h"
+#include "services/tracing/public/cpp/background_tracing/background_tracing_agent_provider_impl.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"

@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
 <translation id="1207086294218137981">Không có tiêu đề cấp 4 nào tiếp theo</translation>
+<translation id="1212770441379271564">Một số phím tắt tiếp theo không phải là phím lệnh của ChromeVox nhưng vẫn rất hữu ích để khai thác tối đa lợi ích của Chrome.
+    Để di chuyển tiến qua các mục có thể thao tác như nút và đường liên kết, hãy nhấn phím Tab. Để di chuyển lùi, hãy nhấn tổ hợp phím Shift+Tab.
+    Để vào hộp địa chỉ của trình duyệt Chrome, còn gọi là thanh địa chỉ, hãy nhấn tổ hợp phím Control + L.
+    Để mở và tự động chuyển sang thẻ mới, hãy nhấn tổ hợp phím Control+T. Con trỏ của bạn sẽ nằm trong thanh địa chỉ.
+    Để đóng thẻ, hãy nhấn tổ hợp phím Control+W.
+    Để chuyển tiến giữa các thẻ đang mở, hãy dùng tổ hợp phím Control+Tab.
+    Để mở trình đơn của trình duyệt Chrome, hãy nhấn tổ hợp phím Alt+F.</translation>
 <translation id="1213216066620407844">ChromeVox - Mang tính năng Thoại lên Chrome</translation>
 <translation id="1225969361094801578">Màu xám đen đậm</translation>
 <translation id="1229276918471378188">Bước nhảy trước</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">công cụ chọn màu</translation>
 <translation id="4221012616705981690">Không có danh sách nào trước đó</translation>
 <translation id="4221071177874897997">Biểu thị chữ in đậm:</translation>
+<translation id="4225355998815256469">Thành phần điều khiển biểu mẫu</translation>
 <translation id="4229646983878045487">ngày giờ</translation>
 <translation id="4230834257931120629">Màu xám đen nhạt</translation>
 <translation id="4231102694147661229">Bật Tùy chọn của nhà phát triển</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Câu</translation>
 <translation id="4623097797855662355">Lời ghi cuối sách</translation>
 <translation id="463135993322337640">Bạn có thể tìm hiểu tính năng mới bằng cách nhấn ChromeVox, o, n</translation>
+<translation id="4646606380313237501">{"ar": "Tiếng Ả Rập",
+    "as": "Tiếng Assam",
+    "aw": "Tiếng Awadh",
+    "be": "Tiếng Bengal",
+    "bg": "Tiếng Bulgaria",
+    "bh": "Tiếng Bihar",
+    "bo": "Tiếng Tây Tạng",
+    "br": "Tiếng Braj",
+    "ca": "Tiếng Catalan",
+    "ckb": "Tiếng Soran",
+    "cs": "Tiếng Séc",
+    "cy": "Tiếng xứ Wales",
+    "da": "Tiếng Đan Mạch",
+    "de": "Tiếng Đức",
+    "de_CH": "Tiếng Đức (Thụy Sĩ)",
+    "de_DE": "Tiếng Đức (Đức)",
+    "dra": "Tiếng Dravida",
+    "el": "Tiếng Hy Lạp",
+    "en": "Tiếng Anh",
+    "en_CA": "Tiếng Anh (Canada)",
+    "en_GB": "Tiếng Anh (Anh)",
+    "en_US": "Tiếng Anh (Mỹ)",
+    "eo": "Tiếng Esperanto",
+    "es": "Tiếng Tây Ban Nha",
+    "et": "Tiếng Estonia",
+    "fa": "Tiếng Ba Tư",
+    "fr": "Tiếng Pháp",
+    "fr_CA": "Tiếng Pháp (Canada)",
+    "fr_FR": "Tiếng Pháp (Pháp)",
+    "fi": "Tiếng Phần Lan",
+    "ga": "Tiếng Ireland",
+    "gd": "Tiếng Gael",
+    "gon": "Tiếng Gond",
+    "gu": "Tiếng Gujarat",
+    "he": "Tiếng Do Thái",
+    "hi": "Tiếng Hindi",
+    "hr": "Tiếng Croatia",
+    "hu": "Tiếng Hungary",
+    "hy": "Tiếng Armenia",
+    "is": "Tiếng Iceland",
+    "it": "Tiếng Ý",
+    "iu": "Tiếng Inuktitut",
+    "ka": "Tiếng Kannada",
+    "kh": "Tiếng Khasi",
+    "ko": "Tiếng Hàn",
+    "kok": "Tiếng Konkan",
+    "kru": "Tiếng Kurukh",
+    "ks": "Tiếng Kashmir",
+    "lt": "Tiếng Lithuania",
+    "lv": "Tiếng Latvia",
+    "mao": "Tiếng Maori",
+    "ml": "Tiếng Malayalam",
+    "mt": "Tiếng Malta",
+    "mwr": "Tiếng Marwar",
+    "mn": "Tiếng Mông Cổ",
+    "mun": "Tiếng Munda",
+    "nb": "Tiếng Bokmål Na Uy",
+    "ne": "Tiếng Nepal",
+    "nl": "Tiếng Hà Lan",
+    "no": "Tiếng Na Uy",
+    "or": "Tiếng Oriya",
+    "pi": "Tiếng Pali",
+    "pl": "Tiếng Ba Lan",
+    "pt": "Tiếng Bồ Đào Nha",
+    "pu": "Tiếng Punjab",
+    "ro": "Tiếng Romania",
+    "ru": "Tiếng Nga",
+    "sa": "Tiếng Phạn",
+    "si": "Tiếng Sindh",
+    "sin": "Tiếng Sinhala",
+    "sk": "Tiếng Slovak",
+    "sl": "Tiếng Slovenia",
+    "sr": "Tiếng Serbia",
+    "sv": "Tiếng Thụy Điển",
+    "ta": "Tiếng Tamil",
+    "te": "Tiếng Telugu",
+    "tr": "Tiếng Thổ Nhĩ Kỳ",
+    "tsn": "Tiếng Hà Lan (Nam Phi)",
+    "uk": "Tiếng Ukrainia",
+    "ur": "Tiếng Urdu",
+    "vi": "Tiếng Việt",
+    "zh": "Tiếng Trung",
+    "zh_TW": "Tiếng Trung (Chữ Hán phồn thể)"}</translation>
 <translation id="4647836961514597010">Công cụ chọn màu</translation>
 <translation id="4660783501463101648">Đã xóa phiên bản cổ điển. Phím chuyển đổi trên bàn phím để quay về phiên bản ChromeVox cổ điển đã bị xóa.</translation>
 <translation id="4661075872484491155">cây</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Đã bật chế độ cố định</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{dấu phẩy}other{# dấu phẩy}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, hộp văn bản</translation>
+<translation id="532485153932049746">Định dạng văn bản
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, liên kết</translation>
 <translation id="5331522683003474486">Điều khiển thiết bị chỉ bằng 1 hoặc 2 công tắc.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Chữ nổi</translation>
 <translation id="5402791055281059602">Thông báo theo thể thức</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{dấu chấm phẩy}other{# dấu chấm phẩy}}</translation>
+<translation id="5420259671171615858">Tìm kiếm trong các trình đơn</translation>
 <translation id="5435274640623994081">Bật ghi nhật ký âm báo</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{dấu nhỏ hơn}other{# dấu nhỏ hơn}}</translation>
 <translation id="5444587279251314700">(hiện hoạt)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">Đã phát hiện lỗi chính tả</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">quay lại</translation>
+<translation id="7429415133937917139">Mô phỏng đầu ra của màn hình chữ nổi có thể làm mới
+    trong bảng điều khiển ChromeVox ở đầu màn hình</translation>
 <translation id="7434509671034404296">Nhà phát triển</translation>
 <translation id="743783356331413498">Ví dụ</translation>
 <translation id="7439060726180460871">Thư mục</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">Nút radio trước</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Không có hộp kết hợp nào tiếp theo</translation>
+<translation id="772146615414628379">Xin chúc mừng! Bạn đã tìm hiểu xong thông tin cơ bản để sử dụng hiệu quả ChromeVox. Hãy nhớ rằng bạn có thể mở trình đơn lệnh của ChromeVox bất cứ lúc nào bằng cách nhấn tổ hợp phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và Chrome OS, hãy truy cập vào các bài viết sau đây.
+    Nếu bạn đã đọc xong phần hướng dẫn, hãy dùng ChromeVox để chuyển đến nút Đóng rồi nhấp vào nút đó.</translation>
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7731785449856576010">Không có tiện ích nghe nhìn nào tiếp theo</translation>
 <translation id="773906353055481349">Nhấn tổ hợp phím Tìm kiếm + Ctrl + Alt cùng với các mũi tên để di chuyển theo ô</translation>

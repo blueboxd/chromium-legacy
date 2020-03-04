@@ -91,7 +91,11 @@ component("chromeos") {
   }
 
   if (is_printing_ppd_provider_v3) {
-    sources += [ "printing/ppd_provider_v3.cc" ]
+    sources += [
+      "printing/ppd_provider_v3.cc",
+      "printing/printer_config_cache.cc",
+      "printing/printer_config_cache.h",
+    ]
   } else {
     sources += [ "printing/ppd_provider.cc" ]
   }
@@ -194,7 +198,6 @@ test("chromeos_unittests") {
     "printing/epson_driver_matching_unittest.cc",
     "printing/ppd_cache_unittest.cc",
     "printing/ppd_line_reader_unittest.cc",
-    "printing/ppd_provider_unittest.cc",
     "printing/printer_configuration_unittest.cc",
     "printing/printer_translator_unittest.cc",
     "printing/usb_printer_id_unittest.cc",
@@ -202,6 +205,12 @@ test("chromeos_unittests") {
     "process_proxy/process_proxy_unittest.cc",
     "test/run_all_unittests.cc",
   ]
+
+  if (is_printing_ppd_provider_v3) {
+    sources += [ "printing/printer_config_cache_unittest.cc" ]
+  } else {
+    sources += [ "printing/ppd_provider_unittest.cc" ]
+  }
 
   data = [ "test/data/" ]
 }

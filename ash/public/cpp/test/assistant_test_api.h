@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 
 namespace aura {
 class Window;
@@ -46,6 +47,9 @@ class ASH_EXPORT AssistantTestApi {
   virtual void SetAssistantEnabled(bool enabled) = 0;
 
   virtual void SetTabletMode(bool enable) = 0;
+
+  // Changes the user preference controlling the status of user consent.
+  virtual void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus) = 0;
 
   // Changes the user setting controlling whether the user prefers voice or
   // keyboard (internally called |kAssistantLaunchWithMicOpen|).
@@ -90,6 +94,10 @@ class ASH_EXPORT AssistantTestApi {
   // Returns the button to enable text mode.
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* keyboard_input_toggle() = 0;
+
+  // Returns the button to launch Assistant onboarding.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* opt_in_view() = 0;
 
   // Returns the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.

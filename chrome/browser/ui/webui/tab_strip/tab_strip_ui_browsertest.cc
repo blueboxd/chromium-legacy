@@ -20,10 +20,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -42,6 +44,8 @@ class MockTabStripUIEmbedder : public TabStripUIEmbedder {
   MOCK_METHOD0(CloseContainer, void());
   MOCK_METHOD2(ShowContextMenuAtPoint,
                void(gfx::Point, std::unique_ptr<ui::MenuModel>));
+  MOCK_METHOD3(ShowEditDialogForGroupAtPoint,
+               void(gfx::Point, gfx::Rect, tab_groups::TabGroupId));
   MOCK_METHOD0(GetLayout, TabStripUILayout());
   MOCK_CONST_METHOD1(GetColor, SkColor(int));
 };
@@ -121,6 +125,47 @@ IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest,
   EXPECT_CALL(mock_embedder_, ShowContextMenuAtPoint(gfx::Point(100, 50), _))
       .Times(1);
   ASSERT_TRUE(content::ExecJs(webui_contents_.get(), invoke_menu_js,
+                              content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                              ISOLATED_WORLD_ID_CHROME_INTERNAL));
+}
+
+IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest, InvokesEditDialogForGroups) {
+  using ::testing::_;
+
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0});
+
+  const std::string get_chip_js =
+      "const chip = document.querySelector('tabstrip-tab-list')"
+      "    .shadowRoot.querySelector('tabstrip-tab-group')"
+      "    .shadowRoot.querySelector('#chip');"
+      "const chipRect = chip.getBoundingClientRect();";
+  int left =
+      content::EvalJs(webui_contents_.get(), get_chip_js + "chipRect.left",
+                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                      ISOLATED_WORLD_ID_CHROME_INTERNAL)
+          .ExtractInt();
+  int top = content::EvalJs(webui_contents_.get(), get_chip_js + "chipRect.top",
+                            content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                            ISOLATED_WORLD_ID_CHROME_INTERNAL)
+                .ExtractInt();
+  int width =
+      content::EvalJs(webui_contents_.get(), get_chip_js + "chipRect.width",
+                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                      ISOLATED_WORLD_ID_CHROME_INTERNAL)
+          .ExtractInt();
+  int height =
+      content::EvalJs(webui_contents_.get(), get_chip_js + "chipRect.height",
+                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                      ISOLATED_WORLD_ID_CHROME_INTERNAL)
+          .ExtractInt();
+
+  EXPECT_CALL(mock_embedder_,
+              ShowEditDialogForGroupAtPoint(gfx::Point(left, top),
+                                            gfx::Rect(width, height), group_id))
+      .Times(1);
+  ASSERT_TRUE(content::ExecJs(webui_contents_.get(),
+                              get_chip_js + "chip.click();",
                               content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                               ISOLATED_WORLD_ID_CHROME_INTERNAL));
 }

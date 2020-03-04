@@ -220,7 +220,6 @@ android_library("chrome_public_java") {
 
 android_library("chrome_java") {
   deps = [
-    ":chrome_android_java_switches",
     ":chrome_app_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
@@ -609,13 +608,9 @@ java_cpp_enum("sync_user_settings_enums_java") {
   sources = [ "//components/sync/driver/sync_user_settings.h" ]
 }
 
-java_cpp_strings("chrome_android_java_switches_srcjar") {
-  sources = [ "//chrome/common/chrome_switches.cc" ]
-  template = "//chrome/android/java_templates/ChromeSwitches.java.tmpl"
-}
-
-android_library("chrome_android_java_switches") {
-  srcjar_deps = [ ":chrome_android_java_switches_srcjar" ]
+# TODO(crbug.com/1041473): Remove this when all usages are migrated.
+java_group("chrome_android_java_switches") {
+  deps = [ "//chrome/browser/flags:java" ]
 }
 
 proto_java_library("partner_location_descriptor_proto_java") {
@@ -767,7 +762,6 @@ android_library("chrome_test_java") {
 
   deps = [
     ":browser_java_test_support",
-    ":chrome_android_java_switches",
     ":chrome_app_java_resources",
     ":chrome_test_util_java",
     ":partner_location_descriptor_proto_java",

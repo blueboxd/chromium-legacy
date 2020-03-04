@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Un problème est survenu lors de la synchronisation du mot de passe de votre compte professionnel avec votre profil Windows. Veuillez contacter votre administrateur.</translation>
 <translation id="2515346402363002066">Votre session a expiré. Connectez-vous à votre compte professionnel.</translation>
 <translation id="2844349213149998955">Vous n'êtes pas autorisé à vous connecter avec un compte personnel sur cet appareil. Veuillez vous connecter avec un compte professionnel.</translation>
-<translation id="2954423647682729023">Connectez-vous à votre compte professionnel.</translation>
 <translation id="3217145568844727893">Si vous poursuivez sans saisir votre mot de passe Windows actuel, vous risquez de perdre définitivement des informations sur cet appareil.</translation>
 <translation id="3285576391135346912">Vous ne pouvez vous connecter qu'avec une adresse e-mail qui se termine comme suit : <ph name="EMAIL_DOMAINS" />. Réessayez à l'aide d'un compte professionnel.</translation>
 <translation id="3306357053520292004">Un utilisateur de cet ordinateur a déjà été ajouté à l'aide de ce compte. Veuillez vous connecter avec un autre compte.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Votre administrateur ne vous autorise pas à vous connecter à ce compte. Utilisez un autre compte.</translation>
 <translation id="8639729688781680518">Vous avez oublié votre mot de passe Windows ?</translation>
 <translation id="866458870819756755">Impossible de créer le compte utilisateur.</translation>
-<translation id="8875753657315897487">Connectez-vous avec votre compte professionnel</translation>
 <translation id="9055998212250844221">Compte utilisateur créé par le fournisseur d'informations d'identification Google pour Windows</translation>
 </translationbundle>

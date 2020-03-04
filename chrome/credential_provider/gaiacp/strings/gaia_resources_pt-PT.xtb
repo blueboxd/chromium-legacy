@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Ocorreu um problema ao sincronizar a palavra-passe da sua conta profissional com o seu perfil do Windows. Contacte o seu administrador.</translation>
 <translation id="2515346402363002066">A sua sessão expirou. Inicie sessão com a sua conta profissional.</translation>
 <translation id="2844349213149998955">Não é permitido iniciar sessão com uma conta pessoal neste dispositivo. Inicie sessão com uma conta profissional.</translation>
-<translation id="2954423647682729023">Inicie sessão com a sua conta profissional.</translation>
 <translation id="3217145568844727893">Se continuar sem introduzir a palavra-passe atual do Windows, pode perder dados neste dispositivo de forma permanente.</translation>
 <translation id="3285576391135346912">Só pode iniciar sessão com um endereço de email que termine com o seguinte domínio: <ph name="EMAIL_DOMAINS" />. Tente novamente com uma conta profissional.</translation>
 <translation id="3306357053520292004">Já foi adicionado um utilizador neste computador com esta conta. Inicie sessão com uma conta diferente.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">O seu administrador não lhe permite iniciar sessão com esta conta. Experimente com outra conta.</translation>
 <translation id="8639729688781680518">Esqueci-me da palavra-passe do Windows</translation>
 <translation id="866458870819756755">Não foi possível criar um utilizador.</translation>
-<translation id="8875753657315897487">Iniciar sessão com a sua conta profissional</translation>
 <translation id="9055998212250844221">Conta de utilizador criada pelo Google Credential Provider para Windows</translation>
 </translationbundle>

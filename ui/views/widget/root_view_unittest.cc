@@ -860,5 +860,57 @@ TEST_F(RootViewTest, MouseEventDispatchedToClosestEnabledView) {
   EXPECT_EQ(1, v3->GetEventCount(ui::ET_MOUSE_PRESSED));
 }
 
+// If RootView::OnMousePressed() receives a double-click event that isn't
+// handled by any views, it should still report it as handled if the first click
+// was handled. However, it should *not* if the first click was unhandled.
+// Regression test for https://crbug.com/1055674.
+TEST_F(RootViewTest, DoubleClickHandledIffFirstClickHandled) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = {100, 100, 100, 100};
+  widget.Init(std::move(init_params));
+  widget.Show();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  root_view->SetContentsView(new View());
+
+  View* const contents_view = root_view->GetContentsView();
+  EventCountView* const v1 =
+      contents_view->AddChildView(std::make_unique<EventCountView>());
+
+  contents_view->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+  v1->SetBoundsRect(gfx::Rect(0, 0, 10, 10));
+
+  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
+                               gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
+                                gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+
+  // First click handled, second click unhandled.
+  v1->set_handle_mode(EventCountView::CONSUME_EVENTS);
+  pressed_event.SetClickCount(1);
+  released_event.SetClickCount(1);
+  EXPECT_TRUE(root_view->OnMousePressed(pressed_event));
+  root_view->OnMouseReleased(released_event);
+  v1->set_handle_mode(EventCountView::PROPAGATE_EVENTS);
+  pressed_event.SetClickCount(2);
+  released_event.SetClickCount(2);
+  EXPECT_TRUE(root_view->OnMousePressed(pressed_event));
+  root_view->OnMouseReleased(released_event);
+
+  // Both clicks unhandled.
+  v1->set_handle_mode(EventCountView::PROPAGATE_EVENTS);
+  pressed_event.SetClickCount(1);
+  released_event.SetClickCount(1);
+  EXPECT_FALSE(root_view->OnMousePressed(pressed_event));
+  root_view->OnMouseReleased(released_event);
+  pressed_event.SetClickCount(2);
+  released_event.SetClickCount(2);
+  EXPECT_FALSE(root_view->OnMousePressed(pressed_event));
+  root_view->OnMouseReleased(released_event);
+}
+
 }  // namespace test
 }  // namespace views

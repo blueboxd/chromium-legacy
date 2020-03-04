@@ -8,12 +8,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [12, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 12, 12],
           "reason": "paint property change"
         }
@@ -43,12 +43,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [9, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
@@ -78,12 +78,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
@@ -113,12 +113,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }
@@ -148,12 +148,12 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='test'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [13, 12],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='test'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
           "rect": [0, 0, 13, 12],
           "reason": "paint property change"
         }

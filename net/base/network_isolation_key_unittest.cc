@@ -152,33 +152,28 @@ TEST(NetworkIsolationKeyTest, ValueRoundTripEmpty) {
   const url::Origin kJunkOrigin =
       url::Origin::Create(GURL("data:text/html,junk"));
 
-  // Convert empty key to value and back, expecting the same value.
-  NetworkIsolationKey no_frame_origin_key;
-  base::Value no_frame_origin_value;
-  ASSERT_TRUE(no_frame_origin_key.ToValue(&no_frame_origin_value));
+  for (bool use_frame_origins : {true, false}) {
+    SCOPED_TRACE(use_frame_origins);
+    base::test::ScopedFeatureList feature_list;
+    if (use_frame_origins) {
+      feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    }
 
-  // Fill initial value with junk data, to make sure it's overwritten.
-  NetworkIsolationKey out_key(kJunkOrigin, kJunkOrigin);
-  EXPECT_TRUE(NetworkIsolationKey::FromValue(no_frame_origin_value, &out_key));
-  EXPECT_EQ(no_frame_origin_key, out_key);
+    // Convert empty key to value and back, expecting the same value.
+    NetworkIsolationKey no_frame_origin_key;
+    base::Value no_frame_origin_value;
+    ASSERT_TRUE(no_frame_origin_key.ToValue(&no_frame_origin_value));
 
-  // Perform same checks when frame origins are enabled.
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAppendFrameOriginToNetworkIsolationKey);
-
-  NetworkIsolationKey frame_origin_key;
-  base::Value frame_origin_value;
-  ASSERT_TRUE(frame_origin_key.ToValue(&frame_origin_value));
-
-  // Fill initial value with junk data, to make sure it's overwritten.
-  out_key = NetworkIsolationKey(kJunkOrigin, kJunkOrigin);
-  EXPECT_TRUE(NetworkIsolationKey::FromValue(frame_origin_value, &out_key));
-  EXPECT_EQ(frame_origin_key, out_key);
-
-  // The Values should also be the same in both cases.
-  EXPECT_EQ(no_frame_origin_key, frame_origin_key);
+    // Fill initial value with junk data, to make sure it's overwritten.
+    NetworkIsolationKey out_key(kJunkOrigin, kJunkOrigin);
+    EXPECT_TRUE(
+        NetworkIsolationKey::FromValue(no_frame_origin_value, &out_key));
+    EXPECT_EQ(no_frame_origin_key, out_key);
+  }
 }
 
 TEST(NetworkIsolationKeyTest, ValueRoundTripNoFrameOrigin) {
@@ -236,11 +231,14 @@ TEST(NetworkIsolationKeyTest, ToValueTransientOrigin) {
   const url::Origin kTransientOrigin =
       url::Origin::Create(GURL("data:text/html,transient"));
 
-  for (bool use_frame_origins : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
     SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
     if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     }
 
@@ -273,11 +271,14 @@ TEST(NetworkIsolationKeyTest, FromValueBadData) {
       base::Value(std::move(too_many_origins_list)),
   };
 
-  for (bool use_frame_origins : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
     SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
     if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     }
 
@@ -495,8 +496,11 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
 // host when using a non-standard scheme.
 TEST(NetworkIsolationKeyTest, UseRegistrableDomainWithNonStandardScheme) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kUseRegistrableDomainInNetworkIsolationKey);
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kUseRegistrableDomainInNetworkIsolationKey},
+      // disabled_features
+      {features::kAppendFrameOriginToNetworkIsolationKey});
 
   // Have to register the scheme, or url::Origin::Create() will return an opaque
   // origin.
@@ -528,9 +532,10 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, CreateWithNewFrameOrigin) {
 }
 
 TEST(NetworkIsolationKeyTest, CreateTransient) {
-  for (bool append_frame_origin : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
+    SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
-    if (append_frame_origin) {
+    if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     } else {

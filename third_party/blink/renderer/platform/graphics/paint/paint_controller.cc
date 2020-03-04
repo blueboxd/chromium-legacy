@@ -167,7 +167,7 @@ PaintController::SubsequenceMarkers* PaintController::GetSubsequenceMarkers(
 
 wtf_size_t PaintController::BeginSubsequence() {
   // Force new paint chunk which is required for subsequence caching.
-  new_paint_chunks_.ForceNewChunk();
+  SetForceNewChunk(true);
   return new_paint_chunks_.size();
 }
 
@@ -217,7 +217,7 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   }
 
   // Force new paint chunk which is required for subsequence caching.
-  new_paint_chunks_.ForceNewChunk();
+  SetForceNewChunk(true);
 
   DCHECK(!new_cached_subsequences_.Contains(&client))
       << "Multiple subsequences for client: " << client.DebugName();
@@ -322,15 +322,6 @@ void PaintController::UpdateCurrentPaintChunkProperties(
   } else {
     new_paint_chunks_.UpdateCurrentPaintChunkProperties(nullptr, properties);
   }
-}
-
-void PaintController::ForceNewChunk(const DisplayItemClient& client,
-                                    DisplayItem::Type type) {
-  new_paint_chunks_.ForceNewChunk();
-  PaintChunk::Id id(client, type, current_fragment_);
-  CheckDuplicatePaintChunkId(id);
-  new_paint_chunks_.UpdateCurrentPaintChunkProperties(
-      &id, CurrentPaintChunkProperties());
 }
 
 void PaintController::AppendChunkByMoving(PaintChunk&& chunk) {
@@ -460,10 +451,11 @@ wtf_size_t PaintController::FindOutOfOrderCachedItemForward(
 // under-invalidation checking.
 void PaintController::CopyCachedSubsequence(wtf_size_t start_chunk_index,
                                             wtf_size_t end_chunk_index) {
+#if DCHECK_IS_ON()
   DCHECK(!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
-
   auto properties_before_subsequence =
       new_paint_chunks_.CurrentPaintChunkProperties();
+#endif
 
   for (auto chunk_index = start_chunk_index; chunk_index < end_chunk_index;
        ++chunk_index) {
@@ -494,10 +486,11 @@ void PaintController::CopyCachedSubsequence(wtf_size_t start_chunk_index,
     AppendChunkByMoving(std::move(cached_chunk));
   }
 
-  // Restore properties and force new chunk for any trailing display items
-  // after the cached subsequence without new properties.
-  new_paint_chunks_.ForceNewChunk();
-  UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
+  SetForceNewChunk(true);
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(properties_before_subsequence, CurrentPaintChunkProperties());
+#endif
 }
 
 void PaintController::ResetCurrentListIndices() {

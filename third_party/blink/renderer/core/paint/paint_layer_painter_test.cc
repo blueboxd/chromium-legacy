@@ -91,90 +91,33 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
                            kBackgroundType)));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
-  auto* content1_layer = ToLayoutBoxModelObject(content1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
-  auto* content2_layer = ToLayoutBoxModelObject(content2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
   auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
 
   auto check_chunks = [&]() {
     // Check that new paint chunks were forced for the layers.
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      EXPECT_THAT(
-          RootPaintController().PaintChunks(),
-          ElementsAre(
-              IsPaintChunk(0, 1,
-                           PaintChunk::Id(view_client, kDocumentBackgroundType),
-                           chunk_state),
-              IsPaintChunk(1, 2,
-                           PaintChunk::Id(*container1_layer,
-                                          DisplayItem::kLayerChunkBackground),
-                           chunk_state),
-              IsPaintChunk(2, 3,
-                           PaintChunk::Id(*content1_layer,
-                                          DisplayItem::kLayerChunkWhole),
-                           chunk_state),
-              IsPaintChunk(
-                  3, 4,
-                  PaintChunk::Id(*filler1_layer, DisplayItem::kLayerChunkWhole),
-                  chunk_state),
-              IsPaintChunk(4, 5,
-                           PaintChunk::Id(*container2_layer,
-                                          DisplayItem::kLayerChunkBackground),
-                           chunk_state),
-              IsPaintChunk(5, 6,
-                           PaintChunk::Id(*content2_layer,
-                                          DisplayItem::kLayerChunkWhole),
-                           chunk_state),
-              IsPaintChunk(
-                  6, 7,
-                  PaintChunk::Id(*filler2_layer, DisplayItem::kLayerChunkWhole),
-                  chunk_state)));
-    } else {
-      DisplayItem::PaintPhaseToDrawingType(
-          PaintPhase::kSelfBlockBackgroundOnly);
-      EXPECT_THAT(
-          RootPaintController().PaintChunks(),
-          ElementsAre(
-              IsPaintChunk(0, 1,
-                           PaintChunk::Id(view_client, kDocumentBackgroundType),
-                           chunk_state),
-              IsPaintChunk(1, 2,
-                           PaintChunk::Id(*container1_layer,
-                                          DisplayItem::kLayerChunkBackground),
-                           chunk_state),
-              IsPaintChunk(
-                  2, 3,
-                  PaintChunk::Id(
-                      *container1_layer,
-                      DisplayItem::
-                          kLayerChunkNormalFlowAndPositiveZOrderChildren),
-                  chunk_state),
-              IsPaintChunk(
-                  3, 4,
-                  PaintChunk::Id(*filler1_layer,
-                                 DisplayItem::PaintPhaseToDrawingType(
-                                     PaintPhase::kSelfBlockBackgroundOnly)),
-                  chunk_state),
-              IsPaintChunk(4, 5,
-                           PaintChunk::Id(*container2_layer,
-                                          DisplayItem::kLayerChunkBackground),
-                           chunk_state),
-              IsPaintChunk(
-                  5, 6,
-                  PaintChunk::Id(
-                      *container2_layer,
-                      DisplayItem::
-                          kLayerChunkNormalFlowAndPositiveZOrderChildren),
-                  chunk_state),
-              IsPaintChunk(
-                  6, 7,
-                  PaintChunk::Id(*filler2_layer,
-                                 DisplayItem::PaintPhaseToDrawingType(
-                                     PaintPhase::kSelfBlockBackgroundOnly)),
-                  chunk_state)));
-    }
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 1,
+                         PaintChunk::Id(view_client, kDocumentBackgroundType),
+                         chunk_state),
+            IsPaintChunk(
+                1, 3,
+                PaintChunk::Id(*container1_layer, DisplayItem::kLayerChunk),
+                chunk_state),
+            IsPaintChunk(
+                3, 4, PaintChunk::Id(*filler1_layer, DisplayItem::kLayerChunk),
+                chunk_state),
+            IsPaintChunk(
+                4, 6,
+                PaintChunk::Id(*container2_layer, DisplayItem::kLayerChunk),
+                chunk_state),
+            IsPaintChunk(
+                6, 7, PaintChunk::Id(*filler2_layer, DisplayItem::kLayerChunk),
+                chunk_state)));
   };
 
   check_chunks();
@@ -507,6 +450,71 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
     EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
     EXPECT_EQ(2u, RootPaintController().PaintChunks()[1].size());
   }
+}
+
+TEST_P(PaintLayerPainterTest, HintedPaintChunks) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      div { background: blue }
+    </style>
+    <div id='container1' style='position: relative; height: 150px; z-index: 1'>
+      <div id='content1a' style='position: relative; height: 100px'></div>
+      <div id='content1b' style='position: relative; height: 100px'></div>
+    </div>
+    <div id='container2' style='position: relative; z-index: 1'>
+      <div id='content2a' style='position: relative; height: 100px'></div>
+      <div id='content2b' style='position: relative; z-index: -1; height: 100px'></div>
+    </div>
+  )HTML");
+
+  auto* container1 = ToLayoutBox(GetLayoutObjectByElementId("container1"));
+  auto* content1a = ToLayoutBox(GetLayoutObjectByElementId("content1a"));
+  auto* content1b = ToLayoutBox(GetLayoutObjectByElementId("content1b"));
+  auto* container2 = ToLayoutBox(GetLayoutObjectByElementId("container2"));
+  auto* content2a = ToLayoutBox(GetLayoutObjectByElementId("content2a"));
+  auto* content2b = ToLayoutBox(GetLayoutObjectByElementId("content2b"));
+  auto chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
+
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(container1, kBackgroundType),
+                          IsSameId(content1a, kBackgroundType),
+                          IsSameId(content1b, kBackgroundType),
+                          IsSameId(container2, kBackgroundType),
+                          IsSameId(content2b, kBackgroundType),
+                          IsSameId(content2a, kBackgroundType)));
+
+  EXPECT_THAT(
+      RootPaintController().PaintChunks(),
+      ElementsAre(
+          IsPaintChunk(0, 1,
+                       PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                      kDocumentBackgroundType),
+                       chunk_state),
+          // Includes |container1| and |content1a|.
+          IsPaintChunk(
+              1, 3,
+              PaintChunk::Id(*container1->Layer(), DisplayItem::kLayerChunk),
+              chunk_state),
+          // Includes |content1b| which overflows |container1|.
+          IsPaintChunk(
+              3, 4,
+              PaintChunk::Id(*content1b->Layer(), DisplayItem::kLayerChunk),
+              chunk_state),
+          IsPaintChunk(
+              4, 5,
+              PaintChunk::Id(*container2->Layer(), DisplayItem::kLayerChunk),
+              chunk_state),
+          IsPaintChunk(
+              5, 6,
+              PaintChunk::Id(*content2b->Layer(), DisplayItem::kLayerChunk),
+              chunk_state),
+          IsPaintChunk(
+              6, 7,
+              PaintChunk::Id(*content2a->Layer(), DisplayItem::kLayerChunk),
+              chunk_state)));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {

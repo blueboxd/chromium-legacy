@@ -708,21 +708,6 @@
 <translation id="2151831603578119302">启用无障碍功能快捷方式</translation>
 <translation id="2156132677421487971">为 <ph name="PRODUCT_NAME" /> 配置相关政策。借助这项功能，用户可从浏览器将标签页、网站或桌面中的内容发送到远程显示器和音响系统。</translation>
 <translation id="2156755242840687300">已启用的外部打印服务器</translation>
-<translation id="2159024114213303519">通过配置此政策，您可以允许/禁止对 <ph name="PRODUCT_NAME" /> 中的无痕个人资料和访客个人资料进行静默身份验证。
-
-      静默身份验证是指在未通过 NTLM/Kerberos/Negotiate 质询-响应方案提供明确凭据的情况下，采用默认凭据进行的 HTTP 身份验证。
-
-      设置 <ph name="REGULAR_ONLY_OPTION_NAME" />（值为 0）会仅允许常规会话执行静默身份验证，不允许无痕会话和访客会话静默地验证用户身份。
-
-      设置 <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />（值为 1）会允许无痕会话和常规会话执行静默身份验证，不允许访客会话静默地验证用户身份。
-
-      设置 <ph name="GUEST_AND_REGULAR_OPTION_NAME" />（值为 2）会允许访客会话和常规会话执行静默身份验证，不允许无痕会话静默地验证用户身份。
-
-      设置 <ph name="ALL_OPTION_NAME" />（值为 3）会允许所有会话执行静默身份验证。
-
-      请注意：系统始终允许对常规个人资料执行静默身份验证。
-
-      如果未设置此政策，那么在未来发布的 <ph name="PRODUCT_NAME" /> 版本中，无痕会话和访客会话都将无法静默地验证用户身份，因为它们将被禁止这样做。</translation>
 <translation id="2160336427036785721">配置在单个 <ph name="PRODUCT_NAME" /> 实例使用的内存量达到多少后浏览器会为节省内存空间而开始舍弃标签页（即：标签页使用的内存将被释放，而且在用户切换到此标签页时它必须重新加载）。
 
       如果设置了此政策，那么当超出该上限后，浏览器将开始舍弃标签页以节省内存空间。不过，我们无法保证浏览器运行时占用的内存量会始终低于该上限。任何小于 1024 的值都会被向上舍入到 1024。
@@ -1040,6 +1025,7 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果未设置此政策，则“插入符号突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="2509919237512982967">在 M84 之前的版本中使用旧版表单控件。</translation>
 <translation id="2514328368635166290">指定默认搜索服务提供商的首选图标网址。此政策是可选的，如果未设置，搜索服务提供商就不会显示任何图标。要实施此政策，必须启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2516600974234263142">在 <ph name="PRODUCT_NAME" /> 中启用打印功能，并禁止用户更改此设置。
 
@@ -2833,7 +2819,6 @@
 <translation id="5306186200045823863">信任 Symantec Corporation 的旧版 PKI 基础架构</translation>
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5311275381462687162">默认旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> Cookie 行为设置</translation>
-<translation id="5313116350102437846">此政策用于控制是否允许已加入高级保护计划的用户将他们的下载内容发送给 Google 进行恶意软件扫描。如果此政策设为 True 或未设置，系统会提示用户将他们的文件发送给 Google 进行深度扫描。如果用户选择“扫描”，系统会将他们的下载内容发送给 Google。如果此政策设为 False，系统将不会提示用户，也不会将他们的下载内容发送给 Google。</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
 <translation id="5321755462836179869">允许使用原生通知</translation>
 <translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
@@ -5007,6 +4992,13 @@
 
       如果此政策未设置，则系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
+<translation id="8937282917198525844"> 从 M81 开始，我们不仅更新了标准表单控件元素（例如 &lt;select&gt;、&lt;button&gt;、&lt;input type=date&gt;）的外观和风格，还改进了无障碍功能并提升了平台统一性。此政策用于在 M84 之前的版本中恢复过去的“旧版”表单控件元素。
+
+      如果此政策设为 True，系统将会为所有网站使用“旧版”表单控件元素。
+
+      如果此政策设为 False 或未设置，系统就会在 M81、M82 和 M83 推出时启用其中的表单控件元素。
+
+      在 Chrome 84 之后，此政策将被移除。</translation>
 <translation id="8938932171964587769">已在 M69 中弃用。请改用 OverrideSecurityRestrictionsOnInsecureOrigin。
 
       此政策可指定针对不安全来源的安全性限制不适用于哪些来源（网址）或主机名模式（例如“*.example.com”）。

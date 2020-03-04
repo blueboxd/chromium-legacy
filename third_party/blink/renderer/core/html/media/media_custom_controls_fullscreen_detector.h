@@ -47,6 +47,11 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   void OnIntersectionChanged(
       const HeapVector<Member<IntersectionObserverEntry>>&);
   bool IsVideoOrParentFullscreen();
+  void ReportEffectivelyFullscreen(bool);
+  static bool IsFullscreenVideoOfDifferentRatioForTesting(
+      const IntSize& video_size,
+      const IntSize& viewport_size,
+      const IntSize& intersection_size);
 
   // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;

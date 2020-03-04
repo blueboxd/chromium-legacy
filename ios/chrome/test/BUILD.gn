@@ -295,6 +295,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/tabs:unit_tests",
     "//ios/chrome/browser/ui/toolbar:unit_tests",
     "//ios/chrome/browser/ui/toolbar/fullscreen:unit_tests",
+    "//ios/chrome/browser/ui/toolbar/keyboard_assist:unit_tests",
     "//ios/chrome/browser/ui/toolbar_container:unit_tests",
     "//ios/chrome/browser/ui/translate:unit_tests",
     "//ios/chrome/browser/ui/util:unit_tests",

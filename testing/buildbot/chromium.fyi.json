@@ -343,7 +343,91 @@
     ]
   },
   "Mojo Linux": {
-    "gtest_tests": []
+    "gtest_tests": [
+      {
+        "args": [
+          "--enable-features=StorageServiceOutOfProcess"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "storage_service_unsandboxed_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 15
+        },
+        "test": "browser_tests",
+        "test_target": "//chrome/test:browser_tests"
+      },
+      {
+        "args": [
+          "--enable-features=StorageServiceOutOfProcess"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "storage_service_unsandboxed_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "content_browsertests",
+        "test_target": "//content/test:content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=StorageServiceOutOfProcess"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "storage_service_unsandboxed_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "extensions_browsertests",
+        "test_target": "//extensions:extensions_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=StorageServiceOutOfProcess"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "storage_service_unsandboxed_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 3
+        },
+        "test": "interactive_ui_tests",
+        "test_target": "//chrome/test:interactive_ui_tests"
+      }
+    ]
   },
   "Mojo Windows": {
     "gtest_tests": [

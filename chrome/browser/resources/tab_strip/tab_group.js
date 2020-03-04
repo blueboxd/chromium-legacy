@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {CustomElement} from './custom_element.js';
+import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {TabGroupVisualData} from './tabs_api_proxy.js';
 
 export class TabGroupElement extends CustomElement {
@@ -10,9 +11,30 @@ export class TabGroupElement extends CustomElement {
     return `{__html_template__}`;
   }
 
+  constructor() {
+    super();
+
+    /** @private @const {!TabStripEmbedderProxy} */
+    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+
+    this.$('#chip').addEventListener('click', () => this.onClickChip_());
+  }
+
   /** @return {!HTMLElement} */
   getDragImage() {
     return /** @type {!HTMLElement} */ (this.$('#dragImage'));
+  }
+
+  /** @private */
+  onClickChip_() {
+    if (!this.dataset.groupId) {
+      return;
+    }
+
+    const boundingBox = this.$('#chip').getBoundingClientRect();
+    this.embedderApi_.showEditDialogForGroup(
+        this.dataset.groupId, boundingBox.left, boundingBox.top,
+        boundingBox.width, boundingBox.height);
   }
 
   /** @param {boolean} enabled */

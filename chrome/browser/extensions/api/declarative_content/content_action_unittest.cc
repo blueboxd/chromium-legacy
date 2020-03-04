@@ -60,7 +60,6 @@ class RequestContentScriptTest : public ExtensionServiceTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  Profile* profile() { return profile_.get(); }
   const Extension* extension() { return extension_.get(); }
 
  private:

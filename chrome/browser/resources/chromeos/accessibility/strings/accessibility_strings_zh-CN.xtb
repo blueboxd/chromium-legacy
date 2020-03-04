@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">没有下一个 4 级标题</translation>
+<translation id="1212770441379271564">下面这几个快捷键并不是 ChromeVox 命令，但它们非常实用，有助于您充分利用 Chrome。
+    要移到下一个可操作项（例如按钮和链接），请按 Tab 键。要移到上一个可操作项，请按 Shift+Tab。
+    要进入 Chrome 浏览器的地址框（也称为多功能框），请按 Ctrl+L。
+    要自动打开并转到新标签页，请按 Ctrl+T。您的光标将会位于多功能框内。
+    要关闭标签页，请按 Ctrl+W。
+    要转到下一个打开的标签页，请按 Ctrl+Tab。
+    要打开 Chrome 浏览器菜单，请按 Alt+F。</translation>
 <translation id="1213216066620407844">ChromeVox - 为Chrome提供语音功能</translation>
 <translation id="1225969361094801578">暗岩灰色</translation>
 <translation id="1229276918471378188">上一个跳转</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">颜色选择器</translation>
 <translation id="4221012616705981690">没有上一个列表</translation>
 <translation id="4221071177874897997">表示粗体：</translation>
+<translation id="4225355998815256469">表单控件</translation>
 <translation id="4229646983878045487">日期时间</translation>
 <translation id="4230834257931120629">亮岩灰色</translation>
 <translation id="4231102694147661229">启用开发者选项</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">逐句</translation>
 <translation id="4623097797855662355">版权页</translation>
 <translation id="463135993322337640">按 ChromeVox 的 O 键、N 键，即可了解最新功能</translation>
+<translation id="4646606380313237501">{"ar": "阿拉伯语",
+    "as": "阿萨姆语",
+    "aw": "阿瓦德语",
+    "be": "孟加拉语",
+    "bg": "保加利亚语",
+    "bh": "比哈里语",
+    "bo": "藏语",
+    "br": "布拉吉语",
+    "ca": "加泰罗尼亚语",
+    "ckb": "索拉尼语",
+    "cs": "捷克语",
+    "cy": "威尔士语",
+    "da": "丹麦语",
+    "de": "德语",
+    "de_CH": "德语（瑞士）",
+    "de_DE": "德语（德国）",
+    "dra": "德拉威语",
+    "el": "希腊语",
+    "en": "英语",
+    "en_CA": "英语（加拿大）",
+    "en_GB": "英语（英国）",
+    "en_US": "英语（美国）",
+    "eo": "世界语",
+    "es": "西班牙语",
+    "et": "爱沙尼亚语",
+    "fa": "波斯语",
+    "fr": "法语",
+    "fr_CA": "法语（加拿大）",
+    "fr_FR": "法语（法国）",
+    "fi": "芬兰语",
+    "ga": "爱尔兰语",
+    "gd": "盖尔语",
+    "gon": "冈德语",
+    "gu": "古吉拉特语",
+    "he": "希伯来语",
+    "hi": "印地语",
+    "hr": "克罗地亚语",
+    "hu": "匈牙利语",
+    "hy": "亚美尼亚语",
+    "is": "冰岛语",
+    "it": "意大利语",
+    "iu": "因纽特语",
+    "ka": "卡纳达语",
+    "kh": "卡西语",
+    "ko": "韩语",
+    "kok": "贡根语",
+    "kru": "库鲁克语",
+    "ks": "克什米尔语",
+    "lt": "立陶宛语",
+    "lv": "拉脱维亚语",
+    "mao": "毛利语",
+    "ml": "马拉雅拉姆语",
+    "mt": "马耳他语",
+    "mwr": "马尔瓦里语",
+    "mn": "蒙古语",
+    "mun": "蒙达语",
+    "nb": "挪威博克马尔语",
+    "ne": "尼泊尔语",
+    "nl": "荷兰语",
+    "no": "挪威语",
+    "or": "奥里亚语",
+    "pi": "巴利语",
+    "pl": "波兰语",
+    "pt": "葡萄牙语",
+    "pu": "旁遮普语",
+    "ro": "罗马尼亚语",
+    "ru": "俄语",
+    "sa": "梵语",
+    "si": "信德语",
+    "sin": "僧伽罗语",
+    "sk": "斯洛伐克语",
+    "sl": "斯洛文尼亚语",
+    "sr": "塞尔维亚语",
+    "sv": "瑞典语",
+    "ta": "泰米尔语",
+    "te": "泰卢固语",
+    "tr": "土耳其语",
+    "tsn": "南非荷兰语",
+    "uk": "乌克兰语",
+    "ur": "乌尔都语",
+    "vi": "越南语",
+    "zh": "中文",
+    "zh_TW": "中文（繁体）"}</translation>
 <translation id="4647836961514597010">颜色选择器</translation>
 <translation id="4660783501463101648">移除了 Classic。现已无法再通过键盘切换回 ChromeVox Classic。</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">已启用粘滞模式</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{1个英文逗号}other{#个英文逗号}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />，文本框</translation>
+<translation id="532485153932049746">设置文本格式
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />，链接</translation>
 <translation id="5331522683003474486">只需 1 个或 2 个开关即可控制此设备。</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">盲文</translation>
 <translation id="5402791055281059602">模态提醒</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{1个分号}other{#个分号}}</translation>
+<translation id="5420259671171615858">在菜单中搜索</translation>
 <translation id="5435274640623994081">启用耳标记录功能</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{1个小于号}other{#个小于号}}</translation>
 <translation id="5444587279251314700">（有效）</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">检测到拼写错误</translation>
 <translation id="7408482676469142474">表格标记</translation>
 <translation id="7425395583360211003">回车</translation>
+<translation id="7429415133937917139">在屏幕顶部的 ChromeVox 面板中模拟可刷新式盲文显示屏的输出结果</translation>
 <translation id="7434509671034404296">开发者</translation>
 <translation id="743783356331413498">示例</translation>
 <translation id="7439060726180460871">目录</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">上一个单选按钮</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">没有下一个组合框</translation>
+<translation id="772146615414628379">恭喜！您已顺利学完为使用 ChromeVox 而需掌握的基本知识。请记住，您随时可通过按搜索键+句点键打开 ChromeVox 命令菜单。要详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
+    若要退出此教程，请使用 ChromeVox 找到“关闭”按钮，然后点击该按钮。</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7731785449856576010">没有下一个媒体微件</translation>
 <translation id="773906353055481349">同时按搜索键+Ctrl+Alt+箭头键，即可按单元格浏览</translation>

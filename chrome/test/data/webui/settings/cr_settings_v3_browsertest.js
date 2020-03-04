@@ -434,3 +434,29 @@ var CrSettingsSearchV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsSearchV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.m.js';
+  }
+};
+
+TEST_F(
+    'CrSettingsClearBrowsingDataV3Test', 'ClearBrowsingDataAllPlatforms',
+    function() {
+      runMochaSuite('ClearBrowsingDataAllPlatforms');
+    });
+
+TEST_F('CrSettingsClearBrowsingDataV3Test', 'InstalledApps', () => {
+  runMochaSuite('InstalledApps');
+});
+
+GEN('#if !defined(OS_CHROMEOS)');
+TEST_F(
+    'CrSettingsClearBrowsingDataV3Test', 'ClearBrowsingDataDesktop',
+    function() {
+      runMochaSuite('ClearBrowsingDataDesktop');
+    });
+GEN('#endif');

@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">다음</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">다음 수준 4 제목이 없습니다</translation>
+<translation id="1212770441379271564">다음은 ChromeVox 명령어는 아니지만 Chrome을 최대한 활용하는 데 도움이 되는 단축키입니다.
+    버튼과 링크 등 실행 가능한 항목 간에 이동하려면 Tab 키를 눌러 앞으로, Shift+Tab을 눌러 뒤로 이동합니다.
+    Chrome 브라우저 주소창(검색주소창이라고도 함)에 입력하려면 Ctrl+L을 누릅니다.
+    새 탭을 열고 자동으로 이동하려면 Ctrl+T를 누릅니다. 이때 커서는 검색주소창으로 이동합니다.
+    탭을 닫으려면 Ctrl+W를 누릅니다.
+    열려 있는 탭 간에 앞으로 이동하려면 Ctrl+Tab을 누릅니다.
+    Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome이 말을 합니다.</translation>
 <translation id="1225969361094801578">다크 슬레이트 그레이</translation>
 <translation id="1229276918471378188">이전 점프</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">color picker</translation>
 <translation id="4221012616705981690">이전 목록이 없습니다</translation>
 <translation id="4221071177874897997">굵게 표시:</translation>
+<translation id="4225355998815256469">양식 컨트롤</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">라이트 슬레이트 그레이</translation>
 <translation id="4231102694147661229">개발자 옵션 사용</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">문장</translation>
 <translation id="4623097797855662355">출판사 이름</translation>
 <translation id="463135993322337640">ChromeVox o, n을 눌러 새로운 기능을 살펴보세요</translation>
+<translation id="4646606380313237501">{"ar": "아랍어",
+    "as": "아삼어",
+    "aw": "아와디어",
+    "be": "벵골어",
+    "bg": "불가리아어",
+    "bh": "비하르어",
+    "bo": "티베트어",
+    "br": "브라어",
+    "ca": "카탈로니아어",
+    "ckb": "소라니어",
+    "cs": "체코어",
+    "cy": "웨일즈어",
+    "da": "덴마크어",
+    "de": "독일어",
+    "de_CH": "독일어(스위스)",
+    "de_DE": "독일어(독일)",
+    "dra": "드라비다어",
+    "el": "그리스어",
+    "en": "영어",
+    "en_CA": "영어(캐나다)",
+    "en_GB": "영어(영국)",
+    "en_US": "영어(미국)",
+    "eo": "에스페란토어",
+    "es": "스페인어",
+    "et": "에스토니아어",
+    "fa": "페르시아어",
+    "fr": "프랑스어",
+    "fr_CA": "프랑스어(캐나다)",
+    "fr_FR": "프랑스어(프랑스)",
+    "fi": "핀란드어",
+    "ga": "아일랜드어",
+    "gd": "게일어",
+    "gon": "곤디어",
+    "gu": "구자라트어",
+    "he": "히브리어",
+    "hi": "힌디어",
+    "hr": "크로아티아어",
+    "hu": "헝가리어",
+    "hy": "아르메니아어",
+    "is": "아이슬란드어",
+    "it": "이탈리아어",
+    "iu": "이누이트어",
+    "ka": "칸나다어",
+    "kh": "카시어",
+    "ko": "한국어",
+    "kok": "콘칸어",
+    "kru": "쿠루크어",
+    "ks": "카슈미르어",
+    "lt": "리투아니아어",
+    "lv": "라트비아어",
+    "mao": "마오리어",
+    "ml": "말라얄람어",
+    "mt": "몰타어",
+    "mwr": "마르와리어",
+    "mn": "몽골어",
+    "mun": "문다어",
+    "nb": "노르웨이어(보크말)",
+    "ne": "네팔어",
+    "nl": "네덜란드어",
+    "no": "노르웨이어",
+    "or": "오리야어",
+    "pi": "팔리어",
+    "pl": "폴란드어",
+    "pt": "포르투갈어",
+    "pu": "펀자브어",
+    "ro": "루마니아어",
+    "ru": "러시아어",
+    "sa": "산스크리트어",
+    "si": "신드어",
+    "sin": "싱할라어",
+    "sk": "슬로바키아어",
+    "sl": "슬로베니아어",
+    "sr": "세르비아어",
+    "sv": "스웨덴어",
+    "ta": "타밀어",
+    "te": "텔루구어",
+    "tr": "터키어",
+    "tsn": "아프리칸스어",
+    "uk": "우크라이나어",
+    "ur": "우르두어",
+    "vi": "베트남어",
+    "zh": "중국어",
+    "zh_TW": "중국어(번체)"}</translation>
 <translation id="4647836961514597010">색상선택 도구</translation>
 <translation id="4660783501463101648">기본 버전이 삭제되었습니다. ChromeVox 기본 버전으로 다시 전환하기 위한 키보드 토글이 삭제되었습니다.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">고정 모드 사용함</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{쉼표}other{쉼표 #개}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, 입력란</translation>
+<translation id="532485153932049746">텍스트 서식
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, 링크</translation>
 <translation id="5331522683003474486">간단히 스위치 한두 개로 기기를 제어하세요.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">점자</translation>
 <translation id="5402791055281059602">모달 알림</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{세미콜론}other{세미콜론 #개}}</translation>
+<translation id="5420259671171615858">메뉴 검색</translation>
 <translation id="5435274640623994081">이어콘 로깅 사용</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{작음 부호}other{작음 부호 #개}}</translation>
 <translation id="5444587279251314700">(활성)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">철자 오류 발견됨</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">리턴</translation>
+<translation id="7429415133937917139">화면 상단의 ChromeVox 패널에서 새로고침할 수 있는 점자 디스플레이의 출력을 시뮬레이션합니다.</translation>
 <translation id="7434509671034404296">개발자 정보</translation>
 <translation id="743783356331413498">예시</translation>
 <translation id="7439060726180460871">디렉터리</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">이전 라디오 버튼</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">다음 콤보 상자가 없습니다</translation>
+<translation id="772146615414628379">축하합니다! ChromeVox를 사용하기 위한 기본사항을 배웠습니다. 언제든지 검색+마침표를 눌러 ChromeVox 명령어 메뉴를 열 수 있습니다. ChromeVox와 Chrome OS에 관해 더 자세히 알아보려면 다음 도움말을 참고하세요.
+    가이드를 완료했다면 ChromeVox를 사용하여 닫기 버튼으로 이동해 클릭하세요.</translation>
 <translation id="7724603315864178912">잘라내기</translation>
 <translation id="7731785449856576010">다음 미디어 위젯이 없습니다</translation>
 <translation id="773906353055481349">셀 단위로 이동하려면 Search + Ctrl + Alt와 함께 화살표를 누르세요.</translation>

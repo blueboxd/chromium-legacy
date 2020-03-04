@@ -12,6 +12,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 
 namespace aura {
 class Window;
@@ -30,6 +31,7 @@ class AssistantInteractionController;
 class AssistantInteractionModel;
 class AssistantTestApi;
 class TestAssistantService;
+class TestAssistantSetup;
 class TestAssistantWebViewFactory;
 
 // Helper class to make testing the Assistant Ash UI easier.
@@ -60,6 +62,9 @@ class AssistantAshTestBase : public AshTestBase {
   void CloseLauncher();
 
   void SetTabletMode(bool enable);
+
+  // Changes the user preference controlling the status of user consent.
+  void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus);
 
   // Change the user setting controlling whether the user prefers voice or
   // keyboard.
@@ -141,6 +146,9 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the button to enable text mode.
   views::View* keyboard_input_toggle();
 
+  // Returns the button to launch Assistant onboarding.
+  views::View* opt_in_view();
+
   // Show/Dismiss the on-screen keyboard.
   void ShowKeyboard();
   void DismissKeyboard();
@@ -159,6 +167,7 @@ class AssistantAshTestBase : public AshTestBase {
   TestAssistantService* assistant_service();
 
   std::unique_ptr<AssistantTestApi> test_api_;
+  std::unique_ptr<TestAssistantSetup> test_setup_;
   std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;
   AssistantController* controller_ = nullptr;
 

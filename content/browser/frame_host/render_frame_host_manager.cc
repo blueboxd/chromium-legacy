@@ -1045,8 +1045,8 @@ void RenderFrameHostManager::OnDidResetContentSecurityPolicy() {
 void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
     blink::mojom::InsecureRequestPolicy policy) {
   for (const auto& pair : proxy_hosts_) {
-    pair.second->Send(new FrameMsg_EnforceInsecureRequestPolicy(
-        pair.second->GetRoutingID(), policy));
+    pair.second->GetAssociatedRemoteFrame()->EnforceInsecureRequestPolicy(
+        policy);
   }
 }
 

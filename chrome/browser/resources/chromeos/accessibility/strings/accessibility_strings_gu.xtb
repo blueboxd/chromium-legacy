@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1206619573307042055">માર્કી</translation>
 <translation id="1207086294218137981">કોઈ આગલું 'લેવલ 4' મથાળું નથી</translation>
+<translation id="1212770441379271564">આગલા અમુક શૉર્ટકટ ChromeVox આદેશો નથી, પરંતુ એ Chromeનો સર્વોત્તમ લાભ લેવા માટે હજી પણ ઉપયોગી છે.
+    બટન અને લિંક જેવી ક્રિયા કરવા યોગ્ય આઇટમ દ્વારા આગળ નૅવિગેટ કરવા માટે, Tab કી દબાવો. પાછળ નૅવિગેટ કરવા માટે, Shift+Tab દબાવો.
+    Chrome બ્રાઉઝર ઍડ્રેસ બૉક્સમાં દાખલ થવા માટે, જે ઑમ્નિબૉક્સ પણ કહેવાય છે, Control + L દબાવો.
+    એક નવા ટૅબને ઑટોમૅટિક રીતે ખોલવા અને એના પર જવા માટે, Control+T દબાવો. તમારું કર્સર ઑમ્નિબૉક્સમાં હશે.
+    કોઈ ટૅબને બંધ કરવા માટે, Control+W દબાવો.
+    ખુલ્લા ટૅબમાં આગળ જવા માટે, Control+Tabનો ઉપયોગ કરો.
+    Chrome બ્રાઉઝર મેનૂ ખોલવા માટે, Alt+F દબાવો.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ને વૉઇસ આપવો</translation>
 <translation id="1225969361094801578">ઘાટો સ્લેટ ગ્રે</translation>
 <translation id="1229276918471378188">તરત પાછળ જાઓ</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">રંગ ચૂંટનાર</translation>
 <translation id="4221012616705981690">કોઈ પાછલી સૂચિ નથી</translation>
 <translation id="4221071177874897997">બોલ્ડ સૂચવો:</translation>
+<translation id="4225355998815256469">નિયંત્રણો બનાવો</translation>
 <translation id="4229646983878045487">તારીખ સમય</translation>
 <translation id="4230834257931120629">આછો સ્લેટ ગ્રે</translation>
 <translation id="4231102694147661229">ડેવલપરના વિકલ્પો ચાલુ કરો</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">વાક્ય</translation>
 <translation id="4623097797855662355">પુષ્પિકા</translation>
 <translation id="463135993322337640">નવું શું છે તે શોધવા માટે ChromeVox o, n દબાવો</translation>
+<translation id="4646606380313237501">{"ar": "અરબી",
+    "as": "આસામી",
+    "aw": "અવધી",
+    "be": "બંગાળી",
+    "bg": "બલ્ગેરિયન",
+    "bh": "બિહારી",
+    "bo": "તિબેટીયન",
+    "br": "બ્રજ",
+    "ca": "કતલાન",
+    "ckb": "સોરાણી",
+    "cs": "ચેક",
+    "cy": "વેલ્શ",
+    "da": "ડેનિશ",
+    "de": "જર્મન",
+    "de_CH": "જર્મન (સ્વિટ્ઝર્લૅન્ડ)",
+    "de_DE": "જર્મન (જર્મની)",
+    "dra": "દ્રવિડિયન",
+    "el": "ગ્રીક",
+    "en": "અંગ્રેજી",
+    "en_CA": "અંગ્રેજી (કેનેડા)",
+    "en_GB": "અંગ્રેજી (યુનાઇટેડ કિંગડમ)",
+    "en_US": "અંગ્રેજી (યુનાઇટેડ સ્ટેટ્સ)",
+    "eo": "એસ્પેરાન્ટો",
+    "es": "સ્પેનિશ",
+    "et": "એસ્ટોનિયન",
+    "fa": "ફારસી",
+    "fr": "ફ્રેન્ચ",
+    "fr_CA": "ફ્રેન્ચ (કેનેડા)",
+    "fr_FR": "ફ્રેન્ચ (ફ્રાન્સ)",
+    "fi": "ફિનિશ",
+    "ga": "આઇરિશ",
+    "gd": "ગેલિક",
+    "gon": "ગોંડીi",
+    "gu": "ગુજરાતી",
+    "he": "હીબ્રુ",
+    "hi": "હિન્દી",
+    "hr": "ક્રોએશિયન",
+    "hu": "હંગેરિયન",
+    "hy": "આર્મેનિયન",
+    "is": "આઇસલેન્ડિક",
+    "it": "ઇટાલિયન",
+    "iu": "ઇનુક્ટિટૂટ",
+    "ka": "કન્નડ",
+    "kh": "ખાસી",
+    "ko": "કોરિયન",
+    "kok": "કોંકણીi",
+    "kru": "કુરુખ",
+    "ks": "કાશ્મીરી",
+    "lt": "લિથુનિયન",
+    "lv": "લાતવિયન",
+    "mao": "માઓરી",
+    "ml": "મલયાલમ",
+    "mt": "માલ્ટિઝ",
+    "mwr": "મારવાડી",
+    "mn": "મોંગોલિયન",
+    "mun": "મુંડા",
+    "nb": "નોર્વેજીયન બોકમલ",
+    "ne": "નેપાળી",
+    "nl": "ડચ",
+    "no": "નોર્વેજીયન",
+    "or": "ઉડિયા",
+    "pi": "પાલી",
+    "pl": "પોલિશ",
+    "pt": "પોર્ટુગીઝ",
+    "pu": "પંજાબી",
+    "ro": "રોમાનિયન",
+    "ru": "રશિયન",
+    "sa": "સંસ્કૃત",
+    "si": "સિંધી",
+    "sin": "સિંહલા",
+    "sk": "સ્લોવૅક",
+    "sl": "સ્લોવેનિયન",
+    "sr": "સર્બિયન",
+    "sv": "સ્વીડિશ",
+    "ta": "તમિળ",
+    "te": "તેલુગુ",
+    "tr": "ટર્કિશ",
+    "tsn": "આફ્રિકન",
+    "uk": "યુક્રેનિયન",
+    "ur": "ઉર્દુ",
+    "vi": "વિયેતનામીસ",
+    "zh": "ચાઇનીઝ",
+    "zh_TW": "ચાઇનીઝ (પરંપરાગત હાન)"}</translation>
 <translation id="4647836961514597010">રંગ ચૂંટનાર</translation>
 <translation id="4660783501463101648">ક્લાસિક કાઢી નાખ્યું. ChromeVox ક્લાસિક પર સ્વિચ કરવા માટે કીબોર્ડ ટૉગલ કાઢી નાખવામાં આવ્યું છે.</translation>
 <translation id="4661075872484491155">ટ્રી</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">સ્ટીકી મોડ સક્ષમ કર્યો</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{અલ્પવિરામ}one{# અલ્પવિરામ}other{# અલ્પવિરામ}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, ટેક્સ્ટ બોક્સ</translation>
+<translation id="532485153932049746">ટેક્સ્ટ ફોર્મેટિંગ
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, લિંક</translation>
 <translation id="5331522683003474486">ડિવાઇસને માત્ર 1 કે 2 સ્વિચ વડે નિયંત્રિત કરો.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">બ્રેઇલ</translation>
 <translation id="5402791055281059602">મોડલ ચેતવણી</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{અર્ધવિરામ}one{# અર્ધવિરામ}other{# અર્ધવિરામ}}</translation>
+<translation id="5420259671171615858">મેનૂ પર શોધો</translation>
 <translation id="5435274640623994081">ઇઅરકોન લૉગિંગ ચાલુ કરો</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{આના કરતાં ઓછું}one{# આના કરતાં ઓછાની નિશાની}other{# આના કરતાં ઓછાની નિશાની}}</translation>
 <translation id="5444587279251314700">(સક્રિય)</translation>
@@ -944,6 +1044,8 @@
 <translation id="7400575256015741911">જોડણીની ભૂલ મળી</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">પરત કરો</translation>
+<translation id="7429415133937917139">રિફ્રેશ કરી શકાય તેવા બ્રેઇલ ડિસ્પ્લેના આઉટપુટની નકલ
+    સ્ક્રીનની ટોચ પર આવેલા ChromeVox પૅનલમાં રજૂ કરે છે</translation>
 <translation id="7434509671034404296">વિકાસકર્તા</translation>
 <translation id="743783356331413498">ઉદાહરણ</translation>
 <translation id="7439060726180460871">ડિરેક્ટરી</translation>
@@ -982,6 +1084,8 @@
 <translation id="7693840228159394336">પાછલું રેડિયો બટન</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">કોઈ આગલું કૉમ્બો બૉક્સ નથી</translation>
+<translation id="772146615414628379">અભિનંદન! તમે ChromeVoxનો સફળતાપૂર્વક ઉપયોગ કરવા માટેની જરૂરી વસ્તુઓ શીખી લીધી છે. યાદ રાખો કે તમે Search+Period દબાવીને કોઈપણ સમયે ChromeVox આદેશ મેનૂ ખોલી શકો છો. ChromeVox અને Chrome OS વિશે હજી વધુ જાણવા માટે, નીચે આપેલા લેખો વાંચો.
+    જો તમે ટ્યૂટૉરિઅલ પૂરું કરી લીધું હોય, તો બંધ કરો બટન પર નૅવિગેટ કરવા અને તેને ક્લિક કરવા માટે ChromeVoxનો ઉપયોગ કરો.</translation>
 <translation id="7724603315864178912">કાપો</translation>
 <translation id="7731785449856576010">કોઈ આગલું મીડિયા વિજેટ નથી</translation>
 <translation id="773906353055481349">સેલ મુજબ નૅવિગેટ કરવા માટે ઍરો કી સાથે Search+Ctrl+Alt દબાવો</translation>

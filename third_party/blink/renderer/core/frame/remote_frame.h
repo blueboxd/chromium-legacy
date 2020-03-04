@@ -103,6 +103,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
   void SetFrameOwnerProperties(
       mojom::blink::FrameOwnerPropertiesPtr properties) override;
+  void EnforceInsecureRequestPolicy(
+      mojom::blink::InsecureRequestPolicy policy) override;
   void SetReplicatedOrigin(
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;

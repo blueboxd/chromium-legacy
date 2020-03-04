@@ -71,10 +71,6 @@ struct ActionInfo {
   static void SetPageActionInfo(Extension* extension,
                                 std::unique_ptr<ActionInfo> info);
 
-  // Returns true if the extension needs a verbose install message because
-  // of its page action.
-  static bool IsVerboseInstallMessage(const Extension* extension);
-
   // The key this action corresponds to. NOTE: You should only use this if you
   // care about the actual manifest key. Use the other members (like
   // |default_state| for querying general info.

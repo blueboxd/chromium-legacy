@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">Қосу – пайдаланушылық параметрлер</translation>
 <translation id="1489664337021920575">Басқа опция қолданып көріңіз</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> күту…</translation>
+<translation id="1494438840282430403">Браузерді пайдалану деректерін (<ph name="URL" />) өшіріңіз (Google.com сайтында есептік жазбаңыздан шығарылуыңыз мүмкін).</translation>
 <translation id="1495486559005647033">Басқа <ph name="NUM_PRINTERS" /> қолжетімді құрылғы бар.</translation>
 <translation id="1495677929897281669">Қойындыға оралу</translation>
 <translation id="1499271269825557605">Егер кеңейтімді анықтай алмасаңыз немесе браузер дұрыс жұмыс істемей тұрса, кеңейтімдерді осы жерден өшіруіңізге немесе реттеуіңізге болады.</translation>
@@ -1175,7 +1176,9 @@
 <translation id="2586672484245266891">Қысқа URL мекенжайын енгізіңіз</translation>
 <translation id="2587922766792651800">Уақыты өтіп кетті</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> құрылғылары</translation>
+<translation id="2593594315333286814">Навигацияға арналған арнайы мүмкіндіктер параметрлері</translation>
 <translation id="2594999711683503743">Google арқылы іздеңіз немесе URL мекенжайын енгізіңіз</translation>
+<translation id="2602501489742255173">Бастау үшін жоғары қарай сырғытыңыз.</translation>
 <translation id="2603115962224169880">Компьютерді тазалау</translation>
 <translation id="2603463522847370204">&amp;Инкогнито терезесінде ашу</translation>
 <translation id="2604255671529671813">Желімен байланыс қатесі</translation>
@@ -1337,6 +1340,7 @@
 <translation id="2804043232879091219">Балама браузер ашылмады.</translation>
 <translation id="2804667941345577550">Осы сайттан, оның ішінде ашық қойындылардан шығып кетесіз.</translation>
 <translation id="2804680522274557040">Камера өшірулі</translation>
+<translation id="2805539617243680210">Барлығы дайын!</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Қолданбалар</translation>
 <translation id="2805770823691782631">Қосымша мәліметтер</translation>
@@ -1420,6 +1424,7 @@
 <translation id="2903457445916429186">Таңдалған элементтерді ашу</translation>
 <translation id="2903882649406874750"><ph name="HOST" /> сайтының датчиктерге кіруіне біржола тыйым салу</translation>
 <translation id="2904456025988372123">Сайт бірінші файлды жүктеп алған соң, кейінгілерін автоматты жүктеп алуға рұқсат сұрасын</translation>
+<translation id="2905990582795979495"><ph name="DEVICE_TYPE" /> пайдалануға дайынсыз. <ph name="DEVICE_TYPE" /> құрылғысына қатысты кеңестерді, Google өнімдері туралы жаңалықтарды алыңыз және пікірлерді бөлісіңіз. Кез келген уақытта жазылымнан бас тарта аласыз.</translation>
 <translation id="2907619724991574506">Бастау URL сілтемелері</translation>
 <translation id="2907798539022650680">"<ph name="NAME" />" қызметіне қосылмады: <ph name="DETAILS" />
     Сервер хабары: <ph name="SERVER_MSG" /></translation>
@@ -1693,6 +1698,7 @@
 <translation id="3308116878371095290">Бұл бетке cookie файлдарын орнатуға тыйым салынды.</translation>
 <translation id="3308134619352333507">Түймені жасыру</translation>
 <translation id="3308852433423051161">Google Assistant жүктелуде…</translation>
+<translation id="3311445899360743395">Бұл қолданбамен байланыстырылған деректер бұл құрылғыдан өшірілуі мүмкін.</translation>
 <translation id="3312424061798279731">Қосылған тілдер</translation>
 <translation id="3313622045786997898">Сертификат қолтаңбасы мәні</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> жасыру</translation>
@@ -1879,7 +1885,6 @@
 <translation id="3586806079541226322">Бұл файлды ашу мүмкін емес</translation>
 <translation id="3586931643579894722">Мәліметтерді жасыру</translation>
 <translation id="3587482841069643663">Барлығы</translation>
-<translation id="358796204584394954">Жұптау үшін "<ph name="DEVICE_NAME" />" ішіндегі кодты теріңіз:</translation>
 <translation id="3589766037099229847">Сенімсіз мазмұн бөгелді</translation>
 <translation id="3590194807845837023">Профильдің құлпын ашу және қайта іске қосу</translation>
 <translation id="3590295622232282437">Басқарылатын сеансқа кіріп жатырсыз.</translation>
@@ -1953,6 +1958,7 @@
 <translation id="3670229581627177274">Bluetooth функциясын қосу</translation>
 <translation id="3672681487849735243">Зауыттық қате анықталды</translation>
 <translation id="367645871420407123">түпкі құпия сөзді әдепкі сынақ кескіні мәніне орнатқыңыз келсе, бос қалдырыңыз</translation>
+<translation id="3677106374019847299">Арнаулы провайдерді енгізу</translation>
 <translation id="3677657024345889897">Ең бәсең</translation>
 <translation id="3677911431265050325">Сайттың мобильдік нұсқасын сұрау</translation>
 <translation id="3678156199662914018">Кеңейтім: <ph name="EXTENSION_NAME" /></translation>
@@ -2044,6 +2050,7 @@
 <translation id="3780211714699334884">Сіз бұл қойындыны жапқанға дейін, <ph name="ORIGIN" /> <ph name="FOLDERNAME" /> қалтасындағы файлдарды өңдей алады.</translation>
 <translation id="3780827508782506612">Бет аударылды</translation>
 <translation id="378312418865624974">Осы компьютерге арналған бірегей идентификаторды оқу</translation>
+<translation id="3784372983762739446">Bluetooth құрылғылары</translation>
 <translation id="3784472333786002075">Cookie файлдары веб-сайттарда жасалады. Олардың екі түрі бар: сіз кірген сайт жасаған меншікті cookie файлдары. Сайт мекенжай жолағында көрсетіледі. Үшінші тараптың cookie файлдары басқа сайттарда жасалады. Бұл сайттарда сіз кірген сайттың мазмұны (мысалы, жарнамалар немесе суреттер) болады.</translation>
 <translation id="3785308913036335955">Қолданбалар таңбашасын көрсету</translation>
 <translation id="3785727820640310185">Бұл сайтқа арналған құпия сөздер сақталды</translation>
@@ -2073,6 +2080,7 @@
 <translation id="3816118180265633665">Chrome түстері</translation>
 <translation id="3817524650114746564">Компьютеріңіздің прокси параметрлерін ашу</translation>
 <translation id="3817579325494460411">Берілмеген</translation>
+<translation id="381892968844315516">Бұл құрылғыда Plugin VM плагинін пайдалануға тыйым салынған. Ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Сақтық көшірме жасау</translation>
 <translation id="3819261658055281761">Жүйе бұл құрылғыға арналған ұзақ мерзімдік API кіру таңбалауышын сақтай алмады.</translation>
 <translation id="3819800052061700452">&amp;Толық экран</translation>
@@ -2455,6 +2463,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4378551569595875038">Қосылуда…</translation>
 <translation id="4378556263712303865">Құрылғы сұрауы</translation>
+<translation id="4379281552162875326">"<ph name="APP_NAME" />" жойылсын ба?</translation>
 <translation id="4380648069038809855">Толық экран режиміндесіз.</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, тағы 1 есептік жазба}other{<ph name="EMAIL" />, тағы <ph name="EXTRA_ACCOUNTS" /> есептік жазба}}</translation>
 <translation id="4384312707950789900">Таңдаулы желілерге қосу</translation>
@@ -2770,7 +2779,6 @@
 <translation id="4850669014075537160">Айналдыру</translation>
 <translation id="4850886885716139402">Көрініс</translation>
 <translation id="4853020600495124913">&amp;Жаңа терезеде ашу</translation>
-<translation id="4854262617951518520">Сайт камераңыздың орнын бақылағысы немесе бөлмеңіздің картасын жасағысы келгенде сұрау (ұсынылады)</translation>
 <translation id="485480310608090163">Басқа параметрлер мен рұқсаттар</translation>
 <translation id="4856478137399998590">Мобильді деректеріңіз қызметі белсендірілді және пайдалануға дайын</translation>
 <translation id="4856855265648545577">Құрылғы планшет режимінде болғанда, Сөредегі "Launcher", "Артқа", "Шолу" түймелерін көрсетеді. Бұл функция ChromeVox (дауыстық пікір) немесе Switch Access қосулы болғанда жұмыс істейді.</translation>
@@ -3321,6 +3329,7 @@
 <translation id="5618075537869101857">Киоск қолданбасын іске қосу мүмкін емес.</translation>
 <translation id="5618333180342767515">(бұл бірнеше минут алуы мүмкін)</translation>
 <translation id="56197088284879152">Қашықтағы құрылғымен байланыс жүктемесі тым көп: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="5620549857835247159">Құрылғы планшет режимінде болғанда, Сөредегі "Launcher", "Артқа", "Шолу" түймелерін көрсетеді.</translation>
 <translation id="5620568081365989559">Әзірлеуші құралдары <ph name="FOLDER_PATH" /> қалтасына толық кіру құқығын сұрайды. Құпия ақпаратты әшкерелемеңіз.</translation>
 <translation id="5620612546311710611">қолданыс статистикасы</translation>
 <translation id="5620655347161642930">Құпия сөздерді экспорттау...</translation>
@@ -3852,6 +3861,7 @@
 <translation id="6349101878882523185"><ph name="APP_NAME" /> қолданбасын орнату</translation>
 <translation id="6349170655202535379">Синхрондалып жатқан жоқ. Жүйеден шығып, қайта кіріп көріңіз.</translation>
 <translation id="6351063337294363751">Осы мәзірден браузерді пайдалану деректерін өшіре аласыз</translation>
+<translation id="6352223293513723497">Құрылғыда бос орын аз қалды. Plugin VM плагинін пайдалану үшін орын босатыңыз.</translation>
 <translation id="6352773953037195952">Ең жоғары</translation>
 <translation id="6354918092619878358">SECG эллипстік қисық сызығы secp256r1 (aka ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Құрылғыны қосулы күйде ұстаңыз</translation>
@@ -4130,12 +4140,14 @@
 <translation id="6758056191028427665">Қал-жағдайыңызды айтып беріңіз.</translation>
 <translation id="6759193508432371551">Зауыттық параметрлерге қайта орнату</translation>
 <translation id="6762833852331690540">Қосулы</translation>
+<translation id="6764693078871405569">Браузерді пайдалану деректерін (<ph name="URL" />) өшіріңіз (<ph name="DOMAIN" /> сайтында есептік жазбаңыздан шығарыласыз).</translation>
 <translation id="6767566652486411142">Басқа тіл таңдау...</translation>
 <translation id="6767639283522617719">Құрылғыны доменге қосу мүмкін емес. Бұл ұйымдық бірлік үшін дұрыс параметрлер орнатылғанын тексеріңіз.</translation>
 <translation id="6769712124046837540">Принтер қосылуда…</translation>
 <translation id="6770664076092644100">NFC арқылы растау</translation>
 <translation id="6771503742377376720">Сертификат беретін орган</translation>
 <translation id="6772339735733515807">Кеңейтімдерді басқару</translation>
+<translation id="6774271858705413900">Бірдеңе дұрыс болмады. Бірнеше минут күтіп, Plugin VM плагинін қайта іске қосыңыз.</translation>
 <translation id="6774402201608588477">1 зиянды кеңейтімді қайта қосып қойдыңыз.</translation>
 <translation id="6775163072363532304">Қолжетімді құрылғылар осы жерде пайда болады.</translation>
 <translation id="6777817260680419853">Бағыттауға тыйым салынған</translation>
@@ -5111,7 +5123,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Сақтық көшірме деректері балаңыздың Drive жадынан орын алмайды.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Бұл қызметті "Параметрлер" бөлімінен өшіруге болады.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Жақында жабылған сайттарға деректерді жіберу және алу операциясын аяқтауға рұқсат беру</translation>
-<translation id="8075388906473569293">Сайт камераңыздың орнын қадағалағысы немесе бөлмеңіздің картасын жасағысы келгенде сұрау</translation>
 <translation id="8076492880354921740">Қойындылар</translation>
 <translation id="8076835018653442223">Әкімші құрылғыңызда жергілікті файлдарға кіруге тыйым салған</translation>
 <translation id="808089508890593134">Google</translation>
@@ -5393,7 +5404,6 @@
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> плагині іске қосылуы үшін рұқсатыңыз қажет</translation>
 <translation id="8466417995783206254">Бұл қойынды "суреттегі сурет" режимінде бейне ойнатуда.</translation>
 <translation id="8467326454809944210">Басқа тілді таңдау</translation>
-<translation id="8468750959626135884"><ph name="DEVICE_TYPE" /> құлпын Android телефонымен ашыңыз.</translation>
 <translation id="8470214316007448308">Басқа адамдар</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> сайты үшін құпия сөздер сақталды</translation>
 <translation id="8472623782143987204">жабдық қажет</translation>
@@ -5438,6 +5448,7 @@
 <translation id="8538358978858059843">Google Cast үшін бұлт қызметтерін қосу керек пе?</translation>
 <translation id="8539727552378197395">Жоқ (HttpOnly)</translation>
 <translation id="8539766201049804895">Жаңа нұсқа орнату</translation>
+<translation id="8540136935098276800">Дұрыс форматталған URL мекенжайын енгізіңіз.</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, мәліметтер</translation>
 <translation id="8541462173655894684">Басып шығару серверінен ешқандай принтер табылмады.</translation>
 <translation id="8542618328173222274">Cайт виртуалды шындық құрылғыларыңызды немесе деректерді пайдаланғысы келгенде сұрау</translation>
@@ -5454,6 +5465,7 @@
 <translation id="8551388862522347954">Лицензиялар</translation>
 <translation id="8553342806078037065">Басқа пайдаланушыларды басқару</translation>
 <translation id="8554899698005018844">Тілі көрсетілмеген</translation>
+<translation id="8556135141412663091">Plugin VM плагині пайдаланылмас бұрын, құрылғы жаңартылуы керек.</translation>
 <translation id="8557022314818157177">Саусақ ізі түскенше, қауіпсіздік кілтін басып тұрыңыз.</translation>
 <translation id="855773602626431402">Сынақ ортасынан тыс плагиндердің осы бетте іске қосылуына жол берілмеді.</translation>
 <translation id="8557930019681227453">Манифест</translation>
@@ -5705,6 +5717,7 @@
 <translation id="8871696467337989339">Қолдау көрсетілмеген пәрмен жолы жалауын пайдаланудасыз: <ph name="BAD_FLAG" />. Тұрақтылық пен қауіпсіздікке зиян келеді.</translation>
 <translation id="8871974300055371298">Мазмұн параметрлері</translation>
 <translation id="8872155268274985541">Жарамсыз киоск қолданбасының сыртқы жаңарту манифест файлы табылды. Киоск қолданбасын жаңарту сәтсіз аяқталды. USB картасын алып тастаңыз.</translation>
+<translation id="8872187374998143710">Plugin VM плагинін пайдалану үшін құрылғыңызды қайта қосыңыз.</translation>
 <translation id="8872777911145321141">Cайтқа виртуалды шындық құрылғыларыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="8874184842967597500">Қосылмаған</translation>
 <translation id="8876307312329369159">Бұл параметр демо сеанста өзгертілмейді.</translation>
@@ -5894,7 +5907,6 @@
 <translation id="9128870381267983090">Желіге қосылу</translation>
 <translation id="9130015405878219958">Жарамсыз режим енгізілген.</translation>
 <translation id="9131487537093447019">Bluetooth құрылғыларына хабар жіберу және алу.</translation>
-<translation id="9133485532850464138">Сайттарға камераңыздың орнын қадағалауға немесе бөлмеңіздің картасын жасауға рұқсат бермеу</translation>
 <translation id="9137013805542155359">Түпнұсқаны көрсету</translation>
 <translation id="9137157311132182254">Таңдалған іздеу жүйесі</translation>
 <translation id="9137248913990643158">Қолданбаны пайдаланбас бұрын Chrome жүйесін іске қосып, оған кіріңіз.</translation>

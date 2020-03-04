@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_EMBEDDER_H_
 
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/point.h"
@@ -24,6 +25,10 @@ class TabStripUIEmbedder {
   virtual void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) = 0;
+
+  virtual void ShowEditDialogForGroupAtPoint(gfx::Point point,
+                                             gfx::Rect rect,
+                                             tab_groups::TabGroupId group) = 0;
 
   virtual TabStripUILayout GetLayout() = 0;
 

@@ -146,6 +146,10 @@ public class LibraryLoader {
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
 
+    // The suffix to add when loading the library. This is useful if a library with the same name is
+    // loaded in the same process, as can be the case with WebView/WebLayer.
+    private String mLibrarySuffix = "";
+
     /**
      * Call this method to determine if the chromium project must load the library
      * directly from a zip file.
@@ -179,6 +183,15 @@ public class LibraryLoader {
                             mLibraryProcessType, type));
         }
         mLibraryProcessType = type;
+    }
+
+    /**
+     * Sets a suffix to use when loading the library. This will be appended to the library names
+     * for calls to System.loadLibrary().
+     */
+    public void setLibrarySuffix(String suffix) {
+        assert mLoadState == LoadState.NOT_LOADED;
+        mLibrarySuffix = suffix;
     }
 
     /**
@@ -478,9 +491,7 @@ public class LibraryLoader {
         // Load libraries using the system linker.
         for (String library : NativeLibraries.LIBRARIES) {
             if (!isInZipFile()) {
-                // The extract and retry logic isn't needed because this path is used only for local
-                // development.
-                System.loadLibrary(library);
+                System.loadLibrary(library + mLibrarySuffix);
             } else {
                 // Load directly from the APK.
                 boolean is64Bit = ApiHelperForM.isProcess64Bit();

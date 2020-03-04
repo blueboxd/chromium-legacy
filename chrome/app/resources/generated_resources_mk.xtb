@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">Вклучено - приспособени поставки</translation>
 <translation id="1489664337021920575">Изберете друга опција</translation>
 <translation id="1493892686965953381">Се чека <ph name="LOAD_STATE_PARAMETER" />…</translation>
+<translation id="1494438840282430403">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа може да ве одјави од Google.com.</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> други достапни уреди.</translation>
 <translation id="1495677929897281669">Назад на картичката</translation>
 <translation id="1499271269825557605">Ако не ја препознавате екстензијата или ако вашиот прелистувач не работи според очекувањата, може да ги исклучите или приспособите екстензиите тука.</translation>
@@ -1178,7 +1179,9 @@
 <translation id="2586672484245266891">Внесете пократка URL-адреса</translation>
 <translation id="2587922766792651800">Истече</translation>
 <translation id="2588636910004461974">Уреди од <ph name="VENDOR_NAME" /></translation>
+<translation id="2593594315333286814">Поставки за пристапност за навигација</translation>
 <translation id="2594999711683503743">Пребарајте на Google или внесете URL-адреса</translation>
+<translation id="2602501489742255173">Повлечете нагоре за да започнете</translation>
 <translation id="2603115962224169880">Чистење на компјутерот</translation>
 <translation id="2603463522847370204">Отвори во &amp;инкогнито прозорец</translation>
 <translation id="2604255671529671813">Грешка во мрежното поврзување</translation>
@@ -1340,6 +1343,7 @@
 <translation id="2804043232879091219">Алтернативниот прелистувач не можеше да се отвори</translation>
 <translation id="2804667941345577550">Ќе ве одјавиме од сајтов, вклучително и од отворените картички</translation>
 <translation id="2804680522274557040">Камерата е исклучена</translation>
+<translation id="2805539617243680210">Подготвени сте!</translation>
 <translation id="2805646850212350655">Систем за шифрирање датотеки на Microsoft</translation>
 <translation id="2805756323405976993">Апликации</translation>
 <translation id="2805770823691782631">Дополнителни детали</translation>
@@ -1423,6 +1427,7 @@
 <translation id="2903457445916429186">Отвори ги избраните ставки</translation>
 <translation id="2903882649406874750">Секогаш блокирај го пристапот на <ph name="HOST" /> до сензорите</translation>
 <translation id="2904456025988372123">Прашај кога некој сајт се обидува автоматски да преземе датотеки по првата датотека</translation>
+<translation id="2905990582795979495">Спремни сте за користење на <ph name="DEVICE_TYPE" />. Добивајте совети за <ph name="DEVICE_TYPE" />, новости за производи на Google и споделувајте повратни информации. Отпишете се во секое време.</translation>
 <translation id="2907619724991574506">URL-врски за стартување</translation>
 <translation id="2907798539022650680">Не успеа да се поврзе на „<ph name="NAME" />“: <ph name="DETAILS" />
     Порака од серверот: <ph name="SERVER_MSG" /></translation>
@@ -1696,6 +1701,7 @@
 <translation id="3308116878371095290">Ја спречивме страницата да поставува колачиња.</translation>
 <translation id="3308134619352333507">Сокриј копче</translation>
 <translation id="3308852433423051161">Се вчитува „Помошникот на Google“…</translation>
+<translation id="3311445899360743395">Податоците поврзани со апликацијава можеби ќе се отстранат од уредов.</translation>
 <translation id="3312424061798279731">Овозможени јазици</translation>
 <translation id="3313622045786997898">Вредност на потпис на сертификат</translation>
 <translation id="3315158641124845231">Сокриј <ph name="PRODUCT_NAME" /></translation>
@@ -1882,7 +1888,6 @@
 <translation id="3586806079541226322">Датотекава не може да се отвори</translation>
 <translation id="3586931643579894722">Сокриј детали</translation>
 <translation id="3587482841069643663">Сите</translation>
-<translation id="358796204584394954">Внесете го кодов на „<ph name="DEVICE_NAME" />“ за да спарите:</translation>
 <translation id="3589766037099229847">Небезбедните содржини се блокирани</translation>
 <translation id="3590194807845837023">Отклучи профил и рестартирај</translation>
 <translation id="3590295622232282437">Се влегува во управувана сесија.</translation>
@@ -1956,6 +1961,7 @@
 <translation id="3670229581627177274">Вклучете Bluetooth</translation>
 <translation id="3672681487849735243">Откриена е фабричка грешка</translation>
 <translation id="367645871420407123">оставете го празно доколку сакате да поставите основна лозинка на стандардната вредност на тест-сликата</translation>
+<translation id="3677106374019847299">Внесете приспособен оператор</translation>
 <translation id="3677657024345889897">Најтивко</translation>
 <translation id="3677911431265050325">Побарај мобилна верзија на сајтот</translation>
 <translation id="3678156199662914018">Наставка: <ph name="EXTENSION_NAME" /></translation>
@@ -2047,6 +2053,7 @@
 <translation id="3780211714699334884"><ph name="ORIGIN" /> ќе може да изменува датотеки во <ph name="FOLDERNAME" /> сѐ додека не ја затворите картичкава</translation>
 <translation id="3780827508782506612">Страницава е преведена</translation>
 <translation id="378312418865624974">Прочитајте го уникатниот идентификатор за овој компјутер</translation>
+<translation id="3784372983762739446">Уреди со Bluetooth</translation>
 <translation id="3784472333786002075">Колачињата се датотеки што ги создаваат веб-сајтовите. Има два типа колачиња: првиот тип колачиња ги создава сајтот што го посетувате. Сајтот се прикажува во лентата за адреси. Вториот тип колачиња ги создаваат други сајтови. Овие сајтови се сопственици на дел од содржините, како рекламите или сликите што ги гледате на веб-сајтот што го посетувате.</translation>
 <translation id="3785308913036335955">Покажи кратенка за Апликации</translation>
 <translation id="3785727820640310185">Зачувани лозинки за сајтов</translation>
@@ -2076,6 +2083,7 @@
 <translation id="3816118180265633665">Бои на Chrome</translation>
 <translation id="3817524650114746564">Отворете ги поставките за прокси на компјутерот</translation>
 <translation id="3817579325494460411">Не е обезбедена</translation>
+<translation id="381892968844315516">Plugin VM не е дозволен на уредов. Контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Бекап</translation>
 <translation id="3819261658055281761">Системот не успеа да го складира пристапниот токен на долгорочниот API за уредов.</translation>
 <translation id="3819800052061700452">&amp;Цел екран</translation>
@@ -2458,6 +2466,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4378551569595875038">Се поврзува…</translation>
 <translation id="4378556263712303865">Барање на уредот</translation>
+<translation id="4379281552162875326">Да се деинсталира „<ph name="APP_NAME" />“?</translation>
 <translation id="4380648069038809855">Се влезе во цел екран</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, уште 1 сметка}one{<ph name="EMAIL" />, уште <ph name="EXTRA_ACCOUNTS" /> сметка}other{<ph name="EMAIL" />, уште <ph name="EXTRA_ACCOUNTS" /> сметки}}</translation>
 <translation id="4384312707950789900">Додај во претпочитани</translation>
@@ -2773,7 +2782,6 @@
 <translation id="4850669014075537160">Лизгање</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4853020600495124913">Отвори во &amp;нов прозорец</translation>
-<translation id="4854262617951518520">Прашувај кога некој сајт ќе сака да ја следи позицијата на камерата или да ја мапира собата (препорачано)</translation>
 <translation id="485480310608090163">Повеќе лозинки и дозволи</translation>
 <translation id="4856478137399998590">Услугата со мобилни податоци е активирана и подготвена за користење</translation>
 <translation id="4856855265648545577">Прикажувај ги копчињата „Стартер“, „Назад“ и „Преглед“ во „Полицата“ во режим на таблет. Вклучено кога е овозможен ChromeVox (говорни повратни информации) или „Пристап со прекинувачи“.</translation>
@@ -3324,6 +3332,7 @@
 <translation id="5618075537869101857">Да му се сневиди, киоск-апликацијата не можеше да се стартува.</translation>
 <translation id="5618333180342767515">(ова може да потрае неколку минути)</translation>
 <translation id="56197088284879152">Има застој на врската на далечинскиот уред: „<ph name="DEVICE_NAME" />".</translation>
+<translation id="5620549857835247159">Прикажувај ги копчињата „Стартер“, „Назад“ и „Преглед“ во „Полицата“ во режим на таблет.</translation>
 <translation id="5620568081365989559">DevTools бара целосен пристап до <ph name="FOLDER_PATH" />. Погрижете се да не откривате чувствителни информации.</translation>
 <translation id="5620612546311710611">статистика на користење</translation>
 <translation id="5620655347161642930">Извезување лозинки…</translation>
@@ -3855,6 +3864,7 @@
 <translation id="6349101878882523185">Инсталирај <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронизацијата не функционира. Обидете се да се одјавите и да се најавите повторно.</translation>
 <translation id="6351063337294363751">Од ова мени може да ги исчистите податоците од прелистувањето</translation>
+<translation id="6352223293513723497">На уредот нема доволно простор за складирање. Ослободете простор за да го користите Plugin VM.</translation>
 <translation id="6352773953037195952">Највисок</translation>
 <translation id="6354918092619878358">SECG елиптична крива secp256r1 (наречена ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">Чувајте го уредот вклучен</translation>
@@ -4133,12 +4143,14 @@
 <translation id="6758056191028427665">Оценете ја нашата работа.</translation>
 <translation id="6759193508432371551">Ресетирање до фабрички вредности</translation>
 <translation id="6762833852331690540">Вклучено</translation>
+<translation id="6764693078871405569">Избришете ги и податоците од прелистувањето (<ph name="URL" />), а тоа ќе ве одјави од <ph name="DOMAIN" />.</translation>
 <translation id="6767566652486411142">Изберете друг јазик…</translation>
 <translation id="6767639283522617719">Не може да се приклучи на доменот. Проверете дали поставките се точни за организациската единица.</translation>
 <translation id="6769712124046837540">Се додава печатач…</translation>
 <translation id="6770664076092644100">Потврди преку NFC</translation>
 <translation id="6771503742377376720">Е орган за сертифицирање</translation>
 <translation id="6772339735733515807">Управувајте со екстензиите</translation>
+<translation id="6774271858705413900">Нешто не е во ред. Почекајте неколку минути и повторно извршете го Plugin VM.</translation>
 <translation id="6774402201608588477">Повторно вклучивте една лоша екстензија</translation>
 <translation id="6775163072363532304">Достапните уреди ќе се појават тука.</translation>
 <translation id="6777817260680419853">Пренасочувањето е блокирано</translation>
@@ -5114,7 +5126,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Податоците од бекапот не се земаат предвид во квотата за складирање во Drive на вашето дете.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Услугава може да ја исклучите во „Поставки“.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Дозволи неодамна затворените сајтови да завршат со испраќањето и примањето податоци</translation>
-<translation id="8075388906473569293">Прашувај кога некој сајт ќе сака да ја следи позицијата на камерата или да ја мапира собата</translation>
 <translation id="8076492880354921740">Картички</translation>
 <translation id="8076835018653442223">Администраторот го оневозможил пристапот до локалните датотеки на вашиот уред</translation>
 <translation id="808089508890593134">Google</translation>
@@ -5399,7 +5410,6 @@
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> бара ваша дозвола за да се изврши</translation>
 <translation id="8466417995783206254">Картичкава пушта видео во режимот „слика во слика“.</translation>
 <translation id="8467326454809944210">Изберете друг јазик</translation>
-<translation id="8468750959626135884">Отклучете го <ph name="DEVICE_TYPE" /> со вашиот телефон со Android.</translation>
 <translation id="8470214316007448308">Други луѓе</translation>
 <translation id="8470513973197838199">Зачувани лозинки за <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">со резервни копии од хардвер</translation>
@@ -5444,6 +5454,7 @@
 <translation id="8538358978858059843">Да се овозможат услуги во облак за Cast?</translation>
 <translation id="8539727552378197395">Не (HttpOnly)</translation>
 <translation id="8539766201049804895">Надгради</translation>
+<translation id="8540136935098276800">Внесете правилно форматирана URL-адреса</translation>
 <translation id="8540608333167683902">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, детали</translation>
 <translation id="8541462173655894684">Не се најдени печатачи од серверот за печатење</translation>
 <translation id="8542618328173222274">Прашувај кога некој сајт ќе сака да ги користи уредите и податоците за виртуелна реалност</translation>
@@ -5460,6 +5471,7 @@
 <translation id="8551388862522347954">Лиценци</translation>
 <translation id="8553342806078037065">Управувај со другите луѓе</translation>
 <translation id="8554899698005018844">Нема јазик</translation>
+<translation id="8556135141412663091">Уредот треба да се ажурира пред да може да користите Plugin VM.</translation>
 <translation id="8557022314818157177">Допирајте го безбедносниот клуч додека не се сними вашиот отпечаток</translation>
 <translation id="855773602626431402">Спречено е активирање на неизолиран приклучок на оваа страница.</translation>
 <translation id="8557930019681227453">Манифест</translation>
@@ -5711,6 +5723,7 @@
 <translation id="8871696467337989339">Користите неподдржано знаме на командна линија: <ph name="BAD_FLAG" />. Ќе настрадаат стабилноста и безбедноста.</translation>
 <translation id="8871974300055371298">Поставки за содржина</translation>
 <translation id="8872155268274985541">Пронајдена е погрешна надворешна манифест-датотека за ажурирање на Киоск. Не успеа да ја ажурира апликацијата Киоск. Отстранете ја USB-меморијата.</translation>
+<translation id="8872187374998143710">Рестартирајте го уредот за да го користите Plugin VM.</translation>
 <translation id="8872777911145321141">Прашувај кога некој сајт ќе сака да ги користи уредите и податоците за виртуелна реалност (препорачано)</translation>
 <translation id="8874184842967597500">Не е поврзано</translation>
 <translation id="8876307312329369159">Поставкава не може да се промени во демо-сесија.</translation>
@@ -5900,7 +5913,6 @@
 <translation id="9128870381267983090">Поврзете се на мрежа</translation>
 <translation id="9130015405878219958">Внесен е неважечки режим.</translation>
 <translation id="9131487537093447019">Испраќајте и примајте пораки од уреди со Bluetooth.</translation>
-<translation id="9133485532850464138">Не дозволувај сајтовите да ја следат позицијата на камерата или да ја мапираат собата</translation>
 <translation id="9137013805542155359">Покажи оригинална страница</translation>
 <translation id="9137157311132182254">Претпочитан пребарувач</translation>
 <translation id="9137248913990643158">Започнете и најавете се на Chrome пред да ја користите апликацијава.</translation>

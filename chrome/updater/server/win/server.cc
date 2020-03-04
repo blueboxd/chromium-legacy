@@ -11,11 +11,61 @@
 
 #include "chrome/updater/server/win/server.h"
 
+#include <windows.h>
+#include <wrl/implements.h>
+#include <wrl/module.h>
+
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/updater/app/app.h"
+#include "chrome/updater/configurator.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_in_process.h"
 
 namespace updater {
+
+// This class is responsible for the lifetime of the COM server, as well as
+// class factory registration.
+class ComServer : public App {
+ public:
+  ComServer();
+
+ private:
+  ~ComServer() override = default;
+
+  void Initialize() override;
+
+  void FirstTaskRun() override;
+
+  // Registers and unregisters the out-of-process COM class factories.
+  HRESULT RegisterClassObject();
+  void UnregisterClassObject();
+
+  // Waits until the last COM object is released.
+  void WaitForExitSignal();
+
+  // Called when the last object is released.
+  void SignalExit();
+
+  // Creates an out-of-process WRL Module.
+  void CreateWRLModule();
+
+  // Handles object unregistration then triggers program shutdown.
+  void Stop();
+
+  // Identifier of registered class objects used for unregistration.
+  DWORD cookies_[1] = {};
+
+  // While this object lives, COM can be used by all threads in the program.
+  base::win::ScopedCOMInitializer com_initializer_;
+
+  // The UpdateService to use for handling COM requests.
+  std::unique_ptr<UpdateService> service_;
+
+  // The updater's Configurator.
+  scoped_refptr<Configurator> config_;
+};
 
 HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
   return E_NOTIMPL;
@@ -34,21 +84,7 @@ HRESULT UpdaterImpl::Update(const base::char16* app_id) {
 }
 
 ComServer::ComServer()
-    : exit_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
-                   base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-
-int ComServer::RunComServer() {
-  // Initialize COM for the current thread.
-  base::win::ScopedCOMInitializer com_initializer(
-      base::win::ScopedCOMInitializer::kMTA);
-  if (!com_initializer.Succeeded()) {
-    PLOG(ERROR) << "Failed to initialize COM";
-    return -1;
-  }
-
-  // Run the COM server.
-  return Run();
-}
+    : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
 
 HRESULT ComServer::RegisterClassObject() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();
@@ -100,32 +136,35 @@ void ComServer::UnregisterClassObject() {
     LOG(ERROR) << "UnregisterCOMObject failed; hr: " << hr;
 }
 
-void ComServer::WaitForExitSignal() {
-  exit_signal_.Wait();
-}
-
-void ComServer::SignalExit() {
-  exit_signal_.Signal();
-}
-
 void ComServer::CreateWRLModule() {
-  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
-      this, &ComServer::SignalExit);
+  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(this,
+                                                            &ComServer::Stop);
 }
 
-HRESULT ComServer::Run() {
+void ComServer::Stop() {
+  UnregisterClassObject();
+  Shutdown(0);
+}
+
+void ComServer::Initialize() {
+  config_ = base::MakeRefCounted<Configurator>();
+}
+
+void ComServer::FirstTaskRun() {
+  if (!com_initializer_.Succeeded()) {
+    PLOG(ERROR) << "Failed to initialize COM";
+    Shutdown(-1);
+    return;
+  }
+  service_ = std::make_unique<UpdateServiceInProcess>(config_);
   CreateWRLModule();
   HRESULT hr = RegisterClassObject();
-  if (SUCCEEDED(hr)) {
-    WaitForExitSignal();
-    UnregisterClassObject();
-  }
-
-  return hr;
+  if (FAILED(hr))
+    Shutdown(hr);
 }
 
-int RunServer(std::unique_ptr<UpdateService> update_service) {
-  return ComServer().RunComServer();
+scoped_refptr<App> MakeAppServer() {
+  return base::MakeRefCounted<ComServer>();
 }
 
 }  // namespace updater

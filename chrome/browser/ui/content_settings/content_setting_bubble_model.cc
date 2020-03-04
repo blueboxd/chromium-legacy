@@ -1340,10 +1340,10 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   PrefService* prefs = GetProfile()->GetPrefs();
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  const blink::MediaStreamDevices& microphones =
-      dispatcher->GetAudioCaptureDevices();
 
   if (MicrophoneAccessed()) {
+    const blink::MediaStreamDevices& microphones =
+        dispatcher->GetAudioCaptureDevices();
     MediaMenu mic_menu;
     mic_menu.label = l10n_util::GetStringUTF16(IDS_MEDIA_SELECTED_MIC_LABEL);
     if (!microphones.empty()) {

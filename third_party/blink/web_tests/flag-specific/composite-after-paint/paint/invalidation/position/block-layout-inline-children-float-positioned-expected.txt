@@ -22,9 +22,9 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutNGBlockFlow (positioned) SPAN",
+          "object": "NGPhysicalTextFragment 'the quick brown fox jumped over the lazy dog'",
           "rect": [155, 37, 292, 19],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

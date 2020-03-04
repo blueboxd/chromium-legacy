@@ -14,7 +14,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='remove_child'",
           "rect": [508, 88, 100, 100],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutNGBlockFlow DIV id='keep_child'",

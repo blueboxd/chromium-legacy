@@ -93,7 +93,10 @@ class BASE_EXPORT ModuleCache {
       const std::vector<const Module*>& to_remove,
       std::vector<std::unique_ptr<const Module>> to_add);
 
-  void InjectNativeModuleForTesting(std::unique_ptr<const Module> module);
+  // Adds a custom native module to the cache. This is intended to support
+  // native modules that require custom handling. In general, native modules
+  // will be found and added automatically when invoking GetModuleForAddress().
+  void AddCustomNativeModule(std::unique_ptr<const Module> module);
 
  private:
   // Heterogenously compares modules by base address, and modules and

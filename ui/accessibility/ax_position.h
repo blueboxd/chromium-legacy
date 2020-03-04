@@ -513,8 +513,23 @@ class AXPosition {
         // position before the next line, and therefore as being at start of
         // line.
         //
-        // We assume that white space separates lines.
-        if (text_position->IsInWhiteSpace() &&
+        // We assume that white space, including but not limited to hard line
+        // breaks, might be used to separate lines. For example, an inline text
+        // box with just a single space character inside it can be used to
+        // represent a soft line break. if an inline text box containing white
+        // space separates two lines, it should always be connected to the first
+        // line via "kPreviousOnLineId". This is guaranteed by the renderer.
+        //
+        // Sometimes there might be an inline text box with a single space in it
+        // at the end of a text field. We should not mark positions that are at
+        // the end of text fields, or in general at the end of their anchor, as
+        // being at the start of line, except when that anchor is an inline text
+        // box that is in the middle of a text span. Note that in most but not
+        // all cases, the parent of an inline text box is a static text object,
+        // whose end signifies the end of the text span. One exception is line
+        // breaks.
+        if (!text_position->AtEndOfTextSpan() &&
+            text_position->IsInWhiteSpace() &&
             GetNextOnLineID(text_position->anchor_id_) ==
                 AXNode::kInvalidAXID &&
             text_position->AtEndOfAnchor()) {
@@ -546,22 +561,46 @@ class AXPosition {
 
         // If affinity has been used to specify whether the caret is at the end
         // of a line or at the start of the next one, this should have been
-        // reflected in the leaf text position we got. In other cases, we
-        // assume that white space is being used to separate lines.
+        // reflected in the leaf text position we got via "AsLeafTextPosition".
+        // If affinity had been set to upstream, the leaf text position should
+        // be pointing to the end of the inline text box that ends the first
+        // line. If it had been set to downstream, the leaf text position should
+        // be pointing to the start of the inline text box that starts the
+        // second line.
+        //
+        // In other cases, we assume that white space, including but not limited
+        // to hard line breaks, might be used to separate lines. For example, an
+        // inline text box with just a single space character inside it can be
+        // used to represent a soft line break. if an inline text box containing
+        // white space separates two lines, it should always be connected to the
+        // first line via "kPreviousOnLineId". This is guaranteed by the
+        // renderer.
         //
         // We don't treat a position that is at the start of white space that is
-        // on a line by itself as being at the end of the line. However, we do
-        // treat positions at the start of white space that end a line of text
-        // as being at the end of that line. We also treat positions at the end
-        // of white space that is on a line by itself as being at the end of
-        // that line. Note that white space that ends a line of text should be
-        // connected to that text with a "previous on line ID".
-        if (GetNextOnLineID(text_position->anchor_id_) == AXNode::kInvalidAXID)
-          return (!text_position->IsInWhiteSpace() ||
-                  GetPreviousOnLineID(text_position->anchor_id_) ==
+        // on a line by itself as being at the end of the line. This is in order
+        // to enable screen readers to recognize and announce blank lines
+        // correctly. However, we do treat positions at the start of white space
+        // that end a line of text as being at the end of that line. We also
+        // treat positions at the end of white space that is on a line by
+        // itself, i.e. on a blank line, as being at the end of that line.
+        //
+        // Sometimes there might be an inline text box with a single space in it
+        // at the end of a text field. We should mark positions that are at the
+        // end of text fields, or in general at the end of an anchor with no
+        // "kNextOnLineId", as being at end of line, except when that anchor is
+        // an inline text box that is in the middle of a text span. Note that
+        // in most but not all cases, the parent of an inline text box is a
+        // static text object, whose end signifies the end of the text span. One
+        // exception is line breaks.
+        if (GetNextOnLineID(text_position->anchor_id_) ==
+            AXNode::kInvalidAXID) {
+          return (!text_position->AtEndOfTextSpan() &&
+                  text_position->IsInWhiteSpace() &&
+                  GetPreviousOnLineID(text_position->anchor_id_) !=
                       AXNode::kInvalidAXID)
-                     ? text_position->AtEndOfAnchor()
-                     : text_position->AtStartOfAnchor();
+                     ? text_position->AtStartOfAnchor()
+                     : text_position->AtEndOfAnchor();
+        }
 
         // The current anchor might be followed by a soft line break.
         return text_position->AtEndOfAnchor() &&
@@ -1722,15 +1761,27 @@ class AXPosition {
                                  ax::mojom::TextAffinity::kDownstream);
         }
 
-        // We check if the parent position has introduced ambiguity as to
+        // If the current position is pointing at the end of its anchor, we need
+        // to check if the parent position has introduced ambiguity as to
         // whether it refers to the end of a line or the start of the next.
-        // We do this check by creating the parent position and testing if
-        // it is erroneously at the start of the next line. We could not have
+        // Ambiguity is only present when the parent position points to a text
+        // offset that is neither at the start nor at the end of its anchor. We
+        // check for ambiguity by creating the parent position and testing if it
+        // is erroneously at the start of the next line. Given that the current
+        // position, by the nature of being at the end of its anchor, could only
+        // be at end of line, the fact that the parent position is also
+        // determined to be at start of line demonstrates the presence of
+        // ambiguity which is resolved by setting its affinity to upstream.
+        //
+        // We could not have
         // checked if the child was at the end of the line, because our
         // "AtEndOfLine" predicate takes into account trailing line breaks,
         // which would create false positives.
-        if (text_offset_ == max_text_offset && parent_position->AtStartOfLine())
+        if (text_offset_ == max_text_offset &&
+            !parent_position->AtEndOfAnchor() &&
+            parent_position->AtStartOfLine()) {
           parent_position->affinity_ = ax::mojom::TextAffinity::kUpstream;
+        }
         return parent_position;
       }
     }
@@ -3044,6 +3095,17 @@ class AXPosition {
                                    const AXPosition& move_to,
                                    const AXMoveType type,
                                    const AXMoveDirection direction)>;
+
+  // A text span is defined by a series of inline text boxes that make up a
+  // single static text object.
+  bool AtEndOfTextSpan() const {
+    if (GetRole() != ax::mojom::Role::kInlineTextBox || !AtEndOfAnchor())
+      return false;
+
+    AXPositionInstance parent_position = CreateParentPosition();
+    return parent_position->GetRole() == ax::mojom::Role::kStaticText &&
+           parent_position->AtEndOfAnchor();
+  }
 
   // Uses depth-first pre-order traversal.
   AXPositionInstance CreateNextAnchorPosition(

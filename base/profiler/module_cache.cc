@@ -93,8 +93,7 @@ void ModuleCache::UpdateNonNativeModules(
                              std::make_move_iterator(to_add.end()));
 }
 
-void ModuleCache::InjectNativeModuleForTesting(
-    std::unique_ptr<const Module> module) {
+void ModuleCache::AddCustomNativeModule(std::unique_ptr<const Module> module) {
   native_modules_.insert(std::move(module));
 }
 

@@ -31,6 +31,19 @@ export class TabStripEmbedderProxy {
   }
 
   /**
+   * @param {string} groupId
+   * @param {number} locationX
+   * @param {number} locationY
+   * @param {number} width
+   * @param {number} height
+   */
+  showEditDialogForGroup(groupId, locationX, locationY, width, height) {
+    chrome.send(
+        'showEditDialogForGroup',
+        [groupId, locationX, locationY, width, height]);
+  }
+
+  /**
    * @param {number} tabId
    * @param {number} locationX
    * @param {number} locationY

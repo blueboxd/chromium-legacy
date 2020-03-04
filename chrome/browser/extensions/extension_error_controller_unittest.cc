@@ -109,8 +109,6 @@ class ExtensionErrorControllerUnitTest : public ExtensionServiceTestBase {
 
   // Return the ExtensionPrefs associated with the test.
   ExtensionPrefs* GetPrefs();
-
-  Profile* profile() { return profile_.get(); }
 };
 
 void ExtensionErrorControllerUnitTest::SetUp() {

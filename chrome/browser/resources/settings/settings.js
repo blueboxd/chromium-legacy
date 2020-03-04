@@ -6,6 +6,7 @@ import './a11y_page/a11y_page.m.js';
 import './about_page/about_page.m.js';
 import './appearance_page/appearance_page.m.js';
 import './appearance_page/appearance_fonts_page.m.js';
+import './clear_browsing_data_dialog/clear_browsing_data_dialog.m.js';
 import './controls/controlled_button.m.js';
 import './controls/controlled_radio_button.m.js';
 import './controls/extension_controlled_indicator.m.js';
@@ -57,6 +58,7 @@ export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_prox
 
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
+export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
@@ -68,6 +70,7 @@ export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';
+export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';
 export {pageVisibility} from './page_visibility.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {routes} from './route.m.js';

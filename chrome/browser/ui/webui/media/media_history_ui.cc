@@ -49,33 +49,33 @@ void MediaHistoryUI::BindInterface(
 
 void MediaHistoryUI::GetMediaHistoryStats(
     GetMediaHistoryStatsCallback callback) {
-  return GetMediaHistoryStore()->GetMediaHistoryStats(std::move(callback));
+  return GetMediaHistoryService()->GetMediaHistoryStats(std::move(callback));
 }
 
 void MediaHistoryUI::GetMediaHistoryOriginRows(
     GetMediaHistoryOriginRowsCallback callback) {
-  return GetMediaHistoryStore()->GetOriginRowsForDebug(std::move(callback));
+  return GetMediaHistoryService()->GetOriginRowsForDebug(std::move(callback));
 }
 
 void MediaHistoryUI::GetMediaHistoryPlaybackRows(
     GetMediaHistoryPlaybackRowsCallback callback) {
-  return GetMediaHistoryStore()->GetMediaHistoryPlaybackRowsForDebug(
+  return GetMediaHistoryService()->GetMediaHistoryPlaybackRowsForDebug(
       std::move(callback));
 }
 
 void MediaHistoryUI::GetMediaHistoryPlaybackSessionRows(
     GetMediaHistoryPlaybackSessionRowsCallback callback) {
-  return GetMediaHistoryStore()->GetPlaybackSessions(
+  return GetMediaHistoryService()->GetPlaybackSessions(
       base::nullopt, base::nullopt, std::move(callback));
 }
 
-media_history::MediaHistoryStore* MediaHistoryUI::GetMediaHistoryStore() {
+media_history::MediaHistoryKeyedService*
+MediaHistoryUI::GetMediaHistoryService() {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(profile);
 
   media_history::MediaHistoryKeyedService* service =
       media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
   DCHECK(service);
-
-  return service->GetMediaHistoryStore();
+  return service;
 }

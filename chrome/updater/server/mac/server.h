@@ -5,13 +5,14 @@
 #ifndef CHROME_UPDATER_SERVER_MAC_SERVER_H_
 #define CHROME_UPDATER_SERVER_MAC_SERVER_H_
 
-#include <memory>
+#include "base/memory/ref_counted.h"
 
 namespace updater {
 
-class UpdateService;
+class App;
 
-int RunServer(std::unique_ptr<UpdateService> update_service);
-}
+scoped_refptr<App> MakeAppServer();
+
+}  // namespace updater
 
 #endif  // CHROME_UPDATER_SERVER_MAC_SERVER_H_

@@ -825,6 +825,16 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         memory_info_out->set_page_faults_since_last_boot(
             memory_info->page_faults_since_last_boot);
       }
+      const auto& backlight_info = probe_result->backlight_info;
+      if (backlight_info.has_value()) {
+        for (const auto& backlight : backlight_info.value()) {
+          em::BacklightInfo* const backlight_info_out =
+              response_params_.device_status->add_backlight_info();
+          backlight_info_out->set_path(backlight->path);
+          backlight_info_out->set_max_brightness(backlight->max_brightness);
+          backlight_info_out->set_brightness(backlight->brightness);
+        }
+      }
 
       for (const std::unique_ptr<SampledData>& sample_data : samples) {
         auto it = sample_data->battery_samples.find(battery_info->model_name);
@@ -994,6 +1004,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceTimezoneInfo, callback);
   memory_info_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceMemoryInfo, callback);
+  backlight_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceBacklightInfo, callback);
 
   power_manager_->AddObserver(this);
 
@@ -1124,6 +1136,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceMemoryInfo,
                                   &report_memory_info_)) {
     report_memory_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBacklightInfo,
+                                  &report_backlight_info_)) {
+    report_backlight_info_ = false;
   }
 
   if (!report_hardware_status_) {
@@ -1407,6 +1423,8 @@ void DeviceStatusCollector::FetchCrosHealthdData(
     categories_to_probe.push_back(ProbeCategoryEnum::kTimezone);
   if (report_memory_info_)
     categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
+  if (report_backlight_info_)
+    categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
@@ -1430,7 +1448,7 @@ void DeviceStatusCollector::OnProbeDataFetched(
 
 bool DeviceStatusCollector::ShouldFetchCrosHealthData() const {
   return report_power_status_ || report_storage_status_ || report_cpu_info_ ||
-         report_timezone_info_ || report_memory_info_;
+         report_timezone_info_ || report_memory_info_ || report_backlight_info_;
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {

@@ -3,9 +3,11 @@
 ## Can I apply commandline flags on my device?
 
 *** note
-**Note:** WebView only permits toggling commandline flags on devices/emulators
-running a debuggable Android OS image. **Most users cannot apply commandline
-flags, because they're using devices with production Android images.**
+**Note:** WebView only permits toggling arbitrary commandline flags on devices/emulators
+running a debuggable Android OS image. **Most users cannot follow these
+instructions**, because they're using devices with production Android images.
+
+If you need to toggle flags on **production devices**, see [this guide](flag-ui.md).
 ***
 
 You can check which Android image you have on your device with the following:

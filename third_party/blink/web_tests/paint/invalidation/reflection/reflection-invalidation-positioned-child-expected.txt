@@ -17,12 +17,12 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 10, 50, 200],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutNGBlockFlow DIV id='box'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 10, 50, 180],
           "reason": "paint property change"
         }

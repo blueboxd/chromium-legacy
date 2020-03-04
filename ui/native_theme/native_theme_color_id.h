@@ -75,6 +75,10 @@
   OP(kColorId_SliderTroughMinimal),                                            \
   /* Separator */                                                              \
   OP(kColorId_SeparatorColor),                                                 \
+  /* Sync info container */                                                    \
+  OP(kColorId_SyncInfoContainerPaused),                                        \
+  OP(kColorId_SyncInfoContainerError),                                         \
+  OP(kColorId_SyncInfoContainerNoPrimaryAccount),                              \
   /* TabbedPane */                                                             \
   OP(kColorId_TabTitleColorActive),                                            \
   OP(kColorId_TabTitleColorInactive),                                          \
@@ -122,6 +126,7 @@
   OP(kColorId_AlertSeverityHigh),                                              \
   /* Colors for icons in secondary UI (content settings, help button, etc). */ \
   OP(kColorId_DefaultIconColor)
+
 // clang-format on
 
 #endif  // UI_NATIVE_THEME_NATIVE_THEME_COLOR_ID_H_

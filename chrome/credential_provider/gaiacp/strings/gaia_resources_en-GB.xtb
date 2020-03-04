@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">There was a problem while synching your work account password to your Windows profile. Please contact your administrator.</translation>
 <translation id="2515346402363002066">Your session has expired. Sign in with your work account.</translation>
 <translation id="2844349213149998955">Signing in with a personal account on this device is not allowed. Please log in with a work account.</translation>
-<translation id="2954423647682729023">Sign in with your work account.</translation>
 <translation id="3217145568844727893">If you continue without entering your current Windows password, you might permanently lose data on this device.</translation>
 <translation id="3285576391135346912">You can sign in only with an email address that ends with the following: <ph name="EMAIL_DOMAINS" />. Try again using a work account.</translation>
 <translation id="3306357053520292004">A user on this computer was already added using this account. Please sign in with a different account.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Your administrator doesn’t allow you to sign in with this account. Try a different account.</translation>
 <translation id="8639729688781680518">Forgot Windows Password</translation>
 <translation id="866458870819756755">A user could not be created.</translation>
-<translation id="8875753657315897487">Sign in using your work account</translation>
 <translation id="9055998212250844221">User account created by Google Credential Provider for Windows</translation>
 </translationbundle>

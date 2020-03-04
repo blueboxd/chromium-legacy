@@ -39,12 +39,14 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -643,5 +645,21 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isValidWebApk(String packageName) {
         return WebApkValidator.isValidWebApk(ContextUtils.getApplicationContext(), packageName);
+    }
+
+    @Override
+    public boolean handleWithAutofillAssistant(
+            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
+        if (browserFallbackUrl != null && !params.isIncognito()
+                && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
+                        targetIntent)
+                && isSerpReferrer()) {
+            if (params.getTab() != null) {
+                AutofillAssistantFacade.start(((TabImpl) params.getTab()).getActivity(),
+                        targetIntent.getExtras(), browserFallbackUrl);
+            }
+            return true;
+        }
+        return false;
     }
 }

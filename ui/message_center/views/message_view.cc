@@ -449,7 +449,8 @@ bool MessageView::ShouldShowControlButtons() const {
   auto* control_buttons_view = GetControlButtonsView();
   return control_buttons_view &&
          (control_buttons_view->IsAnyButtonFocused() ||
-          (GetMode() != Mode::SETTING && IsMouseHovered()));
+          (GetMode() != Mode::SETTING && IsMouseHovered()) ||
+          MessageCenter::Get()->IsSpokenFeedbackEnabled());
 #else
   return true;
 #endif

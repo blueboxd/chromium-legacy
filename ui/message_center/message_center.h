@@ -74,6 +74,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual bool HasPopupNotifications() const = 0;
   virtual bool IsQuietMode() const = 0;
 
+  // Returns true if chrome vox spoken feedback is enabled.
+  virtual bool IsSpokenFeedbackEnabled() const = 0;
+
   // Find the notification with the corresponding id. Returns null if not
   // found. The returned instance is owned by the message center.
   virtual Notification* FindVisibleNotificationById(const std::string& id) = 0;
@@ -167,6 +170,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // This can be called to change the quiet mode state (without a timeout).
   virtual void SetQuietMode(bool in_quiet_mode) = 0;
+
+  // Used to set the spoken feedback state.
+  virtual void SetSpokenFeedbackEnabled(bool enabled) = 0;
 
   // Temporarily enables quiet mode for |expires_in| time.
   virtual void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) = 0;

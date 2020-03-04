@@ -144,21 +144,22 @@ function mouseDragInTarget(targetSelector) {
 
 function mouseWheelScroll(targetSelector, direction) {
   return new Promise(function(resolve, reject) {
-    if (window.eventSender) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       scrollPageIfNeeded(targetSelector, document);
       var target = document.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      eventSender.mouseMoveTo(
-          targetRect.left + boundaryOffset, targetRect.top + boundaryOffset);
-      eventSender.mouseDown(0);
-      eventSender.mouseUp(0);
-      if (direction == 'down')
-        eventSender.continuousMouseScrollBy(-scrollOffset, 0);
-      else if (direction == 'right')
-        eventSender.continuousMouseScrollBy(0, -scrollOffset);
-      else
-        reject();
-      resolve();
+      var xPosition = targetRect.left + boundaryOffset;
+      var yPosition = targetRect.top + boundaryOffset;
+      const SPEED_INSTANT = 400000;
+      const PRECISE_SCROLLING_DELTAS = false;
+      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset,
+                                            resolve,
+                                            xPosition,
+                                            yPosition,
+                                            chrome.gpuBenchmarking.TOUCHPAD_INPUT,
+                                            direction,
+                                            SPEED_INSTANT,
+                                            PRECISE_SCROLLING_DELTAS);
     } else {
       reject();
     }

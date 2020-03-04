@@ -13,10 +13,11 @@
 namespace blink {
 
 class DisplayItemCacheSkipper final {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
-  DisplayItemCacheSkipper(GraphicsContext& context) : context_(context) {
+  explicit DisplayItemCacheSkipper(GraphicsContext& context)
+      : context_(context) {
     context.GetPaintController().BeginSkippingCache();
   }
   ~DisplayItemCacheSkipper() {

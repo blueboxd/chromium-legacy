@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Teie töökonto paroolide sünkroonimisel teie Windowsi profiiliga ilmnes probleem. Võtke ühendust administraatoriga.</translation>
 <translation id="2515346402363002066">Teie seanss on aegunud. Logige sisse oma töökontoga.</translation>
 <translation id="2844349213149998955">Isikliku kontoga sisselogimine pole selles seadmes lubatud. Logige sisse töökontoga.</translation>
-<translation id="2954423647682729023">Logige sisse oma töökontoga.</translation>
 <translation id="3217145568844727893">Kui jätkate ilma oma praegust Windowsi parooli sisestamata, võite selles seadmes olevad andmed jäädavalt kaotada.</translation>
 <translation id="3285576391135346912">Saate sisse logida ainult e-posti aadressiga, mis lõpeb domeeniga <ph name="EMAIL_DOMAINS" />. Proovige uuesti töökontoga.</translation>
 <translation id="3306357053520292004">Arvutis lisati juba selle kontoga kasutaja. Logige sisse teise kontoga.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Administraator ei luba teil selle kontoga sisse logida. Proovige teist kontot.</translation>
 <translation id="8639729688781680518">Unustasin Windowsi parooli</translation>
 <translation id="866458870819756755">Kasutajat ei saanud luua.</translation>
-<translation id="8875753657315897487">Logige sisse oma töökontoga</translation>
 <translation id="9055998212250844221">Windowsi jaoks mõeldud Google'i identimisteabe teenuste pakkuja loodud kasutajakonto</translation>
 </translationbundle>

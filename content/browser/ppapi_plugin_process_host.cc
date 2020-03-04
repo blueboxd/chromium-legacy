@@ -369,7 +369,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                         ChildProcessHost::CHILD_NORMAL;
 #elif defined(OS_MACOSX)
-  int flags = ChildProcessHost::CHILD_PLUGIN;
+  // Flash needs to JIT, but other plugins do not.
+  int flags = permissions_.HasPermission(ppapi::PERMISSION_FLASH)
+                  ? ChildProcessHost::CHILD_PLUGIN
+                  : ChildProcessHost::CHILD_NORMAL;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif

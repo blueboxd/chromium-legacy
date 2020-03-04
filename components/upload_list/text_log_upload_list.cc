@@ -27,6 +27,47 @@ std::vector<std::string> SplitIntoComponents(const std::string& line) {
                            base::SPLIT_WANT_ALL);
 }
 
+// Tries to parse one upload log line based on CSV format, then converts it to
+// a UploadInfo entry. If the conversion succeeds, it returns true and a valid
+// |info|. Otherwise, it returns false.
+bool TryParseCsvLogEntry(const std::string& log_line,
+                         std::unique_ptr<TextLogUploadList::UploadInfo>& info) {
+  std::vector<std::string> components = SplitIntoComponents(log_line);
+  // Skip any blank (or corrupted) lines.
+  if (components.size() < 2 || components.size() > 5)
+    return false;
+  base::Time upload_time;
+  double seconds_since_epoch;
+  if (!components[kUploadTimeIndex].empty()) {
+    if (!base::StringToDouble(components[kUploadTimeIndex],
+                              &seconds_since_epoch))
+      return false;
+    upload_time = base::Time::FromDoubleT(seconds_since_epoch);
+  }
+  info = std::make_unique<TextLogUploadList::UploadInfo>(components[1],
+                                                         upload_time);
+
+  // Add local ID if present.
+  if (components.size() > 2)
+    info->local_id = components[2];
+
+  // Add capture time if present.
+  if (components.size() > kCaptureTimeIndex &&
+      !components[kCaptureTimeIndex].empty() &&
+      base::StringToDouble(components[kCaptureTimeIndex],
+                           &seconds_since_epoch)) {
+    info->capture_time = base::Time::FromDoubleT(seconds_since_epoch);
+  }
+
+  int state;
+  if (components.size() > 4 && !components[4].empty() &&
+      base::StringToInt(components[4], &state)) {
+    info->state = static_cast<TextLogUploadList::UploadInfo::State>(state);
+  }
+
+  return true;
+}
+
 }  // namespace
 
 TextLogUploadList::TextLogUploadList(const base::FilePath& upload_log_path)
@@ -95,38 +136,9 @@ void TextLogUploadList::ParseLogEntries(
   std::vector<std::string>::const_reverse_iterator i;
   for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
     const std::string& line = *i;
-    std::vector<std::string> components = SplitIntoComponents(line);
-    // Skip any blank (or corrupted) lines.
-    if (components.size() < 2 || components.size() > 5)
-      continue;
-    base::Time upload_time;
-    double seconds_since_epoch;
-    if (!components[kUploadTimeIndex].empty()) {
-      if (!base::StringToDouble(components[kUploadTimeIndex],
-                                &seconds_since_epoch))
-        continue;
-      upload_time = base::Time::FromDoubleT(seconds_since_epoch);
-    }
-    UploadInfo info(components[1], upload_time);
+    std::unique_ptr<UploadInfo> info = nullptr;
 
-    // Add local ID if present.
-    if (components.size() > 2)
-      info.local_id = components[2];
-
-    // Add capture time if present.
-    if (components.size() > kCaptureTimeIndex &&
-        !components[kCaptureTimeIndex].empty() &&
-        base::StringToDouble(components[kCaptureTimeIndex],
-                             &seconds_since_epoch)) {
-      info.capture_time = base::Time::FromDoubleT(seconds_since_epoch);
-    }
-
-    int state;
-    if (components.size() > 4 && !components[4].empty() &&
-        base::StringToInt(components[4], &state)) {
-      info.state = static_cast<UploadInfo::State>(state);
-    }
-
-    uploads->push_back(info);
+    if (TryParseCsvLogEntry(line, info))
+      uploads->push_back(*info);
   }
 }

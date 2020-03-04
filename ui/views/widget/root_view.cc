@@ -427,13 +427,15 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
 
   // Reset mouse_pressed_handler_ to indicate that no processing is occurring.
   mouse_pressed_handler_ = nullptr;
+
+  const bool last_click_was_handled = (last_click_handler_ != nullptr);
   last_click_handler_ = nullptr;
 
   // In the event that a double-click is not handled after traversing the
   // entire hierarchy (even as a single-click when sent to a different view),
   // it must be marked as handled to avoid anything happening from default
   // processing if it the first click-part was handled by us.
-  return event.flags() & ui::EF_IS_DOUBLE_CLICK;
+  return last_click_was_handled && (event.flags() & ui::EF_IS_DOUBLE_CLICK);
 }
 
 bool RootView::OnMouseDragged(const ui::MouseEvent& event) {

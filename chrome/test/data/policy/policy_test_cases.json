@@ -4890,6 +4890,8 @@
 
   "ReportDeviceMemoryInfo": {},
 
+  "ReportDeviceBacklightInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

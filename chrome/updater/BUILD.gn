@@ -57,6 +57,7 @@ if (is_win || is_mac) {
     deps = [
       ":version_header",
       "//base",
+      "//components/crash/core/common:crash_key_lib",
       "//components/prefs",
       "//components/update_client",
       "//courgette:bsdiff",
@@ -70,11 +71,16 @@ if (is_win || is_mac) {
 
   source_set("lib") {
     sources = [
+      "app/app.cc",
+      "app/app.h",
+      "app/app_uninstall.cc",
+      "app/app_uninstall.h",
+      "app/app_update_all.cc",
+      "app/app_update_all.h",
       "configurator.cc",
       "configurator.h",
       "installer.cc",
       "installer.h",
-      "update_apps.cc",
       "update_apps.h",
       "update_service_in_process.cc",
       "update_service_in_process.h",
@@ -85,6 +91,10 @@ if (is_win || is_mac) {
     if (is_mac) {
       sources += [
         "installer_mac.cc",
+        "server/mac/server.h",
+        "server/mac/server.mm",
+        "server/mac/service_delegate.h",
+        "server/mac/service_delegate.mm",
         "update_apps_mac.mm",
       ]
     }
@@ -92,6 +102,10 @@ if (is_win || is_mac) {
     if (is_win) {
       sources += [
         "installer_win.cc",
+        "server/win/server.cc",
+        "server/win/server.h",
+        "server/win/service_main.cc",
+        "server/win/service_main.h",
         "update_apps_win.cc",
       ]
     }
@@ -100,7 +114,6 @@ if (is_win || is_mac) {
       ":base",
       ":version_header",
       "//base",
-      "//chrome/updater/server",
       "//components/crash/core/common:crash_key",
       "//components/crx_file:crx_file",
       "//components/prefs",
@@ -110,7 +123,11 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
-      deps += [ "//chrome/updater/win:lib" ]
+      deps += [
+        "//chrome/updater/server/win:updater_idl_idl",
+        "//chrome/updater/win:constants",
+        "//chrome/updater/win:lib",
+      ]
     }
 
     if (is_mac) {
@@ -119,7 +136,13 @@ if (is_win || is_mac) {
         "//chrome/updater/mac:network_fetcher_sources",
         "//chrome/updater/mac:update_service_client_sources",
         "//chrome/updater/mac:updater_setup_sources",
+        "//chrome/updater/server/mac:protocol",
       ]
+    }
+
+    if (is_win) {
+      configs -= [ "//build/config/win:winver" ]
+      configs += [ "//chrome/updater/server/win:winver" ]
     }
   }
 

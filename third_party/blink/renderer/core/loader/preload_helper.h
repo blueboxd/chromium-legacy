@@ -44,9 +44,7 @@ class PreloadHelper final {
       const ViewportDescription*,  // can be nullptr
       std::unique_ptr<AlternateSignedExchangeResourceInfo>,
       const base::UnguessableToken* /* can be nullptr */);
-  static Resource* StartPreload(ResourceType,
-                                FetchParameters&,
-                                ResourceFetcher*);
+  static Resource* StartPreload(ResourceType, FetchParameters&, Document&);
 
   // Currently only used for UseCounter.
   enum LinkCaller {

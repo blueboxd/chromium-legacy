@@ -353,6 +353,7 @@
 <translation id="1487335504823219454">開啟 - 自訂設定</translation>
 <translation id="1489664337021920575">選擇其他選項</translation>
 <translation id="1493892686965953381">正在等待 <ph name="LOAD_STATE_PARAMETER" />...</translation>
+<translation id="1494438840282430403">一併清除瀏覽資料 (<ph name="URL" />)，這項操作可能會將你登出 Google.com。</translation>
 <translation id="1495486559005647033">還有 <ph name="NUM_PRINTERS" /> 個可用裝置。</translation>
 <translation id="1495677929897281669">返回分頁</translation>
 <translation id="1499271269825557605">如果你對某個擴充功能沒有印象，或是瀏覽器無法正常運作，可以在這裡關閉或自訂擴充功能。</translation>
@@ -1177,7 +1178,9 @@
 <translation id="2586672484245266891">請輸入較短的網址</translation>
 <translation id="2587922766792651800">作業逾時</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
+<translation id="2593594315333286814">瀏覽作業適用的無障礙設定</translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
+<translation id="2602501489742255173">向上滑動即可開始使用</translation>
 <translation id="2603115962224169880">清理電腦</translation>
 <translation id="2603463522847370204">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="2604255671529671813">網路連線錯誤</translation>
@@ -1339,6 +1342,7 @@
 <translation id="2804043232879091219">無法開啟替代瀏覽器</translation>
 <translation id="2804667941345577550">系統會將你登出這個網站 (這項操作會套用到所有已開啟的分頁)。</translation>
 <translation id="2804680522274557040">攝影機已關閉</translation>
+<translation id="2805539617243680210">大功告成！</translation>
 <translation id="2805646850212350655">Microsoft 加密檔案系統</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2805770823691782631">其他詳細資訊</translation>
@@ -1422,6 +1426,7 @@
 <translation id="2903457445916429186">開啟所選項目</translation>
 <translation id="2903882649406874750">一律禁止 <ph name="HOST" /> 存取感應器</translation>
 <translation id="2904456025988372123">當網站嘗試自動下載更多檔案時 (已下載第一個檔案)，必須先詢問你</translation>
+<translation id="2905990582795979495">你的 <ph name="DEVICE_TYPE" /> 已準備就緒。你可以取得 <ph name="DEVICE_TYPE" /> 實用提示和各項 Google 產品的最新快訊，並提供意見回饋。你隨時可以取消訂閱。</translation>
 <translation id="2907619724991574506">起始網址</translation>
 <translation id="2907798539022650680">無法連上「<ph name="NAME" />」：<ph name="DETAILS" />
     伺服器訊息：<ph name="SERVER_MSG" /></translation>
@@ -1695,6 +1700,7 @@
 <translation id="3308116878371095290">無法為這個網頁設定 Cookie。</translation>
 <translation id="3308134619352333507">隱藏按鈕</translation>
 <translation id="3308852433423051161">正在載入 Google 助理…</translation>
+<translation id="3311445899360743395">系統可能會從這部裝置中移除與這個應用程式相關聯的資料。</translation>
 <translation id="3312424061798279731">已啟用的語言</translation>
 <translation id="3313622045786997898">憑證簽署值</translation>
 <translation id="3315158641124845231">隱藏 <ph name="PRODUCT_NAME" /></translation>
@@ -1881,7 +1887,6 @@
 <translation id="3586806079541226322">無法開啟這個檔案</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3587482841069643663">全部</translation>
-<translation id="358796204584394954">在「<ph name="DEVICE_NAME" />」上輸入此代碼即可配對：</translation>
 <translation id="3589766037099229847">已封鎖不安全的內容</translation>
 <translation id="3590194807845837023">解除鎖定設定檔並重新啟動</translation>
 <translation id="3590295622232282437">正在進入受管理工作階段。</translation>
@@ -1955,6 +1960,7 @@
 <translation id="3670229581627177274">開啟藍牙功能</translation>
 <translation id="3672681487849735243">系統偵測到原廠錯誤</translation>
 <translation id="367645871420407123">如果您要將 Root 密碼設為測試映像檔的預設值，請保留空白</translation>
+<translation id="3677106374019847299">輸入自訂供應商</translation>
 <translation id="3677657024345889897">最小</translation>
 <translation id="3677911431265050325">切換為行動版網站</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME" /></translation>
@@ -2046,6 +2052,7 @@
 <translation id="3780211714699334884">在你關閉此分頁前，<ph name="ORIGIN" /> 都能編輯「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="3780827508782506612">這個網頁的內容已經過翻譯</translation>
 <translation id="378312418865624974">讀取這台電腦的專屬識別碼</translation>
+<translation id="3784372983762739446">藍牙裝置</translation>
 <translation id="3784472333786002075">Cookie 是網站所建立的檔案，可分為兩種類型：第一方 Cookie 由你造訪過的網站所建立，也就是網址列所顯示的網站。第三方 Cookie 由其他網站所建立。這類網站通常是在你造訪的網站上提供部分內容 (例如廣告或圖片) 的其他網站。</translation>
 <translation id="3785308913036335955">顯示應用程式捷徑</translation>
 <translation id="3785727820640310185">已儲存這個網站的密碼</translation>
@@ -2075,6 +2082,7 @@
 <translation id="3816118180265633665">Chrome 顏色</translation>
 <translation id="3817524650114746564">開啟電腦的 Proxy 設定</translation>
 <translation id="3817579325494460411">未提供</translation>
+<translation id="381892968844315516">這部裝置不允許使用 Plugin VM。請與貴機構的裝置管理員聯絡。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="3819257035322786455">備份</translation>
 <translation id="3819261658055281761">系統無法為這個裝置儲存長期 API 存取憑證。</translation>
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
@@ -2456,6 +2464,7 @@
 <translation id="4378154925671717803">電話</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4378556263712303865">裝置申請</translation>
+<translation id="4379281552162875326">要解除安裝「<ph name="APP_NAME" />」嗎？</translation>
 <translation id="4380648069038809855">已開啟全螢幕模式</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> 和另外 1 個帳戶}other{<ph name="EMAIL" /> 和另外 <ph name="EXTRA_ACCOUNTS" /> 個帳戶}}</translation>
 <translation id="4384312707950789900">加入慣用網路</translation>
@@ -2771,7 +2780,6 @@
 <translation id="4850669014075537160">捲動</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4853020600495124913">在新視窗中開啟(&amp;N)</translation>
-<translation id="4854262617951518520">網站必須先詢問你，才能追蹤攝影機位置或對應你的房間 (建議設定)</translation>
 <translation id="485480310608090163">更多設定和權限</translation>
 <translation id="4856478137399998590">你的行動數據服務已啟用，隨時可供使用</translation>
 <translation id="4856855265648545577">使用平板電腦模式時，在檔案櫃中顯示「啟動器」、「返回」和「總覽」按鈕。系統會在你啟用 ChromeVox (互動朗讀) 或開關功能時開啟這項設定。</translation>
@@ -3322,6 +3330,7 @@
 <translation id="5618075537869101857">糟糕，無法啟動 Kiosk 應用程式。</translation>
 <translation id="5618333180342767515">(這可能需要幾分鐘的時間)</translation>
 <translation id="56197088284879152">以下遠端裝置的連線壅塞：「<ph name="DEVICE_NAME" />」。</translation>
+<translation id="5620549857835247159">使用平板電腦模式時，在檔案櫃中顯示「啟動器」、「返回」和「總覽」按鈕。</translation>
 <translation id="5620568081365989559">DevTools 要求取得 <ph name="FOLDER_PATH" /> 的完整權限。請務必小心，不要透露任何機密資訊。</translation>
 <translation id="5620612546311710611">使用統計資料</translation>
 <translation id="5620655347161642930">匯出密碼...</translation>
@@ -3853,6 +3862,7 @@
 <translation id="6349101878882523185">安裝 <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">同步功能無法正常運作。請嘗試登出，再重新登入。</translation>
 <translation id="6351063337294363751">你可以使用這個選單清除瀏覽資料</translation>
+<translation id="6352223293513723497">你的裝置儲存空間不足。請釋出空間以便使用 Plugin VM。</translation>
 <translation id="6352773953037195952">最高</translation>
 <translation id="6354918092619878358">SECG 橢圓曲線 secp256r1 (亦稱為 ANSI X9.62 prime256v1、NIST P-256)</translation>
 <translation id="635609604405270300">請讓裝置保持開啟</translation>
@@ -4131,12 +4141,14 @@
 <translation id="6758056191028427665">請讓我們瞭解你的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6762833852331690540">開啟</translation>
+<translation id="6764693078871405569">一併清除瀏覽資料 (<ph name="URL" />)，這項操作會將你登出 <ph name="DOMAIN" />。</translation>
 <translation id="6767566652486411142">選擇其他語言...</translation>
 <translation id="6767639283522617719">無法加入網域。請確認該機構單位使用正確設定。</translation>
 <translation id="6769712124046837540">新增印表機...</translation>
 <translation id="6770664076092644100">透過 NFC 進行驗證</translation>
 <translation id="6771503742377376720">這是憑證授權單位</translation>
 <translation id="6772339735733515807">管理你的擴充功能</translation>
+<translation id="6774271858705413900">發生錯誤，請過幾分鐘後再重新執行 Plugin VM。</translation>
 <translation id="6774402201608588477">你已重新開啟 1 個含有惡意軟體的擴充功能</translation>
 <translation id="6775163072363532304">可用的裝置會顯示在這裡。</translation>
 <translation id="6777817260680419853">已禁止重新導向</translation>
@@ -5113,7 +5125,6 @@
     <ph name="BEGIN_PARAGRAPH2" />備份資料不會計入貴子女帳戶的雲端硬碟儲存空間配額。<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />你可以在「設定」中停用這項服務。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">允許最近關閉的網站完成資料收發作業</translation>
-<translation id="8075388906473569293">網站必須先詢問你，才能追蹤攝影機位置或對應你的房間</translation>
 <translation id="8076492880354921740">分頁</translation>
 <translation id="8076835018653442223">管理員停用了裝置本機檔案的存取權</translation>
 <translation id="808089508890593134">Google</translation>
@@ -5394,7 +5405,6 @@
 <translation id="8465444703385715657">需要你的授權才能執行「<ph name="PLUGIN_NAME" />」</translation>
 <translation id="8466417995783206254">這個分頁正在使用子母畫面模式播放影片。</translation>
 <translation id="8467326454809944210">選擇其他語言</translation>
-<translation id="8468750959626135884">使用 Android 手機解鎖您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="8470214316007448308">其他人</translation>
 <translation id="8470513973197838199">已儲存 <ph name="ORIGIN" /> 的密碼</translation>
 <translation id="8472623782143987204">硬體支援</translation>
@@ -5439,6 +5449,7 @@
 <translation id="8538358978858059843">要啟用 Cast 雲端服務嗎？</translation>
 <translation id="8539727552378197395">否 (限 Http)</translation>
 <translation id="8539766201049804895">升級</translation>
+<translation id="8540136935098276800">請輸入正確格式的網址</translation>
 <translation id="8540608333167683902">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，詳細資料</translation>
 <translation id="8541462173655894684">在列印伺服器上找不到任何印表機</translation>
 <translation id="8542618328173222274">網站必須先詢問你，才能使用你的虛擬實境裝置和資料</translation>
@@ -5455,6 +5466,7 @@
 <translation id="8551388862522347954">授權</translation>
 <translation id="8553342806078037065">管理其他使用者</translation>
 <translation id="8554899698005018844">未指定語言</translation>
+<translation id="8556135141412663091">必須先更新裝置才能使用 Plugin VM。</translation>
 <translation id="8557022314818157177">請持續輕觸安全金鑰，直到指紋擷取完成</translation>
 <translation id="855773602626431402">已禁止這個網頁執行無沙箱防護的外掛程。</translation>
 <translation id="8557930019681227453">資訊清單</translation>
@@ -5706,6 +5718,7 @@
 <translation id="8871696467337989339">你正在使用不受支援的命令列標幟：<ph name="BAD_FLAG" />。這可能會危及穩定性與安全性。</translation>
 <translation id="8871974300055371298">內容設定</translation>
 <translation id="8872155268274985541">找到的 Kiosk 外部更新資訊清單檔案無效，無法更新 Kiosk 應用程式。請移除 USB 隨身碟。</translation>
+<translation id="8872187374998143710">請重新啟動裝置以使用 Plugin VM。</translation>
 <translation id="8872777911145321141">網站必須先詢問你，才能使用你的虛擬實境裝置和資料 (建議設定)</translation>
 <translation id="8874184842967597500">未連線</translation>
 <translation id="8876307312329369159">這項設定無法在示範工作階段中變更。</translation>
@@ -5895,7 +5908,6 @@
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9130015405878219958">輸入的模式無效。</translation>
 <translation id="9131487537093447019">透過藍牙裝置收發訊息。</translation>
-<translation id="9133485532850464138">不允許網站追蹤攝影機位置或對應你的房間</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9137157311132182254">偏好的搜尋引擎</translation>
 <translation id="9137248913990643158">使用這個應用程式前，請先啟動 Chrome 並登入帳戶。</translation>

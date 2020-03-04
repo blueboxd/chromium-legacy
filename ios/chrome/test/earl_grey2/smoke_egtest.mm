@@ -229,6 +229,25 @@
                   @"Exactly one new tab should be opened.");
 }
 
+// Tests AppLaunchManager can pass an arbitrary arg to host app.
+- (void)testAppLaunchManagerLaunchWithArbitraryArgs {
+  AppLaunchConfiguration config;
+  config.additional_args = {"-switch1", "--switch2", "--switch3=somevalue"};
+  config.relaunch_policy = ForceRelaunchByKilling;
+
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  GREYAssertTrue([ChromeEarlGrey appHasLaunchSwitch:"switch1"],
+                 @"switch1 should be in app launch switches.");
+  GREYAssertTrue([ChromeEarlGrey appHasLaunchSwitch:"switch2"],
+                 @"switch2 should be in app launch switches.");
+  GREYAssertTrue([ChromeEarlGrey appHasLaunchSwitch:"switch3"],
+                 @"switch3 should be in app launch switches.");
+
+  GREYAssertFalse([ChromeEarlGrey appHasLaunchSwitch:"switch4"],
+                  @"switch4 should not be in app launch switches.");
+}
+
 // Tests gracefully kill through AppLaunchManager.
 - (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
   [ChromeEarlGrey openNewTab];

@@ -8,28 +8,23 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_uninstall.h"
+#include "chrome/updater/app/app_update_all.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
-#include "chrome/updater/update_apps.h"
-#include "chrome/updater/update_service_in_process.h"
-#include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
-#include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
 #include "chrome/updater/server/win/server.h"
 #include "chrome/updater/server/win/service_main.h"
 #include "chrome/updater/win/install_app.h"
-#include "chrome/updater/win/setup/uninstall.h"
 #endif
 
 #if defined(OS_MACOSX)
-#include "chrome/updater/mac/setup/setup.h"
 #include "chrome/updater/server/mac/server.h"
 #endif
 
@@ -47,14 +42,6 @@ namespace updater {
 
 namespace {
 
-void ThreadPoolStart() {
-  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
-}
-
-void ThreadPoolStop() {
-  base::ThreadPoolInstance::Get()->Shutdown();
-}
-
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
@@ -71,80 +58,33 @@ void InitLogging(const base::CommandLine& command_line) {
   VLOG(1) << "Log file " << settings.log_file_path;
 }
 
-void InitializeUpdaterMain() {
-  crash_reporter::InitializeCrashKeys();
-
-  static crash_reporter::CrashKeyString<16> crash_key_process_type(
-      "process_type");
-  crash_key_process_type.Set("updater");
-
-  if (CrashClient::GetInstance()->InitializeCrashReporting())
-    VLOG(1) << "Crash reporting initialized.";
-  else
-    VLOG(1) << "Crash reporting is not available.";
-
-  StartCrashReporter(UPDATER_VERSION_STRING);
-
-  ThreadPoolStart();
-}
-
-void TerminateUpdaterMain() {
-  ThreadPoolStop();
-}
-
-void UpdaterUpdateApps() {
-  UpdateApps();
-}
-
-int UpdaterInstallApp() {
-#if defined(OS_WIN)
-  // TODO(sorin): pick up the app id from the tag. https://crbug.com/1014298
-  return InstallApp({kChromeAppId});
-#else
-  NOTREACHED();
-  return -1;
-#endif
-}
-
-int UpdaterUninstall() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  return Uninstall(false);
-#else
-  return -1;
-#endif
-}
-
 }  // namespace
 
 int HandleUpdaterCommands(const base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  if (command_line->HasSwitch(kServerSwitch)) {
-    return RunServer(std::make_unique<UpdateServiceInProcess>(
-        base::MakeRefCounted<Configurator>()));
-  }
-#endif
-
-#if defined(OS_WIN)
-  if (command_line->HasSwitch(kComServiceSwitch))
-    return ServiceMain::RunComService(command_line);
-#endif
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
     int* ptr = nullptr;
     return *ptr;
   }
 
+  if (command_line->HasSwitch(kServerSwitch)) {
+    return MakeAppServer()->Run();
+  }
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(kComServiceSwitch))
+    return ServiceMain::RunComService(command_line);
+
   if (command_line->HasSwitch(kInstallSwitch))
-    return UpdaterInstallApp();
+    return InstallApp({kChromeAppId});
+#endif
 
   if (command_line->HasSwitch(kUninstallSwitch))
-    return UpdaterUninstall();
+    return MakeAppUninstall()->Run();
 
   if (command_line->HasSwitch(kUpdateAppsSwitch)) {
-    UpdaterUpdateApps();
-    return 0;
+    return MakeAppUpdateAll()->Run();
   }
 
   VLOG(1) << "Unknown command line switch.";
@@ -165,10 +105,7 @@ int UpdaterMain(int argc, const char* const* argv) {
   if (command_line->HasSwitch(kCrashHandlerSwitch))
     return CrashReporterMain();
 
-  InitializeUpdaterMain();
-  const auto result = HandleUpdaterCommands(command_line);
-  TerminateUpdaterMain();
-  return result;
+  return HandleUpdaterCommands(command_line);
 }
 
 }  // namespace updater

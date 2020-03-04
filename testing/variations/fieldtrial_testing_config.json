@@ -5200,7 +5200,7 @@
             ]
         }
     ],
-    "SyncUssNigori": [
+    "SyncUSSNigori": [
         {
             "platforms": [
                 "android",
@@ -5768,6 +5768,7 @@
     "UseSkiaRenderer": [
         {
             "platforms": [
+                "android",
                 "linux",
                 "windows"
             ],

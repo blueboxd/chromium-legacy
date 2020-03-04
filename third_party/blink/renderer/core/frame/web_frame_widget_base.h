@@ -6,6 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_BASE_H_
 
 #include "base/single_thread_task_runner.h"
+#include "cc/input/event_listener_properties.h"
+#include "cc/input/layer_selection_bound.h"
+#include "cc/input/overscroll_behavior.h"
+#include "cc/trees/layer_tree_host.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -145,6 +149,85 @@ class CORE_EXPORT WebFrameWidgetBase
   void RequestAnimationAfterDelay(const base::TimeDelta&);
 
   virtual void Trace(Visitor*);
+
+  // For when the embedder itself change scales on the page (e.g. devtools)
+  // and wants all of the content at the new scale to be crisp
+  void SetNeedsRecalculateRasterScales();
+
+  // Sets the background color to be filled in as gutter behind/around the
+  // painted content. Non-composited WebViews need not implement this, as they
+  // paint into another widget which has a background color of its own.
+  void SetBackgroundColor(SkColor color);
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate.
+  void SetOverscrollBehavior(const cc::OverscrollBehavior& overscroll_behavior);
+
+  // Used to update the active selection bounds. Pass a default-constructed
+  // LayerSelection to clear it.
+  void RegisterSelection(cc::LayerSelection selection);
+
+  // Starts an animation of the page scale to a target scale factor and scroll
+  // offset.
+  // If use_anchor is true, destination is a point on the screen that will
+  // remain fixed for the duration of the animation.
+  // If use_anchor is false, destination is the final top-left scroll position.
+  void StartPageScaleAnimation(const gfx::Vector2d& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               base::TimeDelta duration);
+
+  // Enable or disable BeginMainFrameNotExpected signals from the compositor,
+  // which are consumed by the blink scheduler.
+  void RequestBeginMainFrameNotExpected(bool request);
+
+  // A stable numeric Id for the local root's compositor. For tracing/debugging
+  // purposes.
+  int GetLayerTreeId();
+
+  // Called to update if scroll events should be sent.
+  void SetHaveScrollEventHandlers(bool);
+
+  // Set or get what event handlers exist in the document contained in the
+  // WebWidget in order to inform the compositor thread if it is able to handle
+  // an input event, or it needs to pass it to the main thread to be handled.
+  // The class is the type of input event, and for each class there is a
+  // properties defining if the compositor thread can handle the event.
+  void SetEventListenerProperties(cc::EventListenerClass,
+                                  cc::EventListenerProperties);
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass) const;
+
+  // Start deferring commits to the compositor, allowing document lifecycle
+  // updates without committing the layer tree. Commits are deferred
+  // until at most the given |timeout| has passed. If multiple calls are made
+  // when deferral is active then the initial timeout applies.
+  void StartDeferringCommits(base::TimeDelta timeout);
+  // Immediately stop deferring commits.
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger);
+
+  // Prevents any updates to the input for the layer tree, and the layer tree
+  // itself, and the layer tree from becoming visible.
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate();
+
+  // Sets the amount that the top and bottom browser controls are showing, from
+  // 0 (hidden) to 1 (fully shown).
+  void SetBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
+
+  // Set browser controls params. These params consist of top and bottom
+  // heights, min-heights, browser_controls_shrink_blink_size, and
+  // animate_browser_controls_height_changes. If
+  // animate_browser_controls_height_changes is set to true, changes to the
+  // browser controls height will be animated. If
+  // browser_controls_shrink_blink_size is set to true, then Blink shrunk the
+  // viewport clip layers by the top and bottom browser controls height. Top
+  // controls will translate the web page down and do not immediately scroll
+  // when hiding. The bottom controls scroll immediately and never translate the
+  // content (only clip it).
+  void SetBrowserControlsParams(cc::BrowserControlsParams params);
+
+  cc::LayerTreeDebugState GetLayerTreeDebugState();
+  void SetLayerTreeDebugState(const cc::LayerTreeDebugState& state);
 
   // Returns if we should gather main frame metrics. If there is no compositor
   // thread this returns false.

@@ -1513,6 +1513,7 @@ enum HistogramValue {
   WEBCAMPRIVATE_SET_CAMERA_PRESET = 1450,
   PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO = 1451,
   INPUTMETHODPRIVATE_HIDEINPUTVIEW = 1452,
+  PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD = 1453,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

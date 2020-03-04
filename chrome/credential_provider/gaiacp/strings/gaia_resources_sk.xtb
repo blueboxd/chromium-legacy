@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Pri synchronizácii hesla pracovného účtu s profilom systému Windows sa vyskytol problém. Kontaktujte správcu.</translation>
 <translation id="2515346402363002066">Platnosť vašej relácie vypršala. Prihláste sa pomocou pracovného účtu.</translation>
 <translation id="2844349213149998955">V tomto zariadení sa nemôžete prihlásiť pomocou osobného účtu. Prihláste sa pomocou pracovného.</translation>
-<translation id="2954423647682729023">Prihláste sa pomocou pracovného účtu.</translation>
 <translation id="3217145568844727893">Ak budete pokračovať bez zadania aktuálneho hesla systému Windows, môžete natrvalo prísť o údaje v tomto zariadení.</translation>
 <translation id="3285576391135346912">Môžete sa prihlásiť iba pomocou e‑mailovej adresy s nasledujúcimi príponami: <ph name="EMAIL_DOMAINS" />. Skúste to znova pomocou pracovného účtu.</translation>
 <translation id="3306357053520292004">Pomocou tohoto účtu už bol do tohto počítača pridaný používateľ. Prihláste sa pomocou iného účtu.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Správca vám nepovoľuje prihlásiť sa pomocou tohto účtu. Skúste iný účet.</translation>
 <translation id="8639729688781680518">Nepamätám si heslo systému Windows</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>
-<translation id="8875753657315897487">Prihláste sa pomocou pracovného účtu</translation>
 <translation id="9055998212250844221">Používateľský účet vytvorený poskytovateľom poverení Google pre Windows</translation>
 </translationbundle>

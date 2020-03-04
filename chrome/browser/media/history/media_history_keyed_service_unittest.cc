@@ -114,7 +114,7 @@ class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     mojom::MediaHistoryStatsPtr stats_out;
 
-    service()->GetMediaHistoryStore()->GetMediaHistoryStats(base::BindOnce(
+    service()->GetMediaHistoryStats(base::BindOnce(
         [](mojom::MediaHistoryStatsPtr* stats_out,
            base::RepeatingClosure callback, mojom::MediaHistoryStatsPtr stats) {
           stats_out->Swap(&stats);
@@ -130,7 +130,7 @@ class MediaHistoryKeyedServiceTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     std::set<GURL> out;
 
-    service()->GetMediaHistoryStore()->GetURLsInTableForTest(
+    service()->GetURLsInTableForTest(
         table, base::BindLambdaForTesting([&](std::set<GURL> urls) {
           out = urls;
           run_loop.Quit();
@@ -176,7 +176,7 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
         base::TimeDelta::FromMilliseconds(321), true, false);
 
     history->AddPage(url, base::Time::Now(), history::SOURCE_BROWSED);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
     // Wait until the playbacks have finished saving.
     content::RunAllTasksUntilIdle();
@@ -253,11 +253,11 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
         base::TimeDelta::FromMilliseconds(321), true, false);
 
     history->AddPage(url1a, base::Time::Now(), history::SOURCE_BROWSED);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
-    service()->GetMediaHistoryStore()->SavePlaybackSession(
-        url1a, media_session::MediaMetadata(), base::nullopt,
-        CreateImageVector(url1a_image));
+    service()->SavePlaybackSession(url1a, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url1a_image));
   }
 
   // Record a playback in the database for |url1b|.
@@ -267,11 +267,11 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
         base::TimeDelta::FromMilliseconds(321), true, false);
 
     history->AddPage(url1b, base::Time::Now(), history::SOURCE_BROWSED);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
-    service()->GetMediaHistoryStore()->SavePlaybackSession(
-        url1b, media_session::MediaMetadata(), base::nullopt,
-        CreateImageVector(url1b_image));
+    service()->SavePlaybackSession(url1b, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url1b_image));
   }
 
   // Record a playback in the database for |url1c|. However, we won't store it
@@ -281,11 +281,11 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     content::MediaPlayerWatchTime watch_time(
         url1c, url1c.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
         base::TimeDelta::FromMilliseconds(321), true, false);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
-    service()->GetMediaHistoryStore()->SavePlaybackSession(
-        url1c, media_session::MediaMetadata(), base::nullopt,
-        CreateImageVector(shared_image));
+    service()->SavePlaybackSession(url1c, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(shared_image));
   }
 
   // Record a playback in the database for |url2a|.
@@ -295,11 +295,11 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
         base::TimeDelta::FromMilliseconds(321), true, false);
 
     history->AddPage(url2a, base::Time::Now(), history::SOURCE_BROWSED);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
-    service()->GetMediaHistoryStore()->SavePlaybackSession(
-        url2a, media_session::MediaMetadata(), base::nullopt,
-        CreateImageVector(url2a_image));
+    service()->SavePlaybackSession(url2a, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(url2a_image));
   }
 
   // Record a playback in the database for |url2b|.
@@ -309,11 +309,11 @@ TEST_F(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
         base::TimeDelta::FromMilliseconds(321), true, false);
 
     history->AddPage(url2b, base::Time::Now(), history::SOURCE_BROWSED);
-    service()->GetMediaHistoryStore()->SavePlayback(watch_time);
+    service()->SavePlayback(watch_time);
 
-    service()->GetMediaHistoryStore()->SavePlaybackSession(
-        url2b, media_session::MediaMetadata(), base::nullopt,
-        CreateImageVector(shared_image));
+    service()->SavePlaybackSession(url2b, media_session::MediaMetadata(),
+                                   base::nullopt,
+                                   CreateImageVector(shared_image));
   }
 
   // Wait until the playbacks have finished saving.

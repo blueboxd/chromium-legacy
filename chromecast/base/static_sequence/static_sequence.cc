@@ -4,6 +4,8 @@
 
 #include "chromecast/base/static_sequence/static_sequence.h"
 
+#include "base/task/thread_pool.h"
+
 namespace util {
 namespace internal {
 
@@ -19,7 +21,7 @@ void StaticTaskRunnerHolder::WillDestroyCurrentMessageLoop() {
 
 const scoped_refptr<base::SequencedTaskRunner>& StaticTaskRunnerHolder::Get() {
   if (!initialized_) {
-    task_runner_ = base::CreateSequencedTaskRunner(traits_);
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(traits_);
     base::MessageLoopCurrent::Get().AddDestructionObserver(this);
     initialized_ = true;
   }

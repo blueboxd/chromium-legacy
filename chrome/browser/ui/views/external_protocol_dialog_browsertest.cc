@@ -110,7 +110,7 @@ class ExternalProtocolDialogBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
   ShowUi(std::string());
-  EXPECT_TRUE(dialog_->Accept());
+  dialog_->AcceptDialog();
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_TRUE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestAcceptWithChecked) {
   ShowUi(std::string());
   SetChecked(true);
-  EXPECT_TRUE(dialog_->Accept());
+  dialog_->AcceptDialog();
   EXPECT_EQ(blocked_scheme_, "telnet");
   EXPECT_EQ(blocked_state_, BlockState::DONT_BLOCK);
   EXPECT_TRUE(url_did_launch_);
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   ShowUi(std::string());
   SetChecked(true);  // |remember_| must be true for the segfault to occur.
   browser()->tab_strip_model()->CloseAllTabs();
-  EXPECT_TRUE(dialog_->Accept());
+  dialog_->AcceptDialog();
   EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
       ExternalProtocolHandler::kHandleStateMetric,
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
   ShowUi(std::string());
-  EXPECT_TRUE(dialog_->Cancel());
+  dialog_->CancelDialog();
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_FALSE(url_did_launch_);
   histogram_tester_.ExpectBucketCount(
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
                        TestCancelWithChecked) {
   ShowUi(std::string());
   SetChecked(true);
-  EXPECT_TRUE(dialog_->Cancel());
+  dialog_->CancelDialog();
   // Cancel() should not enforce the remember checkbox.
   EXPECT_EQ(blocked_state_, BlockState::UNKNOWN);
   EXPECT_FALSE(url_did_launch_);

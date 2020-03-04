@@ -662,10 +662,6 @@ TestWebWidgetClient::TestWebWidgetClient(
   animation_host_ = layer_tree_view_->animation_host();
 }
 
-void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
-  layer_tree_host()->set_background_color(color);
-}
-
 void TestWebWidgetClient::SetPageScaleStateAndLimits(
     float page_scale_factor,
     bool is_pinch_gesture_active,
@@ -686,38 +682,8 @@ void TestWebWidgetClient::InjectGestureScrollEvent(
   injected_scroll_gesture_data_.push_back(data);
 }
 
-void TestWebWidgetClient::SetHaveScrollEventHandlers(bool have_handlers) {
-  have_scroll_event_handlers_ = have_handlers;
-}
-
-void TestWebWidgetClient::SetEventListenerProperties(
-    cc::EventListenerClass event_class,
-    cc::EventListenerProperties properties) {
-  layer_tree_host()->SetEventListenerProperties(event_class, properties);
-}
-
-cc::EventListenerProperties TestWebWidgetClient::EventListenerProperties(
-    cc::EventListenerClass event_class) const {
-  return layer_tree_host()->event_listener_properties(event_class);
-}
-
-std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-TestWebWidgetClient::DeferMainFrameUpdate() {
-  return layer_tree_host()->DeferMainFrameUpdate();
-}
-
-void TestWebWidgetClient::StartDeferringCommits(base::TimeDelta timeout) {
-  layer_tree_host()->StartDeferringCommits(timeout);
-}
-
-void TestWebWidgetClient::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  layer_tree_host()->StopDeferringCommits(trigger);
-}
-
-void TestWebWidgetClient::RegisterSelection(
-    const cc::LayerSelection& selection) {
-  layer_tree_host()->RegisterSelection(selection);
+bool TestWebWidgetClient::HaveScrollEventHandlers() const {
+  return layer_tree_host()->have_scroll_event_handlers();
 }
 
 void TestWebWidgetClient::DidMeaningfulLayout(
@@ -733,16 +699,6 @@ void TestWebWidgetClient::DidMeaningfulLayout(
       finished_loading_layout_count_++;
       break;
   }
-}
-
-void TestWebWidgetClient::SetBrowserControlsShownRatio(float top_ratio,
-                                                       float bottom_ratio) {
-  layer_tree_host()->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
-}
-
-void TestWebWidgetClient::SetBrowserControlsParams(
-    cc::BrowserControlsParams params) {
-  layer_tree_host()->SetBrowserControlsParams(params);
 }
 
 viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {

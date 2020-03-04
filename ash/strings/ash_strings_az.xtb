@@ -217,6 +217,7 @@
 <translation id="3621712662352432595">Audio Ayarlar</translation>
 <translation id="3626281679859535460">İşıqlanma dərəcəsi</translation>
 <translation id="3631369015426612114">Aşağıdakı bildirişlərə icazə verin</translation>
+<translation id="3638400994746983214">Məxfilik ekranını dəyişdirin. <ph name="STATE_TEXT" />.</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Zonanın ani şəkli</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
@@ -244,6 +245,7 @@
 <translation id="3995138139523574647">USB-C cihazı (arxa sağ port)</translation>
 <translation id="4017989525502048489">Lazer göstəricisi</translation>
 <translation id="4021716437419160885">Aşağı sürüşdürün</translation>
+<translation id="402772165574991617">Jestlərdən istifadə edərək tətbiqlər arasında sürətli keçid edin və planşet rejimində chromebook ilə əlaqə yaradın.</translation>
 <translation id="4028481283645788203">Əlavə təhlükəsizlik üçün parol tələb olunur</translation>
 <translation id="4042660782729322247">Ekranı paylaşırsınız</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tətbiqdə deaktivdir}other{# tətbiqdə deaktivdir}}</translation>
@@ -292,6 +294,7 @@
 <translation id="4659419629803378708">ChromeVox aktiv edildi</translation>
 <translation id="4665114317261903604">"Narahat etməyin" rejiminə keçin. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Cihazı valideyn kodu ilə kiliddən çıxarın</translation>
+<translation id="4702647871202761252">Məxfilik ekranı deaktivdir</translation>
 <translation id="4710243778082831592">IME ayarları</translation>
 <translation id="4731797938093519117">Valideyn girişi</translation>
 <translation id="4734965478015604180">Üfüqi</translation>
@@ -428,6 +431,7 @@
 <translation id="6559976592393364813">Administrator ilə Əlaqə</translation>
 <translation id="6585808820553845416">Sessiya <ph name="SESSION_TIME_REMAINING" /> tarixində bitir.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />, Administratorunuz tərəfindən idarə olunur</translation>
+<translation id="6614169507485700968">Məxfilik ekranı aktivdir</translation>
 <translation id="6627638273713273709">Axtarış+Shift+K</translation>
 <translation id="6637729079642709226">Vaxtı dəyişin</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" cihazı cütlənmək üçün icazə istəyir. Bu parolu həmin cihazda daxil edin: <ph name="PASSKEY" /></translation>
@@ -442,6 +446,7 @@
 <translation id="6715542151869432661">Mobil cihaz tapılmadı.</translation>
 <translation id="6723839937902243910">Enerji</translation>
 <translation id="6727969043791803658">Qoşuludur, <ph name="BATTERY_PERCENTAGE" />% batareya</translation>
+<translation id="6751052314767925245">Administratorunuz tərəfindən icbari icra olunur</translation>
 <translation id="6751826523481687655">Performansın izlənməsi aktiv edildi</translation>
 <translation id="6752912906630585008">Masa <ph name="REMOVED_DESK" /> silinərək Masa <ph name="RECEIVE_DESK" /> ilə birləşdirildi</translation>
 <translation id="6777216307882431711">Qoşulmuş USB-C cihazları qidalandırılır</translation>
@@ -529,6 +534,7 @@
 <translation id="8000066093800657092">Şəbəkə yoxdur</translation>
 <translation id="8029629653277878342">Əlavə təhlükəsizlik üçün PIN və ya parol tələb olunur</translation>
 <translation id="8030169304546394654">Bağlantı kəsildi</translation>
+<translation id="8042024183333293953">Yeni jest naviqasiyasını sınayın</translation>
 <translation id="8048123526339889627">Bluetooth ayarları</translation>
 <translation id="8054466585765276473">Enerji vaxtı hesablanır.</translation>
 <translation id="8061464966246066292">Yüksək kontrast</translation>

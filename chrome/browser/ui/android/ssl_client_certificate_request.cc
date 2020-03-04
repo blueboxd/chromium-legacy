@@ -13,7 +13,6 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/SSLClientCertificateRequest_jni.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -103,20 +102,12 @@ class SSLClientCertPendingRequests
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  void WebContentsDestroyed() override;
-
   class CertificateDialogPolicy {
    public:
     // Has the maximum number of cert dialogs been exceeded?
     bool MaxExceeded() { return count_ >= k_max_displayed_dialogs; }
     // Resets counter. Should be called on navigation.
-    void ResetCount() {
-      // Record sample right before the value is reset. This represents the
-      // maximum number of certificate dialogs displayed by sites in the wild.
-      UMA_HISTOGRAM_COUNTS_10000(
-          "Net.Certificate.ClientCertDialogCount.Android", count_);
-      count_ = 0;
-    }
+    void ResetCount() { count_ = 0; }
     // Increment the counter.
     void IncrementCount() { count_++; }
 
@@ -299,11 +290,6 @@ void SSLClientCertPendingRequests::ReadyToCommitNavigation(
     FilterPendingRequests(should_keep);
     dialog_policy_.ResetCount();
   }
-}
-
-void SSLClientCertPendingRequests::WebContentsDestroyed() {
-  // Record UMA sample for last page loaded in WebContents.
-  dialog_policy_.ResetCount();
 }
 
 void ClientCertRequest::CertificateSelected(

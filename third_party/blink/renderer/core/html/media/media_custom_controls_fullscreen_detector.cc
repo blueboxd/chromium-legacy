@@ -20,7 +20,58 @@ using blink::WebFullscreenVideoStatus;
 
 namespace {
 
+// If a video takes more that this much of the viewport, it's counted as
+// fullscreen without applying the fullscreen heuristics.
+// (Assuming we're in the fullscreen mode.)
 constexpr float kMostlyFillViewportIntersectionThreshold = 0.85f;
+
+// If a video takes less that this much of the viewport, we don't
+// apply the fullscreen heuristics and just declare it not fullscreen.
+// A portrait ultrawide video (21:9) playing on a landscape ultrawide screen
+// takes about 18% of the screen, that's why 15% looks like a reasonable
+// lowerbound of a real-world fullscreen video.
+constexpr float kMinPossibleFullscreenIntersectionThreshold = 0.15f;
+
+// This is how much of the viewport around the video can be taken by
+// margins and framing for it to still be counted as fullscreen.
+// It is measured only in the dominant direction, because of potential ratio
+// mismatch that would cause big margins in the other direction.
+// For example: portrain video on a landscape screen.
+constexpr float kMaxAllowedVideoMarginRatio = 0.15;
+
+// This is how much of the video can be hidden by something
+// before it is nor longer counted as fullscreen.
+// This helps to disregard custom controls, ads, accidental markup mistakes.
+constexpr float kMaxAllowedPortionOfVideoOffScreen = 0.25;
+
+// This heuristic handles a case of videos with an aspect ratio
+// different from the screen's aspect ratio.
+// Examples: A 4:3 video playing on a 16:9 screen.
+//           A portrait video playing on a landscape screen.
+// In a nutshell:
+//  1. The video should occupy most of the viewport in at least one dimension.
+//  2. The video should be almost fully visible on the screen.
+bool IsFullscreenVideoOfDifferentRatio(const IntSize& video_size,
+                                       const IntSize& viewport_size,
+                                       const IntSize& intersection_size) {
+  if (video_size.IsEmpty() || viewport_size.IsEmpty())
+    return false;
+
+  const float x_occupation_proportion =
+      1.0f * intersection_size.Width() / viewport_size.Width();
+  const float y_occupation_proportion =
+      1.0f * intersection_size.Height() / viewport_size.Height();
+
+  // The video should occupy most of the viewport in at least one dimension.
+  if (std::max(x_occupation_proportion, y_occupation_proportion) <
+      (1.0 - kMaxAllowedVideoMarginRatio)) {
+    return false;
+  }
+
+  // The video should be almost fully visible on the screen.
+  return video_size.Area() * (1.0 - kMaxAllowedPortionOfVideoOffScreen) <=
+         intersection_size.Area();
+}
 
 }  // anonymous namespace
 
@@ -38,9 +89,25 @@ void MediaCustomControlsFullscreenDetector::Attach() {
       event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().addEventListener(
       event_type_names::kFullscreenchange, this, true);
-  constexpr float threshold = kMostlyFillViewportIntersectionThreshold;
+
+  // Ideally we'd like to monitor all minute intersection changes here,
+  // because any change can potentially affect the fullscreen heuristics,
+  // but it's not practical from perf point of view. Given that the heuristics
+  // are more of a guess that exact science, it wouldn't be well spent CPU
+  // cycles anyway. That's why the observer only triggers on 10% steps in
+  // viewport area occupation.
+  const WTF::Vector<float> thresholds{
+      kMinPossibleFullscreenIntersectionThreshold,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      kMostlyFillViewportIntersectionThreshold};
   viewport_intersection_observer_ = IntersectionObserver::Create(
-      {}, {threshold}, &(video_element_->GetDocument()),
+      {}, thresholds, &(video_element_->GetDocument()),
       WTF::BindRepeating(
           &MediaCustomControlsFullscreenDetector::OnIntersectionChanged,
           WrapWeakPersistent(this)),
@@ -81,17 +148,9 @@ void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
   Detach();
 }
 
-void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  if (!viewport_intersection_observer_ || entries.size() == 0)
-    return;
-
-  const bool is_mostly_filling_viewport =
-      entries.back()->intersectionRatio() >=
-      kMostlyFillViewportIntersectionThreshold;
-  VideoElement().SetIsDominantVisibleContent(is_mostly_filling_viewport);
-
-  if (!is_mostly_filling_viewport || !IsVideoOrParentFullscreen()) {
+void MediaCustomControlsFullscreenDetector::ReportEffectivelyFullscreen(
+    bool effectively_fullscreen) {
+  if (!effectively_fullscreen) {
     VideoElement().SetIsEffectivelyFullscreen(
         WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
     return;
@@ -110,6 +169,47 @@ void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
     VideoElement().SetIsEffectivelyFullscreen(
         WebFullscreenVideoStatus::kFullscreenAndPictureInPictureDisabled);
   }
+}
+
+void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  if (!viewport_intersection_observer_ || entries.IsEmpty())
+    return;
+
+  auto* layout = VideoElement().GetLayoutObject();
+  if (!layout || entries.back()->intersectionRatio() <
+                     kMinPossibleFullscreenIntersectionThreshold) {
+    // Video is not shown at all.
+    VideoElement().SetIsDominantVisibleContent(false);
+    ReportEffectivelyFullscreen(false);
+    return;
+  }
+
+  const bool is_mostly_filling_viewport =
+      entries.back()->intersectionRatio() >=
+      kMostlyFillViewportIntersectionThreshold;
+  VideoElement().SetIsDominantVisibleContent(is_mostly_filling_viewport);
+
+  if (!IsVideoOrParentFullscreen()) {
+    // The video is outside of a fullscreen element.
+    // This is definitely not a fullscreen video experience.
+    ReportEffectivelyFullscreen(false);
+    return;
+  }
+
+  if (is_mostly_filling_viewport) {
+    // Video takes most part (85%) of the screen, report fullscreen.
+    ReportEffectivelyFullscreen(true);
+    return;
+  }
+
+  const IntersectionGeometry& geometry = entries.back()->GetGeometry();
+  IntSize target_size = RoundedIntSize(geometry.TargetRect().size);
+  IntSize intersection_size = RoundedIntSize(geometry.IntersectionRect().size);
+  IntSize root_size = RoundedIntSize(geometry.RootRect().size);
+
+  ReportEffectivelyFullscreen(IsFullscreenVideoOfDifferentRatio(
+      target_size, root_size, intersection_size));
 }
 
 void MediaCustomControlsFullscreenDetector::TriggerObservation() {
@@ -135,6 +235,16 @@ void MediaCustomControlsFullscreenDetector::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
   visitor->Trace(viewport_intersection_observer_);
+}
+
+// static
+bool MediaCustomControlsFullscreenDetector::
+    IsFullscreenVideoOfDifferentRatioForTesting(
+        const IntSize& video_size,
+        const IntSize& viewport_size,
+        const IntSize& intersection_size) {
+  return IsFullscreenVideoOfDifferentRatio(video_size, viewport_size,
+                                           intersection_size);
 }
 
 }  // namespace blink

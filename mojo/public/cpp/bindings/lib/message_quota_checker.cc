@@ -63,7 +63,7 @@ NOINLINE void MaybeDumpWithoutCrashing(
   // Normalize the write rate to writes/second.
   double average_write_rate_per_second =
       average_write_rate /
-      MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
+      MessageQuotaChecker::DecayingRateAverage::kSamplingInterval.InSecondsF();
   base::debug::Alias(&total_quota_used);
   base::debug::Alias(&local_quota_used);
   base::debug::Alias(&had_message_pipe);
@@ -98,14 +98,20 @@ NOINLINE void MaybeDumpWithoutCrashing(
 }
 
 int64_t ToSamplingInterval(base::TimeTicks when) {
-  return (when - base::TimeTicks::UnixEpoch()).InSeconds() /
-         MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
+  return (when - base::TimeTicks::UnixEpoch()) /
+         MessageQuotaChecker::DecayingRateAverage::kSamplingInterval;
+}
+
+base::TimeTicks FromSamplingInterval(int64_t sampling_interval) {
+  return MessageQuotaChecker::DecayingRateAverage::kSamplingInterval *
+             sampling_interval +
+         base::TimeTicks::UnixEpoch();
 }
 
 }  // namespace
 
-constexpr size_t
-    MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
+constexpr base::TimeDelta
+    MessageQuotaChecker::DecayingRateAverage::kSamplingInterval;
 constexpr double MessageQuotaChecker::DecayingRateAverage::kSampleWeight;
 
 // static
@@ -280,16 +286,10 @@ void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
 
 MessageQuotaChecker::DecayingRateAverage::DecayingRateAverage() {
   events_sampling_interval_ = ToSamplingInterval(base::TimeTicks::Now());
-  // Pretend the current decayed average is one sampling interval old to
-  // maintain an easy invariant that
-  // |events_sampling_interval_| > |decayed_average_sampling_interval_|.
-  decayed_average_sampling_interval_ = events_sampling_interval_ - 1;
 }
 
 void MessageQuotaChecker::DecayingRateAverage::AccrueEvent(
     base::TimeTicks when) {
-  DCHECK_GT(events_sampling_interval_, decayed_average_sampling_interval_);
-
   const int64_t sampling_interval = ToSamplingInterval(when);
   DCHECK_GE(sampling_interval, events_sampling_interval_);
   if (sampling_interval == events_sampling_interval_) {
@@ -297,16 +297,16 @@ void MessageQuotaChecker::DecayingRateAverage::AccrueEvent(
     ++events_;
     return;
   }
-  DCHECK_GT(sampling_interval, decayed_average_sampling_interval_);
+  DCHECK_GT(sampling_interval, events_sampling_interval_);
 
   // Add the new sample and decay it to the previous event sampling interval.
-  // A new sample is weighed at kSampleWeight into the average, whereas the old
-  // average is weighed at (1-kSampleWeight)^age;
-  const int64_t avg_age =
-      events_sampling_interval_ - decayed_average_sampling_interval_;
-  decayed_average_ = decayed_average_ * pow(1 - kSampleWeight, avg_age) +
-                     kSampleWeight * events_;
-  decayed_average_sampling_interval_ = events_sampling_interval_;
+  decayed_average_ = events_ * kSampleWeight + decayed_average_ * kDecayFactor;
+
+  // Decay the average to the current sampling interval - 1.
+  const int64_t decayed_average_age =
+      sampling_interval - events_sampling_interval_ - 1;
+  if (decayed_average_age)
+    decayed_average_ *= pow(kDecayFactor, decayed_average_age);
 
   // Start a new event sampling interval.
   events_ = 1;
@@ -315,19 +315,54 @@ void MessageQuotaChecker::DecayingRateAverage::AccrueEvent(
 
 double MessageQuotaChecker::DecayingRateAverage::GetDecayedRateAverage(
     base::TimeTicks when) const {
-  DCHECK_GT(events_sampling_interval_, decayed_average_sampling_interval_);
-
-  // Compute the current rate average as of |events_sampling_interval_|.
-  const int64_t avg_age =
-      events_sampling_interval_ - decayed_average_sampling_interval_;
-  double avg = decayed_average_ * pow(1 - kSampleWeight, avg_age) +
-               kSampleWeight * events_;
-
-  // Age the average to |when|.
+  // Three cases:
+  // - |when| is exactly at the start of a sampling interval.
+  // - |when| is within the current sampling interval.
+  // - |when| is beyond the end of the current sampling interval.
   const int64_t sampling_interval = ToSamplingInterval(when);
-  DCHECK_GE(sampling_interval, events_sampling_interval_);
-  return avg *
-         pow(1 - kSampleWeight, sampling_interval - events_sampling_interval_);
+  double age_in_sampling_intervals =
+      (when - FromSamplingInterval(events_sampling_interval_))
+          .InMicrosecondsF() /
+      kSamplingInterval.InMicrosecondsF();
+  DCHECK_LE(0.0, age_in_sampling_intervals);
+  if (when == FromSamplingInterval(events_sampling_interval_)) {
+    DCHECK_EQ(0.0, age_in_sampling_intervals);
+    // It is possible that an event has been accrued to the very start of a
+    // sampling interval. Technically this converges like so:
+    //
+    // lim when t -> 0 = - events_ * log(kDecayFactor) / kSamplingInterval
+    //
+    // For simplicity's sake, this is treated as synonymous with the decayed
+    // average at the end of the previous sampling interval here.
+    return decayed_average_;
+  } else if (sampling_interval == events_sampling_interval_) {
+    DCHECK_GT(1.0, age_in_sampling_intervals);
+
+    // Use a decay factor that's exponential in the age |when|, relative to
+    // the sampling interval. This yields a stabler estimate than straight up
+    // extrapolating the rate to the end of the sampling interval, as that
+    // method is very sensitive to noise in sample timing near zero age.
+    double decay_factor = pow(kDecayFactor, age_in_sampling_intervals);
+    // Scale up the events collected so far to the rate.
+    double event_rate = events_ / age_in_sampling_intervals;
+
+    return event_rate * (1.0 - decay_factor) + decayed_average_ * decay_factor;
+  } else {
+    DCHECK_LE(1.0, age_in_sampling_intervals);
+    // Compute the decayed average to the start of
+    // events_sampling_interval_ + 1.
+    double average = events_ * kSampleWeight + decayed_average_ * kDecayFactor;
+
+    // And age it to |when|.
+    return average * pow(kDecayFactor, age_in_sampling_intervals - 1.0);
+  }
+}
+
+// static
+base::TimeTicks
+MessageQuotaChecker::DecayingRateAverage::GetNextSamplingIntervalForTesting(
+    base::TimeTicks when) {
+  return FromSamplingInterval(ToSamplingInterval(when) + 1);
 }
 
 }  // namespace internal

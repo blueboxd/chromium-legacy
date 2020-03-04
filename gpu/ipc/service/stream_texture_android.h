@@ -93,7 +93,7 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   bool IsUsingGpuMemory() const override;
   void UpdateAndBindTexImage() override;
   bool HasTextureOwner() const override;
-  gles2::Texture* GetTexture() const override;
+  TextureBase* GetTextureBase() const override;
   void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
   bool RenderToOverlay() override;
 

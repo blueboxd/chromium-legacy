@@ -58,9 +58,8 @@ void PrivacyScreenFeaturePodController::UpdateButton() {
   if (!is_supported)
     return;
 
-  // TODO(tengs): Hook up managed state once it is implemented.
   bool is_enabled = privacy_screen_controller->GetEnabled();
-  bool is_managed = false;
+  bool is_managed = privacy_screen_controller->IsManaged();
 
   button_->SetVectorIcon(kPrivacyScreenIcon);
   button_->SetToggled(is_enabled);

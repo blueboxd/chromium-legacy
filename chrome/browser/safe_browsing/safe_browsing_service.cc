@@ -45,7 +45,6 @@
 #include "components/safe_browsing/core/ping_manager.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
@@ -241,13 +240,6 @@ V4ProtocolConfig SafeBrowsingService::GetV4ProtocolConfig() const {
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking));
 }
 
-VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
-    Profile* profile) const {
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
-    return services_delegate_->GetVerdictCacheManager(profile);
-  return nullptr;
-}
-
 BinaryUploadService* SafeBrowsingService::GetBinaryUploadService(
     Profile* profile) const {
   return services_delegate_->GetBinaryUploadService(profile);
@@ -367,14 +359,12 @@ void SafeBrowsingService::OnOffTheRecordProfileCreated(
 
 void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   observed_profiles_.Remove(profile);
-  services_delegate_->RemoveVerdictCacheManager(profile);
   services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveBinaryUploadService(profile);
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
-  services_delegate_->CreateVerdictCacheManager(profile);
   services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
   services_delegate_->CreateBinaryUploadService(profile);

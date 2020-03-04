@@ -124,6 +124,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceTimezoneInfo,
     kReportDeviceGraphicsStatus,
     kReportDeviceMemoryInfo,
+    kReportDeviceBacklightInfo,
     kReportDeviceUsers,
     kReportDeviceVersionInfo,
     kReportOsUpdateStatus,
@@ -586,6 +587,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_memory_info()) {
       new_values_cache->SetBoolean(kReportDeviceMemoryInfo,
                                    reporting_policy.report_memory_info());
+    }
+    if (reporting_policy.has_report_backlight_info()) {
+      new_values_cache->SetBoolean(kReportDeviceBacklightInfo,
+                                   reporting_policy.report_backlight_info());
     }
   }
 }

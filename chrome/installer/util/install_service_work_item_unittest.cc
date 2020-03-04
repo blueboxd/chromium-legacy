@@ -64,8 +64,8 @@ TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
   EXPECT_EQ(vec.size(), base::size(kMultiSz));
 }
 
-// This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
+// This test is flaky, see https://crbug.com/1058506
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -78,8 +78,8 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   EXPECT_FALSE(GetImpl(item.get())->OpenService());
 }
 
-// This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
+// This test is flaky, see https://crbug.com/1058506
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstallThenDeleteService) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -91,8 +91,8 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
   EXPECT_TRUE(InstallServiceWorkItem::DeleteService(kServiceName));
 }
 
-// This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
+// This test is flaky, see https://crbug.com/1058506
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_UpgradeNoChanges) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -112,8 +112,8 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   EXPECT_TRUE(GetImpl(item_upgrade.get())->DeleteCurrentService());
 }
 
-// This test is flaky, see https://crbug.com/1055470
-TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
+// This test is flaky, see https://crbug.com/1058506
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_UpgradeChangedCmdLine) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)));
@@ -136,7 +136,8 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   EXPECT_TRUE(GetImpl(item_upgrade.get())->DeleteCurrentService());
 }
 
-TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
+// This test is flaky, see https://crbug.com/1058506
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_ServiceName) {
   base::win::RegKey key;
   ASSERT_EQ(ERROR_SUCCESS,
             key.Create(HKEY_LOCAL_MACHINE,

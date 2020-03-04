@@ -4,11 +4,11 @@
 
 module content.mojom;
 
-import "components/tracing/common/background_tracing_agent.mojom";
 import "ipc/ipc.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "services/service_manager/public/mojom/service.mojom";
+import "services/tracing/public/mojom/background_tracing_agent.mojom";
 
 // The primordial interface child processes use to push requests to their
 // browser-side host object.

@@ -9,7 +9,12 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
-          "reason": "paint property change"
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV",
+          "rect": [0, 50, 106, 106],
+          "reason": "chunk appeared"
         },
         {
           "object": "VerticalScrollbar",

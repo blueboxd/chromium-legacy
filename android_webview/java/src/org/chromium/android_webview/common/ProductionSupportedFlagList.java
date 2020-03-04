@@ -49,6 +49,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("OutOfBlinkCors",
                     "Moves CORS logic into the Network Service (rather than inside the blink "
                             + "rendering engine)."),
+            Flag.baseFeature("EnableSharedImageForWebview", "Enables shared images for WebView."),
             Flag.baseFeature("VizForWebView", "Enables Viz for WebView."),
             Flag.baseFeature("WebViewConnectionlessSafeBrowsing",
                     "Uses GooglePlayService's 'connectionless' APIs for Safe Browsing "

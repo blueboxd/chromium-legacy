@@ -8,6 +8,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,7 +44,7 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
 
     @Override
     public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
-        return new ExternalNavigationHandler(tab);
+        return new ExternalNavigationHandler(new ExternalNavigationDelegateImpl(tab));
     }
 
     @Override

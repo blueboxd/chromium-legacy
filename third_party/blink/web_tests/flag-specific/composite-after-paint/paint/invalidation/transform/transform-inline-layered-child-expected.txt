@@ -7,14 +7,54 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='box'",
           "rect": [135, 361, 159, 194],
-          "reason": "paint property change"
+          "reason": "chunk appeared"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "object": "NGPhysicalTextFragment 'A B C'",
           "rect": [300, 302, 80, 176],
-          "reason": "paint property change"
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'D E F'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'G H I'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'J K L'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'M N O'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'P Q R'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'S T U'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'V W X'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Y Z'",
+          "rect": [300, 302, 80, 176],
+          "reason": "disappeared"
         }
       ]
     }

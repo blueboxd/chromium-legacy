@@ -1001,7 +1001,7 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
-  Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  widget_base_.LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
   // Pass the limits even though this is for subframes, as the limits will
   // be needed in setting the raster scale.
   Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,

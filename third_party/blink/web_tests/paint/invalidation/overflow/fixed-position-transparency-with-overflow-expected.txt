@@ -12,7 +12,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='container' class='relative blue'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
           "rect": [108, 308, 100, 100],
           "reason": "chunk appeared"
         },

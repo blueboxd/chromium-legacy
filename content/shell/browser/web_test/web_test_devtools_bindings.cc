@@ -39,14 +39,9 @@ namespace content {
 
 class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
  public:
-  SecondaryObserver(WebTestDevToolsBindings* bindings, bool is_startup_test)
+  explicit SecondaryObserver(WebTestDevToolsBindings* bindings)
       : WebContentsObserver(bindings->inspected_contents()),
-        bindings_(bindings) {
-    if (is_startup_test) {
-      bindings_->NavigateDevToolsFrontend();
-      bindings_ = nullptr;
-    }
-  }
+        bindings_(bindings) {}
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override {
@@ -108,12 +103,6 @@ void WebTestDevToolsBindings::NavigateDevToolsFrontend() {
 }
 
 void WebTestDevToolsBindings::Attach() {
-  DCHECK(is_startup_test_);
-  ShellDevToolsBindings::Attach();
-  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("TestRunner._startupTestSetupFinished();\n//# "
-                        "sourceURL=layout_test_devtools_bindings.cc"),
-      base::NullCallback());
 }
 
 WebTestDevToolsBindings::WebTestDevToolsBindings(
@@ -122,12 +111,7 @@ WebTestDevToolsBindings::WebTestDevToolsBindings(
     const GURL& frontend_url)
     : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
       frontend_url_(frontend_url) {
-  is_startup_test_ =
-      frontend_url.query().find("/startup/") != std::string::npos;
-  secondary_observer_ =
-      std::make_unique<SecondaryObserver>(this, is_startup_test_);
-  if (is_startup_test_)
-    return;
+  secondary_observer_ = std::make_unique<SecondaryObserver>(this);
   NavigationController::LoadURLParams params(GetInspectedPageURL(frontend_url));
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
@@ -149,8 +133,6 @@ void WebTestDevToolsBindings::RenderFrameCreated(
 }
 
 void WebTestDevToolsBindings::DocumentAvailableInMainFrame() {
-  if (is_startup_test_)
-    return;
   ShellDevToolsBindings::Attach();
 }
 

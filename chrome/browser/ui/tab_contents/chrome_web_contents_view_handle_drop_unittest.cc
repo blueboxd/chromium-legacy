@@ -80,6 +80,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
             &safe_browsing::FakeDeepScanningDialogDelegate::Create,
             run_loop_->QuitClosure(), callback, is_encrypted_callback,
             "dm_token"));
+    safe_browsing::DeepScanningDialogDelegate::DisableUIForTesting();
   }
 
   // Common code for running the test cases.

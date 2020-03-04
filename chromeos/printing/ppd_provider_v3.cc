@@ -91,8 +91,8 @@ scoped_refptr<PpdProvider> PpdProvider::Create(
     const PpdProvider::Options& options) {
   // TODO(crbug.com/888189): use |loader_factory| and do away with
   // |ppd_cache|.
-  return base::MakeRefCounted<PpdProvider>(browser_locale, current_version,
-                                           options);
+  return base::MakeRefCounted<PpdProviderImpl>(browser_locale, current_version,
+                                               options);
 }
 
 }  // namespace chromeos

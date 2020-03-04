@@ -779,23 +779,21 @@ void ProfileMenuViewBase::RegisterClickAction(views::View* clickable_view,
 
 void ProfileMenuViewBase::UpdateSyncInfoContainerBackground() {
   ui::NativeTheme::ColorId bg_color;
-  SkAlpha alpha = 16;
   switch (sync_background_state_) {
     case SyncInfoContainerBackgroundState::kNoError:
       sync_info_container_->SetBackground(nullptr);
       return;
     case SyncInfoContainerBackgroundState::kPaused:
-      bg_color = ui::NativeTheme::kColorId_ProminentButtonColor;
+      bg_color = ui::NativeTheme::kColorId_SyncInfoContainerPaused;
       break;
     case SyncInfoContainerBackgroundState::kError:
-      bg_color = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      bg_color = ui::NativeTheme::kColorId_SyncInfoContainerError;
       break;
     case SyncInfoContainerBackgroundState::kNoPrimaryAccount:
-      bg_color = ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor;
-      alpha = SK_AlphaOPAQUE;
+      bg_color = ui::NativeTheme::kColorId_SyncInfoContainerNoPrimaryAccount;
   }
   sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
-      SkColorSetA(GetNativeTheme()->GetSystemColor(bg_color), alpha),
+      GetNativeTheme()->GetSystemColor(bg_color),
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_HIGH)));
 }

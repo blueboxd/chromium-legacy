@@ -479,6 +479,19 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey700;
 
+    // Sync info container
+    case NativeTheme::kColorId_SyncInfoContainerPaused:
+      return SkColorSetA(base_theme->GetSystemColor(
+                             NativeTheme::kColorId_ProminentButtonColor),
+                         16);
+    case NativeTheme::kColorId_SyncInfoContainerError:
+      return SkColorSetA(
+          base_theme->GetSystemColor(NativeTheme::kColorId_AlertSeverityHigh),
+          16);
+    case NativeTheme::kColorId_SyncInfoContainerNoPrimaryAccount:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_BubbleFooterBackground);
+
     case NativeTheme::kColorId_NumColors:
       break;
   }

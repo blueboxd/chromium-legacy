@@ -139,6 +139,10 @@ public class AndroidPermissionRequester {
                         } else if (deniedContentSettings.contains(
                                            ContentSettingsType.MEDIASTREAM_CAMERA)) {
                             deniedStringId = R.string.infobar_missing_camera_permission_text;
+                        } else if (deniedContentSettings.contains(ContentSettingsType.AR)) {
+                            // TODO(https://crbug.com/1058055): Use the missing camera permission
+                            // text until we get guidance from UX team.
+                            deniedStringId = R.string.infobar_missing_camera_permission_text;
                         }
                     }
 

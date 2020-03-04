@@ -11,7 +11,7 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace media_history {
-class MediaHistoryStore;
+class MediaHistoryKeyedService;
 }  // namespace media_history
 
 // The UI for chrome://media-history.
@@ -38,7 +38,7 @@ class MediaHistoryUI : public ui::MojoWebUIController,
       GetMediaHistoryPlaybackSessionRowsCallback callback) override;
 
  private:
-  media_history::MediaHistoryStore* GetMediaHistoryStore();
+  media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 
   mojo::ReceiverSet<media_history::mojom::MediaHistoryStore> receivers_;
 

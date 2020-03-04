@@ -171,6 +171,20 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_WEBLAYER);
 
+        Context remoteContext = ObjectWrapper.unwrap(remoteContextWrapper, Context.class);
+        // The remote context will have a different class loader than WebLayerImpl here if we are in
+        // WebView compat mode, since WebView compat mode creates it's own class loader. The class
+        // loader from remoteContext will actually never be used, since
+        // ClassLoaderContextWrapperFactory will override the class loader, and all contexts used in
+        // WebLayer should come from ClassLoaderContextWrapperFactory.
+        boolean isWebViewCompatMode = remoteContext != null
+                && !remoteContext.getClassLoader().equals(WebLayerImpl.class.getClassLoader());
+        if (isWebViewCompatMode && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            // We need to change the library name for Android M and below, otherwise the system will
+            // load the version loaded for WebView.
+            LibraryLoader.getInstance().setLibrarySuffix("-weblayer");
+        }
+
         Context appContext = minimalInitForContext(appContextWrapper, remoteContextWrapper);
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 

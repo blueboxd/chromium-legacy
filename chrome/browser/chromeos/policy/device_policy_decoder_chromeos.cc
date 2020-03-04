@@ -768,6 +768,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.report_memory_info()),
           nullptr);
     }
+    if (container.has_report_backlight_info()) {
+      policies->Set(
+          key::kReportDeviceBacklightInfo, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_backlight_info()),
+          nullptr);
+    }
   }
 
   if (policy.has_device_heartbeat_settings()) {

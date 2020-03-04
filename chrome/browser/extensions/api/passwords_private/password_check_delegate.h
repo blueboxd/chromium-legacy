@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
@@ -40,7 +41,14 @@ class PasswordCheckDelegate
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.
   api::passwords_private::CompromisedCredentialsInfo
-  GetCompromisedCredentialsInfo() const;
+  GetCompromisedCredentialsInfo();
+
+  // Requests the plaintext password for |credential|. If successful, this
+  // returns |credential| with its |password| member set. This can fail if no
+  // matching compromised credential can be found in the password store.
+  base::Optional<api::passwords_private::CompromisedCredential>
+  GetPlaintextCompromisedPassword(
+      api::passwords_private::CompromisedCredential credential) const;
 
  private:
   // password_manager::CompromisedCredentialsProvider::Observer:
@@ -75,6 +83,14 @@ class PasswordCheckDelegate
   // credentials, as well as being able to reflect edits and removals of
   // compromised credentials in the underlying password store.
   CredentialPasswordsMap credentials_to_forms_;
+
+  // An id generator for compromised credentials. Required to match
+  // api::passwords_private::CompromisedCredential instances passed to the UI
+  // with the underlying CredentialWithPassword they are based on.
+  IdGenerator<password_manager::CredentialWithPassword,
+              int,
+              password_manager::PasswordCredentialLess>
+      compromised_credential_id_generator_;
 };
 
 }  // namespace extensions

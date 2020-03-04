@@ -203,7 +203,7 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
                        GetLayoutView().FirstFragment().ContentsProperties()),
           IsPaintChunk(
               1, 2,
-              PaintChunk::Id(*container.Layer(), DisplayItem::kLayerChunkWhole),
+              PaintChunk::Id(*container.Layer(), DisplayItem::kLayerChunk),
               container.FirstFragment().LocalBorderBoxProperties()),
           IsPaintChunk(2, 3, PaintChunk::Id(container, kScrollHitTestType),
                        container.FirstFragment().LocalBorderBoxProperties(),

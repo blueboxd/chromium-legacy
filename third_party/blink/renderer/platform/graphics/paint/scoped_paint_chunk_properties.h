@@ -15,7 +15,7 @@
 namespace blink {
 
 class ScopedPaintChunkProperties {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   // Use new PropertyTreeState for the scope.

@@ -35,7 +35,10 @@ class PasswordsPrivateDelegate : public KeyedService {
   using PlaintextPasswordCallback =
       base::OnceCallback<void(base::Optional<base::string16>)>;
 
-  ~PasswordsPrivateDelegate() override {}
+  using PlaintextCompromisedPasswordCallback = base::OnceCallback<void(
+      base::Optional<api::passwords_private::CompromisedCredential>)>;
+
+  ~PasswordsPrivateDelegate() override = default;
 
   // Gets the saved passwords list.
   using UiEntries = std::vector<api::passwords_private::PasswordUiEntry>;
@@ -112,6 +115,15 @@ class PasswordsPrivateDelegate : public KeyedService {
   // present in the password store.
   virtual api::passwords_private::CompromisedCredentialsInfo
   GetCompromisedCredentialsInfo() = 0;
+
+  // Requests the plaintext password for |credential| due to |reason|. If
+  // successful, |callback| gets invoked with the same |credential|, whose
+  // |password| field will be set.
+  virtual void GetPlaintextCompromisedPassword(
+      api::passwords_private::CompromisedCredential credential,
+      api::passwords_private::PlaintextReason reason,
+      content::WebContents* web_contents,
+      PlaintextCompromisedPasswordCallback callback) = 0;
 };
 
 }  // namespace extensions

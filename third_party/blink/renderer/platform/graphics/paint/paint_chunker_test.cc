@@ -283,21 +283,34 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithNewId) {
   PaintChunk::Id id0(client_, DisplayItemType(0));
   chunker.UpdateCurrentPaintChunkProperties(&id0,
                                             DefaultPaintChunkProperties());
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(0u, chunker.size());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  EXPECT_FALSE(chunker.WillForceNewChunk());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  EXPECT_EQ(1u, chunker.size());
 
-  chunker.ForceNewChunk();
+  chunker.SetForceNewChunk(true);
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(1u, chunker.size());
   PaintChunk::Id id1(client_, DisplayItemType(10));
   chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  EXPECT_EQ(2u, chunker.size());
+  EXPECT_FALSE(chunker.WillForceNewChunk());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  EXPECT_EQ(2u, chunker.size());
 
-  chunker.ForceNewChunk();
+  chunker.SetForceNewChunk(true);
   PaintChunk::Id id2(client_, DisplayItemType(20));
+  EXPECT_TRUE(chunker.WillForceNewChunk());
   chunker.UpdateCurrentPaintChunkProperties(&id2,
                                             DefaultPaintChunkProperties());
+  EXPECT_EQ(2u, chunker.size());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  EXPECT_EQ(3u, chunker.size());
+  EXPECT_FALSE(chunker.WillForceNewChunk());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   EXPECT_THAT(
@@ -312,21 +325,33 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithoutNewId) {
   PaintChunk::Id id0(client_, DisplayItemType(0));
   chunker.UpdateCurrentPaintChunkProperties(nullptr,
                                             DefaultPaintChunkProperties());
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(0u, chunker.size());
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(id0.client, id0.type));
+  EXPECT_FALSE(chunker.WillForceNewChunk());
+  EXPECT_EQ(1u, chunker.size());
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
-  chunker.ForceNewChunk();
+  chunker.SetForceNewChunk(true);
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(1u, chunker.size());
   PaintChunk::Id id1(client_, DisplayItemType(10));
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(id1.client, id1.type));
+  EXPECT_FALSE(chunker.WillForceNewChunk());
+  EXPECT_EQ(2u, chunker.size());
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(client_, DisplayItemType(11)));
 
-  chunker.ForceNewChunk();
+  chunker.SetForceNewChunk(true);
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(2u, chunker.size());
   PaintChunk::Id id2(client_, DisplayItemType(20));
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(id2.client, id2.type));
+  EXPECT_FALSE(chunker.WillForceNewChunk());
+  EXPECT_EQ(3u, chunker.size());
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(client_, DisplayItemType(21)));
 
@@ -335,6 +360,33 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithoutNewId) {
       ElementsAre(IsPaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
                   IsPaintChunk(2, 4, id1, DefaultPaintChunkProperties()),
                   IsPaintChunk(4, 6, id2, DefaultPaintChunkProperties())));
+}
+
+TEST_F(PaintChunkerTest, SetAndImmediatelyUnsetForceNewChunk) {
+  PaintChunker chunker;
+  PaintChunk::Id id0(client_, DisplayItemType(0));
+  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+                                            DefaultPaintChunkProperties());
+  EXPECT_TRUE(chunker.WillForceNewChunk());
+  EXPECT_EQ(0u, chunker.size());
+  chunker.IncrementDisplayItemIndex(
+      TestChunkerDisplayItem(id0.client, id0.type));
+  EXPECT_FALSE(chunker.WillForceNewChunk());
+  EXPECT_EQ(1u, chunker.size());
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+
+  // This should not force a new chunk. Simulates a ScopedPaintChunkHint
+  // without any painting in the scope.
+  chunker.SetForceNewChunk(true);
+  chunker.SetForceNewChunk(false);
+  EXPECT_FALSE(chunker.WillForceNewChunk());
+  chunker.IncrementDisplayItemIndex(
+      TestChunkerDisplayItem(client_, DisplayItemType(11)));
+  EXPECT_EQ(1u, chunker.size());
+
+  EXPECT_THAT(
+      chunker.PaintChunks(),
+      ElementsAre(IsPaintChunk(0, 3, id0, DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, NoNewChunkForSamePropertyDifferentIds) {

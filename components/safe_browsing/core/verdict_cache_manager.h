@@ -14,6 +14,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
@@ -26,7 +27,8 @@ using ReusedPasswordAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 
 // Structure: http://screen/YaNfDRYrcnk.png.
-class VerdictCacheManager : public history::HistoryServiceObserver {
+class VerdictCacheManager : public history::HistoryServiceObserver,
+                            public KeyedService {
  public:
   explicit VerdictCacheManager(
       history::HistoryService* history_service,
@@ -41,6 +43,10 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   base::WeakPtr<VerdictCacheManager> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  // KeyedService:
+  // Called before the actual deletion of the object.
+  void Shutdown() override;
 
   // Stores |verdict| in |content_settings_| based on its |trigger_type|, |url|,
   // reused |password_type|, |verdict| and |receive_time|.

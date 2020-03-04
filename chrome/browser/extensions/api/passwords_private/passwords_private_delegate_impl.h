@@ -68,6 +68,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   bool IsOptedInForAccountStorage() override;
   api::passwords_private::CompromisedCredentialsInfo
   GetCompromisedCredentialsInfo() override;
+  void GetPlaintextCompromisedPassword(
+      api::passwords_private::CompromisedCredential credential,
+      api::passwords_private::PlaintextReason reason,
+      content::WebContents* web_contents,
+      PlaintextCompromisedPasswordCallback callback) override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;

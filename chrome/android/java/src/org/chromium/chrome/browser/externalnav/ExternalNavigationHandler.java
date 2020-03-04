@@ -27,11 +27,8 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -151,15 +148,6 @@ public class ExternalNavigationHandler {
         int NO_OVERRIDE = 3;
 
         int NUM_ENTRIES = 4;
-    }
-
-    /**
-     * A constructor for UrlHandler.
-     *
-     * @param tab The tab that initiated the external intent.
-     */
-    public ExternalNavigationHandler(Tab tab) {
-        this(new ExternalNavigationDelegateImpl(tab));
     }
 
     /**
@@ -765,14 +753,7 @@ public class ExternalNavigationHandler {
 
     private boolean handleWithAutofillAssistant(
             ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
-        if (browserFallbackUrl != null && !params.isIncognito()
-                && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
-                        targetIntent)
-                && mDelegate.isSerpReferrer()) {
-            if (params.getTab() != null) {
-                AutofillAssistantFacade.start(((TabImpl) params.getTab()).getActivity(),
-                        targetIntent.getExtras(), browserFallbackUrl);
-            }
+        if (mDelegate.handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
             if (DEBUG) Log.i(TAG, "Handling with Assistant");
             return true;
         }

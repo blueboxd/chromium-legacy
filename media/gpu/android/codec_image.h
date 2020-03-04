@@ -115,7 +115,7 @@ class MEDIA_GPU_EXPORT CodecImage
   bool IsUsingGpuMemory() const override;
   void UpdateAndBindTexImage() override;
   bool HasTextureOwner() const override;
-  gpu::gles2::Texture* GetTexture() const override;
+  gpu::TextureBase* GetTextureBase() const override;
   void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
   // Renders this image to the overlay. Returns true if the buffer is in the
   // overlay front buffer. Returns false if the buffer was invalidated.

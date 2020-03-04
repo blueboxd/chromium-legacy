@@ -42,7 +42,7 @@ struct StructTraits<gfx::mojom::GpuFenceHandleDataView, gfx::GpuFenceHandle> {
   static gfx::GpuFenceHandleType type(const gfx::GpuFenceHandle& handle) {
     return handle.type;
   }
-  static mojo::ScopedHandle native_fd(const gfx::GpuFenceHandle& handle);
+  static mojo::PlatformHandle native_fd(const gfx::GpuFenceHandle& handle);
   static bool Read(gfx::mojom::GpuFenceHandleDataView data,
                    gfx::GpuFenceHandle* handle);
 };

@@ -132,8 +132,7 @@ TEST_F(BlockPainterTouchActionTest, TouchActionRectSubsequenceCaching) {
   auto root_chunk_properties =
       GetLayoutView().FirstFragment().ContentsProperties();
 
-  PaintChunk::Id hit_test_chunk_id(hit_test_client,
-                                   kNonScrollingBackgroundChunkType);
+  PaintChunk::Id hit_test_chunk_id(hit_test_client, DisplayItem::kLayerChunk);
   auto hit_test_chunk_properties = touchaction->EnclosingLayer()
                                        ->GetLayoutObject()
                                        .FirstFragment()
@@ -458,11 +457,11 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
           IsPaintChunk(
               0, 1, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
               GetLayoutView().FirstFragment().ContentsProperties()),
-          IsPaintChunk(1, 2,
-                       PaintChunk::Id(*scroller->Layer(),
-                                      kNonScrollingBackgroundChunkType),
-                       scroller->FirstFragment().LocalBorderBoxProperties(),
-                       scroller_touch_action_hit_test_data),
+          IsPaintChunk(
+              1, 2,
+              PaintChunk::Id(*scroller->Layer(), DisplayItem::kLayerChunk),
+              scroller->FirstFragment().LocalBorderBoxProperties(),
+              scroller_touch_action_hit_test_data),
           IsPaintChunk(2, 3,
                        PaintChunk::Id(*scroller, DisplayItem::kScrollHitTest),
                        scroller->FirstFragment().LocalBorderBoxProperties(),

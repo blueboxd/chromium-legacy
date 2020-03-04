@@ -84,8 +84,6 @@ class BreadcrumbManagerTabHelper
   void LogEvent(const std::string& event);
 
   // web::WebStateObserver implementation.
-  void WasShown(web::WebState* web_state) override;
-  void WasHidden(web::WebState* web_state) override;
   void DidStartNavigation(web::WebState* web_state,
                           web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,

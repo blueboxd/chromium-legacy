@@ -1781,12 +1781,7 @@ template("ios_xctest_test") {
     output_name = _xctest_output
     product_type = _ios_xcode_xctest_bundle_id
     host_target = _host_target
-
-    # TODO(crbug.com/1056328) The change in output name results in a mismatch
-    # between this value and the ios_app_bundle target name. To mitigate, this
-    # has been modified to _host_target. It can be reverted to _host_output
-    # once the output_name is reverted.
-    xcode_test_application_name = _host_target
+    xcode_test_application_name = _host_output
 
     deps = [ _xctest_module_target ]
   }
@@ -1976,14 +1971,10 @@ template("ios_xcuitest_test") {
          "xcode_test_application_name must be defined for $target_name")
 
   _xcuitest_target = target_name
-  if (defined(invoker.output_name)) {
-    _xcuitest_target = invoker.output_name
-  }
-
   _xcuitest_runner_target = _xcuitest_target + "_runner"
   _xcuitest_module_target = _xcuitest_target + "_module"
 
-  group(target_name) {
+  group(_xcuitest_target) {
     testonly = true
 
     deps = [ ":$_xcuitest_runner_target" ]

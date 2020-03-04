@@ -323,9 +323,9 @@ void ChromeClientImpl::SetOverscrollBehavior(
   DCHECK(main_frame.IsMainFrame());
   if (!web_view_->does_composite())
     return;
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
-  client->SetOverscrollBehavior(overscroll_behavior);
+  WebLocalFrameImpl::FromFrame(main_frame)
+      ->FrameWidgetImpl()
+      ->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
@@ -827,23 +827,21 @@ void ChromeClientImpl::AnimateDoubleTapZoom(const gfx::Point& point,
 }
 
 void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  WebWidgetClient* client = widget->Client();
-  // TODO(dcheng): This shouldn't be called on detached frames?
-  if (client)
-    client->RegisterSelection(cc::LayerSelection());
+  if (!web_view_->does_composite())
+    return;
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->RegisterSelection(cc::LayerSelection());
 }
 
 void ChromeClientImpl::UpdateLayerSelection(
     LocalFrame* frame,
     const cc::LayerSelection& selection) {
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  WebWidgetClient* client = widget->Client();
-  // TODO(dcheng): This shouldn't be called on detached frames?
-  if (client)
-    client->RegisterSelection(selection);
+  if (!web_view_->does_composite())
+    return;
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->RegisterSelection(selection);
 }
 
 bool ChromeClientImpl::HasOpenedPopup() const {
@@ -976,9 +974,9 @@ void ChromeClientImpl::RequestBeginMainFrameNotExpected(LocalFrame& frame,
   // applies when compositing is enabled.
   if (!web_view_->does_composite())
     return;
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
-  client->RequestBeginMainFrameNotExpected(request);
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->RequestBeginMainFrameNotExpected(request);
 }
 
 int ChromeClientImpl::GetLayerTreeId(LocalFrame& frame) {
@@ -986,15 +984,19 @@ int ChromeClientImpl::GetLayerTreeId(LocalFrame& frame) {
   // useful when compositing is enabled.
   if (!web_view_->does_composite())
     return 0;
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
-  return client->GetLayerTreeId();
+  return WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->GetLayerTreeId();
 }
 
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     cc::EventListenerClass event_class,
     cc::EventListenerProperties properties) {
+  // This method is only useful when compositing is enabled.
+  if (!web_view_->does_composite())
+    return;
+
   // |frame| might be null if called via TreeScopeAdopter::
   // moveNodeToNewDocument() and the new document has no frame attached.
   // Since a document without a frame cannot attach one later, it is safe to
@@ -1017,16 +1019,15 @@ void ChromeClientImpl::SetEventListenerProperties(
   }
 
   WebWidgetClient* client = widget->Client();
-
-  client->SetEventListenerProperties(event_class, properties);
+  widget->SetEventListenerProperties(event_class, properties);
 
   if (event_class == cc::EventListenerClass::kTouchStartOrMove ||
       event_class == cc::EventListenerClass::kTouchEndOrCancel) {
     client->SetHasTouchEventHandlers(
-        client->EventListenerProperties(
+        widget->EventListenerProperties(
             cc::EventListenerClass::kTouchStartOrMove) !=
             cc::EventListenerProperties::kNone ||
-        client->EventListenerProperties(
+        widget->EventListenerProperties(
             cc::EventListenerClass::kTouchEndOrCancel) !=
             cc::EventListenerProperties::kNone);
   } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
@@ -1045,8 +1046,7 @@ cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   if (!widget)
     return cc::EventListenerProperties::kNone;
-  WebWidgetClient* client = widget->Client();
-  return client->EventListenerProperties(event_class);
+  return widget->EventListenerProperties(event_class);
 }
 
 void ChromeClientImpl::BeginLifecycleUpdates(LocalFrame& main_frame) {
@@ -1061,9 +1061,9 @@ void ChromeClientImpl::StartDeferringCommits(LocalFrame& main_frame,
   // only applies with a compositor.
   if (!web_view_->does_composite())
     return;
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
-  client->StartDeferringCommits(timeout);
+  WebLocalFrameImpl::FromFrame(main_frame)
+      ->FrameWidgetImpl()
+      ->StartDeferringCommits(timeout);
 }
 
 void ChromeClientImpl::StopDeferringCommits(
@@ -1074,9 +1074,9 @@ void ChromeClientImpl::StopDeferringCommits(
   // only applies with a compositor.
   if (!web_view_->does_composite())
     return;
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
-  client->StopDeferringCommits(trigger);
+  WebLocalFrameImpl::FromFrame(main_frame)
+      ->FrameWidgetImpl()
+      ->StopDeferringCommits(trigger);
 }
 
 void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
@@ -1088,9 +1088,9 @@ void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
   if (!frame)
     return;
 
-  WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
-  client->SetHaveScrollEventHandlers(has_event_handlers);
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->SetHaveScrollEventHandlers(has_event_handlers);
 }
 
 void ChromeClientImpl::SetNeedsLowLatencyInput(LocalFrame* frame,

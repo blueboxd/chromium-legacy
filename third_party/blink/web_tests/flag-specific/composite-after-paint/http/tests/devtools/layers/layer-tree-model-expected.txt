@@ -12,7 +12,7 @@ Updated layer tree
     #document (1)
     div#a 200x200 (1)
     div#b2 110x140 (1)
-    div#c 90x100
+    div#c 90x100 (1)
     div#b1 100x150
     div#b4 88x77
 Updated layer geometry
@@ -20,7 +20,7 @@ Updated layer geometry
     #document (1)
     div#a 200x200 (1)
     div#b2 110x140 (1)
-    div#c 90x80
+    div#c 90x80 (1)
     div#b1 100x150
     div#b4 88x77
 

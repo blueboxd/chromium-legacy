@@ -12,6 +12,7 @@ js_modulizer("modulize") {
     "appearance_fonts_page_test.js",
     "appearance_page_test.js",
     "checkbox_tests.js",
+    "clear_browsing_data_test.js",
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
     "default_browser_browsertest.js",
@@ -47,6 +48,7 @@ js_modulizer("modulize") {
     "test_lifetime_browser_proxy.js",
     "test_reset_browser_proxy.js",
     "test_search_engines_browser_proxy.js",
+    "test_sync_browser_proxy.js",
     "test_util.js",
   ]
   if (is_win) {

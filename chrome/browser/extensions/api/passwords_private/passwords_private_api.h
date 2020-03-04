@@ -208,6 +208,23 @@ class PasswordsPrivateGetCompromisedCredentialsInfoFunction
   ResponseAction Run() override;
 };
 
+class PasswordsPrivateGetPlaintextCompromisedPasswordFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getPlaintextCompromisedPassword",
+                             PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD)
+
+ protected:
+  ~PasswordsPrivateGetPlaintextCompromisedPasswordFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void GotCredential(
+      base::Optional<api::passwords_private::CompromisedCredential> credential);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_API_H_

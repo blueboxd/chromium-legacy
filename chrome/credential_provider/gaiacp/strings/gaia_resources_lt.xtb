@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Sinchronizuojant darbo paskyros slaptažodį su „Windows“ profiliu iškilo problema. Susisiekite su administratoriumi.</translation>
 <translation id="2515346402363002066">Baigėsi seanso laikas. Prisijunkite naudodami darbo paskyrą.</translation>
 <translation id="2844349213149998955">Šiame įrenginyje neleidžiama prisijungti naudojant asmeninę paskyrą. Prisijunkite naudodami darbo paskyrą.</translation>
-<translation id="2954423647682729023">Prisijunkite naudodami darbo paskyrą.</translation>
 <translation id="3217145568844727893">Jei tęsite neįvedę dabartinio „Windows“ slaptažodžio, galite visam laikui prarasti šiame įrenginyje esančius duomenis.</translation>
 <translation id="3285576391135346912">Galite prisijungti tik naudodami el. pašto adresą, kuris baigiasi: <ph name="EMAIL_DOMAINS" />. Bandykite dar kartą naudodami darbo paskyrą.</translation>
 <translation id="3306357053520292004">Naudotojas šiame kompiuteryje jau pridėtas naudojant šią paskyrą. Prisijunkite naudodami kitą paskyrą.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Jūsų administratorius neleidžia jums prisijungti naudojant šią paskyrą. Bandykite naudoti kitą paskyrą.</translation>
 <translation id="8639729688781680518">Pamiršti „Windows“ slaptažodį</translation>
 <translation id="866458870819756755">Nepavyko sukurti naudotojo.</translation>
-<translation id="8875753657315897487">Prisijunkite naudodami darbo paskyrą</translation>
 <translation id="9055998212250844221">Naudotojo paskyra, sukurta sistemos „Windows“ „Google“ prisijungimo duomenų teikėjo</translation>
 </translationbundle>

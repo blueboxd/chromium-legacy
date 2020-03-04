@@ -12,7 +12,7 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [408, 408, 380, 180],
           "reason": "paint property change"
         },
@@ -22,7 +22,7 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='box'",
+          "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [408, 408, 330, 130],
           "reason": "paint property change"
         }

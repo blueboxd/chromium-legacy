@@ -35,6 +35,13 @@
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Sonraki 4. düzey başlık yok</translation>
+<translation id="1212770441379271564">Sonraki birkaç kısayol ChromeVox komutu değildir, ancak yine de Chrome'dan en iyi şekilde yararlanmanıza çok yardımcı olur.
+Düğmeler ve bağlantılar gibi işlem yapılabilir öğelerde ileriye doğru gezinmek için Sekme tuşuna basın. Geriye gitmek için Üst Karakter+Sekme tuşlarına basın.
+Çok amaçlı adres çubuğu olarak adlandırılan Chrome tarayıcı adres kutusuna girmek için Control+L tuşlarına basın.
+Yeni bir sekme açmak ve otomatik olarak o sekmeye gitmek için Control+T tuşlarına basın. İmleciniz çok amaçlı adres çubuğuna yerleştirilir.
+Bir sekmeyi kapatmak için Control+W tuşlarına basın.
+Açık sekmeler arasında ileriye doğru gitmek için Control+Sekme tuşlarını kullanın.
+Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome'un Sesi</translation>
 <translation id="1225969361094801578">Koyu Kurşun Grisi</translation>
 <translation id="1229276918471378188">Önceki atlama</translation>
@@ -490,6 +497,7 @@
 <translation id="421884353938374759">renk seçici</translation>
 <translation id="4221012616705981690">Önceki liste yok</translation>
 <translation id="4221071177874897997">Kalın yazı tipi belirtin:</translation>
+<translation id="4225355998815256469">Form Denetimleri</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Açık Kurşun Grisi</translation>
 <translation id="4231102694147661229">Geliştirici Seçeneklerini Etkinleştir</translation>
@@ -544,6 +552,89 @@
 <translation id="461613135510474570">Cümle</translation>
 <translation id="4623097797855662355">Künye</translation>
 <translation id="463135993322337640">Yenilikler hakkında bilgi edinmek için ChromeVox o, n tuşlarına basın</translation>
+<translation id="4646606380313237501">{"ar": "Arapça",
+    "as": "Assamca",
+    "aw": "Awadhi",
+    "be": "Bengalce",
+    "bg": "Bulgarca",
+    "bh": "Bihari",
+    "bo": "Tibetçe",
+    "br": "Braj",
+    "ca": "Katalanca",
+    "ckb": "Sorani",
+    "cs": "Çekçe",
+    "cy": "Galce",
+    "da": "Danca",
+    "de": "Almanca",
+    "de_CH": "Almanca (İsviçre)",
+    "de_DE": "Almanca (Almanya)",
+    "dra": "Dravidyan",
+    "el": "Yunanca",
+    "en": "İngilizce",
+    "en_CA": "İngilizce (Kanada)",
+    "en_GB": "İngilizce (Birleşik Krallık)",
+    "en_US": "İngilizce (ABD)",
+    "eo": "Esperanto",
+    "es": "İspanyolca",
+    "et": "Estonca",
+    "fa": "Farsça",
+    "fr": "Fransa",
+    "fr_CA": "Fransa (Kanada)",
+    "fr_FR": "Fransa (Fransa)",
+    "fi": "Fince",
+    "ga": "İrlandaca",
+    "gd": "İskoç Galcesi",
+    "gon": "Gondi",
+    "gu": "Guceratça",
+    "he": "İbranice",
+    "hi": "Hintçe",
+    "hr": "Hırvatça",
+    "hu": "Macarca",
+    "hy": "Ermenice",
+    "is": "İzlandaca",
+    "it": "İtalyanca",
+    "iu": "İnuitçe",
+    "ka": "Kannada",
+    "kh": "Khasi",
+    "ko": "Korece",
+    "kok": "Konkani",
+    "kru": "Kurukh",
+    "ks": "Keşmirce",
+    "lt": "Litvanca",
+    "lv": "Letonca",
+    "mao": "Maori",
+    "ml": "Malayalam",
+    "mt": "Maltaca",
+    "mwr": "Marwari",
+    "mn": "Moğolca",
+    "mun": "Munda",
+    "nb": "Norveççe Bokmål",
+    "ne": "Nepalce",
+    "nl": "Felemenkçe",
+    "no": "Norveççe",
+    "or": "Oriya",
+    "pi": "Pali",
+    "pl": "Lehçe",
+    "pt": "Portekizce",
+    "pu": "Pencapça",
+    "ro": "Rumence",
+    "ru": "Rusça",
+    "sa": "Sanskritçe",
+    "si": "Sintçe",
+    "sin": "Seylanca",
+    "sk": "Slovakça",
+    "sl": "Slovence",
+    "sr": "Sırpça",
+    "sv": "İsveççe",
+    "ta": "Tamilce",
+    "te": "Telugu",
+    "tr": "Türkçe",
+    "tsn": "Afrikaanca",
+    "uk": "Ukraynaca",
+    "ur": "Urduca",
+    "vi": "Vietnamca",
+    "zh": "Çince",
+    "zh_TW": "Çince (Geleneksel Han)"}</translation>
 <translation id="4647836961514597010">Renk seçici</translation>
 <translation id="4660783501463101648">Classic kaldırıldı. ChromeVox Classic'e geçiş için kullanılan klavye geçiş tuşu kaldırıldı.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -649,6 +740,14 @@
 <translation id="5320727453979144100">Yapışkan mod etkinleştirildi</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgül}other{# virgül}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, metin kutusu</translation>
+<translation id="532485153932049746">Metin biçimlendirme
+    <ph name="FONT_SIZE_STRING" />
+    <ph name="COLOR_STRING" />
+    <ph name="BOLD_STRING" />
+    <ph name="ITALIC_STRING" />
+    <ph name="UNDERLINE_STRING" />
+    <ph name="LINE_THROUGH_STRING" />
+    <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="5330443287809544590"><ph name="NAME" />, bağlantı</translation>
 <translation id="5331522683003474486">Cihazı yalnızca 1 veya 2 anahtarla kontrol edin.</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
@@ -661,6 +760,7 @@
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Modal uyarı</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{noktalı virgül}other{# noktalı virgül}}</translation>
+<translation id="5420259671171615858">Menülerde arama yapın</translation>
 <translation id="5435274640623994081">Ses sinyali günlük kaydını etkinleştir</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{küçüktür işareti}other{# küçüktür işareti}}</translation>
 <translation id="5444587279251314700">(etkin)</translation>
@@ -944,6 +1044,7 @@
 <translation id="7400575256015741911">Yazım hatası algılandı</translation>
 <translation id="7408482676469142474">tbl</translation>
 <translation id="7425395583360211003">satır başı</translation>
+<translation id="7429415133937917139">Ekranın üst kısmındaki ChromeVox panelinde yenilenebilir bir braille ekranın çıktısını simüle eder</translation>
 <translation id="7434509671034404296">Geliştirici</translation>
 <translation id="743783356331413498">Örnek</translation>
 <translation id="7439060726180460871">Dizin</translation>
@@ -982,6 +1083,8 @@
 <translation id="7693840228159394336">Önceki radyo düğmesi</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Sonraki birleşik giriş kutusu yok</translation>
+<translation id="772146615414628379">Tebrikler! ChromeVox kullanımıyla ilgili temel bilgileri başarıyla öğrendiniz. ChromeVox komut menüsünü Arama+Nokta tuşlarına basarak istediğiniz zaman açabileceğinizi unutmayın. ChromeVox ve Chrome OS hakkında daha da fazla bilgi edinmek için aşağıdaki makaleleri inceleyin.
+    Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidip düğmeyi tıklayın.</translation>
 <translation id="7724603315864178912">Kes</translation>
 <translation id="7731785449856576010">Sonraki medya widget'ı yok</translation>
 <translation id="773906353055481349">Hücreden hücreye gitmek için Arama+Ctrl+Alt ve ok tuşlarına basın</translation>

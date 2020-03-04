@@ -445,10 +445,14 @@ public class SiteSettingsCategory {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
             if (type == ContentSettingsType.GEOLOCATION) {
                 permission_string = R.string.android_location_permission_off;
-            } else if (type == ContentSettingsType.MEDIASTREAM_CAMERA) {
-                permission_string = R.string.android_camera_permission_off;
             } else if (type == ContentSettingsType.MEDIASTREAM_MIC) {
                 permission_string = R.string.android_microphone_permission_off;
+            } else if (type == ContentSettingsType.MEDIASTREAM_CAMERA) {
+                permission_string = R.string.android_camera_permission_off;
+            } else if (type == ContentSettingsType.AR) {
+                // TODO(https://crbug.com/1058055): Use the missing camera permission
+                // text until we get guidance from UX team.
+                permission_string = R.string.android_camera_permission_off;
             } else if (type == ContentSettingsType.NOTIFICATIONS) {
                 permission_string = R.string.android_notifications_permission_off;
             }

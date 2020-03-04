@@ -19,12 +19,12 @@
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [128, 28, 80, 80],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [28, 28, 80, 80],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
@@ -59,7 +59,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [128, 28, 60, 60],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='first'",
@@ -69,7 +69,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
           "rect": [28, 28, 60, 60],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         }
       ]
     }

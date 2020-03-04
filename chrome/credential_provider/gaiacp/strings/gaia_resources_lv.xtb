@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Sinhronizējot jūsu darba konta paroli ar jūsu Windows profilu, radās problēma. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="2515346402363002066">Sesija ir beigusies. Pierakstieties, izmantojot darba kontu.</translation>
 <translation id="2844349213149998955">Šajā ierīcē nav atļauts pierakstīties ar personīgo kontu. Lūdzu, pierakstieties ar darba kontu.</translation>
-<translation id="2954423647682729023">Pierakstieties, izmantojot darba kontu.</translation>
 <translation id="3217145568844727893">Ja turpināsiet, neievadot pašreizējo Windows paroli, iespējams, neatgriezeniski zaudēsiet datus šajā ierīcē.</translation>
 <translation id="3285576391135346912">Jūs varat pierakstīties, tikai izmantojot e-pasta adresi, kas beidzas ar: <ph name="EMAIL_DOMAINS" />. Mēģiniet pierakstīties vēlreiz, izmantojot darba kontu.</translation>
 <translation id="3306357053520292004">Lietotājs šajā datorā jau tika pievienots, izmantojot šo kontu. Lūdzu, pierakstieties ar citu kontu.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Jūsu administrators neļauj jums pierakstīties, izmantojot šo kontu. Mēģiniet lietot citu kontu.</translation>
 <translation id="8639729688781680518">Aizmirsu Windows paroli</translation>
 <translation id="866458870819756755">Nevarēja izveidot lietotāju.</translation>
-<translation id="8875753657315897487">Pierakstīties, izmantojot darba kontu</translation>
 <translation id="9055998212250844221">Lietotāja konts izveidots, izmantojot Google akreditācijas datu nodrošinātāju operētājsistēmai Windows</translation>
 </translationbundle>

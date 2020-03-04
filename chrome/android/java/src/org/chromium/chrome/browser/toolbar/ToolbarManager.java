@@ -29,6 +29,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -69,17 +70,14 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupPopupUi;
@@ -169,7 +167,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private BottomControlsCoordinator mBottomControlsCoordinator;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
-    private TabModelObserver mTabModelObserver;
+    private ActivityTabProvider.ActivityTabTabObserver mActivityTabTabObserver;
+    private final ActivityTabProvider mActivityTabProvider;
     private MenuDelegatePhone mMenuDelegatePhone;
     private final LocationBarModel mLocationBarModel;
     private Profile mCurrentProfile;
@@ -206,8 +205,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private int mFullscreenFindInPageToken = TokenHolder.INVALID_TOKEN;
     private int mFullscreenMenuToken = TokenHolder.INVALID_TOKEN;
     private int mFullscreenHighlightToken = TokenHolder.INVALID_TOKEN;
-
-    private int mPreselectedTabId = Tab.INVALID_TAB_ID;
 
     private boolean mNativeLibraryReady;
     private boolean mTabRestoreCompleted;
@@ -254,7 +251,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier,
             IdentityDiscController identityDiscController,
-            List<ButtonDataProvider> buttonDataProviders) {
+            List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider activityTabProvider) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
@@ -366,54 +363,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
 
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mActivityTabProvider = activityTabProvider;
+        mActivityTabTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
+                mActivityTabProvider) {
             @Override
-            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                refreshSelectedTab();
+            public void onObservingDifferentTab(Tab tab) {
+                refreshSelectedTab(tab);
             }
 
-            @Override
-            public void onTabStateInitialized() {
-                mTabRestoreCompleted = true;
-                handleTabRestoreCompleted();
-            }
-        };
-
-        mTabModelObserver = new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                mPreselectedTabId = Tab.INVALID_TAB_ID;
-                refreshSelectedTab();
-            }
-
-            @Override
-            public void tabClosureUndone(Tab tab) {
-                refreshSelectedTab();
-            }
-
-            @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                mLocationBar.setTitleToPageTitle();
-                refreshSelectedTab();
-            }
-
-            @Override
-            public void tabPendingClosure(Tab tab) {
-                refreshSelectedTab();
-            }
-
-            @Override
-            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
-                refreshSelectedTab();
-            }
-
-            @Override
-            public void tabRemoved(Tab tab) {
-                refreshSelectedTab();
-            }
-        };
-
-        mTabObserver = new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
                 if (mLocationBarModel.getTab() == null) return;
@@ -599,6 +556,23 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
         };
 
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabStateInitialized() {
+                mTabRestoreCompleted = true;
+                handleTabRestoreCompleted();
+                Profile profile = mTabModelSelector != null
+                        ? mTabModelSelector.getCurrentModel().getProfile()
+                        : null;
+                setCurrentProfile(profile);
+            }
+
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                setCurrentProfile(newModel.getProfile());
+            }
+        };
+
         mBookmarksObserver = new BookmarkBridge.BookmarkModelObserver() {
             @Override
             public void bookmarkModelChanged() {
@@ -687,8 +661,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mSceneChangeObserver = new SceneChangeObserver() {
             @Override
             public void onTabSelectionHinted(int tabId) {
-                mPreselectedTabId = tabId;
-                refreshSelectedTab();
+                Tab tab = mTabModelSelector != null ? mTabModelSelector.getTabById(tabId) : null;
+                refreshSelectedTab(tab);
 
                 if (mToolbar.setForceTextureCapture(true)) {
                     mControlContainer.invalidateBitmap();
@@ -780,8 +754,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     /** Record that homepage button was used for IPH reasons */
     private void recordToolbarUseForIPH(String toolbarIPHEvent) {
-        if (mTabModelSelector != null && mTabModelSelector.getCurrentTab() != null) {
-            Tab tab = mTabModelSelector.getCurrentTab();
+        // TODO(https://crbug.com/865801): access the profile directly, either via
+        // getOriginalProfile or via a Supplier<Profile>.
+        Tab tab = mActivityTabProvider.get();
+        if (tab != null) {
             Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
             tracker.notifyEvent(toolbarIPHEvent);
         }
@@ -847,7 +823,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 // As we have only just registered for notifications, any that were sent prior
                 // to this may have been missed. Calling refreshSelectedTab in case we missed
                 // the initial selection notification.
-                refreshSelectedTab();
+                refreshSelectedTab(mActivityTabProvider.get());
             }
         });
 
@@ -1026,9 +1002,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         }
         if (mTabModelSelector != null) {
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-            for (TabModel model : mTabModelSelector.getModels()) {
-                model.removeObserver(mTabModelObserver);
-            }
         }
         if (mBookmarkBridge != null) {
             mBookmarkBridge.destroy();
@@ -1182,11 +1155,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         }
 
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
-        for (TabModel model : mTabModelSelector.getModels()) model.addObserver(mTabModelObserver);
 
-        refreshSelectedTab();
+        refreshSelectedTab(mActivityTabProvider.get());
         if (mTabModelSelector.isTabStateInitialized()) mTabRestoreCompleted = true;
         handleTabRestoreCompleted();
+        setCurrentProfile(mTabModelSelector.getCurrentModel().getProfile());
         mTabCountProvider.setTabModelSelector(mTabModelSelector);
         mIncognitoStateProvider.setTabModelSelector(mTabModelSelector);
         mAppThemeColorProvider.setIncognitoStateProvider(mIncognitoStateProvider);
@@ -1639,13 +1612,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /**
      * Triggered when the selected tab has changed.
      */
-    private void refreshSelectedTab() {
-        Tab tab = null;
-        if (mPreselectedTabId != Tab.INVALID_TAB_ID) {
-            tab = mTabModelSelector.getTabById(mPreselectedTabId);
-        }
-        if (tab == null) tab = mTabModelSelector.getCurrentTab();
-
+    private void refreshSelectedTab(Tab tab) {
         boolean wasIncognito = mLocationBarModel.isIncognito();
         Tab previousTab = mLocationBarModel.getTab();
 
@@ -1661,13 +1628,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mActionModeController.startHideAnimation();
         }
         if (previousTab != tab || wasIncognito != isIncognito) {
-            if (previousTab != tab) {
-                if (previousTab != null) {
-                    previousTab.removeObserver(mTabObserver);
-                }
-                if (tab != null) tab.addObserver(mTabObserver);
-            }
-
             int defaultPrimaryColor =
                     ChromeColors.getDefaultThemeColor(mActivity.getResources(), isIncognito);
             int primaryColor =
@@ -1693,8 +1653,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
         }
 
-        Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
+        updateButtonStatus();
+    }
 
+    // TODO(https://crbug.com/865801): Abstract and encapsulate the "current profile" (really the
+    // current Profile for the current TabModel) into an ObservableSupplier, inject that directly to
+    // mLocationBar, and use it to create an ObservableSupplier<BookmarkBridge> so that we can
+    // remove setCurrentProfile and getBookmarkBridgeSupplier.
+    private void setCurrentProfile(Profile profile) {
         if (mCurrentProfile != profile) {
             if (mBookmarkBridge != null) {
                 mBookmarkBridge.destroy();
@@ -1711,8 +1677,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mCurrentProfile = profile;
             mBookmarkBridgeSupplier.set(mBookmarkBridge);
         }
-
-        updateButtonStatus();
     }
 
     private void updateCurrentTabDisplayStatus() {

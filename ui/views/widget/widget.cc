@@ -616,6 +616,9 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
 
+  if (widget_delegate_)
+    widget_delegate_->WindowWillClose();
+
   native_widget_->Close();
 }
 

@@ -107,11 +107,10 @@ void PrivacyScreenToastController::StartAutoCloseTimer() {
 
 void PrivacyScreenToastController::UpdateToastView() {
   if (toast_view_) {
-    // TODO(tengs): Hook up managed state after it is implemented.
     auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
     toast_view_->SetPrivacyScreenEnabled(
         /*enabled=*/privacy_screen_controller->GetEnabled(),
-        /*managed=*/true);
+        /*managed=*/privacy_screen_controller->IsManaged());
     bubble_view_->SetWidth(toast_view_->GetPreferredSize().width());
   }
 }

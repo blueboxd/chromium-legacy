@@ -189,7 +189,6 @@ test("updater_unittests") {
     "//base",
     "//base/test:test_support",
     "//chrome/updater:version_header",
-    "//chrome/updater/server/win",
     "//chrome/updater/win/test:test_executables",
     "//chrome/updater/win/test:test_strings",
     "//testing/gtest",

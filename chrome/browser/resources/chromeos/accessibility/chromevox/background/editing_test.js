@@ -1361,3 +1361,23 @@ TEST_F('ChromeVoxEditingTest', 'SelectAll', function() {
         input.focus();
       });
 });
+
+TEST_F('ChromeVoxEditingTest', 'TextAreaBrailleEmptyLine', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<textarea></textarea>', function(root) {
+    const textarea = root.find({role: RoleType.TEXT_FIELD});
+    this.listenOnce(textarea, 'focus', function() {
+      this.listenOnce(textarea, 'valueChanged', function() {
+        mockFeedback.call(this.press(38 /* up arrow */)).expectBraille('\n');
+        mockFeedback.call(this.press(38 /* up arrow */)).expectBraille('two');
+        mockFeedback.call(this.press(38 /* up arrow */)).expectBraille('one');
+        mockFeedback.call(this.press(38 /* up arrow */)).expectBraille('\n');
+        mockFeedback.call(this.press(38 /* up arrow */))
+            .expectBraille('test mled')
+            .replay();
+      });
+    });
+    textarea.focus();
+    textarea.setValue('test\n\none\ntwo\n\nthree');
+  });
+});

@@ -12,7 +12,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [58, 241, 489, 537],
           "reason": "chunk disappeared"
         },

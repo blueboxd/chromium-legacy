@@ -28,15 +28,18 @@ import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
  */
 public class WebLayer {
+    private static final String TAG = "WebLayer";
     // This metadata key, if defined, overrides the default behaviour of loading WebLayer from the
     // current WebView implementation. This is only intended for testing, and does not enforce any
     // signature requirements on the implementation, nor does it use the production code path to
@@ -56,6 +59,26 @@ public class WebLayer {
     @NonNull
     private final IWebLayer mImpl;
 
+    private static WebViewCompatibilityHelper sWebViewCompatHelper;
+
+    /** The result of calling {@link #initializeWebViewCompatibilityMode}. */
+    public enum WebViewCompatibilityResult {
+        /** Native libs were copied to data directory. */
+        SUCCESS_COPIED,
+
+        /** Correct libs have already been copied, or symlinks were used. */
+        SUCCESS_CACHED,
+
+        /** IOException was thrown, could mean there is not enough disk space. */
+        FAILURE_IO_ERROR,
+
+        /** This version of the WebLayer implementation does not support WebView compatibility. */
+        FAILURE_UNSUPPORTED_VERSION,
+
+        /** An uncategorized failure happened. */
+        FAILURE_OTHER,
+    }
+
     /**
      * Returns true if WebLayer is available. This tries to load WebLayer, but does no
      * initialization. This function may be called by code that uses WebView.
@@ -74,6 +97,37 @@ public class WebLayer {
     private static void checkAvailable(Context context) {
         if (!isAvailable(context)) {
             throw new UnsupportedVersionException(sLoader.getVersion());
+        }
+    }
+
+    /**
+     * Performs initialization needed to run WebView and WebLayer in the same process. This should
+     * be called as early as possible if this functionality is needed.
+     *
+     * @param appContext The hosting application's Context.
+     * @param baseDir The directory to copy any necessary files into.
+     * @param callback Callback called on success or failure.
+     */
+    public static void initializeWebViewCompatibilityMode(@NonNull Context appContext,
+            @NonNull File baseDir, @NonNull Callback<WebViewCompatibilityResult> callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (sWebViewCompatHelper != null) {
+            throw new AndroidRuntimeException(
+                    "initializeWebViewCompatibilityMode() has already been called.");
+        }
+        if (sLoader != null) {
+            throw new AndroidRuntimeException(
+                    "initializeWebViewCompatibilityMode() must be called before WebLayer is "
+                    + "loaded.");
+        }
+        try {
+            sWebViewCompatHelper = WebViewCompatibilityHelper.initialize(
+                    appContext, getOrCreateRemoteContext(appContext), baseDir, callback);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onResult(WebViewCompatibilityResult.FAILURE_OTHER);
+            }
+            Log.e(TAG, "Unable to initialize WebView compatibility", e);
         }
     }
 
@@ -206,12 +260,17 @@ public class WebLayer {
          * Creates WebLayerLoader. This does a minimal amount of loading
          */
         public WebLayerLoader(@NonNull Context appContext) {
-            ClassLoader remoteClassLoader;
+            ClassLoader remoteClassLoader = null;
             boolean available = false;
             int majorVersion = -1;
             String version = "<unavailable>";
             try {
-                remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
+                if (sWebViewCompatHelper != null) {
+                    remoteClassLoader = sWebViewCompatHelper.getWebLayerClassLoader();
+                }
+                if (remoteClassLoader == null) {
+                    remoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
+                }
                 Class factoryClass = remoteClassLoader.loadClass(
                         "org.chromium.weblayer_private.WebLayerFactoryImpl");
                 // NOTE: the 20 comes from the previous scheme of incrementing versioning. It must
@@ -226,8 +285,8 @@ public class WebLayer {
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();
             } catch (PackageManager.NameNotFoundException | ReflectiveOperationException
-                    | RemoteException e) {
-                Log.e("WebLayer", "Unable to create WebLayerFactory", e);
+                    | RemoteException | ExecutionException | InterruptedException e) {
+                Log.e(TAG, "Unable to create WebLayerFactory", e);
             }
             mAvailable = available;
             mMajorVersion = majorVersion;

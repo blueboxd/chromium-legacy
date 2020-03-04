@@ -805,7 +805,7 @@ cc_test("cc_unittests") {
     # TODO(samans): Support more configurations.
     # CFI issue: https://crbug.com/967819
     # LSAN issue: https://crbug.com/971325
-    # Fuchsia ARM64 issue: https://b/issues/146226835
+    # Fuchsia ARM64 https://crbug.com/1058247
     if ((use_x11 && !is_cfi && !is_lsan) ||
         (is_fuchsia && target_cpu == "x64")) {
       defines += [ "ENABLE_CC_VULKAN_TESTS" ]

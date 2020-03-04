@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -16,8 +17,6 @@
 
 <dom-module id="settings-safety-check-page">
   <template>
-    <!-- // TODO(crbug.com/1010001): Release block M82 beta:
-        Support dark mode. -->
     <style include="settings-shared">
       #safetyCheckCollapse .list-item.selected {
          min-height: var(--settings-row-two-line-min-height);
@@ -36,6 +35,17 @@
 
       .icon-red {
         fill: var(--google-red-600);
+      }
+
+      /* dark mode */
+      @media (prefers-color-scheme: dark) {
+        .icon-blue {
+          fill: var(--google-blue-refresh-300);
+        }
+
+        .icon-red {
+          fill: var(--google-red-refresh-300);
+        }
       }
     </style>
     <div class="settings-box first two-line">

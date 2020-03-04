@@ -570,7 +570,6 @@ if (!is_ios && !is_fuchsia) {
       "//components/security_state/content",
       "//components/security_state/core",
       "//components/strings",
-      "//components/tracing",
       "//components/ukm:test_support",
       "//components/ukm/content",
       "//content/public/browser",

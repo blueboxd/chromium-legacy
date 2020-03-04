@@ -15,7 +15,12 @@
         {
           "object": "LayoutTableSection TBODY id='target'",
           "rect": [0, 0, 186, 134],
-          "reason": "full layer"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutTableSection TBODY id='target'",
+          "rect": [0, 0, 134, 85],
+          "reason": "paint property change"
         }
       ]
     },

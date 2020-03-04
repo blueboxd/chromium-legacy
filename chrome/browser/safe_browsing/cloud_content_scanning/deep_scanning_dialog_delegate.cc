@@ -50,10 +50,6 @@
 
 namespace safe_browsing {
 
-// TODO(rogerta): keeping this disabled by default until UX is finalized.
-const base::Feature kDeepScanningOfUploadsUI{
-    "SafeBrowsingDeepScanningOfUploadsUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 // Global pointer of factory function (RepeatingCallback) used to create
@@ -203,6 +199,11 @@ bool AllowUnsupportedFileTypes() {
       prefs::kBlockUnsupportedFiletypes);
   return state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS &&
          state != BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS;
+}
+
+bool* UIEnabledStorage() {
+  static bool enabled = true;
+  return &enabled;
 }
 
 }  // namespace
@@ -416,9 +417,8 @@ void DeepScanningDialogDelegate::ShowForWebContents(
   bool work_being_done = delegate->UploadData();
 
   // Only show UI if work is being done in the background, the user must
-  // wait for a verdict, and the UI feature is enabled.
-  bool show_ui = work_being_done && wait_for_verdict &&
-                 base::FeatureList::IsEnabled(kDeepScanningOfUploadsUI);
+  // wait for a verdict.
+  bool show_ui = work_being_done && wait_for_verdict && (*UIEnabledStorage());
 
   // If the UI is enabled, create the modal dialog.
   if (show_ui) {
@@ -455,6 +455,11 @@ void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
 void DeepScanningDialogDelegate::ResetFactoryForTesting() {
   if (GetFactoryStorage())
     GetFactoryStorage()->Reset();
+}
+
+// static
+void DeepScanningDialogDelegate::DisableUIForTesting() {
+  *UIEnabledStorage() = false;
 }
 
 DeepScanningDialogDelegate::DeepScanningDialogDelegate(

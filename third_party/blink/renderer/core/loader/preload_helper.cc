@@ -365,7 +365,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   }
   link_fetch_params.SetLinkPreload(true);
   return PreloadHelper::StartPreload(resource_type.value(), link_fetch_params,
-                                     document.Fetcher());
+                                     document);
 }
 
 // https://html.spec.whatwg.org/C/#link-type-modulepreload
@@ -657,7 +657,8 @@ void PreloadHelper::LoadLinksFromHeader(
 
 Resource* PreloadHelper::StartPreload(ResourceType type,
                                       FetchParameters& params,
-                                      ResourceFetcher* resource_fetcher) {
+                                      Document& document) {
+  ResourceFetcher* resource_fetcher = document.Fetcher();
   Resource* resource = nullptr;
   switch (type) {
     case ResourceType::kImage:
@@ -675,6 +676,8 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       break;
     case ResourceType::kFont:
       resource = FontResource::Fetch(params, resource_fetcher, nullptr);
+      document.GetFontPreloadManager().FontPreloadingStarted(
+          ToFontResource(resource));
       break;
     case ResourceType::kAudio:
     case ResourceType::kVideo:

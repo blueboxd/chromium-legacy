@@ -406,6 +406,26 @@ PasswordsPrivateDelegateImpl::GetCompromisedCredentialsInfo() {
   return password_check_delegate_.GetCompromisedCredentialsInfo();
 }
 
+void PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword(
+    api::passwords_private::CompromisedCredential credential,
+    api::passwords_private::PlaintextReason reason,
+    content::WebContents* web_contents,
+    PlaintextCompromisedPasswordCallback callback) {
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
+  web_contents_ = web_contents;
+  // TODO(https://crbug.com/1047726): Add Support for Editing.
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated(
+          password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(
+      password_check_delegate_.GetPlaintextCompromisedPassword(
+          std::move(credential)));
+}
+
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,
     const std::string& folder_name) {

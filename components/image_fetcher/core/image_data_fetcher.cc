@@ -114,10 +114,7 @@ void ImageDataFetcher::FetchImageData(
       DVLOG(0) << "Failed to parse data url";
     }
 
-    // Post a task to maintain our guarantee that the call won't be called
-    // synchronously.
-    base::PostTask(FROM_HERE, BindOnce(std::move(callback), std::move(data),
-                                       RequestMetadata()));
+    std::move(callback).Run(std::move(data), RequestMetadata());
     return;
   }
 

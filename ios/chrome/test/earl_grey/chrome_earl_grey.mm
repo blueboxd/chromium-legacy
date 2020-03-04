@@ -834,6 +834,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isAutofillCompanyNameEnabled];
 }
 
+- (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch {
+  return [ChromeEarlGreyAppInterface
+      appHasLaunchSwitch:base::SysUTF8ToNSString(launchSwitch)];
+}
+
 - (BOOL)isCustomWebKitLoadedIfRequested {
   return [ChromeEarlGreyAppInterface isCustomWebKitLoadedIfRequested];
 }

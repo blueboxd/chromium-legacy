@@ -10,10 +10,9 @@
 
 #include "base/callback_forward.h"
 #include "base/location.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/no_destructor.h"
-#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 
 // Allows sequences to be defined at compile time so that objects can opt into
 // requiring that their methods are called on a specific sequence in a way that
@@ -98,7 +97,6 @@ class StaticTaskRunnerHolder
 //     struct BackgroundTaskTraitsProvider {
 //       static constexpr base::TaskTraits GetTraits() {
 //         return {
-//           base::ThreadPool(),
 //           base::TaskPriority::BEST_EFFORT,
 //           base::MayBlock(),
 //         };
@@ -112,7 +110,7 @@ class StaticTaskRunnerHolder
 //                           const BackgroundSequence::Key&);
 //   };
 struct DefaultStaticSequenceTraitsProvider {
-  static constexpr base::TaskTraits GetTraits() { return {base::ThreadPool()}; }
+  static constexpr base::TaskTraits GetTraits() { return base::TaskTraits(); }
 };
 
 // A class that extends StaticSequence is a holder for a process-global

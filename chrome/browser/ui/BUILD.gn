@@ -1434,6 +1434,7 @@ jumbo_static_library("ui") {
       "//chrome/browser/resource_coordinator/tab_ranker",
       "//chrome/browser/safe_browsing:advanced_protection",
       "//chrome/browser/ui/color:color_headers",
+      "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/common:buildflags",
       "//chrome/common:search_mojom",
@@ -1485,10 +1486,6 @@ jumbo_static_library("ui") {
         "//chrome/browser/web_applications/extensions",
         "//google_apis/drive",
       ]
-    }
-
-    if (use_color_pipeline) {
-      deps += [ "//chrome/browser/ui/color:mixers" ]
     }
   }
 

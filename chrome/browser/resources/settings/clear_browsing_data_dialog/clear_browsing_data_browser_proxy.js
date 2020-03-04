@@ -7,6 +7,10 @@
  * to interact with the browser.
  */
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * An InstalledApp represents a domain with data that the user might want
  * to protect from being deleted.
@@ -21,11 +25,11 @@
  *   appName: string
  * }}
  */
-let InstalledApp;
+/* #export */ let InstalledApp;
 
 cr.define('settings', function() {
   /** @interface */
-  class ClearBrowsingDataBrowserProxy {
+  /* #export */ class ClearBrowsingDataBrowserProxy {
     /**
      * @param {!Array<string>} dataTypes
      * @param {number} timePeriod
@@ -55,7 +59,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.ClearBrowsingDataBrowserProxy}
    */
-  class ClearBrowsingDataBrowserProxyImpl {
+  /* #export */ class ClearBrowsingDataBrowserProxyImpl {
     /** @override */
     clearBrowsingData(dataTypes, timePeriod, installedApps) {
       return cr.sendWithPromise(

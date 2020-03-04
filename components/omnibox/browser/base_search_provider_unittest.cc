@@ -79,7 +79,8 @@ class BaseSearchProviderTest : public testing::Test {
             nullptr /* PrefService */,
             std::unique_ptr<SearchTermsData>(new SearchTermsData),
             nullptr /* KeywordWebDataService */,
-            std::unique_ptr<TemplateURLServiceClient>(), base::Closure()));
+            std::unique_ptr<TemplateURLServiceClient>(),
+            base::RepeatingClosure()));
     client_.reset(new MockAutocompleteProviderClient());
     client_->set_template_url_service(std::move(template_url_service));
     provider_ = new NiceMock<TestBaseSearchProvider>(

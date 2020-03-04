@@ -877,8 +877,8 @@ constexpr uint8_t kCtapMakeCredentialRequest[] = {
     0xa2,
     // key - "alg"
     0x63, 0x61, 0x6c, 0x67,
-    // value - 7
-    0x07,
+    // value - -7
+    0x26,
     // key - "type"
     0x64, 0x74, 0x79, 0x70, 0x65,
     // value - "public-key"

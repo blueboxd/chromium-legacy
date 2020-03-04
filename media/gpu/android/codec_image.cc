@@ -234,9 +234,8 @@ bool CodecImage::HasTextureOwner() const {
   return !!texture_owner();
 }
 
-gpu::gles2::Texture* CodecImage::GetTexture() const {
-  DCHECK(texture_owner());
-  return gpu::gles2::Texture::CheckedCast(texture_owner()->GetTextureBase());
+gpu::TextureBase* CodecImage::GetTextureBase() const {
+  return texture_owner()->GetTextureBase();
 }
 
 bool CodecImage::RenderToFrontBuffer() {

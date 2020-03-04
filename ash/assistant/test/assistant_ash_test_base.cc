@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_setup.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
@@ -57,6 +58,7 @@ void PressHomeButton() {
 
 AssistantAshTestBase::AssistantAshTestBase()
     : test_api_(AssistantTestApi::Create()),
+      test_setup_(std::make_unique<TestAssistantSetup>()),
       test_web_view_factory_(std::make_unique<TestAssistantWebViewFactory>()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
@@ -118,6 +120,11 @@ void AssistantAshTestBase::CloseLauncher() {
 
 void AssistantAshTestBase::SetTabletMode(bool enable) {
   test_api_->SetTabletMode(enable);
+}
+
+void AssistantAshTestBase::SetConsentStatus(
+    chromeos::assistant::prefs::ConsentStatus consent_status) {
+  test_api_->SetConsentStatus(consent_status);
 }
 
 void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
@@ -233,6 +240,10 @@ views::View* AssistantAshTestBase::voice_input_toggle() {
 
 views::View* AssistantAshTestBase::keyboard_input_toggle() {
   return test_api_->keyboard_input_toggle();
+}
+
+views::View* AssistantAshTestBase::opt_in_view() {
+  return test_api_->opt_in_view();
 }
 
 void AssistantAshTestBase::ShowKeyboard() {

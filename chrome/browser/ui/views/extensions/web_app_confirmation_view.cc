@@ -101,8 +101,7 @@ WebAppConfirmationView::WebAppConfirmationView(
   }
 
   title_tf_->SelectAll(true);
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::BOOKMARK_APP_CONFIRMATION);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::WEB_APP_CONFIRMATION);
 }
 
 views::View* WebAppConfirmationView::GetInitiallyFocusedView() {

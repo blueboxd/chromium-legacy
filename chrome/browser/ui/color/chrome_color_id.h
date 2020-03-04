@@ -8,10 +8,6 @@
 #include "ui/color/color_buildflags.h"
 #include "ui/color/color_id.h"
 
-#if !BUILDFLAG(USE_COLOR_PIPELINE)
-#include "chrome/browser/themes/theme_properties.h"  // nogncheck
-#endif
-
 // TODO(pkasting): Add the rest of the colors.
 
 // clang-format off
@@ -73,12 +69,10 @@ enum ChromeColorIds : ui::ColorId {
 static_assert(ui::ColorId{kChromeColorsEnd} <= ui::ColorId{ui::kUiColorsLast},
               "Embedder colors must not exceed allowed space");
 
-#if BUILDFLAG(USE_COLOR_PIPELINE)
 enum ChromeColorSetIds : ui::ColorSetId {
   kColorSetCustomTheme = ui::kUiColorSetsEnd,
 
   kChromeColorSetsEnd,
 };
-#endif  // BUILDFLAG(USE_COLOR_PIPELINE)
 
 #endif  // CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_

@@ -13,6 +13,7 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
       'isVisible',
       'observeThemeChanges',
       'showBackgroundContextMenu',
+      'showEditDialogForGroup',
       'showTabContextMenu',
       'reportTabActivationDuration',
       'reportTabDataReceivedDuration',
@@ -62,6 +63,12 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
 
   showBackgroundContextMenu(locationX, locationY) {
     this.methodCalled('showBackgroundContextMenu', [locationX, locationY]);
+  }
+
+  showEditDialogForGroup(groupId, locationX, locationY, width, height) {
+    this.methodCalled(
+        'showEditDialogForGroup',
+        [groupId, locationX, locationY, width, height]);
   }
 
   showTabContextMenu(tabId, locationX, locationY) {

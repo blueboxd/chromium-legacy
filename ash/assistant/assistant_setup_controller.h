@@ -37,7 +37,7 @@ class AssistantSetupController : public AssistantControllerObserver,
   void StartOnboarding(bool relaunch, FlowType type = FlowType::kConsentFlow);
 
  private:
-  void OnOptInFlowFinished(bool completed);
+  void OnOptInFlowFinished(bool relaunch, bool completed);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

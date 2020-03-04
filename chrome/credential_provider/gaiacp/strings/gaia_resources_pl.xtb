@@ -7,7 +7,6 @@
 <translation id="2048923169632968961">Podczas synchronizowania hasła do konta do pracy z Twoim profilem Windows wystąpił problem. Skontaktuj się z administratorem.</translation>
 <translation id="2515346402363002066">Sesja wygasła. Zaloguj się na swoje konto do pracy.</translation>
 <translation id="2844349213149998955">Logowanie się na to urządzenie za pomocą konta osobistego jest niedozwolone. Zaloguj się za pomocą konta do pracy.</translation>
-<translation id="2954423647682729023">Zaloguj się na swoje konto do pracy.</translation>
 <translation id="3217145568844727893">Jeśli przejdziesz dalej bez wpisania hasła do systemu Windows, możesz nieodwracalnie utracić dane na tym urządzeniu.</translation>
 <translation id="3285576391135346912">Możesz się zalogować tylko przy użyciu adresu e-mail, który kończy się na: <ph name="EMAIL_DOMAINS" />. Spróbuj ponownie, używając konta do pracy.</translation>
 <translation id="3306357053520292004">Inny użytkownik komputera został już dodany za pomocą tego konta. Zaloguj się, używając innego konta.</translation>
@@ -35,6 +34,5 @@
 <translation id="8453641970025433267">Twój administrator nie zezwala na logowanie się na to konto. Użyj innego konta.</translation>
 <translation id="8639729688781680518">Nie pamiętam hasła do Windows</translation>
 <translation id="866458870819756755">Nie udało się utworzyć użytkownika.</translation>
-<translation id="8875753657315897487">Zaloguj się, używając swojego konta do pracy</translation>
 <translation id="9055998212250844221">Konto użytkownika utworzone przez dostawcę danych uwierzytelniających Google do systemów Windows</translation>
 </translationbundle>

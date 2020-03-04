@@ -40,6 +40,10 @@ bool FakeMessageCenter::IsQuietMode() const {
   return false;
 }
 
+bool FakeMessageCenter::IsSpokenFeedbackEnabled() const {
+  return false;
+}
+
 Notification* FakeMessageCenter::FindVisibleNotificationById(
     const std::string& id) {
   const auto& notifications = GetVisibleNotifications();
@@ -132,6 +136,8 @@ void FakeMessageCenter::DisplayedNotification(const std::string& id,
                                               const DisplaySource source) {}
 
 void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {}
+
+void FakeMessageCenter::SetSpokenFeedbackEnabled(bool enabled) {}
 
 void FakeMessageCenter::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {}

@@ -13,9 +13,6 @@ class UpdateService;
 // A factory method to create an UpdateService class instance.
 std::unique_ptr<UpdateService> CreateUpdateService();
 
-// Updates all registered applications.
-int UpdateApps();
-
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_UPDATE_APPS_H_

@@ -481,5 +481,17 @@ const base::Feature kSuppressContentTypeForBeaconMadeWithArrayBufferView{
 const base::Feature kBlockHTMLParserOnStyleSheets{
     "BlockHTMLParserOnStyleSheets", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Slightly delays rendering if there are fonts being preloaded, so that
+// they don't miss the first paint if they can be loaded fast enough (e.g.,
+// from the disk cache)
+const base::Feature kFontPreloadingDelaysRendering{
+    "FontPreloadingDelaysRendering", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Set to be over 90th-percentile of HttpCache.AccessToDone.Used on all
+// platforms, and also to allow some time for IPC and scheduling.
+// TODO(xiaochengh): Tune it for the best performance.
+const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
+    &kFontPreloadingDelaysRendering, "delay-in-ms", 100};
+
 }  // namespace features
 }  // namespace blink

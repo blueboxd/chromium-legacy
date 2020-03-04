@@ -85,6 +85,7 @@ group("gn_all") {
     "//tools/ipc_fuzzer:ipc_fuzzer_all",
     "//tools/metrics:metrics_metadata",
     "//ui/base:ui_base_unittests",
+    "//ui/color:color_unittests",
     "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
   ]
@@ -827,10 +828,6 @@ group("gn_all") {
       "//third_party/dawn:dawn_end2end_tests_temp_group",
       "//third_party/dawn:dawn_unittests_temp_group",
     ]
-  }
-
-  if (use_color_pipeline) {
-    deps += [ "//ui/color:color_unittests" ]
   }
 
   # PFFFT.

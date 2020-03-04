@@ -1,23 +1,34 @@
+#!/usr/bin/env python
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import unittest
 
-from ukm_model import UKM_XML_TYPE
-from ukm_model import _EVENT_TYPE
-from ukm_model import _METRIC_TYPE
 from codegen import EventInfo
 from codegen import MetricInfo
 from builders_template import HEADER as BUILDERS_HEADER_TEMPLATE
 from builders_template import IMPL as BUILDERS_IMPL_TEMPLATE
 from decode_template import HEADER as DECODE_HEADER_TEMPLATE
 from decode_template import IMPL as DECODE_IMPL_TEMPLATE
+import ukm_model
+import gen_builders
 
 
 class GenBuildersTest(unittest.TestCase):
+  def testFilterObsoleteMetrics(self):
+    data = gen_builders.ReadFilteredData('../../tools/metrics/ukm/ukm.xml')
+    for event in data[ukm_model._EVENT_TYPE.tag]:
+      self.assertTrue(ukm_model.IsNotObsolete(event))
+      for metric in event[ukm_model._METRIC_TYPE.tag]:
+        self.assertTrue(ukm_model.IsNotObsolete(metric))
 
   def testGenerateCode(self):
     relpath = '.'
-    data = UKM_XML_TYPE.Parse(open('../../tools/metrics/ukm/ukm.xml').read())
-    event = data[_EVENT_TYPE.tag][0]
-    metric = event[_METRIC_TYPE.tag][0]
+    data = ukm_model.UKM_XML_TYPE.Parse(
+        open('../../tools/metrics/ukm/ukm.xml').read())
+    event = data[ukm_model._EVENT_TYPE.tag][0]
+    metric = event[ukm_model._METRIC_TYPE.tag][0]
     self.assertIsNotNone(event)
     self.assertIsNotNone(metric)
     eventInfo = EventInfo(event)

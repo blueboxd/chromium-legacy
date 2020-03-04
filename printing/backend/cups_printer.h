@@ -77,6 +77,9 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
 
   std::string GetMakeAndModel() const;
 
+  // Returns the "printer-info" option of the printer as configured in CUPS.
+  std::string GetInfo() const;
+
   std::string GetUri() const;
 
   // Lazily initialize dest info as it can require a network call

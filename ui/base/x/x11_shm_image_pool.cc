@@ -273,9 +273,7 @@ void XShmImagePool::SwapBuffers(
   swap_closures_.emplace();
   SwapClosure& swap_closure = swap_closures_.back();
   swap_closure.closure = base::BindOnce(std::move(callback), pixel_size_);
-#ifndef NDEBUG
   swap_closure.shmseg = frame_states_[current_frame_index_].shminfo_.shmseg;
-#endif
 
   current_frame_index_ = (current_frame_index_ + 1) % frame_states_.size();
 }
@@ -302,14 +300,13 @@ XShmImagePool::~XShmImagePool() {
 }
 
 void XShmImagePool::DispatchShmCompletionEvent(XShmCompletionEvent event) {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!swap_closures_.empty());
+  // DCHECKs replaced with CHECKs here for https://crbug.com/1057943
+  CHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  CHECK(!swap_closures_.empty());
 
   SwapClosure& swap_ack = swap_closures_.front();
-#ifndef NDEBUG
-  DCHECK_EQ(event.shmseg, swap_ack.shmseg);
-  DCHECK_EQ(event.offset, 0UL);
-#endif
+  CHECK_EQ(event.shmseg, swap_ack.shmseg);
+  CHECK_EQ(event.offset, 0UL);
 
   std::move(swap_ack.closure).Run();
   swap_closures_.pop();

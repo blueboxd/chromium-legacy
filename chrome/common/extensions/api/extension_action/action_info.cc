@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -199,14 +198,6 @@ void ActionInfo::SetPageActionInfo(Extension* extension,
                                    std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kPageAction,
                              std::make_unique<ActionInfoData>(std::move(info)));
-}
-
-// static
-bool ActionInfo::IsVerboseInstallMessage(const Extension* extension) {
-  const ActionInfo* page_action_info = GetPageActionInfo(extension);
-  return page_action_info &&
-      (CommandsInfo::GetPageActionCommand(extension) ||
-       !page_action_info->default_icon.empty());
 }
 
 }  // namespace extensions

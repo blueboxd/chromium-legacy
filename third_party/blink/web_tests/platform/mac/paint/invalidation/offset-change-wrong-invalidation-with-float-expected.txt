@@ -9,12 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment '\u25E6 '",
-          "rect": [71, 92, 7, 18],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     },

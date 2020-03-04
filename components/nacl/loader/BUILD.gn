@@ -225,7 +225,6 @@ if (is_nacl_nonsfi) {
       "//components/nacl/common:minimal",
       "//components/nacl/common:mojo_bindings",
       "//components/nacl/common:switches",
-      "//components/tracing",
       "//content",
       "//ipc",
       "//mojo/core/embedder",

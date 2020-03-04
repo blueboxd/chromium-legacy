@@ -9,7 +9,7 @@
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV id='square'",
           "rect": [8, 8, 30, 30],
-          "reason": "chunk appeared"
+          "reason": "appeared"
         }
       ]
     }

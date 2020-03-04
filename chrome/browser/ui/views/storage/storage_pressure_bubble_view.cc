@@ -12,14 +12,15 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
 
-const char kAllSitesContentSettingsUrl[] = "chrome://settings/content/all";
+const char kAllSitesContentSettingsUrl[] =
+    "chrome://settings/content/all?sort=data-stored";
 
 }  // namespace
 
@@ -90,9 +91,14 @@ void StoragePressureBubbleView::Init() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Description text label.
+  auto origin_string = url_formatter::FormatUrl(
+      origin_.GetURL(),
+      url_formatter::kFormatUrlOmitDefaults |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+      net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
   auto text_label = std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
-      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_MESSAGE,
-      url_formatter::FormatOriginForSecurityDisplay(origin_)));
+      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_MESSAGE, origin_string));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -393,7 +393,7 @@ public class RootUiCoordinator
                     toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
                     urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
-                    mIdentityDiscController, mButtonDataProviders);
+                    mIdentityDiscController, mButtonDataProviders, mActivityTabProvider);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

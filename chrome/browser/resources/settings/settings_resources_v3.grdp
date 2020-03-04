@@ -65,6 +65,23 @@
              use_base_dir="false"
              type="BINDATA" />
   </if>
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_CLEAR_BROWSING_DATA_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_CLEAR_BROWSING_DATA_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/clear_browsing_data_dialog.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HISTORY_DELETION_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/history_deletion_dialog.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_INSTALLED_APP_CHECKBOX_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/installed_app_checkbox.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/controlled_button.m.js"
            use_base_dir="false"
@@ -361,6 +378,11 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_favicon.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_SYNC_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <if expr="not chromeos">
     <include name="IDR_SETTINGS_PRINTING_PAGE_PRINTING_BROWSER_PROXY_M_JS"
              file="${root_gen_dir}/chrome/browser/resources/settings/printing_page/printing_browser_proxy.m.js"

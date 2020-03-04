@@ -10,17 +10,10 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
-
-namespace {
-
-const char kCUPSDeviceUri[] = "device-uri";
-const char kCUPSPrinterInfoOpt[] = "printer-info";
-const char kCUPSPrinterStateOpt[] = "printer-state";
-
-}  // namespace
 
 namespace printing {
 
@@ -89,20 +82,26 @@ bool CupsPrinter::ToPrinterInfo(PrinterBasicInfo* printer_info) const {
   printer_info->printer_name = printer->name;
   printer_info->is_default = printer->is_default;
 
-  const char* info = cupsGetOption(kCUPSPrinterInfoOpt, printer->num_options,
-                                   printer->options);
-  if (info)
-    printer_info->printer_description = info;
+  const std::string info = GetInfo();
+  const std::string make_and_model = GetMakeAndModel();
 
-  const char* state = cupsGetOption(kCUPSPrinterStateOpt, printer->num_options,
+#if defined(OS_MACOSX)
+  // On Mac, "printer-info" option specifies the human-readable printer name,
+  // while "printer-make-and-model" specifies the printer description.
+  printer_info->display_name = info;
+  printer_info->printer_description = make_and_model;
+#else
+  // On other platforms, "printer-info" specifies the printer description.
+  printer_info->display_name = printer->name;
+  printer_info->printer_description = info;
+#endif  // defined(OS_MACOSX)
+
+  const char* state = cupsGetOption(kCUPSOptPrinterState, printer->num_options,
                                     printer->options);
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info =
-      cupsGetOption(kDriverNameTagName, printer->num_options, printer->options);
-  if (drv_info)
-    printer_info->options[kDriverInfoTagName] = *drv_info;
+  printer_info->options[kDriverInfoTagName] = make_and_model;
 
   // Store printer options.
   for (int opt_index = 0; opt_index < printer->num_options; ++opt_index) {
@@ -118,14 +117,22 @@ std::string CupsPrinter::GetName() const {
 }
 
 std::string CupsPrinter::GetMakeAndModel() const {
-  const char* make_and_model = cupsGetOption(
-      kDriverNameTagName, destination_->num_options, destination_->options);
+  const char* make_and_model =
+      cupsGetOption(kCUPSOptPrinterMakeAndModel, destination_->num_options,
+                    destination_->options);
 
   return make_and_model ? std::string(make_and_model) : std::string();
 }
 
+std::string CupsPrinter::GetInfo() const {
+  const char* info = cupsGetOption(
+      kCUPSOptPrinterInfo, destination_->num_options, destination_->options);
+
+  return info ? std::string(info) : std::string();
+}
+
 std::string CupsPrinter::GetUri() const {
-  const char* uri = cupsGetOption(kCUPSDeviceUri, destination_->num_options,
+  const char* uri = cupsGetOption(kCUPSOptDeviceUri, destination_->num_options,
                                   destination_->options);
   return uri ? std::string(uri) : std::string();
 }

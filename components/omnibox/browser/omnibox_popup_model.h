@@ -28,11 +28,26 @@ class Image;
 
 class OmniboxPopupModel {
  public:
-  // See selected_line_state_ for details.
+  // See |Selection::state| below for details.
   enum LineState {
     NORMAL = 0,
     KEYWORD,
     BUTTON_FOCUSED
+  };
+
+  struct Selection {
+    // The currently selected line.  This is kNoMatch when nothing is selected,
+    // which should only be true when the popup is closed.
+    size_t line;
+
+    // If the selected line has both a normal match and a keyword match, this
+    // determines whether the normal match (if NORMAL) or the keyword match
+    // (if KEYWORD) is selected. Likewise, if the selected line has a normal
+    // match and a tab switch match, this determines whether the tab switch
+    // match (if BUTTON_FOCUSED) is selected.
+    LineState state;
+
+    Selection(size_t line, LineState state) : line(line), state(state) {}
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
@@ -75,9 +90,9 @@ class OmniboxPopupModel {
     return autocomplete_controller()->result();
   }
 
-  size_t selected_line() const { return selected_line_; }
-
-  LineState selected_line_state() const { return selected_line_state_; }
+  Selection selection() const { return selection_; }
+  size_t selected_line() const { return selection_.line; }
+  LineState selected_line_state() const { return selection_.state; }
 
   // Call to change the selected line.  This will update all state and repaint
   // the necessary parts of the window, as well as updating the edit with the
@@ -157,6 +172,8 @@ class OmniboxPopupModel {
   static const size_t kNoMatch;
 
  private:
+  void SetSelection(Selection selection);
+
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 
   std::map<int, SkBitmap> rich_suggestion_bitmaps_;
@@ -165,16 +182,7 @@ class OmniboxPopupModel {
 
   OmniboxEditModel* edit_model_;
 
-  // The currently selected line.  This is kNoMatch when nothing is selected,
-  // which should only be true when the popup is closed.
-  size_t selected_line_;
-
-  // If the selected line has both a normal match and a keyword match, this
-  // determines whether the normal match (if NORMAL) or the keyword match
-  // (if KEYWORD) is selected. Likewise, if the selected line has a normal
-  // match and a tab switch match, this determines whether the tab switch match
-  // (if TAB_SWITCH) is selected.
-  LineState selected_line_state_;
+  Selection selection_;
 
   // When a result changes, this informs of the URL in the previously selected
   // suggestion whose tab switch button was focused, so that we may compare

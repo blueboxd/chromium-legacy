@@ -38,7 +38,7 @@ source_set("update_service_client_sources") {
     "//base",
     "//chrome/updater:base",
     "//chrome/updater:version_header",
-    "//chrome/updater/server",
+    "//chrome/updater/server/mac:protocol",
     "//components/update_client",
   ]
 

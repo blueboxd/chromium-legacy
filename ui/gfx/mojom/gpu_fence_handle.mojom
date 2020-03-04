@@ -12,5 +12,5 @@ enum GpuFenceHandleType {
 
 struct GpuFenceHandle {
   GpuFenceHandleType type;
-  handle? native_fd;
+  handle<platform>? native_fd;
 };

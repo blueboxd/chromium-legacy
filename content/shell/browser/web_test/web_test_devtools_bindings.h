@@ -35,7 +35,6 @@ class WebTestDevToolsBindings : public ShellDevToolsBindings {
 
   void NavigateDevToolsFrontend();
 
-  bool is_startup_test_ = false;
   GURL frontend_url_;
   std::unique_ptr<SecondaryObserver> secondary_observer_;
 

@@ -759,21 +759,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2151831603578119302">Habilitar las combinaciones de teclas para las funciones de accesibilidad</translation>
 <translation id="2156132677421487971">Configura las políticas de <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen contenido de las pestañas, los sitios web o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2156755242840687300">Servidores de impresión externos habilitados</translation>
-<translation id="2159024114213303519">Al configurar esta política, se habilita o inhabilita la autenticación pasiva para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
-
-      La autenticación pasiva permite realizar la autenticación HTTP con credenciales predeterminadas si no se proporcionan credenciales explícitas a través de estructuras de desafío-respuesta de NTLM, Kerberos o Negotiate.
-
-      Si se establece la opción <ph name="REGULAR_ONLY_OPTION_NAME" /> (valor 0), se permite la autenticación pasiva únicamente en las sesiones normales. Las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" /> (valor 1), se permite la autenticación pasiva en las sesiones normales y de incógnito. Las sesiones de invitado no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="GUEST_AND_REGULAR_OPTION_NAME" /> (valor 2), se permite la autenticación pasiva en las sesiones normales y de invitado. Las sesiones de incógnito no podrán usar la autenticación pasiva.
-
-      Si se establece la opción <ph name="ALL_OPTION_NAME" /> (valor 3), se permite la autenticación pasiva en todas las sesiones.
-
-      Ten en cuenta que la autenticación pasiva siempre está permitida en los perfiles normales.
-
-      Si no se asigna ningún valor a esta política, las sesiones de incógnito y de invitado no podrán usar la autenticación pasiva en las versiones futuras de <ph name="PRODUCT_NAME" />, ya que este tipo de autenticación no estará permitida.</translation>
 <translation id="2160336427036785721">Configura la cantidad de memoria que una única instancia de <ph name="PRODUCT_NAME" /> puede usar antes de que se empiecen a descartar pestañas (es decir, se liberará la memoria que usa una pestaña y esta se tendrá que volver a cargar cuando se vuelva a acceder a ella) para ahorrar memoria.
 
       Si se define esta política, el navegador empezará a descartar pestañas para ahorrar memoria cuando se supere el límite de memoria. Sin embargo, no se garantiza que el navegador se ejecute siempre por debajo de ese límite. Cualquier valor que sea inferior a 1024 se establecerá como 1024.
@@ -1098,6 +1083,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
           Si no se le asigna ningún valor, el resaltado del símbolo de intercalación de texto se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="2509919237512982967">Utiliza los controles de formulario antiguos hasta la versión M84.</translation>
 <translation id="2514328368635166290">Permite especificar la URL de icono favorita del proveedor de búsquedas predeterminado.
 
           Esta política es opcional. Si no se establece, no se mostrará ningún icono para el proveedor de búsquedas.
@@ -2971,7 +2957,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5306186200045823863">Confiar en la infraestructura de PKI antigua de Symantec Corporation</translation>
 <translation id="5307432759655324440">Disponibilidad del modo de incógnito</translation>
 <translation id="5311275381462687162">Configuración antigua de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" /> predeterminada</translation>
-<translation id="5313116350102437846">Esta política controla si a los usuarios registrados en el Programa de Protección Avanzada se les permite enviar a Google el contenido descargado para realizar un análisis de software malicioso. Si se asigna el valor "true" a esta política o no se le asigna ningún valor, se le pedirá al usuario que envíe los archivos descargados a Google para realizar un análisis profundo. Si el usuario selecciona "Analizar", los archivos descargados se enviarán a Google. Si se le asigna el valor "false", no se le pedirá nada al usuario y los archivos descargados no se enviarán a Google.</translation>
 <translation id="5318185076587284965">Habilita el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5321755462836179869">Permite las notificaciones nativas</translation>
 <translation id="5323128137188992869">Permite enviar contenido al dispositivo con <ph name="PRODUCT_NAME" />.
@@ -5227,6 +5212,13 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
+<translation id="8937282917198525844"> A partir de la versión M81, se renovaron los elementos de control de formulario estándar (p. ej., &lt;select&gt;, &lt;button&gt; o &lt;input type=date&gt;) para mejorar su accesibilidad y uniformidad en distintas plataformas. Esta política restaura los elementos de control de formularios antiguos hasta la versión M84.
+
+      Si se asigna el valor "True" a esta política, se usarán los elementos de control de formularios antiguos en todos los sitios web.
+
+      Si no se establece esta política o se le asigna el valor "False", se habilitarán los elementos de control de formularios tal como se lanzaron en las versiones M81, M82 y M83.
+
+      Esta política se eliminará después de la versión 84 de Chrome.</translation>
 <translation id="8938932171964587769">Obsoleta en M69. Utiliza en su lugar
       OverrideSecurityRestrictionsOnInsecureOrigin.
 

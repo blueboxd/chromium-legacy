@@ -37,7 +37,18 @@ class PLATFORM_EXPORT PaintChunker final {
   void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
                                          const PropertyTreeState&);
 
-  void ForceNewChunk();
+  // Sets the forcing new chunk status on or off. If the status is on, even the
+  // properties haven't change, we'll force a new paint chunk for the next
+  // display item and then automatically resets the status. Some special display
+  // item (e.g. ForeignLayerDisplayItem) also automatically sets the status on
+  // before and after the item to force a dedicated paint chunk.
+  void SetForceNewChunk(bool force) {
+    force_new_chunk_ = force;
+    next_chunk_id_ = base::nullopt;
+  }
+  bool WillForceNewChunk() const {
+    return force_new_chunk_ || chunks_.IsEmpty();
+  }
 
   void AppendByMoving(PaintChunk&&);
 
@@ -45,23 +56,17 @@ class PLATFORM_EXPORT PaintChunker final {
   bool IncrementDisplayItemIndex(const DisplayItem&);
 
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
-
   wtf_size_t size() const { return chunks_.size(); }
+
   PaintChunk& LastChunk() { return chunks_.back(); }
+  const PaintChunk& LastChunk() const { return chunks_.back(); }
 
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
-  void CreateNewChunk();
-  void AddItemToCurrentChunk(const DisplayItem&);
-
-  wtf_size_t ChunkIndex(const PaintChunk& chunk) const {
-    auto index = static_cast<wtf_size_t>(&chunk - &chunks_.front());
-    DCHECK_LT(index, chunks_.size());
-    return index;
-  }
+  PaintChunk& EnsureCurrentChunk(const PaintChunk::Id&);
 
   Vector<PaintChunk> chunks_;
 

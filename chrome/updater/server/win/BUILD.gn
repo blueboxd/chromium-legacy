@@ -4,25 +4,6 @@
 
 import("//build/toolchain/win/midl.gni")
 
-source_set("win") {
-  sources = [
-    "server.cc",
-    "server.h",
-    "service_main.cc",
-    "service_main.h",
-  ]
-
-  configs -= [ "//build/config/win:winver" ]
-  configs += [ ":winver" ]
-
-  deps = [
-    ":updater_idl_idl",
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater/win:constants",
-  ]
-}
-
 midl("updater_idl_idl") {
   sources = [ "updater_idl.idl" ]
 

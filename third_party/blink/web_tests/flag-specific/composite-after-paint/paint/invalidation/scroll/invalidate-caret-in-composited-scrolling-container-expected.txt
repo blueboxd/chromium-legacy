@@ -15,11 +15,6 @@
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 69, 26],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 69, 26],
           "reason": "paint property change"
         },
         {

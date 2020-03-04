@@ -129,12 +129,7 @@ void SSLErrorControllerClient::Proceed() {
 }
 
 bool SSLErrorControllerClient::CanLaunchDateAndTimeSettings() {
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
   return true;
-#else
-  return false;
-#endif
 }
 
 void SSLErrorControllerClient::LaunchDateAndTimeSettings() {

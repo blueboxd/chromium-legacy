@@ -67,20 +67,22 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
 class AutocompleteProviderClientWithClosure
     : public MockAutocompleteProviderClient {
  public:
-  AutocompleteProviderClientWithClosure() {}
+  AutocompleteProviderClientWithClosure() = default;
 
-  void set_closure(const base::Closure& closure) { closure_ = closure; }
+  void set_closure(const base::RepeatingClosure& closure) {
+    closure_ = closure;
+  }
 
  private:
   void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) override {
-    if (!closure_.is_null())
+    if (closure_)
       closure_.Run();
     if (base::RunLoop::IsRunningOnCurrentThread())
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  base::Closure closure_;
+  base::RepeatingClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProviderClientWithClosure);
 };

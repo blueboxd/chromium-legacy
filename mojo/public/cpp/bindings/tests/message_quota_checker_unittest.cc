@@ -33,8 +33,7 @@ class MessageQuotaCheckerTest : public testing::Test {
   using Configuration = MessageQuotaChecker::Configuration;
 
   static constexpr base::TimeDelta kOneSamplingInterval =
-      base::TimeDelta::FromSeconds(MessageQuotaChecker::DecayingRateAverage::
-                                       kSecondsPerSamplingInterval);
+      MessageQuotaChecker::DecayingRateAverage::kSamplingInterval;
 
   void Advance(base::TimeDelta delta) {
     task_environment_.FastForwardBy(delta);
@@ -184,6 +183,12 @@ TEST_F(MessageQuotaCheckerTest, CountsMessagePipeAlso) {
 }
 
 TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
+  // Make sure to start the test on an even sampling interval to get consistent
+  // average computations below.
+  base::TimeTicks t0 = MessageQuotaChecker::DecayingRateAverage::
+      GetNextSamplingIntervalForTesting(base::TimeTicks::Now());
+  task_environment_.AdvanceClock(t0 - base::TimeTicks::Now());
+
   MessagePipe pipe;
   scoped_refptr<MessageQuotaChecker> checker =
       MessageQuotaChecker::MaybeCreateForTesting(enabled_config_);
@@ -205,18 +210,18 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
   // a core dump yet.
   ASSERT_EQ(0u, num_dumps_);
 
-  checker->BeforeMessagesEnqueued(50);
+  checker->BeforeMessagesEnqueued(99);
   ASSERT_EQ(0u, num_dumps_);
 
-  checker->BeforeMessagesEnqueued(50);
+  Advance(kOneSamplingInterval);
+  checker->BeforeMessagesEnqueued(1);
   EXPECT_EQ(1u, num_dumps_);
   EXPECT_EQ(200u, last_dump_total_quota_used_);
   EXPECT_EQ(100u, last_dump_message_pipe_quota_used_);
-  EXPECT_EQ((10 * kOneSamplingInterval).InSeconds(),
+  EXPECT_EQ((11 * kOneSamplingInterval).InSeconds(),
             last_seconds_since_construction_);
-  EXPECT_EQ(50.0, last_average_write_rate_);
+  EXPECT_EQ(50, last_average_write_rate_);
 
-  Advance(kOneSamplingInterval);
   checker->BeforeWrite();
   ASSERT_EQ(MOJO_RESULT_OK,
             WriteMessageRaw(pipe.handle0.get(), kMessage, sizeof(kMessage),
@@ -227,7 +232,7 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
   EXPECT_EQ(101u, last_dump_message_pipe_quota_used_);
   EXPECT_EQ((11 * kOneSamplingInterval).InSeconds(),
             last_seconds_since_construction_);
-  EXPECT_EQ(25.5, last_average_write_rate_);
+  EXPECT_EQ(50, last_average_write_rate_);
 
   Advance(kOneSamplingInterval);
   checker->SetMessagePipe(mojo::MessagePipeHandle());
@@ -238,44 +243,83 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
   EXPECT_FALSE(last_dump_message_pipe_quota_used_.has_value());
   EXPECT_EQ((12 * kOneSamplingInterval).InSeconds(),
             last_seconds_since_construction_);
-  EXPECT_EQ(12.75, last_average_write_rate_);
+  EXPECT_EQ(25.5, last_average_write_rate_);
   EXPECT_EQ(400u, last_messages_enqueued_);
   EXPECT_EQ(50u, last_messages_dequeued_);
   EXPECT_EQ(101u, last_messages_written_);
 }
 
 TEST_F(MessageQuotaCheckerTest, DecayingRateAverage) {
+  // Make sure to start the test on an even sampling interval to get consistent
+  // average computations below.
+  base::TimeTicks t0 = MessageQuotaChecker::DecayingRateAverage::
+      GetNextSamplingIntervalForTesting(base::TimeTicks::Now());
+  task_environment_.AdvanceClock(t0 - base::TimeTicks::Now());
+
+  // Walk time forward a bit from the epoch.
+  t0 += 101 * kOneSamplingInterval;
+
   MessageQuotaChecker::DecayingRateAverage avg;
-  base::TimeTicks t0 = base::TimeTicks::Now();
   EXPECT_EQ(0.0, avg.GetDecayedRateAverage(t0));
 
-  // Tally two events in the same second.
+  // Tally two events in the same sampling interval.
   avg.AccrueEvent(t0);
   avg.AccrueEvent(t0);
+
   // The decayed average rate is half of the rate this sampling interval.
+  t0 += kOneSamplingInterval;
   EXPECT_EQ(1.0, avg.GetDecayedRateAverage(t0));
 
-  t0 += kOneSamplingInterval;
   // Tally another two events in a subsequent sampling interval.
   avg.AccrueEvent(t0);
   avg.AccrueEvent(t0);
+
+  t0 += kOneSamplingInterval;
   EXPECT_EQ(1.5, avg.GetDecayedRateAverage(t0));
 
-  t0 += kOneSamplingInterval;
   // Tally another two events in a subsequent sampling interval.
   avg.AccrueEvent(t0);
   avg.AccrueEvent(t0);
-  EXPECT_EQ(1.75, avg.GetDecayedRateAverage(t0));
+  EXPECT_EQ(1.75, avg.GetDecayedRateAverage(t0 + kOneSamplingInterval));
 
-  // Make sure the average is decayed with time.
-  EXPECT_EQ(0.875, avg.GetDecayedRateAverage(t0 + kOneSamplingInterval));
-  EXPECT_EQ(0.4375, avg.GetDecayedRateAverage(t0 + 2 * kOneSamplingInterval));
+  // Make sure the average is decayed with time, including within a sampling
+  // interval.
+  EXPECT_EQ(0.875, avg.GetDecayedRateAverage(t0 + 2 * kOneSamplingInterval));
+  EXPECT_NEAR(0.619, avg.GetDecayedRateAverage(t0 + 2.5 * kOneSamplingInterval),
+              0.001);
+  EXPECT_EQ(0.4375, avg.GetDecayedRateAverage(t0 + 3 * kOneSamplingInterval));
 
   t0 += 10 * kOneSamplingInterval;
   avg.AccrueEvent(t0);
   avg.AccrueEvent(t0);
   // The previous average should have decayed by 1/1024.
-  EXPECT_EQ(1.0 + 1.75 / 1024.0, avg.GetDecayedRateAverage(t0));
+  EXPECT_EQ(1.0 + 1.75 / 1024.0,
+            avg.GetDecayedRateAverage(t0 + kOneSamplingInterval));
+
+  // Explicitly test simple interpolation in a sampling interval by setting
+  // up an average that's conveniently converged to 4.0.
+  MessageQuotaChecker::DecayingRateAverage avg2;
+  for (size_t i = 0; i < 16; ++i)
+    avg2.AccrueEvent(t0);
+  t0 += 2 * kOneSamplingInterval;
+  EXPECT_EQ(4.0, avg2.GetDecayedRateAverage(t0));
+
+  // Now test 0/8, 1/8, 1/4, 1/2 and 3/4-way interpolation.
+  avg2.AccrueEvent(t0);
+  // The special case of adding an event and requesting the average at the
+  // start of sampling interval explicitly excludes that event.
+  EXPECT_EQ(4.0, avg2.GetDecayedRateAverage(t0));
+  EXPECT_NEAR(4.332,
+              avg2.GetDecayedRateAverage(t0 + 1.0 / 8.0 * kOneSamplingInterval),
+              0.001);
+  EXPECT_EQ(4.0,
+            avg2.GetDecayedRateAverage(t0 + 1.0 / 4.0 * kOneSamplingInterval));
+  avg2.AccrueEvent(t0);
+  EXPECT_EQ(4.0,
+            avg2.GetDecayedRateAverage(t0 + 2.0 / 4.0 * kOneSamplingInterval));
+  avg2.AccrueEvent(t0);
+  EXPECT_EQ(4.0,
+            avg2.GetDecayedRateAverage(t0 + 3.0 / 4.0 * kOneSamplingInterval));
 }
 
 }  // namespace

@@ -111,7 +111,7 @@ MAYBE_TEST(ModuleCacheTest, LookupRange) {
   ModuleCache cache;
   auto to_inject = std::make_unique<IsolatedModule>();
   const ModuleCache::Module* module = to_inject.get();
-  cache.InjectNativeModuleForTesting(std::move(to_inject));
+  cache.AddCustomNativeModule(std::move(to_inject));
 
   EXPECT_EQ(nullptr, cache.GetModuleForAddress(module->GetBaseAddress() - 1));
   EXPECT_EQ(module, cache.GetModuleForAddress(module->GetBaseAddress()));
@@ -139,7 +139,7 @@ MAYBE_TEST(ModuleCacheTest, LookupOverlaidNonNativeModule) {
 
   auto native_module_to_inject = std::make_unique<IsolatedModule>();
   const ModuleCache::Module* native_module = native_module_to_inject.get();
-  cache.InjectNativeModuleForTesting(std::move(native_module_to_inject));
+  cache.AddCustomNativeModule(std::move(native_module_to_inject));
 
   // Overlay the native module with the non-native module, starting 8 bytes into
   // the native modules and ending 8 bytes before the end of the module.

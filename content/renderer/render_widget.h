@@ -365,13 +365,6 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
-  void SetShowFPSCounter(bool show) override;
-  void SetShowLayoutShiftRegions(bool) override;
-  void SetShowPaintRects(bool) override;
-  void SetShowDebugBorders(bool) override;
-  void SetShowScrollBottleneckRects(bool) override;
-  void SetShowHitTestBorders(bool) override;
-  void SetBackgroundColor(SkColor color) override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
@@ -399,7 +392,6 @@ class CONTENT_EXPORT RenderWidget
       ui::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       blink::WebInputEvent::Type injected_type) override;
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
@@ -417,14 +409,12 @@ class CONTENT_EXPORT RenderWidget
   void RequestUnbufferedInputEvents() override;
   void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
   void SetHasTouchEventHandlers(bool has_handlers) override;
-  void SetHaveScrollEventHandlers(bool have_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                        const blink::WebRect& bounds) override;
   void ZoomToFindInPageRectInMainFrame(
       const blink::WebRect& rect_to_zoom) override;
-  void RegisterSelection(const cc::LayerSelection& selection) override;
   void FallbackCursorModeLockCursor(bool left,
                                     bool right,
                                     bool up,
@@ -434,28 +424,9 @@ class CONTENT_EXPORT RenderWidget
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum) override;
-  void StartPageScaleAnimation(const gfx::Vector2d& destination,
-                               bool use_anchor,
-                               float new_page_scale,
-                               base::TimeDelta duration) override;
-  void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(blink::WebReportTimeCallback callback) override;
-  void SetEventListenerProperties(
-      cc::EventListenerClass event_class,
-      cc::EventListenerProperties properties) override;
-  cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass event_class) const override;
-  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
-      override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
-  void RequestBeginMainFrameNotExpected(bool request) override;
-  int GetLayerTreeId() const override;
-  void SetBrowserControlsShownRatio(float top_ratio,
-                                    float bottom_ratio) override;
-  void SetBrowserControlsParams(cc::BrowserControlsParams params) override;
   viz::FrameSinkId GetFrameSinkId() override;
 
   // Returns the scale being applied to the document in blink by the device

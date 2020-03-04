@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.externalnav;
 
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 
@@ -19,9 +21,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +35,50 @@ import java.util.List;
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ExternalNavigationDelegateImplTest {
+@CommandLineFlags
+        .Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+        @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+                ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+        public class ExternalNavigationDelegateImplTest {
+    private static final String AUTOFILL_ASSISTANT_INTENT_URL =
+            "intent://www.example.com#Intent;scheme=https;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
+            + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+            + Uri.encode("https://www.example.com") + ";end";
+
+    class ExternalNavigationDelegateImplForTesting extends ExternalNavigationDelegateImpl {
+        public ExternalNavigationDelegateImplForTesting() {
+            super(mActivityTestRule.getActivity().getActivityTab());
+        }
+
+        @Override
+        public boolean isSerpReferrer() {
+            return mIsSerpReferrer;
+        }
+
+        public void setIsSerpReferrer(boolean value) {
+            mIsSerpReferrer = value;
+        }
+
+        // Convenience for testing that reduces boilerplate in constructing arguments to the
+        // production method that are common across tests.
+        public boolean handleWithAutofillAssistant(ExternalNavigationParams params) {
+            Intent intent;
+            try {
+                intent = Intent.parseUri(AUTOFILL_ASSISTANT_INTENT_URL, Intent.URI_INTENT_SCHEME);
+            } catch (Exception ex) {
+                Assert.assertTrue(false);
+                return false;
+            }
+
+            String fallbackUrl = "https://www.example.com";
+
+            return handleWithAutofillAssistant(params, intent, fallbackUrl);
+        }
+
+        private boolean mIsSerpReferrer;
+    }
+
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -193,5 +239,80 @@ public class ExternalNavigationDelegateImplTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_TriggersFromSearch() {
+        ExternalNavigationDelegateImplForTesting delegate =
+                new ExternalNavigationDelegateImplForTesting();
+        delegate.setIsSerpReferrer(true);
+
+        // Note: Leave the tab of |params| null to ensure that the delegate doesn't ask
+        // AutofillAssistantFacade to actually start the activity, which this test is not set up
+        // for.
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .build();
+
+        Assert.assertTrue(delegate.handleWithAutofillAssistant(params));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_DoesNotTriggerFromSearchInIncognito() {
+        ExternalNavigationDelegateImplForTesting delegate =
+                new ExternalNavigationDelegateImplForTesting();
+        delegate.setIsSerpReferrer(true);
+
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/true)
+                        .build();
+
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_DoesNotTriggerFromDifferentOrigin() {
+        ExternalNavigationDelegateImplForTesting delegate =
+                new ExternalNavigationDelegateImplForTesting();
+        delegate.setIsSerpReferrer(false);
+
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .build();
+
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_DoesNotTriggerWhenFeatureDisabled() {
+        ExternalNavigationDelegateImplForTesting delegate =
+                new ExternalNavigationDelegateImplForTesting();
+        delegate.setIsSerpReferrer(true);
+
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .build();
+
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
     }
 }

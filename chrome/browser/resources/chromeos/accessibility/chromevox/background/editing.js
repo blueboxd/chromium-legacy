@@ -56,7 +56,6 @@ editing.TextEditHandler = class {
       // A rich text field is one where selection gets placed on a DOM
       // descendant to a root text field. This is one of:
       // - content editables (detected via richly editable state)
-      // - the node is a textarea
       //
       // The only other editables we expect are all single line (including those
       // from ARC++).
@@ -245,6 +244,14 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
     }
     const startIndex = this.start - lineStart;
     const endIndex = this.end - lineStart;
+
+    // If the line is not the last line, and is empty, insert an explicit line
+    // break so that braille output is correctly cleared and has a position for
+    // a caret to be shown.
+    if (lineText == '' && lineIndex < this.lineBreaks_.length - 1) {
+      lineText = '\n';
+    }
+
     const spannable = new Spannable(lineText, new Output.NodeSpan(this.node_));
     ChromeVox.braille.write(
         new NavBraille({text: spannable, startIndex, endIndex}));

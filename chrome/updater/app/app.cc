@@ -1,0 +1,61 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/updater/app/app.h"
+
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/message_loop/message_pump_type.h"
+#include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/updater/crash_client.h"
+#include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/updater_version.h"
+#include "components/crash/core/common/crash_key.h"
+
+namespace updater {
+
+App::App() = default;
+App::~App() = default;
+
+int App::Run() {
+  crash_reporter::InitializeCrashKeys();
+  static crash_reporter::CrashKeyString<16> crash_key_process_type(
+      "process_type");
+  crash_key_process_type.Set("updater");
+  if (CrashClient::GetInstance()->InitializeCrashReporting())
+    VLOG(1) << "Crash reporting initialized.";
+  else
+    VLOG(1) << "Crash reporting is not available.";
+  StartCrashReporter(UPDATER_VERSION_STRING);
+
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  Initialize();
+  base::RunLoop runloop;
+  base::ScopedDisallowBlocking no_blocking_allowed_on_ui_thread;
+  int exit_code = 0;
+  quit_ = base::BindOnce(
+      [](base::OnceClosure quit, int* exit_code_out, int exit_code) {
+        *exit_code_out = exit_code;
+        std::move(quit).Run();
+      },
+      runloop.QuitWhenIdleClosure(), &exit_code);
+  FirstTaskRun();
+  runloop.Run();
+  base::ThreadPoolInstance::Get()->Shutdown();
+  return exit_code;
+}
+
+void App::Shutdown(int exit_code) {
+  std::move(quit_).Run(exit_code);
+}
+
+void App::Initialize() {}
+
+}  // namespace updater

@@ -143,7 +143,13 @@ void BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring() {
 }
 
 void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
-  if (nudge_->ShouldNudgeCountAsShown()) {
+  const bool count_as_shown = nudge_->ShouldNudgeCountAsShown();
+  // UpdateWindowMonitoring() might attempt to cancel any in-progress nudge,
+  // which would switch the nudge into an invalid state. Reset the nudge before
+  // window monitoring is updated.
+  nudge_.reset();
+
+  if (count_as_shown) {
     contextual_tooltip::HandleNudgeShown(
         GetActivePrefService(), contextual_tooltip::TooltipType::kBackGesture);
     UpdateWindowMonitoring();
@@ -153,7 +159,6 @@ void BackGestureContextualNudgeControllerImpl::OnNudgeAnimationFinished() {
         FROM_HERE, contextual_tooltip::kMinInterval, this,
         &BackGestureContextualNudgeControllerImpl::UpdateWindowMonitoring);
   }
-  nudge_.reset();
 }
 
 void BackGestureContextualNudgeControllerImpl::DoCleanUp() {
@@ -162,9 +167,10 @@ void BackGestureContextualNudgeControllerImpl::DoCleanUp() {
   if (is_monitoring_windows_) {
     Shell::Get()->activation_client()->RemoveObserver(this);
     nudge_delegate_.reset();
-    nudge_.reset();
-    is_monitoring_windows_ = false;
   }
+
+  nudge_.reset();
+  is_monitoring_windows_ = false;
 }
 
 }  // namespace ash

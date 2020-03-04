@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -36,6 +37,7 @@ RealTimeUrlLookupServiceFactory::RealTimeUrlLookupServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(VerdictCacheManagerFactory::GetInstance());
 }
 
 KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
@@ -47,17 +49,10 @@ KeyedService* RealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   auto url_loader_factory =
       std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
           g_browser_process->safe_browsing_service()->GetURLLoaderFactory());
-  // When |url_lookup_service| constructs, |cache_manager| is already
-  // constructed. Because |cache_manager| is constructed by |services_delegate|
-  // when the profile is created and |url_lookup_service| is constructed
-  // when the navigation starts.
-  VerdictCacheManager* cache_manager =
-      g_browser_process->safe_browsing_service()->GetVerdictCacheManager(
-          profile);
-  DCHECK(cache_manager);
   return new RealTimeUrlLookupService(
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
-      cache_manager, IdentityManagerFactory::GetForProfile(profile),
+      VerdictCacheManagerFactory::GetForProfile(profile),
+      IdentityManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile), profile->GetPrefs(),
       profile->IsOffTheRecord());
 }

@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/mac/mac_sdk_overrides.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
+import("//components/nacl/features.gni")
 
 declare_args() {
   # The MACOSX_DEPLOYMENT_TARGET variable used when compiling. This partially
@@ -102,6 +103,7 @@ _mac_sdk_result = exec_script(script_name, sdk_info_args, "scope")
 xcode_version = _mac_sdk_result.xcode_version
 xcode_build = _mac_sdk_result.xcode_build
 machine_os_build = _mac_sdk_result.machine_os_build
+machine_os_build_major = _mac_sdk_result.machine_os_build_major
 if (mac_sdk_path == "" && use_system_xcode && ios_use_goma_rbe) {
   mac_sdk_path = _mac_sdk_result.sdk_path
 }
@@ -136,9 +138,9 @@ if (mac_sdk_version != mac_sdk_min &&
   print(
       "********************************************************************************")
   print(
-      " WARNING: The Mac OS X SDK is incompatible with the version of Xcode. To fix,")
+      " WARNING: The macOS SDK is incompatible with the version of Xcode. To fix,")
   print(
-      "          either upgrade Xcode to the latest version or install the Mac OS X")
+      "          either upgrade Xcode to the latest version or install the macOS")
   print(
       "          $mac_sdk_min SDK. For more information, see https://crbug.com/620127.")
   print()
@@ -147,4 +149,18 @@ if (mac_sdk_version != mac_sdk_min &&
   print(
       "********************************************************************************")
   assert(false, "SDK is incompatible with Xcode")
+}
+
+if (enable_nacl && machine_os_build_major >= 19) {
+  print(
+      "********************************************************************************")
+  print(
+      " WARNING: The NaCL SDK is 32-bit only. macOS 10.15+ removed support for 32-bit")
+  print(
+      "          executables. To fix, set enable_nacl=false in args.gn, or downgrade to")
+  print(
+      "          macOS 10.14. For more information, see https://crbug.com/1049832.")
+  print(
+      "********************************************************************************")
+  assert(false, "NaCL SDK is incompatible with host macOS version")
 }

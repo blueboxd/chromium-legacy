@@ -547,9 +547,6 @@ void RenderWidget::Initialize(ShowCallback show_callback,
 
   InitCompositing(screen_info);
 
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
-
   // If the widget is hidden, delay starting the compositor until the user
   // shows it. Otherwise start the compositor immediately. If the widget is
   // for a provisional frame, this importantly starts the compositor before
@@ -1210,52 +1207,6 @@ void RenderWidget::ScheduleAnimation() {
   // scheduler, but they override this method in order to schedule a synchronous
   // composite task themselves.
   layer_tree_host_->SetNeedsAnimate();
-}
-
-void RenderWidget::SetShowFPSCounter(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_fps_counter = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetShowLayoutShiftRegions(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_layout_shift_regions = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetShowPaintRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_paint_rects = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetShowDebugBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  if (show)
-    debug_state.show_debug_borders.set();
-  else
-    debug_state.show_debug_borders.reset();
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetShowScrollBottleneckRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_touch_event_handler_rects = show;
-  debug_state.show_wheel_event_handler_rects = show;
-  debug_state.show_non_fast_scrollable_rects = show;
-  debug_state.show_main_thread_scrolling_reason_rects = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetShowHitTestBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_hit_test_borders = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void RenderWidget::SetBackgroundColor(SkColor color) {
-  layer_tree_host_->set_background_color(color);
 }
 
 void RenderWidget::UpdateVisualState() {
@@ -2696,11 +2647,6 @@ void RenderWidget::InjectGestureScrollEvent(
       device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
-void RenderWidget::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& behavior) {
-  layer_tree_host_->SetOverscrollBehavior(behavior);
-}
-
 // static
 cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     CompositorDependencies* compositor_deps,
@@ -2883,6 +2829,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   // These flags should be mirrored by UI versions in ui/compositor/.
   if (cmd.HasSwitch(cc::switches::kShowCompositedLayerBorders))
     settings.initial_debug_state.show_debug_borders.set();
+  settings.initial_debug_state.show_fps_counter =
+      cmd.HasSwitch(cc::switches::kShowFPSCounter);
   settings.initial_debug_state.show_layer_animation_bounds_rects =
       cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
@@ -3193,10 +3141,6 @@ void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
   Send(new WidgetHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
-void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
-  layer_tree_host_->SetHaveScrollEventHandlers(have_handlers);
-}
-
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
   input_event_queue_->SetNeedsLowLatency(needs_low_latency);
 }
@@ -3220,10 +3164,6 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
   DCHECK(!delegate_);
   Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
                                                          rect_to_zoom));
-}
-
-void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {
-  layer_tree_host_->RegisterSelection(selection);
 }
 
 void RenderWidget::FallbackCursorModeLockCursor(bool left,
@@ -3267,18 +3207,6 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
   // Store the value to give to any new RenderFrameProxy that is registered.
   page_scale_factor_from_mainframe_ = page_scale_factor;
   is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
-}
-
-void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
-                                           bool use_anchor,
-                                           float new_page_scale,
-                                           base::TimeDelta duration) {
-  layer_tree_host_->StartPageScaleAnimation(target_offset, use_anchor,
-                                            new_page_scale, duration);
-}
-
-void RenderWidget::ForceRecalculateRasterScales() {
-  layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
 void RenderWidget::RequestDecode(const cc::PaintImage& image,
@@ -3422,47 +3350,6 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
 void RenderWidget::NotifySwapTime(blink::WebReportTimeCallback callback) {
   NotifySwapAndPresentationTime(base::NullCallback(), std::move(callback));
-}
-
-void RenderWidget::SetEventListenerProperties(
-    cc::EventListenerClass event_class,
-    cc::EventListenerProperties properties) {
-  layer_tree_host_->SetEventListenerProperties(event_class, properties);
-}
-
-cc::EventListenerProperties RenderWidget::EventListenerProperties(
-    cc::EventListenerClass event_class) const {
-  return layer_tree_host_->event_listener_properties(event_class);
-}
-
-std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-RenderWidget::DeferMainFrameUpdate() {
-  return layer_tree_host_->DeferMainFrameUpdate();
-}
-
-void RenderWidget::StartDeferringCommits(base::TimeDelta timeout) {
-  layer_tree_host_->StartDeferringCommits(timeout);
-}
-
-void RenderWidget::StopDeferringCommits(cc::PaintHoldingCommitTrigger trigger) {
-  layer_tree_host_->StopDeferringCommits(trigger);
-}
-
-void RenderWidget::RequestBeginMainFrameNotExpected(bool request) {
-  layer_tree_host_->RequestBeginMainFrameNotExpected(request);
-}
-
-int RenderWidget::GetLayerTreeId() const {
-  return layer_tree_host_->GetId();
-}
-
-void RenderWidget::SetBrowserControlsShownRatio(float top_ratio,
-                                                float bottom_ratio) {
-  layer_tree_host_->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
-}
-
-void RenderWidget::SetBrowserControlsParams(cc::BrowserControlsParams params) {
-  layer_tree_host_->SetBrowserControlsParams(params);
 }
 
 viz::FrameSinkId RenderWidget::GetFrameSinkId() {

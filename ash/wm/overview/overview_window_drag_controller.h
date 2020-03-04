@@ -106,7 +106,6 @@ class ASH_EXPORT OverviewWindowDragController {
       const gfx::PointF& location_in_screen);
 
   aura::Window* GetRootWindowBeingDraggedIn() const;
-  gfx::Rect GetWorkAreaOfDisplayBeingDraggedIn() const;
 
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::PointF& location_in_screen) const;

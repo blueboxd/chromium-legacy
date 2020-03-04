@@ -27,7 +27,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get automationNode() {
-    return BackButtonNode.automationNode_;
+    return BackButtonNode.automationNode;
   }
 
   /** @override */
@@ -35,8 +35,8 @@ class BackButtonNode extends SAChildNode {
     if (BackButtonNode.locationForTesting) {
       return BackButtonNode.locationForTesting;
     }
-    if (BackButtonNode.automationNode_) {
-      return BackButtonNode.automationNode_.location;
+    if (this.automationNode) {
+      return this.automationNode.location;
     }
   }
 
@@ -59,8 +59,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
-    return node instanceof BackButtonNode ||
-        BackButtonNode.automationNode_ === node;
+    return node instanceof BackButtonNode || this.automationNode === node;
   }
 
   /** @override */
@@ -70,7 +69,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isValidAndVisible() {
-    return BackButtonNode.automationNode_ !== null;
+    return this.automationNode !== null;
   }
 
   /** @override */
@@ -106,17 +105,19 @@ class BackButtonNode extends SAChildNode {
 
   // ================= Static methods =================
 
-  /** Looks for the back button node. */
-  static findAutomationNode() {
+  /**
+   * Looks for the back button node.
+   * @return {?chrome.automation.AutomationNode}
+   */
+  static get automationNode() {
+    if (BackButtonNode.automationNode_) {
+      return BackButtonNode.automationNode_;
+    }
+
     const treeWalker = new AutomationTreeWalker(
         NavigationManager.instance.desktopNode, constants.Dir.FORWARD,
         {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
     BackButtonNode.automationNode_ = treeWalker.next().node;
-
-    // TODO(anastasi): Generate event when Switch Access Panel is loaded instead
-    // of polling.
-    if (!BackButtonNode.automationNode_) {
-      setTimeout(BackButtonNode.findAutomationNode, 100);
-    }
+    return BackButtonNode.automationNode_;
   }
 }

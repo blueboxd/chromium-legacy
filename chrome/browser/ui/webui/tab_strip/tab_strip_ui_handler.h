@@ -67,6 +67,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void HandleGetThemeColors(const base::ListValue* args);
   void HandleCloseContainer(const base::ListValue* args);
   void HandleShowBackgroundContextMenu(const base::ListValue* args);
+  void HandleShowEditDialogForGroup(const base::ListValue* args);
   void HandleShowTabContextMenu(const base::ListValue* args);
   void HandleGetLayout(const base::ListValue* args);
   void HandleGroupTab(const base::ListValue* args);

@@ -268,6 +268,7 @@ _CONFIG = [
             # cc::Layers.
             'cc::Layer',
             'cc::LayerClient',
+            'cc::LayerTreeDebugState',
             'cc::LayerTreeHost',
             'cc::PictureLayer',
             'cc::SurfaceLayer',

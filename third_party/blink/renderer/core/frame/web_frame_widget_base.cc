@@ -358,6 +358,91 @@ bool WebFrameWidgetBase::ShouldRecordMainFrameMetrics() {
   return !!Thread::CompositorThread();
 }
 
+void WebFrameWidgetBase::SetNeedsRecalculateRasterScales() {
+  widget_base_.LayerTreeHost()->SetNeedsRecalculateRasterScales();
+}
+
+void WebFrameWidgetBase::SetBackgroundColor(SkColor color) {
+  widget_base_.LayerTreeHost()->set_background_color(color);
+}
+
+void WebFrameWidgetBase::SetOverscrollBehavior(
+    const cc::OverscrollBehavior& overscroll_behavior) {
+  widget_base_.LayerTreeHost()->SetOverscrollBehavior(overscroll_behavior);
+}
+
+void WebFrameWidgetBase::RegisterSelection(cc::LayerSelection selection) {
+  widget_base_.LayerTreeHost()->RegisterSelection(selection);
+}
+
+void WebFrameWidgetBase::StartPageScaleAnimation(
+    const gfx::Vector2d& destination,
+    bool use_anchor,
+    float new_page_scale,
+    base::TimeDelta duration) {
+  widget_base_.LayerTreeHost()->StartPageScaleAnimation(
+      destination, use_anchor, new_page_scale, duration);
+}
+
+void WebFrameWidgetBase::RequestBeginMainFrameNotExpected(bool request) {
+  widget_base_.LayerTreeHost()->RequestBeginMainFrameNotExpected(request);
+}
+
+int WebFrameWidgetBase::GetLayerTreeId() {
+  return widget_base_.LayerTreeHost()->GetId();
+}
+
+void WebFrameWidgetBase::SetHaveScrollEventHandlers(bool has_handlers) {
+  widget_base_.LayerTreeHost()->SetHaveScrollEventHandlers(has_handlers);
+}
+
+void WebFrameWidgetBase::SetEventListenerProperties(
+    cc::EventListenerClass listener_class,
+    cc::EventListenerProperties listener_properties) {
+  widget_base_.LayerTreeHost()->SetEventListenerProperties(listener_class,
+                                                           listener_properties);
+}
+
+cc::EventListenerProperties WebFrameWidgetBase::EventListenerProperties(
+    cc::EventListenerClass listener_class) const {
+  return widget_base_.LayerTreeHost()->event_listener_properties(
+      listener_class);
+}
+
+void WebFrameWidgetBase::StartDeferringCommits(base::TimeDelta timeout) {
+  widget_base_.LayerTreeHost()->StartDeferringCommits(timeout);
+}
+
+void WebFrameWidgetBase::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger triggger) {
+  widget_base_.LayerTreeHost()->StopDeferringCommits(triggger);
+}
+
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+WebFrameWidgetBase::DeferMainFrameUpdate() {
+  return widget_base_.LayerTreeHost()->DeferMainFrameUpdate();
+}
+
+void WebFrameWidgetBase::SetBrowserControlsShownRatio(float top_ratio,
+                                                      float bottom_ratio) {
+  widget_base_.LayerTreeHost()->SetBrowserControlsShownRatio(top_ratio,
+                                                             bottom_ratio);
+}
+
+void WebFrameWidgetBase::SetBrowserControlsParams(
+    cc::BrowserControlsParams params) {
+  widget_base_.LayerTreeHost()->SetBrowserControlsParams(params);
+}
+
+cc::LayerTreeDebugState WebFrameWidgetBase::GetLayerTreeDebugState() {
+  return widget_base_.LayerTreeHost()->GetDebugState();
+}
+
+void WebFrameWidgetBase::SetLayerTreeDebugState(
+    const cc::LayerTreeDebugState& state) {
+  widget_base_.LayerTreeHost()->SetDebugState(state);
+}
+
 // TODO(665924): Remove direct dispatches of mouse events from
 // PointerLockController, instead passing them through EventHandler.
 void WebFrameWidgetBase::PointerLockMouseEvent(

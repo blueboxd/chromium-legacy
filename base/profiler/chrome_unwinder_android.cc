@@ -74,7 +74,7 @@ class ChromeModule : public ModuleCache::Module {
   }
 
   // True if this is a native module.
-  bool IsNative() const override { return false; }
+  bool IsNative() const override { return true; }
 
   std::string build_id_;
 };
@@ -88,7 +88,7 @@ ChromeUnwinderAndroid::ChromeUnwinderAndroid(const ArmCFITable* cfi_table)
 
 ChromeUnwinderAndroid::~ChromeUnwinderAndroid() = default;
 
-void ChromeUnwinderAndroid::AddNonNativeModules(ModuleCache* module_cache) {
+void ChromeUnwinderAndroid::AddInitialModules(ModuleCache* module_cache) {
   std::vector<std::unique_ptr<const ModuleCache::Module>> modules;
   modules.push_back(std::make_unique<ChromeModule>());
   chrome_module_id_ = modules.back()->GetId();

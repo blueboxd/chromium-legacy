@@ -63,10 +63,10 @@ void DhcpPacFileAdapterFetcher::Fetch(
   scoped_refptr<DhcpQuery> dhcp_query(ImplCreateDhcpQuery());
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DhcpPacFileAdapterFetcher::DhcpQuery::GetPacURLForAdapter,
-                 dhcp_query.get(), adapter_name),
-      base::Bind(&DhcpPacFileAdapterFetcher::OnDhcpQueryDone, AsWeakPtr(),
-                 dhcp_query, traffic_annotation));
+      base::BindOnce(&DhcpPacFileAdapterFetcher::DhcpQuery::GetPacURLForAdapter,
+                     dhcp_query.get(), adapter_name),
+      base::BindOnce(&DhcpPacFileAdapterFetcher::OnDhcpQueryDone, AsWeakPtr(),
+                     dhcp_query, traffic_annotation));
 }
 
 void DhcpPacFileAdapterFetcher::Cancel() {
@@ -154,10 +154,11 @@ void DhcpPacFileAdapterFetcher::OnDhcpQueryDone(
   } else {
     state_ = STATE_WAIT_URL;
     script_fetcher_ = ImplCreateScriptFetcher();
-    script_fetcher_->Fetch(pac_url_, &pac_script_,
-                           base::Bind(&DhcpPacFileAdapterFetcher::OnFetcherDone,
-                                      base::Unretained(this)),
-                           traffic_annotation);
+    script_fetcher_->Fetch(
+        pac_url_, &pac_script_,
+        base::BindOnce(&DhcpPacFileAdapterFetcher::OnFetcherDone,
+                       base::Unretained(this)),
+        traffic_annotation);
   }
 }
 

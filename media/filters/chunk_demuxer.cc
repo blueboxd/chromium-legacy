@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -659,8 +660,6 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                               base::Unretained(this), id),
           media_log_);
 
-  SourceBufferState::NewTextTrackCB new_text_track_cb;
-
   // TODO(wolenetz): Change these to DCHECKs or switch to returning
   // kReachedIdLimit once less verification in release build is needed. See
   // https://crbug.com/786975.
@@ -673,7 +672,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   source_state->Init(base::BindOnce(&ChunkDemuxer::OnSourceInitDone,
                                     base::Unretained(this), id),
                      ExpectedCodecs(content_type, codecs),
-                     encrypted_media_init_data_cb_, new_text_track_cb);
+                     encrypted_media_init_data_cb_, base::NullCallback());
 
   // TODO(wolenetz): Change to DCHECKs once less verification in release build
   // is needed. See https://crbug.com/786975.

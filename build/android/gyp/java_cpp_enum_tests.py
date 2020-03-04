@@ -730,7 +730,7 @@ public @interface ClassName {
     definition.AppendEntry('B', None)
     definition.AppendEntry('NAME_LAST', None)
     definition.Finalize()
-    self.assertEqual(['A', 'B', 'NAME_LAST'], definition.entries.keys())
+    self.assertEqual(['A', 'B', 'NAME_LAST'], list(definition.entries.keys()))
 
   def testGenerateThrowsOnEmptyInput(self):
     with self.assertRaises(Exception):

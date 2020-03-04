@@ -76,10 +76,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // 22 : kWebSchedulingBestEffort, obsolete.
 
     kWebScheduling = 24,
+    kNonWaking = 25,
 
     // Used to group multiple types when calculating Expected Queueing Time.
     kOther = 23,
-    kCount = 25
+    kCount = 26
   };
 
   // Returns name of the given queue type. Returned string has application

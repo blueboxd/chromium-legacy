@@ -127,7 +127,6 @@
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -282,8 +281,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // The object that drives the Chrome startup/shutdown logic.
   std::unique_ptr<IOSChromeMain> _chromeMain;
 
-  // TabSwitcher object -- the tab grid.
-  id<TabSwitcher> _tabSwitcher;
 
   // True if the current session began from a cold start. False if the app has
   // entered the background at least once since start up.
@@ -381,8 +378,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleDeleteTempPasswordsDirectory;
 // Returns whether or not the app can launch in incognito mode.
 - (BOOL)canLaunchInIncognito;
-// Determines which UI should be shown on startup, and shows it.
-- (void)createInitialUI:(ApplicationMode)launchMode;
 // Initializes the first run UI and presents it to the user.
 - (void)showFirstRunUI;
 // Schedules presentation of the first eligible promo found, if any.
@@ -510,15 +505,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 }
 
-- (void)startUpBrowserForegroundInitialization {
+// This initialization must happen before any windows are created.
+// Returns YES iff there's a session restore available.
+- (BOOL)startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
+    (BOOL)isPostCrashLaunch {
   // Give tests a chance to prepare for testing.
   tests_hook::SetUpTestsIfPresent();
 
   GetApplicationContext()->OnAppEnterForeground();
-
-  // TODO(crbug.com/546171): Audit all the following code to see if some of it
-  // should move into BrowserMainParts or BrowserProcess.
-  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
 
   // Although this duplicates some metrics_service startup logic also in
   // IOSChromeMain(), this call does additional work, checking for wifi-only
@@ -550,9 +544,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // The CrashRestoreHelper must clean up the old browser state information
   // before the tabModels can be created.  |self.restoreHelper| must be kept
   // alive until the BVC receives the browser state and tab model.
-  BOOL postCrashLaunch = [self mustShowRestoreInfobar];
   BOOL needRestoration = NO;
-  if (postCrashLaunch) {
+  if (isPostCrashLaunch) {
     needRestoration = [CrashRestoreHelper
         moveAsideSessionInformationForBrowserState:chromeBrowserState];
   }
@@ -595,67 +588,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         ->ClearAllCachedSuggestions();
   }
 
-  // This is per-window code.
+  return needRestoration;
+}
 
-  DCHECK(!self.sceneController.browserViewWrangler);
-  DCHECK(self.sceneController.appURLLoadingService);
-
-  self.sceneController.browserViewWrangler = [[BrowserViewWrangler alloc]
-             initWithBrowserState:self.mainBrowserState
-             webStateListObserver:self.sceneController
-       applicationCommandEndpoint:self.sceneController
-      browsingDataCommandEndpoint:self
-             appURLLoadingService:self.sceneController.appURLLoadingService];
-
-  // Ensure the main tab model is created. This also creates the BVC.
-  [self.sceneController.browserViewWrangler createMainBrowser];
-
-  // Only create the restoration helper if the browser state was backed up
-  // successfully.
-  if (needRestoration) {
-    self.restoreHelper =
-        [[CrashRestoreHelper alloc] initWithBrowser:self.mainBrowser];
-  }
-
-  // "Low priority" tasks
-  [_startupTasks registerForApplicationWillResignActiveNotification];
-  [self registerForOrientationChangeNotifications];
-
-  [self.sceneController openTabFromLaunchOptions:_launchOptions
-                              startupInformation:self
-                                        appState:self.appState];
-  _launchOptions = nil;
-
-  [self scheduleTasksRequiringBVCWithBrowserState];
-
-  // Before bringing up the UI, make sure the launch mode is correct, and
-  // check for previous crashes.
-  BOOL startInIncognito = [standardDefaults boolForKey:kIncognitoCurrentKey];
-  BOOL switchFromIncognito = startInIncognito && ![self canLaunchInIncognito];
-
-  if (postCrashLaunch || switchFromIncognito) {
-    [self.sceneController clearIOSSpecificIncognitoData];
-    if (switchFromIncognito)
-      [self.sceneController.browserViewWrangler
-          switchGlobalStateToMode:ApplicationMode::NORMAL];
-  }
-  if (switchFromIncognito)
-    startInIncognito = NO;
-
-  [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
-                                          : ApplicationMode::NORMAL)];
-
-  [self.sceneController.browserViewWrangler updateDeviceSharingManager];
-
-  if (!self.startupParameters) {
-    // The startup parameters may create new tabs or navigations. If the restore
-    // infobar is displayed now, it may be dismissed immediately and the user
-    // will never be able to restore the session.
-    [self.restoreHelper showRestorePrompt];
-    self.restoreHelper = nil;
-  }
-
-  // End of per-window code.
+// This initialization must only happen once there's at least one Chrome window
+// open.
+- (void)startUpAfterFirstWindowCreated {
+  CustomizeUIAppearance();
 
   [self scheduleStartupCleanupTasks];
   [MetricsMediator
@@ -674,6 +613,79 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Now that everything is properly set up, run the tests.
   tests_hook::RunTestsIfPresent();
+}
+
+// Starts up a single chrome window and its UI.
+- (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
+                 needRestoration:(BOOL)needsRestoration {
+  DCHECK(!self.sceneController.browserViewWrangler);
+  DCHECK(self.sceneController.appURLLoadingService);
+
+  self.sceneController.browserViewWrangler = [[BrowserViewWrangler alloc]
+             initWithBrowserState:self.mainBrowserState
+             webStateListObserver:self.sceneController
+       applicationCommandEndpoint:self.sceneController
+      browsingDataCommandEndpoint:self
+             appURLLoadingService:self.sceneController.appURLLoadingService];
+
+  // Ensure the main tab model is created. This also creates the BVC.
+  [self.sceneController.browserViewWrangler createMainBrowser];
+
+  // Only create the restoration helper if the browser state was backed up
+  // successfully.
+  if (needsRestoration) {
+    self.restoreHelper =
+        [[CrashRestoreHelper alloc] initWithBrowser:self.mainBrowser];
+  }
+
+  // "Low priority" tasks
+  [_startupTasks registerForApplicationWillResignActiveNotification];
+  [self registerForOrientationChangeNotifications];
+
+  [self.sceneController openTabFromLaunchOptions:_launchOptions
+                              startupInformation:self
+                                        appState:self.appState];
+  _launchOptions = nil;
+
+  [self scheduleTasksRequiringBVCWithBrowserState];
+
+  // Before bringing up the UI, make sure the launch mode is correct, and
+  // check for previous crashes.
+  BOOL startInIncognito =
+      [[NSUserDefaults standardUserDefaults] boolForKey:kIncognitoCurrentKey];
+  BOOL switchFromIncognito = startInIncognito && ![self canLaunchInIncognito];
+
+  if (isPostCrashLaunch || switchFromIncognito) {
+    [self.sceneController clearIOSSpecificIncognitoData];
+    if (switchFromIncognito)
+      [self.sceneController.browserViewWrangler
+          switchGlobalStateToMode:ApplicationMode::NORMAL];
+  }
+  if (switchFromIncognito)
+    startInIncognito = NO;
+
+  [self.sceneController
+      createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
+                                        : ApplicationMode::NORMAL)];
+
+  [self.sceneController.browserViewWrangler updateDeviceSharingManager];
+
+  if (!self.startupParameters) {
+    // The startup parameters may create new tabs or navigations. If the restore
+    // infobar is displayed now, it may be dismissed immediately and the user
+    // will never be able to restore the session.
+    [self.restoreHelper showRestorePrompt];
+    self.restoreHelper = nil;
+  }
+}
+
+- (void)startUpBrowserForegroundInitialization {
+  BOOL postCrashLaunch = [self mustShowRestoreInfobar];
+  BOOL needRestore =
+      [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
+                postCrashLaunch];
+  [self startUpChromeUIPostCrash:postCrashLaunch needRestoration:needRestore];
+  [self startUpAfterFirstWindowCreated];
 }
 
 - (void)initializeBrowserState:(ChromeBrowserState*)browserState {
@@ -1173,71 +1185,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return ![self.otrTabModel isEmpty];
 }
 
-- (void)createInitialUI:(ApplicationMode)launchMode {
-  DCHECK(self.mainBrowserState);
-
-  // In order to correctly set the mode switch icon, we need to know how many
-  // tabs are in the other tab model. That means loading both models.  They
-  // may already be loaded.
-  // TODO(crbug.com/546203): Find a way to handle this that's closer to the
-  // point where it is necessary.
-  TabModel* mainTabModel = self.mainTabModel;
-  TabModel* otrTabModel = self.otrTabModel;
-
-  // MainCoordinator shouldn't have been initialized yet.
-  DCHECK(!_mainCoordinator);
-
-  // Enables UI initializations to query the keyWindow's size.
-  [self.window makeKeyAndVisible];
-
-  CustomizeUIAppearance();
-
-  // Lazy init of mainCoordinator.
-  [self.mainCoordinator start];
-
-  _tabSwitcher = self.mainCoordinator.tabSwitcher;
-  // Call -restoreInternalState so that the grid shows the correct panel.
-  [_tabSwitcher restoreInternalStateWithMainBrowser:self.mainBrowser
-                                         otrBrowser:self.otrBrowser
-                                      activeBrowser:self.currentBrowser];
-
-  // Decide if the First Run UI needs to run.
-  BOOL firstRun = (FirstRun::IsChromeFirstRun() ||
-                   experimental_flags::AlwaysDisplayFirstRun()) &&
-                  !tests_hook::DisableFirstRun();
-
-  [self.sceneController.browserViewWrangler switchGlobalStateToMode:launchMode];
-
-  TabModel* tabModel;
-  if (launchMode == ApplicationMode::INCOGNITO) {
-    tabModel = otrTabModel;
-    [self.sceneController
-        setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
-  } else {
-    tabModel = mainTabModel;
-    [self.sceneController setCurrentInterfaceForMode:ApplicationMode::NORMAL];
-  }
-  if (self.tabSwitcherIsActive) {
-    DCHECK(!self.dismissingTabSwitcher);
-    [self.sceneController
-        beginDismissingTabSwitcherWithCurrentModel:self.mainTabModel
-                                      focusOmnibox:NO];
-    [self.sceneController finishDismissingTabSwitcher];
-  }
-  if (firstRun ||
-      [self.sceneController shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
-    OpenNewTabCommand* command = [OpenNewTabCommand
-        commandWithIncognito:(self.currentBVC == self.otrBVC)];
-    command.userInitiated = NO;
-    [self.currentBVC.dispatcher openURLInNewTab:command];
-  }
-
-  if (firstRun) {
-    [self showFirstRunUI];
-    // Do not ever show the 'restore' infobar during first run.
-    self.restoreHelper = nil;
-  }
-}
 
 - (void)showFirstRunUI {
   // Register for notification when First Run is completed.
@@ -1512,11 +1459,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           }));
 }
 
-#pragma mark - MainControllerGuts
-
-- (id<TabSwitcher>)tabSwitcher {
-  return _tabSwitcher;
-}
 
 @end
 
@@ -1535,7 +1477,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher {
-  _tabSwitcher = switcher;
+  [self.sceneController setTabSwitcher:switcher];
+}
+
+- (id<TabSwitcher>)tabSwitcher {
+  return self.sceneController.tabSwitcher;
 }
 
 - (void)setTabSwitcherActive:(BOOL)active {

@@ -534,6 +534,105 @@ Polymer({
    * @private
    * @return {boolean}
    */
+  shouldShowSafeBrowsingButton_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
+        return true;
+      default:
+        return false;
+    }
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowSafeBrowsingManagedIcon_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
+        return true;
+      default:
+        return false;
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getSafeBrowsingSubLabelText_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
+        return '';
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
+        return this.i18n('safetyCheckSafeBrowsingSubLabelEnabled');
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
+        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabled');
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
+        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabledByAdmin');
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
+        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabledByExtension');
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getSafeBrowsingIcon_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
+        return null;
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
+        return 'cr:check';
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
+      case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
+        return 'cr:info';
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * @private
+   * @return {?string}
+   */
+  getSafeBrowsingIconSrc_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
+        return 'chrome://resources/images/throbber_small.svg';
+      default:
+        return null;
+    }
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getSafeBrowsingIconClass_: function() {
+    switch (this.safeBrowsingStatus_) {
+      case settings.SafetyCheckSafeBrowsingStatus.CHECKING:
+      case settings.SafetyCheckSafeBrowsingStatus.ENABLED:
+        return 'icon-blue';
+      default:
+        return '';
+    }
+  },
+
+  /** @private */
+  onSafeBrowsingButtonClick_: function() {
+    // TODO(crbug.com/1010001): Implement once behavior has been agreed on.
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
   shouldShowExtensionsButton_: function() {
     switch (this.extensionsStatus_) {
       case settings.SafetyCheckExtensionsStatus.BAD_EXTENSIONS_ON:

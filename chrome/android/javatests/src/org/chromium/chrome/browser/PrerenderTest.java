@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -66,7 +67,8 @@ public class PrerenderTest {
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
-    @DisableIf.Build(sdk_is_greater_than = 25, message = "https://crbug.com/1014213")
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.M, message = "https://crbug.com/1014213")
     public void testNoPrerender() throws InterruptedException {
         String testUrl = mTestServer.getURL(
                 "/chrome/test/data/android/prerender/google.html");

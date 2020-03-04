@@ -184,8 +184,10 @@ TEST_F(MDnsCacheTest, Expiration) {
 
   EXPECT_CALL(record_removal_, OnRecordRemoved(record_to_be_deleted));
 
-  cache_.CleanupRecords(default_time_ + ttl2, base::Bind(
-      &RecordRemovalMock::OnRecordRemoved, base::Unretained(&record_removal_)));
+  cache_.CleanupRecords(
+      default_time_ + ttl2,
+      base::BindRepeating(&RecordRemovalMock::OnRecordRemoved,
+                          base::Unretained(&record_removal_)));
 
   // To make sure that we've indeed removed them from the map, check no funny
   // business happens once they're deleted for good.

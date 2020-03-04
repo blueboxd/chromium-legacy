@@ -23,9 +23,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -438,10 +439,10 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     private String getOwnerEmail() {
         if (sTestOwnerEmail != null) return sTestOwnerEmail;
 
-        ChromeSigninController controller = ChromeSigninController.get();
-        Account account = controller.getSignedInUser();
-        if (account != null) {
-            return account.name;
+        CoreAccountInfo coreAccountInfo =
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+        if (coreAccountInfo != null) {
+            return coreAccountInfo.getEmail();
         }
 
         AccountManagerFacade manager = AccountManagerFacade.get();
@@ -504,8 +505,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(ownerEmail);
         String name = profileData.getFullNameOrEmail();
         if (TextUtils.isEmpty(name) || TextUtils.equals(name, ownerEmail)) {
-            ChromeSigninController controller = ChromeSigninController.get();
-            name = controller.getSignedInAccountName();
+            name = CoreAccountInfo.getEmailFrom(
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
         }
 
         ArrayList<String> telephones = new ArrayList<>();

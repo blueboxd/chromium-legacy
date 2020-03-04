@@ -55,13 +55,13 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
     }
 
     private void setListener(Listener listener) {
-        assert mListener == null;
+        assert listener != null;
         mListener = listener;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
+        if (mListener == null) {
             dismiss();
         }
         String title = getString(R.string.sign_in_managed_account);

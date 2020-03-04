@@ -85,8 +85,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     private static FirstRunActivityObserver sObserver;
 
-    private boolean mShowWelcomePage = true;
-
     private String mResultSignInAccountName;
     private boolean mResultIsDefaultAccount;
     private boolean mResultShowSignInSettings;
@@ -121,12 +119,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * Defines a sequence of pages to be shown (depending on parameters etc).
      */
     private void createPageSequence() {
-        // An optional welcome page.
-        if (mShowWelcomePage) {
-            mPages.add(new ToSAndUMAFirstRunFragment.Page());
-            mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
-        }
-
+        mPages.add(new ToSAndUMAFirstRunFragment.Page());
+        mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
         // Other pages will be created by createPostNativePageSequence() after
         // native has been initialized.
     }
@@ -207,7 +201,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 }
 
                 mFreProperties = freProperties;
-                mShowWelcomePage = mFreProperties.getBoolean(SHOW_WELCOME_PAGE);
                 if (TextUtils.isEmpty(mResultSignInAccountName)) {
                     mResultSignInAccountName = mFreProperties.getString(
                             SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
@@ -464,7 +457,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private boolean jumpToPage(int position) {
         if (sObserver != null) sObserver.onJumpToPage(position);
 
-        if (mShowWelcomePage && !didAcceptTermsOfService()) {
+        if (!didAcceptTermsOfService()) {
             return position == 0;
         }
         if (position >= mPagerAdapter.getCount()) {
@@ -478,7 +471,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     private void stopProgressionIfNotAcceptedTermsOfService() {
         if (mPagerAdapter == null) return;
-        mPagerAdapter.setStopAtTheFirstPage(mShowWelcomePage && !didAcceptTermsOfService());
+        mPagerAdapter.setStopAtTheFirstPage(!didAcceptTermsOfService());
     }
 
     private void skipPagesIfNecessary() {

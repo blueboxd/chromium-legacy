@@ -117,7 +117,7 @@ void ResourceRequest::CopyHeadFrom(const ResourceRequestHead& src) {
   this->ResourceRequestHead::operator=(src);
 }
 
-std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
+std::unique_ptr<ResourceRequest> ResourceRequestHead::CreateRedirectRequest(
     const KURL& new_url,
     const AtomicString& new_method,
     const net::SiteForCookies& new_site_for_cookies,

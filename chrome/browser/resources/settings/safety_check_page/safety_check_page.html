@@ -97,7 +97,7 @@
             class$="[[getPasswordsIconClass_(passwordsStatus_)]]">
         </iron-icon>
         <div class="start settings-box-text">
-          <div>$i18n{safetyCheckPasswordsPrimaryLabel}</div>
+          <div>$i18n{passwords}</div>
           <div class="secondary" no-search>
             [[getPasswordsSubLabelText_(passwordsStatus_)]]
           </div>
@@ -110,6 +110,32 @@
               on-click="onPasswordsButtonClick_" no-search>
             [[getPasswordsButtonText_(passwordsStatus_)]]
           </cr-button>
+        </template>
+      </div>
+      <div class="settings-box two-line">
+        <iron-icon icon="[[getSafeBrowsingIcon_(safeBrowsingStatus_)]]"
+            src="[[getSafeBrowsingIconSrc_(safeBrowsingStatus_)]]"
+            class$="[[getSafeBrowsingIconClass_(safeBrowsingStatus_)]]">
+        </iron-icon>
+        <div class="start settings-box-text">
+          <div>$i18n{safeBrowsingSectionLabel}</div>
+          <div class="secondary" no-search>
+            [[getSafeBrowsingSubLabelText_(safeBrowsingStatus_)]]
+          </div>
+        </div>
+        <template is="dom-if"
+            if="[[shouldShowSafeBrowsingButton_(safeBrowsingStatus_)]]" restamp>
+          <div class="separator"></div>
+          <cr-button id="safetyCheckSafeBrowsingButton" class="action-button"
+              on-click="onSafeBrowsingButtonClick_" no-search>
+            $i18n{safetyCheckSafeBrowsingButton}
+          </cr-button>
+        </template>
+        <template is="dom-if"
+            if="[[shouldShowSafeBrowsingManagedIcon_(safeBrowsingStatus_)]]"
+            restamp>
+          <iron-icon id="safetyCheckSafeBrowsingManagedIcon" icon="cr20:domain">
+          </iron-icon>
         </template>
       </div>
       <div class="settings-box two-line">

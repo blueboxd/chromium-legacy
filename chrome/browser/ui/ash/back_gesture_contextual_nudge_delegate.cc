@@ -46,8 +46,14 @@ void BackGestureContextualNudgeDelegate::MaybeStartTrackingNavigation(
 void BackGestureContextualNudgeDelegate::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(window_);
-  if (navigation_handle->HasCommitted())
+  // Make sure for one valid navigation, we only fire one status change
+  // notification.
+  if (navigation_handle->HasCommitted() &&
+      (navigation_handle->IsInMainFrame() ||
+       navigation_handle->HasSubframeNavigationEntryCommitted()) &&
+      (navigation_handle->GetURL() != navigation_handle->GetPreviousURL())) {
     controller_->NavigationEntryChanged(window_);
+  }
 }
 
 void BackGestureContextualNudgeDelegate::OnTabStripModelChanged(

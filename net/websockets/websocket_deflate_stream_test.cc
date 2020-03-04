@@ -410,7 +410,7 @@ TEST_F(WebSocketDeflateStreamTest, ReadUncompressedFrameAsync) {
   ReadFramesStub stub(ERR_IO_PENDING);
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   base::MockCallback<CompletionOnceCallback> mock_callback;
-  base::MockCallback<base::Closure> checkpoint;
+  base::MockCallback<base::OnceClosure> checkpoint;
 
   {
     InSequence s;
@@ -441,7 +441,7 @@ TEST_F(WebSocketDeflateStreamTest, ReadFailedAsync) {
   ReadFramesStub stub(ERR_IO_PENDING);
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   base::MockCallback<CompletionOnceCallback> mock_callback;
-  base::MockCallback<base::Closure> checkpoint;
+  base::MockCallback<base::OnceClosure> checkpoint;
 
   {
     InSequence s;
@@ -490,7 +490,7 @@ TEST_F(WebSocketDeflateStreamTest, ReadCompressedFrameAsync) {
   ReadFramesStub stub(ERR_IO_PENDING);
 
   base::MockCallback<CompletionOnceCallback> mock_callback;
-  base::MockCallback<base::Closure> checkpoint;
+  base::MockCallback<base::OnceClosure> checkpoint;
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   {
     InSequence s;
@@ -528,7 +528,7 @@ TEST_F(WebSocketDeflateStreamTest,
            data1);
   ReadFramesStub stub1(OK, &frames_to_output), stub2(ERR_IO_PENDING);
   base::MockCallback<CompletionOnceCallback> mock_callback;
-  base::MockCallback<base::Closure> checkpoint;
+  base::MockCallback<base::OnceClosure> checkpoint;
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
 
   {
@@ -1068,7 +1068,7 @@ TEST_F(WebSocketDeflateStreamTest, WriteFrameImmediately) {
 TEST_F(WebSocketDeflateStreamTest, WriteFrameAsync) {
   WriteFramesStub stub(predictor_, ERR_IO_PENDING);
   base::MockCallback<CompletionOnceCallback> mock_callback;
-  base::MockCallback<base::Closure> checkpoint;
+  base::MockCallback<base::OnceClosure> checkpoint;
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
   {
     InSequence s;

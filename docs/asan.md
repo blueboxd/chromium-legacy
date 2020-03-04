@@ -120,7 +120,7 @@ base::ToolsSanityTest_DISABLED_AddressSanitizerLocalOOBCrashTest_Test::TestBody(
 ... lots more stuff
 ```
 
-Congrats, you have a working ASan build! 🙌
+Congrats, you have a working ASan build! &#x1F64C;
 
 ## Run chrome under ASan
 
@@ -210,14 +210,15 @@ build/android/test_runner.py instrumentation --test-apk ContentShellTest \
 To run stuff without Chromium testing script (ex. ContentShell.apk, or any third
 party apk or binary), device setup is needed:
 ```shell
-tools/android/asan/third_party/asan_device_setup.sh --lib
-third_party/llvm-build/Release+Asserts/lib/clang/*/lib/linux/libclang_rt.asan-arm-android.so
+tools/android/asan/third_party/asan_device_setup.sh \
+    --lib third_party/llvm-build/Release+Asserts/lib/clang/*/lib/linux/libclang_rt.asan-arm-android.so
 # wait a few seconds for the device to reload
 ```
 
 It only needs to be run once per device. It is safe to run it multiple times.
-When this is done, the device will run ASan apks as well as normal apks without
-any further setup.
+Examine the output to ensure that setup was successful (you may need to run
+`adb disable-verity` and restart the device first). When this is done, the
+device will run ASan apks as well as normal apks without any further setup.
 
 To run command-line tools (i.e. binaries), prefix them with `asanwrapper`:
 ```shell

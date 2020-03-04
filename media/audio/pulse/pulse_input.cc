@@ -15,22 +15,6 @@
 
 namespace media {
 
-namespace {
-
-PRINTF_FORMAT(2, 3)
-void SendLogMessage(const AudioManagerBase::LogCallback& callback,
-                    const char* format,
-                    ...) {
-  if (callback.is_null())
-    return;
-  va_list args;
-  va_start(args, format);
-  callback.Run("PAIS::" + base::StringPrintV(format, args));
-  va_end(args);
-}
-
-}  // namespace
-
 using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
 
@@ -62,7 +46,7 @@ PulseAudioInputStream::PulseAudioInputStream(
   DCHECK(mainloop);
   DCHECK(context);
   CHECK(params_.IsValid());
-  SendLogMessage(log_callback_, "%s({device_id=%s}, {params=[%s]})", __func__,
+  SendLogMessage("%s({device_id=%s}, {params=[%s]})", __func__,
                  device_name.c_str(), params.AsHumanReadableString().c_str());
 }
 
@@ -74,19 +58,17 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 
 bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "%s()", __func__);
+  SendLogMessage("%s()", __func__);
   if (device_name_ == AudioDeviceDescription::kDefaultDeviceId &&
       audio_manager_->DefaultSourceIsMonitor()) {
-    SendLogMessage(log_callback_, "%s => (ERROR: can't open monitor device)",
-                   __func__);
+    SendLogMessage("%s => (ERROR: can't open monitor device)", __func__);
     return false;
   }
 
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!pulse::CreateInputStream(pa_mainloop_, pa_context_, &handle_, params_,
                                 device_name_, &StreamNotifyCallback, this)) {
-    SendLogMessage(log_callback_, "%s => (ERROR: failed to open PA stream)",
-                   __func__);
+    SendLogMessage("%s => (ERROR: failed to open PA stream)", __func__);
     return false;
   }
 
@@ -99,7 +81,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   DCHECK(handle_);
-  SendLogMessage(log_callback_, "%s()", __func__);
+  SendLogMessage("%s()", __func__);
 
   // AGC needs to be started out of the lock.
   StartAgc();
@@ -126,7 +108,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
 
 void PulseAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "%s()", __func__);
+  SendLogMessage("%s()", __func__);
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!stream_started_)
     return;
@@ -160,7 +142,7 @@ void PulseAudioInputStream::Stop() {
 
 void PulseAudioInputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "%s()", __func__);
+  SendLogMessage("%s()", __func__);
   {
     AutoPulseLock auto_lock(pa_mainloop_);
     if (handle_) {
@@ -192,7 +174,7 @@ void PulseAudioInputStream::SetVolume(double volume) {
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!handle_)
     return;
-  SendLogMessage(log_callback_, "%s({volume=%.2f})", __func__, volume);
+  SendLogMessage("%s({volume=%.2f})", __func__, volume);
 
   size_t index = pa_stream_get_device_index(handle_);
   pa_operation* operation = nullptr;
@@ -204,8 +186,7 @@ void PulseAudioInputStream::SetVolume(double volume) {
     if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                     handle_) ||
         !channels_) {
-      SendLogMessage(log_callback_,
-                     "%s => (WARNING: failed to read number of channels)",
+      SendLogMessage("%s => (WARNING: failed to read number of channels)",
                      __func__);
       return;
     }
@@ -250,6 +231,15 @@ bool PulseAudioInputStream::IsMuted() {
 void PulseAudioInputStream::SetOutputDeviceForAec(
     const std::string& output_device_id) {
   // Not supported. Do nothing.
+}
+
+void PulseAudioInputStream::SendLogMessage(const char* format, ...) {
+  if (log_callback_.is_null())
+    return;
+  va_list args;
+  va_start(args, format);
+  log_callback_.Run("PAIS::" + base::StringPrintV(format, args));
+  va_end(args);
 }
 
 // static, used by pa_stream_set_read_callback.

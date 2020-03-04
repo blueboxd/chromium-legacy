@@ -43,6 +43,8 @@ constexpr char kTraceEventEndName[] = "";
 //           auto* event = ctx.event();
 //           // Fill in some field in track_event.
 //       });
+//
+// When lambda is passed as an argument, it is executed synchronously.
 #define TRACE_EVENT_BEGIN(category, name, ...)                              \
   TRACING_INTERNAL_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_BEGIN, category, name, \
                                    TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__)
@@ -55,6 +57,9 @@ constexpr char kTraceEventEndName[] = "";
 
 // Begin a thread-scoped slice which gets automatically closed when going out
 // of scope.
+//
+// Similarly to TRACE_EVENT_BEGIN, when lambda is passed as an argument, it is
+// executed synchronously.
 #define TRACE_EVENT(category, name, ...) \
   TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ##__VA_ARGS__)
 

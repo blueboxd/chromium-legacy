@@ -32,6 +32,7 @@ const char kLastAppNameKey[] = "last_app_name";
 const char kReleaseVersionKey[] = "release_version";
 const char kBuildNumberKey[] = "build_number";
 const char kReasonKey[] = "reason";
+const char kStadiaSessionIdKey[] = "stadia_session_id";
 
 }  // namespace
 
@@ -75,6 +76,7 @@ std::unique_ptr<base::Value> DumpInfo::GetAsValue() const {
   entry->SetString(kReleaseVersionKey, params_.cast_release_version);
   entry->SetString(kBuildNumberKey, params_.cast_build_number);
   entry->SetString(kReasonKey, params_.reason);
+  entry->SetString(kStadiaSessionIdKey, params_.stadia_session_id);
 
   return result;
 }
@@ -128,6 +130,8 @@ bool DumpInfo::ParseEntry(const base::Value* entry) {
   if (dict->GetString(kBuildNumberKey, &params_.cast_build_number))
     ++num_params;
   if (dict->GetString(kReasonKey, &params_.reason))
+    ++num_params;
+  if (dict->GetString(kStadiaSessionIdKey, &params_.stadia_session_id))
     ++num_params;
 
   // Disallow extraneous params

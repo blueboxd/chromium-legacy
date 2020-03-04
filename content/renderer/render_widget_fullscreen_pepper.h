@@ -14,7 +14,8 @@
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/blink/public/web/web_widget.h"
+#include "third_party/blink/public/web/web_external_widget.h"
+#include "third_party/blink/public/web/web_external_widget_client.h"
 #include "url/gurl.h"
 
 namespace cc {
@@ -24,6 +25,7 @@ class Layer;
 namespace content {
 class CompositorDependencies;
 class PepperPluginInstanceImpl;
+class PepperExternalWidgetClient;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
@@ -62,7 +64,8 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       int32_t routing_id,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+      mojo::PendingReceiver<mojom::Widget> widget_receiver,
+      blink::WebURL main_frame_url);
   ~RenderWidgetFullscreenPepper() override;
 
   // RenderWidget API.
@@ -71,7 +74,12 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   void AfterUpdateVisualProperties() override;
 
  private:
+  friend class PepperExternalWidgetClient;
+
   void UpdateLayerBounds();
+  void DidResize(const gfx::Size& size);
+  blink::WebInputEventResult ProcessInputEvent(
+      const blink::WebCoalescedInputEvent& event);
 
   // The plugin instance this widget wraps.
   PepperPluginInstanceImpl* plugin_;
@@ -79,6 +87,8 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   cc::Layer* layer_ = nullptr;
 
   std::unique_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
+  std::unique_ptr<PepperExternalWidgetClient> widget_client_;
+  std::unique_ptr<blink::WebExternalWidget> blink_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };

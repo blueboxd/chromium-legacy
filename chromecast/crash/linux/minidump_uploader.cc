@@ -254,6 +254,9 @@ bool MinidumpUploader::DoWork() {
     if (!dump.params().reason.empty()) {
       g.SetParameter("reason", dump.params().reason);
     }
+    if (!dump.params().stadia_session_id.empty()) {
+      g.SetParameter("stadia_session_id", dump.params().stadia_session_id);
+    }
 
     std::string response;
     if (!g.Upload(&response)) {

@@ -163,6 +163,56 @@ suite('SafetyCheckUiTests', function() {
     }
   });
 
+  test('safeBrowsingCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
+      newState: settings.SafetyCheckSafeBrowsingStatus.CHECKING,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+  });
+
+  test('safeBrowsingCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
+      newState: settings.SafetyCheckSafeBrowsingStatus.ENABLED,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+  });
+
+  test('safeBrowsingCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
+      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED,
+    });
+    Polymer.dom.flush();
+    assertTrue(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+  });
+
+  test('safeBrowsingCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
+      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+  });
+
+  test('safeBrowsingCheckingUiTest', function() {
+    cr.webUIListenerCallback('safety-check-status-changed', {
+      safetyCheckComponent: settings.SafetyCheckComponent.SAFE_BROWSING,
+      newState: settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION,
+    });
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
+    assertTrue(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
+  });
+
   test('extensionsCheckingUiTest', function() {
     cr.webUIListenerCallback('safety-check-status-changed', {
       safetyCheckComponent: settings.SafetyCheckComponent.EXTENSIONS,

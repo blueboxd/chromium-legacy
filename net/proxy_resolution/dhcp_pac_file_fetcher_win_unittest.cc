@@ -60,7 +60,7 @@ class RealFetchTester {
   void RunTest() {
     int result = fetcher_->Fetch(
         &pac_text_,
-        base::Bind(&RealFetchTester::OnCompletion, base::Unretained(this)),
+        base::BindOnce(&RealFetchTester::OnCompletion, base::Unretained(this)),
         NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != ERR_IO_PENDING)
       finished_ = true;
@@ -386,7 +386,7 @@ class FetcherClient {
   void RunTest() {
     int result = fetcher_.Fetch(
         &pac_text_,
-        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
+        base::BindOnce(&FetcherClient::OnCompletion, base::Unretained(this)),
         NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     ASSERT_THAT(result, IsError(ERR_IO_PENDING));
   }
@@ -394,7 +394,7 @@ class FetcherClient {
   int RunTestThatMayFailSync() {
     int result = fetcher_.Fetch(
         &pac_text_,
-        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
+        base::BindOnce(&FetcherClient::OnCompletion, base::Unretained(this)),
         NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != ERR_IO_PENDING)
       result_ = result;

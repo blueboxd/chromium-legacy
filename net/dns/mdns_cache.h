@@ -50,7 +50,8 @@ class NET_EXPORT_PRIVATE MDnsCache {
     std::string optional_;
   };
 
-  typedef base::Callback<void(const RecordParsed*)> RecordRemovedCallback;
+  typedef base::RepeatingCallback<void(const RecordParsed*)>
+      RecordRemovedCallback;
 
   enum UpdateType {
     RecordAdded,

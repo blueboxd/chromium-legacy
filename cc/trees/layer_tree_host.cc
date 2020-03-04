@@ -61,6 +61,8 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "cc/trees/ukm_manager.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -943,11 +945,20 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   DCHECK(info);
   TRACE_EVENT0("cc", "LayerTreeHost::ApplyScrollAndScale");
+
+  using perfetto::protos::pbzero::ChromeLatencyInfo;
+  using perfetto::protos::pbzero::TrackEvent;
+
   for (auto& swap_promise : info->swap_promises) {
-    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                           TRACE_ID_GLOBAL(swap_promise->TraceId()),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "step", "Main thread scroll update");
+    TRACE_EVENT(
+        "input,benchmark", "LatencyInfo.Flow",
+        [&swap_promise](perfetto::EventContext ctx) {
+          ChromeLatencyInfo* info = ctx.event()->set_chrome_latency_info();
+          info->set_trace_id(swap_promise->TraceId());
+          info->set_step(ChromeLatencyInfo::STEP_MAIN_THREAD_SCROLL_UPDATE);
+          tracing::FillFlowEvent(ctx, TrackEvent::LegacyEvent::FLOW_INOUT,
+                                 swap_promise->TraceId());
+        });
     swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
   }
 
@@ -1100,7 +1111,7 @@ void LayerTreeHost::SetNonBlinkManagedRootLayer(
     scoped_refptr<Layer> root_layer) {
   SetRootLayer(std::move(root_layer));
 
-  DCHECK(root_layer_->children().empty());
+  DCHECK(!root_layer || root_layer_->children().empty());
   if (IsUsingLayerLists() && root_layer_)
     force_use_property_tree_builder_ = true;
 }

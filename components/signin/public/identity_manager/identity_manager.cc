@@ -539,7 +539,6 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
 
 void IdentityManager::GoogleSigninSucceeded(
     const CoreAccountInfo& account_info) {
-  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
@@ -562,6 +561,12 @@ void IdentityManager::UnconsentedPrimaryAccountChanged(
 void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   DCHECK(!account_info.IsEmpty());
+  // This is needed for the case where the user chooses to start syncing
+  // with an account that is different then the unconsented primary account
+  // (not the first in cookies) but then cancel. In that case, the tokens stay
+  // the same. In all the other cases, either the token will be revoked which
+  // will trigger an update for the unconsented primary account or the
+  // primary account stays the same but the sync consent is revoked.
   UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
@@ -688,7 +693,6 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
     const CoreAccountId primary_account_id = GetPrimaryAccountId();
     if (primary_account_id == info.account_id) {
       primary_account_manager_->UpdateAuthenticatedAccountInfo();
-      UpdateUnconsentedPrimaryAccount();
     }
   }
 
@@ -698,7 +702,6 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
 }
 
 void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
-  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_)
     observer.OnExtendedAccountInfoRemoved(info);
 }

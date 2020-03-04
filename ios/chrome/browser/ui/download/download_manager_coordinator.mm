@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/browser/installation_notifier.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
@@ -180,7 +181,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 @synthesize presenter = _presenter;
 @synthesize animatesPresentation = _animatesPresentation;
 @synthesize downloadTask = _downloadTask;
-@synthesize webStateList = _webStateList;
 @synthesize bottomMarginHeightAnchor = _bottomMarginHeightAnchor;
 
 - (void)dealloc {
@@ -190,6 +190,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
 - (void)start {
   DCHECK(self.presenter);
+  DCHECK(self.browser);
 
   _viewController = [[DownloadManagerViewController alloc] init];
   _viewController.delegate = self;
@@ -200,6 +201,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.presentedViewController = _viewController;
   self.presenter.delegate = self;
+
+  self.browser->GetWebStateList()->AddObserver(&_unopenedDownloads);
 
   [self.presenter prepareForPresentation];
 
@@ -217,25 +220,14 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                                           completion:nil];
   _confirmationDialog = nil;
   _downloadTask = nullptr;
-  self.webStateList = nullptr;
+
+  if (self.browser)
+    (self.browser->GetWebStateList())->RemoveObserver(&_unopenedDownloads);
 
   [_storeKitCoordinator stop];
   _storeKitCoordinator = nil;
   [_installDriveAlertCoordinator stop];
   _installDriveAlertCoordinator = nil;
-}
-
-- (void)setWebStateList:(WebStateList*)webStateList {
-  if (_webStateList == webStateList)
-    return;
-
-  if (_webStateList)
-    _webStateList->RemoveObserver(&_unopenedDownloads);
-
-  _webStateList = webStateList;
-
-  if (_webStateList)
-    _webStateList->AddObserver(&_unopenedDownloads);
 }
 
 - (UIViewController*)viewController {
@@ -368,8 +360,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
     OpenDownloadsFolderActivity* customActivity =
         [[OpenDownloadsFolderActivity alloc] init];
-    customActivity.browserHandler =
-        HandlerForProtocol(self.dispatcher, BrowserCoordinatorCommands);
+    customActivity.browserHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), BrowserCoordinatorCommands);
     activities = @[ customActivity ];
   }
   _openInController =

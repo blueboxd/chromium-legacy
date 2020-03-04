@@ -107,6 +107,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueCleanup";
     case TaskType::kMainThreadTaskQueueMemoryPurge:
       return "MainThreadTaskQueueMemoryPurge";
+    case TaskType::kMainThreadTaskQueueNonWaking:
+      return "MainThreadTaskQueueNonWaking";
     case TaskType::kInternalIntersectionObserver:
       return "InternalIntersectionObserver";
     case TaskType::kCompositorThreadTaskQueueDefault:

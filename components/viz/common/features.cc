@@ -15,14 +15,8 @@
 
 namespace features {
 
-// Use Skia's readback API instead of GLRendererCopier.
-#if defined(OS_WIN) || defined(OS_LINUX)
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Use the SkiaRenderer.
 #if defined(OS_LINUX) && !(defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST))

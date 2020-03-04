@@ -8606,10 +8606,6 @@ void Document::ColorSchemeChanged() {
   MediaQueryAffectingValueChanged();
 }
 
-void Document::VisionDeficiencyChanged() {
-  GetStyleEngine().VisionDeficiencyChanged();
-}
-
 void Document::UpdateForcedColors() {
   auto* web_theme_engine =
       RuntimeEnabledFeatures::ForcedColorsEnabled() && Platform::Current()

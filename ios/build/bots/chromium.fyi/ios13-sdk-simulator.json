@@ -88,6 +88,16 @@
       "xcode parallelization": true
     },
     {
+      "app": "ios_crash_xcuitests_module",
+      "host": "ios_crash_xcuitests",
+      "xcode parallelization": true,
+      "device type": "iPhone X",
+      "os": "13.3",
+      "xcode build version": "11c29",
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
+    },
+    {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",

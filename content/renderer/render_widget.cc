@@ -1543,6 +1543,11 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   return mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
 
+bool RenderWidget::SupportsBufferedTouchEvents() {
+  // Buffered touch events aren't supported for pepper.
+  return !pepper_fullscreen_;
+}
+
 void RenderWidget::ResizeWebWidget() {
   // In auto resize mode, blink controls sizes and RenderWidget should not be
   // passing values back in.

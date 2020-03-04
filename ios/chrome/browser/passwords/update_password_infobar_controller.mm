@@ -48,8 +48,10 @@ initWithBaseViewController:(UIViewController*)baseViewController
 
 - (void)infobarLinkDidPress:(NSUInteger)tag {
   DCHECK(self.baseViewController);
+  // TODO(crbug.com/1058340): Provide a Browser for the coordinator.
   self.selectorCoordinator = [[SelectorCoordinator alloc]
-      initWithBaseViewController:self.baseViewController];
+      initWithBaseViewController:self.baseViewController
+                         browser:nullptr];
   self.selectorCoordinator.delegate = self;
   self.selectorCoordinator.options =
       [NSOrderedSet orderedSetWithArray:_delegate->GetAccounts()];

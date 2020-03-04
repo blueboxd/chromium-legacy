@@ -421,12 +421,11 @@ ReadbackTestConfig const kTestConfigs[] = {
 #if !defined(GL_NOT_ON_PLATFORM)
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
-#if !defined(OS_WIN) && !defined(OS_LINUX)
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
-#endif
+    //
+    // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
 #endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS)
@@ -445,12 +444,11 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
 #if !defined(GL_NOT_ON_PLATFORM)
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
-#if !defined(OS_WIN) && !defined(OS_LINUX)
     // TODO(crbug.com/1046788): The skia readback path doesn't support
     // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
     // that have UseSkiaForGLReadback enabled by default.
-    ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
-#endif
+    //
+    // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
 #endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS) && !defined(THREAD_SANITIZER) && \

@@ -472,7 +472,7 @@ static bool CanUseResponse(const ResourceResponse& response,
   return CurrentAge(response, response_timestamp) <= max_life;
 }
 
-const ResourceRequest& Resource::LastResourceRequest() const {
+const ResourceRequestHead& Resource::LastResourceRequest() const {
   if (!redirect_chain_.size())
     return GetResourceRequest();
   return redirect_chain_.back().request_;
@@ -1067,8 +1067,7 @@ bool Resource::MustRevalidateDueToCacheHeaders(bool allow_stale) const {
          GetResourceRequest().CacheControlContainsNoStore();
 }
 
-static bool ShouldRevalidateStaleResponse(const ResourceRequest& request,
-                                          const ResourceResponse& response,
+static bool ShouldRevalidateStaleResponse(const ResourceResponse& response,
                                           base::Time response_timestamp) {
   base::TimeDelta staleness = response.CacheControlStaleWhileRevalidate();
   if (staleness.is_zero())
@@ -1082,15 +1081,14 @@ bool Resource::ShouldRevalidateStaleResponse() const {
   for (auto& redirect : redirect_chain_) {
     // Use |response_timestamp_| since we don't store the timestamp
     // of each redirect response.
-    if (blink::ShouldRevalidateStaleResponse(redirect.request_,
-                                             redirect.redirect_response_,
+    if (blink::ShouldRevalidateStaleResponse(redirect.redirect_response_,
                                              response_timestamp_)) {
       return true;
     }
   }
 
-  return blink::ShouldRevalidateStaleResponse(
-      GetResourceRequest(), GetResponse(), response_timestamp_);
+  return blink::ShouldRevalidateStaleResponse(GetResponse(),
+                                              response_timestamp_);
 }
 
 bool Resource::StaleRevalidationRequested() const {

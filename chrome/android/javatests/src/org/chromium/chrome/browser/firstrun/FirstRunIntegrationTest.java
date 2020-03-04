@@ -194,13 +194,10 @@ public class FirstRunIntegrationTest {
         Assert.assertEquals(0, mTestObserver.updateCachedEngineCallback.getCallCount());
 
         // Accept the ToS.
-        if (freProperties.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE)) {
-            clickButton(mActivity, R.id.terms_accept, "Failed to accept ToS");
-            mTestObserver.jumpToPageCallback.waitForCallback(
-                    "Failed to try moving to the next screen", 0);
-            mTestObserver.acceptTermsOfServiceCallback.waitForCallback(
-                    "Failed to accept the ToS", 0);
-        }
+        clickButton(mActivity, R.id.terms_accept, "Failed to accept ToS");
+        mTestObserver.jumpToPageCallback.waitForCallback(
+                "Failed to try moving to the next screen", 0);
+        mTestObserver.acceptTermsOfServiceCallback.waitForCallback("Failed to accept the ToS", 0);
 
         // Acknowledge that Data Saver will be enabled.
         if (freProperties.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE)) {

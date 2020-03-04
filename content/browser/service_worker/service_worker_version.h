@@ -44,7 +44,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -512,12 +512,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   void set_cross_origin_embedder_policy(
-      network::mojom::CrossOriginEmbedderPolicyValue
-          cross_origin_embedder_policy) {
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
     cross_origin_embedder_policy_ = cross_origin_embedder_policy;
   }
-  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy()
-      const {
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy() const {
     return cross_origin_embedder_policy_;
   }
 
@@ -554,8 +552,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
           compared_script_info_map,
       const GURL& updated_script_url,
-      network::mojom::CrossOriginEmbedderPolicyValue
-          cross_origin_embedder_policy);
+      network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
   ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
@@ -892,8 +889,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Cross-Origin-Embedder-Policy for the service worker script. This persists
   // in the disk. kNone is set if this is a brand-new service worker whose main
   // script is not loaded yet.
-  network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy_ =
-      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;

@@ -137,9 +137,9 @@
       </cr-button>
     </div>
 
-    <div id="outer" class="layout vertical nowrap">
+    <div id="outer" class="layout vertical nowrap" role="list">
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
-        <div class="settings-box account-list-item">
+        <div class="settings-box account-list-item" role="listitem">
 
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
@@ -152,7 +152,8 @@
             <div class="flex text-elide">
               <!-- If account is signed in, display the full name -->
               <template is="dom-if" if="[[item.isSignedIn]]">
-                <span>[[item.fullName]]</span>
+                <span id="fullName-[[index]]"
+                    aria-hidden="true">[[item.fullName]]</span>
               </template>
               <!-- Else, display a re-authentication message -->
               <template is="dom-if" if="[[!item.isSignedIn]]">
@@ -161,26 +162,31 @@
                 </span>
               </template>
 
-              <div class="secondary">[[item.email]]</div>
+              <div class="secondary" id="email-[[index]]"
+                  aria-hidden="true">[[item.email]]</div>
             </div>
           </div>
 
           <template is="dom-if"
               if="[[shouldShowReauthenticationButton_(item)]]">
             <cr-button title="[[getAccountManagerSignedOutTitle_(item)]]"
-                class="reauth-button" on-click="onReauthenticationTap_">
+                class="reauth-button" on-click="onReauthenticationTap_"
+                aria-labelledby$="fullName-[[index]] email-[[index]]">
               [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
             </cr-button>
           </template>
 
           <!-- If this is the Device Account, display the management status -->
           <template is="dom-if" if="[[item.isDeviceAccount]]">
-            <cr-tooltip-icon icon-class="cr:info-outline"
+            <cr-tooltip-icon id="primaryAccountTooltip" aria-hidden="true"
+                icon-class="cr:info-outline"
                 class="tooltip-primary-account"
                 tooltip-text="$i18n{accountManagerPrimaryAccountTooltip}"
                 icon-aria-label="$i18n{accountManagerPrimaryAccountTooltip}">
             </cr-tooltip-icon>
-            <span class="management-status">
+            <span class="management-status"
+                aria-labelledby$="fullName-[[index]] email-[[index]]"
+                aria-describedby="primaryAccountTooltip">
               [[getManagementLabel_(item)]]
             </span>
           </template>
@@ -188,6 +194,8 @@
           <template is="dom-if" if="[[!item.isDeviceAccount]]">
             <cr-icon-button class="icon-more-vert"
                 title="[[getMoreActionsTitle_(item)]]"
+                aria-label="[[getMoreActionsTitle_(item)]]"
+                aria-describedby$="fullName-[[index]]"
                 on-click="onAccountActionsMenuButtonTap_">
             </cr-icon-button>
           </template>

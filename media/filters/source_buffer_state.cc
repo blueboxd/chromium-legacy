@@ -150,11 +150,11 @@ void SourceBufferState::Init(
     StreamParser::InitCB init_cb,
     const std::string& expected_codecs,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const NewTextTrackCB& new_text_track_cb) {
+    NewTextTrackCB new_text_track_cb) {
   DCHECK_EQ(state_, UNINITIALIZED);
   init_cb_ = std::move(init_cb);
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
-  new_text_track_cb_ = new_text_track_cb;
+  new_text_track_cb_ = std::move(new_text_track_cb);
   state_ = PENDING_PARSER_CONFIG;
   InitializeParser(expected_codecs);
 }

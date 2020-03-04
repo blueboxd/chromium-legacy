@@ -551,7 +551,7 @@ public class AutofillAssistantBottomsheetTest {
                     float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
                             mTestRule.getActivity().findViewById(
                                     R.id.autofill_assistant_bottom_sheet_toolbar))[1];
-                    Rect el = getAbsoluteBoundingRect(elementId, mTestRule);
+                    Rect el = getAbsoluteBoundingRect(mTestRule, elementId);
                     return el.bottom > y == shouldBeCovered;
                 } catch (Exception e) {
                     throw new RuntimeException(e);

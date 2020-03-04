@@ -10,11 +10,13 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/channel_info.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/version_info/channel.h"
@@ -60,6 +62,12 @@ void BrowserReportGenerator::GenerateBasicInfos(em::BrowserReport* report) {
 #if !defined(OS_CHROMEOS)
   report->set_browser_version(version_info::GetVersionNumber());
   report->set_channel(policy::ConvertToProtoChannel(chrome::GetChannel()));
+  const auto* const build_state = g_browser_process->GetBuildState();
+  if (build_state->update_type() != BuildState::UpdateType::kNone) {
+    const auto& installed_version = build_state->installed_version();
+    if (installed_version)
+      report->set_installed_browser_version(installed_version->GetString());
+  }
 #endif
 
   report->set_executable_path(GetExecutablePath());

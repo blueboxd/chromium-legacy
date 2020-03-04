@@ -2030,10 +2030,11 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
   ResourceLoaderOptions options = resource->Options();
   options.initiator_info.name = initiator_name;
   FetchParameters params(std::move(resource_request), options);
-  Context().CanRequest(resource->GetType(), resource->LastResourceRequest(),
-                       resource->LastResourceRequest().Url(), params.Options(),
+  ResourceRequest last_resource_request(resource->LastResourceRequest());
+  Context().CanRequest(resource->GetType(), last_resource_request,
+                       last_resource_request.Url(), params.Options(),
                        ReportingDisposition::kReport,
-                       resource->LastResourceRequest().GetRedirectStatus());
+                       last_resource_request.GetRedirectStatus());
   DidLoadResourceFromMemoryCache(resource->InspectorId(), resource,
                                  params.GetResourceRequest(),
                                  false /* is_static_data */);

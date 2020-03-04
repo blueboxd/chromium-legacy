@@ -17,7 +17,6 @@
 class ChromeBrowserState;
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
-@protocol TabSwitcher;
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
@@ -38,7 +37,6 @@ class ChromeBrowserState;
 // Keeps track of the restore state during startup.
 @property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
 
-- (id<TabSwitcher>)tabSwitcher;
 - (TabModel*)currentTabModel;
 - (ChromeBrowserState*)mainBrowserState;
 - (ChromeBrowserState*)currentBrowserState;
@@ -47,11 +45,14 @@ class ChromeBrowserState;
 - (BrowserViewController*)otrBVC;
 - (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
+- (UIWindow*)window;
 
 - (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock;
+
+- (void)showFirstRunUI;
 
 @end
 

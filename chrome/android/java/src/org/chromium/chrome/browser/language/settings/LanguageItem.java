@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings.languages;
+package org.chromium.chrome.browser.language.settings;
 
 /**
  * Simple object representing the language item.

@@ -21,4 +21,6 @@ include_rules = [
   "+ui/gfx/geometry",
 
   "+third_party/one_euro_filter/src/one_euro_filter.h",
+
+  "+services/tracing/public/cpp",
 ]

@@ -38,6 +38,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
@@ -688,8 +689,9 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
                                  swapped_trace_id_, "WaitForSwap");
     swapped_since_resize_ = true;
 
-    ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
-                                                 "Display::DrawAndSwap");
+    ui::LatencyInfo::TraceIntermediateFlowEvents(
+        frame.metadata.latency_info,
+        perfetto::protos::pbzero::ChromeLatencyInfo::STEP_DRAW_AND_SWAP);
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     DirectRenderer::SwapFrameData swap_frame_data;

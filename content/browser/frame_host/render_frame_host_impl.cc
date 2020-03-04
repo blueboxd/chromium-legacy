@@ -1895,10 +1895,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   // process's channel.
   remote_associated_interfaces_.reset();
 
-  // Ensure that the AssociatedRemote<blink::mojom::LocalFrame> works after a
-  // crash.
-  local_frame_.reset();
-
   // Any termination disablers in content loaded by the new process will
   // be sent again.
   has_before_unload_handler_ = false;
@@ -6012,6 +6008,8 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_.reset();
   frame_bindings_control_.reset();
   frame_host_associated_receiver_.reset();
+  local_frame_.reset();
+  local_main_frame_.reset();
   navigation_control_.reset();
   frame_input_handler_.reset();
   find_in_page_.reset();
@@ -6027,6 +6025,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   sensor_provider_proxy_.reset();
 
   local_frame_host_receiver_.reset();
+  local_main_frame_host_receiver_.reset();
   associated_registry_.reset();
 }
 

@@ -405,6 +405,15 @@ ResultExpr RestrictPrlimit(pid_t target_pid) {
   return If(AnyOf(pid == 0, pid == target_pid), Allow()).Else(Error(EPERM));
 }
 
+ResultExpr RestrictPrlimitToGetrlimit(pid_t target_pid) {
+  const Arg<pid_t> pid(0);
+  const Arg<uintptr_t> new_limit(2);
+  // Only allow operations for the current process, and only with |new_limit|
+  // set to null.
+  return If(AllOf(new_limit == 0, AnyOf(pid == 0, pid == target_pid)), Allow())
+      .Else(Error(EPERM));
+}
+
 #if !defined(OS_NACL_NONSFI)
 ResultExpr RestrictPtrace() {
   const Arg<int> request(0);

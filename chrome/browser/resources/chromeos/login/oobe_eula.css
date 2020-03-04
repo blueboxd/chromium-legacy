@@ -9,7 +9,8 @@ a {
 }
 
 #crosEulaFrame {
-  min-height: 200px;
+  /* minimal height which allows popup dialogs looks fine. */
+  min-height: 300px;
 }
 
 #installationSettings,
@@ -18,15 +19,18 @@ a {
   min-height: unset;
 }
 
-#installationSettings {
-  margin-inline-start: 16px;
+#footer-more {
+  padding-inline-start: 16px;
+}
+
+#additionalTerms,
+#installationSettings,
+#logging {
   margin-top: 16px;
 }
 
 #logging {
   color: rgba(0, 0, 0, 0.54);
-  margin-inline-start: 16px;
-  margin-top: 16px;
 }
 
 cr-toggle {

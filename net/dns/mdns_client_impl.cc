@@ -402,9 +402,9 @@ void MDnsClientImpl::Core::ScheduleCleanup(base::Time cleanup) {
 }
 
 void MDnsClientImpl::Core::DoCleanup() {
-  cache_.CleanupRecords(clock_->Now(),
-                        base::Bind(&MDnsClientImpl::Core::OnRecordRemoved,
-                                   base::Unretained(this)));
+  cache_.CleanupRecords(
+      clock_->Now(), base::BindRepeating(&MDnsClientImpl::Core::OnRecordRemoved,
+                                         base::Unretained(this)));
 
   ScheduleCleanup(cache_.next_expiration());
 }

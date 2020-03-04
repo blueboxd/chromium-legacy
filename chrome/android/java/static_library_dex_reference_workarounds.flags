@@ -34,6 +34,10 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.firstrun.FirstRunPagerAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.init.ChromeBrowserInitializer$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.init.ProcessInitializationHandler$** { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.language.settings.AddLanguageFragment { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.language.settings.AddLanguageFragment$$Lambda$1 { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.language.settings.AddLanguageFragment$LanguageSearchListAdapter { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.language.settings.LanguageListBaseAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaImageCallback { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaImageManager { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaNotificationInfo$Builder { *; }
@@ -44,8 +48,6 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.AndroidPaymentApp$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.PaymentApp { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.photo_picker.PhotoPickerDialog { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.preferences.languages.AddLanguageFragment { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.preferences.languages.AddLanguageFragment$$Lambda$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataFetcher { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferencesAdvanced { *; }
@@ -53,10 +55,6 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment$ClearBrowsingDataPagerAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.profiles.Profile { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.settings.languages.AddLanguageFragment { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.settings.languages.AddLanguageFragment$$Lambda$1 { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.settings.languages.AddLanguageFragment$LanguageSearchListAdapter { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.settings.languages.LanguageListBaseAdapter { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataFetcher { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataPreferences { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataPreferencesAdvanced { *; }

@@ -179,7 +179,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   const ResourceRequest& GetResourceRequest() const {
     return resource_request_;
   }
-  const ResourceRequest& LastResourceRequest() const;
+  const ResourceRequestHead& LastResourceRequest() const;
   const ResourceResponse* LastResourceResponse() const;
 
   virtual void SetRevalidatingRequest(const ResourceRequest&);
@@ -466,13 +466,11 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
     DISALLOW_NEW();
 
    public:
-    explicit RedirectPair(const ResourceRequest& request,
+    explicit RedirectPair(const ResourceRequestHead& request,
                           const ResourceResponse& redirect_response)
-        : redirect_response_(redirect_response) {
-      request_.CopyFrom(request);
-    }
+        : request_(request), redirect_response_(redirect_response) {}
 
-    ResourceRequest request_;
+    ResourceRequestHead request_;
     ResourceResponse redirect_response_;
   };
   const Vector<RedirectPair>& RedirectChain() const { return redirect_chain_; }

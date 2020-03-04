@@ -412,16 +412,17 @@ void ProfileImpl::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
 #endif  // !defined(OS_ANDROID)
+  registry->RegisterTimePref(prefs::kProfileCreationTime, base::Time());
 }
 
 ProfileImpl::ProfileImpl(
     const base::FilePath& path,
     Delegate* delegate,
     CreateMode create_mode,
-    base::Time creation_time,
+    base::Time path_creation_time,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : path_(path),
-      creation_time_(creation_time),
+      path_creation_time_(path_creation_time),
       io_task_runner_(std::move(io_task_runner)),
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
@@ -607,6 +608,15 @@ void ProfileImpl::DoFinalInit() {
   TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit")
 
   PrefService* prefs = GetPrefs();
+
+  // Do not override the existing pref in case a profile directory is copied, or
+  // if the file system does not support creation time and the property (i.e.
+  // st_ctim in posix which is actually the last status change time when the
+  // inode was last updated) use to mimic it changes because of some other
+  // modification.
+  if (!prefs->HasPrefPath(prefs::kProfileCreationTime))
+    prefs->SetTime(prefs::kProfileCreationTime, path_creation_time_);
+
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kSupervisedUserId,
@@ -831,7 +841,7 @@ base::FilePath ProfileImpl::GetPath() const {
 }
 
 base::Time ProfileImpl::GetCreationTime() const {
-  return creation_time_;
+  return prefs_->GetTime(prefs::kProfileCreationTime);
 }
 
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
@@ -1411,7 +1421,7 @@ void ProfileImpl::InitChromeOSPreferences() {
 #endif  // defined(OS_CHROMEOS)
 
 void ProfileImpl::SetCreationTimeForTesting(base::Time creation_time) {
-  creation_time_ = creation_time;
+  prefs_->SetTime(prefs::kProfileCreationTime, creation_time);
 }
 
 GURL ProfileImpl::GetHomePage() {

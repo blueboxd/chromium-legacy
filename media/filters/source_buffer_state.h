@@ -34,8 +34,8 @@ class MEDIA_EXPORT SourceBufferState {
   using CreateDemuxerStreamCB =
       base::RepeatingCallback<ChunkDemuxerStream*(DemuxerStream::Type)>;
 
-  typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
-      NewTextTrackCB;
+  using NewTextTrackCB = base::RepeatingCallback<void(ChunkDemuxerStream*,
+                                                      const TextTrackConfig&)>;
 
   SourceBufferState(std::unique_ptr<StreamParser> stream_parser,
                     std::unique_ptr<FrameProcessor> frame_processor,
@@ -48,7 +48,7 @@ class MEDIA_EXPORT SourceBufferState {
             const std::string& expected_codecs,
             const StreamParser::EncryptedMediaInitDataCB&
                 encrypted_media_init_data_cb,
-            const NewTextTrackCB& new_text_track_cb);
+            NewTextTrackCB new_text_track_cb);
 
   // Reconfigures this source buffer to use |new_stream_parser|. Caller must
   // first ensure that ResetParserState() was done to flush any pending frames

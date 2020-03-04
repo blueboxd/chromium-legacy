@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
 
 #import "base/test/ios/wait_util.h"
+#import "base/test/task_environment.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/elements/selector_picker_view_controller.h"
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,10 +30,14 @@ using SelectorCoordinatorTest = PlatformTest;
 // Tests that invoking start on the coordinator presents the selector view, and
 // that invoking stop dismisses the view and invokes the delegate.
 TEST_F(SelectorCoordinatorTest, StartAndStop) {
+  base::test::TaskEnvironment task_environment_;
+
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
-  SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]
-      initWithBaseViewController:rootViewController];
+  std::unique_ptr<Browser> browser_ = std::make_unique<TestBrowser>();
+  SelectorCoordinator* coordinator =
+      [[SelectorCoordinator alloc] initWithBaseViewController:rootViewController
+                                                      browser:browser_.get()];
 
   void (^testSteps)(void) = ^{
     [coordinator start];
@@ -51,10 +57,14 @@ TEST_F(SelectorCoordinatorTest, StartAndStop) {
 // Tests that calling the view controller delegate method invokes the
 // SelectorCoordinatorDelegate method and stops the coordinator.
 TEST_F(SelectorCoordinatorTest, Delegate) {
+  base::test::TaskEnvironment task_environment_;
+
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
-  SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]
-      initWithBaseViewController:rootViewController];
+  std::unique_ptr<Browser> browser_ = std::make_unique<TestBrowser>();
+  SelectorCoordinator* coordinator =
+      [[SelectorCoordinator alloc] initWithBaseViewController:rootViewController
+                                                      browser:browser_.get()];
   id delegate =
       [OCMockObject mockForProtocol:@protocol(SelectorCoordinatorDelegate)];
   coordinator.delegate = delegate;

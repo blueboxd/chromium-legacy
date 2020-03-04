@@ -116,6 +116,7 @@ public class CachedFeatureFlags {
 
     private static Map<String, Boolean> sBoolValuesReturned = new HashMap<>();
     private static Map<String, String> sStringValuesReturned = new HashMap<>();
+    private static Map<String, Integer> sIntValuesReturned = new HashMap<>();
     private static String sReachedCodeProfilerTrialGroup;
 
     /**
@@ -262,6 +263,17 @@ public class CachedFeatureFlags {
                 parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
     }
 
+    /**
+     * TODO(crbug.com/1012975): Move this to IntCachedFieldTrialParameter when
+     * CachedFeatureFlags is in chrome/browser/flags.
+     *
+     * @return the value of the field trial parameter that should be used in this run.
+     */
+    public static int getValue(IntCachedFieldTrialParameter parameter) {
+        return getConsistentIntValue(
+                parameter.getSharedPreferenceKey(), parameter.getDefaultValue());
+    }
+
     private static void cacheStartSurfaceVariation() {
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
@@ -358,6 +370,15 @@ public class CachedFeatureFlags {
         return value;
     }
 
+    static int getConsistentIntValue(String preferenceName, int defaultValue) {
+        Integer value = sIntValuesReturned.get(preferenceName);
+        if (value == null) {
+            value = SharedPreferencesManager.getInstance().readInt(preferenceName, defaultValue);
+            sIntValuesReturned.put(preferenceName, value);
+        }
+        return value;
+    }
+
     private static String getPrefForFeatureFlag(String featureName) {
         String grandfatheredPrefKey = sNonDynamicPrefKeys.get(featureName);
         if (grandfatheredPrefKey == null) {
@@ -371,6 +392,7 @@ public class CachedFeatureFlags {
     public static void resetFlagsForTesting() {
         sBoolValuesReturned.clear();
         sStringValuesReturned.clear();
+        sIntValuesReturned.clear();
     }
 
     @VisibleForTesting

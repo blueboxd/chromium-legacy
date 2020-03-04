@@ -47,7 +47,6 @@ source_set("privacy_check") {
   deps = [
     "//base",
     "//third_party/perfetto:libperfetto",
-    "//third_party/perfetto/src/protozero:protozero",
   ]
 }
 

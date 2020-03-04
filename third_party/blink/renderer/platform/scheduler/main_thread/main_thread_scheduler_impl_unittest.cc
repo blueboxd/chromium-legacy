@@ -3538,6 +3538,52 @@ TEST_F(MainThreadSchedulerImplTest, IsBeginMainFrameScheduled) {
   EXPECT_FALSE(scheduler_->IsBeginMainFrameScheduled());
 }
 
+TEST_F(MainThreadSchedulerImplTest, NonWakingTaskQueue) {
+  std::vector<std::pair<std::string, base::TimeTicks>> log;
+  base::TimeTicks start = scheduler_->GetTickClock()->NowTicks();
+
+  scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::pair<std::string, base::TimeTicks>>* log,
+             const base::TickClock* clock) {
+            log->emplace_back("regular (immediate)", clock->NowTicks());
+          },
+          &log, scheduler_->GetTickClock()));
+  scheduler_->NonWakingTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::pair<std::string, base::TimeTicks>>* log,
+             const base::TickClock* clock) {
+            log->emplace_back("non-waking", clock->NowTicks());
+          },
+          &log, scheduler_->GetTickClock()),
+      base::TimeDelta::FromSeconds(3));
+  scheduler_->DefaultTaskQueue()->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::pair<std::string, base::TimeTicks>>* log,
+             const base::TickClock* clock) {
+            log->emplace_back("regular (delayed)", clock->NowTicks());
+          },
+          &log, scheduler_->GetTickClock()),
+      base::TimeDelta::FromSeconds(5));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+
+  // Check that the non-waking task runner didn't generate an unnecessary
+  // wake-up.
+  // Note: the exact order of these tasks is not fixed and depends on the time
+  // domain iteration order.
+  EXPECT_THAT(
+      log,
+      testing::UnorderedElementsAre(
+          std::make_pair("regular (immediate)", start),
+          std::make_pair("non-waking", start + base::TimeDelta::FromSeconds(5)),
+          std::make_pair("regular (delayed)",
+                         start + base::TimeDelta::FromSeconds(5))));
+}
+
 class VeryHighPriorityForCompositingAlwaysExperimentTest
     : public MainThreadSchedulerImplTest {
  public:

@@ -4805,6 +4805,16 @@ Node* Element::InsertAdjacent(const String& where,
   return nullptr;
 }
 
+void Element::HideNonce() {
+  const AtomicString& nonce_value = FastGetAttribute(html_names::kNonceAttr);
+  if (nonce_value.IsEmpty())
+    return;
+  if (!InActiveDocument())
+    return;
+  if (GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy())
+    setAttribute(html_names::kNonceAttr, g_empty_atom);
+}
+
 ElementIntersectionObserverData* Element::IntersectionObserverData() const {
   if (HasRareData())
     return GetElementRareData()->IntersectionObserverData();

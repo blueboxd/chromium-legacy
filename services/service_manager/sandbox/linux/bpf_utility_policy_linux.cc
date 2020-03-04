@@ -27,6 +27,9 @@ ResultExpr UtilityProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
       return sandbox::RestrictIoctl();
+    case __NR_prlimit64:
+      // Restrict prlimit() to reference only the calling process.
+      return sandbox::RestrictPrlimitToGetrlimit(GetPolicyPid());
     // Allow the system calls below.
     case __NR_fdatasync:
     case __NR_fsync:

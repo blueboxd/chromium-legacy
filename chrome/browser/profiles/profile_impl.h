@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -181,7 +182,7 @@ class ProfileImpl : public Profile {
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
-              base::Time creation_time,
+              base::Time path_creation_time,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
 #if defined(OS_ANDROID)
@@ -223,7 +224,7 @@ class ProfileImpl : public Profile {
 
   base::FilePath path_;
 
-  base::Time creation_time_;
+  base::Time path_creation_time_;
 
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

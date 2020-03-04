@@ -12,7 +12,9 @@ login.createScreen('EulaScreen', 'eula', function() {
         'for(var i = 0; i < A.length; ++i) {' +
         '  const el = A[i];' +
         '  let e = document.createElement("span");' +
-        '  e.textContent=el.textContent;' +
+        '  if (el.textContent.trim().length > 0) {' +
+        '    e.textContent=el.textContent + "(" + el.href + ")";' +
+        '  }' +
         '  el.parentNode.replaceChild(e,el);' +
         '}'
   };
@@ -26,12 +28,12 @@ login.createScreen('EulaScreen', 'eula', function() {
   // the current requests fail. This prevents webview-loadAbort events from
   // being fired and unnecessary reloads.
   class EulaLoader {
-    constructor(webview, timeout, load_offline_callback) {
+    constructor(webview, timeout, load_offline_callback, clear_anchors) {
       assert(webview.tagName === 'WEBVIEW');
 
       // Do not create multiple loaders.
-      if (EulaLoader.instance_) {
-        return EulaLoader.instance_;
+      if (EulaLoader.instances[webview.id]) {
+        return EulaLoader.instances[webview.id];
       }
 
       this.webview_ = webview;
@@ -41,16 +43,18 @@ login.createScreen('EulaScreen', 'eula', function() {
       this.loadOfflineCallback_ = load_offline_callback;
       this.loadTimer_ = 0;
 
-      // Add the CLEAR_ANCHORS_CONTENT_SCRIPT that will clear <a><\a> (anchors)
-      // in order to prevent any navigation in the webview itself.
-      webview.addContentScripts([{
-        name: 'clearAnchors',
-        matches: ['<all_urls>'],
-        js: CLEAR_ANCHORS_CONTENT_SCRIPT,
-      }]);
-      webview.addEventListener('contentload', () => {
-        webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
-      });
+      if (clear_anchors) {
+        // Add the CLEAR_ANCHORS_CONTENT_SCRIPT that will clear <a><\a>
+        // (anchors) in order to prevent any navigation in the webview itself.
+        webview.addContentScripts([{
+          name: 'clearAnchors',
+          matches: ['<all_urls>'],
+          js: CLEAR_ANCHORS_CONTENT_SCRIPT,
+        }]);
+        webview.addEventListener('contentload', () => {
+          webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+        });
+      }
 
       // Monitor webRequests API events
       this.webview_.request.onCompleted.addListener(
@@ -61,7 +65,7 @@ login.createScreen('EulaScreen', 'eula', function() {
           {urls: ['<all_urls>'], types: ['main_frame']});
 
       // The only instance of the EulaLoader.
-      EulaLoader.instance_ = this;
+      EulaLoader.instances[webview.id] = this;
     }
 
     // Clears the internal state of the EULA loader. Stops the timeout timer
@@ -165,6 +169,7 @@ login.createScreen('EulaScreen', 'eula', function() {
       }
     }
   }
+  EulaLoader.instances = {};
 
   return {
     /** @override */
@@ -230,8 +235,11 @@ login.createScreen('EulaScreen', 'eula', function() {
      * privileged webui bindings.
      *
      * @param {!WebView} webview Webview element to host the terms.
+     * @param {!string} onlineEulaUrl
+     * @param {boolean} clear_anchors if true the script will clear anchors
+     *                                from the loaded page.
      */
-    loadEulaToWebview_(webview) {
+    loadEulaToWebview_(webview, onlineEulaUrl, clear_anchors) {
       assert(webview.tagName === 'WEBVIEW');
 
       /**
@@ -251,16 +259,11 @@ login.createScreen('EulaScreen', 'eula', function() {
             webview, TERMS_URL, WebViewHelper.ContentType.HTML);
       };
 
-      var onlineEulaUrl = loadTimeData.getString('eulaOnlineUrl');
-      if (!onlineEulaUrl) {
-        loadBundledEula();
-        return;
-      }
-
       // Load online Eula with a timeout to fallback to the offline version.
       // This won't construct multiple EulaLoaders. Single instance.
       var eulaLoader = new EulaLoader(
-          webview, ONLINE_EULA_LOAD_TIMEOUT_IN_MS, loadBundledEula);
+          webview, ONLINE_EULA_LOAD_TIMEOUT_IN_MS, loadBundledEula,
+          clear_anchors);
       eulaLoader.setUrl(onlineEulaUrl);
     },
 

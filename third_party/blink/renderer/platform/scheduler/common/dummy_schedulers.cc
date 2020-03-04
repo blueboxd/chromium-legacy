@@ -175,6 +175,10 @@ class DummyThreadScheduler : public ThreadScheduler {
     return base::ThreadTaskRunnerHandle::Get();
   }
 
+  scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override {
+    return base::ThreadTaskRunnerHandle::Get();
+  }
+
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override {
     return std::make_unique<DummyPageScheduler>();

@@ -120,7 +120,7 @@ void EmbeddedTestServerAndroid::RegisterRequestHandler(
     const JavaParamRef<jobject>& jobj,
     jlong handler) {
   HandleRequestPtr handler_ptr = reinterpret_cast<HandleRequestPtr>(handler);
-  test_server_.RegisterRequestHandler(base::Bind(handler_ptr));
+  test_server_.RegisterRequestHandler(base::BindRepeating(handler_ptr));
 }
 
 void EmbeddedTestServerAndroid::ServeFilesFromDirectory(

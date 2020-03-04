@@ -77,8 +77,14 @@ message ServiceWorkerRegistrationData {
   // serialized by Time::ToDeltaSinceWindowsEpoch().
   optional int64 script_response_time = 16;
 
-  optional CrossOriginEmbedderPolicyValue cross_origin_embedder_policy = 17
+  optional CrossOriginEmbedderPolicyValue cross_origin_embedder_policy_value =
+      17 [default = NONE_OR_NOT_EXIST];
+  optional string cross_origin_embedder_policy_reporting_endpoint = 18;
+  optional CrossOriginEmbedderPolicyValue
+      cross_origin_embedder_policy_report_only_value = 19
       [default = NONE_OR_NOT_EXIST];
+  optional string cross_origin_embedder_policy_report_only_reporting_endpoint =
+      20;
 }
 
 message ServiceWorkerResourceRecord {

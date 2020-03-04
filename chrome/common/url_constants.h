@@ -320,6 +320,8 @@ extern const char kArcPrivacyPolicyURLPath[];
 
 extern const char kOnlineEulaURLPath[];
 
+extern const char kAdditionalToSOnlineURLPath[];
+
 // The URL for the "learn more" link for TPM firmware update.
 extern const char kTPMFirmwareUpdateLearnMoreURL[];
 

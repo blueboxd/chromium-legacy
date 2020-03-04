@@ -1483,9 +1483,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementPosition) {
   Selector document_element({"#full_height_section"});
   EXPECT_TRUE(GetElementPosition(document_element, &document_element_rect));
 
-  // This element must be after the full_height_section!
+  // The iFrame must be after the #full_height_section element to check that
+  // the resulting rect is global.
   RectF iframe_element_rect;
-  Selector iframe_element({"#iframe", "#touch_area"});
+  Selector iframe_element({"#iframe", "#touch_area_1"});
   EXPECT_TRUE(GetElementPosition(iframe_element, &iframe_element_rect));
 
   EXPECT_GT(iframe_element_rect.top, document_element_rect.bottom);

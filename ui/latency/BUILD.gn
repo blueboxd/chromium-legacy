@@ -18,6 +18,7 @@ jumbo_source_set("latency") {
 
   deps = [
     "//base",
+    "//services/tracing/public/cpp:cpp",
     "//ui/gfx",
   ]
 

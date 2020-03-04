@@ -12,14 +12,19 @@ namespace web {
 class DownloadTask;
 }  // namespace web
 
-@protocol BrowserCoordinatorCommands;
-@class CommandDispatcher;
 @protocol ContainedPresenter;
-class WebStateList;
 
 // Coordinates presentation of Download Manager UI.
 @interface DownloadManagerCoordinator
     : ChromeCoordinator<DownloadManagerTabHelperDelegate>
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Presents the receiver's view controller.
 @property(nonatomic) id<ContainedPresenter> presenter;
@@ -31,16 +36,11 @@ class WebStateList;
 // stop method is called.
 @property(nonatomic) web::DownloadTask* downloadTask;
 
-// Needed to observe web state closing. Set to null when stop method is called.
-@property(nonatomic) WebStateList* webStateList;
-
 // Controls the height of the bottom margin.
 @property(nonatomic) NSLayoutDimension* bottomMarginHeightAnchor;
 
 // Underlying UIViewController presented by this coordinator.
 @property(nonatomic, readonly) UIViewController* viewController;
-
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
 
 @end
 

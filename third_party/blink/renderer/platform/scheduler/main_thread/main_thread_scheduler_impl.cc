@@ -216,6 +216,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                   TaskQueue::QueuePriority::kBestEffortPriority))),
       memory_purge_manager_(memory_purge_task_queue_->CreateTaskRunner(
           TaskType::kMainThreadTaskQueueMemoryPurge)),
+      non_waking_time_domain_(tick_clock()),
       delayed_update_policy_runner_(
           base::BindRepeating(&MainThreadSchedulerImpl::UpdatePolicy,
                               base::Unretained(this)),
@@ -237,12 +238,18 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   task_runners_.emplace(compositor_task_queue_,
                         compositor_task_queue_->CreateQueueEnabledVoter());
 
+  RegisterTimeDomain(&non_waking_time_domain_);
+
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kV8));
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
   cleanup_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kCleanup));
+  non_waking_task_queue_ =
+      NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+                       MainThreadTaskQueue::QueueType::kNonWaking)
+                       .SetTimeDomain(&non_waking_time_domain_));
 
   v8_task_runner_ =
       v8_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueV8);
@@ -254,6 +261,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       ipc_task_queue_->CreateTaskRunner(TaskType::kMainThreadTaskQueueIPC);
   cleanup_task_runner_ = cleanup_task_queue_->CreateTaskRunner(
       TaskType::kMainThreadTaskQueueCleanup);
+  non_waking_task_runner_ = non_waking_task_queue_->CreateTaskRunner(
+      TaskType::kMainThreadTaskQueueNonWaking);
 
   // TaskQueueThrottler requires some task runners, then initialize
   // TaskQueueThrottler after task queues/runners are initialized.
@@ -304,6 +313,8 @@ MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
   for (auto& pair : task_runners_) {
     pair.first->ShutdownTaskQueue();
   }
+
+  UnregisterTimeDomain(&non_waking_time_domain_);
 
   if (virtual_time_domain_)
     UnregisterTimeDomain(virtual_time_domain_.get());
@@ -2322,6 +2333,11 @@ MainThreadSchedulerImpl::V8TaskRunner() {
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::CompositorTaskRunner() {
   return compositor_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::NonWakingTaskRunner() {
+  return non_waking_task_runner_;
 }
 
 std::unique_ptr<PageScheduler> MainThreadSchedulerImpl::CreatePageScheduler(

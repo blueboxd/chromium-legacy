@@ -383,7 +383,6 @@ cc_component("cc") {
     "//cc/base",
     "//cc/paint",
     "//components/viz/common",
-    "//services/tracing/public/cpp:cpp",
     "//skia",
   ]
   deps = [
@@ -399,6 +398,7 @@ cc_component("cc") {
     "//mojo/public/cpp/bindings:struct_traits",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
+    "//services/tracing/public/cpp:cpp",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

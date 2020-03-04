@@ -63,6 +63,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "other_tq";
     case MainThreadTaskQueue::QueueType::kWebScheduling:
       return "web_scheduling_tq";
+    case MainThreadTaskQueue::QueueType::kNonWaking:
+      return "non_waking_tq";
     case MainThreadTaskQueue::QueueType::kCount:
       NOTREACHED();
       return nullptr;
@@ -95,6 +97,7 @@ bool MainThreadTaskQueue::IsPerFrameTaskQueue(
     case MainThreadTaskQueue::QueueType::kInput:
     case MainThreadTaskQueue::QueueType::kDetached:
     case MainThreadTaskQueue::QueueType::kCleanup:
+    case MainThreadTaskQueue::QueueType::kNonWaking:
     case MainThreadTaskQueue::QueueType::kOther:
       return false;
     case MainThreadTaskQueue::QueueType::kCount:
@@ -114,6 +117,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kTest:
     case QueueType::kV8:
     case QueueType::kIPC:
+    case QueueType::kNonWaking:
     case QueueType::kCleanup:
       return QueueClass::kNone;
     case QueueType::kFrameLoading:

@@ -191,13 +191,12 @@ public class FirstRunFlowSequencerTest {
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
 
         Bundle bundle = mSequencer.returnedBundle;
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SIGNIN_PAGE));
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         assertEquals(ChildAccountStatus.NOT_CHILD,
                 bundle.getInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS));
-        assertEquals(5, bundle.size());
+        assertEquals(4, bundle.size());
     }
 
     @Test
@@ -219,7 +218,6 @@ public class FirstRunFlowSequencerTest {
         assertTrue(mSequencer.calledSetFirstRunFlowSignInComplete);
 
         Bundle bundle = mSequencer.returnedBundle;
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SIGNIN_PAGE));
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
@@ -227,7 +225,7 @@ public class FirstRunFlowSequencerTest {
                 bundle.getInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS));
         assertEquals(
                 DEFAULT_ACCOUNT, bundle.getString(SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
-        assertEquals(6, bundle.size());
+        assertEquals(5, bundle.size());
     }
 
     @Test
@@ -249,13 +247,12 @@ public class FirstRunFlowSequencerTest {
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
 
         Bundle bundle = mSequencer.returnedBundle;
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SIGNIN_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         assertEquals(ChildAccountStatus.NOT_CHILD,
                 bundle.getInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS));
-        assertEquals(5, bundle.size());
+        assertEquals(4, bundle.size());
     }
 
     @Test
@@ -277,13 +274,12 @@ public class FirstRunFlowSequencerTest {
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
 
         Bundle bundle = mSequencer.returnedBundle;
-        assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_WELCOME_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SIGNIN_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_DATA_REDUCTION_PAGE));
         assertTrue(bundle.getBoolean(FirstRunActivityBase.SHOW_SEARCH_ENGINE_PAGE));
         assertEquals(ChildAccountStatus.NOT_CHILD,
                 bundle.getInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS));
-        assertEquals(5, bundle.size());
+        assertEquals(4, bundle.size());
     }
 
     @Test

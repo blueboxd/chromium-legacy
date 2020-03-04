@@ -296,16 +296,8 @@ AffineTransform SVGElement::CalculateTransform(
 Node::InsertionNotificationRequest SVGElement::InsertedInto(
     ContainerNode& root_parent) {
   Element::InsertedInto(root_parent);
+  HideNonce();
   UpdateRelativeLengthsInformation();
-
-  const AtomicString& nonce_value = FastGetAttribute(html_names::kNonceAttr);
-  if (!nonce_value.IsEmpty()) {
-    setNonce(nonce_value);
-    if (InActiveDocument() &&
-        GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
-      setAttribute(html_names::kNonceAttr, g_empty_atom);
-    }
-  }
   return kInsertionDone;
 }
 

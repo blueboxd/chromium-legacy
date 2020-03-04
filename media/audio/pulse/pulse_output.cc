@@ -18,22 +18,6 @@
 
 namespace media {
 
-namespace {
-
-PRINTF_FORMAT(2, 3)
-void SendLogMessage(const AudioManagerBase::LogCallback& callback,
-                    const char* format,
-                    ...) {
-  if (callback.is_null())
-    return;
-  va_list args;
-  va_start(args, format);
-  callback.Run("PAOS::" + base::StringPrintV(format, args));
-  va_end(args);
-}
-
-}  // namespace
-
 using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
 
@@ -78,10 +62,8 @@ PulseAudioOutputStream::PulseAudioOutputStream(
       source_callback_(nullptr),
       buffer_size_(params_.GetBytesPerBuffer(kSampleFormatF32)) {
   CHECK(params_.IsValid());
-  SendLogMessage(
-      log_callback_,
-      "PulseAudioOutputStream({device_id=%s}, {params=[%s]} [this=%p])",
-      device_id.c_str(), params.AsHumanReadableString().c_str(), this);
+  SendLogMessage("%s({device_id=%s}, {params=[%s]})", __func__,
+                 device_id.c_str(), params.AsHumanReadableString().c_str());
   audio_bus_ = AudioBus::Create(params_);
 }
 
@@ -95,13 +77,13 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
 
 bool PulseAudioOutputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "Open([this=%p])", this);
+  SendLogMessage("%s()", __func__);
   bool result = pulse::CreateOutputStream(
       &pa_mainloop_, &pa_context_, &pa_stream_, params_, device_id_,
       AudioManager::GetGlobalAppName(), &StreamNotifyCallback,
       &StreamRequestCallback, this);
   if (!result) {
-    SendLogMessage(log_callback_, "Open => (ERROR: failed to open PA stream)");
+    SendLogMessage("%s => (ERROR: failed to open PA stream)", __func__);
   }
   return result;
 }
@@ -147,7 +129,7 @@ void PulseAudioOutputStream::Reset() {
 
 void PulseAudioOutputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "Close([this=%p])", this);
+  SendLogMessage("%s()", __func__);
 
   Reset();
 
@@ -159,6 +141,16 @@ void PulseAudioOutputStream::Close() {
 // This stream is always used with sub second buffer sizes, where it's
 // sufficient to simply always flush upon Start().
 void PulseAudioOutputStream::Flush() {}
+
+void PulseAudioOutputStream::SendLogMessage(const char* format, ...) {
+  if (log_callback_.is_null())
+    return;
+  va_list args;
+  va_start(args, format);
+  log_callback_.Run("PAOS::" + base::StringPrintV(format, args) +
+                    base::StringPrintf(" [this=%p]", this));
+  va_end(args);
+}
 
 void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
   int bytes_remaining = requested_bytes;
@@ -231,7 +223,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(callback);
   CHECK(pa_stream_);
-  SendLogMessage(log_callback_, "Start([this=%p])", this);
+  SendLogMessage("%s()", __func__);
 
   AutoPulseLock auto_lock(pa_mainloop_);
 
@@ -255,7 +247,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
 
 void PulseAudioOutputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SendLogMessage(log_callback_, "Stop([this=%p])", this);
+  SendLogMessage("%s()", __func__);
 
   // Cork (pause) the stream.  Waiting for the main loop lock will ensure
   // outstanding callbacks have completed.

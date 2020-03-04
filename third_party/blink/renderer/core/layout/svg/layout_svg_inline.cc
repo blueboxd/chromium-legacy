@@ -146,18 +146,14 @@ void LayoutSVGInline::AddChild(LayoutObject* child,
                                LayoutObject* before_child) {
   LayoutInline::AddChild(child, before_child);
   SVGResourcesCache::ClientWasAddedToTree(*child);
-
-  if (LayoutSVGText* text_layout_object =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    text_layout_object->SubtreeChildWasAdded();
+  LayoutSVGText::NotifySubtreeStructureChanged(
+      this, layout_invalidation_reason::kChildChanged);
 }
 
 void LayoutSVGInline::RemoveChild(LayoutObject* child) {
   SVGResourcesCache::ClientWillBeRemovedFromTree(*child);
-
-  if (LayoutSVGText* text_layout_object =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    text_layout_object->SubtreeChildWillBeRemoved();
+  LayoutSVGText::NotifySubtreeStructureChanged(
+      this, layout_invalidation_reason::kChildChanged);
   LayoutInline::RemoveChild(child);
 }
 

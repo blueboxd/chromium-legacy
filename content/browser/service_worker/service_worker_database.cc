@@ -1556,17 +1556,30 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
         static_cast<blink::mojom::ServiceWorkerUpdateViaCache>(value);
   }
 
-  if (data.has_cross_origin_embedder_policy()) {
-    switch (data.cross_origin_embedder_policy()) {
-      case ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST:
-        (*out)->cross_origin_embedder_policy =
-            network::mojom::CrossOriginEmbedderPolicyValue::kNone;
-        break;
-      case ServiceWorkerRegistrationData::REQUIRE_CORP:
-        (*out)->cross_origin_embedder_policy =
-            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-        break;
-    }
+  if (data.has_cross_origin_embedder_policy_value()) {
+    (*out)->cross_origin_embedder_policy.value =
+        data.cross_origin_embedder_policy_value() ==
+                ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST
+            ? network::mojom::CrossOriginEmbedderPolicyValue::kNone
+            : network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  }
+
+  if (data.has_cross_origin_embedder_policy_reporting_endpoint()) {
+    (*out)->cross_origin_embedder_policy.reporting_endpoint =
+        data.cross_origin_embedder_policy_reporting_endpoint();
+  }
+
+  if (data.has_cross_origin_embedder_policy_report_only_value()) {
+    (*out)->cross_origin_embedder_policy.report_only_value =
+        data.cross_origin_embedder_policy_report_only_value() ==
+                ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST
+            ? network::mojom::CrossOriginEmbedderPolicyValue::kNone
+            : network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  }
+
+  if (data.has_cross_origin_embedder_policy_report_only_reporting_endpoint()) {
+    (*out)->cross_origin_embedder_policy.report_only_reporting_endpoint =
+        data.cross_origin_embedder_policy_report_only_reporting_endpoint();
   }
 
   return Status::kOk;
@@ -1626,11 +1639,26 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
           ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
           registration.update_via_cache));
 
-  data.set_cross_origin_embedder_policy(
-      registration.cross_origin_embedder_policy ==
+  data.set_cross_origin_embedder_policy_value(
+      registration.cross_origin_embedder_policy.value ==
               network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp
           ? ServiceWorkerRegistrationData::REQUIRE_CORP
           : ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST);
+  if (registration.cross_origin_embedder_policy.reporting_endpoint) {
+    data.set_cross_origin_embedder_policy_reporting_endpoint(
+        registration.cross_origin_embedder_policy.reporting_endpoint.value());
+  }
+  data.set_cross_origin_embedder_policy_report_only_value(
+      registration.cross_origin_embedder_policy.report_only_value ==
+              network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp
+          ? ServiceWorkerRegistrationData::REQUIRE_CORP
+          : ServiceWorkerRegistrationData::NONE_OR_NOT_EXIST);
+  if (registration.cross_origin_embedder_policy
+          .report_only_reporting_endpoint) {
+    data.set_cross_origin_embedder_policy_report_only_reporting_endpoint(
+        registration.cross_origin_embedder_policy.report_only_reporting_endpoint
+            .value());
+  }
 
   std::string value;
   bool success = data.SerializeToString(&value);

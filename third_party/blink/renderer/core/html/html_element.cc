@@ -1213,11 +1213,8 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   // Process the superclass first to ensure that `InActiveDocument()` is
   // updated.
   Element::InsertedInto(insertion_point);
+  HideNonce();
 
-  if (GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
-      InActiveDocument() && FastHasAttribute(html_names::kNonceAttr)) {
-    setAttribute(html_names::kNonceAttr, g_empty_atom);
-  }
   if (IsFormAssociatedCustomElement())
     EnsureElementInternals().InsertedInto(insertion_point);
 

@@ -281,6 +281,16 @@ RequestHandlerForBigWorkerScript(const net::test_server::HttpRequest& request) {
   return http_response;
 }
 
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyNone() {
+  return network::CrossOriginEmbedderPolicy();
+}
+
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyRequireCorp() {
+  network::CrossOriginEmbedderPolicy out;
+  out.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  return out;
+}
+
 }  // namespace
 
 class ConsoleListener : public EmbeddedWorkerInstance::Listener {
@@ -1638,15 +1648,15 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerVersionCoepTest,
   RunOnCoreThread(base::BindOnce(
       &ServiceWorkerVersionBrowserTest::SetUpRegistrationOnCoreThread,
       base::Unretained(this), "/service_worker/generated"));
-  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
+  EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
             version_->cross_origin_embedder_policy());
 
   // Once it's started, the worker script is read from the network and the COEP
   // value is set to the version.
   StartWorker(blink::ServiceWorkerStatusCode::kOk);
   EXPECT_EQ(IsCrossOriginIsolationEnabled()
-                ? network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp
-                : network::mojom::CrossOriginEmbedderPolicyValue::kNone,
+                ? CrossOriginEmbedderPolicyRequireCorp()
+                : CrossOriginEmbedderPolicyNone(),
             version_->cross_origin_embedder_policy());
 }
 

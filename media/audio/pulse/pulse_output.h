@@ -57,6 +57,9 @@ class PulseAudioOutputStream : public AudioOutputStream {
   void GetVolume(double* volume) override;
 
  private:
+  // Helper method used for sending native logs to the registered client.
+  void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
+
   // Called by PulseAudio when |pa_stream_| change state.  If an unexpected
   // failure state change happens and |source_callback_| is set
   // this method will forward the error via OnError().

@@ -359,7 +359,10 @@ const char kNaturalScrollHelpURL[] =
 const char kOemEulaURLPath[] = "oem";
 
 const char kOnlineEulaURLPath[] =
-    "https://www.google.com/intl/%s/chrome/eula_text.html";
+    "https://policies.google.com/terms/embedded?hl=%s";
+
+const char kAdditionalToSOnlineURLPath[] =
+    "https://www.google.com/intl/%s/chrome/terms/";
 
 const char kOsSettingsSearchHelpURL[] =
     "https://support.google.com/chromebook/?p=settings_search_help";

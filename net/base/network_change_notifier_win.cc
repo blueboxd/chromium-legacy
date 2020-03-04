@@ -273,8 +273,8 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
   // that interval.
   if (sequential_failures_ > 0) {
     RecomputeCurrentConnectionTypeOnBlockingSequence(
-        base::Bind(&NetworkChangeNotifierWin::NotifyObservers,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&NetworkChangeNotifierWin::NotifyObservers,
+                       weak_factory_.GetWeakPtr()));
   }
 
   if (sequential_failures_ < 2000) {

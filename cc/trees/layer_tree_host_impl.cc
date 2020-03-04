@@ -112,6 +112,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -2471,8 +2472,9 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
           ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, draw_time);
     }
   }
-  ui::LatencyInfo::TraceIntermediateFlowEvents(metadata.latency_info,
-                                               "SwapBuffers");
+  ui::LatencyInfo::TraceIntermediateFlowEvents(
+      metadata.latency_info,
+      perfetto::protos::pbzero::ChromeLatencyInfo::STEP_SWAP_BUFFERS);
 
   // Collect all resource ids in the render passes into a single array.
   std::vector<viz::ResourceId> resources;

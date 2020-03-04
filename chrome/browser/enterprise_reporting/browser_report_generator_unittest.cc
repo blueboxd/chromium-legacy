@@ -10,8 +10,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
@@ -50,6 +53,12 @@ class BrowserReportGeneratorTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     content::PluginService::GetInstance()->Init();
+  }
+
+  void InitializeUpdate() {
+    auto* build_state = g_browser_process->GetBuildState();
+    build_state->SetUpdate(BuildState::UpdateType::kNormalUpdate,
+                           base::Version("1.2.3.4"), base::nullopt);
   }
 
   void InitializeProfile() {
@@ -93,9 +102,18 @@ class BrowserReportGeneratorTest : public ::testing::Test {
 #if defined(OS_CHROMEOS)
           EXPECT_FALSE(report->has_browser_version());
           EXPECT_FALSE(report->has_channel());
+          EXPECT_FALSE(report->has_installed_browser_version());
 #else
           EXPECT_NE(std::string(), report->browser_version());
           EXPECT_TRUE(report->has_channel());
+          const auto* build_state = g_browser_process->GetBuildState();
+          if (build_state->update_type() == BuildState::UpdateType::kNone ||
+              !build_state->installed_version()) {
+            EXPECT_FALSE(report->has_installed_browser_version());
+          } else {
+            EXPECT_EQ(report->installed_browser_version(),
+                      build_state->installed_version()->GetString());
+          }
 #endif
 
           EXPECT_NE(std::string(), report->executable_path());
@@ -138,5 +156,15 @@ TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
   InitializePlugin();
   GenerateAndVerify();
 }
+
+#if !defined(OS_CHROMEOS)
+TEST_F(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
+  InitializeUpdate();
+  InitializeProfile();
+  InitializeIrregularProfiles();
+  InitializePlugin();
+  GenerateAndVerify();
+}
+#endif
 
 }  // namespace enterprise_reporting

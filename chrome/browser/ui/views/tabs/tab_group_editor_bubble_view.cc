@@ -51,9 +51,11 @@
 views::Widget* TabGroupEditorBubbleView::Show(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
-    TabGroupHeader* anchor_view) {
+    TabGroupHeader* anchor_view,
+    bool stop_context_menu_propagation) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(browser, group, anchor_view, base::nullopt));
+      new TabGroupEditorBubbleView(browser, group, anchor_view, base::nullopt,
+                                   stop_context_menu_propagation));
   widget->Show();
   return widget;
 }
@@ -63,8 +65,9 @@ views::Widget* TabGroupEditorBubbleView::ShowWithRect(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
     gfx::Rect anchor_rect) {
-  views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(browser, group, nullptr, anchor_rect));
+  views::Widget* const widget =
+      BubbleDialogDelegateView::CreateBubble(new TabGroupEditorBubbleView(
+          browser, group, nullptr, anchor_rect, false));
   widget->Show();
   return widget;
 }
@@ -87,7 +90,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
     TabGroupHeader* anchor_view,
-    base::Optional<gfx::Rect> anchor_rect)
+    base::Optional<gfx::Rect> anchor_rect,
+    bool stop_context_menu_propagation)
     : browser_(browser),
       group_(group),
       title_field_controller_(this),
@@ -146,8 +150,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   title_field_container->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       0, color_element_insets.left(), vertical_dialog_content_spacing,
       color_element_insets.right())));
-  title_field_ =
-      title_field_container->AddChildView(std::make_unique<views::Textfield>());
+  title_field_ = title_field_container->AddChildView(
+      std::make_unique<TitleField>(stop_context_menu_propagation));
   title_field_->SetText(title);
   title_field_->SetAccessibleName(base::ASCIIToUTF16("Group title"));
   title_field_->SetPlaceholderText(
@@ -308,6 +312,21 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
   }
 
   return false;
+}
+
+void TabGroupEditorBubbleView::TitleField::ShowContextMenu(
+    const gfx::Point& p,
+    ui::MenuSourceType source_type) {
+  // There is no easy way to stop the propagation of a ShowContextMenu event,
+  // which is sometimes used to open the bubble itself. So when the bubble is
+  // opened this way, we manually hide the textfield's context menu the first
+  // time. Otherwise, the textfield, which is automatically focused, would show
+  // an extra context menu when the bubble first opens.
+  if (stop_context_menu_propagation_) {
+    stop_context_menu_propagation_ = false;
+    return;
+  }
+  views::Textfield::ShowContextMenu(p, source_type);
 }
 
 TabGroupEditorBubbleView::ButtonListener::ButtonListener(

@@ -66,7 +66,7 @@ class SpdyStreamTest : public TestWithTaskEnvironment {
  protected:
   // A function that takes a SpdyStream and the number of bytes which
   // will unstall the next frame completely.
-  typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
+  typedef base::OnceCallback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
       UnstallFunction;
 
   SpdyStreamTest()
@@ -88,10 +88,9 @@ class SpdyStreamTest : public TestWithTaskEnvironment {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   void RunResumeAfterUnstallRequestResponseTest(
-      const UnstallFunction& unstall_function);
+      UnstallFunction unstall_function);
 
-  void RunResumeAfterUnstallBidirectionalTest(
-      const UnstallFunction& unstall_function);
+  void RunResumeAfterUnstallBidirectionalTest(UnstallFunction unstall_function);
 
   // Add{Read,Write}() populates lists that are eventually passed to a
   // SocketData class. |frame| must live for the whole test.
@@ -1327,7 +1326,7 @@ void AdjustStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
 // request/response (i.e., an HTTP-like) stream resumes after a stall
 // and unstall.
 void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
-    const UnstallFunction& unstall_function) {
+    UnstallFunction unstall_function) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kPostBodyLength, LOWEST, nullptr, 0));
   AddWrite(req);
@@ -1372,7 +1371,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  unstall_function.Run(stream, kPostBodyLength);
+  std::move(unstall_function).Run(stream, kPostBodyLength);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -1386,18 +1385,18 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
 TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
   RunResumeAfterUnstallRequestResponseTest(
-      base::Bind(&IncreaseStreamSendWindowSize));
+      base::BindOnce(&IncreaseStreamSendWindowSize));
 }
 
 TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
   RunResumeAfterUnstallRequestResponseTest(
-      base::Bind(&AdjustStreamSendWindowSize));
+      base::BindOnce(&AdjustStreamSendWindowSize));
 }
 
 // Given an unstall function, runs a test to make sure that a bidirectional
 // (i.e., non-HTTP-like) stream resumes after a stall and unstall.
 void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
-    const UnstallFunction& unstall_function) {
+    UnstallFunction unstall_function) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kPostBodyLength, LOWEST, nullptr, 0));
   AddWrite(req);
@@ -1451,7 +1450,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  unstall_function.Run(stream, kPostBodyLength);
+  std::move(unstall_function).Run(stream, kPostBodyLength);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -1466,12 +1465,12 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
 TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
-      base::Bind(&IncreaseStreamSendWindowSize));
+      base::BindOnce(&IncreaseStreamSendWindowSize));
 }
 
 TEST_F(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
-      base::Bind(&AdjustStreamSendWindowSize));
+      base::BindOnce(&AdjustStreamSendWindowSize));
 }
 
 // Test calculation of amount of bytes received from network.

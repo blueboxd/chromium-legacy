@@ -181,11 +181,11 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
         onView(withId(R.id.positive_button)).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        assertThat(getElementValue("name", getWebContents()), is("John Doe"));
-        assertThat(getElementValue("card_number", getWebContents()), is("4111111111111111"));
-        assertThat(getElementValue("cv2_number", getWebContents()), is("123"));
-        assertThat(getElementValue("exp_month", getWebContents()), is("12"));
-        assertThat(getElementValue("exp_year", getWebContents()), is("2050"));
+        assertThat(getElementValue(getWebContents(), "name"), is("John Doe"));
+        assertThat(getElementValue(getWebContents(), "card_number"), is("4111111111111111"));
+        assertThat(getElementValue(getWebContents(), "cv2_number"), is("123"));
+        assertThat(getElementValue(getWebContents(), "exp_month"), is("12"));
+        assertThat(getElementValue(getWebContents(), "exp_year"), is("2050"));
     }
 
     /**
@@ -236,8 +236,8 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        String password = getElementValue("password", getWebContents());
-        String confirmation_password = getElementValue("password-conf", getWebContents());
+        String password = getElementValue(getWebContents(), "password");
+        String confirmation_password = getElementValue(getWebContents(), "password-conf");
         assertThat(password.length(), greaterThan(0));
         assertThat(password, is(confirmation_password));
     }
@@ -307,12 +307,12 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
         waitUntilViewMatchesCondition(withText("Continue"), isDisplayed());
-        tapElement("button", mTestRule);
+        tapElement(mTestRule, "button");
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Toggle"), isDisplayed());
 
         // Verify that in the next step the touchable window is not present anymore.
-        tapElement("button", mTestRule);
+        tapElement(mTestRule, "button");
         onView(withText("Toggle")).check(matches(isDisplayed()));
     }
 

@@ -31,6 +31,7 @@ source_set("input_monitor") {
   deps = [
     "//remoting/proto",
     "//third_party/webrtc_overrides:webrtc_component",
+    "//ui/events",
   ]
 
   if (use_ozone) {

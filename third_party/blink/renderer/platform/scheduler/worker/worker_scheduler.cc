@@ -197,6 +197,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kMainThreadTaskQueueCleanup:
     case TaskType::kMainThreadTaskQueueMemoryPurge:
+    case TaskType::kMainThreadTaskQueueNonWaking:
     case TaskType::kCompositorThreadTaskQueueDefault:
     case TaskType::kCompositorThreadTaskQueueInput:
     case TaskType::kWorkerThreadTaskQueueDefault:

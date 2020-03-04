@@ -32,8 +32,6 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     // received by ChromeLauncherActivity.)
     public static final String EXTRA_CHROME_LAUNCH_INTENT_EXTRAS =
             "Extra.FreChromeLaunchIntentExtras";
-
-    static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
     static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";

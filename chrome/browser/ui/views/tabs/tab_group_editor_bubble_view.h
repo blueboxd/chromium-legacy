@@ -40,7 +40,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // Returns an *unowned* pointer to the bubble's widget.
   static views::Widget* Show(const Browser* browser,
                              const tab_groups::TabGroupId& group,
-                             TabGroupHeader* anchor_view);
+                             TabGroupHeader* anchor_view,
+                             bool stop_context_menu_propagation = false);
 
   // Shows the editor for |group| using a rect as an anchor. Should only be used
   // if the TabGroupHeader is not available as an anchor, e.g. in WebUI. Returns
@@ -58,7 +59,8 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   TabGroupEditorBubbleView(const Browser* browser,
                            const tab_groups::TabGroupId& group,
                            TabGroupHeader* anchor_view,
-                           base::Optional<gfx::Rect> anchor_rect);
+                           base::Optional<gfx::Rect> anchor_rect,
+                           bool stop_context_menu_propagation);
   ~TabGroupEditorBubbleView() override;
 
   void UpdateGroup();
@@ -88,6 +90,26 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   TitleFieldController title_field_controller_;
 
+  class TitleField : public views::Textfield {
+   public:
+    explicit TitleField(bool stop_context_menu_propagation)
+        : stop_context_menu_propagation_(stop_context_menu_propagation) {}
+    ~TitleField() override = default;
+
+    // views::Textfield:
+    void ShowContextMenu(const gfx::Point& p,
+                         ui::MenuSourceType source_type) override;
+
+   private:
+    // Whether the context menu should be hidden the first time it shows.
+    // Needed because there is no easy way to stop the propagation of a
+    // ShowContextMenu event, which is sometimes used to open the bubble
+    // itself.
+    bool stop_context_menu_propagation_;
+  };
+
+  TitleField* title_field_;
+
   class ButtonListener : public views::ButtonListener {
    public:
     explicit ButtonListener(const Browser* browser,
@@ -104,8 +126,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   };
 
   ButtonListener button_listener_;
-
-  views::Textfield* title_field_;
 
   std::vector<tab_groups::TabGroupColorId> color_ids_;
   std::vector<std::pair<SkColor, base::string16>> colors_;

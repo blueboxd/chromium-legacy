@@ -100,7 +100,7 @@ public class AutofillAssistantOverlayUiTest {
 
         assertScrimDisplayed(false);
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(false));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
     }
 
     /** Tests assumptions about the full overlay. */
@@ -114,13 +114,13 @@ public class AutofillAssistantOverlayUiTest {
                 () -> model.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL));
         assertScrimDisplayed(true);
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(true));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(true));
 
         runOnUiThreadBlocking(
                 () -> model.set(AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN));
         assertScrimDisplayed(false);
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(false));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
     }
 
     /** Tests assumptions about the full overlay. */
@@ -152,16 +152,16 @@ public class AutofillAssistantOverlayUiTest {
                 () -> model.set(AssistantOverlayModel.STATE, AssistantOverlayState.PARTIAL));
         assertScrimDisplayed(true);
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(true));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(true));
 
-        Rect rect = getBoundingRectForElement("touch_area_one", getWebContents());
+        Rect rect = getBoundingRectForElement(getWebContents(), "touch_area_one");
         runOnUiThreadBlocking(()
                                       -> model.set(AssistantOverlayModel.TOUCHABLE_AREA,
                                               Collections.singletonList(new RectF(rect))));
 
         // Touchable area set, but no viewport given: equivalent to full overlay.
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(true));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(true));
 
         // Set viewport.
         Rect viewport = getViewport(getWebContents());
@@ -170,12 +170,12 @@ public class AutofillAssistantOverlayUiTest {
 
         // Now the partial overlay allows tapping the highlighted touch area.
         tapElement("touch_area_one");
-        assertThat(checkElementExists("touch_area_one", getWebContents()), is(false));
+        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
 
         runOnUiThreadBlocking(
                 () -> model.set(AssistantOverlayModel.TOUCHABLE_AREA, Collections.emptyList()));
         tapElement("touch_area_three");
-        assertThat(checkElementExists("touch_area_three", getWebContents()), is(true));
+        assertThat(checkElementExists(getWebContents(), "touch_area_three"), is(true));
     }
 
     /** Scrolls a touchable area into view and then taps it. */
@@ -185,7 +185,7 @@ public class AutofillAssistantOverlayUiTest {
         AssistantOverlayModel model = new AssistantOverlayModel();
         AssistantOverlayCoordinator coordinator = createCoordinator(model);
 
-        Rect rect = getBoundingRectForElement("touch_area_two", getWebContents());
+        Rect rect = getBoundingRectForElement(getWebContents(), "touch_area_two");
         Rect viewport = getViewport(getWebContents());
         runOnUiThreadBlocking(() -> {
             model.set(AssistantOverlayModel.STATE, AssistantOverlayState.PARTIAL);
@@ -198,7 +198,7 @@ public class AutofillAssistantOverlayUiTest {
         runOnUiThreadBlocking(
                 () -> model.set(AssistantOverlayModel.VISUAL_VIEWPORT, new RectF(newViewport)));
         tapElement("touch_area_two");
-        assertThat(checkElementExists("touch_area_two", getWebContents()), is(false));
+        assertThat(checkElementExists(getWebContents(), "touch_area_two"), is(false));
     }
 
     /**
@@ -264,7 +264,7 @@ public class AutofillAssistantOverlayUiTest {
     }
 
     void tapElement(String elementId) throws Exception {
-        AutofillAssistantUiTestUtil.tapElement(elementId, mTestRule);
+        AutofillAssistantUiTestUtil.tapElement(mTestRule, elementId);
     }
 
     /**

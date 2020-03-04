@@ -69,7 +69,7 @@ class EnumDefinition(object):
     # Enums, if given no value, are given the value of the previous enum + 1.
     if not all(self.entries.values()):
       prev_enum_value = -1
-      for key, value in self.entries.iteritems():
+      for key, value in self.entries.items():
         if not value:
           self.entries[key] = prev_enum_value + 1
         elif value in self.entries:
@@ -102,9 +102,9 @@ class EnumDefinition(object):
 
     def StripEntries(entries):
       ret = collections.OrderedDict()
-      for k, v in entries.iteritems():
+      for k, v in entries.items():
         stripped_key = k.replace(prefix_to_strip, '', 1)
-        if isinstance(v, basestring):
+        if isinstance(v, str):
           stripped_value = v.replace(prefix_to_strip, '')
         else:
           stripped_value = v
@@ -124,10 +124,10 @@ def _TransformKeys(d, func):
   """Normalize keys in |d| and update references to old keys in |d| values."""
   normal_keys = {k: func(k) for k in d}
   ret = collections.OrderedDict()
-  for k, v in d.iteritems():
+  for k, v in d.items():
     # Need to transform values as well when the entry value was explicitly set
     # (since it could contain references to other enum entry values).
-    if isinstance(v, basestring):
+    if isinstance(v, str):
       for normal_key in normal_keys:
         v = v.replace(normal_key, normal_keys[normal_key])
     ret[normal_keys[k]] = v
@@ -368,7 +368,7 @@ ${ENUM_ENTRIES}
   enum_template = Template('  int ${NAME} = ${VALUE};')
   enum_entries_string = []
   enum_names = []
-  for enum_name, enum_value in enum_definition.entries.iteritems():
+  for enum_name, enum_value in enum_definition.entries.items():
     values = {
         'NAME': enum_name,
         'VALUE': enum_value,

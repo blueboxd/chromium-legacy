@@ -299,10 +299,11 @@ int DhcpPacFileFetcherWin::Fetch(
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames,
-                 last_query_.get()),
-      base::Bind(&DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone,
-                 AsWeakPtr(), last_query_, traffic_annotation));
+      base::BindOnce(
+          &DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames,
+          last_query_.get()),
+      base::BindOnce(&DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone,
+                     AsWeakPtr(), last_query_, traffic_annotation));
 
   return ERR_IO_PENDING;
 }
@@ -380,8 +381,8 @@ void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
         ImplCreateAdapterFetcher());
     size_t fetcher_index = fetchers_.size();
     fetcher->Fetch(adapter_name,
-                   base::Bind(&DhcpPacFileFetcherWin::OnFetcherDone,
-                              base::Unretained(this), fetcher_index),
+                   base::BindOnce(&DhcpPacFileFetcherWin::OnFetcherDone,
+                                  base::Unretained(this), fetcher_index),
                    traffic_annotation);
     fetchers_.push_back(std::move(fetcher));
   }

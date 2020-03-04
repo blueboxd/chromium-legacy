@@ -65,6 +65,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
@@ -429,27 +430,28 @@ class AutofillAssistantUiTestUtil {
     }
 
     /** Performs a single tap on the center of the specified element. */
-    public static void tapElement(String elementId, CustomTabActivityTestRule testRule)
+    public static void tapElement(CustomTabActivityTestRule testRule, String... elementIds)
             throws Exception {
-        Rect coords = getAbsoluteBoundingRect(elementId, testRule);
+        Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
         float x = coords.left + 0.5f * (coords.right - coords.left);
         float y = coords.top + 0.5f * (coords.bottom - coords.top);
 
         // Sanity check, can only click on coordinates on screen.
         DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
         if (x < 0 || x > displayMetrics.widthPixels || y < 0 || y > displayMetrics.heightPixels) {
-            throw new IllegalArgumentException(elementId + " not on screen: tried to tap x=" + x
-                    + ", y=" + y + ", which is outside of display with w="
-                    + displayMetrics.widthPixels + ", h=" + displayMetrics.heightPixels);
+            throw new IllegalArgumentException(Arrays.toString(elementIds)
+                    + " not on screen: tried to tap x=" + x + ", y=" + y
+                    + ", which is outside of display with w=" + displayMetrics.widthPixels
+                    + ", h=" + displayMetrics.heightPixels);
         }
         TestTouchUtils.singleClick(InstrumentationRegistry.getInstrumentation(), x, y);
     }
 
     /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
-    public static Rect getAbsoluteBoundingRect(String elementId, CustomTabActivityTestRule testRule)
-            throws Exception {
+    public static Rect getAbsoluteBoundingRect(
+            CustomTabActivityTestRule testRule, String... elementIds) throws Exception {
         // Get bounding rectangle in viewport space.
-        Rect elementRect = getBoundingRectForElement(elementId, testRule.getWebContents());
+        Rect elementRect = getBoundingRectForElement(testRule.getWebContents(), elementIds);
 
         /*
          * Conversion from viewport space to screen space is done in two steps:
@@ -475,34 +477,45 @@ class AutofillAssistantUiTestUtil {
      * Retrieves the bounding rectangle for the specified element in the DOM tree in CSS pixel
      * coordinates.
      */
-    public static Rect getBoundingRectForElement(String elementId, WebContents webContents)
+    public static Rect getBoundingRectForElement(WebContents webContents, String... elementIds)
             throws Exception {
-        if (!checkElementExists(elementId, webContents)) {
-            throw new IllegalArgumentException(elementId + " does not exist");
+        if (!checkElementExists(webContents, elementIds)) {
+            throw new IllegalArgumentException(Arrays.toString(elementIds) + " does not exist");
         }
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
-        javascriptHelper.evaluateJavaScriptForTests(webContents,
-                "(function() {"
-                        + " rect = document.getElementById('" + elementId
-                        + "').getBoundingClientRect();"
-                        + " return [window.scrollX + rect.left, window.scrollY + rect.top, "
-                        + "         window.scrollX + rect.right, window.scrollY + rect.bottom];"
-                        + "})()");
-        javascriptHelper.waitUntilHasValue();
-        JSONArray rectJson = new JSONArray(javascriptHelper.getJsonResultAndClear());
-        return new Rect(
-                rectJson.getInt(0), rectJson.getInt(1), rectJson.getInt(2), rectJson.getInt(3));
+        Rect rect = new Rect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        for (int i = 0; i < elementIds.length; ++i) {
+            String offsetX = i == 0 ? "window.scrollX" : "0";
+            String offsetY = i == 0 ? "window.scrollY" : "0";
+            String elementSelector =
+                    getElementSelectorString(Arrays.copyOfRange(elementIds, 0, i + 1));
+            javascriptHelper.evaluateJavaScriptForTests(webContents,
+                    "(function() {"
+                            + " rect = " + elementSelector + ".getBoundingClientRect();"
+                            + " return [" + offsetX + " + rect.left, " + offsetY + " + rect.top, "
+                            + "         " + offsetX + " + rect.right, " + offsetY
+                            + " + rect.bottom];"
+                            + "})()");
+            javascriptHelper.waitUntilHasValue();
+            JSONArray rectJson = new JSONArray(javascriptHelper.getJsonResultAndClear());
+
+            rect = new Rect(Math.min(rect.right, rect.left + rectJson.getInt(0)),
+                    Math.min(rect.bottom, rect.top + rectJson.getInt(1)),
+                    Math.min(rect.right, rect.left + rectJson.getInt(2)),
+                    Math.min(rect.bottom, rect.top + rectJson.getInt(3)));
+        }
+        return rect;
     }
 
     /** Checks whether the specified element exists in the DOM tree. */
-    public static boolean checkElementExists(String elementId, WebContents webContents)
+    public static boolean checkElementExists(WebContents webContents, String... elementIds)
             throws Exception {
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
-                        + " return [document.getElementById('" + elementId + "') != null]; "
+                        + " return [" + getElementSelectorString(elementIds) + " != null]; "
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
@@ -510,14 +523,14 @@ class AutofillAssistantUiTestUtil {
     }
 
     /** Checks whether the specified element is displayed in the DOM tree. */
-    public static boolean checkElementIsDisplayed(String elementId, WebContents webContents)
+    public static boolean checkElementIsDisplayed(WebContents webContents, String... elementIds)
             throws Exception {
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
-                        + " return [document.getElementById('" + elementId
-                        + "').style.display != \"none\"]; "
+                        + " return [" + getElementSelectorString(elementIds)
+                        + ".style.display != \"none\"]; "
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
@@ -543,19 +556,37 @@ class AutofillAssistantUiTestUtil {
     /**
      * Retrieves the value of the specified element.
      */
-    public static String getElementValue(String elementId, WebContents webContents)
+    public static String getElementValue(WebContents webContents, String... elementIds)
             throws Exception {
-        if (!checkElementExists(elementId, webContents)) {
-            throw new IllegalArgumentException(elementId + " does not exist");
+        if (!checkElementExists(webContents, elementIds)) {
+            throw new IllegalArgumentException(Arrays.toString(elementIds) + " does not exist");
         }
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
                 new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
-                        + " return [document.getElementById('" + elementId + "').value]"
+                        + " return [" + getElementSelectorString(elementIds) + ".value]"
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
         return result.getString(0);
+    }
+
+    private static String getElementSelectorString(String[] elementIds) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("document");
+
+        for (int i = 0; i < elementIds.length; ++i) {
+            builder.append(".getElementById('");
+            builder.append(elementIds[i]);
+            builder.append("')");
+            if (i != elementIds.length - 1) {
+                // Get the iFrame document. This only works for local iFrames, OutOfProcess iFrames
+                // may respond with an error.
+                builder.append(".contentWindow.document");
+            }
+        }
+
+        return builder.toString();
     }
 }

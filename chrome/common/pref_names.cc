@@ -66,6 +66,9 @@ const char kHomePage[] = "homepage";
 // frequency it has been ignored.
 const char kImportantSitesDialogHistory[] = "important_sites_dialog";
 
+// This is the profile creation time.
+const char kProfileCreationTime[] = "profile.creation_time";
+
 #if defined(OS_WIN)
 // This is a timestamp of the last time this profile was reset by a third party
 // tool. On Windows, a third party tool may set a registry value that will be

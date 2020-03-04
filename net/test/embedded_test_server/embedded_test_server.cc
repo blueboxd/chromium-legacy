@@ -495,7 +495,7 @@ scoped_refptr<X509Certificate> EmbeddedTestServer::GetCertificate() {
 
 void EmbeddedTestServer::ServeFilesFromDirectory(
     const base::FilePath& directory) {
-  RegisterDefaultHandler(base::Bind(&HandleFileRequest, directory));
+  RegisterDefaultHandler(base::BindRepeating(&HandleFileRequest, directory));
 }
 
 void EmbeddedTestServer::ServeFilesFromSourceDirectory(
@@ -588,8 +588,9 @@ void EmbeddedTestServer::HandleAcceptResult(
 
   std::unique_ptr<HttpConnection> http_connection_ptr =
       std::make_unique<HttpConnection>(
-          std::move(socket), base::Bind(&EmbeddedTestServer::HandleRequest,
-                                        base::Unretained(this)));
+          std::move(socket),
+          base::BindRepeating(&EmbeddedTestServer::HandleRequest,
+                              base::Unretained(this)));
   HttpConnection* http_connection = http_connection_ptr.get();
   connections_[http_connection->socket_.get()] = std::move(http_connection_ptr);
 

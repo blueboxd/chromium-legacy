@@ -95,6 +95,16 @@ void VerifyResourceRecords(const std::vector<ResourceRecordPtr>& expected,
   }
 }
 
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyNone() {
+  return network::CrossOriginEmbedderPolicy();
+}
+
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyRequireCorp() {
+  network::CrossOriginEmbedderPolicy out;
+  out.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  return out;
+}
+
 }  // namespace
 
 TEST(ServiceWorkerDatabaseTest, OpenDatabase) {
@@ -450,8 +460,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
   data1.script_response_time = base::Time::FromJsTime(0);
-  data1.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  data1.cross_origin_embedder_policy = CrossOriginEmbedderPolicyNone();
   std::vector<ResourceRecordPtr> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -474,8 +483,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
   data2.script_response_time = base::Time::FromJsTime(42);
-  data2.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  data2.cross_origin_embedder_policy = CrossOriginEmbedderPolicyRequireCorp();
   std::vector<ResourceRecordPtr> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -498,8 +506,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data3.version_id = 3000;
   data3.resources_total_size_bytes = 300;
   data3.script_response_time = base::Time::FromJsTime(420);
-  data3.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  data3.cross_origin_embedder_policy = CrossOriginEmbedderPolicyNone();
   std::vector<ResourceRecordPtr> resources3;
   resources3.push_back(CreateResource(3, data3.script, 300));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -513,8 +520,7 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data4.version_id = 4000;
   data4.resources_total_size_bytes = 400;
   data4.script_response_time = base::Time::FromJsTime(4200);
-  data4.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  data4.cross_origin_embedder_policy = CrossOriginEmbedderPolicyRequireCorp();
   std::vector<ResourceRecordPtr> resources4;
   resources4.push_back(CreateResource(4, data4.script, 400));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -559,8 +565,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data1.script = URL(origin1, "/script1.js");
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
-  data1.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  data1.cross_origin_embedder_policy = CrossOriginEmbedderPolicyNone();
   std::vector<ResourceRecordPtr> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -574,8 +579,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
   data2.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
-  data2.cross_origin_embedder_policy =
-      network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  data2.cross_origin_embedder_policy = CrossOriginEmbedderPolicyRequireCorp();
   std::vector<ResourceRecordPtr> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -2171,6 +2175,70 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
   EXPECT_EQ(expect, registration->used_features);
 }
 
+// Check that every field of CrossOriginEmbedderPolicy can be properly
+// serialized and deserialized.
+TEST(ServiceWorkerDatabaseTest, CrossOriginEmbedderPolicyStoreRestore) {
+  auto store_and_restore = [](network::CrossOriginEmbedderPolicy policy) {
+    // Build the minimal RegistrationData with the given |policy|.
+    GURL origin("https://example.com");
+    RegistrationData data;
+    data.registration_id = 123;
+    data.scope = URL(origin, "/foo");
+    data.script = URL(origin, "/script.js");
+    data.version_id = 456;
+    data.resources_total_size_bytes = 100;
+    data.cross_origin_embedder_policy = policy;
+    std::vector<ResourceRecordPtr> resources;
+    resources.push_back(CreateResource(1, data.script, 100));
+
+    // Store.
+    std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+    ServiceWorkerDatabase::DeletedVersion deleted_version;
+    ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->WriteRegistration(data, resources, &deleted_version));
+
+    // Restore.
+    std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr> registrations;
+    std::vector<std::vector<ResourceRecordPtr>> resources_list;
+    EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->GetRegistrationsForOrigin(origin, &registrations,
+                                                  &resources_list));
+
+    // The data must not have been altered.
+    VerifyRegistrationData(data, *registrations[0]);
+  };
+
+  {
+    network::CrossOriginEmbedderPolicy policy;
+    policy.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    store_and_restore(policy);
+    policy.value = network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+    store_and_restore(policy);
+  }
+
+  {
+    network::CrossOriginEmbedderPolicy policy;
+    policy.reporting_endpoint = "foo";
+    store_and_restore(policy);
+  }
+
+  {
+    network::CrossOriginEmbedderPolicy policy;
+    policy.report_only_value =
+        network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    store_and_restore(policy);
+    policy.report_only_value =
+        network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+    store_and_restore(policy);
+  }
+
+  {
+    network::CrossOriginEmbedderPolicy policy;
+    policy.report_only_reporting_endpoint = "bar";
+    store_and_restore(policy);
+  }
+}
+
 TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicyValue) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
@@ -2198,7 +2266,7 @@ TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicyValue) {
   ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->ParseRegistrationData(value, &registration));
   EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
-            registration->cross_origin_embedder_policy);
+            registration->cross_origin_embedder_policy.value);
 }
 
 }  // namespace content

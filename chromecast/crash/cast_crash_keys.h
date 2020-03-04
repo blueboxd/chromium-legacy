@@ -14,6 +14,8 @@ extern crash_reporter::CrashKeyString<64> last_app;
 
 extern crash_reporter::CrashKeyString<64> previous_app;
 
+extern crash_reporter::CrashKeyString<64> stadia_session_id;
+
 }  // namespace crash_keys
 }  // namespace chromecast
 

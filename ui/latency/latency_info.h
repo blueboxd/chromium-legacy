@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "ui/gfx/geometry/point_f.h"
 
 #if !defined(OS_IOS)
@@ -128,7 +129,7 @@ class LatencyInfo {
   // Adds trace flow events only to LatencyInfos that are being traced.
   static void TraceIntermediateFlowEvents(
       const std::vector<LatencyInfo>& latency_info,
-      const char* trace_name);
+      perfetto::protos::pbzero::ChromeLatencyInfo::Step step);
 
   // Copy timestamp with type |type| from |other| into |this|.
   void CopyLatencyFrom(const LatencyInfo& other, LatencyComponentType type);

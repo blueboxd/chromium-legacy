@@ -48,7 +48,6 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<String> media,
       protocol::Maybe<protocol::Array<protocol::Emulation::MediaFeature>>
           features) override;
-  protocol::Response setEmulatedVisionDeficiency(const String&) override;
   protocol::Response setCPUThrottlingRate(double) override;
   protocol::Response setFocusEmulationEnabled(bool) override;
   protocol::Response setVirtualTimePolicy(
@@ -128,7 +127,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::Integer max_touch_points_;
   InspectorAgentState::String emulated_media_;
   InspectorAgentState::StringMap emulated_media_features_;
-  InspectorAgentState::String emulated_vision_deficiency_;
   InspectorAgentState::String navigator_platform_override_;
   InspectorAgentState::String user_agent_override_;
   InspectorAgentState::String accept_language_override_;

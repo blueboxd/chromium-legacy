@@ -124,7 +124,7 @@ void SetupOnUIThread(
     int embedded_worker_id,
     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     bool can_use_existing_process,
-    network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     blink::mojom::EmbeddedWorkerStartParamsPtr params,
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
     ServiceWorkerContextCore* context,
@@ -528,10 +528,10 @@ class EmbeddedWorkerInstance::StartTask {
     return skip_recording_startup_time_;
   }
 
-  void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,
-             network::mojom::CrossOriginEmbedderPolicyValue
-                 cross_origin_embedder_policy,
-             StatusCallback sent_start_callback) {
+  void Start(
+      blink::mojom::EmbeddedWorkerStartParamsPtr params,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
     DCHECK(instance_->context_);
     TRACE_EVENT_WITH_FLOW0(
@@ -1037,7 +1037,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
     RenderProcessHost* rph,
     int routing_id,
     const url::Origin& origin,
-    network::mojom::CrossOriginEmbedderPolicyValue cross_origin_embedder_policy,
+    const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     ContentBrowserClient::URLLoaderFactoryType factory_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle =
@@ -1067,9 +1067,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
 
   factory_params->client_security_state =
       network::mojom::ClientSecurityState::New();
-  // TODO(https://crbug.com/1056122): Plumb other fields to support report only
-  // mode.
-  factory_params->client_security_state->cross_origin_embedder_policy.value =
+  factory_params->client_security_state->cross_origin_embedder_policy =
       std::move(cross_origin_embedder_policy);
 
   rph->CreateURLLoaderFactory(std::move(default_factory_receiver),

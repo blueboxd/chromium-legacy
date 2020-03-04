@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.translate;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.settings.languages.LanguageItem;
+import org.chromium.chrome.browser.language.settings.LanguageItem;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 

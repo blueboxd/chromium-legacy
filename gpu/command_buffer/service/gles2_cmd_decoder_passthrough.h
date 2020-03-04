@@ -384,21 +384,14 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                 GLsizei* length,
                                 T* params,
                                 GLGetFunction get_call) {
-    // Create a scratch buffer to hold the result of the query
-    std::vector<T> scratch_params(bufsize);
-    get_call(pname, bufsize, length, scratch_params.data());
+    get_call(pname, bufsize, length, params);
 
     // Update the results of the query, if needed
-    error::Error error =
-        PatchGetNumericResults(pname, *length, scratch_params.data());
+    const error::Error error = PatchGetNumericResults(pname, *length, params);
     if (error != error::kNoError) {
       *length = 0;
       return error;
     }
-
-    // Copy into the destination
-    DCHECK(*length <= bufsize);
-    std::copy(scratch_params.data(), scratch_params.data() + *length, params);
 
     return error::kNoError;
   }

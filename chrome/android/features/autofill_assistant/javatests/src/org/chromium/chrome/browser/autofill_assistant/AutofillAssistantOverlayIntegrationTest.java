@@ -103,12 +103,12 @@ public class AutofillAssistantOverlayIntegrationTest {
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM.
-        assertThat(checkElementExists("touch_area_one", mTestRule.getWebContents()), is(true));
-        tapElement("touch_area_one", mTestRule);
-        assertThat(checkElementExists("touch_area_one", mTestRule.getWebContents()), is(false));
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
+        tapElement(mTestRule, "touch_area_one");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(false));
         // Tapping on the element should be blocked by the overlay.
-        tapElement("touch_area_four", mTestRule);
-        assertThat(checkElementExists("touch_area_four", mTestRule.getWebContents()), is(true));
+        tapElement(mTestRule, "touch_area_four");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
     }
 
     /**
@@ -149,15 +149,112 @@ public class AutofillAssistantOverlayIntegrationTest {
 
         // Tapping on the element should remove it from the DOM. The element should be after a
         // big element forcing the page to scroll.
-        assertThat(checkElementExists("touch_area_five", mTestRule.getWebContents()), is(true));
-        tapElement("touch_area_five", mTestRule);
-        assertThat(checkElementExists("touch_area_five", mTestRule.getWebContents()), is(false));
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_five"), is(true));
+        tapElement(mTestRule, "touch_area_five");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_five"), is(false));
         // Tapping on the element should be blocked by the overlay.
-        tapElement("touch_area_six", mTestRule);
-        assertThat(checkElementExists("touch_area_six", mTestRule.getWebContents()), is(true));
+        tapElement(mTestRule, "touch_area_six");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_six"), is(true));
     }
 
-    // TODO(b/143942385): Write a test for an element within an iFrame.
+    /**
+     * Tests that clicking on an iFrame element works with a showcast.
+     */
+    @Test
+    @MediumTest
+    public void testShowCastOnIFrameElement() throws Exception {
+        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
+                                                .addSelectors("#iframe")
+                                                .addSelectors("#touch_area_1")
+                                                .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // Tapping on the element should remove it from the DOM.
+        assertThat(
+                checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_1"), is(true));
+        tapElement(mTestRule, "iframe", "touch_area_1");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_1"),
+                is(false));
+        // Tapping on the element should be blocked by the overlay.
+        tapElement(mTestRule, "iframe", "touch_area_2");
+        assertThat(
+                checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_2"), is(true));
+    }
+
+    /**
+     * Tests that clicking on an iFrame element works with a showcast in a scrolled iFrame.
+     */
+    @Test
+    @MediumTest
+    public void testShowCastOnIFrameElementInScrollIFrame() throws Exception {
+        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
+                                                .addSelectors("#iframe")
+                                                .addSelectors("#touch_area_3")
+                                                .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // Tapping on the element should remove it from the DOM. The element should be after a
+        // big element forcing the page to scroll.
+        assertThat(
+                checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_3"), is(true));
+        tapElement(mTestRule, "iframe", "touch_area_3");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_3"),
+                is(false));
+        // Tapping on the element should be blocked by the overlay.
+        tapElement(mTestRule, "iframe", "touch_area_4");
+        assertThat(
+                checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_4"), is(true));
+    }
 
     private void runScript(AutofillAssistantTestScript script) {
         AutofillAssistantTestService testService =

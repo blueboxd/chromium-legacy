@@ -17,5 +17,12 @@ CrossOriginEmbedderPolicy& CrossOriginEmbedderPolicy::operator=(
     const CrossOriginEmbedderPolicy& src) = default;
 CrossOriginEmbedderPolicy& CrossOriginEmbedderPolicy::operator=(
     CrossOriginEmbedderPolicy&& src) = default;
+bool CrossOriginEmbedderPolicy::operator==(
+    const CrossOriginEmbedderPolicy& other) const {
+  return value == other.value &&
+         reporting_endpoint == other.reporting_endpoint &&
+         report_only_value == other.report_only_value &&
+         report_only_reporting_endpoint == other.report_only_reporting_endpoint;
+}
 
 }  // namespace network

@@ -17,6 +17,7 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_guts.h"
+#import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
@@ -29,10 +30,12 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
+#import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -47,6 +50,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -145,6 +149,9 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 @property(nonatomic, readwrite)
     NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
+// TabSwitcher object -- the tab grid.
+@property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
+
 @end
 
 @implementation SceneController
@@ -206,10 +213,76 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
+#pragma mark - SceneControllerGuts
+- (void)initializeUI {
+  if (self.hasInitializedUI) {
+    return;
+  }
+
+  self.hasInitializedUI = YES;
+}
+
 #pragma mark - private
 
-- (void)initializeUI {
-  self.hasInitializedUI = YES;
+// Determines which UI should be shown on startup, and shows it.
+- (void)createInitialUI:(ApplicationMode)launchMode {
+  DCHECK(self.mainController.mainBrowserState);
+
+  // In order to correctly set the mode switch icon, we need to know how many
+  // tabs are in the other tab model. That means loading both models.  They
+  // may already be loaded.
+  // TODO(crbug.com/546203): Find a way to handle this that's closer to the
+  // point where it is necessary.
+  TabModel* mainTabModel = self.mainInterface.tabModel;
+  TabModel* otrTabModel = self.incognitoInterface.tabModel;
+
+  // Enables UI initializations to query the keyWindow's size.
+  [self.mainController.window makeKeyAndVisible];
+
+  // Lazy init of mainCoordinator.
+  [self.mainController.mainCoordinator start];
+
+  _tabSwitcher = self.mainController.mainCoordinator.tabSwitcher;
+  // Call -restoreInternalState so that the grid shows the correct panel.
+  [_tabSwitcher
+      restoreInternalStateWithMainBrowser:self.mainInterface.browser
+                               otrBrowser:self.incognitoInterface.browser
+                            activeBrowser:self.currentInterface.browser];
+
+  // Decide if the First Run UI needs to run.
+  BOOL firstRun = (FirstRun::IsChromeFirstRun() ||
+                   experimental_flags::AlwaysDisplayFirstRun()) &&
+                  !tests_hook::DisableFirstRun();
+
+  [self.browserViewWrangler switchGlobalStateToMode:launchMode];
+
+  TabModel* tabModel;
+  if (launchMode == ApplicationMode::INCOGNITO) {
+    tabModel = otrTabModel;
+    [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
+  } else {
+    tabModel = mainTabModel;
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
+  }
+  if (self.mainController.tabSwitcherIsActive) {
+    DCHECK(!self.mainController.dismissingTabSwitcher);
+    [self beginDismissingTabSwitcherWithCurrentModel:self.mainInterface.tabModel
+                                        focusOmnibox:NO];
+    [self finishDismissingTabSwitcher];
+  }
+  if (firstRun || [self shouldOpenNTPTabOnActivationOfTabModel:tabModel]) {
+    OpenNewTabCommand* command =
+        [OpenNewTabCommand commandWithIncognito:(self.currentInterface.bvc ==
+                                                 self.incognitoInterface.bvc)];
+    command.userInitiated = NO;
+    [self.currentInterface.bvc.dispatcher openURLInNewTab:command];
+  }
+
+  if (firstRun) {
+    [self.mainController showFirstRunUI];
+    // Do not ever show the 'restore' infobar during first run.
+    self.mainController.restoreHelper = nil;
+  }
 }
 
 // This method completely destroys all of the UI. It should be called when the
@@ -281,7 +354,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
         });
   }
   [self.mainController.mainCoordinator
-      prepareToShowTabSwitcher:self.mainController.tabSwitcher];
+      prepareToShowTabSwitcher:self.tabSwitcher];
 }
 
 - (void)displayTabSwitcher {
@@ -762,7 +835,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 #pragma mark - TabSwitching
 
 - (BOOL)openNewTabFromTabSwitcher {
-  if (!self.mainController.tabSwitcher)
+  if (!self.tabSwitcher)
     return NO;
 
   UrlLoadParams urlLoadParams =
@@ -771,10 +844,9 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
   Browser* mainBrowser = self.mainInterface.browser;
   WebStateList* webStateList = mainBrowser->GetWebStateList();
-  [self.mainController.tabSwitcher
-      dismissWithNewTabAnimationToBrowser:mainBrowser
-                        withUrlLoadParams:urlLoadParams
-                                  atIndex:webStateList->count()];
+  [self.tabSwitcher dismissWithNewTabAnimationToBrowser:mainBrowser
+                                      withUrlLoadParams:urlLoadParams
+                                                atIndex:webStateList->count()];
   return YES;
 }
 
@@ -834,14 +906,13 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
     // If the tabSwitcher is contained, check if the parent container is
     // presenting another view controller.
-    if ([[self.mainController.tabSwitcher viewController]
+    if ([[self.tabSwitcher viewController]
                 .parentViewController presentedViewController]) {
       return NO;
     }
 
     // Check if the tabSwitcher is directly presenting another view controller.
-    if ([self.mainController.tabSwitcher viewController]
-            .presentedViewController) {
+    if ([self.tabSwitcher viewController].presentedViewController) {
       return NO;
     }
 
@@ -1026,7 +1097,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
       self.NTPActionAfterTabSwitcherDismissal =
           [self.mainController.startupParameters postOpeningAction];
       [self.mainController setStartupParameters:nil];
-      [self.mainController.tabSwitcher
+      [self.tabSwitcher
           dismissWithNewTabAnimationToBrowser:targetInterface.browser
                             withUrlLoadParams:urlLoadParams
                                       atIndex:tabIndex];
@@ -1317,18 +1388,17 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)showTabSwitcher {
-  DCHECK(self.mainController.tabSwitcher);
+  DCHECK(self.tabSwitcher);
   // Tab switcher implementations may need to rebuild state before being
   // displayed.
-  [self.mainController.tabSwitcher
+  [self.tabSwitcher
       restoreInternalStateWithMainBrowser:self.mainInterface.browser
                                otrBrowser:self.incognitoInterface.browser
                             activeBrowser:self.currentInterface.browser];
   self.mainController.tabSwitcherIsActive = YES;
-  [self.mainController.tabSwitcher setDelegate:self];
+  [self.tabSwitcher setDelegate:self];
 
-  [self.mainController.mainCoordinator
-      showTabSwitcher:self.mainController.tabSwitcher];
+  [self.mainController.mainCoordinator showTabSwitcher:self.tabSwitcher];
 }
 
 // Destroys and rebuilds the incognito browser state.
@@ -1338,7 +1408,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
   // Clear the Incognito Browser and notify the _tabSwitcher that its otrBrowser
   // will be destroyed.
-  [self.mainController.tabSwitcher setOtrBrowser:nil];
+  [self.tabSwitcher setOtrBrowser:nil];
 
   if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
     BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
@@ -1363,8 +1433,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
   // Always set the new otr Browser for the tablet or grid switcher.
   // Notify the _tabSwitcher with the new Incognito Browser.
-  [self.mainController.tabSwitcher
-      setOtrBrowser:self.incognitoInterface.browser];
+  [self.tabSwitcher setOtrBrowser:self.incognitoInterface.browser];
 
   // This seems the best place to deem the destroying and rebuilding the
   // incognito browser state to be completed.

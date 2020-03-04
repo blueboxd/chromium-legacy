@@ -559,6 +559,15 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
 
+  if (!render_frame_host) {
+    // It is possible for `render_frame_host` to be nullptr here due to a race
+    // (crbug.com/1057981).
+    SubscribeEndWithError(
+        std::move(callback),
+        blink::mojom::PushRegistrationStatus::RENDERER_SHUTDOWN);
+    return;
+  }
+
   if (!options->user_visible_only) {
     content::RenderFrameHost* main_frame =
         GetMainFrameForRenderFrameHost(render_frame_host);

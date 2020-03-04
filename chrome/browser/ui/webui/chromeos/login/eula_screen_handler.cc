@@ -75,6 +75,11 @@ std::string EulaScreenHandler::GetEulaOnlineUrl() {
                             g_browser_process->GetApplicationLocale().c_str());
 }
 
+std::string EulaScreenHandler::GetAdditionalToSUrl() {
+  return base::StringPrintf(chrome::kAdditionalToSOnlineURLPath,
+                            g_browser_process->GetApplicationLocale().c_str());
+}
+
 void EulaScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("eulaScreenAccessibleTitle", IDS_EULA_SCREEN_ACCESSIBLE_TITLE);
@@ -107,9 +112,11 @@ void EulaScreenHandler::DeclareLocalizedValues(
 
   // Online URL to use. May be overridden by tests.
   builder->Add("eulaOnlineUrl", GetEulaOnlineUrl());
+  builder->Add("eulaAdditionalToSOnlineUrl", GetAdditionalToSUrl());
 
   /* MD-OOBE */
   builder->Add("oobeEulaSectionTitle", IDS_OOBE_EULA_SECTION_TITLE);
+  builder->Add("oobeEulaAditionalTerms", IDS_OOBE_EULA_ADDITIONAL_TERMS);
   builder->Add("oobeEulaIframeLabel", IDS_OOBE_EULA_IFRAME_LABEL);
   builder->Add("oobeEulaAcceptAndContinueButtonText",
                IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT);

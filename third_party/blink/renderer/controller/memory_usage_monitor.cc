@@ -7,6 +7,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
@@ -16,7 +17,8 @@ constexpr base::TimeDelta kPingInterval = base::TimeDelta::FromSeconds(1);
 }
 
 MemoryUsageMonitor::MemoryUsageMonitor() {
-  timer_.SetTaskRunner(Thread::MainThread()->GetTaskRunner());
+  timer_.SetTaskRunner(
+      Thread::MainThread()->Scheduler()->NonWakingTaskRunner());
 }
 
 MemoryUsageMonitor::MemoryUsageMonitor(

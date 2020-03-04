@@ -74,6 +74,7 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   // Determines the online URL to use.
   std::string GetEulaOnlineUrl();
   static const char* eula_url_for_testing_;
+  std::string GetAdditionalToSUrl();
 
   void UpdateLocalizedValues(::login::SecureModuleUsed secure_module_used);
 

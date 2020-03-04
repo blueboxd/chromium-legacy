@@ -2017,7 +2017,6 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
         Allocator::template Trace<T, VectorTraits<T>>(
             visitor, *const_cast<T*>(buffer_entry));
       }
-      CheckUnusedSlots(Buffer() + size(), Buffer() + capacity());
     }
   }
 }

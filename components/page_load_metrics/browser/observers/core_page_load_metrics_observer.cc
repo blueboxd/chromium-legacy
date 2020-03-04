@@ -89,10 +89,6 @@ const char kHistogramFirstContentfulPaintInitiatingProcess[] =
     "InitiatingProcess";
 const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
-const char kHistogramLargestImagePaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
-const char kHistogramLargestTextPaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
 const char kHistogramLargestContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToLargestContentfulPaint";
 const char kHistogramLargestContentfulPaintContentType[] =
@@ -716,26 +712,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
       GetDelegate().GetFirstForegroundTime()) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
                         GetDelegate().GetFirstForegroundTime().value());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_image_paint =
-          largest_contentful_paint_handler_.MainFrameLargestImagePaint();
-  if (main_frame_largest_image_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_image_paint.Time(), GetDelegate())) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
-                        main_frame_largest_image_paint.Time().value());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_text_paint =
-          largest_contentful_paint_handler_.MainFrameLargestTextPaint();
-  if (main_frame_largest_text_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_text_paint.Time(), GetDelegate())) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
-                        main_frame_largest_text_paint.Time().value());
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&

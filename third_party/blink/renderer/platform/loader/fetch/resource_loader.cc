@@ -804,18 +804,19 @@ bool ResourceLoader::WillFollowRedirect(
       redirect_response_with_type ? *redirect_response_with_type
                                   : redirect_response;
 
-  // The following two calls may rewrite the new_request.Url() to
+  // The following two calls may rewrite the new_request->Url() to
   // something else not for rejecting redirect but for other reasons.
   // E.g. WebFrameTestClient::WillSendRequest() and
   // RenderFrameImpl::WillSendRequest(). We should reflect the
-  // rewriting but currently we cannot. So, compare new_request.Url() and
+  // rewriting but currently we cannot. So, compare new_request->Url() and
   // new_url after calling them, and return false to make the redirect fail on
   // mismatch.
 
   WebScopedVirtualTimePauser unused_virtual_time_pauser;
+  // TODO(yoichio): Have PrepareRequest use ResourceRequestHead.
   Context().PrepareRequest(*new_request, resource_->Options().initiator_info,
-                           unused_virtual_time_pauser,
-                           resource_->GetType());
+                           unused_virtual_time_pauser, resource_->GetType());
+  DCHECK(!new_request->HttpBody());
   if (auto* observer = fetcher_->GetResourceLoadObserver()) {
     observer->WillSendRequest(resource_->InspectorId(), *new_request,
                               redirect_response_to_pass, resource_->GetType(),
@@ -957,8 +958,10 @@ void ResourceLoader::DidReceiveResponseInternal(
             kEnableCorsHandlingByResourceFetcher &&
         request_mode == network::mojom::RequestMode::kCors &&
         response.WasFallbackRequiredByServiceWorker()) {
+      DCHECK(resource_->RedirectChain().IsEmpty());
       ResourceRequest last_request;
-      last_request.CopyFrom(resource_->LastResourceRequest());
+      last_request.CopyHeadFrom(resource_->GetResourceRequest());
+      last_request.SetHttpBody(resource_->GetResourceRequest().HttpBody());
       DCHECK(!last_request.GetSkipServiceWorker());
       // This code handles the case when a controlling service worker doesn't
       // handle a cross origin request.

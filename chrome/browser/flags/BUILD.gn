@@ -9,6 +9,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/flags/BooleanCachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/CachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
+    "android/java/src/org/chromium/chrome/browser/flags/IntCachedFieldTrialParameter.java",
     "android/java/src/org/chromium/chrome/browser/flags/StringCachedFieldTrialParameter.java",
   ]
   deps = [

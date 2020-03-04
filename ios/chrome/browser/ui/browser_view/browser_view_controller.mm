@@ -753,10 +753,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // removal.
     if (!IsDownloadInfobarMessagesUIEnabled()) {
       _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
-          initWithBaseViewController:_browserContainerViewController];
+          initWithBaseViewController:_browserContainerViewController
+                             browser:browser];
       _downloadManagerCoordinator.presenter =
           [[VerticalAnimationContainer alloc] init];
-      _downloadManagerCoordinator.dispatcher = self.dispatcher;
     }
 
     if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
@@ -2171,7 +2171,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!IsDownloadInfobarMessagesUIEnabled()) {
     // DownloadManagerCoordinator is already created.
     DCHECK(_downloadManagerCoordinator);
-    _downloadManagerCoordinator.webStateList = self.browser->GetWebStateList();
     _downloadManagerCoordinator.bottomMarginHeightAnchor =
         [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
             .heightAnchor;

@@ -59,9 +59,8 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n,
 void LayoutSVGInlineText::TextDidChange() {
   SetTextInternal(NormalizeWhitespace(GetText().Impl()));
   LayoutText::TextDidChange();
-  if (LayoutSVGText* text_layout_object =
-          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
-    text_layout_object->SubtreeTextDidChange();
+  LayoutSVGText::NotifySubtreeStructureChanged(
+      this, layout_invalidation_reason::kTextChanged);
 }
 
 void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,

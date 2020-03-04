@@ -162,8 +162,6 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         Bundle freProperties = new Bundle();
-        // TODO(https://crbug.com/1056132): Remove the boolean FirstRunActivity.SHOW_WELCOME_PAGE
-        freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, true);
         freProperties.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 
         // Initialize usage and crash reporting according to the default value.

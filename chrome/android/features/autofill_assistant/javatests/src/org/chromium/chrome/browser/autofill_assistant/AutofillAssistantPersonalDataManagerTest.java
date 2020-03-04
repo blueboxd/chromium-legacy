@@ -165,8 +165,8 @@ public class AutofillAssistantPersonalDataManagerTest {
                 .check(matches(allOf(withText("johndoe@google.com"), isDisplayed())));
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
-        assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
+        assertThat(getElementValue(getWebContents(), "profile_name"), is("John Doe"));
+        assertThat(getElementValue(getWebContents(), "email"), is("johndoe@google.com"));
     }
 
     /**
@@ -217,8 +217,8 @@ public class AutofillAssistantPersonalDataManagerTest {
         waitUntilViewMatchesCondition(withContentDescription("Continue"), isEnabled());
         onView(withContentDescription("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
-        assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
+        assertThat(getElementValue(getWebContents(), "profile_name"), is("John Doe"));
+        assertThat(getElementValue(getWebContents(), "email"), is("johndoe@google.com"));
     }
 
     /**
@@ -276,8 +276,8 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         // Make sure it's not Adam West that was selected.
-        assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
-        assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
+        assertThat(getElementValue(getWebContents(), "profile_name"), is("John Doe"));
+        assertThat(getElementValue(getWebContents(), "email"), is("johndoe@google.com"));
     }
 
     /**
@@ -395,8 +395,8 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withText("Continue")).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         // Make sure it's now Jane Doe.
-        assertThat(getElementValue("profile_name", getWebContents()), is("Jane Doe"));
-        assertThat(getElementValue("email", getWebContents()), is("janedoe@google.com"));
+        assertThat(getElementValue(getWebContents(), "profile_name"), is("Jane Doe"));
+        assertThat(getElementValue(getWebContents(), "email"), is("janedoe@google.com"));
     }
 
     /**
@@ -477,11 +477,11 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withId(R.id.card_unmask_input)).perform(typeText("123"));
         onView(withId(R.id.positive_button)).perform(click());
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        assertThat(getElementValue("name", getWebContents()), is("John Doe"));
-        assertThat(getElementValue("card_number", getWebContents()), is("4111111111111111"));
-        assertThat(getElementValue("cv2_number", getWebContents()), is("123"));
-        assertThat(getElementValue("exp_month", getWebContents()), is("01"));
-        assertThat(getElementValue("exp_year", getWebContents()), is(String.valueOf(year + 2)));
+        assertThat(getElementValue(getWebContents(), "name"), is("John Doe"));
+        assertThat(getElementValue(getWebContents(), "card_number"), is("4111111111111111"));
+        assertThat(getElementValue(getWebContents(), "cv2_number"), is("123"));
+        assertThat(getElementValue(getWebContents(), "exp_month"), is("01"));
+        assertThat(getElementValue(getWebContents(), "exp_year"), is(String.valueOf(year + 2)));
     }
 
     /**

@@ -14,6 +14,7 @@ struct CurrentAppState {
   std::string previous_app;
   std::string current_app;
   std::string last_launched_app;
+  std::string stadia_session_id;
 };
 
 CurrentAppState* GetAppState() {
@@ -41,6 +42,11 @@ std::string AppStateTracker::GetPreviousApp() {
 }
 
 // static
+std::string AppStateTracker::GetStadiaSessionId() {
+  return GetAppState()->stadia_session_id;
+}
+
+// static
 void AppStateTracker::SetLastLaunchedApp(const std::string& app_id) {
   GetAppState()->last_launched_app = app_id;
 
@@ -57,6 +63,17 @@ void AppStateTracker::SetCurrentApp(const std::string& app_id) {
   current_app.Set(app_id);
 
   crash_keys::previous_app.Set(app_state->previous_app);
+}
+
+// static
+void AppStateTracker::SetStadiaSessionId(const std::string& stadia_session_id) {
+  if (!stadia_session_id.empty()) {
+    GetAppState()->stadia_session_id = stadia_session_id;
+    crash_keys::stadia_session_id.Set(stadia_session_id);
+  } else {
+    GetAppState()->stadia_session_id.clear();
+    crash_keys::stadia_session_id.Clear();
+  }
 }
 
 }  // namespace chromecast

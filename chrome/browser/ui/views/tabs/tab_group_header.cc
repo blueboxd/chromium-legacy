@@ -78,6 +78,7 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   DCHECK(tab_strip);
 
   set_group(group);
+  set_context_menu_controller(this);
 
   // The size and color of the chip are set in VisualsChanged().
   title_chip_ = AddChildView(std::make_unique<views::View>());
@@ -225,6 +226,17 @@ TabSizeInfo TabGroupHeader::GetTabSizeInfo() const {
   size_info.min_inactive_width = width;
   size_info.standard_width = width;
   return size_info;
+}
+
+void TabGroupHeader::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  if (editor_bubble_tracker_.is_open())
+    return;
+
+  editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
+      tab_strip_->controller()->GetBrowser(), group().value(), this, true));
 }
 
 int TabGroupHeader::CalculateWidth() const {

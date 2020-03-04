@@ -1550,6 +1550,12 @@ message BrowserReport {
 
   // A list of plugins installed in the browser.
   repeated Plugin plugins = 7;
+
+  // The installed version of the browser if it differs from |browser_version|,
+  // or absent otherwise. When present, it indicates that an update (of a higher
+  // or lower version) has been installed and will be the active version
+  // following a browser restart.
+  optional string installed_browser_version = 8;
 }
 
 // Report Operating system related information.

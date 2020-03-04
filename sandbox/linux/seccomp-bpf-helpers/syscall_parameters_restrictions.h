@@ -104,6 +104,11 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetRandom();
 // gracefully; see crbug.com/160157.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPrlimit(pid_t target_pid);
 
+// Restrict |pid| to the calling process (or 0) for prlimit64(), and require the
+// |new_limit_ argument to be null.  This allows only getting limits on the
+// current process. Otherwise fail gracefully.
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPrlimitToGetrlimit(pid_t target_pid);
+
 // Restrict ptrace() to just read operations that are needed for crash
 // reporting. See https://crbug.com/933418 for details.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPtrace();

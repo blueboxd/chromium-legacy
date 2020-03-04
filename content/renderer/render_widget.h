@@ -351,6 +351,7 @@ class CONTENT_EXPORT RenderWidget
   void ClearTextInputState() override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
+  bool SupportsBufferedTouchEvents() override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
   void SetScreenMetricsEmulationParameters(

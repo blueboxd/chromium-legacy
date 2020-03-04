@@ -64,7 +64,6 @@ class SVGResource : public GarbageCollected<SVGResource> {
   virtual ~SVGResource();
 
   virtual void Load(const Document&) {}
-  virtual void LoadWithoutCSP(const Document&) {}
 
   Element* Target() const { return target_; }
   LayoutSVGResourceContainer* ResourceContainer() const;
@@ -118,7 +117,6 @@ class ExternalSVGResource final : public SVGResource, private ResourceClient {
   explicit ExternalSVGResource(const KURL&);
 
   void Load(const Document&) override;
-  void LoadWithoutCSP(const Document&) override;
 
   void Trace(Visitor*) override;
 

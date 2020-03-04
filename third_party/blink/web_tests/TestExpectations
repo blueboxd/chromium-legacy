@@ -5209,22 +5209,6 @@ crbug.com/827209 [ Linux ] fast/events/middleClickAutoscroll-latching.html [ Pas
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
 
-# These Web Authentication API would require either real hardware, or
-# virtual simulation thereof (work in progress, see: https://crbug.com/785955).
-# Sheriff 2018-08-16
-crbug.com/826936 external/wpt/webauthn/createcredential-badargs-authnrselection.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-badargs-rp.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-badargs-user.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-excludecredentials.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-passing.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-badargs-challenge.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/createcredential-pubkeycredparams.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/getcredential-badargs-rpid.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout Failure ]
-crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout Failure ]
-
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]

@@ -206,9 +206,6 @@ class WebWidget {
     return false;
   }
 
-  // Returns true if the WebWidget created is of type PepperWidget.
-  virtual bool IsPepperWidget() const { return false; }
-
   // Calling WebWidgetClient::requestPointerLock() will result in one
   // return call to didAcquirePointerLock() or didNotAcquirePointerLock().
   virtual void DidAcquirePointerLock() {}

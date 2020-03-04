@@ -6,6 +6,7 @@
 
 #include <Functiondiscoverykeys_devpkey.h>
 #include <audiopolicy.h>
+#include <inttypes.h>
 #include <objbase.h>
 
 #include <climits>
@@ -455,7 +456,9 @@ void WASAPIAudioOutputStream::SendLogMessage(const char* format, ...) {
     return;
   va_list args;
   va_start(args, format);
-  log_callback_.Run("WAOS::" + base::StringPrintV(format, args));
+  log_callback_.Run("WAOS::" + base::StringPrintV(format, args) +
+                    base::StringPrintf(" [this=0x%" PRIXPTR "]",
+                                       reinterpret_cast<uintptr_t>(this)));
   va_end(args);
 }
 

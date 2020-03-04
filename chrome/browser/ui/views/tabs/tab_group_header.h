@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -21,7 +22,7 @@ class View;
 // View for tab group headers in the tab strip, which are markers of group
 // boundaries. There is one header for each group, which is included in the tab
 // strip flow and positioned left of the leftmost tab in the group.
-class TabGroupHeader : public TabSlotView {
+class TabGroupHeader : public TabSlotView, public views::ContextMenuController {
  public:
   TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
   ~TabGroupHeader() override;
@@ -38,6 +39,11 @@ class TabGroupHeader : public TabSlotView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // Updates our visual state according to the tab_groups::TabGroupVisualData
   // for our group.

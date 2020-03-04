@@ -111,15 +111,8 @@ static inline void CollectDescendantTextNodes(
   }
 }
 
-void LayoutSVGText::InvalidatePositioningValues(
+void LayoutSVGText::SubtreeStructureChanged(
     LayoutInvalidationReasonForTracing reason) {
-  descendant_text_nodes_.clear();
-  SetNeedsPositioningValuesUpdate();
-  // TODO(fs): Restore the passing of |reason| here.
-  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this);
-}
-
-void LayoutSVGText::SubtreeChildWasAdded() {
   if (BeingDestroyed() || !EverHadLayout()) {
     DCHECK(descendant_text_nodes_.IsEmpty());
     return;
@@ -128,37 +121,20 @@ void LayoutSVGText::SubtreeChildWasAdded() {
     return;
 
   // The positioning elements cache depends on the size of each text
-  // layoutObject in the subtree. If this changes, clear the cache. It will be
+  // LayoutObject in the subtree. If this changes, clear the cache. It will be
   // rebuilt on the next layout.
-  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
+  descendant_text_nodes_.clear();
+  SetNeedsPositioningValuesUpdate();
   SetNeedsTextMetricsUpdate();
+  // TODO(fs): Restore the passing of |reason| here.
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this);
 }
 
-void LayoutSVGText::SubtreeChildWillBeRemoved() {
-  if (BeingDestroyed() || !EverHadLayout()) {
-    DCHECK(descendant_text_nodes_.IsEmpty());
-    return;
-  }
-
-  // The positioning elements cache depends on the size of each text
-  // layoutObject in the subtree. If this changes, clear the cache. It will be
-  // rebuilt on the next layout.
-  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
-  SetNeedsTextMetricsUpdate();
-}
-
-void LayoutSVGText::SubtreeTextDidChange() {
-  DCHECK(!BeingDestroyed());
-  if (!EverHadLayout()) {
-    DCHECK(descendant_text_nodes_.IsEmpty());
-    return;
-  }
-
-  // The positioning elements cache depends on the size of each text object in
-  // the subtree. If this changes, clear the cache and mark it for rebuilding
-  // in the next layout.
-  InvalidatePositioningValues(layout_invalidation_reason::kTextChanged);
-  SetNeedsTextMetricsUpdate();
+void LayoutSVGText::NotifySubtreeStructureChanged(
+    LayoutObject* object,
+    LayoutInvalidationReasonForTracing reason) {
+  if (LayoutSVGText* layout_text = LocateLayoutSVGTextAncestor(object))
+    layout_text->SubtreeStructureChanged(reason);
 }
 
 static inline void UpdateFontAndMetrics(LayoutSVGText& text_root) {
@@ -429,12 +405,12 @@ void LayoutSVGText::AddChild(LayoutObject* child, LayoutObject* before_child) {
   LayoutSVGBlock::AddChild(child, before_child);
 
   SVGResourcesCache::ClientWasAddedToTree(*child);
-  SubtreeChildWasAdded();
+  SubtreeStructureChanged(layout_invalidation_reason::kChildChanged);
 }
 
 void LayoutSVGText::RemoveChild(LayoutObject* child) {
   SVGResourcesCache::ClientWillBeRemovedFromTree(*child);
-  SubtreeChildWillBeRemoved();
+  SubtreeStructureChanged(layout_invalidation_reason::kChildChanged);
 
   LayoutSVGBlock::RemoveChild(child);
 }

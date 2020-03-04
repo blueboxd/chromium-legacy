@@ -33,22 +33,27 @@
             i18n-values="aria-label:oobeEulaIframeLabel"
             on-contentload="onFrameLoad_">
         </webview>
-        <a id="installationSettings" href="#"
-            on-tap="onInstallationSettingsClicked_">
-          [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
-        </a>
-        <div id="logging" class="layout horizontal">
-          <cr-toggle id="usageStats" checked="{{usageStatsChecked}}"
-              on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
-          </cr-toggle>
-          <div id="usageStatsLabelContainer">
-            <span id="usageStatsLabel" on-tap="usageStatsLabelClicked_">
-              [[i18nDynamic(locale, 'checkboxLogging')]]
-            </span>
-            <a id="learn-more" href="#" on-tap="onUsageStatsHelpLinkClicked_"
-                class="oobe-local-link">
-              [[i18nDynamic(locale, 'learnMore')]]
-            </a>
+        <div id="footer-more" class="layout vertical">
+          <a href="#" id="additionalTerms" on-tap="onAdditionalTermsClicked_">
+            [[i18nDynamic(locale, 'oobeEulaAditionalTerms')]]
+          </a>
+          <a id="installationSettings" href="#"
+              on-tap="onInstallationSettingsClicked_">
+            [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
+          </a>
+          <div id="logging" class="layout horizontal">
+            <cr-toggle id="usageStats" checked="{{usageStatsChecked}}"
+                on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
+            </cr-toggle>
+            <div id="usageStatsLabelContainer">
+              <span id="usageStatsLabel" on-tap="usageStatsLabelClicked_">
+                [[i18nDynamic(locale, 'checkboxLogging')]]
+              </span>
+              <a id="learn-more" href="#" on-tap="onUsageStatsHelpLinkClicked_"
+                  class="oobe-local-link">
+                [[i18nDynamic(locale, 'learnMore')]]
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -104,5 +109,10 @@
             on-tap="onInstallationSettingsCloseClicked_"></oobe-text-button>
       </div>
     </oobe-dialog>
+    <oobe-help-dialog id="additional-tos">
+      <webview slot="content" role="document" class="flex oobe-tos-webview"
+          id="additionalChromeToS">
+      </webview>
+    </oobe-help-dialog>
   </template>
 </dom-module>

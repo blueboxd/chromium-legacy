@@ -173,7 +173,7 @@ void RawResource::DidAddClient(ResourceClient* c) {
   RevalidationStartForbiddenScope revalidation_start_forbidden_scope(this);
   RawResourceClient* client = static_cast<RawResourceClient*>(c);
   for (const auto& redirect : RedirectChain()) {
-    client->RedirectReceived(this, redirect.request_,
+    client->RedirectReceived(this, ResourceRequest(redirect.request_),
                              redirect.redirect_response_);
     if (!HasClient(c))
       return;

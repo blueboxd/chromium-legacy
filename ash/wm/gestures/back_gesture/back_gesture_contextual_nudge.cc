@@ -23,7 +23,7 @@ namespace ash {
 namespace {
 
 // Width of the contextual nudge.
-constexpr int kBackgroundWidth = 160;
+constexpr int kBackgroundWidth = 320;
 
 // Colors of the contextual nudge background gradient.
 constexpr SkColor kBackgroundStartColor =

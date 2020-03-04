@@ -149,6 +149,16 @@ class EmbeddedWorkerStatusObserver : public ServiceWorkerVersion::Observer {
   EmbeddedWorkerStatus expected_running_status_;
 };
 
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyNone() {
+  return network::CrossOriginEmbedderPolicy();
+}
+
+network::CrossOriginEmbedderPolicy CrossOriginEmbedderPolicyRequireCorp() {
+  network::CrossOriginEmbedderPolicy out;
+  out.value = network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+  return out;
+}
+
 }  // namespace
 
 class ServiceWorkerJobTest : public testing::Test {
@@ -2055,7 +2065,7 @@ Cross-Origin-Embedder-Policy: none
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
-  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
+  EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
             registration->active_version()->cross_origin_embedder_policy());
 
   registration->AddListener(update_helper_);
@@ -2098,7 +2108,7 @@ Cross-Origin-Embedder-Policy: none
     histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
                                        true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
-    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
+    EXPECT_EQ(CrossOriginEmbedderPolicyRequireCorp(),
               registration->waiting_version()->cross_origin_embedder_policy());
   }
 
@@ -2120,7 +2130,7 @@ Cross-Origin-Embedder-Policy: none
     histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
                                        true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
-    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicyValue::kNone,
+    EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
               registration->waiting_version()->cross_origin_embedder_policy());
   }
 }

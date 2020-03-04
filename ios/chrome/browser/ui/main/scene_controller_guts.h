@@ -9,7 +9,9 @@
 
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
+#include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/browser/procedural_block_types.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -28,6 +30,8 @@ class ChromeBrowserState;
 // The scene level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
+
+- (void)createInitialUI:(ApplicationMode)launchMode;
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
@@ -60,6 +64,10 @@ class ChromeBrowserState;
 // Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
+
+// Testing only.
+- (void)setTabSwitcher:(id<TabSwitcher>)switcher;
+- (id<TabSwitcher>)tabSwitcher;
 
 #pragma mark - AppNavigation helpers
 

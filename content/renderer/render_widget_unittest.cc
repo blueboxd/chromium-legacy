@@ -41,7 +41,8 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
-#include "third_party/blink/public/web/web_widget.h"
+#include "third_party/blink/public/web/web_external_widget.h"
+#include "third_party/blink/public/web/web_external_widget_client.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -150,15 +151,12 @@ class MockHandledEventCallback {
   DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
 };
 
-class MockWebWidget : public blink::WebWidget {
+class MockWebExternalWidgetClient : public blink::WebExternalWidgetClient {
  public:
-  // WebWidget implementation.
-  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override {}
-  blink::WebURL GetURLForDebugTrace() override { return {}; }
-  blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
-    return {};
-  }
+  MockWebExternalWidgetClient() = default;
 
+  // WebExternalWidgetClient implementation.
+  MOCK_METHOD1(DidResize, void(const gfx::Size& size));
   MOCK_METHOD0(DispatchBufferedTouchEvents, blink::WebInputEventResult());
   MOCK_METHOD1(
       HandleInputEvent,
@@ -177,8 +175,10 @@ class InteractiveRenderWidget : public RenderWidget {
                      /*is_hidden=*/false,
                      /*never_composited=*/false,
                      mojo::NullReceiver()),
-        always_overscroll_(false) {
-    Initialize(base::NullCallback(), &mock_webwidget_, screen_info);
+        external_web_widget_(
+            blink::WebExternalWidget::Create(&mock_web_external_widget_client_,
+                                             blink::WebURL())) {
+    Initialize(base::NullCallback(), external_web_widget_.get(), screen_info);
 
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
@@ -203,10 +203,16 @@ class InteractiveRenderWidget : public RenderWidget {
 
   IPC::TestSink* sink() { return &sink_; }
 
-  MockWebWidget* mock_webwidget() { return &mock_webwidget_; }
+  MockWebExternalWidgetClient* mock_web_external_widget_client() {
+    return &mock_web_external_widget_client_;
+  }
 
   MockWidgetInputHandlerHost* mock_input_handler_host() {
     return mock_input_handler_host_.get();
+  }
+
+  blink::WebExternalWidget* external_web_widget() {
+    return external_web_widget_.get();
   }
 
   const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
@@ -240,8 +246,9 @@ class InteractiveRenderWidget : public RenderWidget {
 
  private:
   IPC::TestSink sink_;
-  bool always_overscroll_;
-  MockWebWidget mock_webwidget_;
+  bool always_overscroll_ = false;
+  MockWebExternalWidgetClient mock_web_external_widget_client_;
+  std::unique_ptr<blink::WebExternalWidget> external_web_widget_;
   std::unique_ptr<MockWidgetInputHandlerHost> mock_input_handler_host_;
   static int next_routing_id_;
 
@@ -298,7 +305,7 @@ TEST_F(RenderWidgetUnittest, CursorChange) {
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 0U);
 
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
   widget()->SendInputEvent(SyntheticWebMouseEventBuilder::Build(
                                blink::WebInputEvent::Type::kMouseLeave),
@@ -314,7 +321,7 @@ TEST_F(RenderWidgetUnittest, CursorChange) {
 TEST_F(RenderWidgetUnittest, EventOverscroll) {
   widget()->set_always_overscroll(true);
 
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
 
@@ -345,12 +352,13 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   touch.PressPoint(10, 10);
   touch.touch_start_or_first_touch_move = true;
 
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
       .Times(5)
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
 
-  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(),
+              DispatchBufferedTouchEvents())
       .Times(5)
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
@@ -387,9 +395,10 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 2);
 
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
-  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(),
+              DispatchBufferedTouchEvents())
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledSuppressed));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
@@ -397,9 +406,10 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED, 1);
 
-  EXPECT_CALL(*widget()->mock_webwidget(), HandleInputEvent(_))
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
-  EXPECT_CALL(*widget()->mock_webwidget(), DispatchBufferedTouchEvents())
+  EXPECT_CALL(*widget()->mock_web_external_widget_client(),
+              DispatchBufferedTouchEvents())
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledApplication));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;

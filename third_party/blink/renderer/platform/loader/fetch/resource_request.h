@@ -67,12 +67,23 @@ class PLATFORM_EXPORT ResourceRequestHead {
   ResourceRequestHead();
   explicit ResourceRequestHead(const KURL&);
 
-  explicit ResourceRequestHead(const ResourceRequestHead&);
+  ResourceRequestHead(const ResourceRequestHead&);
   ResourceRequestHead& operator=(const ResourceRequestHead&);
-  explicit ResourceRequestHead(ResourceRequestHead&&);
+  ResourceRequestHead(ResourceRequestHead&&);
   ResourceRequestHead& operator=(ResourceRequestHead&&);
 
   ~ResourceRequestHead();
+
+  // Constructs a new ResourceRequest for a redirect from this instance.
+  // Since body for a redirect request is kept and handled in the network
+  // service, the returned instance here in blink side doesn't contain body.
+  std::unique_ptr<ResourceRequest> CreateRedirectRequest(
+      const KURL& new_url,
+      const AtomicString& new_method,
+      const net::SiteForCookies& new_site_for_cookies,
+      const String& new_referrer,
+      network::mojom::ReferrerPolicy new_referrer_policy,
+      bool skip_service_worker) const;
 
   bool IsNull() const;
 
@@ -558,15 +569,6 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
   // See crbug.com/787704.
   void CopyFrom(const ResourceRequest&);
   void CopyHeadFrom(const ResourceRequestHead&);
-
-  // Constructs a new ResourceRequest for a redirect from this instance.
-  std::unique_ptr<ResourceRequest> CreateRedirectRequest(
-      const KURL& new_url,
-      const AtomicString& new_method,
-      const net::SiteForCookies& new_site_for_cookies,
-      const String& new_referrer,
-      network::mojom::ReferrerPolicy new_referrer_policy,
-      bool skip_service_worker) const;
 
   EncodedFormData* HttpBody() const;
   void SetHttpBody(scoped_refptr<EncodedFormData>);

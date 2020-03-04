@@ -30,10 +30,11 @@ class GURL;
 @interface MainController (TestingOnly)
 
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
-@property(nonatomic, retain) id<TabSwitcher> tabSwitcher;
 
 // Tab switcher state.
 @property(nonatomic, getter=isTabSwitcherActive) BOOL tabSwitcherActive;
+
+@property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
 
 // Sets the internal startup state to indicate that the launch was triggered
 // by an external app opening the given URL.

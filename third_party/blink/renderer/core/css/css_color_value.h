@@ -32,7 +32,7 @@ class CORE_EXPORT CSSColorValue : public CSSValue {
     return color_ == other.color_;
   }
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

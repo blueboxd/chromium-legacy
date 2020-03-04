@@ -32,7 +32,7 @@ bool CSSLayoutFunctionValue::Equals(const CSSLayoutFunctionValue& other) const {
   return GetName() == other.GetName() && IsInline() == other.IsInline();
 }
 
-void CSSLayoutFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSLayoutFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(name_);
   CSSValue::TraceAfterDispatch(visitor);
 }

@@ -178,8 +178,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
   void SetDisplayMode(blink::mojom::DisplayMode) override;
-  void AnimateDoubleTapZoom(const gfx::Point&,
-                            const WebRect& block_bounds) override;
   void ZoomToFindInPageRect(const WebRect&) override;
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
@@ -215,6 +213,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetInsidePortal(bool inside_portal) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
   void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
+
+  // Requests a page-scale animation based on the specified point/rect.
+  void AnimateDoubleTapZoom(const gfx::Point&, const WebRect& block_bounds);
 
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;

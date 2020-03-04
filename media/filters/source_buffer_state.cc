@@ -129,13 +129,13 @@ Ranges<TimeDelta> SourceBufferState::ComputeRangesIntersection(
 SourceBufferState::SourceBufferState(
     std::unique_ptr<StreamParser> stream_parser,
     std::unique_ptr<FrameProcessor> frame_processor,
-    const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+    CreateDemuxerStreamCB create_demuxer_stream_cb,
     MediaLog* media_log)
-    : timestamp_offset_during_append_(NULL),
+    : timestamp_offset_during_append_(nullptr),
       parsing_media_segment_(false),
       stream_parser_(stream_parser.release()),
       frame_processor_(frame_processor.release()),
-      create_demuxer_stream_cb_(create_demuxer_stream_cb),
+      create_demuxer_stream_cb_(std::move(create_demuxer_stream_cb)),
       media_log_(media_log),
       state_(UNINITIALIZED) {
   DCHECK(create_demuxer_stream_cb_);
@@ -224,7 +224,7 @@ bool SourceBufferState::Append(const uint8_t* data,
         << " append_window_end=" << append_window_end.InSecondsF();
   }
 
-  timestamp_offset_during_append_ = NULL;
+  timestamp_offset_during_append_ = nullptr;
   append_in_progress_ = false;
   return result;
 }
@@ -239,7 +239,7 @@ void SourceBufferState::ResetParserState(TimeDelta append_window_start,
   append_window_end_during_append_ = append_window_end;
 
   stream_parser_->Flush();
-  timestamp_offset_during_append_ = NULL;
+  timestamp_offset_during_append_ = nullptr;
 
   frame_processor_->Reset();
   parsing_media_segment_ = false;

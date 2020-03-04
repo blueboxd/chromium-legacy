@@ -31,7 +31,7 @@ String CSSCustomIdentValue::CustomCSSText() const {
   return builder.ToString();
 }
 
-void CSSCustomIdentValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSCustomIdentValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

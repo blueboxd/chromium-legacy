@@ -54,7 +54,7 @@ class CSSGridTemplateAreasValue : public CSSValue {
 
   bool Equals(const CSSGridTemplateAreasValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

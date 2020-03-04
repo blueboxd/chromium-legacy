@@ -86,8 +86,10 @@ public class AssistantOverlayCoordinator {
                     // TODO(b/143517837) Merge autofill assistant image fetcher UMA names.
                     mImageFetcher.fetchImage(image.mImageUrl,
                             ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, result -> {
-                                image.mImageBitmap = Bitmap.createScaledBitmap(result,
-                                        image.mImageSizeInPixels, image.mImageSizeInPixels, true);
+                                image.mImageBitmap = result != null ? Bitmap.createScaledBitmap(
+                                                             result, image.mImageSizeInPixels,
+                                                             image.mImageSizeInPixels, true)
+                                                                    : null;
                                 mDrawable.setFullOverlayImage(image);
                             });
                 } else {

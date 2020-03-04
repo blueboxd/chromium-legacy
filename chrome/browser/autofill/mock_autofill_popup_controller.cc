@@ -9,7 +9,7 @@ namespace autofill {
 MockAutofillPopupController::MockAutofillPopupController() {
   gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
   layout_model_ = std::make_unique<autofill::AutofillPopupLayoutModel>(
-      this, false /* is_credit_card_field */);
+      false /* is_credit_card_field */);
 }
 
 MockAutofillPopupController::~MockAutofillPopupController() = default;

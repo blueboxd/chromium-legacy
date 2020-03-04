@@ -43,7 +43,7 @@ class CSSGridLineNamesValue : public CSSValueList {
 
   String CustomCSSText() const;
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValueList::TraceAfterDispatch(visitor);
   }
 };

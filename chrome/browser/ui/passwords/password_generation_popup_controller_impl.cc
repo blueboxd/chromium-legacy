@@ -319,21 +319,6 @@ bool PasswordGenerationPopupControllerImpl::IsRTL() const {
   return base::i18n::IsRTL();
 }
 
-const std::vector<autofill::Suggestion>
-PasswordGenerationPopupControllerImpl::GetSuggestions() {
-  return std::vector<autofill::Suggestion>();
-}
-
-#if !defined(OS_ANDROID)
-int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(int row) {
-  return 0;
-}
-
-int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
-  return 0;
-}
-#endif
-
 PasswordGenerationPopupController::GenerationUIState
 PasswordGenerationPopupControllerImpl::state() const {
   return state_;

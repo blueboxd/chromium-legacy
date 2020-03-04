@@ -294,26 +294,6 @@
             ]
         }
     ],
-    "AndroidInProductHelpQuietNotificationPrompts": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:tabgroups_dummy;comparator:any;window:1;storage:1",
-                        "event_used": "name:tabgroups_dummy;comparator:any;window:1;storage:1"
-                    },
-                    "enable_features": [
-                        "IPH_QuietNotificationPrompts"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInlineUpdateFlowStudy": [
         {
             "platforms": [
@@ -3941,21 +3921,6 @@
             ]
         }
     ],
-    "Precache": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledCGRUV20b",
-                    "params": {
-                        "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_g20"
-                    }
-                }
-            ]
-        }
-    ],
     "PreconnectOnDidFinishNavigation": [
         {
             "platforms": [
@@ -4256,10 +4221,15 @@
                 {
                     "name": "EnableWithAdaptiveActivation",
                     "params": {
+                        "availability": "any",
                         "enable_adaptive_activation": "true",
-                        "enable_crowd_deny_triggering": "true"
+                        "enable_crowd_deny_triggering": "true",
+                        "event_trigger": "name:tabgroups_dummy;comparator:any;window:1;storage:1",
+                        "event_used": "name:tabgroups_dummy;comparator:any;window:1;storage:1",
+                        "session_rate": "any"
                     },
                     "enable_features": [
+                        "IPH_QuietNotificationPrompts",
                         "QuietNotificationPrompts"
                     ]
                 }

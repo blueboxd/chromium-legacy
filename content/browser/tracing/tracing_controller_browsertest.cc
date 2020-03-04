@@ -349,6 +349,9 @@ class TracingControllerTest : public ContentBrowserTest {
   DISABLED_EnableAndStopTracingWithFilePath
 #define MAYBE_EnableAndStopTracingWithCompression \
   DISABLED_EnableAndStopTracingWithCompression
+#define MAYBE_EnableAndStopTracingWithEmptyFile \
+  DISABLED_EnableAndStopTracingWithEmptyFile
+#define MAYBE_DoubleStopTracing DISABLED_DoubleStopTracing
 #define MAYBE_ProcessesPresentInTrace DISABLED_ProcessesPresentInTrace
 #else
 #define MAYBE_EnableAndStopTracing EnableAndStopTracing
@@ -357,6 +360,9 @@ class TracingControllerTest : public ContentBrowserTest {
 #define MAYBE_EnableAndStopTracingWithFilePath EnableAndStopTracingWithFilePath
 #define MAYBE_EnableAndStopTracingWithCompression \
   EnableAndStopTracingWithCompression
+#define MAYBE_EnableAndStopTracingWithEmptyFile \
+  EnableAndStopTracingWithEmptyFile
+#define MAYBE_DoubleStopTracing DoubleStopTracing
 #define MAYBE_ProcessesPresentInTrace ProcessesPresentInTrace
 #endif
 
@@ -450,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingWithEmptyFile) {
+                       MAYBE_EnableAndStopTracingWithEmptyFile) {
   Navigate(shell());
 
   base::RunLoop run_loop;
@@ -468,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_DoubleStopTracing) {
   Navigate(shell());
 
   base::RunLoop run_loop;

@@ -119,7 +119,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
 
   Vector<Color> GetStopColors(const Document&, const ComputedStyle&) const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   struct GradientDesc;
 
@@ -183,7 +183,7 @@ class CSSLinearGradientValue final : public CSSGradientValue {
   CSSLinearGradientValue* ComputedCSSValue(const ComputedStyle&,
                                            bool allow_visited_style);
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   // Any of these may be null.
@@ -281,7 +281,7 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   CSSRadialGradientValue* ComputedCSSValue(const ComputedStyle&,
                                            bool allow_visited_style);
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   // Any of these may be null.
@@ -327,7 +327,7 @@ class CSSConicGradientValue final : public CSSGradientValue {
   CSSConicGradientValue* ComputedCSSValue(const ComputedStyle&,
                                           bool allow_visited_style);
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   // Any of these may be null.

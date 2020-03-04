@@ -64,7 +64,7 @@ class StyleRuleKeyframes final : public StyleRuleBase {
     return MakeGarbageCollected<StyleRuleKeyframes>(*this);
   }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   void StyleChanged() { version_++; }
   unsigned Version() const { return version_; }

@@ -905,16 +905,18 @@ class WebContents : public PageNavigator,
   // Returns the WakeLockContext accociated with this WebContents.
   virtual device::mojom::WakeLockContext* GetWakeLockContext() = 0;
 
-  using ImageDownloadCallback = base::OnceCallback<void(
-      int id,
-      int http_status_code,  // Can be 0 e.g. for data: URLs.
-      const GURL& image_url,
-      const std::vector<SkBitmap>& bitmaps,
-      /* The sizes in pixel of the bitmaps before they were resized due to the
-         max bitmap size passed to DownloadImage(). Each entry in the bitmaps
-         vector corresponds to an entry in the sizes vector. If a bitmap was
-         resized, there should be a single returned bitmap. */
-      const std::vector<gfx::Size>& sizes)>;
+  // |http_status_code| can be 0 e.g. for data: URLs.
+  // |bitmaps| will be empty on download failure.
+  // |sizes| are the sizes in pixels of the bitmaps before they were resized due
+  // to the max bitmap size passed to DownloadImage(). Each entry in the bitmaps
+  // vector corresponds to an entry in the sizes vector. If a bitmap was
+  // resized, there should be a single returned bitmap.
+  using ImageDownloadCallback =
+      base::OnceCallback<void(int id,
+                              int http_status_code,
+                              const GURL& image_url,
+                              const std::vector<SkBitmap>& bitmaps,
+                              const std::vector<gfx::Size>& sizes)>;
 
   // Sends a request to download the given image |url| and returns the unique
   // id of the download request. When the download is finished, |callback| will

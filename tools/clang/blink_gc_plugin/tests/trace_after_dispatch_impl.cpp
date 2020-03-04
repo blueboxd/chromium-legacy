@@ -29,13 +29,13 @@ void TraceAfterDispatchExternBase::Trace(Visitor* visitor) {
   }
 }
 
-void TraceAfterDispatchExternBase::TraceAfterDispatch(Visitor* visitor) {
+void TraceAfterDispatchExternBase::TraceAfterDispatch(Visitor* visitor) const {
   visitor->Trace(x_base_);
 }
 
-void TraceAfterDispatchExternDerived::TraceAfterDispatch(Visitor* visitor) {
+void TraceAfterDispatchExternDerived::TraceAfterDispatch(
+    Visitor* visitor) const {
   visitor->Trace(x_derived_);
   TraceAfterDispatchExternBase::TraceAfterDispatch(visitor);
 }
-
 }

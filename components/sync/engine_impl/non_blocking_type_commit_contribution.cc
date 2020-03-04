@@ -274,6 +274,9 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
       encrypted_password.mutable_password()
           ->mutable_unencrypted_metadata()
           ->set_url(password_data.signon_realm());
+      encrypted_password.mutable_password()
+          ->mutable_unencrypted_metadata()
+          ->set_blacklisted(password_data.blacklisted());
     }
 
     bool result = cryptographer_->Encrypt(

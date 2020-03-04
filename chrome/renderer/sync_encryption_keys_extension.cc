@@ -157,9 +157,8 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   int last_key_version = 0;
   if (!args->GetNext(&last_key_version)) {
     DLOG(ERROR) << "No version provided";
-    // TODO(crbug.com/1032485): Be more strict here and issue an error if the
-    // version is not provided.
-    last_key_version = static_cast<int>(encryption_keys.size()) - 1;
+    args->ThrowError();
+    return;
   }
 
   auto global_callback =

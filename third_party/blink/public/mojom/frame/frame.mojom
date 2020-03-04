@@ -602,6 +602,9 @@ interface RemoteFrame {
 //
 // This interface will only be provided when the LocalFrame is a main frame.
 interface LocalMainFrame {
+  // Requests performing a page scale animation based on the point/rect provided.
+  AnimateDoubleTapZoom(gfx.mojom.Point point, gfx.mojom.Rect rect);
+
   // Scales the view without affecting layout by using the visual viewport.
   SetScaleFactor(float scale);
 

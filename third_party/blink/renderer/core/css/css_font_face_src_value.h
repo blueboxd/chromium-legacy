@@ -91,7 +91,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   bool Equals(const CSSFontFaceSrcValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     visitor->Trace(fetched_);
     CSSValue::TraceAfterDispatch(visitor);
   }

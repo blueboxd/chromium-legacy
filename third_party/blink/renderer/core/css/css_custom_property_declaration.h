@@ -50,7 +50,7 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
     return this == &other;
   }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   const AtomicString name_;

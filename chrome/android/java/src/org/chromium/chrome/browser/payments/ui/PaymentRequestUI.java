@@ -46,10 +46,11 @@ import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -1106,11 +1107,16 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         String message;
         if (!mShowDataSource) {
             message = mContext.getString(R.string.payments_card_and_address_settings);
-        } else if (ChromeSigninController.get().isSignedIn()) {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                    ChromeSigninController.get().getSignedInAccountName());
         } else {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
+            CoreAccountInfo coreAccountInfo =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+            if (coreAccountInfo != null) {
+                message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
+                        coreAccountInfo.getEmail());
+            } else {
+                message =
+                        mContext.getString(R.string.payments_card_and_address_settings_signed_out);
+            }
         }
 
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan(

@@ -3126,8 +3126,7 @@ void RenderWidgetHostImpl::OnAnimateDoubleTapZoomInMainFrame(
   }
 
   auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
-  root_rvhi->Send(new ViewMsg_AnimateDoubleTapZoom(
-      root_rvhi->GetRoutingID(), transformed_point, transformed_rect_to_zoom));
+  root_rvhi->AnimateDoubleTapZoom(transformed_point, transformed_rect_to_zoom);
 }
 
 void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(

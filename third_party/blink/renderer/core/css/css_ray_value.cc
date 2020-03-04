@@ -36,7 +36,7 @@ bool CSSRayValue::Equals(const CSSRayValue& other) const {
          DataEquivalent(contain_, other.contain_);
 }
 
-void CSSRayValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSRayValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(angle_);
   visitor->Trace(size_);
   visitor->Trace(contain_);

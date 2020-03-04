@@ -120,7 +120,7 @@ void ElementData::Trace(Visitor* visitor) {
   }
 }
 
-void ElementData::TraceAfterDispatch(blink::Visitor* visitor) {
+void ElementData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(inline_style_);
 }
 
@@ -185,7 +185,7 @@ ShareableElementData* UniqueElementData::MakeShareableCopy() const {
       *this);
 }
 
-void UniqueElementData::TraceAfterDispatch(blink::Visitor* visitor) {
+void UniqueElementData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(presentation_attribute_style_);
   ElementData::TraceAfterDispatch(visitor);
 }

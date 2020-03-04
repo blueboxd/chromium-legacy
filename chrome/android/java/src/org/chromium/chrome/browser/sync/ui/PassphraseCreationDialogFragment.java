@@ -78,7 +78,7 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
                     public void onClick(View view) {
                         HelpAndFeedback.getInstance().show(activity,
                                 activity.getString(R.string.help_context_change_sync_passphrase),
-                                Profile.getLastUsedProfile(), null);
+                                Profile.getLastUsedRegularProfile(), null);
                     }
                 }));
     }

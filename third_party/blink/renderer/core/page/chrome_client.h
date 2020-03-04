@@ -355,6 +355,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}
 
+  virtual void AnimateDoubleTapZoom(const gfx::Point& point,
+                                    const gfx::Rect& rect) {}
+
   virtual void ClearLayerSelection(LocalFrame*) {}
   virtual void UpdateLayerSelection(LocalFrame*, const cc::LayerSelection&) {}
 

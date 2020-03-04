@@ -7,46 +7,25 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/help/test_version_updater.h"
-#include "chrome/browser/ui/webui/settings/safety_check_handler_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class TestSafetyCheckObserver : public SafetyCheckHandlerObserver {
- public:
-  void OnUpdateCheckStart() override { update_check_started_ = true; }
-
-  void OnUpdateCheckResult(SafetyCheckHandler::UpdateStatus status) override {
-    update_check_status_ = status;
-  }
-
-  void OnSafeBrowsingCheckStart() override {
-    safe_browsing_check_started_ = true;
-  }
-
-  void OnSafeBrowsingCheckResult(
-      SafetyCheckHandler::SafeBrowsingStatus status) override {
-    safe_browsing_check_status_ = status;
-  }
-
-  bool update_check_started_ = false;
-  base::Optional<SafetyCheckHandler::UpdateStatus> update_check_status_;
-  bool safe_browsing_check_started_ = false;
-  base::Optional<SafetyCheckHandler::SafeBrowsingStatus>
-      safe_browsing_check_status_;
-};
 
 class TestingSafetyCheckHandler : public SafetyCheckHandler {
  public:
   using SafetyCheckHandler::AllowJavascript;
+  using SafetyCheckHandler::DisallowJavascript;
   using SafetyCheckHandler::set_web_ui;
 
-  TestingSafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
-                            SafetyCheckHandlerObserver* observer)
-      : SafetyCheckHandler(std::move(version_updater), observer) {}
+  TestingSafetyCheckHandler(
+      std::unique_ptr<VersionUpdater> version_updater,
+      password_manager::BulkLeakCheckService* leak_service)
+      : SafetyCheckHandler(std::move(version_updater), leak_service) {}
 };
 
 class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
@@ -59,7 +38,7 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   TestVersionUpdater* version_updater_ = nullptr;
-  TestSafetyCheckObserver observer_;
+  std::unique_ptr<password_manager::BulkLeakCheckService> test_leak_service_;
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
 };
@@ -71,10 +50,12 @@ void SafetyCheckHandlerTest::SetUp() {
   // SafetyCheckHandler, but a raw pointer is retained here to change its
   // state.
   auto version_updater = std::make_unique<TestVersionUpdater>();
+  test_leak_service_ = std::make_unique<password_manager::BulkLeakCheckService>(
+      nullptr, nullptr);
   version_updater_ = version_updater.get();
   test_web_ui_.set_web_contents(web_contents());
   safety_check_ = std::make_unique<TestingSafetyCheckHandler>(
-      std::move(version_updater), &observer_);
+      std::move(version_updater), test_leak_service_.get());
   test_web_ui_.ClearTrackedCalls();
   safety_check_->set_web_ui(&test_web_ui_);
   safety_check_->AllowJavascript();
@@ -108,18 +89,9 @@ bool SafetyCheckHandlerTest::HasSafetyCheckStatusChangedWithData(
   return false;
 }
 
-TEST_F(SafetyCheckHandlerTest, PerformSafetyCheck_AllChecksInvoked) {
-  safety_check_->PerformSafetyCheck();
-  EXPECT_TRUE(observer_.update_check_started_);
-  EXPECT_TRUE(observer_.safe_browsing_check_started_);
-}
-
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {
   version_updater_->SetReturnedStatus(VersionUpdater::Status::UPDATED);
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.update_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::UpdateStatus::kUpdated,
-            observer_.update_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kUpdates),
       static_cast<int>(SafetyCheckHandler::UpdateStatus::kUpdated)));
@@ -129,9 +101,6 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_NotUpdated) {
   version_updater_->SetReturnedStatus(
       VersionUpdater::Status::DISABLED_BY_ADMIN);
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.update_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::UpdateStatus::kDisabledByAdmin,
-            observer_.update_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kUpdates),
       static_cast<int>(SafetyCheckHandler::UpdateStatus::kDisabledByAdmin)));
@@ -142,9 +111,6 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Enabled) {
       ->GetPrefs()
       ->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.safe_browsing_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::SafeBrowsingStatus::kEnabled,
-            observer_.safe_browsing_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kSafeBrowsing),
       static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kEnabled)));
@@ -155,9 +121,6 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_Disabled) {
       ->GetPrefs()
       ->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.safe_browsing_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::SafeBrowsingStatus::kDisabled,
-            observer_.safe_browsing_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kSafeBrowsing),
       static_cast<int>(SafetyCheckHandler::SafeBrowsingStatus::kDisabled)));
@@ -170,9 +133,6 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByAdmin) {
       ->SetManagedPref(prefs::kSafeBrowsingEnabled,
                        std::make_unique<base::Value>(false));
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.safe_browsing_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::SafeBrowsingStatus::kDisabledByAdmin,
-            observer_.safe_browsing_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kSafeBrowsing),
       static_cast<int>(
@@ -186,11 +146,73 @@ TEST_F(SafetyCheckHandlerTest, CheckSafeBrowsing_DisabledByExtension) {
       ->SetExtensionPref(prefs::kSafeBrowsingEnabled,
                          std::make_unique<base::Value>(false));
   safety_check_->PerformSafetyCheck();
-  ASSERT_TRUE(observer_.safe_browsing_check_status_.has_value());
-  EXPECT_EQ(SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension,
-            observer_.safe_browsing_check_status_);
   EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
       static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kSafeBrowsing),
       static_cast<int>(
           SafetyCheckHandler::SafeBrowsingStatus::kDisabledByExtension)));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_ObserverRemovedAfterError) {
+  safety_check_->PerformSafetyCheck();
+  // First, a "running" change of state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  // Second, an "offline" state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kNetworkError);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline)));
+  // Another error, but since the previous state is terminal, the handler should
+  // no longer be observing the BulkLeakCheckService state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kServiceError);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline)));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_InterruptedAndRefreshed) {
+  safety_check_->PerformSafetyCheck();
+  // Password check running.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  // The check gets interrupted and the page is refreshed.
+  safety_check_->DisallowJavascript();
+  safety_check_->AllowJavascript();
+  // Another run of the safety check.
+  safety_check_->PerformSafetyCheck();
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kNetworkError);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline)));
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckPasswords_StartedTwice) {
+  safety_check_->PerformSafetyCheck();
+  safety_check_->PerformSafetyCheck();
+  // First, a "running" change of state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kRunning);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kChecking)));
+  // Second, an "offline" state.
+  test_leak_service_->set_state_and_notify(
+      password_manager::BulkLeakCheckService::State::kNetworkError);
+  EXPECT_TRUE(HasSafetyCheckStatusChangedWithData(
+      static_cast<int>(SafetyCheckHandler::SafetyCheckComponent::kPasswords),
+      static_cast<int>(SafetyCheckHandler::PasswordsStatus::kOffline)));
 }

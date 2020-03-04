@@ -32,6 +32,7 @@
 namespace blink {
 
 class ComputedStyle;
+class FilterData;
 class LayoutObject;
 class LayoutSVGResourceClipper;
 class LayoutSVGResourceFilter;
@@ -202,10 +203,18 @@ class SVGElementResourceClient final
   void ResourceElementChanged() override;
   void ResourceDestroyed(LayoutSVGResourceContainer*) override;
 
+  void FilterPrimitiveChanged(SVGFilterPrimitiveStandardAttributes& primitive,
+                              const QualifiedName& attribute) override;
+
+  void SetFilterData(FilterData*);
+  bool ClearFilterData();
+  FilterData* GetFilterData() const { return filter_data_; }
+
   void Trace(Visitor*) override;
 
  private:
   Member<SVGElement> element_;
+  Member<FilterData> filter_data_;
 };
 
 }  // namespace blink

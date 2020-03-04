@@ -31,12 +31,12 @@ void TraceAfterDispatchExternBase::Trace(Visitor* visitor) {
   }
 }
 
-void TraceAfterDispatchExternBase::TraceAfterDispatch(Visitor* visitor) {
+void TraceAfterDispatchExternBase::TraceAfterDispatch(Visitor* visitor) const {
   // No Trace call.
 }
 
-void TraceAfterDispatchExternDerived::TraceAfterDispatch(Visitor* visitor) {
+void TraceAfterDispatchExternDerived::TraceAfterDispatch(
+    Visitor* visitor) const {
   // Ditto.
 }
-
 }

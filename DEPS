@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '56ff573a6c1416dad552ed26b1724a30a632f4d3',
+  'v8_revision': 'e18618490c3aeddf96e36c11b4bffcb5c7f12320',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '028a7a725cc63183d87bf248c57ff1dcb33198e1',
+  'angle_revision': 'd62881ce79c87723f6434da869009b42445f0eab',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '393efd6d94e482796e0819bdf242331a37cc320c',
+  'devtools_frontend_revision': '07fd18460d096895e12a7f8b228cf9d2fbf117d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -532,7 +532,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '844112ed66147768bb88c48ad5af1179ab3ed7c8',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '8a6d4f9ab70a581253c8c2fb89ba6e076b71431a',
       'condition': 'checkout_ios',
   },
 
@@ -944,7 +944,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'c40c4bc38a76fb597e7a5954a20313c1bd0d66c9',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'c6a4c6d3d8b5b85b93308336534adf9c1ef0ae66',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1440,7 +1440,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '80636981052754dcdaaf90a5d83a1cd9eb786dfb',
+    Var('webrtc_git') + '/src.git' + '@' + '4518a20e14ecb3415c52aecf132d9bc83edaa9c4',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1515,7 +1515,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f1fe4488c8cff1768e18f42ae688752d8b1628e6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3ac359c9ea04878a029df2e976aa4bcf11a273fc',
     'condition': 'checkout_src_internal',
   },
 

@@ -27,6 +27,9 @@ void DummyProducer::ClearIncrementalState(
     size_t num_data_sources) {}
 
 // PerfettoProducer implementation.
+bool DummyProducer::SetupStartupTracing() {
+  return false;
+}
 perfetto::SharedMemoryArbiter* DummyProducer::MaybeSharedMemoryArbiter() {
   return nullptr;
 }

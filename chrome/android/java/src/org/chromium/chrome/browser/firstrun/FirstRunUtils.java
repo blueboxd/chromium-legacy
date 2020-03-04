@@ -90,7 +90,7 @@ public class FirstRunUtils {
 
     @VisibleForTesting
     static boolean hasGoogleAccounts() {
-        return AccountManagerFacade.get().hasGoogleAccounts();
+        return !AccountManagerFacade.get().tryGetGoogleAccounts().isEmpty();
     }
 
     @SuppressLint("InlinedApi")

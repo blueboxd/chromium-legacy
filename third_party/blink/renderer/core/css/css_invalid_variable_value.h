@@ -23,7 +23,7 @@ class CORE_EXPORT CSSInvalidVariableValue : public CSSValue {
 
   bool Equals(const CSSInvalidVariableValue&) const { return true; }
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

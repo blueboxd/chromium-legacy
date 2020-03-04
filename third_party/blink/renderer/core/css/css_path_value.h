@@ -33,7 +33,7 @@ class CSSPathValue : public CSSValue {
 
   bool Equals(const CSSPathValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   const SVGPathByteStream& ByteStream() const {
     return style_path_->ByteStream();

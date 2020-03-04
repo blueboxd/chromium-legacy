@@ -80,7 +80,7 @@ class ElementData : public GarbageCollected<ElementData> {
 
   bool IsUnique() const { return is_unique_; }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
   void Trace(Visitor*);
 
  protected:
@@ -127,7 +127,7 @@ class ShareableElementData final : public ElementData {
   explicit ShareableElementData(const UniqueElementData&);
   ~ShareableElementData();
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     ElementData::TraceAfterDispatch(visitor);
   }
 
@@ -162,7 +162,7 @@ class UniqueElementData final : public ElementData {
   explicit UniqueElementData(const ShareableElementData&);
   explicit UniqueElementData(const UniqueElementData&);
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   // FIXME: We might want to support sharing element data for elements with
   // presentation attribute style. Lots of table cells likely have the same

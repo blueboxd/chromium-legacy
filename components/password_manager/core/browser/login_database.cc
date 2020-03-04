@@ -1165,11 +1165,6 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
   if (changes) {
     changes->clear();
   }
-  if (form.is_public_suffix_match) {
-    // TODO(dvadym): Discuss whether we should allow to remove PSL matched
-    // credentials.
-    return false;
-  }
 #if defined(OS_IOS)
   DeleteEncryptedPassword(form);
 #endif

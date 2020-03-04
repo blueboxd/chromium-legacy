@@ -447,8 +447,10 @@ void AutofillPopupItemView::CreateContent() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
+  std::vector<autofill::Suggestion> suggestions = controller->GetSuggestions();
+
   const gfx::ImageSkia icon =
-      controller->layout_model().GetIconImage(line_number());
+      controller->layout_model().GetIconImage(suggestions[line_number()]);
 
   if (!icon.isNull()) {
     AddIcon(icon);
@@ -489,7 +491,8 @@ void AutofillPopupItemView::CreateContent() {
 
   AddChildView(std::move(all_labels));
   const gfx::ImageSkia store_indicator_icon =
-      controller->layout_model().GetStoreIndicatorIconImage(line_number());
+      controller->layout_model().GetStoreIndicatorIconImage(
+          suggestions[line_number()]);
   if (!store_indicator_icon.isNull()) {
     AddSpacerWithSize(GetHorizontalMargin(),
                       /*resize=*/true, layout_manager);
@@ -719,8 +722,8 @@ void AutofillPopupFooterView::CreateContent() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  const gfx::ImageSkia icon =
-      controller->layout_model().GetIconImage(line_number());
+  const gfx::ImageSkia icon = controller->layout_model().GetIconImage(
+      controller->GetSuggestions()[line_number()]);
 
   // A FooterView shows an icon, if any, on the trailing (right in LTR) side,
   // but the Show Account Cards context is an anomaly. Its icon is on the

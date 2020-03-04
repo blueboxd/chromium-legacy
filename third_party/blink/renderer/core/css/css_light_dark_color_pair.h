@@ -14,7 +14,7 @@ class CORE_EXPORT CSSLightDarkColorPair : public CSSValuePair {
   CSSLightDarkColorPair(const CSSValue* first, const CSSValue* second)
       : CSSValuePair(kLightDarkColorPairClass, first, second) {}
   String CustomCSSText() const;
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValuePair::TraceAfterDispatch(visitor);
   }
 };

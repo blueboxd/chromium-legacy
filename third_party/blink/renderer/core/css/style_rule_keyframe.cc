@@ -63,7 +63,7 @@ String StyleRuleKeyframe::CssText() const {
   return result.ToString();
 }
 
-void StyleRuleKeyframe::TraceAfterDispatch(blink::Visitor* visitor) {
+void StyleRuleKeyframe::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }

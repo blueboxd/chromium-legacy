@@ -26,7 +26,7 @@ class CORE_EXPORT CSSUnsetValue : public CSSValue {
 
   bool Equals(const CSSUnsetValue&) const { return true; }
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 };

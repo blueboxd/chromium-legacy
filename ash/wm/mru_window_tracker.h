@@ -49,6 +49,14 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   MruWindowTracker();
   ~MruWindowTracker() override;
 
+  // Returns the set windows in the mru list regardless of whether they can be
+  // included in the cycler or not.
+  // |desks_mru_type| determines whether to include or exclude windows from the
+  // inactive desks.
+  // TODO(oshima|afakhry): Investigate if we can consolidate BuildXXXList
+  // methods with parameters.
+  WindowList BuildAppWindowList(DesksMruType desks_mru_type) const;
+
   // Returns the set of windows which can be cycled through using the tracked
   // list of most recently used windows.
   // |desks_mru_type| determines whether to include or exclude windows from the

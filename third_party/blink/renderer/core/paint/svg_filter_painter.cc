@@ -87,7 +87,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   filter_.ClearInvalidationMask();
 
   SVGElementResourceClient* client = SVGResources::GetClient(object);
-  if (FilterData* filter_data = filter_.GetFilterDataForClient(client)) {
+  if (FilterData* filter_data = client->GetFilterData()) {
     // If the filterData already exists we do not need to record the content
     // to be filtered. This can occur if the content was previously recorded
     // or we are in a cycle.
@@ -117,7 +117,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   DCHECK_EQ(filter_data->state_, FilterData::kInitial);
 
   // TODO(pdr): Can this be moved out of painter?
-  filter_.SetFilterDataForClient(client, filter_data);
+  client->SetFilterData(filter_data);
   filter_data->state_ = FilterData::kRecordingContent;
   return recording_context.BeginContent();
 }
@@ -127,7 +127,7 @@ void SVGFilterPainter::FinishEffect(
     const DisplayItemClient& display_item_client,
     SVGFilterRecordingContext& recording_context) {
   SVGElementResourceClient* client = SVGResources::GetClient(object);
-  FilterData* filter_data = filter_.GetFilterDataForClient(client);
+  FilterData* filter_data = client->GetFilterData();
   if (!filter_data) {
     // Our state was torn down while we were being painted (selection style for
     // <text> can have this effect), or it was never created (invalid filter.)

@@ -135,9 +135,7 @@ bool MultiStorePasswordSaveManager::IsAccountStoreEnabled() {
 
 void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
   // TODO(crbug.com/1032992): There are other rare corner cases that should
-  // still be handled: 0. Moving PSL matched credentials doesn't work now
-  // because of
-  // https://cs.chromium.org/chromium/src/components/password_manager/core/browser/login_database.cc?l=1318&rcl=e32055d4843e9fc1fa920c5f1f83c1313607e28a
+  // still be handled:
   // 1. Credential exists only in the profile store but with an outdated
   // password.
   // 2. Credentials exist in both stores.

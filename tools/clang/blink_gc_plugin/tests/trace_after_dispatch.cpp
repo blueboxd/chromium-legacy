@@ -23,28 +23,22 @@ void A::Trace(Visitor* visitor)
     }
 }
 
-void A::TraceAfterDispatch(Visitor* visitor)
-{
+void A::TraceAfterDispatch(Visitor* visitor) const {}
+
+void B::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  // Missing A::TraceAfterDispatch(visitor);
+  // Also check that calling Trace does not count.
+  A::Trace(visitor);
 }
 
-void B::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    // Missing A::TraceAfterDispatch(visitor);
-    // Also check that calling Trace does not count.
-    A::Trace(visitor);
+void C::TraceAfterDispatch(Visitor* visitor) const {
+  // Missing visitor->Trace(m_a);
+  A::TraceAfterDispatch(visitor);
 }
 
-void C::TraceAfterDispatch(Visitor* visitor)
-{
-    // Missing visitor->Trace(m_a);
-    A::TraceAfterDispatch(visitor);
+void D::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  Abstract::TraceAfterDispatch(visitor);
 }
-
-void D::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    Abstract::TraceAfterDispatch(visitor);
-}
-
 }

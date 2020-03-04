@@ -87,10 +87,15 @@ class EncodedDataHelper {
   size_t num_skipped_fragments() { return num_skipped_fragments_; }
 
  private:
+  struct IVFHeader;
+  struct IVFFrame;
+
   // For h.264.
   scoped_refptr<DecoderBuffer> GetNextFragment();
   // For VP8/9.
   scoped_refptr<DecoderBuffer> GetNextFrame();
+  base::Optional<IVFHeader> GetNextIVFFrameHeader() const;
+  base::Optional<IVFFrame> ReadNextIVFFrame();
 
   // Helpers for GetBytesForNextFragment above.
   size_t GetBytesForNextNALU(size_t pos);

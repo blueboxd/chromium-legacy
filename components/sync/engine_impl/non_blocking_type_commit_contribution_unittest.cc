@@ -198,6 +198,10 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_TRUE(entity.specifics().has_password());
   EXPECT_EQ(kSignonRealm,
             entity.specifics().password().unencrypted_metadata().url());
+  EXPECT_TRUE(
+      entity.specifics().password().unencrypted_metadata().has_blacklisted());
+  EXPECT_FALSE(
+      entity.specifics().password().unencrypted_metadata().blacklisted());
   EXPECT_FALSE(entity.specifics().password().encrypted().blob().empty());
   EXPECT_TRUE(entity.parent_id_string().empty());
   EXPECT_FALSE(entity.unique_position().has_custom_compressed_v1());

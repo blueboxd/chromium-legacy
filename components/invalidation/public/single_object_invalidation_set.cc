@@ -96,23 +96,4 @@ std::unique_ptr<base::ListValue> SingleObjectInvalidationSet::ToValue() const {
   return value;
 }
 
-bool SingleObjectInvalidationSet::ResetFromValue(
-    const base::ListValue& list) {
-  for (size_t i = 0; i < list.GetSize(); ++i) {
-    const base::DictionaryValue* dict;
-    if (!list.GetDictionary(i, &dict)) {
-      DLOG(WARNING) << "Could not find invalidation at index " << i;
-      return false;
-    }
-    std::unique_ptr<Invalidation> invalidation =
-        Invalidation::InitFromValue(*dict);
-    if (!invalidation) {
-      DLOG(WARNING) << "Failed to parse invalidation at index " << i;
-      return false;
-    }
-    invalidations_.insert(*invalidation);
-  }
-  return true;
-}
-
 }  // namespace syncer

@@ -166,6 +166,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // https://crbug.com/763548.
   void DispatchRenderViewCreated();
 
+  // Tells the renderer process to request a page-scale animation based on the
+  // specified point/rect.
+  void AnimateDoubleTapZoom(const gfx::Point& point, const gfx::Rect& rect);
+
   // Tells the renderer process to run the page's unload handler.
   // A completion callback is invoked by the renderer when the handler
   // execution completes.

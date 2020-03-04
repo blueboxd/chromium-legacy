@@ -68,8 +68,8 @@ class SourceBufferStateTest : public ::testing::Test {
     mock_stream_parser_ = new testing::StrictMock<MockStreamParser>();
     return base::WrapUnique(new SourceBufferState(
         base::WrapUnique(mock_stream_parser_), std::move(frame_processor),
-        base::Bind(&SourceBufferStateTest::CreateDemuxerStream,
-                   base::Unretained(this)),
+        base::BindRepeating(&SourceBufferStateTest::CreateDemuxerStream,
+                            base::Unretained(this)),
         &media_log_));
   }
 

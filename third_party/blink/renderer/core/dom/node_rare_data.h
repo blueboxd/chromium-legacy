@@ -78,7 +78,7 @@ class GC_PLUGIN_IGNORE(
     DCHECK(!is_element_rare_data || is_rare_data);
   }
   void Trace(Visitor*);
-  void TraceAfterDispatch(blink::Visitor*) {}
+  void TraceAfterDispatch(blink::Visitor*) const {}
 
   enum {
     kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
@@ -118,7 +118,7 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.")
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
-  void TraceAfterDispatch(Visitor* visitor) {
+  void TraceAfterDispatch(Visitor* visitor) const {
     NodeData::TraceAfterDispatch(visitor);
   }
 
@@ -193,7 +193,7 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
   bool HasRestyleFlags() const { return restyle_flags_; }
   void ClearRestyleFlags() { restyle_flags_ = 0; }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
   void FinalizeGarbageCollectedObject();
 
  protected:

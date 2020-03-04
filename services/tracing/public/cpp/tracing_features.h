@@ -22,9 +22,6 @@ extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
     kBackgroundTracingProtoOutput;
 
 extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
-    kPerfettoForceOutOfProcessProducer;
-
-extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
     kEnablePerfettoSystemTracing;
 
 }  // namespace features

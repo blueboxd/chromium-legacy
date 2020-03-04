@@ -74,39 +74,6 @@ TEST_F(SingleObjectInvalidationSetTest, StartWithUnknownVersion) {
   EXPECT_FALSE(list.StartsWithUnknownVersion());
 }
 
-TEST_F(SingleObjectInvalidationSetTest, SerializeEmpty) {
-  SingleObjectInvalidationSet list;
-
-  std::unique_ptr<base::ListValue> value = list.ToValue();
-  ASSERT_TRUE(value.get());
-  SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value);
-  EXPECT_TRUE(list == deserialized);
-}
-
-TEST_F(SingleObjectInvalidationSetTest, SerializeOne) {
-  SingleObjectInvalidationSet list;
-  list.Insert(Invalidation::Init(kId, 1, "one"));
-
-  std::unique_ptr<base::ListValue> value = list.ToValue();
-  ASSERT_TRUE(value.get());
-  SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value);
-  EXPECT_TRUE(list == deserialized);
-}
-
-TEST_F(SingleObjectInvalidationSetTest, SerializeMany) {
-  SingleObjectInvalidationSet list;
-  list.Insert(Invalidation::Init(kId, 1, "one"));
-  list.Insert(Invalidation::InitUnknownVersion(kId));
-
-  std::unique_ptr<base::ListValue> value = list.ToValue();
-  ASSERT_TRUE(value.get());
-  SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value);
-  EXPECT_TRUE(list == deserialized);
-}
-
 }  // namespace
 
 }  // namespace syncer

@@ -553,7 +553,7 @@ String CSSPrimitiveValue::CustomCSSText() const {
   return To<CSSNumericLiteralValue>(this)->CustomCSSText();
 }
 
-void CSSPrimitiveValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSPrimitiveValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

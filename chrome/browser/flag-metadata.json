@@ -3145,6 +3145,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "run-video-capture-service-in-browser",
+    "owners": [ "armax", "guidou" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
     "expiry_milestone": 82

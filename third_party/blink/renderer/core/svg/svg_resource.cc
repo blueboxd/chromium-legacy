@@ -81,6 +81,16 @@ void LocalSVGResource::NotifyContentChanged(
     client->ResourceContentChanged(invalidation_mask);
 }
 
+void LocalSVGResource::NotifyFilterPrimitiveChanged(
+    SVGFilterPrimitiveStandardAttributes& primitive,
+    const QualifiedName& attribute) {
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->FilterPrimitiveChanged(primitive, attribute);
+}
+
 void LocalSVGResource::NotifyResourceAttached(
     LayoutSVGResourceContainer& attached_resource) {
   // Checking the element here because

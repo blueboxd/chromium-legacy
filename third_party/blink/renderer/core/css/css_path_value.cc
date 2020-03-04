@@ -53,7 +53,7 @@ bool CSSPathValue::Equals(const CSSPathValue& other) const {
   return ByteStream() == other.ByteStream();
 }
 
-void CSSPathValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSPathValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

@@ -30,8 +30,7 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
  public:
   MockAutofillPopupController() {
     gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
-    layout_model_ =
-        std::make_unique<autofill::AutofillPopupLayoutModel>(this, false);
+    layout_model_ = std::make_unique<autofill::AutofillPopupLayoutModel>(false);
     suggestions_.push_back(
         autofill::Suggestion("bufflehead", "canvasback", "goldeneye", 1));
     suggestions_.push_back(
@@ -88,7 +87,7 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
 
   void SetIsCreditCardField(bool is_credit_card_field) {
     layout_model_.reset(
-        new autofill::AutofillPopupLayoutModel(this, is_credit_card_field));
+        new autofill::AutofillPopupLayoutModel(is_credit_card_field));
   }
 
   void set_line_count(int line_count) {

@@ -93,6 +93,12 @@ void PosixSystemProducer::SetNewSocketForTesting(const char* socket) {
   DisconnectWithReply(base::OnceClosure());
 }
 
+bool PosixSystemProducer::SetupStartupTracing() {
+  // TODO(eseckler): Support startup tracing using an unbound SMA.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
   base::AutoLock lock(services_lock_);
   DCHECK(GetService());

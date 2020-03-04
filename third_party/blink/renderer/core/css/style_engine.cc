@@ -1680,27 +1680,16 @@ const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
 bool StyleEngine::MediaQueryAffectedByViewportChange() {
   DCHECK(IsMaster());
   DCHECK(global_rule_set_);
-  const MediaQueryEvaluator& evaluator = EnsureMediaQueryEvaluator();
-  const auto& results = global_rule_set_->GetRuleFeatureSet()
-                            .ViewportDependentMediaQueryResults();
-  for (unsigned i = 0; i < results.size(); ++i) {
-    if (evaluator.Eval(results[i].Expression()) != results[i].Result())
-      return true;
-  }
-  return false;
+  return EnsureMediaQueryEvaluator().DidResultsChange(
+      global_rule_set_->GetRuleFeatureSet()
+          .ViewportDependentMediaQueryResults());
 }
 
 bool StyleEngine::MediaQueryAffectedByDeviceChange() {
   DCHECK(IsMaster());
   DCHECK(global_rule_set_);
-  const MediaQueryEvaluator& evaluator = EnsureMediaQueryEvaluator();
-  const auto& results =
-      global_rule_set_->GetRuleFeatureSet().DeviceDependentMediaQueryResults();
-  for (unsigned i = 0; i < results.size(); ++i) {
-    if (evaluator.Eval(results[i].Expression()) != results[i].Result())
-      return true;
-  }
-  return false;
+  return EnsureMediaQueryEvaluator().DidResultsChange(
+      global_rule_set_->GetRuleFeatureSet().DeviceDependentMediaQueryResults());
 }
 
 bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,

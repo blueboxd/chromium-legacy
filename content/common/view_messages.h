@@ -127,12 +127,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
 
-// Sent to the main-frame's view to request performing a page scale animation
-// based on the point/rect provided.
-IPC_MESSAGE_ROUTED2(ViewMsg_AnimateDoubleTapZoom,
-                    gfx::Point /* tap point */,
-                    gfx::Rect /* rect_to_zoom */)
-
 // Sent to the main-frame's view to request performing a zoom-to-find-in-page
 // based on the rect provided.
 IPC_MESSAGE_ROUTED1(ViewMsg_ZoomToFindInPageRect, gfx::Rect /*rect_to_zoom */)

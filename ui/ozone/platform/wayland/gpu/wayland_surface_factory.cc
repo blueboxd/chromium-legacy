@@ -11,6 +11,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/gpu/gl_surface_egl_readback_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h"
@@ -77,10 +78,11 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
-  // Only EGLGLES2 is supported with surfaceless view gl.
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
-    return nullptr;
-
+  if (gl::GetGLImplementation() == gl::kGLImplementationSwiftShaderGL) {
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<GLSurfaceEglReadbackWayland>(window,
+                                                          buffer_manager_));
+  } else {
 #if defined(WAYLAND_GBM)
   // If there is a gbm device available, use surfaceless gl surface.
   if (!buffer_manager_->gbm_device())
@@ -90,6 +92,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
 #else
   return nullptr;
 #endif
+  }
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(

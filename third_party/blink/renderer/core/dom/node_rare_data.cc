@@ -108,7 +108,7 @@ NodeRenderingData& NodeRenderingData::SharedEmptyData() {
   return *shared_empty_data;
 }
 
-void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
+void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(mutation_observer_data_);
   visitor->Trace(flat_tree_node_data_);
   visitor->Trace(node_layout_data_);

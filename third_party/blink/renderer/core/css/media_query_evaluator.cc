@@ -158,6 +158,15 @@ bool MediaQueryEvaluator::Eval(
   return result;
 }
 
+bool MediaQueryEvaluator::DidResultsChange(
+    const MediaQueryResultList& results) const {
+  for (auto& result : results) {
+    if (Eval(result.Expression()) != result.Result())
+      return true;
+  }
+  return false;
+}
+
 template <typename T>
 bool CompareValue(T a, T b, MediaFeaturePrefix op) {
   switch (op) {

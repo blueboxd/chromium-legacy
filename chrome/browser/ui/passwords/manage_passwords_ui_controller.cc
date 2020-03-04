@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -56,9 +57,17 @@ int ManagePasswordsUIController::save_fallback_timeout_in_seconds_ = 90;
 
 namespace {
 
-password_manager::PasswordStore* GetPasswordStore(
+password_manager::PasswordStore* GetProfilePasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
+             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
+}
+
+password_manager::PasswordStore* GetAccountPasswordStore(
+    content::WebContents* web_contents) {
+  return AccountPasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -90,13 +99,17 @@ ManagePasswordsUIController::ManagePasswordsUIController(
       are_passwords_revealed_when_next_bubble_is_opened_(false) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
-  password_manager::PasswordStore* password_store =
-      GetPasswordStore(web_contents);
-  if (password_store)
-    password_store->AddObserver(this);
+  password_manager::PasswordStore* profile_password_store =
+      GetProfilePasswordStore(web_contents);
+  if (profile_password_store)
+    profile_password_store->AddObserver(this);
+  password_manager::PasswordStore* account_password_store =
+      GetAccountPasswordStore(web_contents);
+  if (account_password_store)
+    account_password_store->AddObserver(this);
 }
 
-ManagePasswordsUIController::~ManagePasswordsUIController() {}
+ManagePasswordsUIController::~ManagePasswordsUIController() = default;
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
@@ -623,10 +636,14 @@ void ManagePasswordsUIController::DestroyAccountChooser() {
 }
 
 void ManagePasswordsUIController::WebContentsDestroyed() {
-  password_manager::PasswordStore* password_store =
-      GetPasswordStore(web_contents());
-  if (password_store)
-    password_store->RemoveObserver(this);
+  password_manager::PasswordStore* profile_password_store =
+      GetProfilePasswordStore(web_contents());
+  if (profile_password_store)
+    profile_password_store->RemoveObserver(this);
+  password_manager::PasswordStore* account_password_store =
+      GetAccountPasswordStore(web_contents());
+  if (account_password_store)
+    account_password_store->RemoveObserver(this);
   HidePasswordBubble();
 }
 

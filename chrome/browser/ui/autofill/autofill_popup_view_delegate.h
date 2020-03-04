@@ -20,8 +20,6 @@ class RectF;
 
 namespace autofill {
 
-struct Suggestion;
-
 // Base class for Controllers of Autofill-style popups. This interface is
 // used by the relevant views to communicate with the controller.
 class AutofillPopupViewDelegate {
@@ -46,15 +44,6 @@ class AutofillPopupViewDelegate {
 
   // If the current popup should be displayed in RTL mode.
   virtual bool IsRTL() const = 0;
-
-  // Returns the full set of autofill suggestions, if applicable.
-  virtual const std::vector<autofill::Suggestion> GetSuggestions() = 0;
-
-#if !defined(OS_ANDROID)
-  // Returns elided values and labels for the given |row|.
-  virtual int GetElidedValueWidthForRow(int row) = 0;
-  virtual int GetElidedLabelWidthForRow(int row) = 0;
-#endif
 
  protected:
   virtual ~AutofillPopupViewDelegate() {}

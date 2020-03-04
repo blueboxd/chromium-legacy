@@ -17,14 +17,10 @@ void A::Trace(Visitor* visitor)
     }
 }
 
-void A::TraceAfterDispatch(Visitor* visitor)
-{
-}
+void A::TraceAfterDispatch(Visitor* visitor) const {}
 
-void B::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    A::TraceAfterDispatch(visitor);
+void B::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  A::TraceAfterDispatch(visitor);
 }
-
 }

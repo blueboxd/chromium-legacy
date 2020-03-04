@@ -139,7 +139,7 @@ class CORE_EXPORT CSSPropertyValueSet
   bool PropertyMatches(CSSPropertyID, const CSSValue&) const;
 
   void Trace(Visitor*);
-  void TraceAfterDispatch(blink::Visitor* visitor) {}
+  void TraceAfterDispatch(blink::Visitor* visitor) const {}
 
  protected:
   enum { kMaxArraySize = (1 << 28) - 1 };
@@ -195,7 +195,7 @@ class CORE_EXPORT ALIGNAS(alignof(Member<const CSSValue>))
   template <typename T>  // CSSPropertyID or AtomicString
   int FindPropertyIndex(T property) const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 };
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
@@ -283,7 +283,7 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   template <typename T>  // CSSPropertyID or AtomicString
   int FindPropertyIndex(T property) const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   bool RemovePropertyAtIndex(int, String* return_text);

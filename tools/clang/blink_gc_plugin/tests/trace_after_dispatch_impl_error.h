@@ -25,7 +25,7 @@ class TraceAfterDispatchInlinedBase
 
   void Trace(Visitor*);
 
-  void TraceAfterDispatch(Visitor* visitor) {
+  void TraceAfterDispatch(Visitor* visitor) const {
     // No Trace call; should get a warning.
   }
 
@@ -38,7 +38,7 @@ class TraceAfterDispatchInlinedDerived : public TraceAfterDispatchInlinedBase {
  public:
   TraceAfterDispatchInlinedDerived() : TraceAfterDispatchInlinedBase(DERIVED) {}
 
-  void TraceAfterDispatch(Visitor* visitor) {
+  void TraceAfterDispatch(Visitor* visitor) const {
     // No Trace call (for member and base class).
   }
 
@@ -53,7 +53,7 @@ class TraceAfterDispatchExternBase
 
   void Trace(Visitor* visitor);
 
-  void TraceAfterDispatch(Visitor* visitor);
+  void TraceAfterDispatch(Visitor* visitor) const;
 
  private:
   ClassTag tag_;
@@ -64,7 +64,7 @@ class TraceAfterDispatchExternDerived : public TraceAfterDispatchExternBase {
  public:
   TraceAfterDispatchExternDerived() : TraceAfterDispatchExternBase(DERIVED) {}
 
-  void TraceAfterDispatch(Visitor* visitor);
+  void TraceAfterDispatch(Visitor* visitor) const;
 
  private:
   Member<X> x_derived_;

@@ -261,39 +261,6 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
   }
 }
 
-void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
-  // Mark any strong pointers that have now become reachable in ephemeron maps.
-  ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(),
-      ThreadHeapStatsCollector::kMarkInvokeEphemeronCallbacks);
-
-  // We first reiterate over known callbacks from previous iterations.
-  for (auto& tuple : ephemeron_callbacks_)
-    tuple.value(visitor, tuple.key);
-
-  DCHECK_EQ(WorklistTaskId::MutatorThread, visitor->task_id());
-
-  // Then we iterate over the new callbacks found by the marking visitor.
-  // Callbacks found by the concurrent marking will be flushed eventually
-  // and then invoked by the mutator thread (in the atomic pause at latest).
-  while (
-      !weak_table_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread)) {
-    // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
-    WeakTableWorklist::View ephemerons_worklist(weak_table_worklist_.get(),
-                                                WorklistTaskId::MutatorThread);
-    WeakTableItem item;
-    while (ephemerons_worklist.Pop(&item)) {
-      auto result =
-          ephemeron_callbacks_.insert(item.base_object_payload, item.callback);
-      DCHECK(result.is_new_entry ||
-             result.stored_value->value == item.callback);
-      if (result.is_new_entry) {
-        item.callback(visitor, item.base_object_payload);
-      }
-    }
-  }
-}
-
 namespace {
 
 template <typename Worklist, typename Callback>
@@ -318,6 +285,45 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
 }
 
 }  // namespace
+
+bool ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor,
+                                          base::TimeTicks deadline) {
+  // Mark any strong pointers that have now become reachable in ephemeron maps.
+  ThreadHeapStatsCollector::Scope stats_scope(
+      stats_collector(),
+      ThreadHeapStatsCollector::kMarkInvokeEphemeronCallbacks);
+
+  // We first reiterate over known callbacks from previous iterations.
+  constexpr size_t kDeadlineCheckInterval = 250;
+  size_t processed_callback_count = 0;
+  for (auto& tuple : ephemeron_callbacks_) {
+    tuple.value(visitor, tuple.key);
+    if (++processed_callback_count == kDeadlineCheckInterval) {
+      if (deadline <= base::TimeTicks::Now()) {
+        return false;
+      }
+      processed_callback_count = 0;
+    }
+  }
+
+  DCHECK_EQ(WorklistTaskId::MutatorThread, visitor->task_id());
+
+  // Then we iterate over the new callbacks found by the marking visitor.
+  // Callbacks found by the concurrent marking will be flushed eventually
+  // and then invoked by the mutator thread (in the atomic pause at latest).
+  return DrainWorklistWithDeadline(
+      deadline, weak_table_worklist_.get(),
+      [this, visitor](const WeakTableItem& item) {
+        auto result = ephemeron_callbacks_.insert(item.base_object_payload,
+                                                  item.callback);
+        DCHECK(result.is_new_entry ||
+               result.stored_value->value == item.callback);
+        if (result.is_new_entry) {
+          item.callback(visitor, item.base_object_payload);
+        }
+      },
+      WorklistTaskId::MutatorThread);
+}
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
                                 base::TimeTicks deadline) {
@@ -390,7 +396,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
         break;
     }
 
-    InvokeEphemeronCallbacks(visitor);
+    finished = InvokeEphemeronCallbacks(visitor, deadline);
+    if (!finished)
+      break;
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread));

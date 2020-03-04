@@ -2019,6 +2019,11 @@ void LocalFrame::EvictFromBackForwardCache() {
   GetLocalFrameHostRemote().EvictFromBackForwardCache();
 }
 
+void LocalFrame::AnimateDoubleTapZoom(const gfx::Point& point,
+                                      const gfx::Rect& rect) {
+  GetPage()->GetChromeClient().AnimateDoubleTapZoom(point, rect);
+}
+
 void LocalFrame::SetScaleFactor(float scale_factor) {
   DCHECK(IsMainFrame());
 

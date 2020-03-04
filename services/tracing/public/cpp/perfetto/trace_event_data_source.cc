@@ -45,8 +45,6 @@
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/track.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
@@ -422,11 +420,6 @@ base::ThreadLocalStorage::Slot* ThreadLocalEventSinkSlot() {
 
 TraceEventDataSource* g_trace_event_data_source_for_testing = nullptr;
 
-// crbug.com/914092: This has to be large enough for DevTools to be able to
-// start up and telemetry to start tracing through it before the buffer is
-// exhausted.
-constexpr size_t kMaxStartupWriterBufferSize = 10 * 1024 * 1024;
-
 }  // namespace
 
 // static
@@ -535,24 +528,25 @@ bool TraceEventDataSource::IsEnabled() {
   return is_enabled_;
 }
 
-void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
+void TraceEventDataSource::SetupStartupTracing(PerfettoProducer* producer,
+                                               bool privacy_filtering_enabled) {
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
-    // Do not enable startup registry if trace log is being flushed. The
+    // Do not enable startup tracing if trace log is being flushed. The
     // previous tracing session has not ended yet.
     if (flushing_trace_log_) {
       return;
     }
     // No need to do anything if startup tracing has already been set,
     // or we know Perfetto has already been setup.
-    if (startup_writer_registry_ || producer_) {
+    if (IsStartupTracingActive() || producer_) {
       DCHECK(!privacy_filtering_enabled || privacy_filtering_enabled_);
       return;
     }
 
+    producer_ = producer;
     privacy_filtering_enabled_ = privacy_filtering_enabled;
-    startup_writer_registry_ =
-        std::make_unique<perfetto::StartupTraceWriterRegistry>();
+
     SetStartupTracingFlagsWhileLocked();
 
     DCHECK(!trace_writer_);
@@ -569,8 +563,9 @@ void TraceEventDataSource::OnTaskSchedulerAvailable() {
   CHECK(IsTracingInitialized());
   {
     base::AutoLock lock(lock_);
-    if (!startup_writer_registry_)
+    if (!IsStartupTracingActive()) {
       return;
+    }
   }
   startup_tracing_timer_.Start(
       FROM_HERE, startup_tracing_timeout_,
@@ -589,18 +584,22 @@ void TraceEventDataSource::StartupTracingTimeoutFired() {
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
-  std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry;
-  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
+  std::unique_ptr<perfetto::TraceWriter> trace_writer;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
-    if (!startup_writer_registry_) {
+    if (!IsStartupTracingActive()) {
       return;
     }
-    // Set startup_writer_registry_ to null so that no further writers are
-    // created.
-    startup_writer_registry_.reset();
+
+    // Prevent recreation of ThreadLocalEventSinks after flush.
+    producer_ = nullptr;
+    target_buffer_ = 0;
     flushing_trace_log_ = true;
     trace_writer = std::move(trace_writer_);
+
+    // Increment the session id to make sure that any subsequent tracing session
+    // uses fresh trace writers.
+    IncrementSessionIdOrClearStartupFlagWhileLocked();
   }
   if (trace_writer) {
     ReturnTraceWriter(std::move(trace_writer));
@@ -612,7 +611,8 @@ void TraceEventDataSource::StartupTracingTimeoutFired() {
                    /*use_worker_thread=*/false);
 }
 
-void TraceEventDataSource::IncrementSessionIdOrClearStartupFlagWhileLocked() {
+uint32_t
+TraceEventDataSource::IncrementSessionIdOrClearStartupFlagWhileLocked() {
   // Protected by |lock_| for CreateThreadLocalEventSink() and
   // SetStartupTracingFlagsWhileLocked().
   lock_.AssertAcquired();
@@ -628,6 +628,7 @@ void TraceEventDataSource::IncrementSessionIdOrClearStartupFlagWhileLocked() {
     flags.session_id++;
   }
   session_flags_.store(flags, std::memory_order_relaxed);
+  return flags.session_id;
 }
 
 void TraceEventDataSource::SetStartupTracingFlagsWhileLocked() {
@@ -638,6 +639,11 @@ void TraceEventDataSource::SetStartupTracingFlagsWhileLocked() {
   flags.is_startup_tracing = true;
   flags.session_id++;
   session_flags_.store(flags, std::memory_order_relaxed);
+}
+
+bool TraceEventDataSource::IsStartupTracingActive() const {
+  SessionFlags flags = session_flags_.load(std::memory_order_relaxed);
+  return flags.is_startup_tracing;
 }
 
 void TraceEventDataSource::OnFlushFinished(
@@ -656,11 +662,6 @@ void TraceEventDataSource::OnFlushFinished(
     // task.
     task = std::move(flush_complete_task_);
     flushing_trace_log_ = false;
-
-    // Increment the session id to make sure that once tracing starts the events
-    // are added to a new trace writer that comes from perfetto producer,
-    // instead of holding on to the startup registry's writers.
-    IncrementSessionIdOrClearStartupFlagWhileLocked();
   }
   if (task) {
     std::move(task).Run();
@@ -690,37 +691,43 @@ void TraceEventDataSource::StartTracingInternal(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
-  std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
+  bool startup_tracing_active;
+  uint32_t session_id;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
+
     bool should_enable_filtering =
         data_source_config.chrome_config().privacy_filtering_enabled();
-    if (should_enable_filtering) {
-      CHECK(!startup_writer_registry_ || privacy_filtering_enabled_)
-          << "Unexpected StartTracing received when startup tracing is "
-             "running.";
-    }
-    privacy_filtering_enabled_ = should_enable_filtering;
 
+    startup_tracing_active = IsStartupTracingActive();
+    if (startup_tracing_active) {
+      CHECK(!should_enable_filtering || privacy_filtering_enabled_)
+          << "Startup tracing was active without privacy filtering when "
+             "service started tracing with privacy filtering.";
+      DCHECK_EQ(producer_, producer)
+          << "Startup tracing was taken over by a different PerfettoProducer";
+    }
+
+    privacy_filtering_enabled_ = should_enable_filtering;
     producer_ = producer;
     target_buffer_ = data_source_config.target_buffer();
-    // Reduce lock contention by binding the registry without holding the lock.
-    unbound_writer_registry = std::move(startup_writer_registry_);
-
-    IncrementSessionIdOrClearStartupFlagWhileLocked();
+    session_id = IncrementSessionIdOrClearStartupFlagWhileLocked();
 
     if (!trace_writer_) {
       trace_writer_ = CreateTraceWriterLocked();
     }
   }
 
-  if (unbound_writer_registry) {
-    // TODO(oysteine): Investigate why trace events emitted by something in
-    // BindStartupTraceWriterRegistry() causes deadlocks.
+  // SetupStartupTracing() will not setup a new startup session after we set
+  // |producer_| above, so accessing |startup_tracing_active| outside the lock
+  // is safe.
+  if (startup_tracing_active) {
+    // Binding startup buffers may cause tasks to be posted. Disable trace
+    // events to avoid deadlocks due to reentrancy into tracing code.
     AutoThreadLocalBoolean thread_is_in_trace_event(
         GetThreadIsInTraceEventTLS());
-    producer->BindStartupTraceWriterRegistry(
-        std::move(unbound_writer_registry), data_source_config.target_buffer());
+    producer->BindStartupTargetBuffer(session_id,
+                                      data_source_config.target_buffer());
   } else {
     RegisterWithTraceLog();
   }
@@ -778,7 +785,7 @@ void TraceEventDataSource::StopTracing(
     TraceLog::GetInstance()->SetDisabled();
   }
 
-  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
+  std::unique_ptr<perfetto::TraceWriter> trace_writer;
   {
     AutoLockWithDeferredTaskPosting lock(lock_);
     if (flush_complete_task_) {
@@ -883,27 +890,24 @@ void TraceEventDataSource::ClearIncrementalState() {
   EmitTrackDescriptor();
 }
 
-std::unique_ptr<perfetto::StartupTraceWriter>
+std::unique_ptr<perfetto::TraceWriter>
 TraceEventDataSource::CreateTraceWriterLocked() {
   lock_.AssertAcquired();
-  // |startup_writer_registry_| only exists during startup tracing before we
-  // connect to the service. |producer_| is reset when tracing is
-  // stopped.
-  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
-  if (startup_writer_registry_) {
-    // Chromium uses BufferExhaustedPolicy::kDrop to avoid stalling trace
-    // writers when the chunks in the SMB are exhausted. Stalling could
-    // otherwise lead to deadlocks in chromium, because a stalled mojo IPC
-    // thread could prevent CommitRequest messages from reaching the perfetto
-    // service.
-    auto buffer_exhausted_policy = perfetto::BufferExhaustedPolicy::kDrop;
-    trace_writer = startup_writer_registry_->CreateUnboundTraceWriter(
-        buffer_exhausted_policy, kMaxStartupWriterBufferSize);
-  } else if (producer_) {
-    trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
-        producer_->CreateTraceWriter(target_buffer_));
+
+  if (IsStartupTracingActive()) {
+    DCHECK(producer_);
+    uint32_t session_id =
+        session_flags_.load(std::memory_order_relaxed).session_id;
+    return producer_->CreateStartupTraceWriter(session_id);
   }
-  return trace_writer;
+
+  // |producer_| is reset when tracing is stopped, and trace writer creation can
+  // happen in parallel on any thread.
+  if (producer_) {
+    return producer_->CreateTraceWriter(target_buffer_);
+  }
+
+  return nullptr;
 }
 
 TrackEventThreadLocalEventSink*
@@ -1005,29 +1009,29 @@ void TraceEventDataSource::OnUserActionSampleCallback(
 }
 
 void TraceEventDataSource::ReturnTraceWriter(
-    std::unique_ptr<perfetto::StartupTraceWriter> trace_writer) {
+    std::unique_ptr<perfetto::TraceWriter> trace_writer) {
   {
-    // Prevent concurrent binding of the registry.
+    // Prevent concurrent changes to |session_flags_|.
     AutoLockWithDeferredTaskPosting lock(lock_);
 
-    // If we don't have a task runner yet, we must be attempting to return a
-    // writer before the (very first) registry was bound. We cannot create the
-    // task runner safely in this case, because the thread pool may not have
-    // been brought up yet.
+    // If we don't have a task runner yet, we cannot create the task runner
+    // safely, because the thread pool may not have been brought up yet. This
+    // should only happen during startup tracing.
     if (!PerfettoTracedProcess::GetTaskRunner()->HasTaskRunner()) {
-      DCHECK(startup_writer_registry_);
-      // It's safe to call ReturnToRegistry on the current sequence, as it won't
-      // destroy the writer since the registry was not bound yet. Will keep
-      // |trace_writer| alive until the registry is bound later.
-      perfetto::StartupTraceWriter::ReturnToRegistry(std::move(trace_writer));
+      DCHECK(IsStartupTracingActive());
+      // It's safe to destroy the TraceWriter on the current sequence, as the
+      // destruction won't post tasks or make mojo calls, because the arbiter
+      // wasn't bound yet.
+      trace_writer.reset();
       return;
     }
   }
 
-  // Return the TraceWriter on the sequence that Perfetto runs on. Needed as the
-  // ThreadLocalEventSink gets deleted on thread shutdown and we can't safely
-  // call TaskRunnerHandle::Get() at that point (which can happen as the
-  // TraceWriter destructor might make a Mojo call and trigger it).
+  // Return the TraceWriter on the sequence that the PerfettoProducers run on.
+  // Needed as the TrackEventThreadLocalEventSink gets deleted on thread
+  // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
+  // (which can happen as the TraceWriter destructor might issue a Mojo call
+  // synchronously, which can trigger a call to TaskRunnerHandle::Get()).
   auto* trace_writer_raw = trace_writer.release();
   ANNOTATE_LEAKING_OBJECT_PTR(trace_writer_raw);
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
@@ -1035,14 +1039,7 @@ void TraceEventDataSource::ReturnTraceWriter(
       base::BindOnce(
           // Pass writer as raw pointer so that we leak it if task posting fails
           // (during shutdown).
-          [](perfetto::StartupTraceWriter* trace_writer) {
-            // May destroy |trace_writer|. If the writer is still unbound, the
-            // registry will keep it alive until it was bound and its buffered
-            // data was copied. This ensures that we don't lose data from
-            // threads that are shut down during startup.
-            perfetto::StartupTraceWriter::ReturnToRegistry(
-                base::WrapUnique<perfetto::StartupTraceWriter>(trace_writer));
-          },
+          [](perfetto::TraceWriter* trace_writer) { delete trace_writer; },
           trace_writer_raw));
 }
 

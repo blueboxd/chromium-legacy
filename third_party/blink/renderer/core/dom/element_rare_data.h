@@ -207,7 +207,7 @@ class ElementRareData : public NodeRareData {
   const AtomicString& GetNonce() const { return nonce_; }
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   ScrollOffset saved_layer_scroll_offset_;

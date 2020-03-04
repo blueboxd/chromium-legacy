@@ -81,8 +81,7 @@ class LauncherStateWaiter {
 
 std::vector<aura::Window*> GetAppWindowList() {
   ScopedSkipUserSessionBlockedCheck skip_session_blocked;
-  return Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
-      kAllDesks);
+  return Shell::Get()->mru_window_tracker()->BuildAppWindowList(kAllDesks);
 }
 
 bool WaitForLauncherState(AppListViewState target_state,

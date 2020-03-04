@@ -12,8 +12,9 @@ namespace blink {
 class A : public GarbageCollected<A> {
 public:
     void Trace(Visitor*);
-    void TraceAfterDispatch(Visitor*);
-protected:
+    void TraceAfterDispatch(Visitor*) const;
+
+   protected:
     enum Type { TB };
     A(Type type) : m_type(type) { }
 private:
@@ -23,7 +24,7 @@ private:
 class B : public A {
 public:
     B() : A(TB) { }
-    void TraceAfterDispatch(Visitor*);
+    void TraceAfterDispatch(Visitor*) const;
     virtual void foo() { }
 private:
     Member<A> m_a;

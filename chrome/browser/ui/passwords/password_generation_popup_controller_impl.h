@@ -40,7 +40,6 @@ class PasswordManagerDriver;
 
 namespace autofill {
 struct FormData;
-struct Suggestion;
 namespace password_generation {
 struct PasswordGenerationUIData;
 }  // namespace password_generation
@@ -137,11 +136,6 @@ class PasswordGenerationPopupControllerImpl
   gfx::NativeView container_view() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
-  const std::vector<autofill::Suggestion> GetSuggestions() override;
-#if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(int row) override;
-  int GetElidedLabelWidthForRow(int row) override;
-#endif
 
   GenerationUIState state() const override;
   bool password_selected() const override;

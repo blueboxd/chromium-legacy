@@ -96,10 +96,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;
   const std::vector<Suggestion> GetSuggestions() override;
-#if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(int row) override;
-  int GetElidedLabelWidthForRow(int row) override;
-#endif
 
   // AutofillPopupController implementation.
   void OnSuggestionsChanged() override;
@@ -151,14 +147,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual ui::AXPlatformNode* GetRootAXPlatformNodeForWebContents();
 
  private:
-#if !defined(OS_ANDROID)
-  FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest, ElideText);
-  // Helper method which elides the value and label for the suggestion at |row|
-  // given the |available_width|. Puts the results in |elided_values_| and
-  // |elided_labels_|.
-  void ElideValueAndLabelForRow(int row, int available_width);
-#endif
-
   // The user has accepted the currently selected line. Returns whether there
   // was a selection to accept.
   bool AcceptSelectedLine();
@@ -186,11 +174,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // The current Autofill query values.
   std::vector<Suggestion> suggestions_;
-
-  // Elided values and labels corresponding to the suggestions_ vector to
-  // ensure that it fits on the screen.
-  std::vector<base::string16> elided_values_;
-  std::vector<base::string16> elided_labels_;
 
   // The line that is currently selected by the user, null indicates that no
   // line is currently selected.

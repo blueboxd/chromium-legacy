@@ -40,17 +40,13 @@ class MockAutofillPopupController
     return *bounds;
   }
   MOCK_CONST_METHOD0(IsRTL, bool());
-  const std::vector<autofill::Suggestion> GetSuggestions() override {
-    return suggestions_;
-  }
-#if !defined(OS_ANDROID)
-  MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
-  MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
-#endif
 
   // AutofillPopupController
   MOCK_METHOD0(OnSuggestionsChanged, void());
   MOCK_METHOD1(AcceptSuggestion, void(int index));
+  const std::vector<autofill::Suggestion> GetSuggestions() override {
+    return suggestions_;
+  }
 
   int GetLineCount() const override { return suggestions_.size(); }
 

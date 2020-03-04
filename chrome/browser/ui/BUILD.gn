@@ -1365,7 +1365,6 @@ jumbo_static_library("ui") {
       "webui/settings/reset_settings_handler.h",
       "webui/settings/safety_check_handler.cc",
       "webui/settings/safety_check_handler.h",
-      "webui/settings/safety_check_handler_observer.h",
       "webui/settings/search_engines_handler.cc",
       "webui/settings/search_engines_handler.h",
       "webui/settings/settings_clear_browsing_data_handler.cc",

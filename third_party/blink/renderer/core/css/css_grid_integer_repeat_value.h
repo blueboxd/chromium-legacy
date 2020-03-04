@@ -33,7 +33,7 @@ class CSSGridIntegerRepeatValue : public CSSValueList {
 
   size_t Repetitions() const { return repetitions_; }
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValueList::TraceAfterDispatch(visitor);
   }
 

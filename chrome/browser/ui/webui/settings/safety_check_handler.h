@@ -13,15 +13,17 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-
-class SafetyCheckHandlerObserver;
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 
 // Settings page UI handler that checks four areas of browser safety:
 // browser updates, password leaks, malicious extensions, and unwanted
 // software.
-class SafetyCheckHandler : public settings::SettingsPageUIHandler {
+class SafetyCheckHandler
+    : public settings::SettingsPageUIHandler,
+      public password_manager::BulkLeakCheckService::Observer {
  public:
   // Used in communication with the frontend to indicate which component the
   // communicated status update applies to.
@@ -31,6 +33,9 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
     kSafeBrowsing,
     kExtensions,
   };
+  // The following enums represent the state of each component of the safety
+  // check and should be kept in sync with the JS frontend
+  // (safety_check_browser_proxy.js).
   enum class UpdateStatus {
     kChecking,
     kUpdated,
@@ -47,6 +52,17 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
     kDisabledByAdmin,
     kDisabledByExtension,
   };
+  enum class PasswordsStatus {
+    kChecking,
+    kSafe,
+    kCompromisedExist,
+    kOffline,
+    kNoPasswords,
+    kSignedOut,
+    kQuotaLimit,
+    kTooManyPasswords,
+    kError,
+  };
 
   SafetyCheckHandler();
   ~SafetyCheckHandler() override;
@@ -58,20 +74,24 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
 
  protected:
   SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
-                     SafetyCheckHandlerObserver* observer);
+                     password_manager::BulkLeakCheckService* leak_service);
 
  private:
   // Handles triggering the safety check from the frontend (by user pressing a
   // button).
   void HandlePerformSafetyCheck(const base::ListValue* args);
 
-  // Triggers an update check and invokes the provided callback once results
+  // Triggers an update check and invokes OnUpdateCheckResult once results
   // are available.
   void CheckUpdates();
 
   // Gets the status of Safe Browsing from the PrefService and invokes
   // OnSafeBrowsingCheckResult with results.
   void CheckSafeBrowsing();
+
+  // Triggers a bulk password leak check and invokes OnPasswordsCheckResult once
+  // results are available.
+  void CheckPasswords();
 
   // Callbacks that get triggered when each check completes.
   void OnUpdateCheckResult(VersionUpdater::Status status,
@@ -83,6 +103,14 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
 
   void OnSafeBrowsingCheckResult(SafeBrowsingStatus status);
 
+  void OnPasswordsCheckResult(PasswordsStatus status, int num_compromised);
+
+  // BulkLeakCheckService::Observer implementation.
+  void OnStateChanged(password_manager::BulkLeakCheckService::State state,
+                      size_t pending_credentials) override;
+  void OnLeakFound(
+      const password_manager::LeakCheckCredential& credential) override;
+
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
@@ -91,7 +119,10 @@ class SafetyCheckHandler : public settings::SettingsPageUIHandler {
   void RegisterMessages() override;
 
   std::unique_ptr<VersionUpdater> version_updater_;
-  SafetyCheckHandlerObserver* const observer_;
+  password_manager::BulkLeakCheckService* leak_service_ = nullptr;
+  ScopedObserver<password_manager::BulkLeakCheckService,
+                 password_manager::BulkLeakCheckService::Observer>
+      observed_leak_check_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFETY_CHECK_HANDLER_H_

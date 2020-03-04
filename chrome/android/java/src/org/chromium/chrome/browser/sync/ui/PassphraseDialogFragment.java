@@ -182,10 +182,6 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                 new SpanInfo("<learnmore>", "</learnmore>", new ClickableSpan() {
                     @Override
                     public void onClick(View view) {
-                        // TODO(https://crbug.com/1048632): It works correctly now, but unsafe
-                        // if sync runs in incognito mode ever. Use the current profile (i.e.,
-                        // regular profile or incognito profile) instead of always using regular
-                        // profile.
                         HelpAndFeedback.getInstance().show(getActivity(), helpContext,
                                 Profile.getLastUsedRegularProfile(), null);
                     }

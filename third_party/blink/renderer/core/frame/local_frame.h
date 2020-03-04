@@ -528,6 +528,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
 
   // blink::mojom::LocalMainFrame overrides:
+  void AnimateDoubleTapZoom(const gfx::Point& point,
+                            const gfx::Rect& rect) override;
   void SetScaleFactor(float scale) override;
   void ClosePage(
       mojom::blink::LocalMainFrame::ClosePageCallback callback) override;

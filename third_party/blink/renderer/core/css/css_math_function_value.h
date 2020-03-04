@@ -90,7 +90,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
 
   bool HasComparisons() const { return expression_->HasComparisons(); }
 
-  void TraceAfterDispatch(blink::Visitor* visitor);
+  void TraceAfterDispatch(blink::Visitor* visitor) const;
 
  private:
   bool IsNonNegative() const { return is_non_negative_math_function_; }

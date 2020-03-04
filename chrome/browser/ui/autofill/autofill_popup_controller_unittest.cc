@@ -710,47 +710,6 @@ TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
   Mock::VerifyAndClearExpectations(autofill_popup_view());
 }
 
-#if !defined(OS_ANDROID)
-TEST_F(AutofillPopupControllerUnitTest, ElideText) {
-  std::vector<Suggestion> suggestions;
-  suggestions.push_back(
-      Suggestion("Text that will need to be trimmed",
-      "Label that will be trimmed", "genericCC", 0));
-  suggestions.push_back(
-      Suggestion("untrimmed", "Untrimmed", "genericCC", 0));
-
-  autofill_popup_controller_->SetValues(suggestions);
-
-  // Ensure the popup will be too small to display all of the first row.
-  int popup_max_width =
-      gfx::GetStringWidth(
-          suggestions[0].value,
-          autofill_popup_controller_->layout_model().GetValueFontListForRow(
-              0)) +
-      gfx::GetStringWidth(
-          suggestions[0].label,
-          autofill_popup_controller_->layout_model().GetLabelFontListForRow(
-              0)) -
-      25;
-
-  autofill_popup_controller_->ElideValueAndLabelForRow(0, popup_max_width);
-
-  // The first element was long so it should have been trimmed.
-  EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).value,
-            autofill_popup_controller_->GetElidedValueAt(0));
-  EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).label,
-            autofill_popup_controller_->GetElidedLabelAt(0));
-
-  autofill_popup_controller_->ElideValueAndLabelForRow(1, popup_max_width);
-
-  // The second element was shorter so it should be unchanged.
-  EXPECT_EQ(autofill_popup_controller_->GetSuggestionAt(1).value,
-            autofill_popup_controller_->GetElidedValueAt(1));
-  EXPECT_EQ(autofill_popup_controller_->GetSuggestionAt(1).label,
-            autofill_popup_controller_->GetElidedLabelAt(1));
-}
-#endif
-
 #if !defined(OS_CHROMEOS)
 TEST_F(AutofillPopupControllerAccessibilityUnitTest, FireControlsChangedEvent) {
   StrictMock<MockAxPlatformNodeDelegate> mock_ax_platform_node_delegate;

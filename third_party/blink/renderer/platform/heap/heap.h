@@ -404,7 +404,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void DestroyMarkingWorklists(BlinkGC::StackState);
   void DestroyCompactionWorklists();
 
-  void InvokeEphemeronCallbacks(MarkingVisitor*);
+  bool InvokeEphemeronCallbacks(MarkingVisitor*, base::TimeTicks);
 
   bool FlushV8References(base::TimeTicks);
 

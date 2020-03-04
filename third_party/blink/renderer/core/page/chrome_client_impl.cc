@@ -821,6 +821,11 @@ void ChromeClientImpl::FullscreenElementChanged(Element* old_element,
   web_view_->FullscreenElementChanged(old_element, new_element);
 }
 
+void ChromeClientImpl::AnimateDoubleTapZoom(const gfx::Point& point,
+                                            const gfx::Rect& rect) {
+  web_view_->AnimateDoubleTapZoom(point, WebRect(rect));
+}
+
 void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();

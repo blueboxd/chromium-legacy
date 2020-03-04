@@ -56,7 +56,6 @@ class INVALIDATION_EXPORT SingleObjectInvalidationSet {
   const Invalidation& back() const;
 
   std::unique_ptr<base::ListValue> ToValue() const;
-  bool ResetFromValue(const base::ListValue& list);
 
  private:
   InvalidationsSet invalidations_;

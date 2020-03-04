@@ -789,6 +789,13 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
       ->SetInitialFocus(reverse);
 }
 
+void RenderViewHostImpl::AnimateDoubleTapZoom(const gfx::Point& point,
+                                              const gfx::Rect& rect) {
+  static_cast<RenderFrameHostImpl*>(GetMainFrame())
+      ->GetAssociatedLocalMainFrame()
+      ->AnimateDoubleTapZoom(point, rect);
+}
+
 void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
   did_first_visually_non_empty_paint_ = true;
   delegate_->DidFirstVisuallyNonEmptyPaint(this);

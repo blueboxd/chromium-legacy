@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
@@ -111,6 +112,9 @@ MockProducerClient::MockProducerClient(
   client.reset(this);
   old_producer_ = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
       std::move(client));
+
+  // Create SMB immediately since we never call ProducerClient's Connect().
+  CHECK(InitSharedMemoryIfNeeded());
 }
 
 MockProducerClient::~MockProducerClient() {
@@ -305,13 +309,18 @@ MockProducerHost::MockProducerHost(
     PerfettoService* service,
     MockProducerClient* producer_client,
     base::OnceClosure datasource_registered_callback)
-    : producer_name_(producer_name),
+    : ProducerHost(service->perfetto_task_runner()),
+      producer_name_(producer_name),
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
   mojo::PendingRemote<mojom::ProducerClient> client;
   mojo::PendingRemote<mojom::ProducerHost> host_remote;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  Initialize(std::move(client), service->GetService(), producer_name_);
+  Initialize(std::move(client), service->GetService(), producer_name_,
+             static_cast<MojoSharedMemory*>(
+                 producer_client->shared_memory_for_testing())
+                 ->Clone(),
+             PerfettoProducer::kSMBPageSizeBytes);
   receiver_.Bind(host_remote.InitWithNewPipeAndPassReceiver());
   producer_client->BindClientAndHostPipesForTesting(std::move(client_receiver),
                                                     std::move(host_remote));

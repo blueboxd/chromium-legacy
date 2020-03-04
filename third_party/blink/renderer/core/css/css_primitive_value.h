@@ -248,7 +248,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
   String CustomCSSText() const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   static UnitType CanonicalUnitTypeForCategory(UnitCategory);
   static double ConversionToCanonicalUnitsScaleFactor(UnitType);

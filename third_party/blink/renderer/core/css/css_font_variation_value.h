@@ -22,7 +22,7 @@ class CSSFontVariationValue : public CSSValue {
 
   bool Equals(const CSSFontVariationValue&) const;
 
-  void TraceAfterDispatch(blink::Visitor* visitor) {
+  void TraceAfterDispatch(blink::Visitor* visitor) const {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

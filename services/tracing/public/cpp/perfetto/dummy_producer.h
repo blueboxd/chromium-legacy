@@ -32,6 +32,7 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
       size_t num_data_sources) override;
 
   // PerfettoProducer implementation.
+  bool SetupStartupTracing() override;
   perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   bool IsTracingActive() override;
   void NewDataSourceAdded(

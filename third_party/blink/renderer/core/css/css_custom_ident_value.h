@@ -36,7 +36,7 @@ class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
                                : string_ == other.string_;
   }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   AtomicString string_;

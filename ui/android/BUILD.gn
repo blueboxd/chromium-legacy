@@ -335,7 +335,7 @@ android_library("ui_full_java") {
     "//base:jni_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_asynclayoutinflater_java",
+    "//third_party/android_deps:androidx_asynclayoutinflater_asynclayoutinflater_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//ui/base/mojom:cursor_type_java",
   ]

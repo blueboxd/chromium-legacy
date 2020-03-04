@@ -172,7 +172,7 @@ Response InspectorEmulationAgent::disable() {
   // settings to attach to the same page). TODO: support this use case.
   setEmulatedMedia(String(), {});
   if (!emulated_vision_deficiency_.Get().IsNull())
-    setEmulatedVisionDeficiency(String());
+    setEmulatedVisionDeficiency(String("none"));
   setCPUThrottlingRate(1);
   setFocusEmulationEnabled(false);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());

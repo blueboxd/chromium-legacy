@@ -180,7 +180,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool operator==(const CSSValue&) const;
 
   void FinalizeGarbageCollectedObject();
-  void TraceAfterDispatch(blink::Visitor* visitor) {}
+  void TraceAfterDispatch(blink::Visitor* visitor) const {}
   void Trace(Visitor*);
 
   // ~CSSValue should be public, because non-public ~CSSValue causes C2248

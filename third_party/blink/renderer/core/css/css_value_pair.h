@@ -64,7 +64,7 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
            DataEquivalent(second_, other.second_);
   }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  protected:
   CSSValuePair(ClassType class_type,

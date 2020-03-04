@@ -655,8 +655,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   std::unique_ptr<SourceBufferState> source_state =
       std::make_unique<SourceBufferState>(
           std::move(stream_parser), std::move(frame_processor),
-          base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this),
-                     id),
+          base::BindRepeating(&ChunkDemuxer::CreateDemuxerStream,
+                              base::Unretained(this), id),
           media_log_);
 
   SourceBufferState::NewTextTrackCB new_text_track_cb;

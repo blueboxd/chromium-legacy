@@ -146,6 +146,13 @@ void VideoFrameValidator::ProcessVideoFrame(
     ASSERT_TRUE(model_frame);
   }
 
+  if (video_frame->visible_rect().IsEmpty()) {
+    // This occurs in bitstream buffer in webrtc scenario.
+    DLOG(WARNING) << "Skipping validation, frame_index=" << frame_index
+                  << " because visible_rect is empty";
+    return;
+  }
+
   base::AutoLock auto_lock(frame_validator_lock_);
   num_frames_validating_++;
 

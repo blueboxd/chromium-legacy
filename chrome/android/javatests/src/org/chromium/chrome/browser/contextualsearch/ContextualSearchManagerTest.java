@@ -1307,6 +1307,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "crbug.com/1058297")
     public void testTapCausesOneLowPriorityRequest() throws TimeoutException {
         mFakeServer.reset();
         clickWordNode("states");
@@ -3010,6 +3011,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "crbug.com/1058297")
     public void testAllInternalStatesVisitedResolvingTap()
             throws InterruptedException, TimeoutException {
         // Set up a tracking version of the Internal State Controller.

@@ -32,7 +32,6 @@ namespace blink {
 class FilterEffect;
 class SVGFilterElement;
 class SVGFilterGraphNodeMap;
-class SVGFilterPrimitiveStandardAttributes;
 
 class FilterData final : public GarbageCollected<FilterData> {
  public:
@@ -77,35 +76,14 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   }
 
   void RemoveAllClientsFromCache() override;
-  bool RemoveClientFromCache(SVGResourceClient&) override;
 
   FloatRect ResourceBoundingBox(const FloatRect& reference_box) const;
 
   SVGUnitTypes::SVGUnitType FilterUnits() const;
   SVGUnitTypes::SVGUnitType PrimitiveUnits() const;
 
-  void PrimitiveAttributeChanged(SVGFilterPrimitiveStandardAttributes&,
-                                 const QualifiedName&);
-
   static const LayoutSVGResourceType kResourceType = kFilterResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
-
-  FilterData* GetFilterDataForClient(const SVGResourceClient* client) {
-    return filter_->at(const_cast<SVGResourceClient*>(client));
-  }
-  void SetFilterDataForClient(const SVGResourceClient* client,
-                              FilterData* filter_data) {
-    filter_->Set(const_cast<SVGResourceClient*>(client), filter_data);
-  }
-
- protected:
-  void WillBeDestroyed() override;
-
- private:
-  void DisposeFilterMap();
-
-  using FilterMap = HeapHashMap<Member<SVGResourceClient>, Member<FilterData>>;
-  Persistent<FilterMap> filter_;
 };
 
 // Get the LayoutSVGResourceFilter from the 'filter' property iff the 'filter'

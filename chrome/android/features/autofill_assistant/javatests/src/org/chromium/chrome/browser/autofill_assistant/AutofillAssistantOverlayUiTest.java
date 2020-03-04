@@ -12,6 +12,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getBoundingRectForElement;
@@ -23,6 +24,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -71,16 +73,22 @@ public class AutofillAssistantOverlayUiTest {
         return mTestRule.getWebContents();
     }
 
-    /** Creates a coordinator for use in UI tests. */
+    /** Creates a coordinator for use in UI tests with a default, non-null overlay image. */
     private AssistantOverlayCoordinator createCoordinator(AssistantOverlayModel model)
             throws ExecutionException {
-        Bitmap testImage = BitmapFactory.decodeResource(mTestRule.getActivity().getResources(),
-                org.chromium.chrome.autofill_assistant.R.drawable.btn_close);
+        return createCoordinator(model,
+                BitmapFactory.decodeResource(mTestRule.getActivity().getResources(),
+                        org.chromium.chrome.autofill_assistant.R.drawable.btn_close));
+    }
 
+    /** Creates a coordinator for use in UI tests with a custom overlay image. */
+    private AssistantOverlayCoordinator createCoordinator(
+            AssistantOverlayModel model, @Nullable Bitmap overlayImage) throws ExecutionException {
         return runOnUiThreadBlocking(
                 ()
                         -> new AssistantOverlayCoordinator(mTestRule.getActivity(), model,
-                                new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null)));
+                                new AutofillAssistantUiTestUtil.MockImageFetcher(
+                                        overlayImage, null)));
     }
 
     /** Tests assumptions about the initial state of the infobox. */
@@ -191,6 +199,48 @@ public class AutofillAssistantOverlayUiTest {
                 () -> model.set(AssistantOverlayModel.VISUAL_VIEWPORT, new RectF(newViewport)));
         tapElement("touch_area_two");
         assertThat(checkElementExists("touch_area_two", getWebContents()), is(false));
+    }
+
+    /**
+     * Regular overlay image test. Since there is no easy way to test whether the image is actually
+     * rendered, this is simply checking that nothing crashes.
+     */
+    @Test
+    @MediumTest
+    public void testOverlayImageDoesNotCrashIfValid() throws Exception {
+        AssistantOverlayModel model = new AssistantOverlayModel();
+        Bitmap bitmap = BitmapFactory.decodeResource(mTestRule.getActivity().getResources(),
+                org.chromium.chrome.autofill_assistant.R.drawable.btn_close);
+        assertThat(bitmap, notNullValue());
+        AssistantOverlayCoordinator coordinator =
+                createCoordinator(model, /* overlayImage = */ bitmap);
+
+        runOnUiThreadBlocking(() -> {
+            model.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
+            model.set(AssistantOverlayModel.OVERLAY_IMAGE,
+                    new AssistantOverlayImage("https://www.example.com/example.png", 32, 32, 12,
+                            "Text", Color.RED, 20));
+        });
+
+        assertScrimDisplayed(true);
+    }
+
+    /** Simulates what would happen if the overlay image fetcher returned null. */
+    @Test
+    @MediumTest
+    public void testOverlayDoesNotCrashIfImageFailsToLoad() throws Exception {
+        AssistantOverlayModel model = new AssistantOverlayModel();
+        AssistantOverlayCoordinator coordinator =
+                createCoordinator(model, /* overlayImage = */ null);
+
+        runOnUiThreadBlocking(() -> {
+            model.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
+            model.set(AssistantOverlayModel.OVERLAY_IMAGE,
+                    new AssistantOverlayImage("https://www.example.com/example.png", 32, 32, 12,
+                            "Text", Color.RED, 20));
+        });
+
+        assertScrimDisplayed(true);
     }
 
     private void assertScrimDisplayed(boolean expected) throws Exception {

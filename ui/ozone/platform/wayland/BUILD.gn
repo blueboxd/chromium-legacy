@@ -22,6 +22,8 @@ source_set("wayland") {
     "common/wayland_util.h",
     "gpu/drm_render_node_path_finder.cc",
     "gpu/drm_render_node_path_finder.h",
+    "gpu/gl_surface_egl_readback_wayland.cc",
+    "gpu/gl_surface_egl_readback_wayland.h",
     "gpu/gl_surface_wayland.cc",
     "gpu/gl_surface_wayland.h",
     "gpu/wayland_buffer_manager_gpu.cc",

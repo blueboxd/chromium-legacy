@@ -71,7 +71,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   }
   unsigned NumberOfGeneratorsForTesting() const { return generators_.size(); }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   class Observer final : public CSSPaintImageGenerator::Observer {

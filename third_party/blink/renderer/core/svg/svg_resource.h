@@ -94,6 +94,9 @@ class LocalSVGResource final : public SVGResource {
   void Unregister();
 
   void NotifyContentChanged(InvalidationModeMask);
+  void NotifyFilterPrimitiveChanged(
+      SVGFilterPrimitiveStandardAttributes& primitive,
+      const QualifiedName& attribute);
 
   void NotifyResourceAttached(LayoutSVGResourceContainer&);
   void NotifyResourceDestroyed(LayoutSVGResourceContainer&);

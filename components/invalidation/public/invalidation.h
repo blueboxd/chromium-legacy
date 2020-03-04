@@ -42,8 +42,6 @@ class INVALIDATION_EXPORT Invalidation {
   static Invalidation InitUnknownVersion(const invalidation::ObjectId& id);
   static Invalidation InitUnknownVersion(const Topic& topic);
   static Invalidation InitFromDroppedInvalidation(const Invalidation& dropped);
-  static std::unique_ptr<Invalidation> InitFromValue(
-      const base::DictionaryValue& value);
 
   Invalidation(const Invalidation& other);
   ~Invalidation();

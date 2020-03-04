@@ -262,14 +262,6 @@ public class AccountManagerFacade {
      * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
      */
     @MainThread
-    public void tryGetGoogleAccountNames(final Callback<List<String>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccountNames()));
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
-     */
-    @MainThread
     public void getGoogleAccountNames(
             final Callback<AccountManagerResult<List<String>>> callback) {
         runAfterCacheIsPopulated(() -> {
@@ -316,14 +308,6 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Asynchronous version of {@link #getGoogleAccounts()}.
-     */
-    @MainThread
-    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
-    }
-
-    /**
      * Retrieves all Google accounts on the device.
      * Returns an empty array if an error occurs while getting account list.
      */
@@ -342,23 +326,6 @@ public class AccountManagerFacade {
     @MainThread
     public void tryGetGoogleAccounts(final Callback<List<Account>> callback) {
         runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccounts()));
-    }
-
-    /**
-     * Determine whether there are any Google accounts on the device.
-     * Returns false if an error occurs while getting account list.
-     */
-    @AnyThread
-    public boolean hasGoogleAccounts() {
-        return !tryGetGoogleAccounts().isEmpty();
-    }
-
-    /**
-     * Asynchronous version of {@link #hasGoogleAccounts()}.
-     */
-    @MainThread
-    public void hasGoogleAccounts(final Callback<Boolean> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(hasGoogleAccounts()));
     }
 
     private String canonicalizeName(String name) {
@@ -391,30 +358,12 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Asynchronous version of {@link #getAccountFromName(String)}.
-     */
-    @MainThread
-    public void getAccountFromName(String accountName, final Callback<Account> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(getAccountFromName(accountName)));
-    }
-
-    /**
      * Returns whether an account exists with the given name.
      * Returns false if an error occurs while getting account list.
      */
     @AnyThread
     public boolean hasAccountForName(String accountName) {
         return getAccountFromName(accountName) != null;
-    }
-
-    /**
-     * Asynchronous version of {@link #hasAccountForName(String)}.
-     */
-    // TODO(maxbogue): Remove once this function is used outside of tests.
-    @VisibleForTesting
-    @MainThread
-    public void hasAccountForName(String accountName, final Callback<Boolean> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(hasAccountForName(accountName)));
     }
 
     /**

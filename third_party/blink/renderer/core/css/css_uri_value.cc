@@ -83,7 +83,7 @@ CSSURIValue* CSSURIValue::ValueWithURLMadeAbsolute(
       AtomicString(KURL(base_url, relative_url_, charset).GetString()));
 }
 
-void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(resource_);
   CSSValue::TraceAfterDispatch(visitor);
 }

@@ -358,13 +358,9 @@ void ViewportStyleResolver::InitialViewportChanged() {
   if (has_viewport_units_)
     needs_update_ = kResolve;
 
-  auto& results = viewport_dependent_media_query_results_;
-  for (unsigned i = 0; i < results.size(); i++) {
-    if (initial_viewport_medium_->Eval(results[i].Expression()) !=
-        results[i].Result()) {
-      needs_update_ = kCollectRules;
-      break;
-    }
+  if (initial_viewport_medium_->DidResultsChange(
+          viewport_dependent_media_query_results_)) {
+    needs_update_ = kCollectRules;
   }
   if (needs_update_ == kNoUpdate)
     return;

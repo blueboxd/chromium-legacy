@@ -122,8 +122,8 @@ interface ProducerHost {
 // this interface and use the PerfettoService interface within the tracing
 // service to register itself.
 interface ProducerClient {
-  OnTracingStart(handle<shared_buffer> shared_memory,
-                  uint64 shared_memory_buffer_page_size_bytes);
+  // Called when tracing is first enabled, before any data sources are started.
+  OnTracingStart();
 
   // Called by Perfetto (via ProducerHost) to request a data source to start
   // logging.
@@ -138,10 +138,15 @@ interface ProducerClient {
 // This is implemented by the tracing service, and is essentially a singleton
 // factory for establishing bi-directional communication with the Perfetto
 // tracing system. A client that wishes to provide tracing data when requested,
-// should implement ProducerClient for callbacks and pass along.
+// should implement ProducerClient for callbacks and pass along, together with
+// the shared memory buffer that'll be used to pass the data.
 interface PerfettoService {
+  // Connect a new ProducerClient to a ProducerHost in the tracing service,
+  // providing the shared memory buffer that will be used to send trace data.
   ConnectToProducerHost(pending_remote<ProducerClient> producer_client,
-                        pending_receiver<ProducerHost> producer_host_receiver);
+                        pending_receiver<ProducerHost> producer_host_receiver,
+                        handle<shared_buffer> shared_memory,
+                        uint64 shared_memory_buffer_page_size_bytes);
 };
 
 // The policy for filling the trace buffer.

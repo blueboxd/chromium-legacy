@@ -23,9 +23,7 @@ void A::Trace(Visitor* visitor)
     }
 }
 
-void A::TraceAfterDispatch(Visitor* visitor)
-{
-}
+void A::TraceAfterDispatch(Visitor* visitor) const {}
 
 void A::FinalizeGarbageCollectedObject()
 {
@@ -42,22 +40,18 @@ void A::FinalizeGarbageCollectedObject()
     }
 }
 
-void B::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    A::TraceAfterDispatch(visitor);
+void B::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  A::TraceAfterDispatch(visitor);
 }
 
-void C::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    A::TraceAfterDispatch(visitor);
+void C::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  A::TraceAfterDispatch(visitor);
 }
 
-void D::TraceAfterDispatch(Visitor* visitor)
-{
-    visitor->Trace(m_a);
-    Abstract::TraceAfterDispatch(visitor);
+void D::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(m_a);
+  Abstract::TraceAfterDispatch(visitor);
 }
-
 }

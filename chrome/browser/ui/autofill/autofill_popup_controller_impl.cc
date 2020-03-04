@@ -79,22 +79,20 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     base::i18n::TextDirection text_direction)
     : controller_common_(element_bounds, text_direction, container_view),
       web_contents_(web_contents),
-      layout_model_(this, delegate->GetPopupType() == PopupType::kCreditCards),
+      layout_model_(delegate->GetPopupType() == PopupType::kCreditCards),
       delegate_(delegate) {
   ClearState();
   delegate->RegisterDeletionCallback(base::BindOnce(
       &AutofillPopupControllerImpl::HideViewAndDie, GetWeakPtr()));
 }
 
-AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
+AutofillPopupControllerImpl::~AutofillPopupControllerImpl() = default;
 
 void AutofillPopupControllerImpl::Show(
     const std::vector<Suggestion>& suggestions,
     bool autoselect_first_suggestion,
     PopupType popup_type) {
   SetValues(suggestions);
-  DCHECK_EQ(suggestions_.size(), elided_values_.size());
-  DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 
   bool just_created = false;
   if (!view_) {
@@ -109,20 +107,6 @@ void AutofillPopupControllerImpl::Show(
     }
     just_created = true;
   }
-
-#if !defined(OS_ANDROID)
-  // Android displays the long text with ellipsis using the view attributes.
-
-  layout_model_.UpdatePopupBounds();
-
-  // Elide the name and label strings so that the popup fits in the available
-  // space.
-  for (int i = 0; i < GetLineCount(); ++i) {
-    bool has_label = !suggestions_[i].label.empty();
-    ElideValueAndLabelForRow(
-        i, layout_model_.GetAvailableWidthForRow(i, has_label));
-  }
-#endif
 
   if (just_created) {
 #if defined(OS_ANDROID)
@@ -151,16 +135,11 @@ void AutofillPopupControllerImpl::Show(
                      base::Unretained(this)));
   pinned_until_update_ = false;
   delegate_->OnPopupShown();
-
-  DCHECK_EQ(suggestions_.size(), elided_values_.size());
-  DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {
-  DCHECK_EQ(suggestions_.size(), elided_values_.size());
-  DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 
   selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
@@ -168,8 +147,6 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   while (!suggestions_.empty() &&
          suggestions_[0].frontend_id == POPUP_ITEM_ID_DATALIST_ENTRY) {
     suggestions_.erase(suggestions_.begin());
-    elided_values_.erase(elided_values_.begin());
-    elided_labels_.erase(elided_labels_.begin());
   }
 
   // If there are no new data list values, exit (clearing the separator if there
@@ -178,8 +155,6 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
     if (!suggestions_.empty() &&
         suggestions_[0].frontend_id == POPUP_ITEM_ID_SEPARATOR) {
       suggestions_.erase(suggestions_.begin());
-      elided_values_.erase(elided_values_.begin());
-      elided_labels_.erase(elided_labels_.begin());
     }
 
      // The popup contents have changed, so either update the bounds or hide it.
@@ -196,29 +171,17 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
       suggestions_[0].frontend_id != POPUP_ITEM_ID_SEPARATOR) {
     suggestions_.insert(suggestions_.begin(), Suggestion());
     suggestions_[0].frontend_id = POPUP_ITEM_ID_SEPARATOR;
-    elided_values_.insert(elided_values_.begin(), base::string16());
-    elided_labels_.insert(elided_labels_.begin(), base::string16());
   }
 
   // Prepend the parameters to the suggestions we already have.
   suggestions_.insert(suggestions_.begin(), values.size(), Suggestion());
-  elided_values_.insert(elided_values_.begin(), values.size(),
-                        base::string16());
-  elided_labels_.insert(elided_labels_.begin(), values.size(),
-                        base::string16());
   for (size_t i = 0; i < values.size(); i++) {
     suggestions_[i].value = values[i];
     suggestions_[i].label = labels[i];
     suggestions_[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
-
-    // TODO(brettw) it looks like these should be elided.
-    elided_values_[i] = values[i];
-    elided_labels_[i] = labels[i];
   }
 
   OnSuggestionsChanged();
-  DCHECK_EQ(suggestions_.size(), elided_values_.size());
-  DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 }
 
 void AutofillPopupControllerImpl::PinViewUntilUpdate() {
@@ -294,13 +257,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
 }
 
 void AutofillPopupControllerImpl::OnSuggestionsChanged() {
-#if !defined(OS_ANDROID)
-  // TODO(csharp): Since UpdatePopupBounds can change the position of the popup,
-  // the popup could end up jumping from above the element to below it.
-  // It is unclear if it is better to keep the popup where it was, or if it
-  // should try and move to its desired position.
-  layout_model_.UpdatePopupBounds();
-#else
+#if defined(OS_ANDROID)
   // Assume that suggestions are (still) available. If this is wrong, the method
   // |HideViewAndDie| will be called soon after and will hide all suggestions.
   ManualFillingController::GetOrCreate(web_contents_)
@@ -351,18 +308,6 @@ const std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() {
   return suggestions_;
 }
 
-#if !defined(OS_ANDROID)
-int AutofillPopupControllerImpl::GetElidedValueWidthForRow(int row) {
-  return gfx::GetStringWidth(GetElidedValueAt(row),
-                             layout_model_.GetValueFontListForRow(row));
-}
-
-int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
-  return gfx::GetStringWidth(GetElidedLabelAt(row),
-                             layout_model_.GetLabelFontListForRow(row));
-}
-#endif
-
 int AutofillPopupControllerImpl::GetLineCount() const {
   return suggestions_.size();
 }
@@ -373,12 +318,12 @@ const Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(int row) const {
 
 const base::string16& AutofillPopupControllerImpl::GetElidedValueAt(
     int row) const {
-  return elided_values_[row];
+  return suggestions_[row].value;
 }
 
 const base::string16& AutofillPopupControllerImpl::GetElidedLabelAt(
     int row) const {
-  return elided_labels_[row];
+  return suggestions_[row].label;
 }
 
 bool AutofillPopupControllerImpl::GetRemovalConfirmationText(
@@ -398,8 +343,6 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 
   // Remove the deleted element.
   suggestions_.erase(suggestions_.begin() + list_index);
-  elided_values_.erase(elided_values_.begin() + list_index);
-  elided_labels_.erase(elided_labels_.begin() + list_index);
 
   selected_line_.reset();
 
@@ -503,45 +446,11 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
 void AutofillPopupControllerImpl::SetValues(
     const std::vector<Suggestion>& suggestions) {
   suggestions_ = suggestions;
-  elided_values_.resize(suggestions.size());
-  elided_labels_.resize(suggestions.size());
-  for (size_t i = 0; i < suggestions.size(); i++) {
-    elided_values_[i] = suggestions[i].value;
-    elided_labels_[i] = suggestions[i].label;
-  }
 }
 
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
-
-#if !defined(OS_ANDROID)
-void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
-    int row,
-    int available_width) {
-  int value_width = gfx::GetStringWidth(
-      suggestions_[row].value, layout_model_.GetValueFontListForRow(row));
-  int label_width = gfx::GetStringWidth(
-      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row));
-  int total_text_length = value_width + label_width;
-
-  // The line can have no strings if it represents a UI element, such as
-  // a separator line.
-  if (total_text_length == 0)
-    return;
-
-  // Each field receives space in proportion to its length.
-  int value_size = available_width * value_width / total_text_length;
-  elided_values_[row] = gfx::ElideText(
-      suggestions_[row].value, layout_model_.GetValueFontListForRow(row),
-      value_size, gfx::ELIDE_TAIL);
-
-  int label_size = available_width * label_width / total_text_length;
-  elided_labels_[row] = gfx::ElideText(
-      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row),
-      label_size, gfx::ELIDE_TAIL);
-}
-#endif
 
 bool AutofillPopupControllerImpl::AcceptSelectedLine() {
   if (!selected_line_)
@@ -560,8 +469,6 @@ void AutofillPopupControllerImpl::ClearState() {
   // Don't clear view_, because otherwise the popup will have to get regenerated
   // and this will cause flickering.
   suggestions_.clear();
-  elided_values_.clear();
-  elided_labels_.clear();
 
   selected_line_.reset();
 }

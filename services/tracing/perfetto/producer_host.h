@@ -20,6 +20,8 @@
 
 namespace tracing {
 
+class PerfettoTaskRunner;
+
 // This class is the service-side part of the Perfetto Producer pair
 // and is responsible for registering any available DataSources
 // with Perfetto (like ChromeTracing) in OnConnect(). It will forward
@@ -32,15 +34,18 @@ namespace tracing {
 class ProducerHost : public tracing::mojom::ProducerHost,
                      public perfetto::Producer {
  public:
-  ProducerHost();
+  explicit ProducerHost(PerfettoTaskRunner*);
   ~ProducerHost() override;
 
-  // Called by the ProducerService to register the
-  // Producer with Perfetto and connect to the
-  // corresponding remote ProducerClient.
-  void Initialize(mojo::PendingRemote<mojom::ProducerClient> producer_client,
+  // Called by the ProducerService to register the Producer with Perfetto,
+  // connect to the corresponding remote ProducerClient, and setup the provided
+  // shared memory buffer for tracing data exchange. Returns false if the
+  // service failed to connect the producer or adopt the provided SMB.
+  bool Initialize(mojo::PendingRemote<mojom::ProducerClient> producer_client,
                   perfetto::TracingService* service,
-                  const std::string& name);
+                  const std::string& name,
+                  mojo::ScopedSharedBufferHandle shared_memory,
+                  uint64_t shared_memory_buffer_page_size_bytes);
 
   // perfetto::Producer implementation.
   // Gets called by perfetto::TracingService to toggle specific data sources
@@ -87,7 +92,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
 
  private:
   mojo::Remote<mojom::ProducerClient> producer_client_;
-  bool is_in_process_ = false;
+  PerfettoTaskRunner* task_runner_;
 
  protected:
   // Perfetto guarantees that no OnXX callbacks are invoked on |this|

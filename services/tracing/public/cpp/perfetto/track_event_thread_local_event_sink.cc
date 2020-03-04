@@ -200,7 +200,7 @@ TrackEventThreadLocalEventSink::IndexData::IndexData(
     : src_loc(std::move(src)) {}
 
 TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
-    std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
+    std::unique_ptr<perfetto::TraceWriter> trace_writer,
     uint32_t session_id,
     bool disable_interning,
     bool proto_writer_filtering_enabled)

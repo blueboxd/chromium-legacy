@@ -1174,8 +1174,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
-                        OnAnimateDoubleTapZoomInMainFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
@@ -1922,12 +1920,6 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     render_widget->OnSetFocus(false);
     SetActiveForWidget(false);
   }
-}
-
-void RenderViewImpl::OnAnimateDoubleTapZoomInMainFrame(
-    const gfx::Point& point,
-    const blink::WebRect& bound) {
-  GetWebView()->AnimateDoubleTapZoom(point, bound);
 }
 
 void RenderViewImpl::OnZoomToFindInPageRect(

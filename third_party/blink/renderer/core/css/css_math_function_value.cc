@@ -17,7 +17,7 @@ struct SameSizeAsCSSMathFunctionValue : CSSPrimitiveValue {
 };
 ASSERT_SIZE(CSSMathFunctionValue, SameSizeAsCSSMathFunctionValue);
 
-void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(expression_);
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }

@@ -133,7 +133,6 @@ enum AuthenticationButtonType {
 
   [self addConfirmationButtonToView];
   [self embedUserConsentView];
-  [self addActivityIndicatorToView];
   [self addSkipSigninButtonToView];
 
   [self.view addSubview:self.gradientView];

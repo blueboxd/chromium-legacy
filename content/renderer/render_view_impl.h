@@ -405,8 +405,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
   void OnEnablePreferredSizeChangedMode();
-  void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
-                                         const blink::WebRect& rect_to_zoom);
   void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);
   void OnMoveOrResizeStarted();
   void OnExitFullscreen();

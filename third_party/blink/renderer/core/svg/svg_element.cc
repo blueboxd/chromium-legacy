@@ -620,6 +620,12 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
     return;
   }
 
+  // SVGElement and HTMLElement are handling "nonce" the same way.
+  if (params.name == html_names::kNonceAttr) {
+    if (params.new_value != g_empty_atom)
+      setNonce(params.new_value);
+  }
+
   const AtomicString& event_name =
       HTMLElement::EventNameForAttributeName(params.name);
   if (!event_name.IsNull()) {

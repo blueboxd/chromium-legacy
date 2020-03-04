@@ -17,7 +17,7 @@ struct SameSizeAsCSSNumericLiteralValue : CSSPrimitiveValue {
 };
 ASSERT_SIZE(CSSNumericLiteralValue, SameSizeAsCSSNumericLiteralValue);
 
-void CSSNumericLiteralValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSNumericLiteralValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 

@@ -19,14 +19,14 @@ class NeedsDispatch : public GarbageCollected<NeedsDispatch> {
 class NeedsFinalizedBase : public GarbageCollected<NeedsFinalizedBase> {
 public:
     void Trace(Visitor*) { };
-    void TraceAfterDispatch(Visitor*) { };
+    void TraceAfterDispatch(Visitor*) const {};
     void FinalizeGarbageCollectedObject() { };
 };
 
 class A : GarbageCollected<A> {
  public:
   void Trace(Visitor*);
-  void TraceAfterDispatch(Visitor*);
+  void TraceAfterDispatch(Visitor*) const;
   void FinalizeGarbageCollectedObject();
 
  protected:
@@ -41,16 +41,18 @@ class B : public A {
 public:
     B() : A(TB) { }
     ~B() { }
-    void TraceAfterDispatch(Visitor*);
-private:
+    void TraceAfterDispatch(Visitor*) const;
+
+   private:
     Member<A> m_a;
 };
 
 class C : public A {
 public:
     C() : A(TC) { }
-    void TraceAfterDispatch(Visitor*);
-private:
+    void TraceAfterDispatch(Visitor*) const;
+
+   private:
     Member<A> m_a;
 };
 
@@ -63,8 +65,9 @@ protected:
 class D : public Abstract {
 public:
     D() : Abstract(TD) { }
-    void TraceAfterDispatch(Visitor*);
-private:
+    void TraceAfterDispatch(Visitor*) const;
+
+   private:
     Member<A> m_a;
 };
 

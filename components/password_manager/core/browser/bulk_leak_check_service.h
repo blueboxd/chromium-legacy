@@ -92,6 +92,11 @@ class BulkLeakCheckService : public KeyedService,
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_check_factory_ = std::move(factory);
   }
+
+  void set_state_and_notify(State state) {
+    state_ = state;
+    NotifyStateChanged();
+  }
 #endif  // defined(UNIT_TEST)
 
  private:

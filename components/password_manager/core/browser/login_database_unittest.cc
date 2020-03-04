@@ -513,14 +513,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://foo.com/", result[0]->signon_realm);
   EXPECT_TRUE(result[0]->is_public_suffix_match);
-
-  // Try to remove PSL matched form
-  EXPECT_FALSE(db().RemoveLogin(*result[0], /*changes=*/nullptr));
-  result.clear();
-  // Ensure that the original form is still there
-  EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
-  EXPECT_EQ(1U, result.size());
-  result.clear();
 }
 
 TEST_F(LoginDatabaseTest, TestFederatedMatching) {

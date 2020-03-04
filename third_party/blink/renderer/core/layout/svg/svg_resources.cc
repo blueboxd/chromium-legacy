@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
@@ -256,8 +258,8 @@ InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
     return 0;
   InvalidationModeMask invalidation_flags =
       SVGResourceClient::kBoundariesInvalidation;
-  if (LayoutSVGResourceFilter* filter = clipper_filter_masker_data_->filter) {
-    if (filter->RemoveClientFromCache(client))
+  if (clipper_filter_masker_data_->filter) {
+    if (client.ClearFilterData())
       invalidation_flags |= SVGResourceClient::kPaintInvalidation;
   }
   return invalidation_flags;
@@ -669,9 +671,7 @@ void SVGElementResourceClient::ResourceContentChanged(
   LayoutSVGResourceContainer::MarkClientForInvalidation(*layout_object,
                                                         invalidation_mask);
 
-  // Special case for filter invalidation.
-  if (invalidation_mask & SVGResourceClient::kSkipAncestorInvalidation)
-    return;
+  ClearFilterData();
 
   bool needs_layout =
       invalidation_mask & SVGResourceClient::kLayoutInvalidation;
@@ -680,8 +680,10 @@ void SVGElementResourceClient::ResourceContentChanged(
 }
 
 void SVGElementResourceClient::ResourceElementChanged() {
-  if (LayoutObject* layout_object = element_->GetLayoutObject())
+  if (LayoutObject* layout_object = element_->GetLayoutObject()) {
+    ClearFilterData();
     SVGResourcesCache::ResourceReferenceChanged(*layout_object);
+  }
 }
 
 void SVGElementResourceClient::ResourceDestroyed(
@@ -695,8 +697,38 @@ void SVGElementResourceClient::ResourceDestroyed(
     resources->ResourceDestroyed(resource);
 }
 
+void SVGElementResourceClient::FilterPrimitiveChanged(
+    SVGFilterPrimitiveStandardAttributes& primitive,
+    const QualifiedName& attribute) {
+  if (filter_data_ && filter_data_->state_ == FilterData::kReadyToPaint) {
+    SVGFilterGraphNodeMap* node_map = filter_data_->node_map;
+    if (FilterEffect* effect = node_map->EffectForElement(primitive)) {
+      if (!primitive.SetFilterEffectAttribute(effect, attribute))
+        return;  // No change
+      node_map->InvalidateDependentEffects(effect);
+    }
+  }
+  LayoutObject* layout_object = element_->GetLayoutObject();
+  if (!layout_object)
+    return;
+  LayoutSVGResourceContainer::MarkClientForInvalidation(
+      *layout_object, SVGResourceClient::kPaintInvalidation);
+}
+
+void SVGElementResourceClient::SetFilterData(FilterData* filter_data) {
+  filter_data_ = filter_data;
+}
+
+bool SVGElementResourceClient::ClearFilterData() {
+  FilterData* filter_data = filter_data_.Release();
+  if (filter_data)
+    filter_data->Dispose();
+  return !!filter_data;
+}
+
 void SVGElementResourceClient::Trace(Visitor* visitor) {
   visitor->Trace(element_);
+  visitor->Trace(filter_data_);
   SVGResourceClient::Trace(visitor);
 }
 

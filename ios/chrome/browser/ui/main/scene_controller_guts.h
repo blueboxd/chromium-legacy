@@ -15,9 +15,15 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 class ChromeBrowserState;
+@class BrowserViewWrangler;
 @class TabModel;
 
 @protocol SceneControllerGuts <WebStateListObserving>
+
+// Wrangler to handle BVC and tab model creation, access, and related logic.
+// Implements faetures exposed from this object through the
+// BrowserViewInformation protocol.
+@property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 
 // The scene level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.

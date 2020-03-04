@@ -228,6 +228,59 @@ TEST(PasswordManagerUtil, FindBestMatches) {
   }
 }
 
+TEST(PasswordManagerUtil, FindBestMatchesInProfileAndAccountStores) {
+  const base::string16 kUsername1 = base::ASCIIToUTF16("Username1");
+  const base::string16 kPassword1 = base::ASCIIToUTF16("Password1");
+  const base::string16 kUsername2 = base::ASCIIToUTF16("Username2");
+  const base::string16 kPassword2 = base::ASCIIToUTF16("Password2");
+
+  PasswordForm form;
+  form.is_public_suffix_match = false;
+  form.date_last_used = base::Time::Now();
+
+  // Add the same credentials in account and profile stores.
+  PasswordForm account_form1(form);
+  account_form1.username_value = kUsername1;
+  account_form1.password_value = kPassword1;
+  account_form1.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm profile_form1(account_form1);
+  profile_form1.in_store = PasswordForm::Store::kProfileStore;
+
+  // Add the credentials for the same username in account and profile stores but
+  // with different passwords.
+  PasswordForm account_form2(form);
+  account_form2.username_value = kUsername2;
+  account_form2.password_value = kPassword1;
+  account_form2.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm profile_form2(account_form2);
+  profile_form2.password_value = kPassword2;
+  profile_form2.in_store = PasswordForm::Store::kProfileStore;
+
+  std::vector<const PasswordForm*> matches;
+  matches.push_back(&account_form1);
+  matches.push_back(&profile_form1);
+  matches.push_back(&account_form2);
+  matches.push_back(&profile_form2);
+
+  std::vector<const PasswordForm*> best_matches;
+  const PasswordForm* preferred_match = nullptr;
+  std::vector<const PasswordForm*> same_scheme_matches;
+  FindBestMatches(matches, PasswordForm::Scheme::kHtml, &same_scheme_matches,
+                  &best_matches, &preferred_match);
+  // All 4 matches should be returned in best matches.
+  EXPECT_EQ(best_matches.size(), 4U);
+  EXPECT_NE(std::find(best_matches.begin(), best_matches.end(), &account_form1),
+            best_matches.end());
+  EXPECT_NE(std::find(best_matches.begin(), best_matches.end(), &account_form2),
+            best_matches.end());
+  EXPECT_NE(std::find(best_matches.begin(), best_matches.end(), &profile_form1),
+            best_matches.end());
+  EXPECT_NE(std::find(best_matches.begin(), best_matches.end(), &profile_form2),
+            best_matches.end());
+}
+
 TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsername) {
   autofill::PasswordForm stored = GetTestCredential();
   autofill::PasswordForm parsed = GetTestCredential();

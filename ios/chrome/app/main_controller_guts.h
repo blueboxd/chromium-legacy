@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 
 @class BrowserViewController;
-@class BrowserViewWrangler;
 class ChromeBrowserState;
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
@@ -39,7 +38,6 @@ class ChromeBrowserState;
 // Keeps track of the restore state during startup.
 @property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
 
-- (BrowserViewWrangler*)browserViewWrangler;
 - (id<TabSwitcher>)tabSwitcher;
 - (TabModel*)currentTabModel;
 - (ChromeBrowserState*)mainBrowserState;

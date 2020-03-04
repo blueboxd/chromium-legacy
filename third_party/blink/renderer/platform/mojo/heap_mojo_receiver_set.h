@@ -31,6 +31,7 @@ class HeapMojoReceiverSet {
   mojo::ReceiverId Add(ImplPointerType impl,
                        mojo::PendingReceiver<Interface> receiver,
                        scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    DCHECK(task_runner);
     return wrapper_->receiver_set().Add(std::move(impl), std::move(receiver));
   }
   void Clear() { wrapper_->receiver_set().Clear(); }

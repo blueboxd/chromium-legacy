@@ -204,7 +204,7 @@ InSessionPasswordChangeManager::~InSessionPasswordChangeManager() {
   // Remove |this| as a SessionActivationObserver.
   auto* session_controller = ash::SessionController::Get();
   if (session_controller) {
-    session_controller->AddSessionActivationObserverForAccountId(
+    session_controller->RemoveSessionActivationObserverForAccountId(
         primary_user_->GetAccountId(), this);
   }
 }

@@ -328,11 +328,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL _animationDisabled;
 }
 
-// Wrangler to handle BVC and tab model creation, access, and related logic.
-// Implements faetures exposed from this object through the
-// BrowserViewInformation protocol.
-@property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
-
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
 @property(nonatomic, assign) ChromeBrowserState* mainBrowserState;  // Weak.
 
@@ -602,10 +597,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // This is per-window code.
 
-  DCHECK(!self.browserViewWrangler);
+  DCHECK(!self.sceneController.browserViewWrangler);
   DCHECK(self.sceneController.appURLLoadingService);
 
-  self.browserViewWrangler = [[BrowserViewWrangler alloc]
+  self.sceneController.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainBrowserState
              webStateListObserver:self.sceneController
        applicationCommandEndpoint:self.sceneController
@@ -613,7 +608,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
              appURLLoadingService:self.sceneController.appURLLoadingService];
 
   // Ensure the main tab model is created. This also creates the BVC.
-  [self.browserViewWrangler createMainBrowser];
+  [self.sceneController.browserViewWrangler createMainBrowser];
 
   // Only create the restoration helper if the browser state was backed up
   // successfully.
@@ -641,7 +636,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (postCrashLaunch || switchFromIncognito) {
     [self.sceneController clearIOSSpecificIncognitoData];
     if (switchFromIncognito)
-      [self.browserViewWrangler
+      [self.sceneController.browserViewWrangler
           switchGlobalStateToMode:ApplicationMode::NORMAL];
   }
   if (switchFromIncognito)
@@ -650,7 +645,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
 
-  [self.browserViewWrangler updateDeviceSharingManager];
+  [self.sceneController.browserViewWrangler updateDeviceSharingManager];
 
   if (!self.startupParameters) {
     // The startup parameters may create new tabs or navigations. If the restore
@@ -728,7 +723,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - Property implementation.
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
-  return self.browserViewWrangler;
+  return self.sceneController.browserViewWrangler;
 }
 
 - (TabGridCoordinator*)mainCoordinator {
@@ -786,8 +781,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Invariant: The UI is stopped before the model is shutdown.
   DCHECK(!_mainCoordinator);
-  [self.browserViewWrangler shutdown];
-  self.browserViewWrangler = nil;
+  [self.sceneController.browserViewWrangler shutdown];
+  self.sceneController.browserViewWrangler = nil;
 
   // End of per-window code.
 
@@ -1211,7 +1206,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                    experimental_flags::AlwaysDisplayFirstRun()) &&
                   !tests_hook::DisableFirstRun();
 
-  [self.browserViewWrangler switchGlobalStateToMode:launchMode];
+  [self.sceneController.browserViewWrangler switchGlobalStateToMode:launchMode];
 
   TabModel* tabModel;
   if (launchMode == ApplicationMode::INCOGNITO) {
@@ -1536,7 +1531,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (DeviceSharingManager*)deviceSharingManager {
-  return [self.browserViewWrangler deviceSharingManager];
+  return [self.sceneController.browserViewWrangler deviceSharingManager];
 }
 
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher {

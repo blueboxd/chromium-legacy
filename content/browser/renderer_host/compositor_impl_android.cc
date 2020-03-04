@@ -521,11 +521,16 @@ void CompositorImpl::DidUpdateLayers() {
           << host_->LayersAsString();
 }
 
+void CompositorImpl::BeginMainFrame(const viz::BeginFrameArgs& args) {
+  latest_frame_time_ = args.frame_time;
+}
+
 void CompositorImpl::UpdateLayerTreeHost() {
+  DCHECK(!latest_frame_time_.is_null());
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;
-    root_window_->Animate(base::TimeTicks::Now());
+    root_window_->Animate(latest_frame_time_);
   }
 }
 

@@ -17,6 +17,21 @@
 + (NSArray<showcase::ModelRow*>*)model {
   return @[
     @{
+      showcase::kClassForDisplayKey : @"ConsentViewController",
+      showcase::kClassForInstantiationKey : @"ConsentViewController",
+      showcase::kUseCaseKey : @"Credential Provider Consent UI",
+    },
+    @{
+      showcase::kClassForDisplayKey : @"EmptyCredentialsViewController",
+      showcase::kClassForInstantiationKey : @"EmptyCredentialsViewController",
+      showcase::kUseCaseKey : @"Credential Provider Empty Credentials UI",
+    },
+    @{
+      showcase::kClassForDisplayKey : @"StaleCredentialsViewController",
+      showcase::kClassForInstantiationKey : @"StaleCredentialsViewController",
+      showcase::kUseCaseKey : @"Credential Provider Stale Credentials UI",
+    },
+    @{
       showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
       showcase::kClassForInstantiationKey : @"SCContentSuggestionsCoordinator",
       showcase::kUseCaseKey : @"Content Suggestions UI",

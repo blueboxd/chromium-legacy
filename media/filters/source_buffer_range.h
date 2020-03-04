@@ -28,7 +28,7 @@ class MEDIA_EXPORT SourceBufferRange {
   // of which this range is a part. Used to estimate the duration of a buffer if
   // its duration is not known, and in GetFudgeRoom() for determining whether a
   // time or coded frame is close enough to be considered part of this range.
-  using InterbufferDistanceCB = base::Callback<base::TimeDelta()>;
+  using InterbufferDistanceCB = base::RepeatingCallback<base::TimeDelta()>;
 
   using BufferQueue = StreamParser::BufferQueue;
 
@@ -48,7 +48,7 @@ class MEDIA_EXPORT SourceBufferRange {
   SourceBufferRange(GapPolicy gap_policy,
                     const BufferQueue& new_buffers,
                     base::TimeDelta range_start_pts,
-                    const InterbufferDistanceCB& interbuffer_distance_cb);
+                    InterbufferDistanceCB interbuffer_distance_cb);
 
   ~SourceBufferRange();
 

@@ -349,12 +349,14 @@ void FindBestMatches(
   std::sort(non_federated_same_scheme->begin(),
             non_federated_same_scheme->end(), IsBetterMatch);
 
-  std::set<base::string16> usernames;
+  std::set<std::pair<PasswordForm::Store, base::string16>> store_usernames;
   for (const auto* match : *non_federated_same_scheme) {
-    const base::string16& username = match->username_value;
-    // The first match for |username| in the sorted array is best match.
-    if (!base::Contains(usernames, username)) {
-      usernames.insert(username);
+    auto store_username =
+        std::make_pair(match->in_store, match->username_value);
+    // The first match for |store_username| in the sorted array is best
+    // match.
+    if (!base::Contains(store_usernames, store_username)) {
+      store_usernames.insert(store_username);
       best_matches->push_back(match);
     }
   }

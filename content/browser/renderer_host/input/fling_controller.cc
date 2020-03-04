@@ -186,7 +186,7 @@ void FlingController::ProcessGestureFlingCancel(
   // will be received when the user puts their finger down for a potential
   // boost. FlingBooster will process the event stream after the current fling
   // is ended and decide whether or not to boost any subsequent FlingStart.
-  EndCurrentFling();
+  EndCurrentFling(gesture_event.event.TimeStamp());
 }
 
 void FlingController::ProgressFling(base::TimeTicks current_time) {
@@ -235,13 +235,13 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   if (!fling_is_active && current_fling_parameters_.source_device !=
                               blink::WebGestureDevice::kSyntheticAutoscroll) {
     fling_booster_.Reset();
-    EndCurrentFling();
+    EndCurrentFling(current_time);
     return;
   }
 
   if (std::abs(delta_to_scroll.x()) > kMinInertialScrollDelta ||
       std::abs(delta_to_scroll.y()) > kMinInertialScrollDelta) {
-    GenerateAndSendFlingProgressEvents(delta_to_scroll);
+    GenerateAndSendFlingProgressEvents(current_time, delta_to_scroll);
     last_progress_time_ = current_time;
   }
 
@@ -253,15 +253,16 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
 void FlingController::StopFling() {
   fling_booster_.Reset();
   if (fling_curve_)
-    EndCurrentFling();
+    EndCurrentFling(clock_->NowTicks());
 }
 
 void FlingController::GenerateAndSendWheelEvents(
+    base::TimeTicks current_time,
     const gfx::Vector2dF& delta,
     blink::WebMouseWheelEvent::Phase phase) {
   MouseWheelEventWithLatencyInfo synthetic_wheel(
       WebInputEvent::kMouseWheel, current_fling_parameters_.modifiers,
-      clock_->NowTicks(), ui::LatencyInfo(ui::SourceEventType::WHEEL));
+      current_time, ui::LatencyInfo(ui::SourceEventType::WHEEL));
   synthetic_wheel.event.delta_units =
       ui::ScrollGranularity::kScrollByPrecisePixel;
   synthetic_wheel.event.delta_x = delta.x();
@@ -278,10 +279,11 @@ void FlingController::GenerateAndSendWheelEvents(
 }
 
 void FlingController::GenerateAndSendGestureScrollEvents(
+    base::TimeTicks current_time,
     WebInputEvent::Type type,
     const gfx::Vector2dF& delta /* = gfx::Vector2dF() */) {
   GestureEventWithLatencyInfo synthetic_gesture(
-      type, current_fling_parameters_.modifiers, clock_->NowTicks(),
+      type, current_fling_parameters_.modifiers, current_time,
       ui::LatencyInfo(ui::SourceEventType::INERTIAL));
   synthetic_gesture.event.SetPositionInWidget(current_fling_parameters_.point);
   synthetic_gesture.event.SetPositionInScreen(
@@ -306,19 +308,20 @@ void FlingController::GenerateAndSendGestureScrollEvents(
 }
 
 void FlingController::GenerateAndSendFlingProgressEvents(
+    base::TimeTicks current_time,
     const gfx::Vector2dF& delta) {
   switch (current_fling_parameters_.source_device) {
     case blink::WebGestureDevice::kTouchpad: {
       blink::WebMouseWheelEvent::Phase phase =
           first_fling_update_sent() ? blink::WebMouseWheelEvent::kPhaseChanged
                                     : blink::WebMouseWheelEvent::kPhaseBegan;
-      GenerateAndSendWheelEvents(delta, phase);
+      GenerateAndSendWheelEvents(current_time, delta, phase);
       break;
     }
     case blink::WebGestureDevice::kTouchscreen:
     case blink::WebGestureDevice::kSyntheticAutoscroll:
-      GenerateAndSendGestureScrollEvents(WebInputEvent::kGestureScrollUpdate,
-                                         delta);
+      GenerateAndSendGestureScrollEvents(
+          current_time, WebInputEvent::kGestureScrollUpdate, delta);
       break;
     case blink::WebGestureDevice::kUninitialized:
     case blink::WebGestureDevice::kScrollbar:
@@ -329,15 +332,17 @@ void FlingController::GenerateAndSendFlingProgressEvents(
   fling_booster_.ObserveProgressFling(current_fling_parameters_.velocity);
 }
 
-void FlingController::GenerateAndSendFlingEndEvents() {
+void FlingController::GenerateAndSendFlingEndEvents(
+    base::TimeTicks current_time) {
   switch (current_fling_parameters_.source_device) {
     case blink::WebGestureDevice::kTouchpad:
-      GenerateAndSendWheelEvents(gfx::Vector2d(),
+      GenerateAndSendWheelEvents(current_time, gfx::Vector2d(),
                                  blink::WebMouseWheelEvent::kPhaseEnded);
       break;
     case blink::WebGestureDevice::kTouchscreen:
     case blink::WebGestureDevice::kSyntheticAutoscroll:
-      GenerateAndSendGestureScrollEvents(WebInputEvent::kGestureScrollEnd);
+      GenerateAndSendGestureScrollEvents(current_time,
+                                         WebInputEvent::kGestureScrollEnd);
       break;
     case blink::WebGestureDevice::kUninitialized:
     case blink::WebGestureDevice::kScrollbar:
@@ -347,10 +352,10 @@ void FlingController::GenerateAndSendFlingEndEvents() {
   }
 }
 
-void FlingController::EndCurrentFling() {
+void FlingController::EndCurrentFling(base::TimeTicks current_time) {
   last_progress_time_ = base::TimeTicks();
 
-  GenerateAndSendFlingEndEvents();
+  GenerateAndSendFlingEndEvents(current_time);
   current_fling_parameters_ = ActiveFlingParameters();
 
   if (fling_curve_) {
@@ -387,7 +392,7 @@ bool FlingController::UpdateCurrentFlingState(
   if (velocity.IsZero() && fling_start_event.SourceDevice() !=
                                blink::WebGestureDevice::kSyntheticAutoscroll) {
     fling_booster_.Reset();
-    EndCurrentFling();
+    EndCurrentFling(fling_start_event.TimeStamp());
     return false;
   }
 
@@ -398,7 +403,7 @@ bool FlingController::UpdateCurrentFlingState(
   // state of fling_booster_ and return false.
   if (root_widget_viewport_size.IsEmpty()) {
     fling_booster_.Reset();
-    EndCurrentFling();
+    EndCurrentFling(last_seen_scroll_update_);
     return false;
   }
 

@@ -13,6 +13,15 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kConfirmationAlertMoreInfoAccessibilityIdentifier =
+    @"kConfirmationAlertMoreInfoAccessibilityIdentifier";
+NSString* const kConfirmationAlertTitleAccessibilityIdentifier =
+    @"kConfirmationAlertTitleAccessibilityIdentifier";
+NSString* const kConfirmationAlertSubtitleAccessibilityIdentifier =
+    @"kConfirmationAlertSubtitleAccessibilityIdentifier";
+NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier =
+    @"kConfirmationAlertPrimaryActionAccessibilityIdentifier";
+
 namespace {
 
 constexpr CGFloat kButtonVerticalInsets = 17;
@@ -251,6 +260,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
                target:self
                action:@selector(didTapHelpButton)];
     [items addObject:helpButton];
+    helpButton.accessibilityIdentifier =
+        kConfirmationAlertMoreInfoAccessibilityIdentifier;
     // Set the help button as the left button item so it can be used as a
     // popover anchor.
     _helpButton = helpButton;
@@ -297,6 +308,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   title.textAlignment = NSTextAlignmentCenter;
   title.translatesAutoresizingMaskIntoConstraints = NO;
   title.adjustsFontForContentSizeCategory = YES;
+  title.accessibilityIdentifier =
+      kConfirmationAlertTitleAccessibilityIdentifier;
   return title;
 }
 
@@ -310,6 +323,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   subtitle.textAlignment = NSTextAlignmentCenter;
   subtitle.translatesAutoresizingMaskIntoConstraints = NO;
   subtitle.adjustsFontForContentSizeCategory = YES;
+  subtitle.accessibilityIdentifier =
+      kConfirmationAlertSubtitleAccessibilityIdentifier;
   return subtitle;
 }
 
@@ -354,6 +369,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   primaryActionButton.layer.cornerRadius = kPrimaryButtonCornerRadius;
   primaryActionButton.titleLabel.adjustsFontForContentSizeCategory = NO;
   primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
+  primaryActionButton.accessibilityIdentifier =
+      kConfirmationAlertPrimaryActionAccessibilityIdentifier;
   return primaryActionButton;
 }
 

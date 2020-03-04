@@ -38,11 +38,13 @@ class HeapMojoRemote {
   }
   mojo::PendingReceiver<Interface> BindNewPipeAndPassReceiver(
       scoped_refptr<base::SequencedTaskRunner> task_runner) WARN_UNUSED_RESULT {
+    DCHECK(task_runner);
     return wrapper_->remote().BindNewPipeAndPassReceiver(
         std::move(task_runner));
   }
   void Bind(mojo::PendingRemote<Interface> pending_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    DCHECK(task_runner);
     wrapper_->remote().Bind(std::move(pending_remote), std::move(task_runner));
   }
 

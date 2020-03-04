@@ -135,7 +135,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         if (isSyncEnabled) {
             mProfileSyncService.requestStart();
         } else {
-            if (Profile.getLastUsedProfile().isChild()) {
+            if (Profile.getLastUsedRegularProfile().isChild()) {
                 // For child accounts, Sync needs to stay enabled, so we reenable it in settings.
                 // TODO(bauerb): Remove the dependency on child account code and instead go through
                 // prefs (here and in the Sync customization UI).

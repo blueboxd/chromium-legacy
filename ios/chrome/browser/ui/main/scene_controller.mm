@@ -151,6 +151,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 @synthesize settingsNavigationController;  //< From AppNavigation protocol.
 @synthesize appURLLoadingService =
     _appURLLoadingService;  //< From SceneControllerGuts
+@synthesize browserViewWrangler =
+    _browserViewWrangler;  //< From SceneControllerGuts
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -1347,7 +1349,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
             self.incognitoInterface.browserState));
   }
 
-  [self.mainController.browserViewWrangler destroyAndRebuildIncognitoBrowser];
+  [self.browserViewWrangler destroyAndRebuildIncognitoBrowser];
 
   if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
     breakpad::MonitorBreadcrumbManagerService(

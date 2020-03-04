@@ -123,12 +123,14 @@ class CONTENT_EXPORT FlingController {
   void ScheduleFlingProgress();
 
   // Used to generate synthetic wheel events from touchpad fling and send them.
-  void GenerateAndSendWheelEvents(const gfx::Vector2dF& delta,
+  void GenerateAndSendWheelEvents(base::TimeTicks current_time,
+                                  const gfx::Vector2dF& delta,
                                   blink::WebMouseWheelEvent::Phase phase);
 
   // Used to generate synthetic gesture scroll events from touchscreen fling and
   // send them.
   void GenerateAndSendGestureScrollEvents(
+      base::TimeTicks current_time,
       blink::WebInputEvent::Type type,
       const gfx::Vector2dF& delta = gfx::Vector2dF());
 
@@ -138,11 +140,12 @@ class CONTENT_EXPORT FlingController {
   // to progress flings with touchscreen and touchpad source respectively.
   // The reason for this difference is that during the touchpad fling we still
   // send wheel events to JS and generating GSU events directly is not enough.
-  void GenerateAndSendFlingProgressEvents(const gfx::Vector2dF& delta);
+  void GenerateAndSendFlingProgressEvents(base::TimeTicks current_time,
+                                          const gfx::Vector2dF& delta);
 
-  void GenerateAndSendFlingEndEvents();
+  void GenerateAndSendFlingEndEvents(base::TimeTicks current_time);
 
-  void EndCurrentFling();
+  void EndCurrentFling(base::TimeTicks current_time);
 
   // Used to update the fling_curve_ state based on the parameters of the fling
   // start event. Returns true if the fling curve was updated for a valid

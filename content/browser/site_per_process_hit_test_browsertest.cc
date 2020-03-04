@@ -4494,11 +4494,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
   EXPECT_EQ(nullptr, router->wheel_target_);
 }
 
+#if defined(OS_LINUX)
+#define MAYBE_MouseWheelEventPositionChange \
+  DISABLED_MouseWheelEventPositionChange
+#else
+#define MAYBE_MouseWheelEventPositionChange MouseWheelEventPositionChange
+#endif
 // Ensure that the positions of mouse wheel events sent to cross-process
 // subframes account for any change in the position of the subframe during the
 // scroll sequence.
 IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
-                       MouseWheelEventPositionChange) {
+                       MAYBE_MouseWheelEventPositionChange) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_tall_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

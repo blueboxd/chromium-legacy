@@ -37,9 +37,15 @@ const char BackgroundFetchBridge::kSupplementName[] = "BackgroundFetchBridge";
 
 BackgroundFetchBridge::BackgroundFetchBridge(
     ServiceWorkerRegistration& registration)
-    : Supplement<ServiceWorkerRegistration>(registration) {}
+    : Supplement<ServiceWorkerRegistration>(registration),
+      background_fetch_service_(registration.GetExecutionContext()) {}
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
+
+void BackgroundFetchBridge::Trace(Visitor* visitor) {
+  visitor->Trace(background_fetch_service_);
+  Supplement::Trace(visitor);
+}
 
 void BackgroundFetchBridge::GetIconDisplaySize(
     GetIconDisplaySizeCallback callback) {
@@ -92,7 +98,7 @@ void BackgroundFetchBridge::GetDeveloperIds(GetDeveloperIdsCallback callback) {
 }
 
 mojom::blink::BackgroundFetchService* BackgroundFetchBridge::GetService() {
-  if (!background_fetch_service_) {
+  if (!background_fetch_service_.is_bound()) {
     auto receiver = background_fetch_service_.BindNewPipeAndPassReceiver(
         GetSupplementable()->GetExecutionContext()->GetTaskRunner(
             TaskType::kBackgroundFetch));

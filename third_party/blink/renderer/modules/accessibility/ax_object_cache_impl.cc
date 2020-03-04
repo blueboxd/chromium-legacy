@@ -112,7 +112,9 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       modification_count_(0),
       validation_message_axid_(0),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
-      accessibility_event_permission_(mojom::PermissionStatus::ASK) {
+      accessibility_event_permission_(mojom::blink::PermissionStatus::ASK),
+      permission_service_(document.ToExecutionContext()),
+      permission_observer_receiver_(this, document.ToExecutionContext()) {
   if (document_->LoadEventFinished())
     AddPermissionStatusListener();
   documents_.insert(&document);
@@ -1839,14 +1841,18 @@ void AXObjectCacheImpl::AddPermissionStatusListener() {
   if (permission_service_.is_bound())
     permission_service_.reset();
 
-  ConnectToPermissionService(document_->GetExecutionContext(),
-                             permission_service_.BindNewPipeAndPassReceiver());
+  ConnectToPermissionService(
+      document_->GetExecutionContext(),
+      permission_service_.BindNewPipeAndPassReceiver(
+          document_->GetTaskRunner(TaskType::kUserInteraction)));
 
   if (permission_observer_receiver_.is_bound())
     permission_observer_receiver_.reset();
 
   mojo::PendingRemote<mojom::blink::PermissionObserver> observer;
-  permission_observer_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
+  permission_observer_receiver_.Bind(
+      observer.InitWithNewPipeAndPassReceiver(),
+      document_->GetTaskRunner(TaskType::kUserInteraction));
   permission_service_->AddPermissionObserver(
       CreatePermissionDescriptor(
           mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
@@ -1866,7 +1872,7 @@ void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
   if (accessibility_event_permission_ != mojom::PermissionStatus::ASK)
     return;
 
-  if (!permission_service_)
+  if (!permission_service_.is_bound())
     return;
 
   permission_service_->RequestPermission(
@@ -1887,10 +1893,7 @@ void AXObjectCacheImpl::DidFinishLifecycleUpdate(const LocalFrameView& view) {
   }
 }
 
-void AXObjectCacheImpl::ContextDestroyed() {
-  permission_service_.reset();
-  permission_observer_receiver_.reset();
-}
+void AXObjectCacheImpl::ContextDestroyed() {}
 
 void AXObjectCacheImpl::Trace(Visitor* visitor) {
   visitor->Trace(document_);
@@ -1899,6 +1902,8 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) {
 
   visitor->Trace(objects_);
   visitor->Trace(notifications_to_post_);
+  visitor->Trace(permission_service_);
+  visitor->Trace(permission_observer_receiver_);
   visitor->Trace(documents_);
   visitor->Trace(tree_update_callback_queue_);
   AXObjectCache::Trace(visitor);

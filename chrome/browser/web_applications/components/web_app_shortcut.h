@@ -99,11 +99,16 @@ enum ShortcutCreationReason {
 // Compute a deterministic name based on data in the shortcut_info.
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info);
 
-// Gets the user data directory for given web app. The path for the directory is
-// based on |extension_id|. If |extension_id| is empty then |url| is used
-// to construct a unique ID.
+// Returns a per-app directory for OS-specific web app data to handle OS
+// registration and unregistration. To store manifest resources, use
+// GetManifestResourcesDirectoryForApp() declared in web_app_utils.h.
+//
+// The path for the directory is based on |app_id|. If |app_id| is empty then
+// |url| is used to construct a unique ID.
+// TODO(crbug.com/877898): Rename this function to
+// GetOsIntegrationDataDirectoryForApp().
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const std::string& extension_id,
+                                      const std::string& app_id,
                                       const GURL& url);
 
 // Callback made when CreateShortcuts has finished trying to create the

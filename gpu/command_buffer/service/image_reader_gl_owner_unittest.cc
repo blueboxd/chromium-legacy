@@ -141,14 +141,14 @@ TEST_F(ImageReaderGLOwnerTest, DestructionWorksWithWrongContext) {
   new_surface = nullptr;
 }
 
-// The max number of images used by the ImageReader must be 2 for non-Surface
+// The max number of images used by the ImageReader must be 1 for non-Surface
 // control.
 TEST_F(ImageReaderGLOwnerTest, MaxImageExpectation) {
   if (!IsImageReaderSupported())
     return;
   EXPECT_EQ(static_cast<ImageReaderGLOwner*>(image_reader_.get())
                 ->max_images_for_testing(),
-            2);
+            1);
 }
 
 class ImageReaderGLOwnerSecureSurfaceControlTest

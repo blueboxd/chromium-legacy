@@ -100,8 +100,7 @@ void ExtensionsTestSuite::Shutdown() {
 
 int main(int argc, char** argv) {
   content::UnitTestTestSuite test_suite(new ExtensionsTestSuite(argc, argv));
-  return base::LaunchUnitTests(argc,
-                               argv,
-                               base::Bind(&content::UnitTestTestSuite::Run,
-                                          base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::BindOnce(&content::UnitTestTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

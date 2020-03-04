@@ -995,6 +995,39 @@ const DeviceCapabilities kXboxElite = {
     base::size(kXboxEliteAxes),
 };
 
+const DeviceAbsoluteAxis kDrallionStylusAxes[] = {
+    {ABS_X, {0, 0, 30931, 0, 0, 100}},
+    {ABS_Y, {0, 0, 17399, 0, 0, 100}},
+    {ABS_PRESSURE, {0, 0, 4095, 0, 0, 0}},
+    {ABS_TILT_X, {0, -90, 90, 0, 0, 57}},
+    {ABS_TILT_Y, {0, -90, 90, 0, 0, 57}},
+    {ABS_MISC, {0, 0, 65535, 0, 0, 0}},
+};
+
+const DeviceCapabilities kDrallionStylus = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-7/"
+    "i2c-WCOM48E2:00/0018:2D1F:4971.0001/input/input6/event5",
+    /* name */ "WCOM48E2:00 2D1F:4971 Pen",
+    /* phys */ "i2c-WCOM48E2:00",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "4971",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "1c03 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "1000d000003",
+    /* msc */ "11",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kDrallionStylusAxes,
+    base::size(kDrallionStylusAxes),
+};
+
 // NB: Please use the capture_device_capabilities.py script to add more
 // test data here. This will help ensure the data matches what the kernel
 // reports for a real device and is entered correctly.

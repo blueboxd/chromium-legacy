@@ -59,8 +59,9 @@ bool AreColorsEqual(SkColor expected_color,
 }
 
 base::FilePath GetAppIconsDir(Profile* profile, const AppId& app_id) {
-  base::FilePath web_apps_dir = GetWebAppsDirectory(profile);
-  base::FilePath app_dir = web_apps_dir.AppendASCII(app_id);
+  base::FilePath web_apps_root_directory = GetWebAppsRootDirectory(profile);
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_root_directory, app_id);
   base::FilePath icons_dir = app_dir.AppendASCII("Icons");
   return icons_dir;
 }

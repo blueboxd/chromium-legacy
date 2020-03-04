@@ -1624,6 +1624,55 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusMotion) {
   EXPECT_EQ(0.f / 1024, event.pointer_details.force);
 }
 
+TEST_F(TouchEventConverterEvdevTest, ActiveStylusDrallionRubberSequence) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kDrallionStylus, &devinfo));
+  dev->Initialize(devinfo);
+
+
+  struct input_event mock_kernel_queue[] = {
+    {{0, 0}, EV_KEY, BTN_TOOL_RUBBER, 1},
+    {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+    {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+    {{0, 0}, EV_ABS, ABS_X, 4008},
+    {{0, 0}, EV_ABS, ABS_Y, 11247},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+    {{0, 0}, EV_ABS, ABS_X, 4004},
+    {{0, 0}, EV_ABS, ABS_Y, 11248},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+    {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+    {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+    {{0, 0}, EV_KEY, BTN_TOOL_RUBBER, 0},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(4u, size());
+
+  ui::TouchEventParams event = dispatched_touch_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_ERASER,
+            event.pointer_details.pointer_type);
+
+  event = dispatched_touch_event(1);
+  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_ERASER,
+            event.pointer_details.pointer_type);
+
+  event = dispatched_touch_event(2);
+  EXPECT_EQ(ET_TOUCH_MOVED, event.type);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_ERASER,
+            event.pointer_details.pointer_type);
+
+  event = dispatched_touch_event(3);
+  EXPECT_EQ(ET_TOUCH_RELEASED, event.type);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_ERASER,
+            event.pointer_details.pointer_type);
+}
+
 TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButtonWhileHovering) {
   ui::MockTouchEventConverterEvdev* dev = device();
   EventDeviceInfo devinfo;

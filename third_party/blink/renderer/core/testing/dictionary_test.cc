@@ -14,26 +14,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-namespace {
-ScriptIterator GetIterator(const Dictionary& iterable,
-                           ExecutionContext* execution_context) {
-  v8::Local<v8::Value> iterator_getter;
-  v8::Isolate* isolate = iterable.GetIsolate();
-  if (!iterable.Get(v8::Symbol::GetIterator(isolate), iterator_getter) ||
-      !iterator_getter->IsFunction()) {
-    return ScriptIterator();
-  }
-  v8::Local<v8::Value> iterator;
-  if (!V8ScriptRunner::CallFunction(
-           v8::Local<v8::Function>::Cast(iterator_getter), execution_context,
-           iterable.V8Value(), 0, nullptr, isolate)
-           .ToLocal(&iterator))
-    return ScriptIterator();
-  if (!iterator->IsObject())
-    return ScriptIterator();
-  return ScriptIterator(isolate, v8::Local<v8::Object>::Cast(iterator));
-}
-}  // namespace
 
 DictionaryTest::DictionaryTest() : required_boolean_member_(false) {}
 
@@ -155,36 +135,6 @@ InternalDictionaryDerivedDerived* DictionaryTest::getDerivedDerived() {
       InternalDictionaryDerivedDerived::Create();
   GetDerivedDerivedInternals(result);
   return result;
-}
-
-String DictionaryTest::stringFromIterable(
-    ScriptState* script_state,
-    Dictionary iterable,
-    ExceptionState& exception_state) const {
-  StringBuilder result;
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  ScriptIterator iterator = GetIterator(iterable, execution_context);
-  if (iterator.IsNull())
-    return g_empty_string;
-
-  bool first_loop = true;
-  while (iterator.Next(execution_context, exception_state)) {
-    if (exception_state.HadException())
-      return g_empty_string;
-
-    if (first_loop)
-      first_loop = false;
-    else
-      result.Append(',');
-
-    v8::Local<v8::Value> value;
-    if (iterator.GetValue().ToLocal(&value)) {
-      result.Append(ToCoreString(
-          value->ToString(script_state->GetContext()).ToLocalChecked()));
-    }
-  }
-
-  return result.ToString();
 }
 
 void DictionaryTest::Reset() {

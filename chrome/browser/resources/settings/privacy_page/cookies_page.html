@@ -1,13 +1,24 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../site_settings/category_setting_exceptions.html">
+<link rel="import" href="../site_settings/constants.html">
+
 <dom-module id="settings-cookies-page">
   <template>
-    <style>
+    <style include="settings-shared">
       img {
         width: 100%;
       }
     </style>
     <img src="../images/cookies_banner.svg">
+    <div class="settings-box first">
+      <h2>$i18n{cookiesManageSiteSpecificExceptions}</h2>
+    </div>
+    <category-setting-exceptions
+        category="[[ContentSettingsTypes.COOKIES]]"
+        block-header="$i18n{siteSettingsBlock}">
+    </category-setting-exceptions>
   </template>
   <script src="cookies_page.js"></script>
 </dom-module>

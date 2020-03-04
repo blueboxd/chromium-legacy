@@ -93,13 +93,13 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   int32_t width = 1, height = 1;
 
   // This should be as small as possible to limit the memory usage.
-  // ImageReader needs 2 images to mimic the behavior of SurfaceTexture. For
-  // SurfaceControl we need 3 images instead of 2 since 1 frame(and hence image
-  // associated with it) will be with system compositor and 2 frames will be in
-  // flight. Also note that we always acquire an image before deleting the
-  // previous acquired image. This causes 2 acquired images to be in flight at
-  // the image acquisition point until the previous image is deleted.
-  max_images_ = IsSurfaceControl(mode) ? 3 : 2;
+  // ImageReader needs 1 image to mimic the behavior of SurfaceTexture. Ideally
+  // it should be 2 but that doesn't work on some devices
+  // (see crbug.com/1051705).
+  // For SurfaceControl we need 3 images instead of 2 since 1 frame (and hence
+  // image associated with it) will be with system compositor and 2 frames will
+  // be in flight.
+  max_images_ = IsSurfaceControl(mode) ? 3 : 1;
   AIMAGE_FORMATS format = mode == Mode::kAImageReaderSecureSurfaceControl
                               ? AIMAGE_FORMAT_PRIVATE
                               : AIMAGE_FORMAT_YUV_420_888;
@@ -221,7 +221,12 @@ void ImageReaderGLOwner::UpdateTexImage() {
 
   DCHECK(image_reader_);
 
-  // Acquire the latest image asynchronously
+  // Acquire the latest image asynchronously. We must release the current image
+  // before acquiring a new one if the ImageReader was initialized with one
+  // outstanding image at max.
+  if (max_images_ == 1)
+    current_image_ref_.reset();
+
   AImage* image = nullptr;
   int acquire_fence_fd = -1;
   media_status_t return_code = AMEDIA_OK;

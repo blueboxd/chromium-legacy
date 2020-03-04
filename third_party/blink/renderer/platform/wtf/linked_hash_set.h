@@ -1059,34 +1059,78 @@ class NewLinkedHashSetNode {
 
   NewLinkedHashSetNode& operator=(NewLinkedHashSetNode&& other) = default;
 
-  wtf_size_t GetNextIndexForFreeNode() const { return next_index_; }
+  wtf_size_t GetNextIndexForFreeNode() const {
+#if DCHECK_IS_ON()
+    DCHECK(!is_used);
+#endif
+    return next_index_;
+  }
 
-  wtf_size_t GetPrevIndexForUsedNode() const { return prev_index_; }
+  wtf_size_t GetPrevIndexForUsedNode() const {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
+    return prev_index_;
+  }
 
-  wtf_size_t GetNextIndexForUsedNode() const { return next_index_; }
+  wtf_size_t GetNextIndexForUsedNode() const {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
+    return next_index_;
+  }
 
-  const ValueArg& GetValueForUsedNode() const { return value_; }
+  const ValueArg& GetValueForUsedNode() const {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
+    return value_;
+  }
 
   void SetNextIndexForFreeNode(wtf_size_t next_index) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_used);
+#endif
     next_index_ = next_index;
   }
 
   void SetPrevIndexForUsedNode(wtf_size_t prev_index) {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
     prev_index_ = prev_index;
   }
 
   void SetNextIndexForUsedNode(wtf_size_t next_index) {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
     next_index_ = next_index;
   }
 
-  void SetValueForUsedNode(const ValueArg& value) { value_ = value; }
+  void SetValueForUsedNode(const ValueArg& value) {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
+    value_ = value;
+  }
 
-  void SetValueForUsedNode(ValueArg&& value) { value_ = std::move(value); }
+  void SetValueForUsedNode(ValueArg&& value) {
+#if DCHECK_IS_ON()
+    DCHECK(is_used);
+#endif
+    value_ = std::move(value);
+  }
 
  private:
   wtf_size_t prev_index_ = 0;
   wtf_size_t next_index_ = 0;
   ValueArg value_ = HashTraits<ValueArg>::EmptyValue();
+
+#if DCHECK_IS_ON()
+ public:
+  bool is_used = true;
+#endif
 };
 
 // This class is yet experimental. Do not use this class.
@@ -1097,6 +1141,9 @@ class NewLinkedHashSetNode {
 // iterating it yields values in the order in which they were inserted.
 // The linked list is implementing in a vector (with links being indexes instead
 // of pointers), to simplify the move of backing during GC compaction.
+
+// TODO(keinakashima): implement NewLinkedHashTraits (now we cannot insert
+// deleted/empty value) and add it to template parameter
 
 template <typename ValueArg>
 class NewLinkedHashSet {
@@ -1141,10 +1188,17 @@ class NewLinkedHashSet {
 
   const Value& back() const;
   void pop_back();
-  // TODO(keinakashima): implement find, Contains
+
+  // TODO(keinakashima): implement find, Contains after implementing iterator
 
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
+
+  template <typename IncomingValueType>
+  AddResult AppendOrMoveToLast(IncomingValueType&&);
+
+  template <typename IncomingValueType>
+  AddResult PrependOrMoveToFirst(IncomingValueType&&);
 
   void erase(ValuePeekInType);
   // TODO(keinakashima): implement erase that has an iterator as an argument
@@ -1166,6 +1220,16 @@ class NewLinkedHashSet {
     return free_head_index_;
   }
 
+  // Inserts new value before given position to a linked list in vector
+  // Returns a pointer to the stored value
+  template <typename IncomingValueType>
+  const Value* InsertValueBeforeNode(wtf_size_t, IncomingValueType&&);
+
+  // Erases the node with the given index from the used list
+  // and prepends it to the free list as a free node.
+  // At this time, its value is set to be empty.
+  void FreeUsedNode(wtf_size_t);
+
   HashMap<Value, wtf_size_t> value_to_index_;
   Vector<Node> nodes_;
   wtf_size_t free_head_index_ = anchor_index_;
@@ -1180,6 +1244,9 @@ NewLinkedHashSet<T>::NewLinkedHashSet() {
   // the used list.
   nodes_.push_back(Node());
 }
+
+// TODO(keinakashima): add copy constructor after implementing iterator if
+// anybody uses it.
 
 template <typename T>
 inline NewLinkedHashSet<T>::NewLinkedHashSet(NewLinkedHashSet&& other) {
@@ -1215,9 +1282,23 @@ inline const T& NewLinkedHashSet<T>::front() const {
 }
 
 template <typename T>
+inline void NewLinkedHashSet<T>::RemoveFirst() {
+  DCHECK(!IsEmpty());
+  value_to_index_.erase(front());
+  FreeUsedNode(UsedFirstIndex());
+}
+
+template <typename T>
 inline const T& NewLinkedHashSet<T>::back() const {
   DCHECK(!IsEmpty());
   return nodes_[UsedLastIndex()].GetValueForUsedNode();
+}
+
+template <typename T>
+inline void NewLinkedHashSet<T>::pop_back() {
+  DCHECK(!IsEmpty());
+  value_to_index_.erase(back());
+  FreeUsedNode(UsedLastIndex());
 }
 
 template <typename T>
@@ -1226,30 +1307,52 @@ typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::insert(
     IncomingValueType&& value) {
   wtf_size_t new_entry_index = NewEntryIndex();
   typename Map::AddResult result =
-      value_to_index_.template insert(value, new_entry_index);
+      value_to_index_.insert(value, new_entry_index);
 
   if (!result.is_new_entry) {
     wtf_size_t index = result.stored_value->value;
     return AddResult(&(nodes_[index].GetValueForUsedNode()), false);
   }
 
-  wtf_size_t used_last_index = UsedLastIndex();
-  Node& used_last_node = nodes_[used_last_index];
-  Node& anchor = nodes_[anchor_index_];
-  used_last_node.SetNextIndexForUsedNode(new_entry_index);
-  anchor.SetPrevIndexForUsedNode(new_entry_index);
+  const T* stored_value = InsertValueBeforeNode(
+      anchor_index_, std::forward<IncomingValueType>(value));
+  return AddResult(stored_value, true);
+}
 
-  if (IsFreeListEmpty()) {
-    nodes_.push_back(Node(used_last_index, anchor_index_,
-                          std::forward<IncomingValueType>(value)));
-  } else {
-    DCHECK(free_head_index_ == new_entry_index);
-    Node& free_head = nodes_[free_head_index_];
-    free_head_index_ = free_head.GetNextIndexForFreeNode();
-    free_head = Node(used_last_index, anchor_index_, value);
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult NewLinkedHashSet<T>::AppendOrMoveToLast(
+    IncomingValueType&& value) {
+  typename Map::AddResult result =
+      value_to_index_.insert(value, NewEntryIndex());
+
+  // TODO(keinakashima): just update prev/next indices to avoid reconstruct the
+  // same value
+  if (!result.is_new_entry) {
+    wtf_size_t index = result.stored_value->value;
+    FreeUsedNode(index);
   }
 
-  return AddResult(&(nodes_[new_entry_index].GetValueForUsedNode()), true);
+  const T* stored_value = InsertValueBeforeNode(
+      anchor_index_, std::forward<IncomingValueType>(value));
+  return AddResult(stored_value, result.is_new_entry);
+}
+
+template <typename T>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T>::AddResult
+NewLinkedHashSet<T>::PrependOrMoveToFirst(IncomingValueType&& value) {
+  typename Map::AddResult result =
+      value_to_index_.insert(value, NewEntryIndex());
+
+  if (!result.is_new_entry) {
+    wtf_size_t index = result.stored_value->value;
+    FreeUsedNode(index);
+  }
+
+  const T* stored_value = InsertValueBeforeNode(
+      UsedFirstIndex(), std::forward<IncomingValueType>(value));
+  return AddResult(stored_value, result.is_new_entry);
 }
 
 template <typename T>
@@ -1259,8 +1362,45 @@ inline void NewLinkedHashSet<T>::erase(ValuePeekInType value) {
     return;
 
   wtf_size_t index = it->value;
-  value_to_index_.erase(value);
+  value_to_index_.erase(it);
+  FreeUsedNode(index);
+}
+
+template <typename T>
+template <typename IncomingValueType>
+inline const T* NewLinkedHashSet<T>::InsertValueBeforeNode(
+    wtf_size_t before_index,
+    IncomingValueType&& new_value) {
+  wtf_size_t prev_index = nodes_[before_index].GetPrevIndexForUsedNode();
+  Node& prev = nodes_[prev_index];
+  Node& next = nodes_[before_index];
+
+  wtf_size_t new_entry_index = NewEntryIndex();
+  prev.SetNextIndexForUsedNode(new_entry_index);
+  next.SetPrevIndexForUsedNode(new_entry_index);
+
+  if (IsFreeListEmpty()) {
+    DCHECK(nodes_.size() == new_entry_index);
+    nodes_.push_back(Node(prev_index, before_index,
+                          std::forward<IncomingValueType>(new_value)));
+  } else {
+    DCHECK(free_head_index_ == new_entry_index);
+    Node& free_head = nodes_[free_head_index_];
+    free_head_index_ = free_head.GetNextIndexForFreeNode();
+    free_head = Node(prev_index, before_index,
+                     std::forward<IncomingValueType>(new_value));
+  }
+  return &(nodes_[new_entry_index].GetValueForUsedNode());
+}
+
+template <typename T>
+inline void NewLinkedHashSet<T>::FreeUsedNode(wtf_size_t index) {
+  DCHECK(index != anchor_index_);
   Node& node = nodes_[index];
+#if DCHECK_IS_ON()
+  DCHECK(node.is_used);
+#endif
+
   wtf_size_t prev_index = node.GetPrevIndexForUsedNode();
   wtf_size_t next_index = node.GetNextIndexForUsedNode();
 
@@ -1271,6 +1411,9 @@ inline void NewLinkedHashSet<T>::erase(ValuePeekInType value) {
   next_node.SetPrevIndexForUsedNode(prev_index);
 
   node.SetValueForUsedNode(HashTraits<T>::EmptyValue());
+#if DCHECK_IS_ON()
+  node.is_used = false;
+#endif
   node.SetNextIndexForFreeNode(free_head_index_);
   free_head_index_ = index;
 }

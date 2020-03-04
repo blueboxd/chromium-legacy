@@ -364,8 +364,12 @@ void TouchEventConverterEvdev::ProcessKey(const input_event& input) {
     case BTN_TOOL_PEN:
     case BTN_TOOL_RUBBER:
       if (input.value > 0) {
+        if (events_[current_slot_].tool_code != 0)
+          break;
         events_[current_slot_].tool_code = input.code;
       } else {
+        if (events_[current_slot_].tool_code != input.code)
+          break;
         events_[current_slot_].tool_code = 0;
       }
       events_[current_slot_].altered = true;

@@ -28,7 +28,10 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -83,6 +86,36 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   return nullptr;
 }
 
+base::Optional<std::string> GetAppIdForTab(Profile* profile,
+                                           content::WebContents* tab) {
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    if (web_app::WebAppProviderBase* provider =
+            web_app::WebAppProviderBase::GetProviderBase(profile)) {
+      // Use the Browser's app name to determine the web app for app windows and
+      // use the tab's url for app tabs.
+
+      // Note: It is possible to come here after a tab got removed from the
+      // browser before it gets destroyed, in which case there is no browser.
+      if (Browser* browser = chrome::FindBrowserWithWebContents(tab)) {
+        if (browser->app_controller() && browser->app_controller()->HasAppId())
+          return browser->app_controller()->GetAppId();
+      }
+
+      base::Optional<web_app::AppId> app_id =
+          provider->registrar().FindAppWithUrlInScope(tab->GetURL());
+      if (app_id)
+        return app_id;
+    }
+  }
+
+  const extensions::Extension* extension = GetExtensionForTab(profile, tab);
+  if (extension &&
+      (!extension->from_bookmark() ||
+       !base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)))
+    return extension->id();
+  return base::nullopt;
+}
+
 }  // namespace
 
 LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
@@ -126,16 +159,17 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
         profile_manager->GetLoadedProfiles();
     if (!profile_list.empty()) {
       for (auto* i : profile_list) {
-        const extensions::Extension* extension = GetExtensionForTab(i, tab);
-        if (extension)
-          return extension->id();
+        base::Optional<std::string> app_id = GetAppIdForTab(i, tab);
+        if (app_id.has_value())
+          return *app_id;
       }
       return std::string();
     }
   }
+
   // If there is no profile manager we only use the known profile.
-  const extensions::Extension* extension = GetExtensionForTab(profile_, tab);
-  return extension ? extension->id() : std::string();
+  base::Optional<std::string> app_id = GetAppIdForTab(profile_, tab);
+  return app_id.has_value() ? *app_id : std::string();
 }
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(

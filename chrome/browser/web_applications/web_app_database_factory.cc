@@ -17,7 +17,7 @@ WebAppDatabaseFactory::WebAppDatabaseFactory(Profile* profile)
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsSharedStoreService)) {
     model_type_store_service_ =
         std::make_unique<syncer::ModelTypeStoreServiceImpl>(
-            GetWebAppsDirectory(profile));
+            GetWebAppsRootDirectory(profile));
   }
 }
 

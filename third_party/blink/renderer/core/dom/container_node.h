@@ -366,14 +366,22 @@ class CORE_EXPORT ContainerNode : public Node {
     //  - siblingChanged.nextSibling after single node insertion
     //  - nextSibling of the last inserted node after multiple node insertion.
     Node* sibling_after_change = nullptr;
-    // TODO(crbug.com/1056094): This field is not used yet.
+    // List of removed nodes for ChildrenChangeType::kAllChildrenRemoved.
+    // This is available only if ChildrenChangedAllChildrenRemovedNeedsList()
+    // returns true.
     HeapVector<Member<Node>>* removed_nodes;
   };
 
   // Notifies the node that it's list of children have changed (either by adding
   // or removing child nodes), or a child node that is of the type
-  // CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
+  // kCdataSectionNode, kTextNode or kCommentNode has changed its value.
+  //
+  // ChildrenChanged() implementations may modify the DOM tree, and may dispatch
+  // synchronous events.
   virtual void ChildrenChanged(const ChildrenChange&);
+
+  // Provides ChildrenChange::removed_nodes for kAllChildrenRemoved.
+  virtual bool ChildrenChangedAllChildrenRemovedNeedsList() const;
 
   virtual bool ChildrenCanHaveStyle() const { return true; }
 

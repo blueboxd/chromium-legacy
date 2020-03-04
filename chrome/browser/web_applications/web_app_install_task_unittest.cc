@@ -643,9 +643,10 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
 
   // TestingProfile creates temp directory if TestingProfile::path_ is empty
   // (i.e. if TestingProfile::Builder::SetPath was not called by a test fixture)
-  const base::FilePath profile_dir = profile()->GetPath();
-  const base::FilePath web_apps_dir = profile_dir.AppendASCII("WebApps");
-  EXPECT_FALSE(file_utils_->DirectoryExists(web_apps_dir));
+  const base::FilePath web_apps_dir = GetWebAppsRootDirectory(profile());
+  const base::FilePath manifest_resources_directory =
+      GetManifestResourcesDirectory(web_apps_dir);
+  EXPECT_FALSE(file_utils_->DirectoryExists(manifest_resources_directory));
 
   const SkColor color = SK_ColorGREEN;
   const int original_icon_size_px = icon_size::k512;
@@ -656,13 +657,14 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
 
   const AppId app_id = InstallWebAppFromManifestWithFallback();
 
-  EXPECT_TRUE(file_utils_->DirectoryExists(web_apps_dir));
+  EXPECT_TRUE(file_utils_->DirectoryExists(manifest_resources_directory));
 
   const base::FilePath temp_dir = web_apps_dir.AppendASCII("Temp");
   EXPECT_TRUE(file_utils_->DirectoryExists(temp_dir));
   EXPECT_TRUE(file_utils_->IsDirectoryEmpty(temp_dir));
 
-  const base::FilePath app_dir = web_apps_dir.AppendASCII(app_id);
+  const base::FilePath app_dir =
+      manifest_resources_directory.AppendASCII(app_id);
   EXPECT_TRUE(file_utils_->DirectoryExists(app_dir));
 
   const base::FilePath icons_dir = app_dir.AppendASCII("Icons");
@@ -712,10 +714,11 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
                     SK_ColorBLUE, &icons_map);
   SetIconsMapToRetrieve(std::move(icons_map));
 
-  const base::FilePath profile_dir = profile()->GetPath();
-  const base::FilePath web_apps_dir = profile_dir.AppendASCII("WebApps");
+  const base::FilePath web_apps_dir = GetWebAppsRootDirectory(profile());
+  const base::FilePath manifest_resources_directory =
+      GetManifestResourcesDirectory(web_apps_dir);
 
-  EXPECT_TRUE(file_utils_->CreateDirectory(web_apps_dir));
+  EXPECT_TRUE(file_utils_->CreateDirectory(manifest_resources_directory));
 
   // Induce an error: Simulate "Disk Full" for writing icon files.
   file_utils_->SetRemainingDiskSpaceSize(1024);
@@ -742,7 +745,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   EXPECT_TRUE(file_utils_->IsDirectoryEmpty(temp_dir));
 
   const AppId app_id = GenerateAppIdFromURL(app_url);
-  const base::FilePath app_dir = web_apps_dir.AppendASCII(app_id);
+  const base::FilePath app_dir =
+      manifest_resources_directory.AppendASCII(app_id);
   EXPECT_FALSE(file_utils_->DirectoryExists(app_dir));
 }
 

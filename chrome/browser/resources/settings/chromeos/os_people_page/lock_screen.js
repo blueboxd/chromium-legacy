@@ -167,7 +167,7 @@ Polymer({
    */
   currentRouteChanged(newRoute, oldRoute) {
     if (newRoute == settings.routes.LOCK_SCREEN) {
-      this.updateUnlockType();
+      this.updateUnlockType(/*activeModesChanged=*/ false);
       this.updateNumFingerprints_();
     }
 
@@ -201,11 +201,19 @@ Polymer({
     }
 
     if (selected != LockScreenUnlockType.PIN_PASSWORD && this.setModes_) {
+      // If the user selects PASSWORD only (which sends an asynchronous
+      // setModes_.call() to clear the quick unlock capability), indicate to the
+      // user immediately that the quick unlock capability is cleared by setting
+      // |hasPin| to false. If there is an error clearing quick unlock, revert
+      // |hasPin| to true. This prevents setupPinButton UI delays, except in the
+      // small chance that CrOS fails to remove the quick unlock capability. See
+      // https://crbug.com/1054327 for details.
+      this.hasPin = false;
       this.setModes_.call(null, [], [], function(result) {
         assert(result, 'Failed to clear quick unlock modes');
-        if (!result) {
-          console.error('Failed to clear quick unlock modes');
-        }
+        // Revert |hasPin| to true in the event setModes fails to set lock state
+        // to PASSWORD only.
+        this.hasPin = true;
       });
     }
   },

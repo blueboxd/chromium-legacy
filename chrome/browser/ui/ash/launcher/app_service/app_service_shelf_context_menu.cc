@@ -191,24 +191,17 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
 bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (app_type_) {
     case apps::mojom::AppType::kWeb:
-      if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsWithoutExtensions)) {
-        if (command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
-            command_id <= ash::LAUNCH_TYPE_WINDOW) {
-          auto* provider =
-              web_app::WebAppProvider::Get(controller()->profile());
-          DCHECK(provider);
-          web_app::DisplayMode effective_display_mode =
-              provider->registrar().GetAppEffectiveDisplayMode(
-                  item().id.app_id);
-          return effective_display_mode != web_app::DisplayMode::kUndefined &&
-                 effective_display_mode ==
-                     ConvertLaunchTypeCommandToDisplayMode(command_id);
-        }
-        return ShelfContextMenu::IsCommandIdChecked(command_id);
+      if (command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
+          command_id <= ash::LAUNCH_TYPE_WINDOW) {
+        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
+        DCHECK(provider);
+        web_app::DisplayMode effective_display_mode =
+            provider->registrar().GetAppEffectiveDisplayMode(item().id.app_id);
+        return effective_display_mode != web_app::DisplayMode::kUndefined &&
+               effective_display_mode ==
+                   ConvertLaunchTypeCommandToDisplayMode(command_id);
       }
-      // Otherwise deliberately fall through to fallback on Bookmark Apps.
-      FALLTHROUGH;
+      return ShelfContextMenu::IsCommandIdChecked(command_id);
     case apps::mojom::AppType::kExtension:
       if (command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
           command_id <= ash::LAUNCH_TYPE_WINDOW) {
@@ -382,23 +375,18 @@ void AppServiceShelfContextMenu::ShowAppInfo() {
 
 void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
   switch (app_type_) {
-    case apps::mojom::AppType::kWeb:
-      if (base::FeatureList::IsEnabled(
-              features::kDesktopPWAsWithoutExtensions)) {
-        // Web apps can only toggle between kStandalone and kBrowser.
-        web_app::DisplayMode user_display_mode =
-            ConvertLaunchTypeCommandToDisplayMode(command_id);
-        if (user_display_mode != web_app::DisplayMode::kUndefined) {
-          auto* provider =
-              web_app::WebAppProvider::Get(controller()->profile());
-          DCHECK(provider);
-          provider->registry_controller().SetAppUserDisplayMode(
-              item().id.app_id, user_display_mode);
-        }
-        return;
+    case apps::mojom::AppType::kWeb: {
+      // Web apps can only toggle between kStandalone and kBrowser.
+      web_app::DisplayMode user_display_mode =
+          ConvertLaunchTypeCommandToDisplayMode(command_id);
+      if (user_display_mode != web_app::DisplayMode::kUndefined) {
+        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
+        DCHECK(provider);
+        provider->registry_controller().SetAppUserDisplayMode(
+            item().id.app_id, user_display_mode);
       }
-      // Otherwise deliberately fall through to fallback on Bookmark Apps.
-      FALLTHROUGH;
+      return;
+    }
     case apps::mojom::AppType::kExtension:
       SetExtensionLaunchType(command_id);
       return;

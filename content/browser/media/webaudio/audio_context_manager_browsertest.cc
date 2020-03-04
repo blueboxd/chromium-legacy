@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -70,7 +71,14 @@ class AudioContextManagerTest : public ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AudioContextManagerTest, AudioContextPlaybackRecorded) {
+// Flaky on Linux: https://crbug.com/1047163
+#if defined(OS_LINUX)
+#define MAYBE_AudioContextPlaybackRecorded DISABLED_AudioContextPlaybackRecorded
+#else
+#define MAYBE_AudioContextPlaybackRecorded AudioContextPlaybackRecorded
+#endif
+IN_PROC_BROWSER_TEST_F(AudioContextManagerTest,
+                       MAYBE_AudioContextPlaybackRecorded) {
   EXPECT_TRUE(NavigateToURL(
       shell(), content::GetTestUrl("media/webaudio/", "playback-test.html")));
 
@@ -89,7 +97,14 @@ IN_PROC_BROWSER_TEST_F(AudioContextManagerTest, AudioContextPlaybackRecorded) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AudioContextManagerTest, AudioContextPlaybackTimeUkm) {
+// Flaky on Linux: https://crbug.com/941219
+#if defined(OS_LINUX)
+#define MAYBE_AudioContextPlaybackTimeUkm DISABLED_AudioContextPlaybackTimeUkm
+#else
+#define MAYBE_AudioContextPlaybackTimeUkm AudioContextPlaybackTimeUkm
+#endif
+IN_PROC_BROWSER_TEST_F(AudioContextManagerTest,
+                       MAYBE_AudioContextPlaybackTimeUkm) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   using Entry = ukm::builders::Media_WebAudio_AudioContext_AudibleTime;
 

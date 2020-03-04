@@ -1674,6 +1674,7 @@ body.files-ng .thumbnail-bottom {
 }
 
 body.files-ng .thumbnail-item .filename-label {
+  font-weight: normal;
   padding-inline-end: 12px;
 }
 
@@ -1848,18 +1849,39 @@ body.files-ng .thumbnail-grid .thumbnail-bottom {
   background-color: rgb(232, 246, 253);
 }
 
-/** TODO(lucmult): Style the bg without focus */
 body.files-ng .thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom,
 body.files-ng .thumbnail-grid .thumbnail-item[lead] .thumbnail-bottom,
 body.files-ng .thumbnail-grid .thumbnail-item[selected].directory
     .thumbnail-bottom,
 body.files-ng .thumbnail-grid .thumbnail-item[lead].directory
     .thumbnail-bottom {
+  background-color: var(--google-grey-100);
+}
+
+body.files-ng .thumbnail-grid:focus .thumbnail-item[selected] .thumbnail-bottom,
+body.files-ng .thumbnail-grid:focus .thumbnail-item[lead] .thumbnail-bottom,
+body.files-ng .thumbnail-grid:focus .thumbnail-item[selected].directory
+    .thumbnail-bottom,
+body.files-ng .thumbnail-grid:focus .thumbnail-item[lead].directory
+    .thumbnail-bottom {
   background-color: var(--google-blue-50);
+}
+
+body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[selected]
+    .thumbnail-bottom,
+body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[lead]
+    .thumbnail-bottom,
+body.check-select.files-ng .thumbnail-grid:focus
+    .thumbnail-item[selected].directory .thumbnail-bottom,
+body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[lead].directory
+    .thumbnail-bottom {
   color: var(--google-blue-600);
 }
 
-body.files-ng #list-container .thumbnail-grid .thumbnail-item[lead] {
+body.check-select.files-ng #list-container .thumbnail-grid:focus
+    .thumbnail-item[lead],
+body.files-ng #list-container .thumbnail-grid:focus
+    .thumbnail-item[lead]:not([selected]) {
   /* 2px border: 1px via box-shadow + 1px via border, to accommodate
      the difference between regular border 1px and selected border 2px.*/
   border-color: var(--google-blue-600);
@@ -2633,6 +2655,7 @@ body.files-ng #list-container li .detail-checkmark {
   -webkit-mask-repeat: no-repeat;
   background-color: currentColor;
   background-image: none;
+  color: var(--google-blue-600);
   height: 40px;
   width: 32px;
 }

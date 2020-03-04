@@ -12,6 +12,4 @@ interface DictionaryTest {
 
     void setDerivedDerived(InternalDictionaryDerivedDerived derived);
     InternalDictionaryDerivedDerived getDerivedDerived();
-
-    [CallWith=ScriptState, RaisesException] DOMString stringFromIterable(Dictionary iterableDictionary);
 };

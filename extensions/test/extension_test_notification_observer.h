@@ -111,7 +111,7 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver,
   // notifications to wait for and to check |condition| when observing. This
   // can be NULL if we are instead waiting for a different observer method, like
   // OnPageActionsUpdated().
-  void WaitForCondition(const base::Callback<bool(void)>& condition,
+  void WaitForCondition(const base::RepeatingCallback<bool(void)>& condition,
                         NotificationSet* notification_set);
 
   void WaitForNotification(int notification_type);
@@ -131,10 +131,10 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver,
 
   // The condition for which we are waiting. This should be checked in any
   // observing methods that could trigger it.
-  base::Callback<bool(void)> condition_;
+  base::RepeatingCallback<bool(void)> condition_;
 
   // The closure to quit the currently-running message loop.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // Listens to extension loaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

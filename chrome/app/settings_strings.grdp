@@ -1913,6 +1913,9 @@
   <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
     Cookies
   </message>
+  <message name="IDS_SETTINGS_COOKIES_SITE_SPECIFIC_EXCEPTIONS" desc="Title of cookies page section for managing site specific cookie settings">
+    Manage site specific exceptions
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies and site data site settings.">
     Cookies and site data
   </message>

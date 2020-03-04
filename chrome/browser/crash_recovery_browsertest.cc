@@ -126,7 +126,14 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_Reload) {
 }
 
 // Test that reload after a crash forces a cache revalidation.
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
+//
+// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_ReloadCacheRevalidate DISABLED_ReloadCacheRevalidate
+#else
+#define MAYBE_ReloadCacheRevalidate ReloadCacheRevalidate
+#endif
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_ReloadCacheRevalidate) {
   const char kTestPath[] = "/test";
 
   // Use the test server so as not to bypass cache behavior. The title of the
@@ -188,7 +195,14 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_LoadInNewTab) {
 
 // Tests that reloads of navigation errors behave correctly after a crash.
 // Regression test for http://crbug.com/348918
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
+//
+// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_DoubleReloadWithError DISABLED_DoubleReloadWithError
+#else
+#define MAYBE_DoubleReloadWithError DoubleReloadWithError
+#endif
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_DoubleReloadWithError) {
   GURL url(content::GetWebUIURL("bogus"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
@@ -206,7 +220,14 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
 
 // Tests that a beforeunload handler doesn't run if user navigates to
 // chrome::crash.
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, BeforeUnloadNotRun) {
+//
+// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_BeforeUnloadNotRun DISABLED_BeforeUnloadNotRun
+#else
+#define MAYBE_BeforeUnloadNotRun BeforeUnloadNotRun
+#endif
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_BeforeUnloadNotRun) {
   const char* kBeforeUnloadHTML =
     "<html><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"

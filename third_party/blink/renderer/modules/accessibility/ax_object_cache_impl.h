@@ -33,8 +33,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
@@ -44,6 +42,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -401,9 +401,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::PermissionStatus accessibility_event_permission_;
   // The permission service, enabling us to check for event listener
   // permission.
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
-  mojo::Receiver<mojom::blink::PermissionObserver>
-      permission_observer_receiver_{this};
+  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoReceiver<mojom::blink::PermissionObserver>
+      permission_observer_receiver_;
 
   // The main document, plus any page popups.
   HeapHashSet<WeakMember<Document>> documents_;

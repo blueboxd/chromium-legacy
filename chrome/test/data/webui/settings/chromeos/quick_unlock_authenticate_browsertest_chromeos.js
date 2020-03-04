@@ -389,6 +389,39 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals([], quickUnlockPrivateApi.activeModes);
       });
 
+      // Tests correct UI conflict resolution in the event of a race condition
+      // that may occur when:
+      // (1) User selects PIN_PASSSWORD, and successfully sets a pin, adding
+      //     QuickUnlockMode.PIN to active modes.
+      // (2) User selects PASSWORD, QuickUnlockMode.PIN capability is cleared
+      //     from the active modes, notifying LockStateBehavior to call
+      //     updateUnlockType to fetch the active modes asynchronously.
+      // (3) User selects PIN_PASSWORD, but the process from step 2 has
+      //     not yet completed.
+      // See https://crbug.com/1054327 for details.
+      test('UserSelectsPinBeforePasswordOnlyStateSet', function() {
+        setActiveModes([QuickUnlockMode.PIN]);
+        assertRadioButtonChecked(pinPasswordRadioButton);
+        assertTrue(isSetupPinButtonVisible());
+        Polymer.dom.flush();
+        assertEquals(testElement.$$('#setupPinButton').innerText, 'Change PIN');
+
+        // Clicking will trigger an async call which setActiveModes([]) fakes.
+        passwordRadioButton.click();
+        assertFalse(isSetupPinButtonVisible());
+
+        pinPasswordRadioButton.click();
+        assertTrue(isSetupPinButtonVisible());
+
+        // Simulate the state change to PASSWORD after selecting PIN radio.
+        setActiveModes([]);
+
+        Polymer.dom.flush();
+        assertRadioButtonChecked(pinPasswordRadioButton);
+        assertTrue(isSetupPinButtonVisible());
+        assertEquals(testElement.$$('#setupPinButton').innerText, 'Set up PIN');
+      });
+
       // Tapping the PIN configure button opens up the setup PIN dialog, and
       // records a chose pin or password uma.
       test('TappingConfigureOpensSetupPin', function() {

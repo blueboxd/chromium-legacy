@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -14,8 +15,11 @@
 
 namespace web_app {
 
-constexpr base::FilePath::CharType kWebAppsDirectoryName[] =
-    FILE_PATH_LITERAL("WebApps");
+constexpr base::FilePath::CharType kManifestResourcesDirectoryName[] =
+    FILE_PATH_LITERAL("Manifest Resources");
+
+constexpr base::FilePath::CharType kTempDirectoryName[] =
+    FILE_PATH_LITERAL("Temp");
 
 bool AreWebAppsEnabled(Profile* profile) {
   if (!profile)
@@ -67,8 +71,29 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
   return is_web_app_metrics_enabled ? original_profile : nullptr;
 }
 
-base::FilePath GetWebAppsDirectory(Profile* profile) {
-  return profile->GetPath().Append(base::FilePath(kWebAppsDirectoryName));
+base::FilePath GetWebAppsRootDirectory(Profile* profile) {
+  return profile->GetPath().Append(chrome::kWebAppDirname);
+}
+
+base::FilePath GetManifestResourcesDirectory(
+    const base::FilePath& web_apps_root_directory) {
+  return web_apps_root_directory.Append(kManifestResourcesDirectoryName);
+}
+
+base::FilePath GetManifestResourcesDirectory(Profile* profile) {
+  return GetManifestResourcesDirectory(GetWebAppsRootDirectory(profile));
+}
+
+base::FilePath GetManifestResourcesDirectoryForApp(
+    const base::FilePath& web_apps_root_directory,
+    const AppId& app_id) {
+  return GetManifestResourcesDirectory(web_apps_root_directory)
+      .AppendASCII(app_id);
+}
+
+base::FilePath GetWebAppsTempDirectory(
+    const base::FilePath& web_apps_root_directory) {
+  return web_apps_root_directory.Append(kTempDirectoryName);
 }
 
 std::string GetProfileCategoryForLogging(Profile* profile) {

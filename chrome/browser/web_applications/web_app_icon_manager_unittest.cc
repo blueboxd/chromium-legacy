@@ -389,9 +389,12 @@ TEST_F(WebAppIconManagerTest, DeleteData_Success) {
   WriteIcons(app1_id, sizes_px, colors);
   WriteIcons(app2_id, sizes_px, colors);
 
-  const base::FilePath web_apps_directory = GetWebAppsDirectory(profile());
-  const base::FilePath app1_dir = web_apps_directory.AppendASCII(app1_id);
-  const base::FilePath app2_dir = web_apps_directory.AppendASCII(app2_id);
+  const base::FilePath web_apps_root_directory =
+      GetWebAppsRootDirectory(profile());
+  const base::FilePath app1_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_root_directory, app1_id);
+  const base::FilePath app2_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_root_directory, app2_id);
 
   EXPECT_TRUE(file_utils().DirectoryExists(app1_dir));
   EXPECT_FALSE(file_utils().IsDirectoryEmpty(app1_dir));
@@ -407,7 +410,9 @@ TEST_F(WebAppIconManagerTest, DeleteData_Success) {
                             }));
   run_loop.Run();
 
-  EXPECT_TRUE(file_utils().DirectoryExists(web_apps_directory));
+  base::FilePath manifest_resources_directory =
+      GetManifestResourcesDirectory(web_apps_root_directory);
+  EXPECT_TRUE(file_utils().DirectoryExists(manifest_resources_directory));
 
   EXPECT_TRUE(file_utils().DirectoryExists(app1_dir));
   EXPECT_FALSE(file_utils().IsDirectoryEmpty(app1_dir));

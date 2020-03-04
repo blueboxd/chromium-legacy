@@ -1538,8 +1538,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
+// Flaky on Linux: https://crbug.com/1054194
+#if defined(OS_LINUX)
+#define MAYBE_DoesNotCacheIfRecordingAudio DISABLED_DoesNotCacheIfRecordingAudio
+#else
+#define MAYBE_DoesNotCacheIfRecordingAudio DoesNotCacheIfRecordingAudio
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCacheIfRecordingAudio) {
+                       MAYBE_DoesNotCacheIfRecordingAudio) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to an empty page.

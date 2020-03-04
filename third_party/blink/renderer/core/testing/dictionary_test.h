@@ -44,10 +44,6 @@ class DictionaryTest : public ScriptWrappable {
   void setDerivedDerived(const InternalDictionaryDerivedDerived*);
   InternalDictionaryDerivedDerived* getDerivedDerived();
 
-  String stringFromIterable(ScriptState*,
-                            Dictionary iterable,
-                            ExceptionState&) const;
-
   void Trace(Visitor*) override;
 
  private:

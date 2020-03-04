@@ -92,15 +92,13 @@ std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
 }
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const std::string& extension_id,
+                                      const std::string& app_id,
                                       const GURL& url) {
   DCHECK(!profile_path.empty());
   base::FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
 
-  if (!extension_id.empty()) {
-    return app_data_dir.AppendASCII(
-        GenerateApplicationNameFromAppId(extension_id));
-  }
+  if (!app_id.empty())
+    return app_data_dir.AppendASCII(GenerateApplicationNameFromAppId(app_id));
 
   std::string host(url.host());
   std::string scheme(url.has_scheme() ? url.scheme() : "http");

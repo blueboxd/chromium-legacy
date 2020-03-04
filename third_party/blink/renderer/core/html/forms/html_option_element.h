@@ -101,8 +101,6 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   bool MatchesDefaultPseudoClass() const override;
   bool MatchesEnabledPseudoClass() const override;
   void ParseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode&) override;
   void AccessKeyAction(bool) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

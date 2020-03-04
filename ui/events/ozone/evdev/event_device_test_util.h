@@ -88,6 +88,7 @@ extern const DeviceCapabilities kNocturneStylus;
 extern const DeviceCapabilities kKohakuTouchscreen;
 extern const DeviceCapabilities kKohakuStylus;
 extern const DeviceCapabilities kXboxElite;
+extern const DeviceCapabilities kDrallionStylus;
 }  // namspace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_TEST_UTIL_H_

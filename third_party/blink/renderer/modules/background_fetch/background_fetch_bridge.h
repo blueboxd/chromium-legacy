@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -44,6 +44,7 @@ class BackgroundFetchBridge final
 
   explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
   virtual ~BackgroundFetchBridge();
+  void Trace(Visitor* visitor) override;
 
   // Creates a new Background Fetch registration identified by |developer_id|
   // for the sequence of |requests|. The |callback| will be invoked when the
@@ -80,7 +81,8 @@ class BackgroundFetchBridge final
       mojom::blink::BackgroundFetchError error,
       mojom::blink::BackgroundFetchRegistrationPtr registration_ptr);
 
-  mojo::Remote<mojom::blink::BackgroundFetchService> background_fetch_service_;
+  HeapMojoRemote<mojom::blink::BackgroundFetchService>
+      background_fetch_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBridge);
 };

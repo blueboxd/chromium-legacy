@@ -6763,3 +6763,6 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stabili
 crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
+
+# Sheriff 2020-03-04
+crbug.com/1058244 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]

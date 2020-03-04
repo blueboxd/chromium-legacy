@@ -84,6 +84,30 @@ bool HTMLOptGroupElement::MatchesEnabledPseudoClass() const {
   return !IsDisabledFormControl();
 }
 
+void HTMLOptGroupElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLElement::ChildrenChanged(change);
+  auto* select = OwnerSelectElement();
+  if (!select)
+    return;
+  if (change.type == ChildrenChangeType::kElementInserted) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(change.sibling_changed))
+      select->OptionInserted(*option, option->Selected());
+  } else if (change.type == ChildrenChangeType::kElementRemoved) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(change.sibling_changed))
+      select->OptionRemoved(*option);
+  } else if (change.type == ChildrenChangeType::kAllChildrenRemoved) {
+    DCHECK(change.removed_nodes);
+    for (Node* node : *change.removed_nodes) {
+      if (auto* option = DynamicTo<HTMLOptionElement>(node))
+        select->OptionRemoved(*option);
+    }
+  }
+}
+
+bool HTMLOptGroupElement::ChildrenChangedAllChildrenRemovedNeedsList() const {
+  return true;
+}
+
 Node::InsertionNotificationRequest HTMLOptGroupElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);

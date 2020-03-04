@@ -133,5 +133,30 @@ class LaunchQueue {
   setConsumer(consumer) {}
 }
 
+/**
+ * @typedef {{
+ *    description: (string|undefined),
+ *    mimeTypes: (Array<string>|undefined),
+ *    extensions: (Array<string>|undefined)
+ * }}
+ */
+var ChooseFileSystemEntriesOptionsAccepts;
+
+/**
+ * @typedef {{
+ *    type: (string|undefined),
+ *    multiple: (boolean|undefined),
+ *    accepts: (Array<ChooseFileSystemEntriesOptionsAccepts>|undefined),
+ *    excludeAcceptAllOption: (boolean|undefined)
+ * }}
+ */
+var chooseFileSystemEntriesOptions;
+
+/**
+ * @param {(chooseFileSystemEntriesOptions|undefined)} options
+ * @return {Promise<(FileSystemHandle|Array<FileSystemHandle>)>}
+ */
+window.chooseFileSystemEntries = function(options) {};
+
 /** @type {LaunchQueue} */
 window.launchQueue;

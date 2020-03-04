@@ -133,7 +133,7 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
     DCHECK(item);
     if (item->IsText()) {
       PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
-      if (UNLIKELY(has_hanging_)) {
+      if (UNLIKELY(has_hanging)) {
         AdjustScrollableOverflowForHanging(line.RectInContainerBlock(),
                                            container_writing_mode,
                                            &child_scroll_overflow);

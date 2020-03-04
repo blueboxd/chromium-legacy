@@ -23,7 +23,10 @@ js_type_check("closure_compile") {
 }
 
 js_library("cookies_page") {
-  deps = [ "//ui/webui/resources/js:load_time_data" ]
+  deps = [
+    "../site_settings:constants",
+    "//ui/webui/resources/js:load_time_data",
+  ]
 }
 
 js_library("personalization_options") {

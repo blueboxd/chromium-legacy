@@ -37,28 +37,28 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForInteger) {
   using Set = NewLinkedHashSet<int>;
   Set set;
   Set::AddResult result = set.insert(1);  // set: 1 vector: anchor 1
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 1);
   EXPECT_EQ(set.front(), 1);
   EXPECT_EQ(set.back(), 1);
   EXPECT_EQ(set.size(), 1u);
 
   result = set.insert(2);  // set: 1, 2 vector: anchor 1, 2
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 2);
   EXPECT_EQ(set.front(), 1);
   EXPECT_EQ(set.back(), 2);
   EXPECT_EQ(set.size(), 2u);
 
   result = set.insert(1);  // set: 1, 2 vector: anchor 1, 2
-  EXPECT_EQ(result.is_new_entry, false);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 1);
   EXPECT_EQ(set.front(), 1);
   EXPECT_EQ(set.back(), 2);
   EXPECT_EQ(set.size(), 2u);
 
   result = set.insert(3);  // set: 1, 2, 3 vector: anchor 1, 2, 3
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 3);
   EXPECT_EQ(set.front(), 1);
   EXPECT_EQ(set.back(), 3);
@@ -70,7 +70,7 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForInteger) {
   EXPECT_EQ(set.size(), 2u);
 
   result = set.insert(1);  // set: 2, 3, 1 vector: anchor 1, 2, 3
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 1);
   EXPECT_EQ(set.front(), 2);
   EXPECT_EQ(set.back(), 1);
@@ -82,14 +82,14 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForInteger) {
   EXPECT_EQ(set.size(), 2u);
 
   result = set.insert(4);  // set: 2, 1, 4 vector: anchor 1, 2, 4
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 4);
   EXPECT_EQ(set.front(), 2);
   EXPECT_EQ(set.back(), 4);
   EXPECT_EQ(set.size(), 3u);
 
   result = set.insert(5);  // set: 2, 1, 4, 5 vector: anchor 1, 2, 4, 5
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 5);
   EXPECT_EQ(set.front(), 2);
   EXPECT_EQ(set.back(), 5);
@@ -101,32 +101,133 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForInteger) {
   set.erase(211);
 
   result = set.insert(3);  // set: 2, 1, 4, 5, 3 vector: anchor 1, 2, 4, 5, 3
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, 3);
   EXPECT_EQ(set.front(), 2);
   EXPECT_EQ(set.back(), 3);
   EXPECT_EQ(set.size(), 5u);
 }
 
+TEST(NewLinkedHashSetTest, RemoveFirstAndPopBackForInteger) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+
+  for (int i = 1; i <= 5; i++) {
+    set.insert(i);
+  }
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 5);
+
+  set.RemoveFirst();
+  EXPECT_EQ(set.front(), 2);
+  EXPECT_EQ(set.back(), 5);
+
+  set.pop_back();
+  EXPECT_EQ(set.front(), 2);
+  EXPECT_EQ(set.back(), 4);
+
+  set.RemoveFirst();
+  EXPECT_EQ(set.front(), 3);
+  EXPECT_EQ(set.back(), 4);
+
+  set.pop_back();
+  EXPECT_EQ(set.front(), 3);
+  EXPECT_EQ(set.back(), 3);
+
+  set.RemoveFirst();
+  EXPECT_TRUE(set.IsEmpty());
+
+  set.insert(1);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 1);
+  set.pop_back();
+  EXPECT_TRUE(set.IsEmpty());
+}
+
+TEST(NewLinkedHashSetTest, PrependOrMoveToFirstForInteger) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  Set::AddResult result =
+      set.PrependOrMoveToFirst(1);  // set: 1 vector: anchor 1
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 1);
+  EXPECT_EQ(set.size(), 1u);
+
+  result = set.insert(2);  // set: 1, 2 vector: anchor 1, 2
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 2);
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.PrependOrMoveToFirst(2);  // set: 2, 1 vector: anchor 1, 2
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+  EXPECT_EQ(set.front(), 2);
+  EXPECT_EQ(set.back(), 1);
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.PrependOrMoveToFirst(3);  // set: 3, 2, 1 vector: anchor 1, 2, 3
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 3);
+  EXPECT_EQ(set.front(), 3);
+  EXPECT_EQ(set.back(), 1);
+  EXPECT_EQ(set.size(), 3u);
+}
+
+TEST(NewLinkedHashSetTest, AppendOrMoveToLastForInteger) {
+  using Set = NewLinkedHashSet<int>;
+  Set set;
+  Set::AddResult result = set.AppendOrMoveToLast(1);  // set: 1 vector: anchor 1
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 1);
+  EXPECT_EQ(set.size(), 1u);
+
+  result = set.insert(2);  // set: 1, 2 vector: anchor 1, 2
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 2);
+  EXPECT_EQ(set.front(), 1);
+  EXPECT_EQ(set.back(), 2);
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.AppendOrMoveToLast(1);  // set: 2, 1 vector: anchor 1, 2
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 1);
+  EXPECT_EQ(set.front(), 2);
+  EXPECT_EQ(set.back(), 1);
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.AppendOrMoveToLast(3);  // set: 2, 1, 3 vector: anchor 1, 2, 3
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, 3);
+  EXPECT_EQ(set.front(), 2);
+  EXPECT_EQ(set.back(), 3);
+  EXPECT_EQ(set.size(), 3u);
+}
+
 TEST(NewLinkedHashSetTest, InsertAndEraseForString) {
   using Set = NewLinkedHashSet<String>;
   Set set;
   Set::AddResult result = set.insert("a");  // set: "a" vector: anchor "a"
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, "a");
   EXPECT_EQ(set.front(), "a");
   EXPECT_EQ(set.back(), "a");
   EXPECT_EQ(set.size(), 1u);
 
   result = set.insert("b");  // set: "a" "b" vector: anchor "a" "b"
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, "b");
   EXPECT_EQ(set.front(), "a");
   EXPECT_EQ(set.back(), "b");
   EXPECT_EQ(set.size(), 2u);
 
   result = set.insert("");  // set: "a" "b" "" vector: anchor "a" "b" ""
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, "");
   EXPECT_EQ(set.front(), "a");
   EXPECT_EQ(set.back(), "");
@@ -134,7 +235,7 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForString) {
 
   result = set.insert(
       "abc");  // set: "a" "b" "" "abc" vector: anchor "a" "b" "" "abc"
-  EXPECT_EQ(result.is_new_entry, true);
+  EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(*result.stored_value, "abc");
   EXPECT_EQ(set.front(), "a");
   EXPECT_EQ(set.back(), "abc");
@@ -162,6 +263,109 @@ TEST(NewLinkedHashSetTest, InsertAndEraseForString) {
 
   set.insert("c");  // set: "a" "b" "c" vector: anchor "a" "b" hole "c"
   EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "c");
+  EXPECT_EQ(set.size(), 3u);
+}
+
+TEST(NewLinkedHashSetTest, RemoveFirstAndPopBackForString) {
+  using Set = NewLinkedHashSet<String>;
+  Set set;
+
+  set.insert("a");
+  set.insert("b");
+  set.insert("c");
+  set.insert("d");
+  set.insert("e");
+
+  EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "e");
+
+  set.RemoveFirst();
+  EXPECT_EQ(set.front(), "b");
+  EXPECT_EQ(set.back(), "e");
+
+  set.pop_back();
+  EXPECT_EQ(set.front(), "b");
+  EXPECT_EQ(set.back(), "d");
+
+  set.RemoveFirst();
+  EXPECT_EQ(set.front(), "c");
+  EXPECT_EQ(set.back(), "d");
+
+  set.pop_back();
+  EXPECT_EQ(set.front(), "c");
+  EXPECT_EQ(set.back(), "c");
+
+  set.RemoveFirst();
+  EXPECT_TRUE(set.IsEmpty());
+}
+
+TEST(NewLinkedHashSetTest, PrependOrMoveToFirstForString) {
+  using Set = NewLinkedHashSet<String>;
+  Set set;
+  Set::AddResult result =
+      set.PrependOrMoveToFirst("a");  // set: "a" vector: anchor "a"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "a");
+  EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "a");
+  EXPECT_EQ(set.size(), 1u);
+
+  result = set.insert("b");  // set: "a", "b" vector: anchor "a", "b"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "b");
+  EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "b");
+  EXPECT_EQ(set.size(), 2u);
+
+  result =
+      set.PrependOrMoveToFirst("b");  // set: "b", "a" vector: anchor "a", "b"
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "b");
+  EXPECT_EQ(set.front(), "b");
+  EXPECT_EQ(set.back(), "a");
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.PrependOrMoveToFirst(
+      "c");  // set: "c", "b", "a" vector: anchor "a", "b", "c"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "c");
+  EXPECT_EQ(set.front(), "c");
+  EXPECT_EQ(set.back(), "a");
+  EXPECT_EQ(set.size(), 3u);
+}
+
+TEST(NewLinkedHashSetTest, AppendOrMoveToLastForString) {
+  using Set = NewLinkedHashSet<String>;
+  Set set;
+  Set::AddResult result =
+      set.AppendOrMoveToLast("a");  // set: "a" vector: anchor "a"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "a");
+  EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "a");
+  EXPECT_EQ(set.size(), 1u);
+
+  result = set.insert("b");  // set: "a", "b" vector: anchor "a", "b"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "b");
+  EXPECT_EQ(set.front(), "a");
+  EXPECT_EQ(set.back(), "b");
+  EXPECT_EQ(set.size(), 2u);
+
+  result =
+      set.AppendOrMoveToLast("a");  // set: "b", "a" vector: anchor "a", "b"
+  EXPECT_FALSE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "a");
+  EXPECT_EQ(set.front(), "b");
+  EXPECT_EQ(set.back(), "a");
+  EXPECT_EQ(set.size(), 2u);
+
+  result = set.AppendOrMoveToLast(
+      "c");  // set: "b", "a", "c" vector: anchor "a", "b", "c"
+  EXPECT_TRUE(result.is_new_entry);
+  EXPECT_EQ(*result.stored_value, "c");
+  EXPECT_EQ(set.front(), "b");
   EXPECT_EQ(set.back(), "c");
   EXPECT_EQ(set.size(), 3u);
 }

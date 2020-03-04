@@ -28,42 +28,37 @@ namespace web_app {
 
 namespace {
 
-constexpr base::FilePath::CharType kTempDirectoryName[] =
-    FILE_PATH_LITERAL("Temp");
-
-constexpr base::FilePath::CharType kIconsDirectoryName[] =
-    FILE_PATH_LITERAL("Icons");
-
-base::FilePath GetAppDirectory(const base::FilePath& web_apps_directory,
-                               const AppId& app_id) {
-  return web_apps_directory.AppendASCII(app_id);
-}
-
-base::FilePath GetTempDir(FileUtilsWrapper* utils,
-                          const base::FilePath& web_apps_dir) {
-  // Create the temp directory as a sub-directory of the WebApps directory.
-  // This guarantees it is on the same file system as the WebApp's eventual
-  // install target.
-  base::FilePath temp_path = web_apps_dir.Append(kTempDirectoryName);
-  if (utils->PathExists(temp_path)) {
-    if (!utils->DirectoryExists(temp_path)) {
-      LOG(ERROR) << "Not a directory: " << temp_path.value();
-      return base::FilePath();
+// Returns false if directory doesn't exist or it is not writable.
+bool CreateDirectoryIfNotExists(FileUtilsWrapper* utils,
+                                const base::FilePath& path) {
+  if (utils->PathExists(path)) {
+    if (!utils->DirectoryExists(path)) {
+      LOG(ERROR) << "Not a directory: " << path.value();
+      return false;
     }
-    if (!utils->PathIsWritable(temp_path)) {
-      LOG(ERROR) << "Can't write to path: " << temp_path.value();
-      return base::FilePath();
+    if (!utils->PathIsWritable(path)) {
+      LOG(ERROR) << "Can't write to path: " << path.value();
+      return false;
     }
     // This is a directory we can write to.
-    return temp_path;
+    return true;
   }
 
   // Directory doesn't exist, so create it.
-  if (!utils->CreateDirectory(temp_path)) {
-    LOG(ERROR) << "Could not create directory: " << temp_path.value();
-    return base::FilePath();
+  if (!utils->CreateDirectory(path)) {
+    LOG(ERROR) << "Could not create directory: " << path.value();
+    return false;
   }
-  return temp_path;
+  return true;
+}
+
+// This is a private implementation detail of WebAppIconManager, where and how
+// to store icon files.
+base::FilePath GetAppIconsDirectory(
+    const base::FilePath& app_manifest_resources_directory) {
+  constexpr base::FilePath::CharType kIconsDirectoryName[] =
+      FILE_PATH_LITERAL("Icons");
+  return app_manifest_resources_directory.Append(kIconsDirectoryName);
 }
 
 bool WriteIcon(FileUtilsWrapper* utils,
@@ -95,7 +90,7 @@ bool WriteIcon(FileUtilsWrapper* utils,
 bool WriteIcons(FileUtilsWrapper* utils,
                 const base::FilePath& app_dir,
                 const std::map<SquareSizePx, SkBitmap>& icon_bitmaps) {
-  const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
+  const base::FilePath icons_dir = GetAppIconsDirectory(app_dir);
   if (!utils->CreateDirectory(icons_dir)) {
     LOG(ERROR) << "Could not create icons directory.";
     return false;
@@ -116,10 +111,13 @@ bool WriteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
                        const base::FilePath& web_apps_directory,
                        const AppId& app_id,
                        const std::map<SquareSizePx, SkBitmap>& icons) {
-  const base::FilePath temp_dir = GetTempDir(utils.get(), web_apps_directory);
-  if (temp_dir.empty()) {
-    LOG(ERROR)
-        << "Could not get path to WebApps temporary directory in profile.";
+  // Create the temp directory under the web apps root.
+  // This guarantees it is on the same file system as the WebApp's eventual
+  // install target.
+  base::FilePath temp_dir = GetWebAppsTempDirectory(web_apps_directory);
+  if (!CreateDirectoryIfNotExists(utils.get(), temp_dir)) {
+    LOG(ERROR) << "Could not create or write to WebApps temporary directory in "
+                  "profile.";
     return false;
   }
 
@@ -132,12 +130,20 @@ bool WriteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
   if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), icons))
     return false;
 
-  // Commit: move whole app data dir to final destination in one mv operation.
-  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
+  base::FilePath manifest_resources_directory =
+      GetManifestResourcesDirectory(web_apps_directory);
+  if (!CreateDirectoryIfNotExists(utils.get(), manifest_resources_directory)) {
+    LOG(ERROR) << "Could not create Manifest Resources directory.";
+    return false;
+  }
 
-  // Try to delete the destination. Needed for update.
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_directory, app_id);
+
+  // Try to delete the destination. Needed for update. Ignore the result.
   utils->DeleteFileRecursively(app_dir);
 
+  // Commit: move whole app data dir to final destination in one mv operation.
   if (!utils->Move(app_temp_dir.GetPath(), app_dir)) {
     LOG(ERROR) << "Could not move temp WebApp directory to final destination.";
     return false;
@@ -152,15 +158,18 @@ bool WriteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
 bool DeleteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
                         const base::FilePath& web_apps_directory,
                         const AppId& app_id) {
-  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_directory, app_id);
+
   return utils->DeleteFileRecursively(app_dir);
 }
 
 base::FilePath GetIconFileName(const base::FilePath& web_apps_directory,
                                const AppId& app_id,
                                int icon_size_px) {
-  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
-  const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_directory, app_id);
+  base::FilePath icons_dir = GetAppIconsDirectory(app_dir);
 
   return icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_size_px));
 }
@@ -269,7 +278,7 @@ WebAppIconManager::WebAppIconManager(Profile* profile,
                                      WebAppRegistrar& registrar,
                                      std::unique_ptr<FileUtilsWrapper> utils)
     : registrar_(registrar), utils_(std::move(utils)) {
-  web_apps_directory_ = GetWebAppsDirectory(profile);
+  web_apps_directory_ = GetWebAppsRootDirectory(profile);
 }
 
 WebAppIconManager::~WebAppIconManager() = default;

@@ -17,16 +17,11 @@ import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Tests the behavior of FindInPageController and FindInPageCallback.
  */
 @RunWith(WebLayerJUnit4ClassRunner.class)
 public class FindInPageTest {
-    private static final int COUNTDOWN_TIMEOUT_SECONDS = 6;
-
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
@@ -37,8 +32,8 @@ public class FindInPageTest {
     private static class CallbackImpl extends FindInPageCallback {
         public int mNumberOfMatches;
         public int mActiveMatchIndex;
-        public CountDownLatch mResultCountDown;
-        public CountDownLatch mEndedCountDown;
+        public BoundedCountDownLatch mResultCountDown;
+        public BoundedCountDownLatch mEndedCountDown;
 
         @Override
         public void onFindResult(int numberOfMatches, int activeMatchIndex, boolean finalUpdate) {
@@ -54,14 +49,10 @@ public class FindInPageTest {
     }
 
     private void searchFor(String text, boolean forward) {
-        mCallback.mResultCountDown = new CountDownLatch(1);
+        mCallback.mResultCountDown = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTab().getFindInPageController().find(text, forward); });
-        try {
-            mCallback.mResultCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assert.fail(e.toString());
-        }
+        mCallback.mResultCountDown.timedAwait();
     }
 
     private void searchFor(String text) {
@@ -136,33 +127,33 @@ public class FindInPageTest {
 
     @Test
     @SmallTest
-    public void testHideOnNavigate() throws InterruptedException {
+    public void testHideOnNavigate() {
         setUp("shakespeare.html");
 
-        mCallback.mEndedCountDown = new CountDownLatch(1);
+        mCallback.mEndedCountDown = new BoundedCountDownLatch(1);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getTab().getNavigationController().navigate(Uri.parse("simple_page.html"));
         });
 
-        mCallback.mEndedCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        mCallback.mEndedCountDown.timedAwait();
         verifyFindSessionInactive();
     }
 
     @Test
     @SmallTest
-    public void testHideOnNewTab() throws InterruptedException {
+    public void testHideOnNewTab() {
         setUp("new_browser.html");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getBrowser().getActiveTab().setNewTabCallback(new NewTabCallbackImpl());
         });
 
-        mCallback.mEndedCountDown = new CountDownLatch(1);
+        mCallback.mEndedCountDown = new BoundedCountDownLatch(1);
 
         // This touch creates a new tab.
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
 
-        mCallback.mEndedCountDown.await(COUNTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        mCallback.mEndedCountDown.timedAwait();
     }
 }

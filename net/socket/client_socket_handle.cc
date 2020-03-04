@@ -125,9 +125,10 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
   }
 }
 
-void ClientSocketHandle::CloseIdleSocketsInGroup() {
+void ClientSocketHandle::CloseIdleSocketsInGroup(
+    const char* net_log_reason_utf8) {
   if (pool_)
-    pool_->CloseIdleSocketsInGroup(group_id_);
+    pool_->CloseIdleSocketsInGroup(group_id_, net_log_reason_utf8);
 }
 
 bool ClientSocketHandle::GetLoadTimingInfo(

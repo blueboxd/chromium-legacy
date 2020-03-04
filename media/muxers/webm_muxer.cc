@@ -457,12 +457,14 @@ bool WebmMuxer::FlushNextFrame() {
 base::TimeTicks WebmMuxer::UpdateLastTimestampMonotonically(
     base::TimeTicks timestamp,
     base::TimeTicks* last_timestamp) {
+  base::TimeTicks compensated_timestamp = timestamp - total_time_in_pause_;
   // In theory, time increases monotonically. In practice, it does not.
   // See http://crbug/618407.
-  DLOG_IF(WARNING, timestamp < *last_timestamp)
+  DLOG_IF(WARNING, compensated_timestamp < *last_timestamp)
       << "Encountered a non-monotonically increasing timestamp. Was: "
-      << *last_timestamp << ", now: " << timestamp;
-  *last_timestamp = std::max(*last_timestamp, timestamp);
+      << *last_timestamp << ", compensated: " << compensated_timestamp
+      << ", uncompensated: " << timestamp;
+  *last_timestamp = std::max(*last_timestamp, compensated_timestamp);
   return *last_timestamp;
 }
 

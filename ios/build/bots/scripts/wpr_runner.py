@@ -392,9 +392,10 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
     """
 
     test_config = {}
+    test_config['invert'] = False
+    test_config['test_filter'] = []
     if test_app:
       if test_app.included_tests:
-        test_config['invert'] = False
         test_config['test_filter'] = test_app.included_tests
       elif test_app.excluded_tests:
         test_config['invert'] = True

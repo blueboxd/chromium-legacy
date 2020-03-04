@@ -257,6 +257,26 @@ public class LocationBarLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     @Feature({"OmniboxSearchEngineLogo"})
+    public void testOmniboxSearchEngineLogo_backAndForthFromIncognito() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View iconView = locationBar.getSecurityIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+
+        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
+        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
+
+        onView(withId(R.id.location_bar_status)).check((view, e) -> {
+            Assert.assertEquals(1.0f, view.getAlpha(), 0f);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    @Feature({"OmniboxSearchEngineLogo"})
     public void testOmniboxSearchEngineLogo_unfocusedOnNTP() {
         final LocationBarLayout locationBar = getLocationBar();
         final View iconView = locationBar.getSecurityIconView();

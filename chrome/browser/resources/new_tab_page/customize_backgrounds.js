@@ -19,8 +19,19 @@ class CustomizeBackgroundsElement extends PolymerElement {
 
   static get properties() {
     return {
+      /** @private {newTabPage.mojom.BackgroundCollection} */
+      selectedCollection: {
+        notify: true,
+        observer: 'onSelectedCollectionChange_',
+        type: Object,
+        value: null,
+      },
+
       /** @private {!Array<!newTabPage.mojom.BackgroundCollection>} */
       collections_: Array,
+
+      /** @private {!Array<!newTabPage.mojom.BackgroundImage>} */
+      images_: Array,
     };
   }
 
@@ -30,6 +41,33 @@ class CustomizeBackgroundsElement extends PolymerElement {
         ({collections}) => {
           this.collections_ = collections;
         });
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onCollectionClick_(e) {
+    this.selectedCollection = this.$.collectionsRepeat.itemForElement(e.target);
+  }
+
+  /** @private */
+  async onSelectedCollectionChange_() {
+    this.images_ = [];
+    if (!this.selectedCollection) {
+      return;
+    }
+    const collectionId = this.selectedCollection.id;
+    const {images} =
+        await BrowserProxy.getInstance().handler.getBackgroundImages(
+            collectionId);
+    // We check the IDs match since the user may have already moved to a
+    // different collection before the results come back.
+    if (!this.selectedCollection ||
+        this.selectedCollection.id !== collectionId) {
+      return;
+    }
+    this.images_ = images;
   }
 }
 

@@ -204,13 +204,30 @@ void NewTabPageHandler::UpdateMostVisitedTile(
 
 void NewTabPageHandler::GetBackgroundCollections(
     GetBackgroundCollectionsCallback callback) {
-  if (!ntp_background_service_) {
+  if (!ntp_background_service_ || background_collections_callback_) {
     std::move(callback).Run(
         std::vector<new_tab_page::mojom::BackgroundCollectionPtr>());
     return;
   }
   background_collections_callback_ = std::move(callback);
   ntp_background_service_->FetchCollectionInfo();
+}
+
+void NewTabPageHandler::GetBackgroundImages(
+    const std::string& collection_id,
+    GetBackgroundImagesCallback callback) {
+  if (background_images_callback_) {
+    std::move(background_images_callback_)
+        .Run(std::vector<new_tab_page::mojom::BackgroundImagePtr>());
+  }
+  if (!ntp_background_service_) {
+    std::move(callback).Run(
+        std::vector<new_tab_page::mojom::BackgroundImagePtr>());
+    return;
+  }
+  images_request_collection_id_ = collection_id;
+  background_images_callback_ = std::move(callback);
+  ntp_background_service_->FetchCollectionImageInfo(collection_id);
 }
 
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
@@ -248,6 +265,7 @@ void NewTabPageHandler::OnCollectionInfoAvailable() {
   std::vector<new_tab_page::mojom::BackgroundCollectionPtr> collections;
   for (const auto& info : ntp_background_service_->collection_info()) {
     auto collection = new_tab_page::mojom::BackgroundCollection::New();
+    collection->id = info.collection_id;
     collection->label = info.collection_name;
     collection->preview_image_url = GURL(info.preview_image_url);
     collections.push_back(std::move(collection));
@@ -255,7 +273,25 @@ void NewTabPageHandler::OnCollectionInfoAvailable() {
   std::move(background_collections_callback_).Run(std::move(collections));
 }
 
-void NewTabPageHandler::OnCollectionImagesAvailable() {}
+void NewTabPageHandler::OnCollectionImagesAvailable() {
+  if (!background_images_callback_) {
+    return;
+  }
+  std::vector<new_tab_page::mojom::BackgroundImagePtr> images;
+  if (ntp_background_service_->collection_images().empty()) {
+    std::move(background_images_callback_).Run(std::move(images));
+  }
+  auto collection_id =
+      ntp_background_service_->collection_images()[0].collection_id;
+  for (const auto& info : ntp_background_service_->collection_images()) {
+    DCHECK(info.collection_id == collection_id);
+    auto image = new_tab_page::mojom::BackgroundImage::New();
+    image->preview_image_url = GURL(info.thumbnail_image_url);
+    image->label = !info.attribution.empty() ? info.attribution[0] : "";
+    images.push_back(std::move(image));
+  }
+  std::move(background_images_callback_).Run(std::move(images));
+}
 
 void NewTabPageHandler::OnNextCollectionImageAvailable() {}
 

@@ -932,10 +932,12 @@ bool InspectorPageAgent::ScreencastEnabled() {
 
 void InspectorPageAgent::FrameStartedLoading(LocalFrame* frame) {
   GetFrontend()->frameStartedLoading(IdentifiersFactory::FrameId(frame));
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
   GetFrontend()->frameStoppedLoading(IdentifiersFactory::FrameId(frame));
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::FrameRequestedNavigation(
@@ -945,6 +947,7 @@ void InspectorPageAgent::FrameRequestedNavigation(
   GetFrontend()->frameRequestedNavigation(
       IdentifiersFactory::FrameId(target_frame),
       ClientNavigationReasonToProtocol(reason), url.GetString());
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::FrameScheduledNavigation(
@@ -955,11 +958,13 @@ void InspectorPageAgent::FrameScheduledNavigation(
   GetFrontend()->frameScheduledNavigation(
       IdentifiersFactory::FrameId(frame), delay.InSecondsF(),
       ClientNavigationReasonToProtocol(reason), url.GetString());
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
   GetFrontend()->frameClearedScheduledNavigation(
       IdentifiersFactory::FrameId(frame));
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::WillRunJavaScriptDialog() {
@@ -992,6 +997,7 @@ void InspectorPageAgent::LifecycleEvent(LocalFrame* frame,
   GetFrontend()->lifecycleEvent(IdentifiersFactory::FrameId(frame),
                                 IdentifiersFactory::LoaderId(loader), name,
                                 timestamp);
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::PaintTiming(Document* document,
@@ -1028,6 +1034,7 @@ void InspectorPageAgent::WindowOpen(Document* document,
   GetFrontend()->windowOpen(completed_url.GetString(), window_name,
                             GetEnabledWindowFeatures(window_features),
                             user_gesture);
+  GetFrontend()->flush();
 }
 
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(

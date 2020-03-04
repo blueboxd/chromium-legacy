@@ -24,10 +24,12 @@ namespace policy {
 class PolicyChangeRegistrar;
 }
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 enum class CookieControlsEnforcement {
-  kNoEnforcement,
-  kEnforcedByPolicy,
-  kEnforcedByCookieSetting
+  kNoEnforcement = 0,
+  kEnforcedByPolicy = 1,
+  kEnforcedByCookieSetting = 2,
+  kMaxValue = kEnforcedByCookieSetting,
 };
 
 // // Handles the global state for cookie settings changes and observation.

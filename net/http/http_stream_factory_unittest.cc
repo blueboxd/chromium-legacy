@@ -467,7 +467,9 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
                      int64_t generation) override {
     ADD_FAILURE();
   }
-  void CloseIdleSockets() override { ADD_FAILURE(); }
+  void CloseIdleSockets(const char* net_log_reason_utf8) override {
+    ADD_FAILURE();
+  }
   int IdleSocketCount() const override {
     ADD_FAILURE();
     return 0;

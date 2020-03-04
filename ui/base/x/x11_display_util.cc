@@ -339,7 +339,6 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
       if (!display::Display::HasForceDisplayColorProfile()) {
         gfx::ICCProfile icc_profile = ui::GetICCProfileForMonitor(
             monitor_iter == output_to_monitor.end() ? 0 : monitor_iter->second);
-        icc_profile.HistogramDisplay(display.id());
         gfx::ColorSpace color_space = icc_profile.GetPrimariesOnlyColorSpace();
 
         // Most folks do not have an ICC profile set up, but we still want to

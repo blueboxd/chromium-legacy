@@ -116,6 +116,9 @@ Polymer({
       case settings.ChooserType.HID_DEVICES:
         this.emptyListMessage_ = this.i18n('noHidDevicesFound');
         break;
+      case settings.ChooserType.BLUETOOTH_DEVICES:
+        this.emptyListMessage_ = this.i18n('noBluetoothDevicesFound');
+        break;
       default:
         this.emptyListMessage_ = '';
     }

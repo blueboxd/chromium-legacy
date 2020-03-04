@@ -1073,6 +1073,7 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source) {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
       {"storageItemInUse", IDS_SETTINGS_STORAGE_ITEM_IN_USE},
       {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
+      {"storageItemSystem", IDS_SETTINGS_STORAGE_ITEM_SYSTEM},
       {"storageItemMyFiles", IDS_SETTINGS_STORAGE_ITEM_MY_FILES},
       {"storageItemBrowsingData", IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA},
       {"storageItemApps", IDS_SETTINGS_STORAGE_ITEM_APPS},

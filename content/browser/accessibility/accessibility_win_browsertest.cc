@@ -268,7 +268,7 @@ void AccessibilityWinBrowserTest::SetUpInputFieldHelper(
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      div.GetAddressOf()));
+      &div));
   std::vector<base::win::ScopedVariant> div_children =
       GetAllAccessibleChildren(div.Get());
   ASSERT_LT(0u, div_children.size());
@@ -279,13 +279,14 @@ void AccessibilityWinBrowserTest::SetUpInputFieldHelper(
       GetAccessibleFromVariant(div.Get(),
                                div_children[div_children.size() - 1].AsInput())
           .Get(),
-      input.GetAddressOf()));
+      &input));
   LONG input_role = 0;
   ASSERT_HRESULT_SUCCEEDED(input->role(&input_role));
   ASSERT_EQ(ROLE_SYSTEM_TEXT, input_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  ASSERT_HRESULT_SUCCEEDED(input.CopyTo(input_text->GetAddressOf()));
+  input_text->Reset();
+  ASSERT_HRESULT_SUCCEEDED(input.As(input_text));
 
   // Set the caret before the last character.
   AccessibilityNotificationWaiter waiter(
@@ -320,7 +321,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      section.GetAddressOf()));
+      &section));
   std::vector<base::win::ScopedVariant> section_children =
       GetAllAccessibleChildren(section.Get());
   ASSERT_EQ(1u, section_children.size());
@@ -330,13 +331,14 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(section.Get(), section_children[0].AsInput())
           .Get(),
-      textarea.GetAddressOf()));
+      &textarea));
   LONG textarea_role = 0;
   ASSERT_HRESULT_SUCCEEDED(textarea->role(&textarea_role));
   ASSERT_EQ(ROLE_SYSTEM_TEXT, textarea_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  ASSERT_HRESULT_SUCCEEDED(textarea.CopyTo(textarea_text->GetAddressOf()));
+  textarea_text->Reset();
+  ASSERT_HRESULT_SUCCEEDED(textarea.As(textarea_text));
 
   // Set the caret before the last character.
   AccessibilityNotificationWaiter waiter(
@@ -425,13 +427,14 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      paragraph.GetAddressOf()));
+      &paragraph));
 
   LONG paragraph_role = 0;
   ASSERT_HRESULT_SUCCEEDED(paragraph->role(&paragraph_role));
   ASSERT_EQ(IA2_ROLE_PARAGRAPH, paragraph_role);
 
-  ASSERT_HRESULT_SUCCEEDED(paragraph.CopyTo(accessible_text->GetAddressOf()));
+  accessible_text->Reset();
+  ASSERT_HRESULT_SUCCEEDED(paragraph.As(accessible_text));
 }
 
 // Retrieve the accessibility node, starting from the root node, that matches
@@ -484,16 +487,16 @@ AccessibilityWinBrowserTest::GetAccessibleFromVariant(IAccessible* parent,
     case VT_DISPATCH: {
       IDispatch* dispatch = V_DISPATCH(var);
       if (dispatch)
-        dispatch->QueryInterface(ptr.GetAddressOf());
+        dispatch->QueryInterface(IID_PPV_ARGS(&ptr));
       break;
     }
 
     case VT_I4: {
       Microsoft::WRL::ComPtr<IDispatch> dispatch;
-      HRESULT hr = parent->get_accChild(*var, dispatch.GetAddressOf());
+      HRESULT hr = parent->get_accChild(*var, &dispatch);
       EXPECT_TRUE(SUCCEEDED(hr));
       if (dispatch.Get())
-        dispatch.CopyTo(ptr.GetAddressOf());
+        dispatch.As(&ptr);
       break;
     }
   }
@@ -506,7 +509,7 @@ HRESULT AccessibilityWinBrowserTest::QueryIAccessible2(
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving IAccessible2.
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
-  HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
+  HRESULT hr = accessible->QueryInterface(IID_PPV_ARGS(&service_provider));
   return SUCCEEDED(hr)
              ? service_provider->QueryService(IID_IAccessible2, accessible2)
              : hr;
@@ -757,7 +760,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleRole(
 void AccessibilityWinBrowserTest::AccessibleChecker::CheckIA2Role(
     IAccessible* accessible) {
   Microsoft::WRL::ComPtr<IAccessible2> accessible2;
-  HRESULT hr = QueryIAccessible2(accessible, accessible2.GetAddressOf());
+  HRESULT hr = QueryIAccessible2(accessible, &accessible2);
   ASSERT_EQ(S_OK, hr);
   LONG ia2_role = 0;
   hr = accessible2->role(&ia2_role);
@@ -1310,9 +1313,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   HWND hwnd = window_tree_host->GetAcceleratedWidget();
   CHECK(hwnd);
   Microsoft::WRL::ComPtr<IAccessible> browser_accessible;
-  HRESULT hr = AccessibleObjectFromWindow(
-      hwnd, OBJID_WINDOW, IID_IAccessible,
-      reinterpret_cast<void**>(browser_accessible.GetAddressOf()));
+  HRESULT hr = AccessibleObjectFromWindow(hwnd, OBJID_WINDOW,
+                                          IID_PPV_ARGS(&browser_accessible));
   ASSERT_EQ(S_OK, hr);
 
   bool found = false;
@@ -1332,7 +1334,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, SupportsISimpleDOM) {
   // Get the ISimpleDOM object for the document.
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = static_cast<IAccessible*>(document_accessible.Get())
-                   ->QueryInterface(service_provider.GetAddressOf());
+                   ->QueryInterface(IID_PPV_ARGS(&service_provider));
   ASSERT_EQ(S_OK, hr);
   const GUID refguid = {0x0c539790,
                         0x12e4,
@@ -1359,8 +1361,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, SupportsISimpleDOM) {
   node_value.Reset();
 
   Microsoft::WRL::ComPtr<ISimpleDOMNode> body_isimpledomnode;
-  hr = document_isimpledomnode->get_firstChild(
-      body_isimpledomnode.GetAddressOf());
+  hr = document_isimpledomnode->get_firstChild(&body_isimpledomnode);
   ASSERT_EQ(S_OK, hr);
   hr = body_isimpledomnode->get_nodeInfo(node_name.Receive(), &name_space_id,
                                          node_value.Receive(), &num_children,
@@ -1373,8 +1374,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, SupportsISimpleDOM) {
   node_value.Reset();
 
   Microsoft::WRL::ComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
-  hr = body_isimpledomnode->get_firstChild(
-      checkbox_isimpledomnode.GetAddressOf());
+  hr = body_isimpledomnode->get_firstChild(&checkbox_isimpledomnode);
   ASSERT_EQ(S_OK, hr);
   hr = checkbox_isimpledomnode->get_nodeInfo(
       node_name.Receive(), &name_space_id, node_value.Receive(), &num_children,
@@ -2182,7 +2182,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
   Microsoft::WRL::ComPtr<IAccessibleText> accessible_text;
   SetUpSampleParagraphInScrollableDocument(&accessible_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(accessible_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(accessible_text.As(&paragraph));
 
   LONG prev_x, prev_y, x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2222,7 +2222,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraphInScrollableDocument(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2257,7 +2257,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallPadding(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2280,7 +2280,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallPadding(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2303,7 +2303,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallPadding(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2331,7 +2331,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallMargin(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2354,7 +2354,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallMargin(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2377,7 +2377,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpVeryTallMargin(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   LONG x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -2405,7 +2405,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   SetUpInputField(&input_text);
 
   Microsoft::WRL::ComPtr<IAccessible2> input;
-  ASSERT_HRESULT_SUCCEEDED(input_text.CopyTo(IID_PPV_ARGS(&input)));
+  ASSERT_HRESULT_SUCCEEDED(input_text.As(&input));
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr new_value(L"New value");
@@ -2426,7 +2426,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInTextarea) {
   SetUpTextareaField(&textarea_text);
 
   Microsoft::WRL::ComPtr<IAccessible2> textarea;
-  ASSERT_HRESULT_SUCCEEDED(textarea_text.CopyTo(IID_PPV_ARGS(&textarea)));
+  ASSERT_HRESULT_SUCCEEDED(textarea_text.As(&textarea));
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr new_value(L"New value");
@@ -2449,7 +2449,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInEditable) {
   SetUpSampleParagraphInScrollableEditable(&paragraph_text);
 
   Microsoft::WRL::ComPtr<IAccessible2> paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&paragraph));
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr new_value(L"New value");
@@ -2557,7 +2557,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_input;
-  ASSERT_HRESULT_SUCCEEDED(input_text.CopyTo(IID_PPV_ARGS(&ax_input)));
+  ASSERT_HRESULT_SUCCEEDED(input_text.As(&ax_input));
 
   LONG n_ranges = 1;
   IA2Range* ranges =
@@ -2662,7 +2662,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_textarea;
-  ASSERT_HRESULT_SUCCEEDED(textarea_text.CopyTo(IID_PPV_ARGS(&ax_textarea)));
+  ASSERT_HRESULT_SUCCEEDED(textarea_text.As(&ax_textarea));
 
   int contents_string_length = int{InputContentsString().size()};
   LONG n_ranges = 1;
@@ -2764,7 +2764,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_paragraph;
-  ASSERT_HRESULT_SUCCEEDED(paragraph_text.CopyTo(IID_PPV_ARGS(&ax_paragraph)));
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text.As(&ax_paragraph));
 
   LONG child_count = 0;
   ASSERT_HRESULT_SUCCEEDED(ax_paragraph->get_accChildCount(&child_count));
@@ -3502,7 +3502,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      div.GetAddressOf()));
+      &div));
   std::vector<base::win::ScopedVariant> div_children =
       GetAllAccessibleChildren(div.Get());
   ASSERT_EQ(1u, div_children.size());
@@ -3510,13 +3510,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   Microsoft::WRL::ComPtr<IAccessible2> image;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(div.Get(), div_children[0].AsInput()).Get(),
-      image.GetAddressOf()));
+      &image));
   LONG image_role = 0;
   ASSERT_HRESULT_SUCCEEDED(image->role(&image_role));
   ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, image_role);
 
   Microsoft::WRL::ComPtr<IAccessibleAction> image_action;
-  ASSERT_HRESULT_SUCCEEDED(image.CopyTo(image_action.GetAddressOf()));
+  ASSERT_HRESULT_SUCCEEDED(image.As(&image_action));
 
   LONG n_actions = 0;
   EXPECT_HRESULT_SUCCEEDED(image_action->nActions(&n_actions));
@@ -3606,7 +3606,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      table.GetAddressOf()));
+      &table));
   LONG role = 0;
   ASSERT_HRESULT_SUCCEEDED(table->role(&role));
   ASSERT_EQ(ROLE_SYSTEM_TABLE, role);
@@ -3615,9 +3615,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   Microsoft::WRL::ComPtr<IAccessibleTable2> table2;
   Microsoft::WRL::ComPtr<IUnknown> cell;
   Microsoft::WRL::ComPtr<IAccessible2> cell1;
-  EXPECT_HRESULT_SUCCEEDED(table.CopyTo(table2.GetAddressOf()));
-  EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, cell.GetAddressOf()));
-  EXPECT_HRESULT_SUCCEEDED(cell.CopyTo(cell1.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(table.As(&table2));
+  EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, &cell));
+  EXPECT_HRESULT_SUCCEEDED(cell.As(&cell1));
 
   base::win::ScopedBstr name;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -3628,7 +3628,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell1->get_accName(childid_self, name.Receive()));
   EXPECT_STREQ(L"AD", name.Get());
-  EXPECT_HRESULT_SUCCEEDED(cell1.CopyTo(accessible_cell.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(cell1.As(&accessible_cell));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(0, row_index);
@@ -3649,12 +3649,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
       cell1->accNavigate(NAVDIR_RIGHT, childid_self, variant.Receive()));
   ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
   ASSERT_EQ(VT_DISPATCH, variant.type());
-  V_DISPATCH(variant.AsInput())->QueryInterface(cell2.GetAddressOf());
+  V_DISPATCH(variant.AsInput())->QueryInterface(IID_PPV_ARGS(&cell2));
   EXPECT_HRESULT_SUCCEEDED(cell2->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell2->get_accName(childid_self, name.Receive()));
   EXPECT_STREQ(L"BC", name.Get());
-  EXPECT_HRESULT_SUCCEEDED(cell2.CopyTo(accessible_cell.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(cell2.As(&accessible_cell));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(0, row_index);
@@ -3669,12 +3669,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
       cell2->accNavigate(NAVDIR_DOWN, childid_self, variant.Receive()));
   ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
   ASSERT_EQ(VT_DISPATCH, variant.type());
-  V_DISPATCH(variant.AsInput())->QueryInterface(cell3.GetAddressOf());
+  V_DISPATCH(variant.AsInput())->QueryInterface(IID_PPV_ARGS(&cell3));
   EXPECT_HRESULT_SUCCEEDED(cell3->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
   EXPECT_HRESULT_SUCCEEDED(cell3->get_accName(childid_self, name.Receive()));
   EXPECT_STREQ(L"EF", name.Get());
-  EXPECT_HRESULT_SUCCEEDED(cell3.CopyTo(accessible_cell.GetAddressOf()));
+  EXPECT_HRESULT_SUCCEEDED(cell3.As(&accessible_cell));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(1, row_index);
@@ -3713,9 +3713,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestTreegridIsIATable) {
   Microsoft::WRL::ComPtr<IAccessibleTable2> table2;
   Microsoft::WRL::ComPtr<IUnknown> cell;
   Microsoft::WRL::ComPtr<IAccessible2> cell1;
-  EXPECT_HRESULT_SUCCEEDED(table.CopyTo(IID_PPV_ARGS(&table2)));
+  EXPECT_HRESULT_SUCCEEDED(table.As(&table2));
   EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, &cell));
-  EXPECT_HRESULT_SUCCEEDED(cell.CopyTo(IID_PPV_ARGS(&cell1)));
+  EXPECT_HRESULT_SUCCEEDED(cell.As(&cell1));
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   Microsoft::WRL::ComPtr<IAccessibleTableCell> accessible_cell;
@@ -3723,7 +3723,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestTreegridIsIATable) {
   LONG column_index = -1;
   EXPECT_HRESULT_SUCCEEDED(cell1->role(&role));
   EXPECT_EQ(ROLE_SYSTEM_CELL, role);
-  EXPECT_HRESULT_SUCCEEDED(cell1.CopyTo(IID_PPV_ARGS(&accessible_cell)));
+  EXPECT_HRESULT_SUCCEEDED(cell1.As(&accessible_cell));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
   EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
   EXPECT_EQ(0, row_index);
@@ -3761,7 +3761,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      target.GetAddressOf()));
+      &target));
   LONG target_role = 0;
   ASSERT_HRESULT_SUCCEEDED(target->role(&target_role));
   ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, target_role);
@@ -3769,7 +3769,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[1].AsInput())
           .Get(),
-      target2.GetAddressOf()));
+      &target2));
   LONG target2_role = 0;
   ASSERT_HRESULT_SUCCEEDED(target2->role(&target2_role));
   ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, target2_role);
@@ -3855,7 +3855,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
-      group.GetAddressOf()));
+      &group));
   LONG group_role = 0;
   ASSERT_HRESULT_SUCCEEDED(group->role(&group_role));
   ASSERT_EQ(IA2_ROLE_SECTION, group_role);
@@ -3867,7 +3867,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessible2> input;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(group.Get(), group_children[1].AsInput()).Get(),
-      input.GetAddressOf()));
+      &input));
   LONG input_role = 0;
   ASSERT_HRESULT_SUCCEEDED(input->role(&input_role));
   ASSERT_EQ(ROLE_SYSTEM_TEXT, input_role);

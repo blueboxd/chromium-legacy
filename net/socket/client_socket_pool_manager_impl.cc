@@ -38,15 +38,18 @@ ClientSocketPoolManagerImpl::~ClientSocketPoolManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
+void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(
+    int net_error,
+    const char* net_log_reason_utf8) {
   for (const auto& it : socket_pools_) {
-    it.second->FlushWithError(error);
+    it.second->FlushWithError(net_error, net_log_reason_utf8);
   }
 }
 
-void ClientSocketPoolManagerImpl::CloseIdleSockets() {
+void ClientSocketPoolManagerImpl::CloseIdleSockets(
+    const char* net_log_reason_utf8) {
   for (const auto& it : socket_pools_) {
-    it.second->CloseIdleSockets();
+    it.second->CloseIdleSockets(net_log_reason_utf8);
   }
 }
 

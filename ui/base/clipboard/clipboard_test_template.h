@@ -466,24 +466,32 @@ TYPED_TEST(ClipboardTest, Bitmap_RGBA_Opaque) {
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType),
       &kRGBAOpaque, &kN32Opaque);
 }
-TYPED_TEST(ClipboardTest, DISABLED_Bitmap_BGRA_Premul) {
+#if !defined(OS_ANDROID)
+// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
+// cause. This test only fails on Android.
+TYPED_TEST(ClipboardTest, Bitmap_BGRA_Premul) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kPremul_SkAlphaType),
       &kBGRAPremul, &kN32);
 }
+#endif  // !defined(OS_ANDROID)
 TYPED_TEST(ClipboardTest, Bitmap_BGRA_Unpremul) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType),
       &kBGRAUnpremul, &kN32);
 }
-TYPED_TEST(ClipboardTest, DISABLED_Bitmap_BGRA_Opaque) {
+#if !defined(OS_ANDROID)
+// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
+// cause. This test only fails on Android.
+TYPED_TEST(ClipboardTest, Bitmap_BGRA_Opaque) {
   TestBitmapWrite(
       &this->clipboard(),
       SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kOpaque_SkAlphaType),
       &kBGRAOpaque, &kN32Opaque);
 }
+#endif  // !defined(OS_ANDROID)
 
 // Used by HTMLCanvasElement.
 TYPED_TEST(ClipboardTest, Bitmap_F16_Premul) {

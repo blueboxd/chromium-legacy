@@ -92,6 +92,9 @@ Polymer({
     this.addWebUIListener(
         'storage-crostini-size-changed',
         this.handleCrostiniSizeChanged_.bind(this));
+    this.addWebUIListener(
+        'storage-system-size-changed',
+        this.handleSystemSizeChanged_.bind(this));
     if (!this.isGuest_) {
       this.addWebUIListener(
           'storage-other-users-size-changed',
@@ -247,6 +250,14 @@ Polymer({
     }
     this.showOtherUsers_ = true;
     this.$$('#otherUsersSize').subLabel = size;
+  },
+
+  /**
+   * @param {string} size Formatted string representing the System size.
+   * @private
+   */
+  handleSystemSizeChanged_(size) {
+    this.$$('#systemSizeSubLabel').innerText = size;
   },
 
   /**

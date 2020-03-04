@@ -11,11 +11,13 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -42,6 +44,8 @@ using RTLookupResponseCallback =
     base::OnceCallback<void(bool, std::unique_ptr<RTLookupResponse>)>;
 
 class VerdictCacheManager;
+
+class SafeBrowsingTokenFetcher;
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
@@ -102,6 +106,26 @@ class RealTimeUrlLookupService : public KeyedService {
   // there's a cache hit; nullptr otherwise.
   std::unique_ptr<RTLookupResponse> GetCachedRealTimeUrlVerdict(
       const GURL& url);
+
+  // Called when the access token is obtained from |token_fetcher_|.
+  void OnGetAccessToken(
+      const GURL& url,
+      RTLookupRequestCallback request_callback,
+      RTLookupResponseCallback response_callback,
+      base::Optional<signin::AccessTokenInfo> access_token_info);
+
+  // Called to send the request to the Safe Browsing backend over the network.
+  // It also attached an auth header if |access_token_info| has a value.
+  void SendRequest(const GURL& url,
+                   base::Optional<signin::AccessTokenInfo> access_token_info,
+                   std::unique_ptr<RTLookupRequest> request,
+                   RTLookupRequestCallback request_callback,
+                   RTLookupResponseCallback response_callback);
+
+  // Called to get cache from |cache_manager|. If a cache is found, return true.
+  // Otherwise, return false.
+  bool GetCachedRealTimeUrlVerdict(const GURL& url,
+                                   RTLookupResponse* out_response);
 
   // Called to post a task to store the response keyed by the |url| in
   // |cache_manager|.
@@ -172,6 +196,9 @@ class RealTimeUrlLookupService : public KeyedService {
 
   // Unowned object used for getting preference settings.
   PrefService* pref_service_;
+
+  // The token fetcher used for getting access token.
+  std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher_;
 
   // A boolean indicates whether the profile associated with this
   // |url_lookup_service| is an off the record profile.

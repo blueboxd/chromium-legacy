@@ -260,11 +260,13 @@ void BaseUIManager::DisplayBlockingPage(
     // showed_interstitial is set to false for subresources since this
     // cancellation doesn't correspond to the navigation that triggers the error
     // page (the call to LoadPostCommitErrorPage creates another navigation).
-    resource.callback_thread->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            resource.callback, false /* proceed */,
-            resource.IsMainPageLoadBlocked() /* showed_interstitial */));
+    if (!resource.callback.is_null()) {
+      resource.callback_thread->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              resource.callback, /*proceed=*/false,
+              /*showed_interstitial=*/resource.IsMainPageLoadBlocked()));
+    }
     if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource)) {
       // For subresource triggered interstitials, we trigger the error page
       // navigation from here since there will be no navigation to intercept

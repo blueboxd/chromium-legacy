@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("weblayer_java_tests") {
   testonly = true
   sources = [
+    "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
     "src/org/chromium/weblayer/test/CloseTabNewTabCallbackImpl.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",

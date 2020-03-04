@@ -55,7 +55,7 @@ HttpNetworkSession* HttpNetworkLayer::GetSession() {
 
 void HttpNetworkLayer::OnSuspend() {
   suspended_ = true;
-  session_->CloseIdleConnections();
+  session_->CloseIdleConnections("Entering suspend mode");
 }
 
 void HttpNetworkLayer::OnResume() {

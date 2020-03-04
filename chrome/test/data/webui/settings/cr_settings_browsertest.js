@@ -1025,8 +1025,7 @@ CrSettingsSecureDnsTest.prototype = {
   ]),
 };
 
-// Disabled due to flakiness: https://crbug.com/1057504.
-TEST_F('CrSettingsSecureDnsTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsSecureDnsTest', 'All', function() {
   mocha.run();
 });
 

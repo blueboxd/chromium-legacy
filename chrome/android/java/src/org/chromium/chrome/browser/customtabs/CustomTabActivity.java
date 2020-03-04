@@ -358,7 +358,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             ChromeActivityCommonsModule commonsModule) {
         // mIntentHandler comes from the base class.
         IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> IntentHandler.shouldIgnoreIntent(intent);
+                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
         CustomTabActivityModule customTabsModule = new CustomTabActivityModule(mIntentDataProvider,
                 mNightModeStateController, intentIgnoringCriterion, getStartupTabPreloader());

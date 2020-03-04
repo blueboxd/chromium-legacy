@@ -6880,12 +6880,15 @@
     ]
   },
   "AdvancedProtectionDeepScanningEnabled": {
-    "os": ["win", "linux", "mac"],
+    "note": "This policy was replaced with AdvancedProtectionExtraSecurityAllowed in M82"
+  },
+  "AdvancedProtectionExtraSecurityAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "AdvancedProtectionDeepScanningEnabled": true },
+        "policies": { "AdvancedProtectionExtraSecurityAllowed": true },
         "prefs": {
-          "safebrowsing.advanced_protection_deep_scanning_enabled": {}
+          "safebrowsing.advanced_protection_extra_security_allowed": {}
         }
       }
     ]

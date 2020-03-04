@@ -72,8 +72,11 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
   static base::TimeDelta unused_idle_socket_timeout(
       HttpNetworkSession::SocketPoolType pool_type);
 
-  virtual void FlushSocketPoolsWithError(int error) = 0;
-  virtual void CloseIdleSockets() = 0;
+  // The |net_error| is returned to clients of pending socket requests, while
+  // |reason| is logged at the socket layer.
+  virtual void FlushSocketPoolsWithError(int net_error,
+                                         const char* net_log_reason_utf8) = 0;
+  virtual void CloseIdleSockets(const char* net_log_reason_utf8) = 0;
 
   // Returns the socket pool for the specified ProxyServer (Which may be
   // ProxyServer::Direct()).

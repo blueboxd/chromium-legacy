@@ -360,12 +360,12 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
     EventRouter::Get(profile_)->DispatchEventToExtension(extension_id(),
                                                          std::move(event));
   } else {
-    DebuggerSendCommandFunction* function = pending_requests_[id].get();
-    if (!function)
+    auto it = pending_requests_.find(id);
+    if (it == pending_requests_.end())
       return;
 
-    function->SendResponseBody(dictionary);
-    pending_requests_.erase(id);
+    it->second->SendResponseBody(dictionary);
+    pending_requests_.erase(it);
   }
 }
 
@@ -398,46 +398,49 @@ DebuggerFunction::DebuggerFunction()
     : client_host_(NULL) {
 }
 
-DebuggerFunction::~DebuggerFunction() {
-}
+DebuggerFunction::~DebuggerFunction() = default;
 
-void DebuggerFunction::FormatErrorMessage(const std::string& format) {
-  if (debuggee_.tab_id)
-    error_ = ErrorUtils::FormatErrorMessage(
+std::string DebuggerFunction::FormatErrorMessage(const std::string& format) {
+  if (debuggee_.tab_id) {
+    return ErrorUtils::FormatErrorMessage(
         format, debugger_api_constants::kTabTargetType,
         base::NumberToString(*debuggee_.tab_id));
-  else if (debuggee_.extension_id)
-    error_ = ErrorUtils::FormatErrorMessage(
+  }
+  if (debuggee_.extension_id) {
+    return ErrorUtils::FormatErrorMessage(
         format, debugger_api_constants::kBackgroundPageTargetType,
         *debuggee_.extension_id);
-  else
-    error_ = ErrorUtils::FormatErrorMessage(
-        format, debugger_api_constants::kOpaqueTargetType,
-        *debuggee_.target_id);
+  }
+
+  return ErrorUtils::FormatErrorMessage(
+      format, debugger_api_constants::kOpaqueTargetType, *debuggee_.target_id);
 }
 
-bool DebuggerFunction::InitAgentHost() {
+bool DebuggerFunction::InitAgentHost(std::string* error) {
   if (debuggee_.tab_id) {
     WebContents* web_contents = nullptr;
-    bool result = ExtensionTabUtil::GetTabById(*debuggee_.tab_id, GetProfile(),
-                                               include_incognito_information(),
-                                               &web_contents);
+    bool result = ExtensionTabUtil::GetTabById(
+        *debuggee_.tab_id, browser_context(), include_incognito_information(),
+        &web_contents);
     if (result && web_contents) {
       // TODO(rdevlin.cronin) This should definitely be GetLastCommittedURL().
       GURL url = web_contents->GetVisibleURL();
 
-      if (!ExtensionCanAttachToURL(*extension(), url, GetProfile(), &error_))
+      if (!ExtensionCanAttachToURL(
+              *extension(), url, Profile::FromBrowserContext(browser_context()),
+              error)) {
         return false;
+      }
 
       agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
     }
   } else if (debuggee_.extension_id) {
     ExtensionHost* extension_host =
-        ProcessManager::Get(GetProfile())
+        ProcessManager::Get(browser_context())
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
       if (extension()->permissions_data()->IsRestrictedUrl(
-              extension_host->GetURL(), &error_)) {
+              extension_host->GetURL(), error)) {
         return false;
       }
       agent_host_ =
@@ -447,7 +450,7 @@ bool DebuggerFunction::InitAgentHost() {
     agent_host_ = DevToolsAgentHost::GetForId(*debuggee_.target_id);
     if (agent_host_.get()) {
       if (extension()->permissions_data()->IsRestrictedUrl(
-              agent_host_->GetURL(), &error_)) {
+              agent_host_->GetURL(), error)) {
         agent_host_ = nullptr;
         return false;
       }
@@ -473,24 +476,24 @@ bool DebuggerFunction::InitAgentHost() {
                               DevToolsAgentHost::CreateServerSocketCallback());
     }
   } else {
-    error_ = debugger_api_constants::kInvalidTargetError;
+    *error = debugger_api_constants::kInvalidTargetError;
     return false;
   }
 
   if (!agent_host_.get()) {
-    FormatErrorMessage(debugger_api_constants::kNoTargetError);
+    *error = FormatErrorMessage(debugger_api_constants::kNoTargetError);
     return false;
   }
   return true;
 }
 
-bool DebuggerFunction::InitClientHost() {
-  if (!InitAgentHost())
+bool DebuggerFunction::InitClientHost(std::string* error) {
+  if (!InitAgentHost(error))
     return false;
 
   client_host_ = FindClientHost();
   if (!client_host_) {
-    FormatErrorMessage(debugger_api_constants::kNotAttachedError);
+    *error = FormatErrorMessage(debugger_api_constants::kNotAttachedError);
     return false;
   }
 
@@ -516,98 +519,93 @@ ExtensionDevToolsClientHost* DebuggerFunction::FindClientHost() {
 
 // DebuggerAttachFunction -----------------------------------------------------
 
-DebuggerAttachFunction::DebuggerAttachFunction() {
-}
+DebuggerAttachFunction::DebuggerAttachFunction() = default;
 
-DebuggerAttachFunction::~DebuggerAttachFunction() {
-}
+DebuggerAttachFunction::~DebuggerAttachFunction() = default;
 
-bool DebuggerAttachFunction::RunAsync() {
+ExtensionFunction::ResponseAction DebuggerAttachFunction::Run() {
   std::unique_ptr<Attach::Params> params(Attach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
-  if (!InitAgentHost())
-    return false;
+  std::string error;
+  if (!InitAgentHost(&error))
+    return RespondNow(Error(error));
 
   if (!DevToolsAgentHost::IsSupportedProtocolVersion(
           params->required_version)) {
-    error_ = ErrorUtils::FormatErrorMessage(
+    return RespondNow(Error(ErrorUtils::FormatErrorMessage(
         debugger_api_constants::kProtocolVersionNotSupportedError,
-        params->required_version);
-    return false;
+        params->required_version)));
   }
 
   if (FindClientHost()) {
-    FormatErrorMessage(debugger_api_constants::kAlreadyAttachedError);
-    return false;
+    return RespondNow(Error(
+        FormatErrorMessage(debugger_api_constants::kAlreadyAttachedError)));
   }
 
   auto host = std::make_unique<ExtensionDevToolsClientHost>(
-      GetProfile(), agent_host_.get(), extension(), debuggee_);
+      Profile::FromBrowserContext(browser_context()), agent_host_.get(),
+      extension(), debuggee_);
 
   if (!host->Attach()) {
-    error_ = debugger_api_constants::kRestrictedError;
-    return false;
+    return RespondNow(Error(debugger_api_constants::kRestrictedError));
   }
 
   host.release();  // An attached client host manages its own lifetime.
-  SendResponse(true);
-  return true;
+  return RespondNow(NoArguments());
 }
-
 
 // DebuggerDetachFunction -----------------------------------------------------
 
-DebuggerDetachFunction::DebuggerDetachFunction() {
-}
+DebuggerDetachFunction::DebuggerDetachFunction() = default;
 
-DebuggerDetachFunction::~DebuggerDetachFunction() {
-}
+DebuggerDetachFunction::~DebuggerDetachFunction() = default;
 
-bool DebuggerDetachFunction::RunAsync() {
+ExtensionFunction::ResponseAction DebuggerDetachFunction::Run() {
   std::unique_ptr<Detach::Params> params(Detach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
-  if (!InitClientHost())
-    return false;
+  std::string error;
+  if (!InitClientHost(&error))
+    return RespondNow(Error(error));
 
   client_host_->RespondDetachedToPendingRequests();
   client_host_->Close();
-  SendResponse(true);
-  return true;
+  return RespondNow(NoArguments());
 }
-
 
 // DebuggerSendCommandFunction ------------------------------------------------
 
-DebuggerSendCommandFunction::DebuggerSendCommandFunction() {
-}
+DebuggerSendCommandFunction::DebuggerSendCommandFunction() = default;
 
-DebuggerSendCommandFunction::~DebuggerSendCommandFunction() {
-}
+DebuggerSendCommandFunction::~DebuggerSendCommandFunction() = default;
 
-bool DebuggerSendCommandFunction::RunAsync() {
+ExtensionFunction::ResponseAction DebuggerSendCommandFunction::Run() {
   std::unique_ptr<SendCommand::Params> params(
       SendCommand::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   CopyDebuggee(&debuggee_, params->target);
-  if (!InitClientHost())
-    return false;
+  std::string error;
+  if (!InitClientHost(&error))
+    return RespondNow(Error(error));
 
   client_host_->SendMessageToBackend(this, params->method,
       params->command_params.get());
-  return true;
+  if (did_respond())
+    return AlreadyResponded();
+  return RespondLater();
 }
 
 void DebuggerSendCommandFunction::SendResponseBody(
     base::DictionaryValue* response) {
   base::Value* error_body;
   if (response->Get("error", &error_body)) {
-    base::JSONWriter::Write(*error_body, &error_);
-    SendResponse(false);
+    std::string error;
+    base::JSONWriter::Write(*error_body, &error);
+    Respond(Error(error));
     return;
   }
 
@@ -616,13 +614,11 @@ void DebuggerSendCommandFunction::SendResponseBody(
   if (response->GetDictionary("result", &result_body))
     result.additional_properties.Swap(result_body);
 
-  SetResultList(SendCommand::Results::Create(result));
-  SendResponse(true);
+  Respond(ArgumentList(SendCommand::Results::Create(result)));
 }
 
 void DebuggerSendCommandFunction::SendDetachedError() {
-  error_ = debugger_api_constants::kDetachedWhileHandlingError;
-  SendResponse(false);
+  Respond(Error(debugger_api_constants::kDetachedWhileHandlingError));
 }
 
 // DebuggerGetTargetsFunction -------------------------------------------------
@@ -677,27 +673,17 @@ std::unique_ptr<base::DictionaryValue> SerializeTarget(
 
 }  // namespace
 
-DebuggerGetTargetsFunction::DebuggerGetTargetsFunction() {
-}
+DebuggerGetTargetsFunction::DebuggerGetTargetsFunction() = default;
 
-DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
-}
+DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() = default;
 
-bool DebuggerGetTargetsFunction::RunAsync() {
+ExtensionFunction::ResponseAction DebuggerGetTargetsFunction::Run() {
   content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DebuggerGetTargetsFunction::SendTargetList, this, list));
-  return true;
-}
-
-void DebuggerGetTargetsFunction::SendTargetList(
-    const content::DevToolsAgentHost::List& target_list) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (size_t i = 0; i < target_list.size(); ++i)
-    result->Append(SerializeTarget(target_list[i]));
-  SetResult(std::move(result));
-  SendResponse(true);
+  for (size_t i = 0; i < list.size(); ++i)
+    result->Append(SerializeTarget(list[i]));
+
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 }  // namespace extensions

@@ -56,7 +56,7 @@ BrowserInterfaceBrokerProxy& NullExecutionContext::GetBrowserInterfaceBroker() {
   return GetEmptyBrowserInterfaceBroker();
 }
 
-void NullExecutionContext::Trace(blink::Visitor* visitor) {
+void NullExecutionContext::Trace(Visitor* visitor) {
   visitor->Trace(security_context_);
   ExecutionContext::Trace(visitor);
 }

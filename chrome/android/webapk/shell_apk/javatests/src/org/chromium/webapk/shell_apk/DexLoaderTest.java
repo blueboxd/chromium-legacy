@@ -111,7 +111,7 @@ public class DexLoaderTest {
 
         mLocalDexDir = mContext.getDir("dex", Context.MODE_PRIVATE);
         if (mLocalDexDir.exists()) {
-            FileUtils.recursivelyDeleteFile(mLocalDexDir);
+            FileUtils.recursivelyDeleteFile(mLocalDexDir, FileUtils.DELETE_ALL);
             if (mLocalDexDir.exists()) {
                 Assert.fail("Could not delete local dex directory.");
             }

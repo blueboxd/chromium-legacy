@@ -49,9 +49,8 @@ void GetSizeStatBlocking(const base::FilePath& mount_path,
 
 }  // namespace
 
-SizeCalculator::SizeCalculator(const std::string& calculation_name) {
-  calculation_name_ = calculation_name;
-}
+SizeCalculator::SizeCalculator(const CalculationType& calculation_type)
+    : calculation_type_(calculation_type) {}
 
 SizeCalculator::~SizeCalculator() {}
 
@@ -75,13 +74,12 @@ void SizeCalculator::NotifySizeCalculated(
     const base::Optional<int64_t>& available_bytes) {
   calculating_ = false;
   for (SizeCalculator::Observer& observer : observers_) {
-    observer.OnSizeCalculated(calculation_name_, total_bytes, available_bytes);
+    observer.OnSizeCalculated(calculation_type_, total_bytes, available_bytes);
   }
 }
 
-SizeStatCalculator::SizeStatCalculator(const std::string& calculation_name,
-                                       Profile* profile)
-    : SizeCalculator(calculation_name), profile_(profile) {}
+SizeStatCalculator::SizeStatCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kInUse), profile_(profile) {}
 
 SizeStatCalculator::~SizeStatCalculator() = default;
 void SizeStatCalculator::PerformCalculation() {
@@ -105,10 +103,8 @@ void SizeStatCalculator::OnGetSizeStat(int64_t* total_bytes,
   NotifySizeCalculated(*total_bytes, *available_bytes);
 }
 
-MyFilesSizeCalculator::MyFilesSizeCalculator(
-    const std::string& calculation_name,
-    Profile* profile)
-    : SizeCalculator(calculation_name), profile_(profile) {}
+MyFilesSizeCalculator::MyFilesSizeCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kMyFiles), profile_(profile) {}
 
 MyFilesSizeCalculator::~MyFilesSizeCalculator() = default;
 
@@ -153,10 +149,8 @@ void MyFilesSizeCalculator::OnGetMyFilesSize(int64_t total_bytes) {
   NotifySizeCalculated(total_bytes);
 }
 
-BrowsingDataSizeCalculator::BrowsingDataSizeCalculator(
-    const std::string& calculation_name,
-    Profile* profile)
-    : SizeCalculator(calculation_name), profile_(profile) {}
+BrowsingDataSizeCalculator::BrowsingDataSizeCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kBrowsingData), profile_(profile) {}
 
 BrowsingDataSizeCalculator::~BrowsingDataSizeCalculator() = default;
 
@@ -222,9 +216,8 @@ void BrowsingDataSizeCalculator::OnGetBrowsingDataSize(bool is_site_data,
   }
 }
 
-AppsSizeCalculator::AppsSizeCalculator(const std::string& calculation_name,
-                                       Profile* profile)
-    : SizeCalculator(calculation_name), profile_(profile) {}
+AppsSizeCalculator::AppsSizeCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kAppsExtensions), profile_(profile) {}
 
 AppsSizeCalculator::~AppsSizeCalculator() {
   arc::ArcServiceManager::Get()
@@ -334,10 +327,8 @@ void AppsSizeCalculator::UpdateAppsAndExtensionsSize() {
   }
 }
 
-CrostiniSizeCalculator::CrostiniSizeCalculator(
-    const std::string& calculation_name,
-    Profile* profile)
-    : SizeCalculator(calculation_name), profile_(profile) {}
+CrostiniSizeCalculator::CrostiniSizeCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kCrostini), profile_(profile) {}
 
 CrostiniSizeCalculator::~CrostiniSizeCalculator() = default;
 
@@ -358,9 +349,8 @@ void CrostiniSizeCalculator::OnGetCrostiniSize(crostini::CrostiniResult result,
   NotifySizeCalculated(total_bytes);
 }
 
-OtherUsersSizeCalculator::OtherUsersSizeCalculator(
-    const std::string& calculation_name)
-    : SizeCalculator(calculation_name) {}
+OtherUsersSizeCalculator::OtherUsersSizeCalculator()
+    : SizeCalculator(CalculationType::kOtherUsers) {}
 
 OtherUsersSizeCalculator::~OtherUsersSizeCalculator() = default;
 

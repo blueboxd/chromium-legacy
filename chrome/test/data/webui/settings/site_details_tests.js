@@ -104,6 +104,9 @@ suite('SiteDetails', function() {
           settings.ContentSettingsTypes.HID_DEVICES,
           [test_util.createRawSiteException('https://foo.com:443')]),
       test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.BLUETOOTH_DEVICES,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.AR,
           [test_util.createRawSiteException('https://foo.com:443')]),
       test_util.createContentSettingTypeToValuePair(
@@ -115,6 +118,11 @@ suite('SiteDetails', function() {
           settings.ContentSettingsTypes.USB_DEVICES,
           [test_util.createRawChooserException(
               settings.ChooserType.USB_DEVICES,
+              [test_util.createRawSiteException('https://foo.com:443')])]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.BLUETOOTH_DEVICES,
+          [test_util.createRawChooserException(
+              settings.ChooserType.BLUETOOTH_DEVICES,
               [test_util.createRawSiteException('https://foo.com:443')])]),
     ]);
 
@@ -173,6 +181,9 @@ suite('SiteDetails', function() {
         'enableWebXrContentSetting';
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes.VR] =
         'enableWebXrContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .BLUETOOTH_DEVICES] =
+        'enableWebBluetoothNewPermissionsBackend';
 
     const controlledSettingsCount = /** @type{string : int } */ ({});
 
@@ -182,6 +193,7 @@ suite('SiteDetails', function() {
     controlledSettingsCount['enableInsecureContentContentSetting'] = 1;
     controlledSettingsCount['enableWebXrContentSetting'] = 2;
     controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 2;
+    controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
 
     browserProxy.setPrefs(prefs);
 

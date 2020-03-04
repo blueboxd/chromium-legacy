@@ -75,7 +75,7 @@ static void ParkWorkerThread() {
 class Object : public GarbageCollected<Object> {
  public:
   Object() {}
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 };
 
 class AlternatingThreadTester {
@@ -170,7 +170,7 @@ class MarkingSameThreadCheckTester : public AlternatingThreadTester {
  private:
   class MainThreadObject final : public GarbageCollected<MainThreadObject> {
    public:
-    void Trace(blink::Visitor* visitor) { visitor->Trace(set_); }
+    void Trace(Visitor* visitor) { visitor->Trace(set_); }
     void AddToSet(Object* object) { set_.insert(42, object); }
 
    private:
@@ -211,7 +211,7 @@ class DestructorLockingObject
   virtual ~DestructorLockingObject() { ++destructor_calls_; }
 
   static int destructor_calls_;
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 };
 
 int DestructorLockingObject::destructor_calls_ = 0;

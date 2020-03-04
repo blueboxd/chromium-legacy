@@ -444,8 +444,7 @@ void ClientSideDetectionHost::PhishingDetectionDone(
     UMA_HISTOGRAM_ENUMERATION(
         "SBClientPhishing.ClassifierNotReadyReason",
         csd_service_->GetLastModelStatus(
-            IsExtendedReportingEnabled(*profile->GetPrefs()) ||
-            IsEnhancedProtectionEnabled(*profile->GetPrefs())));
+            IsExtendedReportingEnabled(*profile->GetPrefs())));
   }
   if (result != mojom::PhishingDetectorResult::SUCCESS)
     return;

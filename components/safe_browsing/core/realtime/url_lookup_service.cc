@@ -7,14 +7,17 @@
 #include "base/base64url.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "net/base/ip_address.h"
@@ -50,6 +53,8 @@ GURL SanitizeURL(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
+constexpr char kAuthHeaderBearer[] = "Bearer ";
+
 }  // namespace
 
 RealTimeUrlLookupService::RealTimeUrlLookupService(
@@ -68,6 +73,8 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
   DCHECK(cache_manager_);
   DCHECK(identity_manager_);
   DCHECK(pref_service_);
+  token_fetcher_ =
+      std::make_unique<SafeBrowsingTokenFetcher>(identity_manager_);
 }
 
 void RealTimeUrlLookupService::StartLookup(
@@ -88,8 +95,37 @@ void RealTimeUrlLookupService::StartLookup(
     return;
   }
 
-  std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+  if (CanPerformFullURLLookupWithToken()) {
+    token_fetcher_->Start(
+        signin::ConsentLevel::kNotRequired,
+        base::BindOnce(&RealTimeUrlLookupService::OnGetAccessToken,
+                       weak_factory_.GetWeakPtr(), url,
+                       std::move(request_callback),
+                       std::move(response_callback)));
+  } else {
+    std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+    SendRequest(url, /* access_token_info */ base::nullopt, std::move(request),
+                std::move(request_callback), std::move(response_callback));
+  }
+}
 
+void RealTimeUrlLookupService::OnGetAccessToken(
+    const GURL& url,
+    RTLookupRequestCallback request_callback,
+    RTLookupResponseCallback response_callback,
+    base::Optional<signin::AccessTokenInfo> access_token_info) {
+  std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
+  SendRequest(url, access_token_info, std::move(request),
+              std::move(request_callback), std::move(response_callback));
+}
+
+void RealTimeUrlLookupService::SendRequest(
+    const GURL& url,
+    base::Optional<signin::AccessTokenInfo> access_token_info,
+    std::unique_ptr<RTLookupRequest> request,
+    RTLookupRequestCallback request_callback,
+    RTLookupResponseCallback response_callback) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   std::string req_data;
   request->SerializeToString(&req_data);
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -129,6 +165,13 @@ void RealTimeUrlLookupService::StartLookup(
   resource_request->url = GURL(kRealTimeLookupUrlPrefix);
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request->method = "POST";
+  // TODO(crbug.com/1041912): Verify if a header is still needed when oauth
+  // token is empty.
+  if (access_token_info.has_value()) {
+    resource_request->headers.SetHeader(
+        net::HttpRequestHeaders::kAuthorization,
+        base::StrCat({kAuthHeaderBearer, access_token_info.value().token}));
+  }
 
   std::unique_ptr<network::SimpleURLLoader> owned_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
@@ -144,6 +187,12 @@ void RealTimeUrlLookupService::StartLookup(
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
+  // For displaying the token in chrome://safe-browsing, set the
+  // scoped_oauth_token field. Since the token is already set in the header,
+  // this field is set after the request is sent.
+  if (access_token_info.has_value()) {
+    request->set_scoped_oauth_token(access_token_info.value().token);
+  }
   base::PostTask(
       FROM_HERE, CreateTaskTraits(ThreadID::IO),
       base::BindOnce(std::move(request_callback), std::move(request)));
@@ -271,7 +320,6 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
 }
 
 size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
   return did_successful_lookup_since_last_backoff_
              ? kMinBackOffResetDurationInSeconds
              : std::min(kMaxBackOffResetDurationInSeconds,

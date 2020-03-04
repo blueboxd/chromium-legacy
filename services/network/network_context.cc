@@ -697,7 +697,9 @@ void NetworkContext::ClearHttpAuthCache(base::Time start_time,
   DCHECK(http_session);
 
   http_session->http_auth_cache()->ClearEntriesAddedSince(start_time);
-  http_session->CloseAllConnections();
+  // TODO(mmenke): Use another error code for this, as ERR_ABORTED has somewhat
+  // magical handling with respect to navigations.
+  http_session->CloseAllConnections(net::ERR_ABORTED, "Clearing auth cache");
 
   std::move(callback).Run();
 }
@@ -886,7 +888,10 @@ void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
       url_request_context_->http_transaction_factory()->GetSession();
   DCHECK(http_session);
 
-  http_session->CloseAllConnections();
+  // TODO(mmenke): Use another error code for this, as ERR_ABORTED has somewhat
+  // magical handling with respect to navigations.
+  http_session->CloseAllConnections(net::ERR_ABORTED,
+                                    "Embedder closing all connections");
 
   std::move(callback).Run();
 }
@@ -897,7 +902,7 @@ void NetworkContext::CloseIdleConnections(
       url_request_context_->http_transaction_factory()->GetSession();
   DCHECK(http_session);
 
-  http_session->CloseIdleConnections();
+  http_session->CloseIdleConnections("Embedder closing idle connections");
 
   std::move(callback).Run();
 }

@@ -48,7 +48,7 @@ class CrostiniUpgraderPageHandler
 
   // CrostiniUpgraderUIObserver
   void OnBackupProgress(int percent) override;
-  void OnBackupSucceeded() override;
+  void OnBackupSucceeded(bool was_cancelled) override;
   void OnBackupFailed() override;
   void PrecheckStatus(chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus
                           status) override;

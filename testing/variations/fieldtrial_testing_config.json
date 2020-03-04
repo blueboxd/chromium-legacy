@@ -3313,21 +3313,6 @@
             ]
         }
     ],
-    "NetworkServiceSandboxMac": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NetworkServiceSandbox"
-                    ]
-                }
-            ]
-        }
-    ],
     "NewTabInProductHelp": [
         {
             "platforms": [

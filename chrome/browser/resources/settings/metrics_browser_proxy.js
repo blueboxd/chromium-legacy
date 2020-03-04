@@ -58,8 +58,9 @@ cr.define('settings', function() {
     PRIVACY_SITE_SETTINGS_ALL: 39,
     PRIVACY_SITE_SETTINGS_AR: 40,
     PRIVACY_SITE_SETTINGS_VR: 41,
+    PRIVACY_SITE_SETTINGS_BLUETOOTH_DEVICES: 42,
     // Leave this at the end.
-    SETTINGS_MAX_VALUE: 41,
+    SETTINGS_MAX_VALUE: 42,
   };
 
   /** @interface */

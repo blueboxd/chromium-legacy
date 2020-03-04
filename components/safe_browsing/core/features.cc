@@ -44,6 +44,9 @@ const base::Feature kContentComplianceEnabled{
 const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable saved password protection by default only on desktop.
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 const base::Feature kPasswordProtectionForSavedPasswords{

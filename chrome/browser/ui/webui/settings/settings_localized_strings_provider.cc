@@ -1313,6 +1313,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"mediaLicenseSize", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
     {"mediaLicenseLastModified",
      IDS_SETTINGS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
+    {"noBluetoothDevicesFound", IDS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND},
     {"noHidDevicesFound", IDS_SETTINGS_NO_HID_DEVICES_FOUND},
     {"noSerialPortsFound", IDS_SETTINGS_NO_SERIAL_PORTS_FOUND},
     {"noUsbDevicesFound", IDS_SETTINGS_NO_USB_DEVICES_FOUND},
@@ -1433,6 +1434,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_ASK_RECOMMENDED},
     {"siteSettingsUsbDevicesBlock",
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_BLOCK},
+    {"siteSettingsBluetoothDevices",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES},
+    {"siteSettingsBluetoothDevicesAsk",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES_ASK},
+    {"siteSettingsBluetoothDevicesAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES_ASK_RECOMMENDED},
+    {"siteSettingsBluetoothDevicesBlock",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_DEVICES_BLOCK},
     {"siteSettingsNativeFileSystemWrite",
      IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE},
     {"siteSettingsNativeFileSystemWriteAsk",
@@ -1743,6 +1752,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableQuietNotificationPromptsSetting",
       base::FeatureList::IsEnabled(features::kQuietNotificationPrompts));
+
+  html_source->AddBoolean("enableWebBluetoothNewPermissionsBackend",
+                          base::FeatureList::IsEnabled(
+                              features::kWebBluetoothNewPermissionsBackend));
 
   html_source->AddBoolean(
       "enableWebXrContentSetting",

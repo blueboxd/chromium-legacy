@@ -84,9 +84,10 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t generation) override;
-  void FlushWithError(int error) override;
-  void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
+  void FlushWithError(int error, const char* net_log_reason_utf8) override;
+  void CloseIdleSockets(const char* net_log_reason_utf8) override;
+  void CloseIdleSocketsInGroup(const GroupId& group_id,
+                               const char* net_log_reason_utf8) override;
   int IdleSocketCount() const override;
   size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
   LoadState GetLoadState(const GroupId& group_id,

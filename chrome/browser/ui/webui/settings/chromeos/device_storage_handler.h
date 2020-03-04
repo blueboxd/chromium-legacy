@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_STORAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_STORAGE_HANDLER_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -62,9 +64,9 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
 
   // chromeos::settings::calculator::SizeCalculator::Observer:
   void OnSizeCalculated(
-      const std::string& event_name,
+      const calculator::SizeCalculator::CalculationType& calculation_type,
       int64_t total_bytes,
-      const base::Optional<int64_t>& available_bytes) override;
+      const base::Optional<int64_t>& available_bytes = base::nullopt) override;
 
   // Remove the handler from the list of observers of every observed instances.
   void StopObservingEvents();
@@ -83,10 +85,19 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   void HandleUpdateExternalStorages(const base::ListValue* unused_args);
 
   // Update storage sizes on the UI.
-  void UpdateStorageItem(const std::string& event_name, int64_t total_bytes);
-  void UpdateSizeStat(const std::string& event_name,
-                      int64_t total_bytes,
-                      int64_t available_bytes);
+  void UpdateStorageItem(
+      const calculator::SizeCalculator::CalculationType& calculation_type,
+      int64_t total_bytes);
+  void UpdateSizeStat(
+      const calculator::SizeCalculator::CalculationType& calculation_type,
+      int64_t total_bytes,
+      int64_t available_bytes);
+
+  // Marks the size of |item| as calculated. When all storage items have been
+  // calculated, then "System" size can be calculated.
+  void UpdateSystemSize(
+      const calculator::SizeCalculator::CalculationType& calculation_type,
+      int64_t total_bytes);
 
   // Updates list of external storages.
   void UpdateExternalStorages();
@@ -102,6 +113,14 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
   calculator::AppsSizeCalculator apps_size_calculator_;
   calculator::CrostiniSizeCalculator crostini_size_calculator_;
   calculator::OtherUsersSizeCalculator other_users_size_calculator_;
+
+  // Controls if the size of each storage item has been calculated.
+  std::bitset<calculator::SizeCalculator::kCalculationTypeCount>
+      calculation_state_;
+
+  // Keeps track of the size of each storage item.
+  int64_t storage_items_total_bytes_
+      [calculator::SizeCalculator::kCalculationTypeCount] = {0};
 
   Profile* const profile_;
   const std::string source_name_;

@@ -487,6 +487,10 @@ void Job::StartURLLoader(network::mojom::URLLoaderFactory* factory) {
   request->url = request_params_->url;
   if (request_params_->http_method == HTTP_METHOD_POST)
     request->method = net::HttpRequestHeaders::kPostMethod;
+  // Disable secure DNS for hostname lookups triggered by certificate network
+  // fetches to prevent deadlock.
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->disable_secure_dns = true;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

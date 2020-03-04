@@ -43,7 +43,8 @@ public class WebappDirectoryManager {
             protected final Void doInBackground() {
                 recordNumberOfStaleWebApkUpdateRequestFiles();
                 FileUtils.recursivelyDeleteFile(
-                        getBaseWebappDirectory(ContextUtils.getApplicationContext()));
+                        getBaseWebappDirectory(ContextUtils.getApplicationContext()),
+                        FileUtils.DELETE_ALL);
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

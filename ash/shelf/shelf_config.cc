@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/scoped_observer.h"
@@ -72,6 +73,7 @@ class ShelfConfig::ShelfAccessibilityObserver : public AccessibilityObserver {
 ShelfConfig::ShelfConfig()
     : is_dense_(false),
       shelf_controls_shown_(true),
+      is_virtual_keyboard_shown_(false),
       is_app_list_visible_(false),
       shelf_button_icon_size_(44),
       shelf_button_icon_size_dense_(36),
@@ -129,6 +131,7 @@ void ShelfConfig::Init() {
   shell->tablet_mode_controller()->AddObserver(this);
   shell->app_list_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
 }
 
 void ShelfConfig::Shutdown() {
@@ -139,6 +142,7 @@ void ShelfConfig::Shutdown() {
   display::Screen::GetScreen()->RemoveObserver(this);
   shell->app_list_controller()->RemoveObserver(this);
   shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
 }
 
 void ShelfConfig::OnTabletModeStarting() {
@@ -156,6 +160,10 @@ void ShelfConfig::OnTabletModeEnded() {
 
 void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
+  UpdateConfig(is_app_list_visible_);
+}
+
+void ShelfConfig::OnVirtualKeyboardVisibilityChanged() {
   UpdateConfig(is_app_list_visible_);
 }
 
@@ -255,7 +263,7 @@ bool ShelfConfig::is_in_app() const {
   if (!session)
     return false;
   return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
-         !is_app_list_visible_;
+         (!is_app_list_visible_ || is_virtual_keyboard_shown_);
 }
 
 void ShelfConfig::UpdateConfig(bool app_list_visible) {
@@ -275,14 +283,25 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
       !(in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled()) ||
       ShelfControlsForcedShownForAccessibility();
 
+  // TODO(https://crbug.com/1058205): Test this behavior.
+  // If the virtual keyboard is shown, the back button and in-app shelf should
+  // be shown so users can exit the keyboard. SystemTrayModel may be null in
+  // tests.
+  const bool virtual_keyboard_shown =
+      Shell::Get()->system_tray_model()
+          ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
+          : false;
+
   if (new_is_dense == is_dense_ &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
+      is_virtual_keyboard_shown_ == virtual_keyboard_shown &&
       is_app_list_visible_ == app_list_visible) {
     return;
   }
 
   is_dense_ = new_is_dense;
   shelf_controls_shown_ = new_shelf_controls_shown;
+  is_virtual_keyboard_shown_ = virtual_keyboard_shown;
   is_app_list_visible_ = app_list_visible;
 
   OnShelfConfigUpdated();

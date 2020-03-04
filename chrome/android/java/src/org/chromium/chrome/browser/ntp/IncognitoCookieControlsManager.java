@@ -12,6 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.settings.website.CookieControlsServiceBridge.CookieControlsServiceObserver;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**
  * A manager for cookie controls related behaviour on the incognito description view.
@@ -30,16 +31,17 @@ public class IncognitoCookieControlsManager
          * Notifies that this manager has received an update.
          * @param checked A boolean indicating whether the toggle indicating third-party cookies are
          *         currently being blocked should be checked or not.
-         * @param enforced A boolean indicating if third-party cookies being blocked is currently
-         *         enforced by policy/cookie settings or not.
+         * @param enforcement A CookieControlsEnforcement enum type indicating the enforcement rule
+         *         for these cookie controls.
          */
-        void onUpdate(boolean checked, boolean enforced);
+        void onUpdate(boolean checked, @CookieControlsEnforcement int enforcement);
     }
 
     private CookieControlsServiceBridge mServiceBridge;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private boolean mIsInitialized;
     private boolean mShowCard;
+    private @CookieControlsEnforcement int mEnforcement = CookieControlsEnforcement.NO_ENFORCEMENT;
 
     /**
      * Initializes the IncognitoCookieControlsManager explicitly.
@@ -84,15 +86,18 @@ public class IncognitoCookieControlsManager
     }
 
     @Override
-    public void sendCookieControlsUIChanges(boolean checked, boolean enforced) {
+    public void sendCookieControlsUIChanges(
+            boolean checked, @CookieControlsEnforcement int enforcement) {
+        mEnforcement = enforcement;
         for (Observer obs : mObservers) {
-            obs.onUpdate(checked, enforced);
+            obs.onUpdate(checked, enforcement);
         }
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (mShowCard && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
+        if (mShowCard && mEnforcement == CookieControlsEnforcement.NO_ENFORCEMENT
+                && (buttonView.getId() == R.id.cookie_controls_card_toggle)) {
             mServiceBridge.handleCookieControlsToggleChanged(isChecked);
         }
     }

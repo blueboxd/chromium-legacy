@@ -593,7 +593,7 @@ TEST_P(HttpProxyConnectJobTest, NeedAuth) {
 
     // Close the H2 session to prevent reuse.
     if (GetParam() == SPDY)
-      session_->CloseAllConnections();
+      session_->CloseAllConnections(ERR_FAILED, "Very good reason");
     // Also need to clear the auth cache before re-running the test.
     session_->http_auth_cache()->ClearAllEntries();
   }
@@ -737,7 +737,7 @@ TEST_P(HttpProxyConnectJobTest, NeedAuthTwice) {
 
     // Close the H2 session to prevent reuse.
     if (GetParam() == SPDY)
-      session_->CloseAllConnections();
+      session_->CloseAllConnections(ERR_FAILED, "Very good reason");
     // Also need to clear the auth cache before re-running the test.
     session_->http_auth_cache()->ClearAllEntries();
   }
@@ -806,7 +806,7 @@ TEST_P(HttpProxyConnectJobTest, HaveAuth) {
 
     // Close the H2 session to prevent reuse.
     if (GetParam() == SPDY)
-      session_->CloseAllConnections();
+      session_->CloseAllConnections(ERR_FAILED, "Very good reason");
   }
 }
 

@@ -232,8 +232,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
   request_proto_->set_content_type(web_contents_->GetContentsMimeType());
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  if ((password_protection_service_->IsExtendedReporting() ||
-       password_protection_service_->IsEnhancedProtection()) &&
+  if (password_protection_service_->IsExtendedReporting() &&
       !password_protection_service_->IsIncognito()) {
     gfx::Size content_area_size =
         password_protection_service_->GetCurrentContentAreaSize();
@@ -274,8 +273,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
         LogSyncAccountType(reuse_event->sync_account_type());
       }
 
-      if ((password_protection_service_->IsExtendedReporting() ||
-           password_protection_service_->IsEnhancedProtection()) &&
+      if (password_protection_service_->IsExtendedReporting() &&
           !password_protection_service_->IsIncognito()) {
         for (const auto& domain : matching_domains_) {
           reuse_event->add_domains_matching_password(domain);
@@ -378,8 +376,7 @@ void PasswordProtectionRequest::MaybeCollectVisualFeatures() {
   // Once the DOM features are collected, either collect visual features, or go
   // straight to sending the ping.
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
-      (password_protection_service_->IsExtendedReporting() ||
-       password_protection_service_->IsEnhancedProtection()) &&
+      password_protection_service_->IsExtendedReporting() &&
       zoom::ZoomController::GetZoomLevelForWebContents(web_contents_) <=
           kMaxZoomForVisualFeatures &&
       request_proto_->content_area_width() >= kMinWidthForVisualFeatures &&

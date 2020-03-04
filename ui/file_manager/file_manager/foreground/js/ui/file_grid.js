@@ -222,8 +222,8 @@ class FileGrid extends cr.ui.Grid {
                 .contentMimeType;
         if (!event.dataUrl) {
           FileGrid.clearThumbnailImage_(assertInstanceof(box, HTMLDivElement));
-          FileGrid.setGenericThumbnail_(
-              assertInstanceof(box, HTMLDivElement), entry);
+          this.setGenericThumbnail_(
+              assertInstanceof(box, HTMLDivElement), entry, mimeType);
         } else {
           FileGrid.setThumbnailImage_(
               assertInstanceof(box, HTMLDivElement), entry,
@@ -612,24 +612,28 @@ class FileGrid extends cr.ui.Grid {
     li.appendChild(frame);
 
     const box = li.ownerDocument.createElement('div');
-    box.className = 'img-container';
+    box.classList.add('img-container', 'no-thumbnail');
     frame.appendChild(box);
     if (entry) {
       this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
     }
 
-    const shield = li.ownerDocument.createElement('div');
-    shield.className = 'shield';
-    frame.appendChild(shield);
+    if (!util.isFilesNg()) {
+      const shield = li.ownerDocument.createElement('div');
+      shield.className = 'shield';
+      frame.appendChild(shield);
+    }
 
     const isDirectory = entry && entry.isDirectory;
     if (!isDirectory) {
-      const activeCheckmark = li.ownerDocument.createElement('div');
-      activeCheckmark.className = 'checkmark active';
-      frame.appendChild(activeCheckmark);
-      const inactiveCheckmark = li.ownerDocument.createElement('div');
-      inactiveCheckmark.className = 'checkmark inactive';
-      frame.appendChild(inactiveCheckmark);
+      if (!util.isFilesNg()) {
+        const activeCheckmark = li.ownerDocument.createElement('div');
+        activeCheckmark.className = 'checkmark active';
+        frame.appendChild(activeCheckmark);
+        const inactiveCheckmark = li.ownerDocument.createElement('div');
+        inactiveCheckmark.className = 'checkmark inactive';
+        frame.appendChild(inactiveCheckmark);
+      }
     }
 
     const badge = li.ownerDocument.createElement('div');
@@ -644,7 +648,9 @@ class FileGrid extends cr.ui.Grid {
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const detailIcon = filelist.renderFileTypeIcon(
         li.ownerDocument, entry, locationInfo, mimeType);
-    if (isDirectory) {
+
+    // For FilesNg we add the checkmark in the same location.
+    if (isDirectory || util.isFilesNg()) {
       const checkmark = li.ownerDocument.createElement('div');
       checkmark.className = 'detail-checkmark';
       detailIcon.appendChild(checkmark);
@@ -676,7 +682,7 @@ class FileGrid extends cr.ui.Grid {
     }
 
     if (entry.isDirectory) {
-      FileGrid.setGenericThumbnail_(box, entry);
+      this.setGenericThumbnail_(box, entry);
       return;
     }
 
@@ -685,21 +691,19 @@ class FileGrid extends cr.ui.Grid {
     const thumbnailData = this.listThumbnailLoader_ ?
         this.listThumbnailLoader_.getThumbnailFromCache(entry) :
         null;
+    const mimeType =
+        this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+            .contentMimeType;
     if (thumbnailData && thumbnailData.dataUrl) {
-      const mimeType =
-          this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
-              .contentMimeType;
       FileGrid.setThumbnailImage_(
           box, entry, thumbnailData.dataUrl, (thumbnailData.width || 0),
           (thumbnailData.height || 0), mimeType);
       li.classList.toggle('thumbnail-loaded', true);
     } else {
-      FileGrid.setGenericThumbnail_(box, entry);
+      this.setGenericThumbnail_(box, entry, mimeType);
       li.classList.toggle('thumbnail-loaded', false);
     }
-    const mimeType =
-        this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
-            .contentMimeType;
+
     li.classList.toggle(
         'can-hide-filename',
         FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType));
@@ -766,6 +770,7 @@ class FileGrid extends cr.ui.Grid {
   static setThumbnailImage_(box, entry, dataUrl, width, height, opt_mimeType) {
     const thumbnail = box.ownerDocument.createElement('div');
     thumbnail.classList.add('thumbnail');
+    box.classList.toggle('no-thumbnail', false);
 
     // If the image is JPEG or the thumbnail is larger than the grid size,
     // resize it to cover the thumbnail box.
@@ -796,6 +801,7 @@ class FileGrid extends cr.ui.Grid {
     for (let i = 0; i < oldThumbnails.length; i++) {
       box.removeChild(oldThumbnails[i]);
     }
+    box.classList.toggle('no-thumbnail', true);
     return;
   }
 
@@ -803,14 +809,23 @@ class FileGrid extends cr.ui.Grid {
    * Sets a generic thumbnail on the box.
    * @param {!HTMLDivElement} box A div element to hold thumbnails.
    * @param {!Entry} entry An entry of the thumbnail.
+   * @param {string=} opt_mimeType Optional mime type for the file.
    * @private
    */
-  static setGenericThumbnail_(box, entry) {
+  setGenericThumbnail_(box, entry, opt_mimeType) {
     if (entry.isDirectory) {
       box.setAttribute('generic-thumbnail', 'folder');
     } else {
-      const mediaType = FileType.getMediaType(entry);
-      box.setAttribute('generic-thumbnail', mediaType);
+      if (!util.isFilesNg()) {
+        const mediaType = FileType.getMediaType(entry);
+        box.setAttribute('generic-thumbnail', mediaType);
+      } else {
+        box.classList.toggle('no-thumbnail', true);
+        const locationInfo = this.volumeManager_.getLocationInfo(entry);
+        const icon =
+            FileType.getIcon(entry, opt_mimeType, locationInfo.rootType);
+        box.setAttribute('generic-thumbnail', icon);
+      }
     }
   }
 

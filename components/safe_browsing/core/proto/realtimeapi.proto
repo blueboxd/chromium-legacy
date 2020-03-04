@@ -31,6 +31,8 @@ message RTLookupRequest {
   optional ChromeUserPopulation population = 3;
 
   // Scoped OAuth token for throttling and validation.
+  // Note that this field is used only for displaying on chrome://safe-browsing.
+  // It is not set when the request is sent to the server.
   optional string scoped_oauth_token = 4;
 }
 

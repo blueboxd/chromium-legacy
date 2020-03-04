@@ -685,9 +685,9 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
   void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t generation) override {}
-  void CloseIdleSockets() override {}
-  void CloseIdleSocketsInGroup(
-      const ClientSocketPool::GroupId& group_id) override {}
+  void CloseIdleSockets(const char* net_log_reason_utf8) override {}
+  void CloseIdleSocketsInGroup(const ClientSocketPool::GroupId& group_id,
+                               const char* net_log_reason_utf8) override {}
   int IdleSocketCount() const override { return 0; }
   size_t IdleSocketCountInGroup(
       const ClientSocketPool::GroupId& group_id) const override {
@@ -3392,7 +3392,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the request-challenge-retry sequence for basic auth, over a connection
@@ -3516,7 +3516,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the request-challenge-retry sequence for basic auth, over a keep-alive
@@ -3627,7 +3627,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
     // out of scope.
-    session->CloseAllConnections();
+    session->CloseAllConnections(ERR_FAILED, "Very good reason");
   }
 }
 
@@ -3739,7 +3739,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
     // out of scope.
-    session->CloseAllConnections();
+    session->CloseAllConnections(ERR_FAILED, "Very good reason");
   }
 }
 
@@ -3867,7 +3867,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the case a proxy closes a socket while the challenge body is being
@@ -4019,7 +4019,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyCancelTunnel) {
   EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the no-tunnel HTTP auth case where proxy and server origins and realms
@@ -4158,7 +4158,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyMatchesServerAuthNoTunnel) {
   EXPECT_EQ("hi", response_data);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the no-tunnel HTTP auth case where proxy and server origins and realms
@@ -4419,7 +4419,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hi", response_data);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Much like the test above, but uses tunnelled connections.
@@ -4690,7 +4690,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hi", response_data);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test that we don't pass extraneous headers from the proxy's response to the
@@ -4753,7 +4753,7 @@ TEST_F(HttpNetworkTransactionTest, SanitizeProxyAuthHeaders) {
   EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 
   // Flush the idle socket before the HttpNetworkTransaction goes out of scope.
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test when a server (non-proxy) returns a 407 (proxy-authenticate).
@@ -4974,7 +4974,7 @@ TEST_F(HttpNetworkTransactionTest,
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test a proxy auth scheme that allows default credentials and a proxy server
@@ -5094,7 +5094,7 @@ TEST_F(HttpNetworkTransactionTest,
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test a proxy auth scheme that allows default credentials and a proxy server
@@ -5191,7 +5191,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_EMPTY_RESPONSE));
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // This test exercises an odd edge case where the proxy closes the connection
@@ -5312,7 +5312,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.GetResult(rv));
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test a proxy auth scheme that allows default credentials and a proxy server
@@ -5415,7 +5415,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_TRUE(response->auth_challenge.has_value());
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // A more nuanced test than GenerateAuthToken test which asserts that
@@ -5545,7 +5545,7 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
   EXPECT_EQ(200, response->headers->response_code());
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Proxy resolver that returns a proxy with the same host and port for different
@@ -5927,7 +5927,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
   trans2.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the load timing for HTTPS requests with an HTTP proxy and a PAC script.
@@ -6030,7 +6030,7 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
 
   trans2.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Make sure that NetworkIsolationKeys are passed down to the proxy layer.
@@ -10992,7 +10992,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
                                  CONNECT_TIMING_HAS_SSL_TIMES);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test that an explicitly trusted SPDY proxy can push a resource from an
@@ -11116,7 +11116,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
 
   trans.reset();
   push_trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test that an explicitly trusted SPDY proxy cannot push HTTPS content.
@@ -11199,7 +11199,7 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   EXPECT_EQ("hello!", response_data);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test that an explicitly trusted SPDY proxy can push same-origin HTTPS
@@ -11292,7 +11292,7 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   EXPECT_EQ("hello!", response_data);
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test HTTPS connections to a site with a bad certificate, going through an
@@ -19008,7 +19008,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
   EXPECT_EQ(101, response->headers->response_code());
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Verify that proxy headers are not sent to the destination server when
@@ -19091,7 +19091,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
   EXPECT_EQ(101, response->headers->response_code());
 
   trans.reset();
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // WebSockets over QUIC is not supported, including over QUIC proxies.
@@ -20822,7 +20822,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
@@ -20891,7 +20891,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
@@ -20945,7 +20945,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
@@ -21013,7 +21013,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
@@ -21067,7 +21067,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // 0-RTT rejects are handled at HttpNetworkTransaction.
@@ -21215,7 +21215,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorSync) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
@@ -21262,7 +21262,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
 
   trans.reset();
 
-  session->CloseAllConnections();
+  session->CloseAllConnections(ERR_FAILED, "Very good reason");
 }
 
 // Test the proxy and origin server each requesting both TLS client certificates

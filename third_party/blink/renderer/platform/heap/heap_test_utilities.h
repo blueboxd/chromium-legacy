@@ -181,7 +181,7 @@ class IntegerObject : public GarbageCollected<IntegerObject> {
     destructor_calls.fetch_add(1, std::memory_order_relaxed);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
   int Value() const { return x_; }
 

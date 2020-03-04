@@ -1713,6 +1713,7 @@ body.files-ng #list-container .thumbnail-grid li {
 }
 
 body.files-ng grid .thumbnail-bottom .detail-icon {
+  color: var(--google-grey-700);
   cursor: pointer;
   height: 40px;
   padding-inline-end: 6px;
@@ -1788,6 +1789,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 body.files-ng .thumbnail-grid .img-container {
+  color: var(--google-grey-700);
   height: 120px;
 }
 
@@ -2184,6 +2186,7 @@ body:not(.files-ng) #list-container li .detail-icon {
 }
 
 body.files-ng #list-container list li .detail-icon {
+  color: var(--google-grey-700);
   height: 40px;
   margin-inline-end: 16px;
   margin-inline-start: 12px;
@@ -2193,6 +2196,7 @@ body.files-ng #list-container list li .detail-icon {
 #list-container li .detail-checkmark {
   background-position: center;
   background-repeat: no-repeat;
+  color: var(--google-blue-600);
   height: 28px;
   isolation: isolate;
   opacity: 0;

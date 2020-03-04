@@ -506,6 +506,9 @@ void Job::StartURLRequest(URLRequestContext* context) {
   if (request_params_->http_method == HTTP_METHOD_POST)
     url_request_->set_method("POST");
   url_request_->set_allow_credentials(false);
+  // Disable secure DNS for hostname lookups triggered by certificate network
+  // fetches to prevent deadlock.
+  url_request_->SetDisableSecureDns(true);
   url_request_->Start();
 
   // Start a timer to limit how long the job runs for.

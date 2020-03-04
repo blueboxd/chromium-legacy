@@ -253,7 +253,8 @@ class WebContents : public PageNavigator,
 
   CONTENT_EXPORT static WebContents* FromRenderFrameHost(RenderFrameHost* rfh);
 
-  // Returns the WebContents associated with the |frame_tree_node_id|.
+  // Returns the WebContents associated with the |frame_tree_node_id|. This may
+  // return nullptr if the RenderFrameHost is shutting down.
   CONTENT_EXPORT static WebContents* FromFrameTreeNodeId(
       int frame_tree_node_id);
 

@@ -508,12 +508,6 @@ TEST_F(SafeBrowsingUIManagerTest,
   // Needed for showing the blocking page.
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
 
-  // The callback needs to be set for committed interstitials, just set it to do
-  // nothing.
-  resource.callback = base::DoNothing();
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-
   NavigateAndCommit(GURL("http://example.test"));
 
   delegate.ClearVisibleSecurityStateChanged();
@@ -540,6 +534,23 @@ TEST_F(SafeBrowsingUIManagerTest,
   EXPECT_TRUE(waiter.callback_called());
   EXPECT_TRUE(waiter.proceed());
   EXPECT_TRUE(IsWhitelisted(resource));
+}
+
+TEST_F(SafeBrowsingUIManagerTest, ShowBlockPageNoCallback) {
+  TestSafeBrowsingBlockingPageFactory factory;
+  SafeBrowsingBlockingPage::RegisterFactory(&factory);
+  SecurityStateWebContentsDelegate delegate;
+  web_contents()->SetDelegate(&delegate);
+
+  // Simulate a blocking page showing for an unsafe subresource.
+  security_interstitials::UnsafeResource resource =
+      MakeUnsafeResource(kBadURL, false /* is_subresource */);
+  // Needed for showing the blocking page.
+  resource.threat_source = safe_browsing::ThreatSource::REMOTE;
+
+  // This call caused a crash in https://crbug.com/1058094. Just verify that we
+  // don't crash anymore.
+  ui_manager()->DisplayBlockingPage(resource);
 }
 
 }  // namespace safe_browsing

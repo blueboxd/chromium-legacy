@@ -102,8 +102,7 @@ int GetDownloadAttributionUserGestureLimit(const download::DownloadItem& item) {
   const PrefService* prefs = profile->GetPrefs();
   if (!prefs)
     return kDownloadAttributionUserGestureLimit;
-  if (!IsExtendedReportingEnabled(*prefs) &&
-      !IsEnhancedProtectionEnabled(*prefs))
+  if (!IsExtendedReportingEnabled(*prefs))
     return kDownloadAttributionUserGestureLimit;
   return kDownloadAttributionUserGestureLimitForExtendedReporting;
 }
@@ -424,9 +423,7 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   OnDangerousDownloadOpened(item, profile);
   if (sb_service_ &&
       !token.empty() &&  // Only dangerous downloads have token stored.
-      profile &&
-      (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
-       IsEnhancedProtectionEnabled(*profile->GetPrefs()))) {
+      profile && (IsExtendedReportingEnabled(*profile->GetPrefs()))) {
     safe_browsing::ClientSafeBrowsingReportRequest report;
     report.set_url(item->GetURL().spec());
     report.set_type(safe_browsing::ClientSafeBrowsingReportRequest::
@@ -592,8 +589,7 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
   PrefService* prefs = profile->GetPrefs();
   bool is_extended_reporting =
       ExtendedReportingPrefExists(*prefs) && IsExtendedReportingEnabled(*prefs);
-  if (!profile->IsOffTheRecord() &&
-      (is_extended_reporting || IsEnhancedProtectionEnabled(*prefs))) {
+  if (!profile->IsOffTheRecord() && is_extended_reporting) {
     feedback_service_->BeginFeedbackForDownload(download, download_command);
     return true;
   }

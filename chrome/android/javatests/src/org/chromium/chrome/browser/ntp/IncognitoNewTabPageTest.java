@@ -4,9 +4,21 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
+import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.isNotChecked;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.not;
+
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.SwitchCompat;
-import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,6 +56,25 @@ public class IncognitoNewTabPageTest {
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
+    private void setThirdPartyCookieBlocking(boolean enabled) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
+        });
+    }
+
+    private void setCookieControlsMode(@CookieControlsMode int mode) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
+        });
+    }
+
+    private void assertCookieControlsMode(@CookieControlsMode int mode) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE), mode);
+        });
+    }
+
     /**
      * Test cookie controls card is GONE when cookie controls flag disabled.
      */
@@ -52,15 +83,8 @@ public class IncognitoNewTabPageTest {
     @DisableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)
     public void testCookieControlsCardGONE() throws Exception {
         mActivityTestRule.newIncognitoTabFromMenu();
-        final IncognitoNewTabPage ntp = (IncognitoNewTabPage) mActivityTestRule.getActivity()
-                                                .getActivityTab()
-                                                .getNativePage();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(
-                    ntp.getView().findViewById(R.id.cookie_controls_card).getVisibility(),
-                    View.GONE);
-        });
+        onView(withId(R.id.cookie_controls_card))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }
 
     /**
@@ -69,29 +93,15 @@ public class IncognitoNewTabPageTest {
     @Test
     @SmallTest
     public void testCookieControlsToggleStartsOn() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Set normal third-party cookie blocking to off.
-            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, false);
-            // Set CookieControlsMode Pref to On
-            PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.INCOGNITO_ONLY);
-        });
-
+        setThirdPartyCookieBlocking(false);
+        setCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
         mActivityTestRule.newIncognitoTabFromMenu();
-        final IncognitoNewTabPage ntp = (IncognitoNewTabPage) mActivityTestRule.getActivity()
-                                                .getActivityTab()
-                                                .getNativePage();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Make sure cookie controls card is visible
-            Assert.assertEquals(
-                    ntp.getView().findViewById(R.id.cookie_controls_card).getVisibility(),
-                    View.VISIBLE);
-            // Assert the cookie controls toggle is checked
-            Assert.assertTrue(
-                    ((SwitchCompat) ntp.getView().findViewById(R.id.cookie_controls_card_toggle))
-                            .isChecked());
-        });
+        // Make sure cookie controls card is visible
+        onView(withId(R.id.cookie_controls_card))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
+        // Assert the cookie controls toggle is checked
+        onView(withId(R.id.cookie_controls_card_toggle)).check(matches(isChecked()));
     }
 
     /**
@@ -100,38 +110,53 @@ public class IncognitoNewTabPageTest {
     @Test
     @SmallTest
     public void testCookieControlsToggleChanges() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Set normal third-party cookie blocking to off.
-            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, false);
-            // Set CookieControlsMode Pref to Off
-            PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.OFF);
-        });
-
+        setThirdPartyCookieBlocking(false);
+        setCookieControlsMode(CookieControlsMode.OFF);
         mActivityTestRule.newIncognitoTabFromMenu();
-        final IncognitoNewTabPage ntp = (IncognitoNewTabPage) mActivityTestRule.getActivity()
-                                                .getActivityTab()
-                                                .getNativePage();
+        onView(withId(R.id.cookie_controls_card))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Make sure cookie controls card is visible
-            Assert.assertEquals(
-                    ntp.getView().findViewById(R.id.cookie_controls_card).getVisibility(),
-                    View.VISIBLE);
+        int toggle_id = R.id.cookie_controls_card_toggle;
+        // Toggle should start unchecked
+        onView(withId(toggle_id)).check(matches(isNotChecked()));
+        // Toggle should be checked after click
+        onView(withId(toggle_id)).perform(scrollTo(), click()).check(matches(isChecked()));
+        // CookieControlsMode should be incognito_only
+        assertCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
+        // Toggle should be unchecked again after click
+        onView(withId(toggle_id)).perform(scrollTo(), click()).check(matches(isNotChecked()));
+        // CookieControlsMode should be off
+        assertCookieControlsMode(CookieControlsMode.OFF);
+    }
 
-            SwitchCompat toggle =
-                    (SwitchCompat) ntp.getView().findViewById(R.id.cookie_controls_card_toggle);
-            Assert.assertFalse("Toggle should be unchecked", toggle.isChecked());
-            toggle.performClick();
-            Assert.assertTrue("Toggle should be checked", toggle.isChecked());
-            Assert.assertEquals("CookieControlsMode should be incognito_only",
-                    PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE),
-                    CookieControlsMode.INCOGNITO_ONLY);
-            toggle.performClick();
-            Assert.assertFalse("Toggle should be unchecked again", toggle.isChecked());
-            Assert.assertEquals("CookieControlsMode should be off",
-                    PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE),
-                    CookieControlsMode.OFF);
-        });
+    /**
+     * Test cookie controls disabled if managed by settings.
+     */
+    @Test
+    @SmallTest
+    public void testCookieControlsToggleManaged() throws Exception {
+        setThirdPartyCookieBlocking(false);
+        setCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
+        mActivityTestRule.newIncognitoTabFromMenu();
+        onView(withId(R.id.cookie_controls_card))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
+
+        int toggle_id = R.id.cookie_controls_card_toggle;
+        // Toggle should start checked and enabled
+        onView(withId(toggle_id)).check(matches(allOf(isChecked(), isEnabled())));
+        // Toggle should be disabled if managed by setting
+        setThirdPartyCookieBlocking(true);
+        onView(withId(toggle_id)).check(matches(not(isEnabled())));
+        // Toggle should be enabled and remain checked
+        setThirdPartyCookieBlocking(false);
+        onView(withId(toggle_id)).check(matches(allOf(isChecked(), isEnabled())));
+
+        // Repeat of above but toggle should remain unchecked
+        onView(withId(toggle_id)).perform(scrollTo(), click());
+        onView(withId(toggle_id)).check(matches(allOf(isNotChecked(), isEnabled())));
+        setThirdPartyCookieBlocking(true);
+        onView(withId(toggle_id)).check(matches(not(isEnabled())));
+        setThirdPartyCookieBlocking(false);
+        onView(withId(toggle_id)).check(matches(allOf(isNotChecked(), isEnabled())));
     }
 }

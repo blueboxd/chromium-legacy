@@ -9,6 +9,7 @@
 // include these headers here.
 #include <winsock2.h>
 #include <iphlpapi.h>
+#include <iptypes.h>
 
 #include <memory>
 #include <string>
@@ -99,7 +100,17 @@ struct NET_EXPORT_PRIVATE DnsSystemSettings {
 
   // True when the Name Resolution Policy Table (NRPT) has at least one rule:
   // SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\DnsPolicyConfig\Rule*
-  bool have_name_resolution_policy;
+  // (or)
+  // SYSTEM\CurrentControlSet\Services\Dnscache\Parameters\DnsPolicyConfig\Rule*
+  bool have_name_resolution_policy = false;
+
+  // True when a proxy is configured via at least one rule:
+  // SYSTEM\CurrentControlSet\Services\Dnscache\Parameters\DnsConnections
+  // (or)
+  // SYSTEM\CurrentControlSet\Services\Dnscache\Parameters\DnsActiveIfs
+  // (or)
+  // SYSTEM\CurrentControlSet\Services\Dnscache\Parameters\DnsConnectionsProxies
+  bool have_proxy = false;
 };
 
 enum ConfigParseWinResult {

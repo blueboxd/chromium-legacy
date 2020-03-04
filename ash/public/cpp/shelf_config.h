@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -21,7 +22,8 @@ namespace ash {
 // values could change at runtime.
 class ASH_EXPORT ShelfConfig : public TabletModeObserver,
                                public AppListControllerObserver,
-                               public display::DisplayObserver {
+                               public display::DisplayObserver,
+                               public VirtualKeyboardModel::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -50,6 +52,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // VirtualKeyboardModel::Observer:
+  void OnVirtualKeyboardVisibilityChanged() override;
 
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
@@ -158,6 +163,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   bool shelf_controls_shown() const { return shelf_controls_shown_; }
 
+  bool is_virtual_keyboard_shown() const { return is_virtual_keyboard_shown_; }
+
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
 
@@ -222,6 +229,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Whether the shelf buttons (navigation controls, and overview tray button)
   // should be shown.
   bool shelf_controls_shown_;
+
+  // Whether virtual IME keyboard is shown.
+  bool is_virtual_keyboard_shown_;
 
   // Whether the app list (or home launcher in tablet mode) is visible.
   bool is_app_list_visible_;

@@ -181,7 +181,7 @@ void CrostiniUpgrader::OnBackup(CrostiniResult result,
   }
   backup_path_ = backup_path;
   for (auto& observer : upgrader_observers_) {
-    observer.OnBackupSucceeded();
+    observer.OnBackupSucceeded(!backup_path.has_value());
   }
 }
 

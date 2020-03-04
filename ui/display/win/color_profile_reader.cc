@@ -124,7 +124,6 @@ void ColorProfileReader::ReadProfilesCompleted(
     DeviceToDataMap device_to_data_map) {
   DCHECK(update_in_flight_);
   update_in_flight_ = false;
-  has_read_profiles_ = true;
 
   display_id_to_profile_map_.clear();
   for (auto entry : device_to_data_map) {
@@ -147,8 +146,6 @@ gfx::ColorSpace ColorProfileReader::GetDisplayColorSpace(
   auto found = display_id_to_profile_map_.find(display_id);
   if (found != display_id_to_profile_map_.end())
     icc_profile = found->second;
-  if (has_read_profiles_)
-    icc_profile.HistogramDisplay(display_id);
   return icc_profile.IsValid() ? icc_profile.GetPrimariesOnlyColorSpace()
                                : gfx::ColorSpace::CreateSRGB();
 }

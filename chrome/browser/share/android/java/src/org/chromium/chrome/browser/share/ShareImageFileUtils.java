@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationState;
@@ -18,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.task.AsyncTask;
@@ -46,40 +46,6 @@ public class ShareImageFileUtils {
     private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
     private static final String JPEG_EXTENSION = ".jpg";
     private static final String FILE_NUMBER_FORMAT = " (%d)";
-
-    /**
-     * Delete the |file|, if the |file| is a directory, delete the files and directories in the
-     * directory recursively.
-     *
-     * @param file The {@link File} or directory to be deleted.
-     * @param reservedFilepath The filepath should not to be deleted.
-     * @return Whether the |folder| has file to keep/reserve.
-     */
-    private static boolean deleteFiles(File file, @Nullable String reservedFilepath) {
-        if (!file.exists()) return false;
-        if (reservedFilepath != null && file.isFile()
-                && file.getPath().endsWith(reservedFilepath)) {
-            return true;
-        }
-
-        boolean anyChildKept = false;
-        if (file.isDirectory()) {
-            File[] file_list = file.listFiles();
-            if (file_list != null) {
-                for (File child : file.listFiles()) {
-                    anyChildKept |= deleteFiles(child, reservedFilepath);
-                }
-            }
-        }
-
-        // file.delete() will fail if |file| is a directory and has a file need to keep. In this
-        // case, the log should not been recorded since it is correct.
-        if (!anyChildKept && !file.delete()) {
-            Log.w(TAG, "Failed to delete share image file: %s", file.getAbsolutePath());
-            return true;
-        }
-        return anyChildKept;
-    }
 
     /**
      * Check if the file related to |fileUri| is in the |folder|.
@@ -129,7 +95,11 @@ public class ShareImageFileUtils {
     public static void clearSharedImages() {
         AsyncTask.SERIAL_EXECUTOR.execute(() -> {
             try {
-                deleteFiles(getSharedFilesDirectory(), getClipboardCurrentFilepath());
+                String clipboardFilepath = getClipboardCurrentFilepath();
+                FileUtils.recursivelyDeleteFile(getSharedFilesDirectory(), (filepath) -> {
+                    return filepath == null || clipboardFilepath == null
+                            || !filepath.endsWith(clipboardFilepath);
+                });
             } catch (IOException ie) {
                 // Ignore exception.
             }

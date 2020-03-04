@@ -56,6 +56,9 @@ ASH_EXPORT void HandleNudgeShown(PrefService* prefs, TooltipType type);
 // correpsonding gesture has been performed successfully.
 ASH_EXPORT void HandleGesturePerformed(PrefService* prefs, TooltipType type);
 
+// Resets all user prefs related to contextual tooltips.
+ASH_EXPORT void ClearPrefs();
+
 ASH_EXPORT void OverrideClockForTesting(base::Clock* test_clock);
 
 ASH_EXPORT void ClearClockOverrideForTesting();

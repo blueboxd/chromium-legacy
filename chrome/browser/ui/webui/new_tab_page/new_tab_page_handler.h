@@ -59,6 +59,8 @@ class NewTabPageHandler : public content::WebContentsObserver,
   void RevertThemeChanges() override;
   void GetBackgroundCollections(
       GetBackgroundCollectionsCallback callback) override;
+  void GetBackgroundImages(const std::string& collection_id,
+                           GetBackgroundImagesCallback callback) override;
 
  private:
   // InstantServiceObserver:
@@ -76,6 +78,8 @@ class NewTabPageHandler : public content::WebContentsObserver,
   NtpBackgroundService* ntp_background_service_;
   GURL last_blacklisted_;
   GetBackgroundCollectionsCallback background_collections_callback_;
+  std::string images_request_collection_id_;
+  GetBackgroundImagesCallback background_images_callback_;
   mojo::Remote<new_tab_page::mojom::Page> page_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
 

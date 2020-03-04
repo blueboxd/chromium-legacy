@@ -53,7 +53,7 @@ public class WebApkVersionManager {
 
         Context context = ContextUtils.getApplicationContext();
         File dexDir = context.getDir("dex", Context.MODE_PRIVATE);
-        FileUtils.recursivelyDeleteFile(dexDir);
+        FileUtils.recursivelyDeleteFile(dexDir, FileUtils.DELETE_ALL);
 
         // Recreate world-executable directory using {@link Context#getDir}.
         dexDir = context.getDir("dex", Context.MODE_PRIVATE);

@@ -65,13 +65,13 @@ struct TraceIfNeeded;
 template <typename T>
 struct TraceIfNeeded<T, false> {
   STATIC_ONLY(TraceIfNeeded);
-  static void Trace(blink::Visitor*, T&) {}
+  static void Trace(Visitor*, T&) {}
 };
 
 template <typename T>
 struct TraceIfNeeded<T, true> {
   STATIC_ONLY(TraceIfNeeded);
-  static void Trace(blink::Visitor* visitor, T& t) { visitor->Trace(t); }
+  static void Trace(Visitor* visitor, T& t) { visitor->Trace(t); }
 };
 
 template <WTF::WeakHandlingFlag weakness,
@@ -91,7 +91,7 @@ struct TraceCollectionIfEnabled<weakness,
 
   static bool IsAlive(T&) { return true; }
 
-  static bool Trace(blink::Visitor*, void*) {
+  static bool Trace(Visitor*, void*) {
     static_assert(!WTF::IsTraceableInCollectionTrait<Traits>::value,
                   "T should not be traced");
     return false;
@@ -106,7 +106,7 @@ struct TraceCollectionIfEnabled<WTF::kNoWeakHandling,
                                 WTF::kWeakHandling> {
   STATIC_ONLY(TraceCollectionIfEnabled);
 
-  static bool Trace(blink::Visitor* visitor, void* t) {
+  static bool Trace(Visitor* visitor, void* t) {
     return WTF::TraceInCollectionTrait<WTF::kNoWeakHandling, T, Traits>::Trace(
         visitor, *reinterpret_cast<T*>(t));
   }
@@ -124,7 +124,7 @@ struct TraceCollectionIfEnabled {
     return WTF::TraceInCollectionTrait<weakness, T, Traits>::IsAlive(traceable);
   }
 
-  static bool Trace(blink::Visitor* visitor, void* t) {
+  static bool Trace(Visitor* visitor, void* t) {
     static_assert(WTF::IsTraceableInCollectionTrait<Traits>::value ||
                       weakness == WTF::kWeakHandling,
                   "Traits should be traced");
@@ -182,7 +182,7 @@ struct TraceTrait<std::pair<T, U>> {
   STATIC_ONLY(TraceTrait);
 
  public:
-  static void Trace(blink::Visitor* visitor, std::pair<T, U>* pair) {
+  static void Trace(Visitor* visitor, std::pair<T, U>* pair) {
     TraceIfNeeded<T>::Trace(visitor, pair->first);
     TraceIfNeeded<U>::Trace(visitor, pair->second);
   }
@@ -197,7 +197,7 @@ struct TraceTrait<base::Optional<T>> {
   STATIC_ONLY(TraceTrait);
 
  public:
-  static void Trace(blink::Visitor* visitor, base::Optional<T>* optional) {
+  static void Trace(Visitor* visitor, base::Optional<T>* optional) {
     if (*optional != base::nullopt) {
       TraceIfNeeded<T>::Trace(visitor, optional->value());
     }

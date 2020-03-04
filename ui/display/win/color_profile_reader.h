@@ -62,9 +62,6 @@ class DISPLAY_EXPORT ColorProfileReader {
   void ReadProfilesCompleted(DeviceToDataMap device_to_data_map);
 
   Client* const client_ = nullptr;
-  // Set to true once profiles have been read at least once, to avoid
-  // histogramming the default value.
-  bool has_read_profiles_ = false;
   bool update_in_flight_ = false;
   DeviceToPathMap device_to_path_map_;
   std::map<int64_t, gfx::ICCProfile> display_id_to_profile_map_;

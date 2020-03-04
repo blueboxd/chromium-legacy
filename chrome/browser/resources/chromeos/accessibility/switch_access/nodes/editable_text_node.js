@@ -60,6 +60,15 @@ class EditableTextNode extends NodeWrapper {
       case SAConstants.MenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();
         return SAConstants.ActionResponse.CLOSE_MENU;
+      case SAConstants.MenuAction.CUT:
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SAConstants.MenuAction.COPY:
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SAConstants.MenuAction.PASTE:
+        EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
+        return SAConstants.ActionResponse.REMAIN_OPEN;
     }
     return super.performAction(action);
   }

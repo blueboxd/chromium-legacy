@@ -408,6 +408,8 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
 
   // Step 4 of https://w3c.github.io/webauthn/#createCredential
   if (options->hasTimeout()) {
+    mojo_options->timeout =
+        base::TimeDelta::FromMilliseconds(options->timeout());
     mojo_options->adjusted_timeout = AdjustTimeout(options->timeout());
   } else {
     mojo_options->adjusted_timeout = kAdjustedTimeoutUpper;
@@ -552,6 +554,8 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
   mojo_options->challenge = ConvertTo<Vector<uint8_t>>(options->challenge());
 
   if (options->hasTimeout()) {
+    mojo_options->timeout =
+        base::TimeDelta::FromMilliseconds(options->timeout());
     mojo_options->adjusted_timeout = AdjustTimeout(options->timeout());
   } else {
     mojo_options->adjusted_timeout = kAdjustedTimeoutUpper;

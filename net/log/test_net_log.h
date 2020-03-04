@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -54,6 +55,12 @@ class RecordingNetLogObserver : public NetLog::ThreadSafeObserver {
 
   // Returns all captured entries with the specified type.
   std::vector<NetLogEntry> GetEntriesWithType(NetLogEventType type) const;
+
+  // Returns all captured entries with the specified values.
+  std::vector<NetLogEntry> GetEntriesForSourceWithType(
+      NetLogSource source,
+      NetLogEventType type,
+      NetLogEventPhase phase) const;
 
   // Returns the number of entries in the log.
   size_t GetSize() const;
@@ -102,6 +109,10 @@ class RecordingTestNetLog : public TestNetLog {
   std::vector<NetLogEntry> GetEntries() const;
   std::vector<NetLogEntry> GetEntriesForSource(NetLogSource source) const;
   std::vector<NetLogEntry> GetEntriesWithType(NetLogEventType type) const;
+  std::vector<NetLogEntry> GetEntriesForSourceWithType(
+      NetLogSource source,
+      NetLogEventType type,
+      NetLogEventPhase phase) const;
   size_t GetSize() const;
   void Clear();
 
@@ -135,6 +146,10 @@ class RecordingBoundTestNetLog {
   std::vector<NetLogEntry> GetEntries() const;
   std::vector<NetLogEntry> GetEntriesForSource(NetLogSource source) const;
   std::vector<NetLogEntry> GetEntriesWithType(NetLogEventType type) const;
+  std::vector<NetLogEntry> GetEntriesForSourceWithType(
+      NetLogSource source,
+      NetLogEventType type,
+      NetLogEventPhase phase) const;
   size_t GetSize() const;
   void Clear();
 

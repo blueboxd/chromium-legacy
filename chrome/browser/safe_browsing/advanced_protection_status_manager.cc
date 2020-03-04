@@ -227,9 +227,15 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
 }
 
 bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kForceTreatUserAsAdvancedProtection) ||
-         is_under_advanced_protection_;
+  if (!pref_service_->GetBoolean(
+          prefs::kAdvancedProtectionExtraSecurityAllowed))
+    return false;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kForceTreatUserAsAdvancedProtection))
+    return true;
+
+  return is_under_advanced_protection_;
 }
 
 bool AdvancedProtectionStatusManager::IsUnconsentedPrimaryAccount(

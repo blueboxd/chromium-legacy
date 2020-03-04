@@ -42,7 +42,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
 
 WebSocketTransportClientSocketPool::~WebSocketTransportClientSocketPool() {
   // Clean up any pending connect jobs.
-  FlushWithError(ERR_ABORTED);
+  FlushWithError(ERR_ABORTED, "");
   DCHECK(pending_connects_.empty());
   DCHECK_EQ(0, handed_out_socket_count_);
   DCHECK(stalled_request_queue_.empty());
@@ -174,7 +174,9 @@ void WebSocketTransportClientSocketPool::ReleaseSocket(
   ActivateStalledRequest();
 }
 
-void WebSocketTransportClientSocketPool::FlushWithError(int error) {
+void WebSocketTransportClientSocketPool::FlushWithError(
+    int error,
+    const char* net_log_reason_utf8) {
   DCHECK_NE(error, OK);
 
   // Sockets which are in LOAD_STATE_CONNECTING are in danger of unlocking
@@ -187,6 +189,9 @@ void WebSocketTransportClientSocketPool::FlushWithError(int error) {
   for (auto it = pending_connects_.begin(); it != pending_connects_.end();) {
     InvokeUserCallbackLater(it->second->socket_handle(),
                             it->second->release_callback(), error);
+    it->second->connect_job_net_log().AddEventWithStringParams(
+        NetLogEventType::SOCKET_POOL_CLOSING_SOCKET, "reason",
+        net_log_reason_utf8);
     it = pending_connects_.erase(it);
   }
   for (auto it = stalled_request_queue_.begin();
@@ -198,12 +203,14 @@ void WebSocketTransportClientSocketPool::FlushWithError(int error) {
   flushing_ = false;
 }
 
-void WebSocketTransportClientSocketPool::CloseIdleSockets() {
+void WebSocketTransportClientSocketPool::CloseIdleSockets(
+    const char* net_log_reason_utf8) {
   // We have no idle sockets.
 }
 
 void WebSocketTransportClientSocketPool::CloseIdleSocketsInGroup(
-    const GroupId& group_id) {
+    const GroupId& group_id,
+    const char* net_log_reason_utf8) {
   // We have no idle sockets.
 }
 

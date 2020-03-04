@@ -109,13 +109,13 @@ Polymer({
         assert(this.state_ === State.BACKUP);
         this.backupProgress_ = percent;
       }),
-      callbackRouter.onBackupSucceeded.addListener(() => {
+      callbackRouter.onBackupSucceeded.addListener((wasCancelled) => {
         assert(this.state_ === State.BACKUP);
         this.state_ = State.BACKUP_SUCCEEDED;
         // We do a short (2 second) interstitial display of the backup success
         // message before continuing the upgrade.
         var timeout = new Promise((resolve, reject) => {
-          setTimeout(resolve, 2000);
+          setTimeout(resolve, wasCancelled ? 0 : 2000);
         });
         // We also want to wait for the prechecks to finish.
         var callback = new Promise((resolve, reject) => {

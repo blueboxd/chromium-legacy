@@ -10,6 +10,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,6 +18,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -54,6 +57,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -1384,6 +1388,14 @@ void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
   if (!chooser_observer_.IsObserving(hid_context))
     chooser_observer_.Add(hid_context);
 
+  if (base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    auto* bluetooth_context =
+        BluetoothChooserContextFactory::GetForProfile(profile);
+    if (!chooser_observer_.IsObserving(bluetooth_context))
+      chooser_observer_.Add(bluetooth_context);
+  }
+
   observed_profiles_.Add(profile);
 }
 
@@ -1403,6 +1415,14 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   auto* hid_context = HidChooserContextFactory::GetForProfile(profile);
   if (chooser_observer_.IsObserving(hid_context))
     chooser_observer_.Remove(hid_context);
+
+  if (base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    auto* bluetooth_context =
+        BluetoothChooserContextFactory::GetForProfile(profile);
+    if (chooser_observer_.IsObserving(bluetooth_context))
+      chooser_observer_.Remove(bluetooth_context);
+  }
 
   observed_profiles_.Remove(profile);
 }

@@ -29,20 +29,29 @@ import java.util.Locale;
 public class FileUtils {
     private static final String TAG = "FileUtils";
 
+    public static Function<String, Boolean> DELETE_ALL = filepath -> true;
+
     /**
      * Delete the given File and (if it's a directory) everything within it.
      * @param currentFile The file or directory to delete. Does not need to exist.
-     * @return Whether currentFile does not exist afterwards.
+     * @param canDelete the {@link Function} function used to check if the file can be deleted.
+     * @return True if the files are deleted, or files reserved by |canDelete|, false if failed to
+     *         delete files.
      */
-    public static boolean recursivelyDeleteFile(File currentFile) {
+    public static boolean recursivelyDeleteFile(
+            File currentFile, Function<String, Boolean> canDelete) {
         if (!currentFile.exists()) {
             return true;
         }
+        if (canDelete != null && !canDelete.apply(currentFile.getPath())) {
+            return true;
+        }
+
         if (currentFile.isDirectory()) {
             File[] files = currentFile.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    recursivelyDeleteFile(file);
+                    recursivelyDeleteFile(file, canDelete);
                 }
             }
         }
@@ -58,14 +67,17 @@ public class FileUtils {
      * Delete the given files or directories by calling {@link #recursivelyDeleteFile(File)}. This
      * supports deletion of content URIs.
      * @param filePaths The file paths or content URIs to delete.
+     * @param canDelete the {@link Function} function used to check if the file can be deleted.
      */
-    public static void batchDeleteFiles(List<String> filePaths) {
+    public static void batchDeleteFiles(
+            List<String> filePaths, Function<String, Boolean> canDelete) {
         for (String filePath : filePaths) {
+            if (canDelete != null && !canDelete.apply(filePath)) continue;
             if (ContentUriUtils.isContentUri(filePath)) {
                 ContentUriUtils.delete(filePath);
             } else {
                 File file = new File(filePath);
-                if (file.exists()) recursivelyDeleteFile(file);
+                if (file.exists()) recursivelyDeleteFile(file, canDelete);
             }
         }
     }

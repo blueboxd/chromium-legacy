@@ -4381,6 +4381,10 @@ if (is_chromeos) {
 }
 
 if (is_android) {
+  java_cpp_enum("cookie_controls_enforcement_javagen") {
+    sources = [ "cookie_controls/cookie_controls_service.h" ]
+  }
+
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

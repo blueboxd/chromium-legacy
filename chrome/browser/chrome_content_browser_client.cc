@@ -4291,11 +4291,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   std::string client_data_header;
   if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
     auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-    auto* client_data_header_observer =
-        customtabs::ClientDataHeaderWebContentsObserver::FromWebContents(
-            web_contents);
-    if (client_data_header_observer)
-      client_data_header = client_data_header_observer->header();
+    // Could be null if the FrameTreeNode's RenderFrameHost is shutting down.
+    if (web_contents) {
+      auto* client_data_header_observer =
+          customtabs::ClientDataHeaderWebContentsObserver::FromWebContents(
+              web_contents);
+      if (client_data_header_observer)
+        client_data_header = client_data_header_observer->header();
+    }
   }
 #endif
 

@@ -541,11 +541,6 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
     stat->SetKey("count", base::Value(item.count));
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
-  if (result.size() == profiles::kProfileStatisticsCategories.size()) {
-    // All categories are finished.
-    UMA_HISTOGRAM_TIMES("Profile.RemoveUserWarningStatsTime",
-                        base::Time::Now() - start_time);
-  }
   web_ui()->CallJavascriptFunctionUnsafe("updateRemoveWarningDialog",
                                          base::Value(profile_path.value()),
                                          return_value);

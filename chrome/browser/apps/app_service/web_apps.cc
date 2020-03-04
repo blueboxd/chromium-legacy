@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -229,7 +229,7 @@ void WebApps::Launch(const std::string& app_id,
   web_app::DisplayMode display_mode =
       GetRegistrar().GetAppEffectiveDisplayMode(app_id);
 
-  AppLaunchParams params = CreateAppIdLaunchParamsWithEventFlags(
+  AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       web_app->app_id(), event_flags,
       apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id,
       /*fallback_container=*/

@@ -8986,7 +8986,7 @@ TEST_F(HTTPSRequestTest, ClientAuth) {
   // Close all connections and clear the session cache to force a new handshake.
   default_context_.http_transaction_factory()
       ->GetSession()
-      ->CloseAllConnections();
+      ->CloseAllConnections(ERR_FAILED, "Very good reason");
   default_context_.http_transaction_factory()
       ->GetSession()
       ->ClearSSLSessionCache();
@@ -9068,7 +9068,7 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigning) {
   // Close all connections and clear the session cache to force a new handshake.
   default_context_.http_transaction_factory()
       ->GetSession()
-      ->CloseAllConnections();
+      ->CloseAllConnections(ERR_FAILED, "Very good reason");
   default_context_.http_transaction_factory()
       ->GetSession()
       ->ClearSSLSessionCache();
@@ -9148,7 +9148,7 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigningRetry) {
   // Close all connections and clear the session cache to force a new handshake.
   default_context_.http_transaction_factory()
       ->GetSession()
-      ->CloseAllConnections();
+      ->CloseAllConnections(ERR_FAILED, "Very good reason");
   default_context_.http_transaction_factory()
       ->GetSession()
       ->ClearSSLSessionCache();
@@ -9210,8 +9210,8 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
     EXPECT_EQ(1, d.response_started_count());
   }
 
-  reinterpret_cast<HttpCache*>(default_context_.http_transaction_factory())->
-    CloseAllConnections();
+  reinterpret_cast<HttpCache*>(default_context_.http_transaction_factory())
+      ->CloseAllConnections(ERR_FAILED, "Very good reason");
 
   {
     TestDelegate d;
@@ -9508,8 +9508,8 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
     EXPECT_EQ(1, d.response_started_count());
   }
 
-  reinterpret_cast<HttpCache*>(default_context_.http_transaction_factory())->
-    CloseAllConnections();
+  reinterpret_cast<HttpCache*>(default_context_.http_transaction_factory())
+      ->CloseAllConnections(ERR_FAILED, "Very good reason");
 
   // Now change the certificate to be acceptable (so that the response is
   // loaded), and ensure that no session id is presented to the peer.
@@ -9589,6 +9589,22 @@ static const SHA256HashValue kOCSPTestCertSPKI = {{
 // generates.
 static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
 
+// Interceptor to check that secure DNS has been disabled.
+class SecureDnsInterceptor : public net::URLRequestInterceptor {
+ public:
+  SecureDnsInterceptor() = default;
+  ~SecureDnsInterceptor() override = default;
+
+ private:
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    EXPECT_TRUE(request->disable_secure_dns());
+    return nullptr;
+  }
+};
+
 class HTTPSOCSPTest : public HTTPSRequestTest {
  public:
   HTTPSOCSPTest()
@@ -9609,6 +9625,9 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     cert_net_fetcher_->SetURLRequestContext(&context_);
     context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
 
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", "127.0.0.1", std::make_unique<SecureDnsInterceptor>());
+
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     ASSERT_TRUE(root_cert);
@@ -9617,6 +9636,10 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(&context_);
 #endif
+  }
+
+  void TearDown() override {
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
   void DoConnectionWithDelegate(
@@ -11789,7 +11812,8 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTest) {
     EXPECT_EQ("0", d.data_received());
   }
 
-  context_.http_transaction_factory()->GetSession()->CloseAllConnections();
+  context_.http_transaction_factory()->GetSession()->CloseAllConnections(
+      ERR_FAILED, "Very good reason");
 
   // 0-RTT inherently involves a race condition: if the server responds with the
   // ServerHello before the client sends the HTTP request (the client may be
@@ -11855,7 +11879,8 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataPOSTTest) {
     EXPECT_EQ("0", d.data_received());
   }
 
-  context_.http_transaction_factory()->GetSession()->CloseAllConnections();
+  context_.http_transaction_factory()->GetSession()->CloseAllConnections(
+      ERR_FAILED, "Very good reason");
 
   {
     TestDelegate d;
@@ -11931,7 +11956,8 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTooEarlyTest) {
     EXPECT_FALSE(sent_425);
   }
 
-  context_.http_transaction_factory()->GetSession()->CloseAllConnections();
+  context_.http_transaction_factory()->GetSession()->CloseAllConnections(
+      ERR_FAILED, "Very good reason");
 
   // 0-RTT inherently involves a race condition: if the server responds with the
   // ServerHello before the client sends the HTTP request (the client may be
@@ -12001,7 +12027,8 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataRejectTest) {
     EXPECT_EQ("0", d.data_received());
   }
 
-  context_.http_transaction_factory()->GetSession()->CloseAllConnections();
+  context_.http_transaction_factory()->GetSession()->CloseAllConnections(
+      ERR_FAILED, "Very good reason");
 
   // The certificate in the resumption is changed to confirm that the
   // certificate change is observed.
@@ -12065,7 +12092,8 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTLS12RejectTest) {
     EXPECT_EQ("0", d.data_received());
   }
 
-  context_.http_transaction_factory()->GetSession()->CloseAllConnections();
+  context_.http_transaction_factory()->GetSession()->CloseAllConnections(
+      ERR_FAILED, "Very good reason");
 
   // The certificate in the resumption is changed to confirm that the
   // certificate change is observed.

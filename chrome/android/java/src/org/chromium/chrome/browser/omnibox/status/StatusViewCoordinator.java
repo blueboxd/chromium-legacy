@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
@@ -221,6 +222,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
      */
     public void setShowIconsWhenUrlFocused(boolean showIconsWithUrlFocused) {
         mMediator.setShowIconsWhenUrlFocused(showIconsWithUrlFocused);
+        reconcileVisualState(showIconsWithUrlFocused);
     }
 
     /**
@@ -237,6 +239,37 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
             boolean isSearchEngineGoogle, String searchEngineUrl) {
         mMediator.updateSearchEngineStatusIcon(
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
+    }
+
+    /**
+     * Temporary workaround for the divergent logic for status icon visibility changes for the dse
+     * icon experiment. Should be removed when the dse icon launches (crbug.com/1019488).
+     *
+     * When transitioning to incognito, the first visible view when focused will be assigned to
+     * UrlBar. When the UrlBar is the first visible view when focused, the StatusView's alpha
+     * will be set to 0 in LocationBarPhone#populateFadeAnimations. When transitioning back from
+     * incognito, StatusView's state needs to be reset to match the current state of the status view
+     * {@link org.chromium.chrome.browser.omnibox.LocationBarPhone#updateVisualsForState}.
+     * property model.
+     **/
+    private void reconcileVisualState(boolean showStatusIconWhenFocused) {
+        // State requirements:
+        // - The ToolbarDataProvider and views are not null.
+        // - The status icon will be shown when focused.
+        // - Incognito isn't active.
+        // - The search engine logo should be shown.
+        if (mToolbarDataProvider == null || mStatusView == null || getSecurityIconView() == null
+                || !showStatusIconWhenFocused || mToolbarDataProvider.isIncognito()
+                || !SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        mToolbarDataProvider.isIncognito())) {
+            return;
+        }
+        View securityIconView = getSecurityIconView();
+
+        mStatusView.setAlpha(1f);
+        securityIconView.setAlpha(mModel.get(StatusProperties.STATUS_ICON_ALPHA));
+        securityIconView.setVisibility(
+                mModel.get(StatusProperties.SHOW_STATUS_ICON) ? View.VISIBLE : View.GONE);
     }
 
     /**

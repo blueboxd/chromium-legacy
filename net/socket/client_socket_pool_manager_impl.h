@@ -42,8 +42,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
-  void FlushSocketPoolsWithError(int error) override;
-  void CloseIdleSockets() override;
+  void FlushSocketPoolsWithError(int net_error,
+                                 const char* net_log_reason_utf8) override;
+  void CloseIdleSockets(const char* net_log_reason_utf8) override;
 
   ClientSocketPool* GetSocketPool(const ProxyServer& proxy_server) override;
 

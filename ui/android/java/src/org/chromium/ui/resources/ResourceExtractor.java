@@ -306,12 +306,15 @@ public class ResourceExtractor {
 
     private void deleteFiles(String[] existingFileNames) {
         // These used to be extracted, but no longer are, so just clean them up.
-        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), ICU_DATA_FILENAME));
-        FileUtils.recursivelyDeleteFile(new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME));
+        FileUtils.recursivelyDeleteFile(
+                new File(getAppDataDir(), ICU_DATA_FILENAME), FileUtils.DELETE_ALL);
+        FileUtils.recursivelyDeleteFile(
+                new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME), FileUtils.DELETE_ALL);
 
         if (existingFileNames != null) {
             for (String fileName : existingFileNames) {
-                FileUtils.recursivelyDeleteFile(new File(getOutputDir(), fileName));
+                FileUtils.recursivelyDeleteFile(
+                        new File(getOutputDir(), fileName), FileUtils.DELETE_ALL);
             }
         }
     }

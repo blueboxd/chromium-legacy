@@ -81,10 +81,6 @@ extern const base::Feature kEnableStereoAudioInput;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnablePowerManager;
 
-// Enables sending the client discourse context with text queries.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
-
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 int GetProactiveSuggestionsMaxWidth();
 

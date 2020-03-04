@@ -47,6 +47,9 @@ extern const base::Feature kCommittedSBInterstitials;
 // sent for scanning.
 extern const base::Feature kContentComplianceEnabled;
 
+// Enable Chrome Safe Browsing enhanced protection.
+extern const base::Feature kEnhancedProtection;
+
 // Controls whether to do deep scanning for malware. If both this feature and
 // the enterprise policies are enabled, the downloaded and uploaded files are
 // sent for scanning.

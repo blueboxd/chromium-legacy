@@ -77,6 +77,16 @@ cr.define('settings', function() {
         disabledLabel: 'siteSettingsBackgroundSyncBlocked',
       },
       {
+        route: 'SITE_SETTINGS_BLUETOOTH_DEVICES',
+        id: Id.BLUETOOTH_DEVICES,
+        label: 'siteSettingsBluetoothDevices',
+        icon: 'settings:bluetooth',
+        enabledLabel: 'siteSettingsBluetoothDevicesAsk',
+        disabledLabel: 'siteSettingsBluetoothDevicesBlock',
+        shouldShow: () =>
+            loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
+      },
+      {
         route: 'SITE_SETTINGS_BLUETOOTH_SCANNING',
         id: Id.BLUETOOTH_SCANNING,
         label: 'siteSettingsBluetoothScanning',
@@ -355,6 +365,7 @@ cr.define('settings', function() {
                 Id.ZOOM_LEVELS,
                 Id.USB_DEVICES,
                 Id.SERIAL_PORTS,
+                Id.BLUETOOTH_DEVICES,
                 Id.NATIVE_FILE_SYSTEM_WRITE,
                 Id.HID_DEVICES,
                 'pdfDocuments',
@@ -387,6 +398,7 @@ cr.define('settings', function() {
               Id.MIDI_DEVICES,
               Id.USB_DEVICES,
               Id.SERIAL_PORTS,
+              Id.BLUETOOTH_DEVICES,
               Id.NATIVE_FILE_SYSTEM_WRITE,
               Id.HID_DEVICES,
               Id.CLIPBOARD,

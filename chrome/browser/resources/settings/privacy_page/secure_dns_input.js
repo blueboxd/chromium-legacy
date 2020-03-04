@@ -51,9 +51,8 @@ Polymer({
    * When the custom input field loses focus, validate the current value and
    * trigger an event with the result. Show an error message if the validated
    * value is still the most recent value, is invalid, and is non-empty.
-   * @private
    */
-  onBlur_: function() {
+  validate: function() {
     const valueToValidate = this.value;
     this.browserProxy_.validateCustomDnsEntry(valueToValidate).then(valid => {
       this.showError_ =

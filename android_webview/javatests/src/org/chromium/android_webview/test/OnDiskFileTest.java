@@ -45,7 +45,7 @@ public class OnDiskFileTest {
                                                 .getCacheDir()
                                                 .getPath(),
                 "WebView/Default/HTTP Cache");
-        FileUtils.recursivelyDeleteFile(webViewCacheDir);
+        FileUtils.recursivelyDeleteFile(webViewCacheDir, FileUtils.DELETE_ALL);
 
         mActivityTestRule.startBrowserProcess();
         final TestAwContentsClient contentClient = new TestAwContentsClient();

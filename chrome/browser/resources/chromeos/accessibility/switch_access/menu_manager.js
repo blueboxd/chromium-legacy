@@ -519,15 +519,6 @@ class MenuManager {
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
         TextNavigationManager.moveUpOneLine();
         return;
-      case SAConstants.MenuAction.CUT:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
-        return;
-      case SAConstants.MenuAction.COPY:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.C, {ctrl: true});
-        return;
-      case SAConstants.MenuAction.PASTE:
-        EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
-        return;
       case SAConstants.MenuAction.SELECT_START:
         TextNavigationManager.saveSelectStart();
         if (this.menuOriginNode_) {

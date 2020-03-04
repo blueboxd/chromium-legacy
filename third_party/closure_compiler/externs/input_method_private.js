@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,20 @@ chrome.inputMethodPrivate.FocusReason = {
 /**
  * @enum {string}
  */
+chrome.inputMethodPrivate.InputModeType = {
+  NO_KEYBOARD: 'noKeyboard',
+  TEXT: 'text',
+  TEL: 'tel',
+  URL: 'url',
+  EMAIL: 'email',
+  NUMERIC: 'numeric',
+  DECIMAL: 'decimal',
+  SEARCH: 'search',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.inputMethodPrivate.InputContextType = {
   TEXT: 'text',
   SEARCH: 'search',
@@ -85,6 +99,7 @@ chrome.inputMethodPrivate.AutoCapitalizeType = {
  * @typedef {{
  *   contextID: number,
  *   type: !chrome.inputMethodPrivate.InputContextType,
+ *   mode: !chrome.inputMethodPrivate.InputModeType,
  *   autoCorrect: boolean,
  *   autoComplete: boolean,
  *   autoCapitalize: !chrome.inputMethodPrivate.AutoCapitalizeType,

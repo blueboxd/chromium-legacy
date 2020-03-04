@@ -111,7 +111,7 @@ public class MinidumpUploadJobTest {
     public void testUploadingWithoutCrashDir() {
         File webviewCrashDir = mTestRule.getExistingCacheDir();
         // Delete the WebView crash directory to ensure MinidumpUploadJob doesn't crash without it.
-        FileUtils.recursivelyDeleteFile(webviewCrashDir);
+        FileUtils.recursivelyDeleteFile(webviewCrashDir, FileUtils.DELETE_ALL);
         Assert.assertFalse(webviewCrashDir.exists());
 
         PlatformServiceBridge.injectInstance(new TestPlatformServiceBridge(true));

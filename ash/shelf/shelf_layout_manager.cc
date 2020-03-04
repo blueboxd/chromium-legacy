@@ -825,6 +825,13 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->overview_controller()->InOverviewSession();
   if (Shell::Get()->IsInTabletMode()) {
     if (app_list_is_visible) {
+      // TODO(https://crbug.com/1058205): Test this behavior.
+      // If the IME virtual keyboard is showing, the shelf should appear in-app.
+      // The workspace area in tablet mode is always the in-app workspace area,
+      // and the virtual keyboard places itself on screen based on workspace
+      // area.
+      if (ShelfConfig::Get()->is_virtual_keyboard_shown())
+        return ShelfBackgroundType::kInApp;
       // If the home launcher is shown or mostly shown, show the home launcher
       // background. If it is mostly hidden, show the in-app or overview
       // background.
@@ -1130,6 +1137,7 @@ float ShelfLayoutManager::GetOpacity() const {
 
 void ShelfLayoutManager::OnShelfConfigUpdated() {
   LayoutShelf(/*animate=*/true);
+  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
   UpdateContextualNudges();
 }
 
@@ -1289,6 +1297,10 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
        overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
   const bool app_list_visible = app_list_controller->GetTargetVisibility();
+
+  // TODO(https://crbug.com/1058205): Test this behavior.
+  if (ShelfConfig::Get()->is_virtual_keyboard_shown())
+    return HotseatState::kHidden;
 
   // Only force to show if there is not a pending drag operation.
   if (shelf_widget_->is_hotseat_forced_to_show() && drag_status_ == kDragNone)

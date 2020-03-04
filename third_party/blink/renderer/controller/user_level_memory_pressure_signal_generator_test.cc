@@ -137,7 +137,13 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest,
   }
 }
 
-TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
+// Flaky on Android, see crbug/1058178.
+#if defined(OS_ANDROID)
+#define MAYBE_GenerationPauses DISABLED_GenerationPauses
+#else
+#define MAYBE_GenerationPauses GenerationPauses
+#endif
+TEST_F(UserLevelMemoryPressureSignalGeneratorTest, MAYBE_GenerationPauses) {
   {
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();

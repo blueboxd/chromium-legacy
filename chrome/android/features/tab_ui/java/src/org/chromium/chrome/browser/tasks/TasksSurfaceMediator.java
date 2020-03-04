@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -88,10 +90,8 @@ class TasksSurfaceMediator {
         mModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mIncognitoCookieControlsManager);
         mIncognitoCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
             @Override
-            public void onUpdate(boolean checked, boolean enforced) {
-                // TODO(crbug.com/1040091): use enforced to support the case where this toggle is
-                // managed by organization or the normal 3PC blocking setting and update the UI
-                // accordingly.
+            public void onUpdate(boolean checked, @CookieControlsEnforcement int enforcement) {
+                mModel.set(INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT, enforcement);
                 mModel.set(INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED, checked);
             }
         };

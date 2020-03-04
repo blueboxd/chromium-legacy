@@ -29,8 +29,12 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
     case SandboxType::kAudio:
       return !IsAudioSandboxEnabled();
     case SandboxType::kNetwork:
+#if defined(OS_MACOSX)
+      return false;
+#else
       return !base::FeatureList::IsEnabled(
           service_manager::features::kNetworkServiceSandbox);
+#endif  // defined(OS_MACOSX)
     case SandboxType::kInvalid:
     case SandboxType::kRenderer:
     case SandboxType::kUtility:

@@ -20006,7 +20006,8 @@
       'owners': ['file://chrome/browser/safe_browsing/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:81-'],
+      'supported_on': ['chrome.*:81-81'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -20015,7 +20016,9 @@
       'id': 667,
       'caption': '''Enable sending downloads to Google for deep scanning for users enrolled in the Advanced Protection program''',
       'tags': [],
-      'desc': '''This policy controls whether users enrolled in the Advanced Protection program are allowed to send their downloads to Google for malware scanning. If set to True or not set, enrolled users will be be prompted to send their files to Google for deep scanning. If the user selects 'Scan', their download will be sent to Google. If set to False, users will not be prompted and their downloads will not be sent to Google.''',
+      'desc': '''This policy is deprecated, and has been replaced with AdvancedProtectionExtraSecurityAllowed.
+
+      This policy controls whether users enrolled in the Advanced Protection program are allowed to send their downloads to Google for malware scanning. If set to True or not set, enrolled users will be be prompted to send their files to Google for deep scanning. If the user selects 'Scan', their download will be sent to Google. If set to False, users will not be prompted and their downloads will not be sent to Google.''',
     },
     {
       'name': 'SystemProxySettings',
@@ -20217,6 +20220,22 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
       'caption': '''Required device-wide Client Certificates''',
       'tags': [],
       'desc': '''Specifies device-wide client certificates that should be enrolled using the device management protocol.''',
+    },
+    {
+      'name': 'AdvancedProtectionExtraSecurityAllowed',
+      'owners': ['file://chrome/browser/safe_browsing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:82-', 'chrome_os:82-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 685,
+      'caption': '''Enable additional protections for users enrolled in the Advanced Protection program''',
+      'tags': [],
+      'desc': '''This policy controls whether users enrolled in the Advanced Protection program receive extra security features. Some of these features may involve the sharing of data with Google (for example, Advanced Protection users will be able to send their downloads to Google for malware scanning). If set to True or not set, enrolled users will receive extra security features. If set to False, Advanced Protection users will receive only the consumer security features.''',
     },
   ],
 
@@ -21059,6 +21078,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 684,
+  'highest_id_currently_used': 685,
   'highest_atomic_group_id_currently_used': 38
 }

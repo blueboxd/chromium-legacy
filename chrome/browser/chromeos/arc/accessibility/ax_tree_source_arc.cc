@@ -18,13 +18,7 @@
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/platform/ax_android_constants.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace arc {
 
@@ -53,8 +47,9 @@ bool IsDrawerLayout(AXNodeInfoData* node) {
 }
 }  // namespace
 
-AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
-    : current_tree_serializer_(new AXTreeArcSerializer(this)),
+AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate, float device_scale_factor)
+    : device_scale_factor_(device_scale_factor),
+      current_tree_serializer_(new AXTreeArcSerializer(this)),
       is_notification_(false),
       is_input_method_window_(false),
       delegate_(delegate) {}
@@ -221,12 +216,17 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.updates.emplace_back();
 
-  // Force the tree, starting at the target of the event, to update, so
-  // unignored fields get updated.
-  event_bundle.updates[0].node_id_to_clear = event_data->source_id;
-  current_tree_serializer_->InvalidateSubtree(GetFromId(event_data->source_id));
+  // Force the tree, to update, so unignored fields get updated.
+  // On event type of WINDOW_STATE_CHANGED, update the entire tree so that
+  // window location is correctly calculated.
+  int32_t node_id_to_clear =
+      (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED)
+          ? *root_id_
+          : event_data->source_id;
+  event_bundle.updates[0].node_id_to_clear = node_id_to_clear;
+  current_tree_serializer_->InvalidateSubtree(GetFromId(node_id_to_clear));
 
-  current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
+  current_tree_serializer_->SerializeChanges(GetFromId(node_id_to_clear),
                                              &event_bundle.updates.back());
 
   GetAutomationEventRouter()->DispatchAccessibilityEvents(event_bundle);
@@ -249,48 +249,6 @@ void AXTreeSourceArc::UpdateAccessibilityFocusLocation(int32_t id) {
     return;
   chrome_focused_id_ = id;
   chrome_focused_bounds_ = node->GetBounds();
-}
-
-const gfx::Rect AXTreeSourceArc::GetBounds(
-    AccessibilityInfoDataWrapper* info_data,
-    aura::Window* active_window) const {
-  DCHECK(root_id_.has_value());
-
-  gfx::Rect info_data_bounds = info_data->GetBounds();
-
-  if (!active_window) {
-    const gfx::Rect root_bounds = GetRoot()->GetBounds();
-    info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
-    return info_data_bounds;
-  }
-
-  // By default, the node bounds is relative to the tree root.
-  if (info_data->GetId() != root_id_) {
-    const gfx::Rect root_bounds = GetRoot()->GetBounds();
-    info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
-
-    gfx::RectF info_data_bounds_f = ToChromeScale(info_data_bounds);
-    arc::ScaleDeviceFactor(info_data_bounds_f,
-                           active_window->GetToplevelWindow());
-    return gfx::ToEnclosingRect(info_data_bounds_f);
-  }
-
-  // For the root node, the node bounds is relative to its container View.
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
-  DCHECK(widget);
-
-  gfx::RectF info_data_bounds_f = arc::ToChromeBounds(info_data_bounds, widget);
-
-  DCHECK(widget->widget_delegate());
-  DCHECK(widget->widget_delegate()->GetContentsView());
-  const gfx::Rect root_bounds =
-      widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
-
-  info_data_bounds_f.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
-
-  arc::ScaleDeviceFactor(info_data_bounds_f,
-                         active_window->GetToplevelWindow());
-  return gfx::ToEnclosingRect(info_data_bounds_f);
 }
 
 void AXTreeSourceArc::InvalidateTree() {

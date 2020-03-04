@@ -652,7 +652,8 @@ GTEST_BENCHMARKS = {
         'reveman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
     'tracing_perftests': BenchmarkMetadata(
-        'kkraynov@chromium.org, primiano@chromium.org'),
+        'eseckler@chromium.org, oysteine@chromium.org',
+        'Speed>Tracing'),
     'load_library_perf_tests': BenchmarkMetadata(
         'xhwang@chromium.org, crouleau@chromium.org',
         'Internals>Media>Encrypted'),

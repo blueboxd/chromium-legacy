@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout.SearchBoxContainerView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 // The view of the tasks surface.
 class TasksView extends CoordinatorLayoutForPointer {
@@ -40,6 +41,8 @@ class TasksView extends CoordinatorLayoutForPointer {
     private boolean mIncognitoCookieControlsCardIsVisible;
     private boolean mIncognitoCookieControlsToggleIsChecked;
     private OnCheckedChangeListener mIncognitoCookieControlsToggleCheckedListener;
+    private @CookieControlsEnforcement int mIncognitoCookieControlsToggleEnforcement =
+            CookieControlsEnforcement.NO_ENFORCEMENT;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
@@ -175,6 +178,7 @@ class TasksView extends CoordinatorLayoutForPointer {
                     mIncognitoCookieControlsToggleCheckedListener);
             mIncognitoCookieControlsToggleCheckedListener = null;
         }
+        setIncognitoCookieControlsToggleEnforcement(mIncognitoCookieControlsToggleEnforcement);
     }
 
     /**
@@ -227,6 +231,17 @@ class TasksView extends CoordinatorLayoutForPointer {
         mIncognitoCookieControlsToggleCheckedListener = listener;
         if (mIncognitoDescriptionView != null) {
             mIncognitoDescriptionView.setCookieControlsToggleOnCheckedChangeListener(listener);
+        }
+    }
+
+    /**
+     * Set the enforcement rule for the incognito cookie controls toggle.
+     * @param enforcement The enforcement enum to set.
+     */
+    void setIncognitoCookieControlsToggleEnforcement(@CookieControlsEnforcement int enforcement) {
+        mIncognitoCookieControlsToggleEnforcement = enforcement;
+        if (mIncognitoDescriptionView != null) {
+            mIncognitoDescriptionView.setCookieControlsEnforcement(enforcement);
         }
     }
 }

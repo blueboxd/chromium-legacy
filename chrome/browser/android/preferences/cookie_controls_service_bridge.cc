@@ -43,10 +43,11 @@ void CookieControlsServiceBridge::UpdateServiceIfNecessary(JNIEnv* env) {
 
 void CookieControlsServiceBridge::SendCookieControlsUIChanges() {
   bool checked = service_->GetToggleCheckedValue();
-  bool enforced = service_->ShouldEnforceCookieControls();
+  CookieControlsEnforcement enforcement =
+      service_->GetCookieControlsEnforcement();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CookieControlsServiceBridge_sendCookieControlsUIChanges(
-      env, jobject_, checked, enforced);
+      env, jobject_, checked, static_cast<int>(enforcement));
 }
 
 void CookieControlsServiceBridge::OnThirdPartyCookieBlockingPrefChanged() {

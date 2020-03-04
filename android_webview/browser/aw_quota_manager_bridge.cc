@@ -153,17 +153,6 @@ void RunOnUIThread(base::OnceClosure task) {
 }  // namespace
 
 // static
-jlong JNI_AwQuotaManagerBridge_GetDefaultNativeAwQuotaManagerBridge(
-    JNIEnv* env) {
-  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
-
-  AwQuotaManagerBridge* bridge = static_cast<AwQuotaManagerBridge*>(
-      browser_context->GetQuotaManagerBridge());
-  DCHECK(bridge);
-  return reinterpret_cast<intptr_t>(bridge);
-}
-
-// static
 scoped_refptr<AwQuotaManagerBridge> AwQuotaManagerBridge::Create(
     AwBrowserContext* browser_context) {
   return new AwQuotaManagerBridge(browser_context);

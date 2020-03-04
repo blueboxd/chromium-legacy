@@ -91,10 +91,6 @@ const base::Feature kEnableDspHotword{"EnableDspHotword",
 const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableTextQueriesWithClientDiscourseContext{
-    "AssistantEnableTextQueriesWithClientDiscourseContext",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 

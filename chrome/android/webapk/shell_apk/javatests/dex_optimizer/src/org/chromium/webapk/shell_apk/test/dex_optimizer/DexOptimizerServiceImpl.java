@@ -28,7 +28,7 @@ public class DexOptimizerServiceImpl extends Service {
             @Override
             public boolean deleteDexDirectory() {
                 File dir = getDir(DEX_DIR, Context.MODE_PRIVATE);
-                FileUtils.recursivelyDeleteFile(dir);
+                FileUtils.recursivelyDeleteFile(dir, FileUtils.DELETE_ALL);
                 return !dir.exists();
             }
 

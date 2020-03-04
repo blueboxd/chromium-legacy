@@ -107,9 +107,9 @@ void CrostiniUpgraderPageHandler::OnBackupProgress(int percent) {
   page_->OnBackupProgress(percent);
 }
 
-void CrostiniUpgraderPageHandler::OnBackupSucceeded() {
+void CrostiniUpgraderPageHandler::OnBackupSucceeded(bool was_cancelled) {
   Redisplay();
-  page_->OnBackupSucceeded();
+  page_->OnBackupSucceeded(was_cancelled);
 }
 
 void CrostiniUpgraderPageHandler::OnBackupFailed() {

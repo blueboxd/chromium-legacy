@@ -7,10 +7,6 @@
 
 // TODO(hirokisato) support multiple display.
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class RectF;
 }
@@ -27,9 +23,6 @@ gfx::RectF ToChromeScale(const gfx::Rect& rect);
 // Given ARC pixels in screen coordinate, returns DIPs in Chrome OS main
 // display. This function adjusts differences between ARC and Chrome.
 gfx::RectF ToChromeBounds(const gfx::Rect& rect, views::Widget* widget);
-
-// Given DIPs in Chrome OS main display, scales it into pixels.
-void ScaleDeviceFactor(gfx::RectF& rect, aura::Window* toplevel_window);
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_GEOMETRY_UTIL_H_

@@ -6,15 +6,11 @@ syntax = "proto3";
 
 package feedstore;
 
-option optimize_for = LITE_RUNTIME;
-
-import "components/feed/core/proto/ui/piet/piet.proto";
 import "components/feed/core/proto/ui/action/ui_feed_action.proto";
 import "components/feed/core/proto/ui/stream/stream_structure.proto";
-import "components/feed/core/proto/wire/action_payload.proto";
 import "components/feed/core/proto/wire/content_id.proto";
-import "components/feed/core/proto/wire/piet_shared_state_item.proto";
-import "components/feed/core/proto/wire/semantic_properties.proto";
+
+option optimize_for = LITE_RUNTIME;
 
 // Actual data stored by the client.
 // This data is sourced from the wire protocol, which is converted upon receipt.
@@ -22,18 +18,19 @@ import "components/feed/core/proto/wire/semantic_properties.proto";
 //
 // This is the 'value' in the key/value store.
 // Keys are defined as:
-// 'root'    -> stream_data
-// 'c:<id>'  -> cluster
-// 'la:<id>' -> local_action
-// 'ua:<id>' -> uploadable_action
-// 'ss:<id>' -> shared_state
+// 'S/<stream-id>' -> stream_data
+// 'c/<content-id>' -> content
+// 'a/<id>' -> action
+// 's/<content-id>' -> shared_state
+// 'N' -> next_stream_state
 message Record {
   oneof data {
-    Cluster cluster = 1;
-    StreamData stream_data = 2;
-    StreamLocalAction local_action = 3;
-    StreamUploadableAction uploadable_action = 4;
-    StreamSharedState shared_state = 5;
+    StreamData stream_data = 1;
+    Content content = 2;
+    StoredAction local_action = 3;
+    StreamSharedState shared_state = 4;
+    // The result of a background refresh, to be processed later.
+    StreamAndContentState next_stream_state = 5;
   }
 }
 
@@ -47,26 +44,58 @@ message StreamData {
   bytes consistency_token = 3;
   // The unix timestamp in milliseconds that the most recent content was added.
   int64 last_added_time_millis = 4;
-  // List of all clusters, in order they would be shown in the stream.
-  repeated feedwire.ContentId cluster_ids = 5;
-  // List of all stale clusters. Stale clusters can be removed when no session
-  // references them.
-  repeated feedwire.ContentId stale_cluster_ids = 6;
+  // List of operations to perform to create the stream.
+  repeated StreamStructure structures = 5;
+  // Next sequential ID to be used for StoredAction.id.
+  int32 next_action_id = 6;
 }
 
-message Cluster {
-  feedwire.ContentId content_id = 1;
-  feedwire.SemanticProperties semantic_properties = 2;
-  repeated Card cards = 3;
+// This is the structure of the stream.  It is defined through the parent/child
+// relationship and an operation.  This message will be journaled.  Reading
+// the journal from start to end will fully define the structure of the stream.
+message StreamStructure {
+  // The defined set of DataOperations
+  // These operations align with the Operation enum defined in
+  // data_operation.proto.
+  enum Operation {
+    UNKNOWN = 0;
+    // Clear all the content in the session, creating a new session
+    CLEAR_ALL = 1;
+    // Append if not present or update
+    UPDATE_OR_APPEND = 2;
+    // Remove the node from its parent
+    REMOVE = 3;
+  }
+  Operation operation = 1;
+  // The ContentId of the content.
+  feedwire.ContentId content_id = 2;
+  // The parent ContentId, or unset if this is the root.
+  feedwire.ContentId parent_id = 3;
+
+  // Type of node as denoted by the server. This type has no meaning for the
+  // client.
+  enum Type {
+    // Default type for operations that don't affect the stream (e.g. operations
+    // on shared states).
+    UNKNOWN_TYPE = 0;
+    // The root of the stream.
+    STREAM = 1;
+    // An internal tree node, which may have children.
+    CARD = 2;
+    // A leaf node, which provides content.
+    CONTENT = 3;
+    // An internal tree node, which may have children.
+    CLUSTER = 4;
+  }
+  Type type = 4;
+  // Set iff type=CONTENT
+  ContentInfo content_info = 5;
 }
 
-message Card {
-  feedwire.ContentId card_id = 1;
-  feedwire.SemanticProperties semantic_properties = 2;
-  // This may not be present if Card is part of a DataOperation.
-  Content content = 3;
-  // All actions bound to this card or content.
-  repeated components.feed.core.proto.ui.action.FeedActionMetadata actions = 4;
+message DataOperation {
+  StreamStructure structure = 1;
+  // Provided if structure adds content.
+  Content content = 2;
 }
 
 message RepresentationData {
@@ -76,63 +105,44 @@ message RepresentationData {
   int64 published_time_seconds = 2;
 }
 
-message Content {
-  // The parent Card's ContentId.
-  feedwire.ContentId content_id = 1;
-  feedwire.SemanticProperties semantic_properties = 2;
-
-  enum ContentType {
-    UNKNOWN_CONTENT = 0;
-    PIET = 1;
-  }
-
-  ContentType content_type = 3;
-  PietContent piet_content = 4;
+message ContentInfo {
   // Score given by server.
-  float score = 5;
+  float score = 1;
   // Unix timestamp (seconds) that content was received by Chrome.
-  int64 availability_time_seconds = 6;
-  RepresentationData representation_data = 7;
-  components.feed.core.proto.ui.stream.OfflineMetadata offline_metadata = 8;
-  components.feed.core.proto.ui.action.FeedActionMetadata swipe_action = 9;
+  int64 availability_time_seconds = 2;
+  RepresentationData representation_data = 3;
+  components.feed.core.proto.ui.stream.OfflineMetadata offline_metadata = 4;
 }
 
-// Content which is able to show a Piet frame. This includes any data which may
-// be needed to show a Piet frame.
-message PietContent {
-  // Content Ids of Piet Shared States which should be provided to Piet in order
-  // to show its content.
-  repeated feedwire.ContentId piet_shared_states = 1;
-
-  // The Piet frame to render. This is the same frame as sent over the wire,
-  // except the action extensions have been replaced by ui.Action.
-  components.feed.core.proto.ui.piet.Frame frame = 2;
+message Content {
+  feedwire.ContentId content_id = 1;
+  // Opaque content. The UI layer knows how to parse and render this as a slice.
+  bytes frame = 2;
 }
 
 // This represents a shared state item.
 message StreamSharedState {
   feedwire.ContentId content_id = 1;
-  feedwire.PietSharedStateItem piet_shared_state_item = 2;
+  // Opaque data required to render content.
+  bytes shared_state_data = 2;
 }
 
-// An action that should be eventually uploaded, unless it is undone.
-message StreamLocalAction {
-  enum Type {
-    UNKNOWN = 0;
-    DISMISS = 1;
-  }
-  Type action = 1;
-  feedwire.ContentId feature_content_id = 2;
-  // When the action was recorded
-  int64 timestamp_seconds = 3;
+// A stored action awaiting upload.
+message StoredAction {
+  // Unique ID for this stored action, provided by the client.
+  // This is a sequential number, so that the action with the lowest id value
+  // was recorded chronologically first.
+  int32 id = 1;
+  // How many times we have tried to upload the action.
+  int32 upload_attempt_count = 2;
+  // The action to upload.
+  components.feed.core.proto.ui.action.FeedAction action = 3;
 }
 
-// An action ready to be uploaded.
-message StreamUploadableAction {
-  feedwire.ContentId feature_content_id = 1;
-  // The number of time this action was attempted to be recorded
-  int32 upload_attempts = 2;
-  // Unix timestamp (seconds) when the action was recorded
-  int64 timestamp_seconds = 3;
-  feedwire.ActionPayload payload = 4;
+// The internal version of the server response. Includes feature tree and
+// content.
+message StreamAndContentState {
+  StreamData stream_data = 1;
+  repeated Content content = 2;
+  repeated StreamSharedState shared_state = 3;
 }

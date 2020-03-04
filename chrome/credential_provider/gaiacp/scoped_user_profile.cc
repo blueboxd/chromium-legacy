@@ -574,7 +574,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
 
     // Set both of the settings to stricter defaults.
     sts = key.WriteValue(kAllowImportOnlyOnFirstRun,
-                         GetGlobalFlagOrDefault(kAllowImportOnlyOnFirstRun, 1));
+                         GetGlobalFlagOrDefault(kAllowImportOnlyOnFirstRun, 0));
     if (sts != ERROR_SUCCESS) {
       HRESULT hr = HRESULT_FROM_WIN32(sts);
       LOGFN(ERROR) << "key.WriteValue(" << sid
@@ -584,7 +584,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
 
     sts = key.WriteValue(
         kAllowImportWhenPrimaryAccountExists,
-        GetGlobalFlagOrDefault(kAllowImportWhenPrimaryAccountExists, 0));
+        GetGlobalFlagOrDefault(kAllowImportWhenPrimaryAccountExists, 1));
     if (sts != ERROR_SUCCESS) {
       HRESULT hr = HRESULT_FROM_WIN32(sts);
       LOGFN(ERROR) << "key.WriteValue(" << sid

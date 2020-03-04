@@ -24,6 +24,8 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/cert_verifier/cert_net_fetcher_test.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -43,6 +45,8 @@ const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("net/data/cert_net_fetcher_impl_unittest");
 
 const char kMockURL[] = "http://mock.hanging.read/";
+
+const char kMockSecureDnsHostname[] = "mock.secure.dns.check";
 
 // Wait for the request to complete, and verify that it completed successfully
 // with the indicated bytes.
@@ -195,6 +199,49 @@ class CertNetFetcherURLLoaderTest : public PlatformTest {
   std::unique_ptr<CertNetFetcherTestUtil> test_util_;
 
   bool use_hanging_url_loader_ = false;
+};
+
+// Interceptor to check that secure DNS has been disabled.
+class SecureDnsInterceptor : public net::URLRequestInterceptor {
+ public:
+  explicit SecureDnsInterceptor(bool* invoked_interceptor)
+      : invoked_interceptor_(invoked_interceptor) {}
+  ~SecureDnsInterceptor() override = default;
+
+ private:
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    EXPECT_TRUE(request->disable_secure_dns());
+    *invoked_interceptor_ = true;
+    return nullptr;
+  }
+
+  bool* invoked_interceptor_;
+};
+
+class CertNetFetcherURLLoaderTestWithSecureDnsInterceptor
+    : public CertNetFetcherURLLoaderTest,
+      public net::WithTaskEnvironment {
+ public:
+  CertNetFetcherURLLoaderTestWithSecureDnsInterceptor()
+      : invoked_interceptor_(false) {}
+
+  void SetUp() override {
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kMockSecureDnsHostname,
+        std::make_unique<SecureDnsInterceptor>(&invoked_interceptor_));
+  }
+
+  void TearDown() override {
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
+  }
+
+  bool invoked_interceptor() { return invoked_interceptor_; }
+
+ private:
+  bool invoked_interceptor_;
 };
 
 // Helper to start an AIA fetch using default parameters.
@@ -598,6 +645,17 @@ TEST_F(CertNetFetcherURLLoaderTest, ShutdownCancelsRequests) {
 
   ShutdownFetcher();
   VerifyFailure(net::ERR_ABORTED, request.get());
+}
+
+TEST_F(CertNetFetcherURLLoaderTestWithSecureDnsInterceptor, SecureDnsDisabled) {
+  CreateFetcher();
+  std::unique_ptr<net::CertNetFetcher::Request> request = StartRequest(
+      fetcher(),
+      GURL("http://" + std::string(kMockSecureDnsHostname) + "/cert.crt"));
+  net::Error actual_error;
+  std::vector<uint8_t> actual_body;
+  request->WaitForResult(&actual_error, &actual_body);
+  EXPECT_TRUE(invoked_interceptor());
 }
 
 }  // namespace

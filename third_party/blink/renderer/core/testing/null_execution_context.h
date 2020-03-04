@@ -60,7 +60,7 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
     return security_context_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   KURL url_;

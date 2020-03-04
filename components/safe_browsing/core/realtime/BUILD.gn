@@ -14,6 +14,7 @@ static_library("url_lookup_service") {
     "//components/prefs",
     "//components/safe_browsing/core:realtimeapi_proto",
     "//components/safe_browsing/core:verdict_cache_manager",
+    "//components/safe_browsing/core/browser:token_fetcher",
     "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/signin/public/identity_manager",

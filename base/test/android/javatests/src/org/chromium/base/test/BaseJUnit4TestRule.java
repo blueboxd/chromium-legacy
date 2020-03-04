@@ -126,12 +126,12 @@ class BaseJUnit4TestRule implements TestRule {
                 // Directories are lazily created by PathUtils only once, and so can be cleared but
                 // not removed.
                 for (File subFile : file.listFiles()) {
-                    if (!FileUtils.recursivelyDeleteFile(subFile)) {
+                    if (!FileUtils.recursivelyDeleteFile(subFile, FileUtils.DELETE_ALL)) {
                         throw new RuntimeException(
                                 "Could not delete file: " + subFile.getAbsolutePath());
                     }
                 }
-            } else if (!FileUtils.recursivelyDeleteFile(file)) {
+            } else if (!FileUtils.recursivelyDeleteFile(file, FileUtils.DELETE_ALL)) {
                 throw new RuntimeException("Could not delete file: " + file.getAbsolutePath());
             }
         }

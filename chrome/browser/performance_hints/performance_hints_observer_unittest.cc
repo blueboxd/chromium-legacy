@@ -205,9 +205,12 @@ TEST_F(PerformanceHintsObserverTest, InvalidURL) {
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(web_contents(),
                                                                GURL("")),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("ftp://notsupported.com")),
+              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
   histogram_tester.ExpectUniqueSample(
-      "PerformanceHints.Observer.HintForURLResult", /*kInvalidUrl*/ 2, 1);
+      "PerformanceHints.Observer.HintForURLResult", /*kInvalidUrl*/ 2, 2);
 }
 
 TEST_F(PerformanceHintsObserverTest, NoHintsForPage) {

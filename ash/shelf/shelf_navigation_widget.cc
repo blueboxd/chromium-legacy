@@ -24,6 +24,7 @@
 #include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
@@ -63,6 +64,10 @@ gfx::Rect GetSecondButtonBounds() {
 }
 
 bool IsBackButtonShown() {
+  // TODO(https://crbug.com/1058205): Test this behavior.
+  if (ShelfConfig::Get()->is_virtual_keyboard_shown())
+    return true;
+
   if (!ShelfConfig::Get()->shelf_controls_shown())
     return false;
   return chromeos::switches::ShouldShowShelfHotseat()
@@ -594,6 +599,18 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   views::View* const home_button = delegate_->home_button();
   UpdateButtonVisibility(home_button, home_button_shown, animate,
                          home_button_metrics_reporter_.get());
+
+  if (back_button_shown) {
+    // TODO(https://crbug.com/1058205): Test this behavior.
+    gfx::Transform rotation;
+    // If the IME virtual keyboard is visible, rotate the back button downwards,
+    // this indicates it can be used to close the keyboard.
+    if (ShelfConfig::Get()->is_virtual_keyboard_shown())
+      rotation.Rotate(270.0);
+
+    delegate_->back_button()->layer()->SetTransform(TransformAboutPivot(
+        delegate_->back_button()->GetCenterPoint(), rotation));
+  }
 
   gfx::Rect home_button_bounds =
       back_button_shown ? GetSecondButtonBounds()

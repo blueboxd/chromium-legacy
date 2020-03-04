@@ -307,18 +307,22 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                              std::unique_ptr<StreamSocket> socket,
                              int64_t generation) = 0;
 
-  // This flushes all state from the ClientSocketPool.  This means that all
-  // idle and connecting sockets are discarded with the given |error|.
+  // This flushes all state from the ClientSocketPool.  Pending socket requests
+  // are failed with |error|, while |reason| is logged to the NetLog.
+  //
   // Active sockets being held by ClientSocketPool clients will be discarded
-  // when released back to the pool.
-  // Does not flush any pools wrapped by |this|.
-  virtual void FlushWithError(int error) = 0;
+  // when released back to the pool, though they will be closed with an error
+  // about being of the wrong generation, rather than |net_log_reason_utf8|.
+  virtual void FlushWithError(int error, const char* net_log_reason_utf8) = 0;
 
   // Called to close any idle connections held by the connection manager.
-  virtual void CloseIdleSockets() = 0;
+  // |reason| is logged to NetLog for debugging purposes.
+  virtual void CloseIdleSockets(const char* net_log_reason_utf8) = 0;
 
   // Called to close any idle connections held by the connection manager.
-  virtual void CloseIdleSocketsInGroup(const GroupId& group_id) = 0;
+  // |reason| is logged to NetLog for debugging purposes.
+  virtual void CloseIdleSocketsInGroup(const GroupId& group_id,
+                                       const char* net_log_reason_utf8) = 0;
 
   // The total number of idle sockets in the pool.
   virtual int IdleSocketCount() const = 0;

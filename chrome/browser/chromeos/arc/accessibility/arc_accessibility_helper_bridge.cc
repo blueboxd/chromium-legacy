@@ -46,6 +46,12 @@ using ash::ArcNotificationSurfaceManager;
 
 namespace {
 
+float DeviceScaleFactorFromWindow(aura::Window* window) {
+  if (!window || !window->GetToplevelWindow())
+    return 1.0;
+  return window->GetToplevelWindow()->layer()->device_scale_factor();
+}
+
 void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
                          Profile* profile) {
   chromeos::AccessibilityManager* accessibility_manager =
@@ -388,16 +394,25 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
   auto key = KeyForNotification(notification_key);
   switch (state) {
     case arc::mojom::AccessibilityNotificationStateType::SURFACE_CREATED: {
-      if (GetFromKey(key))
-        return;
+      aura::Window* window = nullptr;
+      auto* surface_manager = ArcNotificationSurfaceManager::Get();
+      if (surface_manager) {
+        ArcNotificationSurface* surface =
+            surface_manager->GetArcSurface(notification_key);
+        if (surface)
+          window = surface->GetWindow();
+      }
 
-      AXTreeSourceArc* tree_source = CreateFromKey(std::move(key));
-      ui::AXTreeData tree_data;
-      if (!tree_source->GetTreeData(&tree_data)) {
-        NOTREACHED();
+      AXTreeSourceArc* tree_source = GetFromKey(key);
+      if (tree_source) {
+        tree_source->set_device_scale_factor(
+            DeviceScaleFactorFromWindow(window));
         return;
       }
-      UpdateTreeIdOfNotificationSurface(notification_key, tree_data.tree_id);
+
+      tree_source = CreateFromKey(std::move(key), window);
+      UpdateTreeIdOfNotificationSurface(notification_key,
+                                        tree_source->ax_tree_id());
       break;
     }
     case arc::mojom::AccessibilityNotificationStateType::SURFACE_REMOVED:
@@ -499,11 +514,9 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
   if (!tree)
     return;
 
-  ui::AXTreeData tree_data;
-  if (!tree->GetTreeData(&tree_data))
-    return;
-
-  surface->SetAXTreeId(tree_data.tree_id);
+  surface->SetAXTreeId(tree->ax_tree_id());
+  tree->set_device_scale_factor(
+      DeviceScaleFactorFromWindow(surface->GetWindow()));
 
   // Dispatch ax::mojom::Event::kChildrenChanged to force AXNodeData of the
   // notification updated. As order of OnNotificationSurfaceAdded call is not
@@ -624,7 +637,7 @@ ArcAccessibilityHelperBridge::OnGetTextLocationDataResultInternal(
     return base::nullopt;
 
   gfx::RectF rect_f = arc::ToChromeScale(*result_rect);
-  arc::ScaleDeviceFactor(rect_f, active_window->GetToplevelWindow());
+  rect_f.Scale(DeviceScaleFactorFromWindow(active_window));
   return gfx::ToEnclosingRect(rect_f);
 }
 
@@ -716,7 +729,7 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
     TreeKey key = KeyForTaskId(task_id);
     AXTreeSourceArc* tree = GetFromKey(key);
     if (!tree)
-      tree = CreateFromKey(std::move(key));
+      tree = CreateFromKey(std::move(key), window);
 
     // Just after the creation of window, widget has not been set yet and this
     // is not dispatched to ShellSurfaceBase. Thus, call this every time.
@@ -804,10 +817,9 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
       return;
 
     if (!trees_.count(KeyForInputMethod())) {
-      auto* tree = CreateFromKey(KeyForInputMethod());
-      ui::AXTreeData tree_data;
-      tree->GetTreeData(&tree_data);
-      input_method_surface->SetChildAxTreeId(tree_data.tree_id);
+      auto* tree = CreateFromKey(KeyForInputMethod(),
+                                 input_method_surface->host_window());
+      input_method_surface->SetChildAxTreeId(tree->ax_tree_id());
     }
 
     tree_source = GetFromKey(KeyForInputMethod());
@@ -832,8 +844,11 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     tree_source = GetFromKey(key);
 
     if (!tree_source) {
-      tree_source = CreateFromKey(key);
+      tree_source = CreateFromKey(key, active_window);
       SetChildAxTreeIDForWindow(active_window, tree_source->ax_tree_id());
+    } else {
+      tree_source->set_device_scale_factor(
+          DeviceScaleFactorFromWindow(active_window));
     }
   }
 
@@ -884,8 +899,11 @@ void ArcAccessibilityHelperBridge::DispatchCustomSpokenFeedbackToggled(
   GetEventRouter()->BroadcastEvent(std::move(event));
 }
 
-AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromKey(TreeKey key) {
-  auto tree = std::make_unique<AXTreeSourceArc>(this);
+AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromKey(
+    TreeKey key,
+    aura::Window* window) {
+  auto tree = std::make_unique<AXTreeSourceArc>(
+      this, DeviceScaleFactorFromWindow(window));
   auto* tree_ptr = tree.get();
   trees_.insert(std::make_pair(std::move(key), std::move(tree)));
   return tree_ptr;

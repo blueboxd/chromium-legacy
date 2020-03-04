@@ -20,7 +20,7 @@ struct ContainerId;
 class CrostiniUpgraderUIObserver {
  public:
   virtual void OnBackupProgress(int percent) = 0;
-  virtual void OnBackupSucceeded() = 0;
+  virtual void OnBackupSucceeded(bool was_cancelled) = 0;
   virtual void OnBackupFailed() = 0;
   virtual void PrecheckStatus(
       chromeos::crostini_upgrader::mojom::UpgradePrecheckStatus status) = 0;

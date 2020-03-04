@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator_test_api.h"
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -15,6 +17,8 @@
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
+#include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator_test_api.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -78,26 +82,20 @@ class StorageHandlerTest : public testing::Test {
 
     // Initialize tests APIs.
     size_stat_test_api_ = std::make_unique<calculator::SizeStatTestAPI>(
-        handler_.get(), new calculator::SizeStatCalculator(
-                            "storage-size-stat-changed", profile_));
+        handler_.get(), new calculator::SizeStatCalculator(profile_));
     my_files_size_test_api_ = std::make_unique<calculator::MyFilesSizeTestAPI>(
-        handler_.get(), new calculator::MyFilesSizeCalculator(
-                            "storage-my-files-size-changed", profile_));
+        handler_.get(), new calculator::MyFilesSizeCalculator(profile_));
     browsing_data_size_test_api_ =
         std::make_unique<calculator::BrowsingDataSizeTestAPI>(
             handler_.get(),
-            new calculator::BrowsingDataSizeCalculator(
-                "storage-browsing-data-size-changed", profile_));
+            new calculator::BrowsingDataSizeCalculator(profile_));
     apps_size_test_api_ = std::make_unique<calculator::AppsSizeTestAPI>(
-        handler_.get(), new calculator::AppsSizeCalculator(
-                            "storage-apps-size-changed", profile_));
+        handler_.get(), new calculator::AppsSizeCalculator(profile_));
     crostini_size_test_api_ = std::make_unique<calculator::CrostiniSizeTestAPI>(
-        handler_.get(), new calculator::CrostiniSizeCalculator(
-                            "storage-crostini-size-changed", profile_));
+        handler_.get(), new calculator::CrostiniSizeCalculator(profile_));
     other_users_size_test_api_ =
         std::make_unique<calculator::OtherUsersSizeTestAPI>(
-            handler_.get(), new calculator::OtherUsersSizeCalculator(
-                                "storage-other-users-size-changed"));
+            handler_.get(), new calculator::OtherUsersSizeCalculator());
 
     // Create and register My files directory.
     // By emulating chromeos running, GetMyFilesFolderForProfile will return the
@@ -390,6 +388,126 @@ TEST_F(StorageHandlerTest, AppsExtensionsSize) {
 
   // Check return value.
   EXPECT_EQ("401 KB", callback->GetString());
+}
+
+TEST_F(StorageHandlerTest, SystemSize) {
+  // The "System" row on the storage page displays the difference between the
+  // total amount of used space and the sum of the sizes of the different
+  // storage items of the storage page (My files, Browsing data, apps etc...)
+  // This test simulates callbacks from each one of these storage items; the
+  // calculation of the "System" size should only happen when all of the other
+  // storage items have been calculated.
+  const int64_t KB = 1024;
+  const int64_t MB = 1024 * KB;
+  const int64_t GB = 1024 * MB;
+  const int64_t TB = 1024 * GB;
+
+  // Simulate size stat callback.
+  int64_t total_size = TB;
+  int64_t available_size = 100 * GB;
+  size_stat_test_api_->SimulateOnGetSizeStat(&total_size, &available_size);
+  const base::Value* callback =
+      GetWebUICallbackMessage("storage-size-stat-changed");
+  ASSERT_TRUE(callback) << "No 'storage-size-stat-changed' callback";
+  EXPECT_EQ("100 GB", callback->FindKey("availableSize")->GetString());
+  EXPECT_EQ("924 GB", callback->FindKey("usedSize")->GetString());
+  // Expect no system size callback until every other item has been updated.
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate my files size callback.
+  my_files_size_test_api_->SimulateOnGetTotalBytes(400 * GB);
+  callback = GetWebUICallbackMessage("storage-my-files-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-my-files-size-changed' callback";
+  EXPECT_EQ("400 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate browsing data callbacks. Has to be called with
+  // both |is_data_site| = true and false.
+  browsing_data_size_test_api_->SimulateOnGetBrowsingDataSize(
+      true /* is_site_data */, 10 * GB);
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-browsing-data-size-changed"));
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+  browsing_data_size_test_api_->SimulateOnGetBrowsingDataSize(
+      false /* is_site_data */, 14 * GB);
+  callback = GetWebUICallbackMessage("storage-browsing-data-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-browsing-data-size-changed' callback";
+  EXPECT_EQ("24.0 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate apps and extensions size callbacks.
+  apps_size_test_api_->SimulateOnGetAppsSize(29 * GB);
+  apps_size_test_api_->SimulateOnGetAndroidAppsSize(false, 0, 0, 0);
+  callback = GetWebUICallbackMessage("storage-apps-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
+  EXPECT_EQ("29.0 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+  apps_size_test_api_->SimulateOnGetAndroidAppsSize(
+      true /* succeeded */, 724 * MB, 100 * MB, 200 * MB);
+  callback = GetWebUICallbackMessage("storage-apps-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-apps-size-changed' callback";
+  EXPECT_EQ("30.0 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate crostini size callback.
+  crostini_size_test_api_->SimulateOnGetCrostiniSize(70 * GB);
+  callback = GetWebUICallbackMessage("storage-crostini-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-crostini-size-changed' callback";
+  EXPECT_EQ("70.0 GB", callback->GetString());
+  ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+
+  // Simulate other users size callback. No callback message until the sizes of
+  // every users is calculated.
+  std::vector<int64_t> other_user_sizes =
+      std::vector<int64_t>{200 * GB, 50 * GB, 50 * GB};
+  other_users_size_test_api_->InitializeOtherUserSize(other_user_sizes.size());
+  for (std::size_t i = 0; i < other_user_sizes.size(); i++) {
+    cryptohome::BaseReply result;
+    result.set_error(cryptohome::CRYPTOHOME_ERROR_NOT_SET);
+    cryptohome::GetAccountDiskUsageReply* usage_reply =
+        result.MutableExtension(cryptohome::GetAccountDiskUsageReply::reply);
+    usage_reply->set_size(other_user_sizes[i]);
+    base::Optional<cryptohome::BaseReply> reply = std::move(result);
+    other_users_size_test_api_->SimulateOnGetOtherUserSize(reply);
+    if (i < other_user_sizes.size() - 1) {
+      ASSERT_FALSE(GetWebUICallbackMessage("storage-other-users-size-changed"));
+      ASSERT_FALSE(GetWebUICallbackMessage("storage-system-size-changed"));
+    } else {
+      // When the size of the last user's cryptohome is calculated, we expect a
+      // callback with the "Other users" size.
+      callback = GetWebUICallbackMessage("storage-other-users-size-changed");
+      ASSERT_TRUE(callback) << "No 'storage-other-users-size-changed' callback";
+      EXPECT_EQ("300 GB", callback->GetString());
+      // Every item size has been calculated, system size should also be
+      // updated.
+      callback = GetWebUICallbackMessage("storage-system-size-changed");
+      ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
+      EXPECT_EQ("100 GB", callback->GetString());
+    }
+  }
+
+  // If there's an error while calculating the size of browsing data, the size
+  // of browsing data and system should be displayed as "Unknown".
+  browsing_data_size_test_api_->SimulateOnGetBrowsingDataSize(
+      true /* is_site_data */, -1);
+  callback = GetWebUICallbackMessage("storage-browsing-data-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-browsing-data-size-changed' callback";
+  EXPECT_EQ("Unknown", callback->GetString());
+  // The missing 24.0 GB of browsing data should be reflected in the system
+  // section instead. We expect the displayed size to be 100 + 24 GB.
+  callback = GetWebUICallbackMessage("storage-system-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
+  EXPECT_EQ("124 GB", callback->GetString());
+
+  // No error while recalculating browsing data size, the UI should be updated
+  // with the right sizes.
+  browsing_data_size_test_api_->SimulateOnGetBrowsingDataSize(
+      true /* is_site_data */, 10 * GB);
+  callback = GetWebUICallbackMessage("storage-browsing-data-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-browsing-data-size-changed' callback";
+  EXPECT_EQ("24.0 GB", callback->GetString());
+  callback = GetWebUICallbackMessage("storage-system-size-changed");
+  ASSERT_TRUE(callback) << "No 'storage-system-size-changed' callback";
+  EXPECT_EQ("100 GB", callback->GetString());
 }
 
 }  // namespace

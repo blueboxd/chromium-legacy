@@ -300,8 +300,6 @@ bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
 #else
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   return base::FeatureList::IsEnabled(kPromptAppForDeepScanning) &&
-         profile->GetPrefs()->GetBoolean(
-             prefs::kAdvancedProtectionDeepScanningEnabled) &&
          AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
              ->IsUnderAdvancedProtection();
 #endif

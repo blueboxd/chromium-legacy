@@ -1,7 +1,7 @@
 Tests frame lifetime events.
 Attached
-RequestWillBeSent .../inspector-protocol/resources/blank.html
 Started loading
+RequestWillBeSent .../inspector-protocol/resources/blank.html
 Navigated
 Started loading
 Navigated

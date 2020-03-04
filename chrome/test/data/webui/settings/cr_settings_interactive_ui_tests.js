@@ -72,3 +72,29 @@ CrSettingsAnimatedPagesTest.prototype = {
 TEST_F('CrSettingsAnimatedPagesTest', 'All', function() {
   mocha.run();
 });
+
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSecureDnsTest() {}
+
+CrSettingsSecureDnsTest.prototype = {
+  __proto__: CrSettingsInteractiveUITest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/secure_dns.html',
+
+  /** @override */
+  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
+    'secure_dns_interactive_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSecureDnsTest', 'All', function() {
+  mocha.run();
+});

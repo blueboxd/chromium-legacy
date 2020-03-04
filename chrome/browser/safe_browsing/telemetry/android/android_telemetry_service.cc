@@ -154,8 +154,7 @@ bool AndroidTelemetryService::CanSendPing(download::DownloadItem* item) {
     return false;
   }
 
-  bool no_ping_allowed = !IsExtendedReportingEnabled(*GetPrefs()) &&
-                         !IsEnhancedProtectionEnabled(*GetPrefs());
+  bool no_ping_allowed = !IsExtendedReportingEnabled(*GetPrefs());
 
   if (no_ping_allowed) {
     RecordApkDownloadTelemetryOutcome(

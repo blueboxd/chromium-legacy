@@ -6,6 +6,9 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/util/values/values_util.h"
@@ -67,6 +70,15 @@ int GetSuccessCount(PrefService* prefs, TooltipType type) {
   return success_count.value_or(0);
 }
 
+const base::Optional<base::TimeDelta>& GetMinIntervalOverride() {
+  // Overridden minimum time between showing contextual nudges to the user.
+  static base::Optional<base::TimeDelta> min_interval_override;
+  if (!min_interval_override) {
+    min_interval_override = switches::ContextualNudgesInterval();
+  }
+  return min_interval_override;
+}
+
 }  // namespace
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -87,7 +99,9 @@ bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   if (shown_count == 0)
     return true;
   const base::Time last_shown_time = GetLastShownTime(prefs, type);
-  return (GetTime() - last_shown_time) >= kMinInterval;
+  base::TimeDelta min_interval =
+      GetMinIntervalOverride().value_or(kMinInterval);
+  return (GetTime() - last_shown_time) >= min_interval;
 }
 
 base::TimeDelta GetNudgeTimeout(PrefService* prefs, TooltipType type) {
@@ -115,6 +129,15 @@ void HandleGesturePerformed(PrefService* prefs, TooltipType type) {
   const int success_count = GetSuccessCount(prefs, type);
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kSuccessCount), success_count + 1);
+}
+
+void ClearPrefs() {
+  DCHECK(Shell::Get()->session_controller()->GetLastActiveUserPrefService());
+  DictionaryPrefUpdate update(
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
+      prefs::kContextualTooltips);
+  base::DictionaryValue* nudges_dict = update.Get();
+  nudges_dict->Clear();
 }
 
 void OverrideClockForTesting(base::Clock* test_clock) {

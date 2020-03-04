@@ -114,7 +114,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     return {self, TraceTrait<Backing>::Trace};
   }
 
-  static void Trace(blink::Visitor* visitor, void* self) {
+  static void Trace(Visitor* visitor, void* self) {
     if (visitor->ConcurrentTracingBailOut({self, &Trace}))
       return;
 

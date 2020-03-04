@@ -1924,6 +1924,17 @@ cr.define('device_page_tests', function() {
                 .innerText);
       });
 
+      test('system size', async function() {
+        assertEquals('System', storagePage.$$('#systemSizeLabel').innerText);
+        assertEquals(
+            'Calculating…', storagePage.$$('#systemSizeSubLabel').innerText);
+
+        // Send system size callback.
+        cr.webUIListenerCallback('storage-system-size-changed', '8.4 GB');
+        Polymer.dom.flush();
+        assertEquals('8.4 GB', storagePage.$$('#systemSizeSubLabel').innerText);
+      });
+
       test('apps extensions size', async function() {
         assertEquals(
             'Apps and extensions', getStorageItemLabelFromId('appsSize'));

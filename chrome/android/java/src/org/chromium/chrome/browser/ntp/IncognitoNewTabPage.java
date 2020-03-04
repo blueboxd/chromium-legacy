@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
@@ -82,10 +83,10 @@ public class IncognitoNewTabPage
                         mCookieControlsManager.shouldShowCookieControlsCard());
                 mCookieControlsObserver = new IncognitoCookieControlsManager.Observer() {
                     @Override
-                    public void onUpdate(boolean checked, boolean enforced) {
-                        // TODO(crbug.com/1040091): use enforced to support the case where this
-                        // toggle is managed by organization or the normal 3PC blocking setting and
-                        // update the UI accordingly.
+                    public void onUpdate(
+                            boolean checked, @CookieControlsEnforcement int enforcement) {
+                        mIncognitoNewTabPageView.setIncognitoCookieControlsToggleEnforcement(
+                                enforcement);
                         mIncognitoNewTabPageView.setIncognitoCookieControlsToggleChecked(checked);
                     }
                 };

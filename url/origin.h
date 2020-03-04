@@ -145,6 +145,9 @@ class COMPONENT_EXPORT(URL) Origin {
   // 2. 'filesystem' URLs behave as 'blob' URLs (that is, the origin is parsed
   //    out of everything in the URL which follows the scheme).
   // 3. 'file' URLs all parse as ("file", "", 0).
+  //
+  // Note that the returned Origin may have a different scheme and host from
+  // |url| (e.g. in case of blob URLs - see OriginTest.ConstructFromGURL).
   static Origin Create(const GURL& url);
 
   // Creates an Origin for the resource |url| as if it were requested

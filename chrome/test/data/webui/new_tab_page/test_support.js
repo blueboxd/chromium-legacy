@@ -33,6 +33,17 @@ export function assertStyle(element, name, expected) {
 }
 
 /**
+ * Asserts the computed style for an element is not value.
+ * @param {!HTMLElement} element The element.
+ * @param {string} name The name of the style to assert.
+ * @param {string} not The value the style should not be.
+ */
+export function assertNotStyle(element, name, not) {
+  const actual = window.getComputedStyle(element).getPropertyValue(name).trim();
+  assertNotEquals(not, actual);
+}
+
+/**
  * Asserts that an element is focused.
  * @param {!HTMLElement} element The element to test.
  */

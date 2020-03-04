@@ -5,6 +5,7 @@
 /**
  * @type {!Object}
  */
+// eslint-disable-next-line no-var
 var launcher = {};
 
 /**
@@ -82,7 +83,7 @@ launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
       if (opt_appState) {
-        for (var key in window.appWindows) {
+        for (const key in window.appWindows) {
           if (!key.match(FILES_ID_PATTERN)) {
             continue;
           }
@@ -114,7 +115,7 @@ launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
     // Focus any window if none is focused. Try restored first.
     if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
       // If there is already a focused window, then finish.
-      for (var key in window.appWindows) {
+      for (const key in window.appWindows) {
         if (!key.match(FILES_ID_PATTERN)) {
           continue;
         }
@@ -134,7 +135,7 @@ launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
         }
       }
       // Try to focus the first non-minimized window.
-      for (var key in window.appWindows) {
+      for (const key in window.appWindows) {
         if (!key.match(FILES_ID_PATTERN)) {
           continue;
         }
@@ -149,7 +150,7 @@ launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
         }
       }
       // Restore and focus any window.
-      for (var key in window.appWindows) {
+      for (const key in window.appWindows) {
         if (!key.match(FILES_ID_PATTERN)) {
           continue;
         }
@@ -169,6 +170,11 @@ launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
     const id = opt_id || nextFileManagerWindowID;
     nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
     const appId = FILES_ID_PREFIX + id;
+
+    // Make the files-ng frame color white.
+    if (util.isFilesNg()) {
+      FILE_MANAGER_WINDOW_CREATE_OPTIONS.frame.color = '#ffffff';
+    }
 
     const appWindow = new AppWindowWrapper(
         'main.html', appId, FILE_MANAGER_WINDOW_CREATE_OPTIONS);

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
@@ -68,7 +67,7 @@ base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
       provider->registrar().GetAppEffectiveDisplayMode(app_id.value());
 
   // TODO(calamity): Plumb through better launch sources from callsites.
-  apps::AppLaunchParams params = CreateAppIdLaunchParamsWithEventFlags(
+  apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id.value(), /*event_flags=*/0,
       apps::mojom::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId, /*fallback_container=*/

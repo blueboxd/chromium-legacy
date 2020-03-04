@@ -326,17 +326,19 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   return std::move(dict);
 }
 
-void HttpNetworkSession::CloseAllConnections() {
-  normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
-  websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
-  spdy_session_pool_.CloseCurrentSessions(ERR_ABORTED);
-  quic_stream_factory_.CloseAllSessions(ERR_ABORTED,
-                                        quic::QUIC_PEER_GOING_AWAY);
+void HttpNetworkSession::CloseAllConnections(int net_error,
+                                             const char* net_log_reason_utf8) {
+  normal_socket_pool_manager_->FlushSocketPoolsWithError(net_error,
+                                                         net_log_reason_utf8);
+  websocket_socket_pool_manager_->FlushSocketPoolsWithError(
+      net_error, net_log_reason_utf8);
+  spdy_session_pool_.CloseCurrentSessions(static_cast<net::Error>(net_error));
+  quic_stream_factory_.CloseAllSessions(net_error, quic::QUIC_PEER_GOING_AWAY);
 }
 
-void HttpNetworkSession::CloseIdleConnections() {
-  normal_socket_pool_manager_->CloseIdleSockets();
-  websocket_socket_pool_manager_->CloseIdleSockets();
+void HttpNetworkSession::CloseIdleConnections(const char* net_log_reason_utf8) {
+  normal_socket_pool_manager_->CloseIdleSockets(net_log_reason_utf8);
+  websocket_socket_pool_manager_->CloseIdleSockets(net_log_reason_utf8);
   spdy_session_pool_.CloseCurrentIdleSessions();
 }
 
@@ -447,7 +449,7 @@ void HttpNetworkSession::OnMemoryPressure(
 
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      CloseIdleConnections();
+      CloseIdleConnections("Low memory");
       break;
   }
 }

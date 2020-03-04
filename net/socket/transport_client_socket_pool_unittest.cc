@@ -1156,7 +1156,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
     handle.Reset();
 
     // Close all pending connect jobs and existing sockets.
-    pool_->FlushWithError(ERR_NETWORK_CHANGED);
+    pool_->FlushWithError(ERR_NETWORK_CHANGED, "Network changed");
   }
 }
 

@@ -269,7 +269,6 @@ public class ShareHelper {
         }
     }
 
-
     /**
      * Share directly with the last used share target.
      * @param params The container holding the share parameters.

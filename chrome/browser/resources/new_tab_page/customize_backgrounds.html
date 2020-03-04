@@ -1,7 +1,10 @@
 <style>
-  #collections {
-    --ntp-grid-gap: 8px;
+  #container {
     padding: 4px;
+  }
+
+  ntp-grid {
+    --ntp-grid-gap: 8px;
   }
 
   .tile {
@@ -36,13 +39,24 @@
     min-height: 30px;
   }
 </style>
-<ntp-grid id="collections" columns="3">
-  <dom-repeat items="[[collections_]]">
+<ntp-grid id="collections" columns="3" hidden="[[selectedCollection]]">
+  <dom-repeat id="collectionsRepeat" items="[[collections_]]">
+    <template>
+      <div class="tile" tabindex="0" title="[[item.label]]" role="button"
+        on-click="onCollectionClick_">
+        <!-- TODO(crbug.com/1032328): Show image in an iframe. -->
+        <div class="image">[[item.previewImageUrl.url]]</div>
+        <div class="label">[[item.label]]</div>
+      </div>
+    </template>
+  </dom-repeat>
+</ntp-grid>
+<ntp-grid id="images" columns="3" hidden="[[!selectedCollection]]">
+  <dom-repeat items="[[images_]]">
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button">
         <!-- TODO(crbug.com/1032328): Show image in an iframe. -->
         <div class="image">[[item.previewImageUrl.url]]</div>
-        <div class="label">[[item.label]]</div>
       </div>
     </template>
   </dom-repeat>

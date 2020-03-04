@@ -881,7 +881,13 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   if (!is_display_move_pending) {
     ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
         target_display.work_area(), &adjusted_bounds);
-    if (GetWindowState()->IsPip() && !GetWindowState()->is_dragged()) {
+    // Collision detection to the bounds set by Android should be applied only
+    // to initial bounds. Do not adjust new bounds as it can be obsolete or in
+    // transit during animation, which results in incorrect resting postiion.
+    // The resting position should be fully controlled by chrome afterwards
+    // because Android isn't aware of Chrome OS System UI.
+    if (GetWindowState()->IsPip() &&
+        !ash::PipPositioner::HasSnapFraction(GetWindowState())) {
       adjusted_bounds = ash::CollisionDetectionUtils::GetRestingPosition(
           target_display, adjusted_bounds,
           ash::CollisionDetectionUtils::RelativePriority::kPictureInPicture);

@@ -211,6 +211,13 @@
           icon="settings:serial-port" id="serialPorts"
           label="$i18n{siteSettingsSerialPorts}">
       </site-details-permission>
+      <template is="dom-if" if="[[enableWebBluetoothNewPermissionsBackend_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.BLUETOOTH_DEVICES}}"
+            icon="settings:bluetooth" id="bluetoothDevices"
+            label="$i18n{siteSettingsBluetoothDevices}">
+        </site-details-permission>
+      </template>
       <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
         <site-details-permission
             category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"

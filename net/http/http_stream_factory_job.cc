@@ -1145,7 +1145,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
   // Close idle sockets in this group, since subsequent requests will go over
   // |spdy_session|.
   if (connection_->socket()->IsConnected())
-    connection_->CloseIdleSocketsInGroup();
+    connection_->CloseIdleSocketsInGroup("Switching to HTTP2 session");
 
   // If |spdy_session_direct_| is false, then |proxy_info_| is guaranteed to
   // have a non-empty proxy list.

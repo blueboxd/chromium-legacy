@@ -33,6 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.chromium.android_webview.common.AwSwitches;
+import org.chromium.android_webview.common.DeveloperModeUtils;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
@@ -120,15 +121,16 @@ public class CrashesListActivity extends Activity {
         // changes WebView implementation from system settings and then returns back to the
         // activity.
         mDifferentPackageError.showMessageIfDifferent();
-        mCrashListViewAdapter.updateCrashes();
 
-        // Firstly, check for the flag value in commandline file, since it doesn't require any IPCs.
-        if (CommandLine.getInstance().hasSwitch(
-                    AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH)) {
+        // Check if crash collection is enabled and show or hide the error message.
+        // Firstly, check for the flag value in commandline, since it doesn't require any IPCs.
+        // Then check for flags value in the DeveloperUi ContentProvider (it involves an IPC but
+        // it's guarded by quick developer mode check). Finally check the GMS service since it
+        // is the slowest check.
+        if (isCrashUploadsEnabledFromCommandLine() || isCrashUploadsEnabledFromFlagsUi()) {
             mCrashConsentError.hide();
         } else {
             PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
-                // enabled is a Boolean object and can be null.
                 if (Boolean.TRUE.equals(enabled)) {
                     mCrashConsentError.hide();
                 } else {
@@ -136,6 +138,21 @@ public class CrashesListActivity extends Activity {
                 }
             });
         }
+
+        mCrashListViewAdapter.updateCrashes();
+    }
+
+    private boolean isCrashUploadsEnabledFromCommandLine() {
+        return CommandLine.getInstance().hasSwitch(
+                AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+    }
+
+    private boolean isCrashUploadsEnabledFromFlagsUi() {
+        if (DeveloperModeUtils.isDeveloperModeEnabled(getPackageName())) {
+            return DeveloperModeUtils.getFlagOverrides(getPackageName())
+                    .getOrDefault(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH, false);
+        }
+        return false;
     }
 
     /**

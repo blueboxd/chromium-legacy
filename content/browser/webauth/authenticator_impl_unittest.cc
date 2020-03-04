@@ -346,7 +346,7 @@ GetTestPublicKeyCredentialCreationOptions() {
   options->public_key_parameters =
       GetTestPublicKeyCredentialParameters(kCoseEs256);
   options->challenge.assign(32, 0x0A);
-  options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  options->timeout = base::TimeDelta::FromMinutes(1);
   options->authenticator_selection = GetTestAuthenticatorSelectionCriteria();
   return options;
 }
@@ -356,7 +356,7 @@ GetTestPublicKeyCredentialRequestOptions() {
   auto options = PublicKeyCredentialRequestOptions::New();
   options->relying_party_id = std::string(kTestRelyingPartyId);
   options->challenge.assign(32, 0x0A);
-  options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  options->timeout = base::TimeDelta::FromMinutes(1);
   options->user_verification = device::UserVerificationRequirement::kPreferred;
   options->allow_credentials = GetTestCredentials();
   return options;
@@ -2027,7 +2027,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       PublicKeyCredentialCreationOptionsPtr options =
           GetTestPublicKeyCredentialCreationOptions();
       options->relying_party.id = "example.com";
-      options->adjusted_timeout = base::TimeDelta::FromSeconds(1);
+      options->timeout = base::TimeDelta::FromSeconds(1);
       options->attestation =
           ConvertAttestationConveyancePreference(test.attestation_requested);
       TestMakeCredentialCallback callback_receiver;
@@ -3771,7 +3771,7 @@ TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
           !fingerprints_enrolled &&
           uv == device::UserVerificationRequirement::kRequired;
       if (should_timeout) {
-        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
+        options->timeout = base::TimeDelta::FromMilliseconds(100);
       }
 
       TestMakeCredentialCallback callback_receiver;
@@ -4093,7 +4093,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUVToken) {
           !fingerprints_enrolled &&
           uv == device::UserVerificationRequirement::kRequired;
       if (should_timeout) {
-        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
+        options->timeout = base::TimeDelta::FromMilliseconds(100);
       }
 
       TestMakeCredentialCallback callback_receiver;

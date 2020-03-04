@@ -76,7 +76,7 @@ class IntWrapper : public GarbageCollected<IntWrapper> {
   }
 
   static std::atomic_int destructor_calls_;
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   int Value() const { return x_; }
 
@@ -280,7 +280,7 @@ class TestGCScope : public TestGCCollectGarbageScope {
 class SimpleObject : public GarbageCollected<SimpleObject> {
  public:
   SimpleObject() = default;
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
   char GetPayload(int i) { return payload[i]; }
   // This virtual method is unused but it is here to make sure
   // that this object has a vtable. This object is used
@@ -300,7 +300,7 @@ class HeapTestSuperClass : public GarbageCollected<HeapTestSuperClass> {
   virtual ~HeapTestSuperClass() { ++destructor_calls_; }
 
   static int destructor_calls_;
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 };
 
 int HeapTestSuperClass::destructor_calls_ = 0;
@@ -338,7 +338,7 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
   }
 
   int8_t at(size_t i) { return array_[i]; }
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   static const int kArraySize = 1000;
@@ -536,7 +536,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
    public:
     Local() = default;
 
-    void Trace(blink::Visitor* visitor) {}
+    void Trace(Visitor* visitor) {}
   };
 
   class PersistentChain;
@@ -564,7 +564,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
       ref_counted_chain_ = base::AdoptRef(RefCountedChain::Create(count));
     }
 
-    void Trace(blink::Visitor* visitor) {}
+    void Trace(Visitor* visitor) {}
 
    private:
     scoped_refptr<RefCountedChain> ref_counted_chain_;
@@ -593,7 +593,7 @@ class TraceCounter final : public GarbageCollected<TraceCounter> {
  public:
   TraceCounter() : trace_count_(0) {}
 
-  void Trace(blink::Visitor* visitor) { trace_count_++; }
+  void Trace(Visitor* visitor) { trace_count_++; }
   int TraceCount() const { return trace_count_; }
 
  private:
@@ -614,9 +614,7 @@ class ClassWithMember : public GarbageCollected<ClassWithMember> {
  public:
   ClassWithMember() : trace_counter_(MakeGarbageCollected<TraceCounter>()) {}
 
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(trace_counter_);
-  }
+  void Trace(Visitor* visitor) { visitor->Trace(trace_counter_); }
   int TraceCount() const { return trace_counter_->TraceCount(); }
 
  private:
@@ -631,7 +629,7 @@ class SimpleFinalizedObject final
 
   static int destructor_calls_;
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 };
 
 int SimpleFinalizedObject::destructor_calls_ = 0;
@@ -657,7 +655,7 @@ class IntNode : public GarbageCollected<IntNode> {
 
   static IntNode* Create(int i) { return new IntNode(i); }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   int Value() { return value_; }
 
@@ -677,7 +675,7 @@ class Bar : public GarbageCollected<Bar> {
   }
   bool HasBeenFinalized() const { return !magic_; }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
   static unsigned live_;
 
  protected:
@@ -691,7 +689,7 @@ class Baz : public GarbageCollected<Baz> {
  public:
   explicit Baz(Bar* bar) : bar_(bar) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
+  void Trace(Visitor* visitor) { visitor->Trace(bar_); }
 
   void Clear() { bar_.Release(); }
 
@@ -708,7 +706,7 @@ class Foo : public Bar {
 
   Foo(Foo* foo) : Bar(), bar_(foo), points_to_foo_(true) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     if (points_to_foo_)
       visitor->Trace(static_cast<Foo*>(bar_));
     else
@@ -729,7 +727,7 @@ class Bars : public Bar {
     }
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     for (unsigned i = 0; i < width_; i++)
       visitor->Trace(bars_[i]);
   }
@@ -749,7 +747,7 @@ class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
     int_wrapper_ = MakeGarbageCollected<IntWrapper>(42);
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(int_wrapper_); }
+  void Trace(Visitor* visitor) { visitor->Trace(int_wrapper_); }
 
  private:
   Member<IntWrapper> int_wrapper_;
@@ -763,7 +761,7 @@ class LargeHeapObject final : public GarbageCollected<LargeHeapObject> {
   char Get(size_t i) { return data_[i]; }
   void Set(size_t i, char c) { data_[i] = c; }
   size_t length() { return kLength; }
-  void Trace(blink::Visitor* visitor) { visitor->Trace(int_wrapper_); }
+  void Trace(Visitor* visitor) { visitor->Trace(int_wrapper_); }
   static int destructor_calls_;
 
  private:
@@ -808,7 +806,7 @@ class RefCountedAndGarbageCollected final
       keep_alive_.Clear();
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static int destructor_calls_;
 
@@ -843,7 +841,7 @@ class RefCountedAndGarbageCollected2 final
       keep_alive_.Clear();
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static int destructor_calls_;
 
@@ -859,7 +857,7 @@ class Weak : public Bar {
   Weak(Bar* strong_bar, Bar* weak_bar)
       : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(strong_bar_);
     visitor->template RegisterWeakCallbackMethod<Weak, &Weak::ZapWeakMembers>(
         this);
@@ -883,7 +881,7 @@ class WithWeakMember : public Bar {
   WithWeakMember(Bar* strong_bar, Bar* weak_bar)
       : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(strong_bar_);
     visitor->Trace(weak_bar_);
   }
@@ -902,7 +900,7 @@ class Observable final : public GarbageCollected<Observable> {
  public:
   explicit Observable(Bar* bar) : bar_(bar), was_destructed_(false) {}
   ~Observable() { was_destructed_ = true; }
-  void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
+  void Trace(Visitor* visitor) { visitor->Trace(bar_); }
 
   // willFinalize is called by FinalizationObserver. willFinalize can touch
   // other on-heap objects.
@@ -927,7 +925,7 @@ class ObservableWithPreFinalizer final
  public:
   ObservableWithPreFinalizer() : was_destructed_(false) {}
   ~ObservableWithPreFinalizer() { was_destructed_ = true; }
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(was_destructed_);
     dispose_was_called_ = true;
@@ -950,7 +948,7 @@ class PreFinalizerBase : public GarbageCollected<PreFinalizerBase> {
  public:
   PreFinalizerBase() : was_destructed_(false) {}
   virtual ~PreFinalizerBase() { was_destructed_ = true; }
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_TRUE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -968,7 +966,7 @@ class PreFinalizerMixin : public GarbageCollectedMixin {
 
  public:
   ~PreFinalizerMixin() { was_destructed_ = true; }
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_TRUE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -989,7 +987,7 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
  public:
   PreFinalizerSubClass() : was_destructed_(false) {}
   ~PreFinalizerSubClass() override { was_destructed_ = true; }
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1009,7 +1007,7 @@ class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
 
   bool DidCallWillFinalize() const { return did_call_will_finalize_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->template RegisterWeakCallbackMethod<
         FinalizationObserver<T>, &FinalizationObserver<T>::ZapWeakMembers>(
         this);
@@ -1090,7 +1088,7 @@ class PointsBack final : public GarbageCollected<PointsBack> {
 
   SuperClass* BackPointer() const { return back_pointer_; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(back_pointer_); }
+  void Trace(Visitor* visitor) { visitor->Trace(back_pointer_); }
 
   static int alive_count_;
 
@@ -1116,7 +1114,7 @@ class SuperClass : public GarbageCollected<SuperClass> {
     EXPECT_EQ(super_class_count, SuperClass::alive_count_);
   }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(points_back_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(points_back_); }
 
   PointsBack* GetPointsBack() const { return points_back_.Get(); }
 
@@ -1132,7 +1130,7 @@ class SubData final : public GarbageCollected<SubData> {
   SubData() { ++alive_count_; }
   ~SubData() { --alive_count_; }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static int alive_count_;
 };
@@ -1147,7 +1145,7 @@ class SubClass : public SuperClass {
   }
   ~SubClass() override { --alive_count_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(data_);
     SuperClass::Trace(visitor);
   }
@@ -1162,7 +1160,7 @@ int SubClass::alive_count_ = 0;
 
 class Mixin : public GarbageCollectedMixin {
  public:
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 
   virtual char GetPayload(int i) { return padding_[i]; }
 
@@ -1182,7 +1180,7 @@ class UseMixin : public SimpleObject, public Mixin {
   }
 
   static int trace_count_;
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     SimpleObject::Trace(visitor);
     Mixin::Trace(visitor);
     ++trace_count_;
@@ -1197,7 +1195,7 @@ class VectorObject {
  public:
   VectorObject() { value_ = MakeGarbageCollected<SimpleFinalizedObject>(); }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
+  void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
   Member<SimpleFinalizedObject> value_;
@@ -1224,7 +1222,7 @@ class TerminatedArrayItem {
   TerminatedArrayItem(IntWrapper* payload)
       : payload_(payload), is_last_(false) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(payload_); }
+  void Trace(Visitor* visitor) { visitor->Trace(payload_); }
 
   bool IsLastInArray() const { return is_last_; }
   void SetLastInArray(bool value) { is_last_ = value; }
@@ -1250,7 +1248,7 @@ class OneKiloByteObject final : public GarbageCollected<OneKiloByteObject> {
  public:
   ~OneKiloByteObject() { destructor_calls_++; }
   char* Data() { return data_; }
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
   static int destructor_calls_;
 
  private:
@@ -1271,7 +1269,7 @@ class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
 
   uint8_t Get(int i) { return *(reinterpret_cast<uint8_t*>(this) + i); }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   DynamicallySizedObject() = default;
@@ -1291,7 +1289,7 @@ class FinalizationAllocator final
       MakeGarbageCollected<LargeHeapObject>();
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   Persistent<IntWrapper>* wrapper_;
@@ -1336,7 +1334,7 @@ class PreFinalizerBackingShrinkForbidden final
     EXPECT_EQ(0ul, map_.Capacity());
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(vector_);
     visitor->Trace(map_);
   }
@@ -1372,7 +1370,7 @@ class PreFinalizerVectorBackingExpandForbidden final
     }
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(vector_); }
+  void Trace(Visitor* visitor) { visitor->Trace(vector_); }
 
  private:
   HeapVector<Member<IntWrapper>> vector_;
@@ -1401,7 +1399,7 @@ class PreFinalizerHashTableBackingExpandForbidden final
     }
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(map_); }
+  void Trace(Visitor* visitor) { visitor->Trace(map_); }
 
  private:
   HeapHashMap<int, Member<IntWrapper>> map_;
@@ -1425,7 +1423,7 @@ class PreFinalizerAllocationForbidden
 #endif  // DCHECK_IS_ON()
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 };
 
 TEST(HeapDeathTest, PreFinalizerAllocationForbidden) {
@@ -2246,7 +2244,7 @@ class Container final : public GarbageCollected<Container> {
   HeapVector<PairWrappedUnwrapped, 2> vector_wu;
   HeapVector<PairUnwrappedWrapped, 2> vector_uw;
   HeapDeque<Member<IntWrapper>> deque;
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(map);
     visitor->Trace(set);
     visitor->Trace(set2);
@@ -2260,7 +2258,7 @@ class Container final : public GarbageCollected<Container> {
 
 struct NeedsTracingTrait {
   explicit NeedsTracingTrait(IntWrapper* wrapper) : wrapper_(wrapper) {}
-  void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
   Member<IntWrapper> wrapper_;
 };
 
@@ -2908,7 +2906,7 @@ class NonTrivialObject final {
     deque_.push_back(MakeGarbageCollected<IntWrapper>(num));
     vector_.push_back(MakeGarbageCollected<IntWrapper>(num));
   }
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(deque_);
     visitor->Trace(vector_);
   }
@@ -3959,7 +3957,7 @@ class InlinedVectorObject {
  public:
   InlinedVectorObject() = default;
   ~InlinedVectorObject() { destructor_calls_++; }
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static int destructor_calls_;
 };
@@ -3973,7 +3971,7 @@ class InlinedVectorObjectWithVtable {
   InlinedVectorObjectWithVtable() = default;
   virtual ~InlinedVectorObjectWithVtable() { destructor_calls_++; }
   virtual void VirtualMethod() {}
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static int destructor_calls_;
 };
@@ -3999,7 +3997,7 @@ class InlinedVectorObjectWrapper final
     vector3_.push_back(i2);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(vector1_);
     visitor->Trace(vector2_);
     visitor->Trace(vector3_);
@@ -4024,7 +4022,7 @@ class InlinedVectorObjectWithVtableWrapper final
     vector3_.push_back(i2);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(vector1_);
     visitor->Trace(vector2_);
     visitor->Trace(vector3_);
@@ -4246,7 +4244,7 @@ TEST_F(HeapTest, DestructorsCalled) {
 class MixinA : public GarbageCollectedMixin {
  public:
   MixinA() : obj_(MakeGarbageCollected<IntWrapper>(100)) {}
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     trace_count_++;
     visitor->Trace(obj_);
   }
@@ -4261,7 +4259,7 @@ int MixinA::trace_count_ = 0;
 class MixinB : public GarbageCollectedMixin {
  public:
   MixinB() : obj_(MakeGarbageCollected<IntWrapper>(101)) {}
-  void Trace(blink::Visitor* visitor) override { visitor->Trace(obj_); }
+  void Trace(Visitor* visitor) override { visitor->Trace(obj_); }
   Member<IntWrapper> obj_;
 };
 
@@ -4272,7 +4270,7 @@ class MultipleMixins : public GarbageCollected<MultipleMixins>,
 
  public:
   MultipleMixins() : obj_(MakeGarbageCollected<IntWrapper>(102)) {}
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(obj_);
     MixinA::Trace(visitor);
     MixinB::Trace(visitor);
@@ -4284,7 +4282,7 @@ class DerivedMultipleMixins : public MultipleMixins {
  public:
   DerivedMultipleMixins() : obj_(MakeGarbageCollected<IntWrapper>(103)) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     trace_called_++;
     visitor->Trace(obj_);
     MultipleMixins::Trace(visitor);
@@ -4502,7 +4500,7 @@ TEST_F(HeapTest, EphemeronsInEphemerons) {
 
 class EphemeronWrapper : public GarbageCollected<EphemeronWrapper> {
  public:
-  void Trace(blink::Visitor* visitor) { visitor->Trace(map_); }
+  void Trace(Visitor* visitor) { visitor->Trace(map_); }
 
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<EphemeronWrapper>> Map;
   Map& GetMap() { return map_; }
@@ -4594,7 +4592,7 @@ class Link1 : public GarbageCollected<Link1> {
  public:
   Link1(IntWrapper* link) : link_(link) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(link_); }
+  void Trace(Visitor* visitor) { visitor->Trace(link_); }
 
   IntWrapper* Link() { return link_; }
 
@@ -4636,9 +4634,7 @@ class TraceIfNeededTester final
   TraceIfNeededTester() = default;
   explicit TraceIfNeededTester(const T& obj) : obj_(obj) {}
 
-  void Trace(blink::Visitor* visitor) {
-    TraceIfNeeded<T>::Trace(visitor, obj_);
-  }
+  void Trace(Visitor* visitor) { TraceIfNeeded<T>::Trace(visitor, obj_); }
   T& Obj() { return obj_; }
   ~TraceIfNeededTester() = default;
 
@@ -4651,7 +4647,7 @@ class PartObject {
 
  public:
   PartObject() : obj_(MakeGarbageCollected<SimpleObject>()) {}
-  void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
+  void Trace(Visitor* visitor) { visitor->Trace(obj_); }
 
  private:
   Member<SimpleObject> obj_;
@@ -4680,7 +4676,7 @@ class AllocatesOnAssignment {
 
   inline bool IsDeleted() const { return value_.IsHashTableDeletedValue(); }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
+  void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
   int Value() { return value_->Value(); }
 
@@ -4756,14 +4752,14 @@ TEST_F(HeapTest, GCInHashMapOperations) {
 
 class PartObjectWithVirtualMethod {
  public:
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 };
 
 class ObjectWithVirtualPartObject
     : public GarbageCollected<ObjectWithVirtualPartObject> {
  public:
   ObjectWithVirtualPartObject() : dummy_(AllocateAndReturnBool()) {}
-  void Trace(blink::Visitor* visitor) { visitor->Trace(part_); }
+  void Trace(Visitor* visitor) { visitor->Trace(part_); }
 
  private:
   bool dummy_;
@@ -4781,7 +4777,7 @@ class AllocInSuperConstructorArgumentSuper
  public:
   AllocInSuperConstructorArgumentSuper(bool value) : value_(value) {}
   virtual ~AllocInSuperConstructorArgumentSuper() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
   bool Value() { return value_; }
 
  private:
@@ -4811,7 +4807,7 @@ class NonNodeAllocatingNodeInDestructor final
     node_ = new Persistent<IntNode>(IntNode::Create(10));
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   static Persistent<IntNode>* node_;
 };
@@ -4830,7 +4826,7 @@ class DeepEagerly final : public GarbageCollected<DeepEagerly> {
  public:
   DeepEagerly(DeepEagerly* next) : next_(next) {}
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     int calls = ++s_trace_calls_;
     if (s_trace_lazy_ <= 2)
       visitor->Trace(next_);
@@ -4934,7 +4930,7 @@ class PartObjectWithRef {
  public:
   PartObjectWithRef(int i) : value_(SimpleRefValue::Create(i)) {}
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   int Value() const { return value_->Value(); }
 
@@ -4988,7 +4984,7 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
  public:
   TestMixinAllocationA() = default;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 };
 
 class TestMixinAllocationB : public TestMixinAllocationA {
@@ -4999,7 +4995,7 @@ class TestMixinAllocationB : public TestMixinAllocationA {
       // Construct object during a mixin construction.
       : a_(MakeGarbageCollected<TestMixinAllocationA>()) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(a_);
     TestMixinAllocationA::Trace(visitor);
   }
@@ -5014,7 +5010,7 @@ class TestMixinAllocationC final : public TestMixinAllocationB {
  public:
   TestMixinAllocationC() { DCHECK(!ThreadState::Current()->IsGCForbidden()); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     TestMixinAllocationB::Trace(visitor);
   }
 };
@@ -5122,7 +5118,7 @@ class ThreadedClearOnShutdownTester::HeapObject final
     GetHeapObjectSet().insert(MakeGarbageCollected<HeapObject>(false));
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   bool test_destructor_;
@@ -5169,7 +5165,7 @@ class WithWeakConstObject final : public GarbageCollected<WithWeakConstObject> {
  public:
   WithWeakConstObject(const IntWrapper* int_wrapper) : wrapper_(int_wrapper) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_); }
+  void Trace(Visitor* visitor) { visitor->Trace(wrapper_); }
 
   const IntWrapper* Value() const { return wrapper_; }
 

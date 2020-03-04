@@ -96,6 +96,7 @@
  *   SITE_SETTINGS_ALL: !settings.Route,
  *   SITE_SETTINGS_AUTOMATIC_DOWNLOADS: !settings.Route,
  *   SITE_SETTINGS_BACKGROUND_SYNC: !settings.Route,
+ *   SITE_SETTINGS_BLUETOOTH_DEVICES: !settings.Route,
  *   SITE_SETTINGS_BLUETOOTH_SCANNING: !settings.Route,
  *   SITE_SETTINGS_CAMERA: !settings.Route,
  *   SITE_SETTINGS_CLIPBOARD: !settings.Route,

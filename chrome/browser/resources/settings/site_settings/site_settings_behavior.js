@@ -229,6 +229,9 @@ const SiteSettingsBehaviorImpl = {
         settings.ContentSettingsTypes.AR, 'enableWebXrContentSetting');
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.VR, 'enableWebXrContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.BLUETOOTH_DEVICES,
+        'enableWebBluetoothNewPermissionsBackend');
     return this.contentTypes_.slice(0);
   },
 

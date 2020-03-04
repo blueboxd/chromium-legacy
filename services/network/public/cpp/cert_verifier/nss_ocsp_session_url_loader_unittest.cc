@@ -110,6 +110,8 @@ class OCSPRequestSessionDelegateURLLoaderTest : public ::testing::Test {
     old_interceptor_ = base::BindLambdaForTesting(
         [this](const network::ResourceRequest& request) {
           EXPECT_EQ(request.url, intercept_url_);
+          EXPECT_TRUE(request.trusted_params.has_value());
+          EXPECT_TRUE(request.trusted_params->disable_secure_dns);
           num_loaders_created_++;
         });
     loader_factory_->SetInterceptor(old_interceptor_);
@@ -469,6 +471,8 @@ class NssHttpURLLoaderTest : public net::TestWithTaskEnvironment {
     loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [this](const network::ResourceRequest& request) {
           EXPECT_EQ(request.url, intercept_url_);
+          EXPECT_TRUE(request.trusted_params.has_value());
+          EXPECT_TRUE(request.trusted_params->disable_secure_dns);
           num_loaders_created_++;
         }));
 

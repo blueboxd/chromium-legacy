@@ -72,6 +72,17 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       public NetworkChangeNotifier::IPAddressObserver,
       public SSLClientContext::Observer {
  public:
+  // Reasons for closing sockets. Exposed here for testing.
+  static const char kCertDatabaseChanged[];
+  static const char kClosedConnectionReturnedToPool[];
+  static const char kDataReceivedUnexpectedly[];
+  static const char kIdleTimeLimitExpired[];
+  static const char kNetworkChanged[];
+  static const char kRemoteSideClosedConnection[];
+  static const char kSocketGenerationOutOfDate[];
+  static const char kSocketPoolDestroyed[];
+  static const char kSslConfigChanged[];
+
   using Flags = uint32_t;
 
   // Used to specify specific behavior for the ClientSocketPool.
@@ -217,9 +228,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int64_t group_generation) override;
-  void FlushWithError(int error) override;
-  void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
+  void FlushWithError(int error, const char* net_log_reason_utf8) override;
+  void CloseIdleSockets(const char* net_log_reason_utf8) override;
+  void CloseIdleSocketsInGroup(const GroupId& group_id,
+                               const char* net_log_reason_utf8) override;
   int IdleSocketCount() const override;
   size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
   LoadState GetLoadState(const GroupId& group_id,
@@ -284,7 +296,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // Note that a socket that has never been used before (like a preconnected
     // socket) may be used even with unread data.  This may be, e.g., a SPDY
     // SETTINGS frame.
-    bool IsUsable() const;
+    //
+    // If the socket is not usable, |net_log_reason_utf8| is set to a string
+    // indicating why the socket is not usable.
+    bool IsUsable(const char** net_log_reason_utf8) const;
 
     StreamSocket* socket;
     base::TimeTicks start_time;
@@ -631,7 +646,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   // Closes all idle sockets if |force| is true.  Else, only closes idle
   // sockets that timed out or can't be reused.  Made public for testing.
-  void CleanupIdleSockets(bool force);
+  // |reason| must be non-empty when |force| is true.
+  void CleanupIdleSockets(bool force, const char* net_log_reason_utf8);
 
   // Closes one idle socket.  Picks the first one encountered.
   // TODO(willchan): Consider a better algorithm for doing this.  Perhaps we
@@ -648,7 +664,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // reused.
   void CleanupIdleSocketsInGroup(bool force,
                                  Group* group,
-                                 const base::TimeTicks& now);
+                                 const base::TimeTicks& now,
+                                 const char* net_log_reason_utf8);
 
   Group* GetOrCreateGroup(const GroupId& group_id);
   void RemoveGroup(const GroupId& group_id);
@@ -757,7 +774,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // The group may be removed if this leaves the group empty. The caller must
   // call CheckForStalledSocketGroups() after all applicable groups have been
   // refreshed.
-  void RefreshGroup(GroupMap::iterator it, const base::TimeTicks& now);
+  void RefreshGroup(GroupMap::iterator it,
+                    const base::TimeTicks& now,
+                    const char* net_log_reason_utf8);
 
   GroupMap group_map_;
 

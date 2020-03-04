@@ -76,6 +76,8 @@ Polymer({
         return this.i18n('siteSettingsUsbDevices');
       case 'serial-ports':
         return this.i18n('siteSettingsSerialPorts');
+      case 'bluetooth-devices':
+        return this.i18n('siteSettingsBluetoothDevices');
       case 'zoom-levels':
         return this.i18n('siteSettingsZoomLevels');
       case 'protected-content':

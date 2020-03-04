@@ -56,8 +56,19 @@ const base::char16 kPolicyPath[] =
     STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient");
 const base::char16 kPrimaryDnsSuffixPath[] =
     STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\System\\DNSClient");
-const base::char16 kNRPTPath[] = STRING16_LITERAL(
+const base::char16 kNrptPath[] = STRING16_LITERAL(
     "SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient\\DnsPolicyConfig");
+const base::char16 kControlSetNrptPath[] = STRING16_LITERAL(
+    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters"
+    "\\DnsPolicyConfig");
+const base::char16 kDnsConnectionsPath[] = STRING16_LITERAL(
+    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters"
+    "\\DnsConnections");
+const base::char16 kDnsActiveIfs[] = STRING16_LITERAL(
+    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters\\DnsActiveIfs");
+const base::char16 kDnsConnectionsProxies[] = STRING16_LITERAL(
+    "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters"
+    "\\DnsConnectionsProxies");
 
 enum HostsParseWinResult {
   HOSTS_PARSE_WIN_OK = 0,
@@ -197,8 +208,21 @@ ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
     return CONFIG_PARSE_WIN_READ_PRIMARY_SUFFIX;
   }
 
-  base::win::RegistryKeyIterator nrpt_rules(HKEY_LOCAL_MACHINE, kNRPTPath);
-  settings->have_name_resolution_policy = (nrpt_rules.SubkeyCount() > 0);
+  base::win::RegistryKeyIterator nrpt_rules(HKEY_LOCAL_MACHINE, kNrptPath);
+  base::win::RegistryKeyIterator cs_nrpt_rules(HKEY_LOCAL_MACHINE,
+                                               kControlSetNrptPath);
+  settings->have_name_resolution_policy =
+      (nrpt_rules.SubkeyCount() > 0 || cs_nrpt_rules.SubkeyCount() > 0);
+
+  base::win::RegistryKeyIterator dns_connections(HKEY_LOCAL_MACHINE,
+                                                 kDnsConnectionsPath);
+  base::win::RegistryKeyIterator dns_active_ifs(HKEY_LOCAL_MACHINE,
+                                                kDnsActiveIfs);
+  base::win::RegistryKeyIterator dns_connections_proxies(
+      HKEY_LOCAL_MACHINE, kDnsConnectionsProxies);
+  settings->have_proxy =
+      (dns_connections.SubkeyCount() > 0 || dns_active_ifs.SubkeyCount() > 0 ||
+       dns_connections_proxies.SubkeyCount() > 0);
 
   return CONFIG_PARSE_WIN_OK;
 }
@@ -424,8 +448,7 @@ DnsSystemSettings::DnsSystemSettings()
       policy_devolution(),
       dnscache_devolution(),
       tcpip_devolution(),
-      append_to_multi_label_name(),
-      have_name_resolution_policy(false) {
+      append_to_multi_label_name() {
   policy_search_list.set = false;
   tcpip_search_list.set = false;
   tcpip_domain.set = false;
@@ -498,6 +521,7 @@ bool ParseSearchList(const base::string16& value,
 ConfigParseWinResult ConvertSettingsToDnsConfig(
     const DnsSystemSettings& settings,
     DnsConfig* config) {
+  bool uses_vpn = false;
   *config = DnsConfig();
 
   // Use GetAdapterAddresses to get effective DNS server order and
@@ -505,11 +529,18 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
   // The order of adapters is the network binding order, so stick to the
   // first good adapter.
   for (const IP_ADAPTER_ADDRESSES* adapter = settings.addresses.get();
-       adapter != nullptr && config->nameservers.empty();
-       adapter = adapter->Next) {
-    if (adapter->OperStatus != IfOperStatusUp)
-      continue;
-    if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
+       adapter != nullptr; adapter = adapter->Next) {
+    // Check each adapter for a VPN interface. Even if a single such interface
+    // is present, treat this as an unhandled configuration.
+    if (adapter->IfType == IF_TYPE_PPP) {
+      uses_vpn = true;
+    }
+
+    // Skip disconnected and loopback adapters. If a good configuration was
+    // previously found, skip processing another adapter.
+    if (adapter->OperStatus != IfOperStatusUp ||
+        adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK ||
+        !config->nameservers.empty())
       continue;
 
     for (const IP_ADAPTER_DNS_SERVER_ADDRESS* address =
@@ -552,11 +583,14 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
         (settings.append_to_multi_label_name.value != 0);
   }
 
-  ConfigParseWinResult result = CONFIG_PARSE_WIN_OK;
   if (settings.have_name_resolution_policy) {
-    config->unhandled_options = true;
     // TODO(szym): only set this to true if NRPT has DirectAccess rules.
     config->use_local_ipv6 = true;
+  }
+
+  ConfigParseWinResult result = CONFIG_PARSE_WIN_OK;
+  if (settings.have_name_resolution_policy || settings.have_proxy || uses_vpn) {
+    config->unhandled_options = true;
     result = CONFIG_PARSE_WIN_UNHANDLED_OPTIONS;
   }
 

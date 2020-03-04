@@ -345,8 +345,9 @@ TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
 }
 
 #if defined(OS_ANDROID)
+// Failing test, see crbug/1050906.
 // Test that content URIs correctly show the file display name as the title.
-TEST_F(NavigationEntryTest, NavigationEntryContentUri) {
+TEST_F(NavigationEntryTest, DISABLED_NavigationEntryContentUri) {
   base::FilePath image_path;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
   image_path = image_path.Append(FILE_PATH_LITERAL("content"));

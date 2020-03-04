@@ -372,8 +372,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   bool receive_inline_response_ = false;
   std::string receive_url_response_;
 
-  bool is_first_client_discourse_context_query_ = true;
-
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       media_controller_observer_receiver_{this};
 

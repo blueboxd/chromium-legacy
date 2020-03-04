@@ -22,7 +22,7 @@
     <cr-input id="input" value="{{value}}"
         placeholder="$i18n{secureDnsCustomPlaceholder}" invalid="[[showError_]]"
         error-message="[[errorText_]]" maxlength="102400" spellcheck="false"
-        on-input="onInput_" on-blur="onBlur_">
+        on-input="onInput_" on-blur="validate">
     </cr-input>
   </template>
   <script src="secure_dns_input.js"></script>

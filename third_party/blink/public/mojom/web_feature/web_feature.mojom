@@ -2512,6 +2512,11 @@ enum WebFeature {
   kCryptoAlgorithmEd25519 = 3170,
   kCryptoAlgorithmX25519 = 3171,
   kDisplayNames = 3172,
+  kNumberFormatStyleUnit = 3173,
+  kDateTimeFormatRange = 3174,
+  kDateTimeFormatDateTimeStyle = 3175,
+  kBreakIteratorTypeWord = 3176,
+  kBreakIteratorTypeLine = 3177,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

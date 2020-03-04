@@ -546,23 +546,9 @@ void AssistantManagerServiceImpl::StartTextInteraction(
   options.conversation_turn_id = NewPendingInteraction(
       mojom::AssistantInteractionType::kText, source, query);
 
-  if (base::FeatureList::IsEnabled(
-          assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
-      assistant_extra_ && assistant_tree_) {
-    // We don't send the screenshot, because the backend only needs the
-    // view hierarchy to resolve contextual queries such as "Who is he?".
-    assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
-        query,
-        CreateContextProto(
-            AssistantBundle{assistant_extra_.get(), assistant_tree_.get()},
-            is_first_client_discourse_context_query_),
-        options);
-    is_first_client_discourse_context_query_ = false;
-  } else {
-    std::string interaction = CreateTextQueryInteraction(query);
-    assistant_manager_internal_->SendVoicelessInteraction(
-        interaction, /*description=*/"text_query", options, [](auto) {});
-  }
+  std::string interaction = CreateTextQueryInteraction(query);
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, /*description=*/"text_query", options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
@@ -1492,7 +1478,6 @@ void AssistantManagerServiceImpl::ClearScreenContextCache() {
   assistant_extra_.reset();
   assistant_tree_.reset();
   assistant_screenshot_.clear();
-  is_first_client_discourse_context_query_ = true;
 }
 
 void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(

@@ -50,17 +50,6 @@ bool ReleaseNotesStorage::ShouldNotify() {
           chromeos::features::kReleaseNotesNotification))
     return false;
 
-  // TODO: remove after fixing http://crbug.com/991767.
-  const base::CommandLine* current_command_line =
-      base::CommandLine::ForCurrentProcess();
-  const bool is_running_test =
-      current_command_line->HasSwitch(::switches::kTestName) ||
-      current_command_line->HasSwitch(::switches::kTestType);
-  if (is_running_test) {
-    DLOG(WARNING) << "Ignoring Release Notes Notification for test.";
-    return false;
-  }
-
   std::string user_email = profile_->GetProfileUserName();
   if (gaia::IsGoogleInternalAccountEmail(user_email) ||
       (ProfileHelper::Get()->GetUserByProfile(profile_)->HasGaiaAccount() &&

@@ -16,6 +16,10 @@ const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
+// Whether or not to delegate color queries to the color provider.
+const base::Feature kColorProviderRedirection = {
+    "ColorProviderRedirection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Integrate input method specific settings to Chrome OS settings page.
 // https://crbug.com/895886.

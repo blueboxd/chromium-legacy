@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -45,9 +46,10 @@ public class CookieControlsServiceBridgeTest {
         }
 
         @Override
-        public void sendCookieControlsUIChanges(boolean checked, boolean enforced) {
+        public void sendCookieControlsUIChanges(
+                boolean checked, @CookieControlsEnforcement int enforcement) {
             mChecked = checked;
-            mEnforced = enforced;
+            mEnforcement = enforcement;
             mHelper.notifyCalled();
         }
     }
@@ -60,7 +62,7 @@ public class CookieControlsServiceBridgeTest {
     private TestCallbackHandler mCallbackHandler;
     private CookieControlsServiceBridge mCookieControlsServiceBridge;
     private boolean mChecked;
-    private boolean mEnforced;
+    private @CookieControlsEnforcement int mEnforcement;
 
     @Before
     public void setUp() throws Exception {
@@ -126,13 +128,13 @@ public class CookieControlsServiceBridgeTest {
         // Test that the toggle switches back on and enforced (by settings)
         expectedChecked = true;
         mChecked = false;
-        boolean expectedEnforced = true;
-        mEnforced = false;
+        int expectedEnforcement = CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING;
+        mEnforcement = CookieControlsEnforcement.NO_ENFORCEMENT;
         currentCallCount = mCallbackHelper.getCallCount();
         setThirdPartyCookieBlocking(true);
         mCallbackHelper.waitForCallback(currentCallCount, 1);
         Assert.assertEquals(expectedChecked, mChecked);
-        Assert.assertEquals(expectedEnforced, mEnforced);
+        Assert.assertEquals(expectedEnforcement, mEnforcement);
     }
 
     /**

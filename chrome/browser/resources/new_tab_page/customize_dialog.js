@@ -39,6 +39,17 @@ class CustomizeDialogElement extends PolymerElement {
         value: 'backgrounds',
         observer: 'onSelectedPageChange_',
       },
+
+      /** @private {newTabPage.mojom.BackgroundCollection} */
+      selectedCollection_: Object,
+
+      /** @private */
+      showTitleNavigation_: {
+        type: Boolean,
+        computed:
+            'computeShowTitleNavigation_(selectedPage_, selectedCollection_)',
+        value: false,
+      },
     };
   }
 
@@ -97,6 +108,16 @@ class CustomizeDialogElement extends PolymerElement {
   /** @private */
   onSelectedPageChange_() {
     this.$.pages.scrollTop = 0;
+  }
+
+  /** @private */
+  computeShowTitleNavigation_() {
+    return this.selectedPage_ === 'backgrounds' && this.selectedCollection_;
+  }
+
+  /** @private */
+  onBackClick_() {
+    this.selectedCollection_ = null;
   }
 }
 

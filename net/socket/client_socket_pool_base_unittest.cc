@@ -697,6 +697,21 @@ class ClientSocketPoolBaseTest : public TestWithTaskEnvironment {
     test_base_.ReleaseAllConnections(keep_alive);
   }
 
+  // Expects a single NetLogEventType::SOCKET_POOL_CLOSING_SOCKET in |net_log_|.
+  // It should be logged for the provided source and have the indicated reason.
+  void ExpectSocketClosedWithReason(NetLogSource expected_source,
+                                    const char* expected_reason) {
+    auto entries = net_log_.GetEntriesForSourceWithType(
+        expected_source, NetLogEventType::SOCKET_POOL_CLOSING_SOCKET,
+        NetLogEventPhase::NONE);
+    ASSERT_EQ(1u, entries.size());
+    ASSERT_TRUE(entries[0].HasParams());
+    ASSERT_TRUE(entries[0].params.is_dict());
+    const std::string* reason = entries[0].params.FindStringKey("reason");
+    ASSERT_TRUE(reason);
+    EXPECT_EQ(expected_reason, *reason);
+  }
+
   TestSocketRequest* request(int i) { return test_base_.request(i); }
   size_t requests_size() const { return test_base_.requests_size(); }
   std::vector<std::unique_ptr<TestSocketRequest>>* requests() {
@@ -788,6 +803,41 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
       entries, 2, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
       NetLogEventPhase::NONE));
   EXPECT_TRUE(LogContainsEndEvent(entries, 3, NetLogEventType::SOCKET_POOL));
+}
+
+// Test releasing an open socket into the socket pool, telling the socket pool
+// to close the socket.
+TEST_F(ClientSocketPoolBaseTest, ReleaseAndCloseConnection) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+
+  EXPECT_THAT(StartRequest(TestGroupId("a"), LOWEST), IsError(OK));
+  ASSERT_TRUE(request(0)->handle()->socket());
+  net::NetLogSource source = request(0)->handle()->socket()->NetLog().source();
+  ReleaseOneConnection(ClientSocketPoolTest::NO_KEEP_ALIVE);
+
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
+
+  ExpectSocketClosedWithReason(
+      source, TransportClientSocketPool::kClosedConnectionReturnedToPool);
+}
+
+TEST_F(ClientSocketPoolBaseTest, SocketWithUnreadDataReturnedToPool) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockUnreadDataJob);
+
+  EXPECT_THAT(StartRequest(TestGroupId("a"), LOWEST), IsError(OK));
+  ASSERT_TRUE(request(0)->handle()->socket());
+  net::NetLogSource source = request(0)->handle()->socket()->NetLog().source();
+  EXPECT_TRUE(request(0)->handle()->socket()->IsConnected());
+  EXPECT_FALSE(request(0)->handle()->socket()->IsConnectedAndIdle());
+  ReleaseOneConnection(ClientSocketPoolTest::KEEP_ALIVE);
+
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
+
+  ExpectSocketClosedWithReason(
+      source, TransportClientSocketPool::kDataReceivedUnexpectedly);
 }
 
 // Make sure different groups do not share sockets.
@@ -1898,6 +1948,8 @@ TEST_F(ClientSocketPoolBaseTest, CancelActiveRequestThenRequestSocket) {
 }
 
 TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsForced) {
+  const char kReason[] = "Really nifty reason";
+
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
@@ -1907,9 +1959,12 @@ TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsForced) {
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       ClientSocketPool::ProxyAuthCallback(), pool_.get(), log.bound());
   EXPECT_THAT(rv, IsOk());
+  ASSERT_TRUE(handle.socket());
+  NetLogSource source = handle.socket()->NetLog().source();
   handle.Reset();
   EXPECT_EQ(1, pool_->IdleSocketCount());
-  pool_->CloseIdleSockets();
+  pool_->CloseIdleSockets(kReason);
+  ExpectSocketClosedWithReason(source, kReason);
 }
 
 TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsInGroupForced) {
@@ -1937,7 +1992,7 @@ TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsInGroupForced) {
   handle2.Reset();
   handle3.Reset();
   EXPECT_EQ(3, pool_->IdleSocketCount());
-  pool_->CloseIdleSocketsInGroup(TestGroupId("a"));
+  pool_->CloseIdleSocketsInGroup(TestGroupId("a"), "Very good reason");
   EXPECT_EQ(1, pool_->IdleSocketCount());
 }
 
@@ -1952,10 +2007,12 @@ TEST_F(ClientSocketPoolBaseTest, CleanUpUnusableIdleSockets) {
       ClientSocketPool::ProxyAuthCallback(), pool_.get(), log.bound());
   EXPECT_THAT(rv, IsOk());
   StreamSocket* socket = handle.socket();
+  ASSERT_TRUE(socket);
   handle.Reset();
   EXPECT_EQ(1, pool_->IdleSocketCount());
 
   // Disconnect socket now to make the socket unusable.
+  NetLogSource source = socket->NetLog().source();
   socket->Disconnect();
   ClientSocketHandle handle2;
   rv = handle2.Init(TestGroupId("a"), params_, base::nullopt, LOWEST,
@@ -1964,6 +2021,13 @@ TEST_F(ClientSocketPoolBaseTest, CleanUpUnusableIdleSockets) {
                     pool_.get(), log.bound());
   EXPECT_THAT(rv, IsOk());
   EXPECT_FALSE(handle2.is_reused());
+
+  // This is admittedly not an accurate error in this case, but normally code
+  // doesn't secretly keep a raw pointers to sockets returned to the socket pool
+  // and close them out of band, so discovering an idle socket was closed when
+  // trying to reuse it normally means it was closed by the remote side.
+  ExpectSocketClosedWithReason(
+      source, TransportClientSocketPool::kRemoteSideClosedConnection);
 }
 
 // Regression test for http://crbug.com/17985.
@@ -2000,7 +2064,7 @@ TEST_F(ClientSocketPoolBaseTest, GroupWithPendingRequestsIsNotEmpty) {
   // Closing idle sockets should not get us into trouble, but in the bug
   // we were hitting a CHECK here.
   EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(TestGroupId("a")));
-  pool_->CloseIdleSockets();
+  pool_->CloseIdleSockets("Very good reason");
 
   // Run the released socket wakeups.
   base::RunLoop().RunUntilIdle();
@@ -2599,6 +2663,9 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
 
   handle.Reset();
   ASSERT_THAT(callback2.WaitForResult(), IsOk());
+  // Get the NetLogSource for the socket, so the time out reason can be checked
+  // at the end of the test.
+  NetLogSource net_log_source2 = handle2.socket()->NetLog().source();
   // Use the socket.
   EXPECT_EQ(1, handle2.socket()->Write(nullptr, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -2633,6 +2700,8 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   auto entries = log.GetEntries();
   EXPECT_FALSE(LogContainsEntryWithType(
       entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
+  ExpectSocketClosedWithReason(
+      net_log_source2, TransportClientSocketPool::kIdleTimeLimitExpired);
 }
 
 // Make sure that we process all pending requests even when we're stalling
@@ -2896,7 +2965,7 @@ TEST_F(ClientSocketPoolBaseTest, CallbackThatReleasesPool) {
                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
                   pool_.get(), NetLogWithSource()));
 
-  pool_->FlushWithError(ERR_NETWORK_CHANGED);
+  pool_->FlushWithError(ERR_NETWORK_CHANGED, "Network changed");
 
   // We'll call back into this now.
   callback.WaitForResult();
@@ -2916,8 +2985,9 @@ TEST_F(ClientSocketPoolBaseTest, DoNotReuseSocketAfterFlush) {
                   pool_.get(), NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(ClientSocketHandle::UNUSED, handle.reuse_type());
+  NetLogSource source = handle.socket()->NetLog().source();
 
-  pool_->FlushWithError(ERR_NETWORK_CHANGED);
+  pool_->FlushWithError(ERR_NETWORK_CHANGED, "Network changed");
 
   handle.Reset();
   base::RunLoop().RunUntilIdle();
@@ -2930,6 +3000,9 @@ TEST_F(ClientSocketPoolBaseTest, DoNotReuseSocketAfterFlush) {
                   pool_.get(), NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(ClientSocketHandle::UNUSED, handle.reuse_type());
+
+  ExpectSocketClosedWithReason(
+      source, TransportClientSocketPool::kSocketGenerationOutOfDate);
 }
 
 class ConnectWithinCallback : public TestCompletionCallbackBase {
@@ -2990,7 +3063,7 @@ TEST_F(ClientSocketPoolBaseTest, AbortAllRequestsOnFlush) {
   // Second job will be started during the first callback, and will
   // asynchronously complete with OK.
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
-  pool_->FlushWithError(ERR_NETWORK_CHANGED);
+  pool_->FlushWithError(ERR_NETWORK_CHANGED, "Network changed");
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_THAT(callback.WaitForNestedResult(), IsOk());
 }
@@ -5297,7 +5370,7 @@ TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceFlushWithError) {
 
   auth_helper.WaitForAuth();
 
-  pool_->FlushWithError(ERR_FAILED);
+  pool_->FlushWithError(ERR_FAILED, "Network changed");
   base::RunLoop().RunUntilIdle();
 
   // When flushing the socket pool, bound sockets should delay returning the

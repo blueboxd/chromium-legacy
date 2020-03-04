@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -24,22 +26,42 @@ using chromeos::disks::DiskMountManager;
 namespace chromeos {
 namespace settings {
 
-
 namespace {
 
 constexpr char kAndroidEnabled[] = "androidEnabled";
+
+const char* CalculationTypeToEventName(
+    calculator::SizeCalculator::CalculationType x) {
+  switch (x) {
+    case calculator::SizeCalculator::CalculationType::kSystem:
+      return "storage-system-size-changed";
+    case calculator::SizeCalculator::CalculationType::kInUse:
+      return "storage-size-stat-changed";
+    case calculator::SizeCalculator::CalculationType::kMyFiles:
+      return "storage-my-files-size-changed";
+    case calculator::SizeCalculator::CalculationType::kBrowsingData:
+      return "storage-browsing-data-size-changed";
+    case calculator::SizeCalculator::CalculationType::kAppsExtensions:
+      return "storage-apps-size-changed";
+    case calculator::SizeCalculator::CalculationType::kCrostini:
+      return "storage-crostini-size-changed";
+    case calculator::SizeCalculator::CalculationType::kOtherUsers:
+      return "storage-other-users-size-changed";
+  }
+  NOTREACHED();
+  return "";
+}
 
 }  // namespace
 
 StorageHandler::StorageHandler(Profile* profile,
                                content::WebUIDataSource* html_source)
-    : size_stat_calculator_("storage-size-stat-changed", profile),
-      my_files_size_calculator_("storage-my-files-size-changed", profile),
-      browsing_data_size_calculator_("storage-browsing-data-size-changed",
-                                     profile),
-      apps_size_calculator_("storage-apps-size-changed", profile),
-      crostini_size_calculator_("storage-crostini-size-changed", profile),
-      other_users_size_calculator_("storage-other-users-size-changed"),
+    : size_stat_calculator_(profile),
+      my_files_size_calculator_(profile),
+      browsing_data_size_calculator_(profile),
+      apps_size_calculator_(profile),
+      crostini_size_calculator_(profile),
+      other_users_size_calculator_(),
       profile_(profile),
       source_name_(html_source->GetSource()),
       arc_observer_(this),
@@ -213,13 +235,13 @@ void StorageHandler::OnMountEvent(
 }
 
 void StorageHandler::OnSizeCalculated(
-    const std::string& event_name,
+    const calculator::SizeCalculator::CalculationType& calculation_type,
     int64_t total_bytes,
     const base::Optional<int64_t>& available_bytes) {
   if (available_bytes) {
-    UpdateSizeStat(event_name, total_bytes, available_bytes.value());
+    UpdateSizeStat(calculation_type, total_bytes, available_bytes.value());
   } else {
-    UpdateStorageItem(event_name, total_bytes);
+    UpdateStorageItem(calculation_type, total_bytes);
   }
 }
 
@@ -236,8 +258,15 @@ void StorageHandler::StopObservingEvents() {
   other_users_size_calculator_.RemoveObserver(this);
 }
 
-void StorageHandler::UpdateStorageItem(const std::string& event_name,
-                                       int64_t total_bytes) {
+void StorageHandler::UpdateStorageItem(
+    const calculator::SizeCalculator::CalculationType& calculation_type,
+    int64_t total_bytes) {
+  // When the system size has been calculated, UpdateSystemSize calls this
+  // method with the calculation type kSystem. This check prevents an infinite
+  // loop.
+  if (calculation_type != calculator::SizeCalculator::CalculationType::kSystem)
+    UpdateSystemSize(calculation_type, total_bytes);
+
   base::string16 message;
   if (total_bytes < 0) {
     message = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
@@ -245,20 +274,25 @@ void StorageHandler::UpdateStorageItem(const std::string& event_name,
     message = ui::FormatBytes(total_bytes);
   }
 
-  if (event_name == "storage-other-users-size-changed") {
+  if (calculation_type ==
+      calculator::SizeCalculator::CalculationType::kOtherUsers) {
     bool no_other_users = (total_bytes == 0);
-    FireWebUIListener(event_name, base::Value(message),
-                      base::Value(no_other_users));
+    FireWebUIListener(CalculationTypeToEventName(calculation_type),
+                      base::Value(message), base::Value(no_other_users));
   } else {
-    FireWebUIListener(event_name, base::Value(message));
+    FireWebUIListener(CalculationTypeToEventName(calculation_type),
+                      base::Value(message));
   }
 }
 
-void StorageHandler::UpdateSizeStat(const std::string& event_name,
-                                    int64_t total_bytes,
-                                    int64_t available_bytes) {
+void StorageHandler::UpdateSizeStat(
+    const calculator::SizeCalculator::CalculationType& calculation_type,
+    int64_t total_bytes,
+    int64_t available_bytes) {
   int64_t rounded_total_bytes = RoundByteSize(total_bytes);
   int64_t in_use_total_bytes_ = rounded_total_bytes - available_bytes;
+
+  UpdateSystemSize(calculation_type, in_use_total_bytes_);
 
   base::DictionaryValue size_stat;
   size_stat.SetString("availableSize", ui::FormatBytes(available_bytes));
@@ -274,7 +308,38 @@ void StorageHandler::UpdateSizeStat(const std::string& event_name,
     storage_space_state = static_cast<int>(StorageSpaceState::kStorageSpaceLow);
   size_stat.SetInteger("spaceState", storage_space_state);
 
-  FireWebUIListener(event_name, size_stat);
+  FireWebUIListener(CalculationTypeToEventName(calculation_type), size_stat);
+}
+
+void StorageHandler::UpdateSystemSize(
+    const calculator::SizeCalculator::CalculationType& calculation_type,
+    int64_t total_bytes) {
+  const int item_index = static_cast<int>(calculation_type);
+  storage_items_total_bytes_[item_index] = total_bytes > 0 ? total_bytes : 0;
+  calculation_state_.set(item_index);
+
+  // Update system size. We only display the total system size when the size of
+  // all categories has been updated. If some size calculations are pending,
+  // return early and wait for all calculations to complete.
+  if (!calculation_state_.all())
+    return;
+
+  int64_t system_bytes = 0;
+  for (int i = 0; i < calculator::SizeCalculator::kCalculationTypeCount; ++i) {
+    int64_t total_bytes_for_current_item = storage_items_total_bytes_[i];
+    // If the storage is in use, add to the system's total storage.
+    if (i ==
+        static_cast<int>(calculator::SizeCalculator::CalculationType::kInUse)) {
+      system_bytes += total_bytes_for_current_item;
+      continue;
+    }
+    // Otherwise, this storage amount counts against the total storage
+    // amount.
+    system_bytes -= total_bytes_for_current_item;
+  }
+
+  OnSizeCalculated(calculator::SizeCalculator::CalculationType::kSystem,
+                   system_bytes);
 }
 
 bool StorageHandler::IsEligibleForAndroidStorage(std::string source_path) {

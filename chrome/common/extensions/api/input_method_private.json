@@ -46,6 +46,12 @@
         "enum": ["mouse", "touch", "pen", "other"]
       },
       {
+        "id": "InputModeType",
+        "type": "string",
+        "description": "Type of keyboard to show for this text field, (Text, Number, URL, etc) set by mode property of input tag",
+        "enum": ["noKeyboard", "text", "tel", "url", "email", "numeric", "decimal", "search"]
+      },
+      {
         "id": "InputContextType",
         "type": "string",
         "description": "Type of value this text field edits, (Text, Number, URL, etc)",
@@ -64,6 +70,7 @@
         "properties": {
           "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
           "type": {"$ref": "InputContextType", "description": "Type of value this text field edits, (Text, Number, URL, etc)"},
+          "mode": {"$ref": "InputModeType", "description": "Type of keyboard to show for this field (Text, Number, URL, etc)"},
           "autoCorrect": {"type": "boolean", "description": "Whether the text field wants auto-correct."},
           "autoComplete": {"type": "boolean", "description": "Whether the text field wants auto-complete."},
           "autoCapitalize": {"$ref": "AutoCapitalizeType", "description": "The auto-capitalize type of the text field."},

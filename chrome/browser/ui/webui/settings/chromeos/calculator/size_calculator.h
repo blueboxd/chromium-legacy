@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CALCULATOR_SIZE_CALCULATOR_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CALCULATOR_SIZE_CALCULATOR_H_
 
+#include <array>
 #include <bitset>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
@@ -26,20 +29,37 @@ namespace chromeos {
 namespace settings {
 namespace calculator {
 
-// Base class for storage item size calculation. SizeCalculator instances are
-// designed to notify observers about the calculated sizes.
+// Base class for the calculation of a specific storage item. Instances of this
+// class rely on their observers calling StartCalculation, and are designed to
+// notify observers about the calculated sizes.
 class SizeCalculator {
  public:
+  // Enumeration listing the items displayed on the storage page.
+  enum class CalculationType {
+    kInUse = 0,
+    kMyFiles,
+    kBrowsingData,
+    kAppsExtensions,
+    kCrostini,
+    kOtherUsers,
+    kLast = kOtherUsers,
+    kSystem,
+  };
+
   // Implement this interface to be notified about item size callbacks.
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnSizeCalculated(
-        const std::string& calculation_name,
+        const CalculationType& item_id,
         int64_t total_bytes,
         const base::Optional<int64_t>& available_bytes) = 0;
   };
 
-  explicit SizeCalculator(const std::string& calculation_name);
+  // Total number of storage items.
+  static constexpr int kCalculationTypeCount =
+      static_cast<int>(CalculationType::kLast) + 1;
+
+  explicit SizeCalculator(const CalculationType& calculation_type);
   virtual ~SizeCalculator();
 
   // Starts the size calculation of a given storage item.
@@ -55,26 +75,25 @@ class SizeCalculator {
   // Performs the size calculation.
   virtual void PerformCalculation() = 0;
 
-  // Notify the StorageHandler about the calculated storage item size.
+  // Notify the StorageHandler about the calculated storage item size
   void NotifySizeCalculated(
       int64_t total_bytes,
       const base::Optional<int64_t>& available_bytes = base::nullopt);
 
-  // Observers being notified about storage items size changes.
-  base::ObserverList<SizeCalculator::Observer> observers_;
+  // Item id.
+  const CalculationType calculation_type_;
 
   // Flag indicating that fetch operations for storage size are ongoing.
   bool calculating_ = false;
-
-  // Name associated to the item size to calculate.
-  std::string calculation_name_;
+  // Observers being notified about storage items size changes.
+  base::ObserverList<SizeCalculator::Observer> observers_;
 };
 
 // Class handling the interactions with the filesystem to get storage
 // statistics, using OnSizeStatCalculated to notify observers.
 class SizeStatCalculator : public SizeCalculator {
  public:
-  SizeStatCalculator(const std::string& calculation_name, Profile* profile);
+  explicit SizeStatCalculator(Profile* profile);
   ~SizeStatCalculator() override;
 
   SizeStatCalculator(const SizeStatCalculator&) = delete;
@@ -96,7 +115,7 @@ class SizeStatCalculator : public SizeCalculator {
 // files + Android Play files.
 class MyFilesSizeCalculator : public SizeCalculator {
  public:
-  MyFilesSizeCalculator(const std::string& calculation_name, Profile* profile);
+  explicit MyFilesSizeCalculator(Profile* profile);
   ~MyFilesSizeCalculator() override;
 
   MyFilesSizeCalculator(const MyFilesSizeCalculator&) = delete;
@@ -121,8 +140,7 @@ class MyFilesSizeCalculator : public SizeCalculator {
 // Class handling the calculation of browsing data and cache.
 class BrowsingDataSizeCalculator : public SizeCalculator {
  public:
-  BrowsingDataSizeCalculator(const std::string& calculation_name,
-                             Profile* profile);
+  explicit BrowsingDataSizeCalculator(Profile* profile);
   ~BrowsingDataSizeCalculator() override;
 
   BrowsingDataSizeCalculator(const BrowsingDataSizeCalculator&) = delete;
@@ -164,7 +182,7 @@ class AppsSizeCalculator
     : public SizeCalculator,
       public arc::ConnectionObserver<arc::mojom::StorageManagerInstance> {
  public:
-  AppsSizeCalculator(const std::string& calculation_name, Profile* profile);
+  explicit AppsSizeCalculator(Profile* profile);
   ~AppsSizeCalculator() override;
 
   AppsSizeCalculator(const AppsSizeCalculator&) = delete;
@@ -226,7 +244,7 @@ class AppsSizeCalculator
 // Class handling the calculation of crostini VM size.
 class CrostiniSizeCalculator : public SizeCalculator {
  public:
-  CrostiniSizeCalculator(const std::string& calculation_name, Profile* profile);
+  explicit CrostiniSizeCalculator(Profile* profile);
   ~CrostiniSizeCalculator() override;
 
   CrostiniSizeCalculator(const CrostiniSizeCalculator&) = delete;
@@ -247,7 +265,7 @@ class CrostiniSizeCalculator : public SizeCalculator {
 // Class handling the calculation of other users' cryptohomes.
 class OtherUsersSizeCalculator : public SizeCalculator {
  public:
-  explicit OtherUsersSizeCalculator(const std::string& calculation_name);
+  OtherUsersSizeCalculator();
   ~OtherUsersSizeCalculator() override;
 
   OtherUsersSizeCalculator(const OtherUsersSizeCalculator&) = delete;

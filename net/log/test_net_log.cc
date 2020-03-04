@@ -60,6 +60,21 @@ std::vector<NetLogEntry> RecordingNetLogObserver::GetEntriesWithType(
   return result;
 }
 
+std::vector<NetLogEntry> RecordingNetLogObserver::GetEntriesForSourceWithType(
+    NetLogSource source,
+    NetLogEventType type,
+    NetLogEventPhase phase) const {
+  base::AutoLock lock(lock_);
+  std::vector<NetLogEntry> result;
+  for (const auto& entry : entry_list_) {
+    if (entry.source.id == source.id && entry.type == type &&
+        entry.phase == phase) {
+      result.push_back(entry.Clone());
+    }
+  }
+  return result;
+}
+
 size_t RecordingNetLogObserver::GetSize() const {
   base::AutoLock lock(lock_);
   return entry_list_.size();
@@ -117,6 +132,13 @@ std::vector<NetLogEntry> RecordingTestNetLog::GetEntriesWithType(
   return observer_.GetEntriesWithType(type);
 }
 
+std::vector<NetLogEntry> RecordingTestNetLog::GetEntriesForSourceWithType(
+    NetLogSource source,
+    NetLogEventType type,
+    NetLogEventPhase phase) const {
+  return observer_.GetEntriesForSourceWithType(source, type, phase);
+}
+
 size_t RecordingTestNetLog::GetSize() const {
   return observer_.GetSize();
 }
@@ -152,6 +174,13 @@ std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntriesForSource(
 std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntriesWithType(
     NetLogEventType type) const {
   return test_net_log_.GetEntriesWithType(type);
+}
+
+std::vector<NetLogEntry> RecordingBoundTestNetLog::GetEntriesForSourceWithType(
+    NetLogSource source,
+    NetLogEventType type,
+    NetLogEventPhase phase) const {
+  return test_net_log_.GetEntriesForSourceWithType(source, type, phase);
 }
 
 size_t RecordingBoundTestNetLog::GetSize() const {

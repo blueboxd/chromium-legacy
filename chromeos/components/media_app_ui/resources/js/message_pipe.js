@@ -61,6 +61,26 @@ class NativeResolver {
 }
 
 /**
+ * A simplified "assert" that casts away null types. Assumes preconditions that
+ * satisfy the assert have already been checked. Inspired by
+ * webui/resources/js/assert/assert.js. However, this file is used (and tested)
+ * verbatim in multiple repositories with different dependency management, so
+ * that's not used directly. TODO(b/150650426): consolidate this better.
+ *
+ * @template T
+ * @param {?T|undefined} condition
+ * @return {T} A non-null |condition|.
+ * @closurePrimitive {asserts.truthy}
+ * @suppress {reportUnknownTypes} because T is not sufficiently constrained.
+ */
+function assertCast(condition) {
+  if (!condition) {
+    throw new Error('Failed assertion');
+  }
+  return condition;
+}
+
+/**
  * Enum for reserved message types used in generated messages.
  *
  * @enum {string}
@@ -124,11 +144,11 @@ class MessagePipe {
       if (!frame || !frame.contentWindow) {
         throw new Error('Unable to locate target content window.');
       }
-      target = /** @type{!Window} */ (frame.contentWindow);
+      target = assertCast(frame.contentWindow);
     }
 
     /** @private @const {!Window} */
-    this.target_ = /** @type {!Window} */ (target);
+    this.target_ = target;
 
     /** @private @const {string} */
     this.targetOrigin_ = targetOrigin;
@@ -175,7 +195,7 @@ class MessagePipe {
     this.messageListener_ = (m) => this.receiveMessage_(m);
 
     // Make sure we aren't trying to send messages to ourselves.
-    console.assert(this.target_ !== window);
+    console.assert(this.target_ !== window, 'target !== window');
 
     window.addEventListener('message', this.messageListener_);
   }
@@ -270,18 +290,21 @@ class MessagePipe {
     let response;
     /** @type {?Error} */
     let error = null;
+    /** @type {boolean} */
+    let sawError = false;
 
     try {
       response = await this.messageHandlers_.get(messageType)(message);
     } catch (/** @type {!Error} */ err) {
       error = err;
+      sawError = true;
       // If an error happened capture the error and send it back.
       response = {message: error.message || ''};
     }
 
     this.postToTarget_(error ? ERROR_TYPE : RESPONSE_TYPE, response, messageId);
 
-    if (error && this.rethrowErrors) {
+    if (sawError && this.rethrowErrors) {
       // Rethrow the error so the current frame has visibility on its handler
       // failures.
       throw error;
@@ -336,12 +359,11 @@ class MessagePipe {
    * @param {number} messageId
    */
   postToTarget_(messageType, message, messageId) {
-    // Message must be an object.
-    if (!message) {
-      message = {};
-    }
-
-    const messageWrapper = {messageId, type: messageType, message};
+    const messageWrapper = {
+      messageId,
+      type: messageType,
+      message: message || {}
+    };
     // The next line should probably be passing a transfer argument, but that
     // causes Chrome to send a "null" message. The transfer seems to work
     // without the third argument (but inefficiently, perhaps).

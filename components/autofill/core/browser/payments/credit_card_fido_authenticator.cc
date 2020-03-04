@@ -528,7 +528,7 @@ CreditCardFIDOAuthenticator::ParseRequestOptions(
 
   const auto* timeout = request_options.FindKeyOfType(
       "timeout_millis", base::Value::Type::INTEGER);
-  options->adjusted_timeout = base::TimeDelta::FromMilliseconds(
+  options->timeout = base::TimeDelta::FromMilliseconds(
       timeout ? timeout->GetInt() : kWebAuthnTimeoutMs);
 
   options->user_verification = UserVerificationRequirement::kRequired;
@@ -595,7 +595,7 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
 
   const auto* timeout = creation_options.FindKeyOfType(
       "timeout_millis", base::Value::Type::INTEGER);
-  options->adjusted_timeout = base::TimeDelta::FromMilliseconds(
+  options->timeout = base::TimeDelta::FromMilliseconds(
       timeout ? timeout->GetInt() : kWebAuthnTimeoutMs);
 
   const auto* attestation =

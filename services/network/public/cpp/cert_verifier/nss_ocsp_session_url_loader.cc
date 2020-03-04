@@ -97,6 +97,10 @@ void OCSPRequestSessionDelegateURLLoader::StartLoad(
   request->url = params->url;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->load_flags = net::LOAD_DISABLE_CACHE;
+  // Disable secure DNS for hostname lookups triggered by certificate network
+  // fetches to prevent deadlock.
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->disable_secure_dns = true;
 
   if (!params->extra_request_headers.IsEmpty())
     request->headers = params->extra_request_headers;

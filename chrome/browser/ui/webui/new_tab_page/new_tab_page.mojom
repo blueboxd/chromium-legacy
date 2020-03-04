@@ -29,9 +29,19 @@ struct ThemeColors {
 
 // A collection of background images.
 struct BackgroundCollection {
+  // Collection identifier.
+  string id;
   // Localized string of the collection name.
   string label;
   // URL to a preview image for the collection. Can point to untrusted content.
+  url.mojom.Url preview_image_url;
+};
+
+// A background image in a collection.
+struct BackgroundImage {
+  // Localized string of extra image info.
+  string label;
+  // URL to a preview of the image. Can point to untrusted content.
   url.mojom.Url preview_image_url;
 };
 
@@ -127,6 +137,8 @@ interface PageHandler {
   RevertThemeChanges();
   // Returns the collections of background images.
   GetBackgroundCollections() => (array<BackgroundCollection> collections);
+  // Returns the images of a collection identified by |collection_id|.
+  GetBackgroundImages(string collection_id) => (array<BackgroundImage> images);
 };
 
 // WebUI-side handler for requests from the browser.

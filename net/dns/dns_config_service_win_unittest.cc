@@ -456,6 +456,48 @@ TEST(DnsConfigServiceWinTest, HaveNRPT) {
   }
 }
 
+// Setting have_proxy should set unhandled_options.
+TEST(DnsConfigServiceWinTest, HaveProxy) {
+  AdapterInfo infos[2] = {
+      {IF_TYPE_USB, IfOperStatusUp, L"connection.suffix", {"1.0.0.1"}},
+      {0},
+  };
+
+  const struct TestCase {
+    bool have_proxy;
+    bool unhandled_options;
+    internal::ConfigParseWinResult result;
+  } cases[] = {
+      {false, false, internal::CONFIG_PARSE_WIN_OK},
+      {true, true, internal::CONFIG_PARSE_WIN_UNHANDLED_OPTIONS},
+  };
+
+  for (const auto& t : cases) {
+    internal::DnsSystemSettings settings;
+    settings.addresses = CreateAdapterAddresses(infos);
+    settings.have_proxy = t.have_proxy;
+    DnsConfig config;
+    EXPECT_EQ(t.result,
+              internal::ConvertSettingsToDnsConfig(settings, &config));
+    EXPECT_EQ(t.unhandled_options, config.unhandled_options);
+  }
+}
+
+// Setting uses_vpn should set unhandled_options.
+TEST(DnsConfigServiceWinTest, UsesVpn) {
+  AdapterInfo infos[3] = {
+      {IF_TYPE_USB, IfOperStatusUp, L"connection.suffix", {"1.0.0.1"}},
+      {IF_TYPE_PPP, IfOperStatusUp, L"connection.suffix", {"1.0.0.1"}},
+      {0},
+  };
+
+  internal::DnsSystemSettings settings;
+  settings.addresses = CreateAdapterAddresses(infos);
+  DnsConfig config;
+  EXPECT_EQ(internal::CONFIG_PARSE_WIN_UNHANDLED_OPTIONS,
+            internal::ConvertSettingsToDnsConfig(settings, &config));
+  EXPECT_TRUE(config.unhandled_options);
+}
 
 }  // namespace
 

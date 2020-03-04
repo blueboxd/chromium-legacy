@@ -28,8 +28,9 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
                      std::unique_ptr<ClientSocketPool> pool);
 
   // ClientSocketPoolManager methods:
-  void FlushSocketPoolsWithError(int error) override;
-  void CloseIdleSockets() override;
+  void FlushSocketPoolsWithError(int error,
+                                 const char* net_log_reason_utf8) override;
+  void CloseIdleSockets(const char* net_log_reason_utf8) override;
   ClientSocketPool* GetSocketPool(const ProxyServer& proxy_server) override;
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
   void DumpMemoryStats(

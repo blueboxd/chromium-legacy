@@ -60,6 +60,7 @@ class AiaResponseHandler : public URLRequestInterceptor {
   URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
+    EXPECT_TRUE(request->disable_secure_dns());
     ++const_cast<AiaResponseHandler*>(this)->request_count_;
 
     return new URLRequestTestJob(request, network_delegate, headers_,

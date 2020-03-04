@@ -191,6 +191,13 @@ cr.define('settings', function() {
       },
 
       /** @private */
+      enableWebBluetoothNewPermissionsBackend_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
+      },
+
+      /** @private */
       enableWebXrContentSetting_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),

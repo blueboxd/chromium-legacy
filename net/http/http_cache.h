@@ -216,10 +216,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Close currently active sockets so that fresh page loads will not use any
   // recycled connections.  For sockets currently in use, they may not close
   // immediately, but they will not be reusable. This is for debugging.
-  void CloseAllConnections();
+  void CloseAllConnections(int net_error, const char* net_log_reason_utf8);
 
   // Close all idle connections. Will close all sockets not in active use.
-  void CloseIdleConnections();
+  void CloseIdleConnections(const char* net_log_reason_utf8);
 
   // Called whenever an external cache in the system reuses the resource
   // referred to by |url| and |http_method| and |network_isolation_key|.

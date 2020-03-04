@@ -180,6 +180,7 @@ Polymer({
       case settings.ContentSettingsTypes.MIDI_DEVICES:
       case settings.ContentSettingsTypes.USB_DEVICES:
       case settings.ContentSettingsTypes.SERIAL_PORTS:
+      case settings.ContentSettingsTypes.BLUETOOTH_DEVICES:
       case settings.ContentSettingsTypes.BLUETOOTH_SCANNING:
       case settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
       case settings.ContentSettingsTypes.HID_DEVICES:

@@ -103,7 +103,6 @@ Display BuildDisplayForScreen(NSScreen* screen) {
             CFDataGetBytePtr(cf_icc_profile), CFDataGetLength(cf_icc_profile));
       }
     }
-    icc_profile.HistogramDisplay(display.id());
   }
   gfx::DisplayColorSpaces display_color_spaces(icc_profile.GetColorSpace(),
                                                gfx::BufferFormat::RGBA_8888);

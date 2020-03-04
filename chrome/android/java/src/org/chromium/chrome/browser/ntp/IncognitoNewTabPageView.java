@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.base.ViewUtils;
 
 /**
@@ -150,5 +151,13 @@ public class IncognitoNewTabPageView extends FrameLayout {
      */
     void setIncognitoCookieControlsToggleCheckedListener(OnCheckedChangeListener listener) {
         mDescriptionView.setCookieControlsToggleOnCheckedChangeListener(listener);
+    }
+
+    /**
+     * Set the enforcement rule for the incognito cookie controls toggle.
+     * @param enforcement The enforcement enum to set.
+     */
+    void setIncognitoCookieControlsToggleEnforcement(@CookieControlsEnforcement int enforcement) {
+        mDescriptionView.setCookieControlsEnforcement(enforcement);
     }
 }

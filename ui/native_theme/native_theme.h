@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/caption_style.h"
+#include "ui/native_theme/native_theme_color_id.h"
 #include "ui/native_theme/native_theme_export.h"
 #include "ui/native_theme/native_theme_observer.h"
 
@@ -320,121 +321,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // Colors for GetSystemColor().
   enum ColorId {
-    // Windows
-    kColorId_WindowBackground,
-    // Dialogs
-    kColorId_DialogBackground,
-    kColorId_DialogForeground,
-    kColorId_BubbleBackground,
-    kColorId_BubbleFooterBackground,
-    // FocusableBorder
-    kColorId_FocusedBorderColor,
-    kColorId_UnfocusedBorderColor,
-    // Button
-    kColorId_ButtonBorderColor,
-    kColorId_ButtonEnabledColor,
-    kColorId_ButtonDisabledColor,
-    kColorId_ButtonHoverColor,
-    kColorId_ButtonInkDropFillColor,
-    kColorId_ButtonInkDropShadowColor,
-    kColorId_ButtonPressedShade,
-    kColorId_ButtonUncheckedColor,
-    kColorId_ProminentButtonColor,
-    kColorId_ProminentButtonDisabledColor,
-    kColorId_ProminentButtonFocusedColor,
-    kColorId_ProminentButtonHoverColor,
-    kColorId_ProminentButtonInkDropShadowColor,
-    kColorId_ProminentButtonInkDropFillColor,
-    kColorId_TextOnProminentButtonColor,
-    // ToggleButton
-    kColorId_ToggleButtonShadowColor,
-    kColorId_ToggleButtonTrackColorOff,
-    kColorId_ToggleButtonTrackColorOn,
-    // MenuItem
-    kColorId_EnabledMenuItemForegroundColor,
-    kColorId_DisabledMenuItemForegroundColor,
-    kColorId_SelectedMenuItemForegroundColor,
-    kColorId_FocusedMenuItemBackgroundColor,
-    kColorId_MenuDropIndicator,
-    kColorId_MenuItemMinorTextColor,
-    kColorId_MenuSeparatorColor,
-    kColorId_MenuBackgroundColor,
-    kColorId_MenuBorderColor,
-    kColorId_HighlightedMenuItemBackgroundColor,
-    kColorId_HighlightedMenuItemForegroundColor,
-    kColorId_MenuItemAlertBackgroundColor,
-    // Dropdown
-    kColorId_DropdownBackgroundColor,
-    kColorId_DropdownForegroundColor,
-    kColorId_DropdownSelectedBackgroundColor,
-    kColorId_DropdownSelectedForegroundColor,
-    // Label
-    kColorId_LabelEnabledColor,
-    kColorId_LabelDisabledColor,
-    kColorId_LabelSecondaryColor,
-    kColorId_LabelTextSelectionColor,
-    kColorId_LabelTextSelectionBackgroundFocused,
-    // Link
-    kColorId_LinkDisabled,
-    kColorId_LinkEnabled,
-    kColorId_LinkPressed,
-    kColorId_OverlayScrollbarThumbBackground,
-    kColorId_OverlayScrollbarThumbForeground,
-    // Slider
-    kColorId_SliderThumbDefault,
-    kColorId_SliderTroughDefault,
-    kColorId_SliderThumbMinimal,
-    kColorId_SliderTroughMinimal,
-    // Separator
-    kColorId_SeparatorColor,
-    // TabbedPane
-    kColorId_TabTitleColorActive,
-    kColorId_TabTitleColorInactive,
-    kColorId_TabBottomBorder,
-    kColorId_TabHighlightBackground,
-    kColorId_TabHighlightFocusedBackground,
-    // Textfield
-    kColorId_TextfieldDefaultColor,
-    kColorId_TextfieldDefaultBackground,
-    kColorId_TextfieldReadOnlyColor,
-    kColorId_TextfieldReadOnlyBackground,
-    kColorId_TextfieldSelectionColor,
-    kColorId_TextfieldSelectionBackgroundFocused,
-    // Tooltip
-    kColorId_TooltipBackground,
-    kColorId_TooltipIcon,
-    kColorId_TooltipIconHovered,
-    kColorId_TooltipText,
-    // Tree
-    kColorId_TreeBackground,
-    kColorId_TreeText,
-    kColorId_TreeSelectedText,
-    kColorId_TreeSelectedTextUnfocused,
-    kColorId_TreeSelectionBackgroundFocused,
-    kColorId_TreeSelectionBackgroundUnfocused,
-    // Table
-    kColorId_TableBackground,
-    kColorId_TableText,
-    kColorId_TableSelectedText,
-    kColorId_TableSelectedTextUnfocused,
-    kColorId_TableSelectionBackgroundFocused,
-    kColorId_TableSelectionBackgroundUnfocused,
-    kColorId_TableGroupingIndicatorColor,
-    // Table Header
-    kColorId_TableHeaderText,
-    kColorId_TableHeaderBackground,
-    kColorId_TableHeaderSeparator,
-    // Colors for the material spinner (aka throbber).
-    kColorId_ThrobberSpinningColor,
-    kColorId_ThrobberWaitingColor,
-    kColorId_ThrobberLightColor,
-    // Colors for icons that alert, e.g. upgrade reminders.
-    kColorId_AlertSeverityLow,
-    kColorId_AlertSeverityMedium,
-    kColorId_AlertSeverityHigh,
-    // Colors for icons in secondary UI (content settings, help button, etc).
-    kColorId_DefaultIconColor,
-    // TODO(benrg): move other hardcoded colors here.
+#define OP(enum_name) enum_name
+    NATIVE_THEME_COLOR_IDS,
+#undef OP
 
     kColorId_NumColors,
   };

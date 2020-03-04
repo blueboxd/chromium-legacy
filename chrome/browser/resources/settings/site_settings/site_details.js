@@ -84,6 +84,13 @@ Polymer({
       type: Boolean,
       value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
     },
+
+    /** @private */
+    enableWebBluetoothNewPermissionsBackend_: {
+      type: Boolean,
+      value: () =>
+          loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
+    },
   },
 
   /** @private */

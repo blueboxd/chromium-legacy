@@ -8,6 +8,7 @@ import static org.chromium.ui.base.ViewUtils.dpToPx;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -26,9 +27,12 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChromeBulletSpan;
+
+import java.util.Locale;
 
 /**
  * The view to describle incognito mode.
@@ -45,6 +49,9 @@ public class IncognitoDescriptionView extends LinearLayout {
     private TextView[] mParagraphs;
     private RelativeLayout mCookieControlsCard;
     private SwitchCompat mCookieControlsToggle;
+    private ImageView mCookieControlsManagedIcon;
+    private TextView mCookieControlsTitle;
+    private TextView mCookieControlsSubtitle;
 
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
@@ -98,6 +105,9 @@ public class IncognitoDescriptionView extends LinearLayout {
         mBulletpointsContainer = findViewById(R.id.new_tab_incognito_bulletpoints_container);
         mCookieControlsCard = findViewById(R.id.cookie_controls_card);
         mCookieControlsToggle = findViewById(R.id.cookie_controls_card_toggle);
+        mCookieControlsManagedIcon = findViewById(R.id.cookie_controls_card_managed_icon);
+        mCookieControlsTitle = findViewById(R.id.cookie_controls_card_title);
+        mCookieControlsSubtitle = findViewById(R.id.cookie_controls_card_subtitle);
 
         adjustView();
     }
@@ -295,5 +305,56 @@ public class IncognitoDescriptionView extends LinearLayout {
      */
     public void showCookieControlsCard(boolean showCard) {
         mCookieControlsCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Sets the cookie controls enforced state.
+     * @param enforcement A CookieControlsEnforcement enum type indicating the type of
+     *         enforcement policy being applied to Cookie Controls.
+     */
+    public void setCookieControlsEnforcement(@CookieControlsEnforcement int enforcement) {
+        boolean enforced = enforcement != CookieControlsEnforcement.NO_ENFORCEMENT;
+        mCookieControlsToggle.setEnabled(!enforced);
+        mCookieControlsManagedIcon.setVisibility(enforced ? View.VISIBLE : View.GONE);
+        mCookieControlsTitle.setEnabled(!enforced);
+        mCookieControlsSubtitle.setEnabled(!enforced);
+
+        Resources resources = getContext().getResources();
+        StringBuilder subtitleText = new StringBuilder();
+        subtitleText.append(resources.getString(R.string.new_tab_otr_third_party_cookie_sublabel));
+        if (!enforced) {
+            mCookieControlsSubtitle.setText(subtitleText.toString());
+            return;
+        }
+
+        int iconRes;
+        String addition;
+        switch (enforcement) {
+            case CookieControlsEnforcement.ENFORCED_BY_POLICY:
+                iconRes = R.drawable.controlled_setting_mandatory;
+                addition = resources.getString(R.string.managed_by_your_organization);
+                break;
+            case CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING:
+                iconRes = R.drawable.settings_cog;
+                int placeholderTextId =
+                        R.string.new_tab_otr_cookie_controls_controlled_tooltip_text;
+                // Need to construct the string by replacing the placeholder text with the correct
+                // strings. However, since this text is shared with desktop, the placeholder
+                // characters for arguments are different, so we first need to swap in the correct
+                // placeholder characters.
+                // TODO(crbug.com/1040091): Look into changing this string on Android and Desktop
+                // to not use placeholders at all.
+                addition = String.format(Locale.getDefault(),
+                        resources.getString(placeholderTextId).replaceAll("\\$(\\d+)", "%$1\\$s"),
+                        resources.getString(R.string.block_third_party_cookies_title),
+                        resources.getString(R.string.cookies_title));
+                break;
+            default:
+                return;
+        }
+        mCookieControlsManagedIcon.setImageResource(iconRes);
+        subtitleText.append("\n");
+        subtitleText.append(addition);
+        mCookieControlsSubtitle.setText(subtitleText.toString());
     }
 }

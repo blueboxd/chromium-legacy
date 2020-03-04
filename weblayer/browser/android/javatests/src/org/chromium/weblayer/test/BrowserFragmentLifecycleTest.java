@@ -23,8 +23,6 @@ import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
-import java.util.concurrent.CountDownLatch;
-
 /**
  * Tests that fragment lifecycle works as expected.
  */
@@ -53,7 +51,7 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    public void restoreAfterRecreate() throws InterruptedException {
+    public void restoreAfterRecreate() {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
 
@@ -63,7 +61,7 @@ public class BrowserFragmentLifecycleTest {
         mActivityTestRule.recreateActivity();
 
         InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        CountDownLatch latch = new CountDownLatch(1);
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab restoredTab = newActivity.getTab();
             // It's possible the NavigationController hasn't loaded yet, handle either scenario.
@@ -83,14 +81,14 @@ public class BrowserFragmentLifecycleTest {
                 }
             });
         });
-        latch.await();
+        latch.timedAwait();
     }
 
     // https://crbug.com/1021041
     @Test
     @SmallTest
-    public void handlesFragmentDestroyWhileNavigating() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
+    public void handlesFragmentDestroyWhileNavigating() {
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationController navigationController = activity.getTab().getNavigationController();
@@ -106,10 +104,10 @@ public class BrowserFragmentLifecycleTest {
             });
             navigationController.navigate(Uri.parse("data:text,foo"));
         });
-        latch.await();
+        latch.timedAwait();
     }
 
-    private void restoresPreviousSession(Bundle extras) throws InterruptedException {
+    private void restoresPreviousSession(Bundle extras) {
         extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
         final String url = mActivityTestRule.getTestDataURL("simple_page.html");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
@@ -119,7 +117,7 @@ public class BrowserFragmentLifecycleTest {
         InstrumentationActivity newActivity = mActivityTestRule.getActivity();
         Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
         Assert.assertNotNull(tab);
-        CountDownLatch latch = new CountDownLatch(1);
+        BoundedCountDownLatch latch = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // It's possible the NavigationController hasn't loaded yet, handle either scenario.
             NavigationController navigationController = tab.getNavigationController();
@@ -138,7 +136,7 @@ public class BrowserFragmentLifecycleTest {
                 }
             });
         });
-        latch.await();
+        latch.timedAwait();
     }
 
     @Test

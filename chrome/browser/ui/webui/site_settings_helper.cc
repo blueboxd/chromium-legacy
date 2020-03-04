@@ -13,6 +13,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -32,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/common/content_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
@@ -58,6 +61,7 @@ typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
 const char kUsbChooserDataGroupType[] = "usb-devices-data";
 const char kSerialChooserDataGroupType[] = "serial-ports-data";
 const char kHidChooserDataGroupType[] = "hid-devices-data";
+const char kBluetoothChooserDataGroupType[] = "bluetooth-devices-data";
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // The following ContentSettingsTypes have UI in Content Settings
@@ -97,6 +101,9 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::MIXEDSCRIPT, "mixed-script"},
     {ContentSettingsType::VR, "vr"},
     {ContentSettingsType::AR, "ar"},
+    {ContentSettingsType::BLUETOOTH_GUARD, "bluetooth-devices"},
+    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
+     kBluetoothChooserDataGroupType},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -107,7 +114,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::APP_BANNER, nullptr},
     {ContentSettingsType::SITE_ENGAGEMENT, nullptr},
     {ContentSettingsType::DURABLE_STORAGE, nullptr},
-    {ContentSettingsType::BLUETOOTH_GUARD, nullptr},
     {ContentSettingsType::AUTOPLAY, nullptr},
     {ContentSettingsType::IMPORTANT_SITE_INFO, nullptr},
     {ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA, nullptr},
@@ -127,7 +133,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, nullptr},
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
     {ContentSettingsType::NFC, nullptr},
-    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, nullptr},
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
     {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, nullptr},
     {ContentSettingsType::STORAGE_ACCESS, nullptr},
@@ -290,6 +295,18 @@ ChooserContextBase* GetHidChooserContext(Profile* profile) {
   return HidChooserContextFactory::GetForProfile(profile);
 }
 
+// The BluetoothChooserContext is only available when the
+// WebBluetoothNewPermissionsBackend flag is enabled.
+// TODO(https://crbug.com/589228): Remove the feature check when it is enabled
+// by default.
+ChooserContextBase* GetBluetoothChooserContext(Profile* profile) {
+  if (base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    return BluetoothChooserContextFactory::GetForProfile(profile);
+  }
+  return nullptr;
+}
+
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetUsbChooserContext, &UsbChooserContext::GetObjectName,
      kUsbChooserDataGroupType},
@@ -297,7 +314,8 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
      kSerialChooserDataGroupType},
     {&GetHidChooserContext, &HidChooserContext::GetObjectName,
      kHidChooserDataGroupType},
-};
+    {&GetBluetoothChooserContext, &BluetoothChooserContext::GetObjectName,
+     kBluetoothChooserDataGroupType}};
 
 }  // namespace
 
@@ -733,7 +751,14 @@ base::Value GetChooserExceptionListFromProfile(
   ContentSettingsType content_type =
       ContentSettingsTypeFromGroupName(std::string(chooser_type.name));
 
+  // The BluetoothChooserContext is only available when the
+  // WebBluetoothNewPermissionsBackend flag is enabled.
+  // TODO(https://crbug.com/589228): Remove the nullptr check when it is enabled
+  // by default.
   ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  if (!chooser_context)
+    return exceptions;
+
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       chooser_context->GetAllGrantedObjects();
 

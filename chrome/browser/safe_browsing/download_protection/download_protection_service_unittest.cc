@@ -635,10 +635,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     SetExtendedReportingPref(profile()->GetPrefs(), is_extended_reporting);
   }
 
-  void SetEnhancedProtectionPreference(bool is_enhanced_protection) {
-    SetEnhancedProtectionPref(profile()->GetPrefs(), is_enhanced_protection);
-  }
-
   // Verify that corrupted ZIP/DMGs do send a ping.
   void CheckClientDownloadReportCorruptArchive(ArchiveType type);
 
@@ -895,13 +891,12 @@ TEST_F(DownloadProtectionServiceTest,
                            "http://www.google.com/",     // referrer
                            FILE_PATH_LITERAL("a.tmp"),   // tmp_path
                            FILE_PATH_LITERAL("a.exe"));  // final_path
-  // Case 4 and 5 sends a request.
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(2);
+      .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(4);
+      .Times(3);
   // Assume http://www.whitelist.com/a.exe is on the whitelist.
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -962,25 +957,6 @@ TEST_F(DownloadProtectionServiceTest,
     //           Download matches URL whitelist.
     //           ClientDownloadRequest should be sent.
     SetExtendedReportingPreference(true);
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_TRUE(GetClientDownloadRequest()->skipped_url_whitelist());
-    EXPECT_FALSE(GetClientDownloadRequest()->skipped_certificate_whitelist());
-    ClearClientDownloadRequest();
-  }
-  {
-    // Case (5): is_enhanced_protection && !is_extended_reporting &&
-    // !is_incognito &&
-    //           Download matches URL whitelist.
-    //           ClientDownloadRequest should be sent.
-    SetEnhancedProtectionPreference(true);
     content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -1066,13 +1042,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       "http://referrer.com/3/4",    // Referrer
       FILE_PATH_LITERAL("a.tmp"),   // tmp_path
       FILE_PATH_LITERAL("a.txt"));  // final_path, txt is set to SAMPLED_PING
-  // Case 1 and 5 both send requests.
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(2);
+      .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(2);
+      .Times(1);
 
   // Set ping sample rate to 1.00 so download_service_ will always send a
   // "light" ping for unknown types if allowed.
@@ -1145,33 +1120,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
     EXPECT_FALSE(HasClientDownloadRequest());
-  }
-  {
-    // Case (5): is_enhanced_protection && !is_extended_reporting &&
-    //           !is_incognito.
-    //           A "light" ClientDownloadRequest should be sent.
-    SetEnhancedProtectionPreference(true);
-    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
-    RunLoop run_loop;
-    download_service_->CheckClientDownload(
-        &item,
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
-    ASSERT_TRUE(HasClientDownloadRequest());
-
-    // Verify it's a "light" ping, check that URLs don't have paths.
-    auto* req = GetClientDownloadRequest();
-    EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
-              req->download_type());
-    EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
-    for (auto resource : req->resources()) {
-      EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
-      EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
-                resource.referrer());
-    }
-    ClearClientDownloadRequest();
   }
 }
 
@@ -2520,23 +2468,6 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
     ASSERT_EQ(ChromeUserPopulation::EXTENDED_REPORTING,
               GetClientDownloadRequest()->population().user_population());
   }
-
-  for (const auto& test_case : kExpectedResults) {
-    sb_service_->test_url_loader_factory()->ClearResponses();
-    PrepareResponse(test_case.verdict, net::HTTP_OK, net::OK);
-    SetExtendedReportingPreference(false);
-    SetEnhancedProtectionPreference(true);
-    RunLoop run_loop;
-    download_service_->CheckPPAPIDownloadRequest(
-        GURL("http://example.com/foo"), GURL(), nullptr, default_file_path,
-        alternate_extensions, profile(),
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    ASSERT_TRUE(IsResult(test_case.expected_result));
-    ASSERT_EQ(ChromeUserPopulation::ENHANCED_PROTECTION,
-              GetClientDownloadRequest()->population().user_population());
-  }
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
@@ -2715,31 +2646,19 @@ TEST_F(DownloadProtectionServiceTest,
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
 
-  // No report sent if user is not in extended reporting and enhanced protection
-  // group.
+  // No report sent if user is not in extended reporting  group.
   content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
   SetExtendedReportingPreference(false);
-  SetEnhancedProtectionPreference(false);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
 
   // Report successfully sent if user opted-in extended reporting, not in
   // incognito, and download item has a token stored.
   SetExtendedReportingPreference(true);
-  SetEnhancedProtectionPreference(false);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, sb_service_->download_report_count());
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, true);
   EXPECT_EQ(2, sb_service_->download_report_count());
-
-  // Report successfully sent if user opted-in enhanced protection, not in
-  // incognito, and download item has a token stored.
-  SetExtendedReportingPreference(false);
-  SetEnhancedProtectionPreference(true);
-  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
-  EXPECT_EQ(3, sb_service_->download_report_count());
-  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, true);
-  EXPECT_EQ(4, sb_service_->download_report_count());
 }
 
 TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
@@ -2810,17 +2729,6 @@ TEST_F(DownloadProtectionServiceTest, CheckOffTheRecordDoesNotSendFeedback) {
   NiceMockDownloadItem item;
   EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
       profile()->GetOffTheRecordProfile(), &item, DownloadCommands::KEEP));
-}
-
-TEST_F(
-    DownloadProtectionServiceTest,
-    CheckNotExtendedReportedAndEnhancedProtectionDisabledDoesNotSendFeedback) {
-  SetExtendedReportingPreference(false);
-  SetEnhancedProtectionPreference(false);
-
-  NiceMockDownloadItem item;
-  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
-      profile(), &item, DownloadCommands::KEEP));
 }
 
 // ------------ class DownloadProtectionServiceFlagTest ----------------
@@ -2958,16 +2866,6 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 6u);
 
   SetExtendedReportingPref(profile()->GetPrefs(), false);
-  referrer_chain_data = download_service_->IdentifyReferrerChain(item);
-  // 3 entries means 2 interactions between entries.
-  EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);
-
-  SetEnhancedProtectionPref(profile()->GetPrefs(), true);
-  referrer_chain_data = download_service_->IdentifyReferrerChain(item);
-  // 6 entries means 5 interactions between entries.
-  EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 6u);
-
-  SetEnhancedProtectionPref(profile()->GetPrefs(), false);
   referrer_chain_data = download_service_->IdentifyReferrerChain(item);
   // 3 entries means 2 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);
@@ -3150,13 +3048,12 @@ TEST_F(DownloadProtectionServiceTest,
       /*tmp_path=*/FILE_PATH_LITERAL("a.txt.crswap"),
       /*final_path=*/FILE_PATH_LITERAL("a.txt"));
 
-  // Case 2 and 5 send requests.
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(2);
+      .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(2);
+      .Times(1);
 
   // Set ping sample rate to 1.00 so download_service_ will always send a
   // "light" ping for unknown types if allowed.
@@ -3236,36 +3133,6 @@ TEST_F(DownloadProtectionServiceTest,
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
     EXPECT_FALSE(HasClientDownloadRequest());
-  }
-  {
-    // Case (5): is_enhanced_protection && !is_extended_reporting &&
-    //           !is_incognito.
-    //           A "light" ClientDownloadRequest should be sent.
-    SetExtendedReportingPreference(false);
-    SetEnhancedProtectionPreference(true);
-    item = PrepareBasicNativeFileSystemWriteItem(
-        /*tmp_path=*/FILE_PATH_LITERAL("a.txt.crswap"),
-        /*final_path=*/FILE_PATH_LITERAL("a.txt"));
-    RunLoop run_loop;
-    download_service_->CheckNativeFileSystemWrite(
-        std::move(item),
-        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
-    ASSERT_TRUE(HasClientDownloadRequest());
-
-    // Verify it's a "light" ping, check that URLs don't have paths.
-    auto* req = GetClientDownloadRequest();
-    EXPECT_EQ(ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE,
-              req->download_type());
-    EXPECT_EQ(GURL(req->url()).GetOrigin().spec(), req->url());
-    for (auto resource : req->resources()) {
-      EXPECT_EQ(GURL(resource.url()).GetOrigin().spec(), resource.url());
-      EXPECT_EQ(GURL(resource.referrer()).GetOrigin().spec(),
-                resource.referrer());
-    }
-    ClearClientDownloadRequest();
   }
 }
 

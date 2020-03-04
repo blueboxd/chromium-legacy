@@ -401,7 +401,7 @@ class Mixin : public GarbageCollectedMixin {
   Mixin() : next_(nullptr) {}
   virtual ~Mixin() {}
 
-  void Trace(blink::Visitor* visitor) override { visitor->Trace(next_); }
+  void Trace(Visitor* visitor) override { visitor->Trace(next_); }
 
   virtual void Bar() {}
 
@@ -423,7 +423,7 @@ class Child : public GarbageCollected<Child>,
   Child() : ClassWithVirtual(), Mixin() {}
   ~Child() override {}
 
-  void Trace(blink::Visitor* visitor) override { Mixin::Trace(visitor); }
+  void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
 
   void Foo() override {}
   void Bar() override {}
@@ -435,7 +435,7 @@ class ParentWithMixinPointer : public GarbageCollected<ParentWithMixinPointer> {
 
   void set_mixin(Mixin* mixin) { mixin_ = mixin; }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(mixin_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(mixin_); }
 
  protected:
   Member<Mixin> mixin_;
@@ -483,7 +483,7 @@ class NonGarbageCollectedContainer {
   NonGarbageCollectedContainer(Object* obj, int y) : obj_(obj), y_(y) {}
 
   virtual ~NonGarbageCollectedContainer() {}
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(obj_); }
 
  private:
   Member<Object> obj_;
@@ -498,7 +498,7 @@ class NonGarbageCollectedContainerRoot {
       : next_(obj1, y), obj_(obj2) {}
   virtual ~NonGarbageCollectedContainerRoot() {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  virtual void Trace(Visitor* visitor) {
     visitor->Trace(next_);
     visitor->Trace(obj_);
   }

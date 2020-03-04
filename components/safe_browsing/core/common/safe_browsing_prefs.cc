@@ -130,15 +130,31 @@ const char kURLsToNotCheckForMalwareOfDownloadedContent[] =
     "safebrowsing.urls_to_not_check_for_malware_of_downloaded_content";
 const char kURLsToNotCheckComplianceOfUploadedContent[] =
     "policy.urls_to_not_check_compliance_of_uploaded_content";
-const char kAdvancedProtectionDeepScanningEnabled[] =
-    "safebrowsing.advanced_protection_deep_scanning_enabled";
+const char kAdvancedProtectionExtraSecurityAllowed[] =
+    "safebrowsing.advanced_protection_extra_security_allowed";
 
 }  // namespace prefs
 
 namespace safe_browsing {
 
+SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs) {
+  if (IsEnhancedProtectionEnabled(prefs)) {
+    return ENHANCED_PROTECTION;
+  } else if (prefs.GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    return STANDARD_PROTECTION;
+  } else {
+    return NO_SAFE_BROWSING;
+  }
+}
+
+bool IsSafeBrowsingEnabled(const PrefService& prefs) {
+  return prefs.GetBoolean(prefs::kSafeBrowsingEnabled) ||
+         IsEnhancedProtectionEnabled(prefs);
+}
+
 bool IsEnhancedProtectionEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(prefs::kSafeBrowsingEnhanced);
+  return prefs.GetBoolean(prefs::kSafeBrowsingEnhanced) &&
+         base::FeatureList::IsEnabled(kEnhancedProtection);
 }
 
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
@@ -154,7 +170,8 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled);
+  return prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled) ||
+         IsEnhancedProtectionEnabled(prefs);
 }
 
 bool IsExtendedReportingPolicyManaged(const PrefService& prefs) {
@@ -203,7 +220,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
                                 DO_NOT_SCAN);
-  registry->RegisterBooleanPref(prefs::kAdvancedProtectionDeepScanningEnabled,
+  registry->RegisterBooleanPref(prefs::kAdvancedProtectionExtraSecurityAllowed,
                                 true);
 }
 

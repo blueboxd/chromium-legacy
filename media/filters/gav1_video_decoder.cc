@@ -90,34 +90,17 @@ int GetDecoderThreadCounts(int coded_height) {
   return std::min(threads_by_height(coded_height), num_cores);
 }
 
-// Libgav1 frame buffer callbacks return 0 on success, -1 on failure.
-
-int OnFrameBufferSizeChangedImpl(void* /*callback_private_data*/,
-                                 int /*bitdepth*/,
-                                 libgav1::ImageFormat /*image_format*/,
-                                 int /*width*/,
-                                 int /*height*/,
-                                 int /*left_border*/,
-                                 int /*right_border*/,
-                                 int /*top_border*/,
-                                 int /*bottom_border*/,
-                                 int /*stride_alignment*/) {
-  // The libgav1 decoder calls this callback to provide information on the
-  // subsequent frames in the video. VideoFramePool ignores this information.
-  return 0;
-}
-
-int GetFrameBufferImpl(void* callback_private_data,
-                       int bitdepth,
-                       libgav1::ImageFormat image_format,
-                       int width,
-                       int height,
-                       int left_border,
-                       int right_border,
-                       int top_border,
-                       int bottom_border,
-                       int stride_alignment,
-                       Libgav1FrameBuffer2* frame_buffer) {
+libgav1::StatusCode GetFrameBufferImpl(void* callback_private_data,
+                                       int bitdepth,
+                                       libgav1::ImageFormat image_format,
+                                       int width,
+                                       int height,
+                                       int left_border,
+                                       int right_border,
+                                       int top_border,
+                                       int bottom_border,
+                                       int stride_alignment,
+                                       Libgav1FrameBuffer* frame_buffer) {
   DCHECK(callback_private_data);
   DCHECK(frame_buffer);
   DCHECK((stride_alignment & (stride_alignment - 1)) == 0);
@@ -129,7 +112,7 @@ int GetFrameBufferImpl(void* callback_private_data,
   const VideoPixelFormat format =
       Libgav1ImageFormatToVideoPixelFormat(image_format, bitdepth);
   if (format == PIXEL_FORMAT_UNKNOWN)
-    return -1;
+    return libgav1::kStatusUnimplemented;
 
   // VideoFramePool aligns video_frame->data(i), but libgav1 needs
   // video_frame->visible_data(i) to be aligned. To accomplish that, pad
@@ -166,7 +149,7 @@ int GetFrameBufferImpl(void* callback_private_data,
   auto video_frame =
       decoder->CreateVideoFrame(format, coded_size, visible_rect);
   if (!video_frame)
-    return -1;
+    return libgav1::kStatusInvalidArgument;
 
   for (int i = 0; i < 3; i++) {
     // frame_buffer->plane[i] points to the first byte of the frame proper,
@@ -177,7 +160,7 @@ int GetFrameBufferImpl(void* callback_private_data,
   frame_buffer->private_data = video_frame.get();
   video_frame->AddRef();
 
-  return 0;
+  return libgav1::kStatusOk;
 }
 
 void ReleaseFrameBufferImpl(void* callback_private_data,
@@ -272,7 +255,6 @@ void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
   libgav1::DecoderSettings settings;
   settings.threads = VideoDecoder::GetRecommendedThreadCount(
       GetDecoderThreadCounts(config.coded_size().height()));
-  settings.on_frame_buffer_size_changed = OnFrameBufferSizeChangedImpl;
   settings.get_frame_buffer = GetFrameBufferImpl;
   settings.release_frame_buffer = ReleaseFrameBufferImpl;
   settings.callback_private_data = this;

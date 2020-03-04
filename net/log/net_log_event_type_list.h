@@ -809,6 +809,12 @@ EVENT_TYPE(SOCKET_POOL_BOUND_TO_SOCKET)
 //   }
 EVENT_TYPE(SOCKET_POOL_CONNECTING_N_SOCKETS)
 
+// Logged when a socket pool is closing a socket:
+//   {
+//      "reason": <Reason the socket was closed>,
+//   }
+EVENT_TYPE(SOCKET_POOL_CLOSING_SOCKET)
+
 // ------------------------------------------------------------------------
 // URLRequest
 // ------------------------------------------------------------------------

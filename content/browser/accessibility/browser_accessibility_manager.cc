@@ -197,7 +197,6 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
     SetLastFocusedNode(nullptr);
   }
 
-  event_generator_.ReleaseTree();
   ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
 }
 

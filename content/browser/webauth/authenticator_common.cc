@@ -276,6 +276,30 @@ enum class AttestationErasureOption {
   kEraseAttestationAndAaguid,
 };
 
+base::TimeDelta AdjustTimeout(base::Optional<base::TimeDelta> timeout,
+                              RenderFrameHost* render_frame_host) {
+  // Time to wait for an authenticator to successfully complete an operation.
+  static constexpr base::TimeDelta kAdjustedTimeoutLower =
+      base::TimeDelta::FromSeconds(10);
+  static constexpr base::TimeDelta kAdjustedTimeoutUpper =
+      base::TimeDelta::FromMinutes(10);
+
+  if (!timeout)
+    return kAdjustedTimeoutUpper;
+
+  bool testing_api_enabled =
+      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)
+              ->frame_tree_node());
+
+  if (testing_api_enabled) {
+    return *timeout;
+  }
+
+  return std::max(kAdjustedTimeoutLower,
+                  std::min(kAdjustedTimeoutUpper, *timeout));
+}
+
 blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
@@ -802,7 +826,7 @@ void AuthenticatorCommon::MakeCredential(
   make_credential_response_callback_ = std::move(callback);
 
   timer_->Start(
-      FROM_HERE, options->adjusted_timeout,
+      FROM_HERE, AdjustTimeout(options->timeout, render_frame_host_),
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
   const bool origin_is_crypto_token_extension =
@@ -986,7 +1010,7 @@ void AuthenticatorCommon::GetAssertion(
   get_assertion_response_callback_ = std::move(callback);
 
   timer_->Start(
-      FROM_HERE, options->adjusted_timeout,
+      FROM_HERE, AdjustTimeout(options->timeout, render_frame_host_),
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(

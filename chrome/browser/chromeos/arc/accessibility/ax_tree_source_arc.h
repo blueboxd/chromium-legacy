@@ -21,10 +21,6 @@
 #include "ui/accessibility/ax_tree_source.h"
 #include "ui/views/view.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ui {
 struct AXEvent;
 }
@@ -47,7 +43,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
     virtual void OnAction(const ui::AXActionData& data) const = 0;
   };
 
-  explicit AXTreeSourceArc(Delegate* delegate);
+  AXTreeSourceArc(Delegate* delegate, float device_scale_factor);
   ~AXTreeSourceArc() override;
 
   // Notify automation of an accessibility event.
@@ -62,16 +58,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
 
   // Update Chrome's accessibility focused node by id.
   void UpdateAccessibilityFocusLocation(int32_t id);
-
-  // Returns bounds of a node which can be passed to AXNodeData.location. Bounds
-  // are returned in the following coordinates depending on whether it's root or
-  // not.
-  // - Root node is relative to its container, i.e. focused window.
-  // - Non-root node is relative to the root node of this tree.
-  //
-  // focused_window is nullptr for notification.
-  const gfx::Rect GetBounds(AccessibilityInfoDataWrapper* info_data,
-                            aura::Window* focused_window) const;
 
   // Invalidates the tree serializer.
   void InvalidateTree();
@@ -88,6 +74,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
       AccessibilityInfoDataWrapper* info_data) const override;
   void SerializeNode(AccessibilityInfoDataWrapper* info_data,
                      ui::AXNodeData* out_data) const override;
+
+  float device_scale_factor() const { return device_scale_factor_; }
+  void set_device_scale_factor(float dsf) { device_scale_factor_ = dsf; }
 
   bool is_notification() { return is_notification_; }
 
@@ -165,6 +154,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
 
   // Maps an AccessibilityInfoDataWrapper ID to its tree data.
   std::map<int32_t, std::unique_ptr<AccessibilityInfoDataWrapper>> tree_map_;
+
+  // The device scale factor of the display which the window is on.
+  float device_scale_factor_;
 
   // Maps an AccessibilityInfoDataWrapper ID to its parent.
   std::map<int32_t, int32_t> parent_map_;

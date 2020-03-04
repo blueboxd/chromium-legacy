@@ -35,11 +35,6 @@ gfx::RectF ToChromeBounds(const gfx::Rect& bounds, views::Widget* widget) {
 
   return chrome_bounds;
 }
-
-void ScaleDeviceFactor(gfx::RectF& bounds, aura::Window* toplevel_window) {
-  DCHECK(toplevel_window);
-  bounds.Scale(toplevel_window->layer()->device_scale_factor());
-}
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ACCESSIBILITY_GEOMETRY_UTIL_H_

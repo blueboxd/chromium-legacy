@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
@@ -42,6 +43,9 @@ class TasksViewBinder {
         } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER) {
             view.setIncognitoCookieControlsToggleCheckedListener(
                     model.get(INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED_LISTENER));
+        } else if (propertyKey == INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT) {
+            view.setIncognitoCookieControlsToggleEnforcement(
+                    model.get(INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT));
         } else if (propertyKey == INCOGNITO_LEARN_MORE_CLICK_LISTENER) {
             view.setIncognitoDescriptionLearnMoreClickListener(
                     model.get(INCOGNITO_LEARN_MORE_CLICK_LISTENER));

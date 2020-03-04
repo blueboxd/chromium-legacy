@@ -91,7 +91,8 @@ class FileDeletionQueue {
     }
 
     private static class LazyHolder {
-        private static final FileDeletionQueue INSTANCE = new FileDeletionQueue(
-                fileName -> FileUtils.batchDeleteFiles(CollectionUtil.newArrayList(fileName)));
+        private static final FileDeletionQueue INSTANCE = new FileDeletionQueue(fileName
+                -> FileUtils.batchDeleteFiles(
+                        CollectionUtil.newArrayList(fileName), FileUtils.DELETE_ALL));
     }
 }

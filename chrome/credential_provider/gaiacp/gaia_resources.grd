@@ -131,7 +131,7 @@
         Used to run Google Credential Provider sign in page.
       </message>
       <message name="IDS_AUTH_FID_DESCRIPTION" desc="">
-        Sign in using your work account
+        Sign in with your work account
       </message>
       <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
         Your session has expired. Sign in with your work account.
@@ -140,19 +140,19 @@
         This device isn’t yet enrolled with your organization’s device management. Sign in with your work account.
       </message>
       <message name="IDS_REAUTH_MISSING_PASSWORD_RECOVERY_INFO_FID_DESCRIPTION" desc="">
-        Sign in with your work account.
+        Sign in with your work account
       </message>
       <message name="IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION" desc="">
-        Sign in with your work account.
+        Sign in with your work account
       </message>
       <message name="IDS_REAUTH_FAILED_UPLOAD_DEVICE_DETAILS_DESCRIPTION" desc="">
-        Sign in with your work account.
+        Sign in with your work account
       </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add work account
       </message>
       <message name="IDS_EXISTING_AUTH_FID_PROVIDER_LABEL" desc="">
-        Sign in using your work account
+        Sign in with your work account
       </message>
       <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
         User account created by Google Credential Provider for Windows

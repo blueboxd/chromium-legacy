@@ -233,6 +233,8 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       input_context.context_id = context.id;
       input_context.type = input_method_private::ParseInputContextType(
           ConvertInputContextType(context));
+      input_context.mode = input_method_private::ParseInputModeType(
+          ConvertInputContextType(context));
       input_context.auto_correct = ConvertInputContextAutoCorrect(context);
       input_context.auto_complete = ConvertInputContextAutoComplete(context);
       input_context.auto_capitalize =
@@ -376,6 +378,38 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   bool ConvertHasBeenPassword(
       ui::IMEEngineHandlerInterface::InputContext input_context) {
     return input_context.flags & ui::TEXT_INPUT_FLAG_HAS_BEEN_PASSWORD;
+  }
+
+  std::string ConvertInputContextMode(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    std::string input_mode_type = "text";
+    switch (input_context.mode) {
+      case ui::TEXT_INPUT_MODE_SEARCH:
+        input_mode_type = "search";
+        break;
+      case ui::TEXT_INPUT_MODE_TEL:
+        input_mode_type = "tel";
+        break;
+      case ui::TEXT_INPUT_MODE_URL:
+        input_mode_type = "url";
+        break;
+      case ui::TEXT_INPUT_MODE_EMAIL:
+        input_mode_type = "email";
+        break;
+      case ui::TEXT_INPUT_MODE_NUMERIC:
+        input_mode_type = "numeric";
+        break;
+      case ui::TEXT_INPUT_MODE_DECIMAL:
+        input_mode_type = "decimal";
+        break;
+      case ui::TEXT_INPUT_MODE_NONE:
+        input_mode_type = "noKeyboard";
+        break;
+      default:
+        input_mode_type = "text";
+        break;
+    }
+    return input_mode_type;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserverChromeOS);

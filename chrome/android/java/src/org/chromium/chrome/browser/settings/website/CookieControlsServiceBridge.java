@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.settings.website;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 
 /**
  * Communicates between CookieControlsService (C++ backend) and observers in the Incognito NTP Java
@@ -21,10 +22,11 @@ public class CookieControlsServiceBridge {
          * Called when there is an update in the cookie controls that should be reflected in the UI.
          * @param checked A boolean indicating whether the toggle indicating third-party cookies are
          *         currently being blocked should be checked or not.
-         * @param enforced A boolean indicating if third-party cookies being blocked is currently
-         *         enforced by policy/cookie settings or not.
+         * @param enforcement A CookieControlsEnforcement enum type indicating the enforcement rule
+         *         for these cookie controls.
          */
-        public void sendCookieControlsUIChanges(boolean checked, boolean enforced);
+        public void sendCookieControlsUIChanges(
+                boolean checked, @CookieControlsEnforcement int enforcement);
     }
 
     private long mNativeCookieControlsServiceBridge;
@@ -70,8 +72,9 @@ public class CookieControlsServiceBridge {
     }
 
     @CalledByNative
-    private void sendCookieControlsUIChanges(boolean checked, boolean enforced) {
-        mObserver.sendCookieControlsUIChanges(checked, enforced);
+    private void sendCookieControlsUIChanges(
+            boolean checked, @CookieControlsEnforcement int enforcement) {
+        mObserver.sendCookieControlsUIChanges(checked, enforcement);
     }
 
     @NativeMethods

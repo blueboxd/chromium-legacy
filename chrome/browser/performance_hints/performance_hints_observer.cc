@@ -179,7 +179,7 @@ PerformanceHintsObserver::HintForURL(const GURL& url) const {
 
   if (!hint_processed_) {
     hint_result = HintForURLResult::kHintNotReady;
-  } else if (!url.is_valid()) {
+  } else if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
     hint_result = HintForURLResult::kInvalidURL;
   } else {
     for (const auto& pattern_hint : hints_) {

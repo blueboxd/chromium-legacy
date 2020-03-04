@@ -11,6 +11,7 @@
     "app.window.alwaysOnTop",
     "app.window.ime",
     "audioCapture",
+    "crashReportPrivate",
     "https://clients4.google.com/",
     "https://dl.google.com/",
     "https://handwriting.googleapis.com/",

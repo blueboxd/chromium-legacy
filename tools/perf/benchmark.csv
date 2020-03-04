@@ -62,7 +62,7 @@ system_health.memory_mobile,"pasko@chromium.org, crouleau@chromium.org, chrome-a
 system_health.webview_startup,"oksamyt@chromium.org, torne@chromium.org, changwan@chromium.org",Mobile>WebView>Perf,,2016
 tab_switching.typical_25,vovoy@chromium.org,OS>Performance,,"2016,tabs_switching"
 tracing.tracing_with_background_memory_infra,ssid@chromium.org,,,
-tracing_perftests,"kkraynov@chromium.org, primiano@chromium.org",,,
+tracing_perftests,"eseckler@chromium.org, oysteine@chromium.org",Speed>Tracing,,
 v8.browsing_desktop,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,2020,health_check,images,infinite_scroll,international,javascript_heavy,webgl"
 v8.browsing_desktop-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2016,2018,2019,2020,health_check,images,infinite_scroll,international,javascript_heavy,webgl"
 v8.browsing_mobile,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"

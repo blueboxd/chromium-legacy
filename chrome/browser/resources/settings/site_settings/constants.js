@@ -29,6 +29,7 @@ cr.define('settings', function() {
     MIDI_DEVICES: 'midi-sysex',
     USB_DEVICES: 'usb-devices',
     SERIAL_PORTS: 'serial-ports',
+    BLUETOOTH_DEVICES: 'bluetooth-devices',
     ZOOM_LEVELS: 'zoom-levels',
     PROTECTED_CONTENT: 'protected-content',
     ADS: 'ads',
@@ -69,6 +70,7 @@ cr.define('settings', function() {
     USB_DEVICES: 'usb-devices-data',
     SERIAL_PORTS: 'serial-ports-data',
     HID_DEVICES: 'hid-devices-data',
+    BLUETOOTH_DEVICES: 'bluetooth-devices-data',
   };
 
   /**

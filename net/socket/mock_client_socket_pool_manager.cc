@@ -20,11 +20,14 @@ void MockClientSocketPoolManager::SetSocketPool(
   socket_pools_[proxy_server] = std::move(pool);
 }
 
-void MockClientSocketPoolManager::FlushSocketPoolsWithError(int error) {
+void MockClientSocketPoolManager::FlushSocketPoolsWithError(
+    int error,
+    const char* net_log_reason_utf8) {
   NOTIMPLEMENTED();
 }
 
-void MockClientSocketPoolManager::CloseIdleSockets() {
+void MockClientSocketPoolManager::CloseIdleSockets(
+    const char* net_log_reason_utf8) {
   NOTIMPLEMENTED();
 }
 

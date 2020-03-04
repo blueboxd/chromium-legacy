@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_info_data_wrapper.h"
 
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
+#include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
 #include "components/exo/wm_helper.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace arc {
 
@@ -16,33 +20,47 @@ AccessibilityInfoDataWrapper::AccessibilityInfoDataWrapper(
 void AccessibilityInfoDataWrapper::Serialize(ui::AXNodeData* out_data) const {
   out_data->id = GetId();
   PopulateAXRole(out_data);
+  PopulateBounds(out_data);
+}
 
-  exo::WMHelper* wm_helper =
-      exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;
+void AccessibilityInfoDataWrapper::PopulateBounds(
+    ui::AXNodeData* out_data) const {
+  AccessibilityInfoDataWrapper* root = tree_source_->GetRoot();
+  gfx::Rect info_data_bounds = GetBounds();
+  gfx::RectF& out_bounds = out_data->relative_bounds.bounds;
 
-  if (tree_source_->GetRoot() && wm_helper) {
-    // This is the computed bounds which relies upon the existence of an
-    // associated focused window and a root node.
-    aura::Window* active_window = (tree_source_->is_notification() ||
-                                   tree_source_->is_input_method_window())
-                                      ? nullptr
-                                      : wm_helper->GetActiveWindow();
-    const gfx::Rect& local_bounds = tree_source_->GetBounds(
-        tree_source_->GetFromId(GetId()), active_window);
-    out_data->relative_bounds.bounds.SetRect(local_bounds.x(), local_bounds.y(),
-                                             local_bounds.width(),
-                                             local_bounds.height());
+  if (root && exo::WMHelper::HasInstance()) {
+    if (tree_source_->is_notification() ||
+        tree_source_->is_input_method_window() || root->GetId() != GetId()) {
+      // By default, populate the bounds relative to the tree root.
+      const gfx::Rect& root_bounds = root->GetBounds();
+
+      info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
+      out_bounds = ToChromeScale(info_data_bounds);
+      out_data->relative_bounds.offset_container_id = root->GetId();
+    } else {
+      // For the root node of application tree, populate the bounds to be
+      // relative to its container View.
+      views::Widget* widget = views::Widget::GetWidgetForNativeView(
+          exo::WMHelper::GetInstance()->GetActiveWindow());
+      DCHECK(widget);
+      DCHECK(widget->widget_delegate());
+      DCHECK(widget->widget_delegate()->GetContentsView());
+      const gfx::Rect& root_bounds =
+          widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
+
+      out_bounds = ToChromeBounds(info_data_bounds, widget);
+      out_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
+    }
+
+    // |out_bounds| is in Chrome DPI here. As ARC is considered the same as web
+    // in Chrome automation, scale the bounds by device scale factor.
+    out_bounds.Scale(tree_source_->device_scale_factor());
   } else {
     // We cannot compute global bounds, so use the raw bounds.
-    const auto& bounds = GetBounds();
-    out_data->relative_bounds.bounds.SetRect(bounds.x(), bounds.y(),
-                                             bounds.width(), bounds.height());
+    out_bounds.SetRect(info_data_bounds.x(), info_data_bounds.y(),
+                       info_data_bounds.width(), info_data_bounds.height());
   }
-
-  // TODO(hirokisato): Try using offset_container_id to make bounds calculations
-  // more efficient. If this is the child of the root, set the
-  // offset_container_id to be the root. Otherwise, set it to the first node
-  // child of the root.
 }
 
 }  // namespace arc

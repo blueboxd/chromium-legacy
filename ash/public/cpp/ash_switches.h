@@ -6,6 +6,8 @@
 #define ASH_PUBLIC_CPP_ASH_SWITCHES_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 
 namespace ash {
 namespace switches {
@@ -20,6 +22,8 @@ ASH_PUBLIC_EXPORT extern const char kAshColorMode[];
 ASH_PUBLIC_EXPORT extern const char kAshColorModeDark[];
 ASH_PUBLIC_EXPORT extern const char kAshColorModeLight[];
 ASH_PUBLIC_EXPORT extern const char kAshConstrainPointerToRoot[];
+ASH_PUBLIC_EXPORT extern const char kAshContextualNudgesInterval[];
+ASH_PUBLIC_EXPORT extern const char kAshContextualNudgesResetShownCount[];
 ASH_PUBLIC_EXPORT extern const char kAshDebugShortcuts[];
 ASH_PUBLIC_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTouchExplorationMode[];
@@ -58,6 +62,8 @@ ASH_PUBLIC_EXPORT extern const char kShowWebUiLogin[];
 ASH_PUBLIC_EXPORT extern const char kSuppressMessageCenterPopups[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 
+ASH_PUBLIC_EXPORT base::Optional<base::TimeDelta> ContextualNudgesInterval();
+ASH_PUBLIC_EXPORT bool ContextualNudgesResetShownCount();
 ASH_PUBLIC_EXPORT bool IsUsingShelfAutoDim();
 ASH_PUBLIC_EXPORT bool IsUsingViewsLock();
 

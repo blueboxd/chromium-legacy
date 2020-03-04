@@ -57,8 +57,10 @@ interface Page {
   // Callback to receive the container backup progress once the export has
   // started.
   OnBackupProgress(int32 percent);
-  // This is called when the backup succeeded.
-  OnBackupSucceeded();
+  // This is called when the backup succeeded. If the user cancels the backup,
+  // we treat this as a success and proceed with upgrading (though the backup
+  // will not be used if the upgrade fails).
+  OnBackupSucceeded(bool was_cancelled);
   // This is called when the backup failed.
   OnBackupFailed();
   // Handle the result of the prechecks.

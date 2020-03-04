@@ -31,7 +31,8 @@ body.files-ng [file-type-icon] {
 }
 
 body.files-ng [file-type-icon='archive'] {
-  background-image: url(../images/filetype/filetype_archive.svg);
+  -webkit-mask-image: url(../images/filetype/filetype_archive.svg);
+  background-color: currentColor;
 }
 
 [file-type-icon='audio'] {
@@ -321,10 +322,24 @@ body.files-ng [file-type-icon='word'] {
   background-repeat: no-repeat;
 }
 
+body.files-ng .no-thumbnail[generic-thumbnail] {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 48px;
+  background-color: transparent;
+  background-image: url(../images/files/ui/filetype_placeholder_generic.svg);
+  background-position: center;
+  background-size: 48px;
+}
+
 [generic-thumbnail='audio'] {
   background-image: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_audio.png) 1x,
       url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='audio'] {
+  background-image: url(../images/filetype/filetype_audio.svg);
 }
 
 [generic-thumbnail='image'] {
@@ -333,10 +348,86 @@ body.files-ng [file-type-icon='word'] {
       url(../images/files/ui/2x/filetype_placeholder_image.png) 2x);
 }
 
+body.files-ng .no-thumbnail[generic-thumbnail='image'],
+body.files-ng .no-thumbnail[generic-thumbnail='raw'] {
+  background-image: url(../images/filetype/filetype_image.svg);
+}
+
 [generic-thumbnail='video'] {
   background-image: -webkit-image-set(
       url(../images/files/ui/filetype_placeholder_video.png) 1x,
       url(../images/files/ui/2x/filetype_placeholder_video.png) 2x);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='video'] {
+  background-image: url(../images/filetype/filetype_video.svg);
+}
+
+/* grid view large icons for known types. */
+body.files-ng .no-thumbnail[generic-thumbnail='archive'] {
+  -webkit-mask-image: url(../images/filetype/filetype_archive.svg);
+  background-color: currentColor;
+  background-image: none;
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='tini'] {
+  background-image: url(../images/filetype/filetype_tini.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='excel'] {
+  background-image: url(../images/filetype/filetype_excel.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gdoc'] {
+  background-image: url(../images/filetype/filetype_gdoc.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gdraw'] {
+  background-image: url(../images/filetype/filetype_gdraw.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gsheet'] {
+  background-image: url(../images/filetype/filetype_gsheet.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gslides'] {
+  background-image: url(../images/filetype/filetype_gslides.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gtable'] {
+  background-image: url(../images/filetype/filetype_gtable.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gform'] {
+  background-image: url(../images/filetype/filetype_gform.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gmap'] {
+  background-image: url(../images/filetype/filetype_gmap.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='gsite'] {
+  background-image: url(../images/filetype/filetype_gsite.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='pdf'] {
+  background-image: url(../images/filetype/filetype_pdf.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='ppt'] {
+  background-image: url(../images/filetype/filetype_ppt.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='script'] {
+  background-image: url(../images/filetype/filetype_script.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='sites'] {
+  background-image: url(../images/filetype/filetype_sites.svg);
+}
+
+body.files-ng .no-thumbnail[generic-thumbnail='word'] {
+  background-image: url(../images/filetype/filetype_word.svg);
 }
 
 /* Icons for volume types. A ".tree-row > .file-row" component in any rules

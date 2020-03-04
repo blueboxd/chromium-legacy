@@ -205,26 +205,26 @@
     <!-- Non Adaptive Text Styles -->
     <!--  Light version  -->
     <style name="TextAppearance.Headline.Primary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_light</item>
+        <item name="android:textColor">@color/default_text_color_light_list</item>
     </style>
     <style name="TextAppearance.TextLarge.Primary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_light</item>
+        <item name="android:textColor">@color/default_text_color_light_list</item>
     </style>
     <style name="TextAppearance.TextMediumThick.Primary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_light</item>
+        <item name="android:textColor">@color/default_text_color_light_list</item>
     </style>
     <style name="TextAppearance.TextMedium.Primary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_light</item>
+        <item name="android:textColor">@color/default_text_color_light_list</item>
     </style>
     <style name="TextAppearance.TextSmall.Primary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_light</item>
+        <item name="android:textColor">@color/default_text_color_light_list</item>
     </style>
 
     <style name="TextAppearance.TextLarge.Secondary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_secondary_light</item>
+        <item name="android:textColor">@color/default_text_color_secondary_light_list</item>
     </style>
     <style name="TextAppearance.TextMedium.Secondary.Light" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/default_text_color_secondary_light</item>
+        <item name="android:textColor">@color/default_text_color_secondary_light_list</item>
     </style>
 
     <style name="TextAppearance.TextLarge.Tertiary.Light" tools:ignore="UnusedResources">

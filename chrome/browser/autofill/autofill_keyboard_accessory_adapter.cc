@@ -72,7 +72,7 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
     DCHECK(!front_element_.has_value()) << "Additional front item at: " << i;
     front_element_ = base::Optional<int>(i);
     // If there is a special popup item, just reuse the previously used label.
-    labels_.push_back(controller_->GetElidedLabelAt(i));
+    labels_.push_back(controller_->GetSuggestionLabelAt(i));
   }
 
   view_->Show();
@@ -100,15 +100,15 @@ const autofill::Suggestion& AutofillKeyboardAccessoryAdapter::GetSuggestionAt(
   return controller_->GetSuggestionAt(OffsetIndexFor(row));
 }
 
-const base::string16& AutofillKeyboardAccessoryAdapter::GetElidedValueAt(
+const base::string16& AutofillKeyboardAccessoryAdapter::GetSuggestionValueAt(
     int row) const {
-  DCHECK(controller_) << "Call GetElidedValueAt only from its owner!";
-  return controller_->GetElidedValueAt(OffsetIndexFor(row));
+  DCHECK(controller_) << "Call GetSuggestionValueAt only from its owner!";
+  return controller_->GetSuggestionValueAt(OffsetIndexFor(row));
 }
 
-const base::string16& AutofillKeyboardAccessoryAdapter::GetElidedLabelAt(
+const base::string16& AutofillKeyboardAccessoryAdapter::GetSuggestionLabelAt(
     int row) const {
-  DCHECK(controller_) << "Call GetElidedLabelAt only from its owner!";
+  DCHECK(controller_) << "Call GetSuggestionLabelAt only from its owner!";
   DCHECK(static_cast<size_t>(row) < labels_.size());
   return labels_[OffsetIndexFor(row)];
 }

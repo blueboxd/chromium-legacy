@@ -318,9 +318,11 @@ void WaitForDistillation() {
   ConditionBlock wait_for_distillation_date = ^{
     NSError* error = nil;
     [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     kTableViewURLCellFaviconBadgeViewID)]
-        assertWithMatcher:grey_sufficientlyVisible()
+        selectElementWithMatcher:grey_allOf(
+                                     grey_accessibilityID(
+                                         kTableViewURLCellFaviconBadgeViewID),
+                                     grey_sufficientlyVisible(), nil)]
+        assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
   };

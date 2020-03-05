@@ -67,6 +67,10 @@ class Layer;
 struct OverscrollBehavior;
 }
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 
 class ColorChooser;
@@ -99,7 +103,6 @@ struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct WebTextAutosizerPageInfo;
 struct ViewportDescription;
-struct WebCursorInfo;
 struct WebScreenInfo;
 struct WebWindowFeatures;
 
@@ -274,7 +277,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
     return last_mouse_over_node_.Get();
   }
 
-  virtual void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) = 0;
+  virtual void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) = 0;
 
   // Returns a custom visible rect if a viewport override is active. Requires
   // the |frame| being painted, but only supports being used for the main frame.

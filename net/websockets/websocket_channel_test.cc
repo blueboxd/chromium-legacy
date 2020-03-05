@@ -810,8 +810,8 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
         connect_data_.socket_url, connect_data_.requested_subprotocols,
         connect_data_.origin, connect_data_.site_for_cookies,
         connect_data_.network_isolation_key, HttpRequestHeaders(),
-        base::Bind(&WebSocketStreamCreationCallbackArgumentSaver::Create,
-                   base::Unretained(&connect_data_.argument_saver)));
+        base::BindOnce(&WebSocketStreamCreationCallbackArgumentSaver::Create,
+                       base::Unretained(&connect_data_.argument_saver)));
   }
 
   // Same as CreateChannelAndConnect(), but calls the on_success callback as

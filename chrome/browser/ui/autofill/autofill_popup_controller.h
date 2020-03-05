@@ -38,10 +38,14 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // Returns the full set of autofill suggestions, if applicable.
   virtual const std::vector<autofill::Suggestion> GetSuggestions() = 0;
 
-  // Returns the suggestion or pre-elided string at the given row index.
+  // Returns the suggestion at the given |row| index.
   virtual const autofill::Suggestion& GetSuggestionAt(int row) const = 0;
-  virtual const base::string16& GetElidedValueAt(int row) const = 0;
-  virtual const base::string16& GetElidedLabelAt(int row) const = 0;
+
+  // Returns the suggestion value string at the given |row| index.
+  virtual const base::string16& GetSuggestionValueAt(int row) const = 0;
+
+  // Returns the suggestion label string at the given |row| index.
+  virtual const base::string16& GetSuggestionLabelAt(int row) const = 0;
 
   // Returns whether the item at |list_index| can be removed. If so, fills
   // out |title| and |body| (when non-null) with relevant user-facing text.

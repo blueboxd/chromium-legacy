@@ -77,10 +77,8 @@ void BulkLeakCheckService::OnFinishedCredential(LeakCheckCredential credential,
     state_ = State::kIdle;
     bulk_leak_check_.reset();
   }
-  if (is_leaked) {
-    for (Observer& obs : observers_)
-      obs.OnLeakFound(credential);
-  }
+  for (Observer& obs : observers_)
+    obs.OnCredentialDone(credential, is_leaked);
   if (state_ == State::kIdle)
     NotifyStateChanged();
 }
@@ -108,9 +106,8 @@ void BulkLeakCheckService::OnError(LeakDetectionError error) {
 }
 
 void BulkLeakCheckService::NotifyStateChanged() {
-  size_t pending_count = GetPendingChecksCount();
   for (Observer& obs : observers_)
-    obs.OnStateChanged(state_, pending_count);
+    obs.OnStateChanged(state_);
 }
 
 }  // namespace password_manager

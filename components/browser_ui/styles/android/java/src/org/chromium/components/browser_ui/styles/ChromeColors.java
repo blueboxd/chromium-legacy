@@ -9,7 +9,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.support.v7.content.res.AppCompatResources;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -26,7 +25,7 @@ public class ChromeColors {
      *        adaptive default color.
      * @return The default theme color.
      */
-    public static @ColorInt int getDefaultThemeColor(Resources res, boolean forceDarkBgColor) {
+    public static @ColorRes int getDefaultThemeColor(Resources res, boolean forceDarkBgColor) {
         return forceDarkBgColor
                 ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary_dark)
                 : ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
@@ -41,7 +40,7 @@ public class ChromeColors {
      *        returns adaptive primary background color.
      * @return The primary background color.
      */
-    public static @ColorInt int getPrimaryBackgroundColor(Resources res, boolean forceDarkBgColor) {
+    public static @ColorRes int getPrimaryBackgroundColor(Resources res, boolean forceDarkBgColor) {
         return forceDarkBgColor
                 ? ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.dark_primary_color)
                 : ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.modern_primary_color);

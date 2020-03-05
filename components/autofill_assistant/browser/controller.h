@@ -130,6 +130,11 @@ class Controller : public ScriptExecutorDelegate,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
+  void SetGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+          end_action_callback) override;
+  void ClearGenericUi() override;
 
   // Show the UI if it's not already shown. This is only meaningful while in
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
@@ -206,6 +211,7 @@ class Controller : public ScriptExecutorDelegate,
   EventHandler* GetEventHandler() override;
   bool ShouldPromptActionExpandSheet() const override;
   BasicInteractions* GetBasicInteractions() override;
+  const GenericUserInterfaceProto* GetGenericUiProto() const override;
 
  private:
   friend ControllerTest;
@@ -440,6 +446,9 @@ class Controller : public ScriptExecutorDelegate,
   BasicInteractions basic_interactions_{this};
 
   bool expand_sheet_for_prompt_action_ = true;
+
+  // Only set during a ShowGenericUiAction.
+  std::unique_ptr<GenericUserInterfaceProto> generic_user_interface_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 

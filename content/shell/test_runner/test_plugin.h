@@ -86,7 +86,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   void UpdateVisibility(bool visibility) override {}
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,
-      blink::WebCursorInfo* info) override;
+      ui::Cursor* cursor) override;
   bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& data,
                               blink::WebDragOperationsMask mask,

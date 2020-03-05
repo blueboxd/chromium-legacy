@@ -7,11 +7,9 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #include "base/bind.h"
-#include "build/branding_buildflags.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #include "ios/chrome/app/intents/SearchInChromeIntent.h"
-#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -66,16 +64,11 @@ NSString* const kStartProfileStartupTaskRunners =
 }
 
 - (void)initializeOmaha {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (tests_hook::DisableUpdateService())
-    return;
-  // Start omaha service. We only do this on official builds.
   OmahaService::Start(
       GetApplicationContext()->GetSharedURLLoaderFactory()->Clone(),
       base::BindRepeating(^(const UpgradeRecommendedDetails& details) {
         [[UpgradeCenter sharedInstance] upgradeNotificationDidOccur:details];
       }));
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 - (void)registerForApplicationWillResignActiveNotification {

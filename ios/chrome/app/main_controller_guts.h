@@ -56,9 +56,9 @@ class ChromeBrowserState;
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock;
-
-- (void)showFirstRunUI;
-- (void)scheduleShowPromo;
+// MainController tracks EULA acceptance and performs delayed tasks when the
+// first run UI is dismissed.
+- (void)prepareForFirstRunUI;
 // Returns whether or not the app can launch in incognito mode.
 - (BOOL)canLaunchInIncognito;
 

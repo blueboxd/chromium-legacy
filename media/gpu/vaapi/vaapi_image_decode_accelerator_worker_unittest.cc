@@ -65,11 +65,10 @@ constexpr uint8_t kLossyWebPFileHeader[] = {
 };
 // clang-format on
 
-constexpr base::span<const uint8_t> kJpegEncodedData(kJpegPFileHeader, 3u);
+constexpr base::span<const uint8_t, 3u> kJpegEncodedData = kJpegPFileHeader;
 
-constexpr base::span<const uint8_t> kLossyWebPEncodedData(
-    kLossyWebPFileHeader,
-    kWebPFileAndVp8ChunkHeaderSizeInBytes);
+constexpr base::span<const uint8_t, kWebPFileAndVp8ChunkHeaderSizeInBytes>
+    kLossyWebPEncodedData = kLossyWebPFileHeader;
 
 class MockNativePixmapDmaBuf : public gfx::NativePixmapDmaBuf {
  public:
@@ -185,10 +184,10 @@ ACTION_P2(ExportAsNativePixmapDmaBufSuccessfully,
 }
 
 TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeSucceeds) {
-  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.cbegin(),
-                                         kJpegEncodedData.cend());
-  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.cbegin(),
-                                         kLossyWebPEncodedData.cend());
+  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.begin(),
+                                         kJpegEncodedData.end());
+  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.begin(),
+                                         kLossyWebPEncodedData.end());
   {
     InSequence sequence;
     MockVaapiImageDecoder* jpeg_decoder = GetJpegDecoder();
@@ -235,10 +234,10 @@ TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeSucceeds) {
 }
 
 TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeFails) {
-  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.cbegin(),
-                                         kJpegEncodedData.cend());
-  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.cbegin(),
-                                         kLossyWebPEncodedData.cend());
+  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.begin(),
+                                         kJpegEncodedData.end());
+  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.begin(),
+                                         kLossyWebPEncodedData.end());
   {
     InSequence sequence;
     MockVaapiImageDecoder* jpeg_decoder = GetJpegDecoder();

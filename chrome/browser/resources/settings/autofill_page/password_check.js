@@ -15,8 +15,23 @@ Polymer({
     },
 
     /** @private */
-    lastCompletedCheck_: Date,
+    lastCompletedCheck_: String,
+
+    /**
+     * An array of leaked passwords to display.
+     * @type {!Array<!PasswordManagerProxy.CompromisedCredential>}
+     */
+    leakedPasswords: {
+      type: Array,
+      value: () => [],
+    },
   },
+
+  /**
+   * @type {?function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   * @private
+   */
+  leakedCredentialsListener_: null,
 
   /**
    * @private {PasswordManagerProxy}
@@ -25,11 +40,31 @@ Polymer({
 
   /** @override */
   attached() {
-    // It's just a placeholder at the moment.
-    this.passwordLeakCount_ = 5;
-
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
+
+    const setLeakedCredentialsListener = info => {
+      this.leakedPasswords = info.compromisedCredentials;
+      this.passwordLeakCount_ = info.compromisedCredentials.length;
+      this.lastCompletedCheck_ = info.elapsedTimeSinceLastCheck;
+    };
+
+    this.leakedCredentialsListener_ = setLeakedCredentialsListener;
+
+    // Request initial data.
+    this.passwordManager_.getCompromisedCredentialsInfo().then(
+        this.leakedCredentialsListener_);
+
+    // Listen for changes.
+    this.passwordManager_.addCompromisedCredentialsListener(
+        this.leakedCredentialsListener_);
+  },
+
+  /** @override */
+  detached() {
+    this.passwordManager_.removeCompromisedCredentialsListener(
+        assert(this.leakedCredentialsListener_));
+    this.leakedCredentialsListener_ = null;
   },
 
   /**
@@ -51,12 +86,12 @@ Polymer({
   },
 
   /**
-   * @return {string}
+   * Returns true if there are any compromised credentials.
+   * @param {!Array<!PasswordManagerProxy.CompromisedCredential>} list
+   * @return {boolean}
    * @private
    */
-  getLastCompletedCheck_() {
-    // TODO(https://crbug.com/1047726): use lastCompletedCheck_ to return proper
-    // passed time from the last password check.
-    return '5 min ago';
+  hasLeakedCredentials_(list) {
+    return list && !!list.length;
   },
 });

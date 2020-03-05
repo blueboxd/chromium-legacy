@@ -82,7 +82,8 @@ class PerfettoTracingSession
         raw_data_(std::make_unique<std::string>()) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
-    // Perfetto-related deadlocks are resolved.
+    // Perfetto-related deadlocks are resolved and we also handle concurrent
+    // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
       did_setup_startup_tracing_ = tracing::SetupStartupTracingForProcess(
           /*privacy_filtering_enabled=*/true,
@@ -199,7 +200,8 @@ class LegacyTracingSession
       : parent_scenario_(parent_scenario) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
-    // Perfetto-related deadlocks are resolved.
+    // Perfetto-related deadlocks are resolved and we also handle concurrent
+    // system tracing for startup tracing.
     if (!TracingControllerImpl::GetInstance()->IsTracing()) {
       did_setup_startup_tracing_ = tracing::SetupStartupTracingForProcess(
           /*privacy_filtering_enabled=*/false,

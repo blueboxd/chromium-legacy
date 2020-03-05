@@ -21,16 +21,15 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gpu_preference.h"
 
 using blink::WebCoalescedInputEvent;
 using blink::WebImeTextSpan;
-using blink::WebCursorInfo;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
@@ -217,7 +216,7 @@ void RenderWidgetFullscreenPepper::Destroy() {
 }
 
 void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
-    const blink::WebCursorInfo& cursor) {
+    const ui::Cursor& cursor) {
   DidChangeCursor(cursor);
 }
 
@@ -292,9 +291,9 @@ WebInputEventResult RenderWidgetFullscreenPepper::ProcessInputEvent(
 
   const WebInputEvent& event = coalesced_event.Event();
 
-  // This cursor info is ignored, we always set the cursor directly from
+  // This cursor is ignored, we always set the cursor directly from
   // RenderWidgetFullscreenPepper::DidChangeCursor.
-  blink::WebCursorInfo cursor;
+  ui::Cursor cursor;
 
   // Pepper plugins do not accept gesture events. So do not send the gesture
   // events directly to the plugin. Instead, try to convert them to equivalent

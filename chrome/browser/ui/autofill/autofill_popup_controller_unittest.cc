@@ -155,11 +155,11 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   // Making protected functions public for testing
   using AutofillPopupControllerImpl::element_bounds;
   using AutofillPopupControllerImpl::FireControlsChangedEvent;
-  using AutofillPopupControllerImpl::GetElidedLabelAt;
-  using AutofillPopupControllerImpl::GetElidedValueAt;
   using AutofillPopupControllerImpl::GetLineCount;
   using AutofillPopupControllerImpl::GetRootAXPlatformNodeForWebContents;
   using AutofillPopupControllerImpl::GetSuggestionAt;
+  using AutofillPopupControllerImpl::GetSuggestionLabelAt;
+  using AutofillPopupControllerImpl::GetSuggestionValueAt;
   using AutofillPopupControllerImpl::GetWeakPtr;
   using AutofillPopupControllerImpl::RemoveSelectedLine;
   using AutofillPopupControllerImpl::selected_line;
@@ -519,10 +519,10 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   Suggestion result0 = autofill_popup_controller_->GetSuggestionAt(0);
   EXPECT_EQ(value1, result0.value);
-  EXPECT_EQ(value1, autofill_popup_controller_->GetElidedValueAt(0));
+  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionValueAt(0));
   EXPECT_EQ(label1, result0.label);
   EXPECT_EQ(base::string16(), result0.additional_label);
-  EXPECT_EQ(label1, autofill_popup_controller_->GetElidedLabelAt(0));
+  EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionLabelAt(0));
   EXPECT_EQ(POPUP_ITEM_ID_DATALIST_ENTRY, result0.frontend_id);
 
   Suggestion result1 = autofill_popup_controller_->GetSuggestionAt(1);
@@ -549,12 +549,12 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   // Original one first, followed by new one, then separator.
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
-  EXPECT_EQ(value1, autofill_popup_controller_->GetElidedValueAt(0));
+  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionValueAt(0));
   EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionAt(0).label);
   EXPECT_EQ(base::string16(),
             autofill_popup_controller_->GetSuggestionAt(0).additional_label);
   EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionAt(1).value);
-  EXPECT_EQ(value2, autofill_popup_controller_->GetElidedValueAt(1));
+  EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionValueAt(1));
   EXPECT_EQ(label2, autofill_popup_controller_->GetSuggestionAt(1).label);
   EXPECT_EQ(base::string16(),
             autofill_popup_controller_->GetSuggestionAt(1).additional_label);

@@ -63,7 +63,7 @@ class FakeWebPlugin : public WebPlugin {
   void UpdateFocus(bool, mojom::blink::FocusType) override {}
   void UpdateVisibility(bool) override {}
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
-                                       WebCursorInfo*) override {
+                                       ui::Cursor*) override {
     return WebInputEventResult::kNotHandled;
   }
   bool HandleDragStatusUpdate(WebDragStatus,

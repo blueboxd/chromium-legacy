@@ -45,6 +45,10 @@ namespace gfx {
 class PointF;
 }  // namespace gfx
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 
 class WebCoalescedInputEvent;
@@ -52,7 +56,6 @@ class WebDragData;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebImeTextSpan;
-struct WebCursorInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebRect;
@@ -121,7 +124,7 @@ class WebPlugin {
   virtual void UpdateVisibility(bool) = 0;
 
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&,
-                                               WebCursorInfo*) = 0;
+                                               ui::Cursor*) = 0;
 
   virtual bool HandleDragStatusUpdate(WebDragStatus,
                                       const WebDragData&,

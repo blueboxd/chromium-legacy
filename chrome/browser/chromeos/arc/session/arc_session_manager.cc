@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -750,6 +751,16 @@ bool ArcSessionManager::RequestEnableImpl() {
     // Otherwise, be silent now. Users are notified when clicking ARC app icons.
     if (!start_arc_directly && g_ui_enabled)
       arc::ShowArcMigrationGuideNotification(profile_);
+    return false;
+  }
+
+  // When ARC is blocked because of powerwash request, do not proceed
+  // to starting ARC nor follow further state transitions. Applications are
+  // still visible but replaced with notification requesting powerwash.
+  policy::PowerwashRequirementsChecker pw_checker(
+      policy::PowerwashRequirementsChecker::Context::kArc, profile_);
+  if (pw_checker.GetState() !=
+      policy::PowerwashRequirementsChecker::State::kNotRequired) {
     return false;
   }
 

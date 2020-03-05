@@ -9,16 +9,14 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewStub;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.resources.ResourceManager;
+
+import java.util.HashSet;
 
 /**
  * The coordinator for a status indicator that is positioned below the status bar and is persistent.
@@ -31,119 +29,95 @@ public class StatusIndicatorCoordinator {
          * Called when the height of the status indicator changes.
          * @param newHeight The new height in pixels.
          */
-        default void onStatusIndicatorHeightChanged(int newHeight) {}
-
-        /**
-         * Called when the background color of the status indicator changes.
-         * @param newColor The new color as {@link ColorInt}.
-         */
-        default void onStatusIndicatorColorChanged(@ColorInt int newColor) {}
+        void onStatusIndicatorHeightChanged(int newHeight);
     }
 
     private StatusIndicatorMediator mMediator;
+    private PropertyModel mModel;
+    private View mView;
     private StatusIndicatorSceneLayer mSceneLayer;
-    private boolean mIsShowing;
-    private Runnable mRemoveOnLayoutChangeListener;
+    private HashSet<StatusIndicatorObserver> mObservers = new HashSet<>();
 
-    /**
-     * Constructs the status indicator.
-     * @param activity The {@link Activity} to find and inflate the status indicator view.
-     * @param resourceManager The {@link ResourceManager} for the status indicator's cc layer.
-     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen to for the changes in
-     *                          controls offsets.
-     * @param statusBarColorWithoutStatusIndicatorSupplier A supplier that will get the status bar
-     *                                                     color without taking the status indicator
-     *                                                     into account.
-     */
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager,
-            Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier) {
+            ChromeFullscreenManager fullscreenManager) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
-        // when we have the public API figured out. First, we should avoid inflating the view here
-        // in case it's never used.
+        // when we have the public API figured out.
         final ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
         ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
+        mView = root;
         mSceneLayer = new StatusIndicatorSceneLayer(root, () -> fullscreenManager);
-        PropertyModel model =
-                new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
-                        .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
-                        .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
-                        .build();
-        PropertyModelChangeProcessor.create(model,
+        mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
+                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
+                         .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
+                         .build();
+        PropertyModelChangeProcessor.create(mModel,
                 new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
                 StatusIndicatorViewBinder::bind);
-        mMediator = new StatusIndicatorMediator(
-                model, fullscreenManager, statusBarColorWithoutStatusIndicatorSupplier);
+        mMediator = new StatusIndicatorMediator(mModel, fullscreenManager);
+        mObservers.add(mMediator);
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
-        root.addOnLayoutChangeListener(mMediator);
-        mRemoveOnLayoutChangeListener = () -> root.removeOnLayoutChangeListener(mMediator);
     }
 
-    public void destroy() {
-        mRemoveOnLayoutChangeListener.run();
+    /**
+     * Set the {@link String} the status indicator should display.
+     * @param statusText The string.
+     */
+    public void setStatusText(String statusText) {
+        mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
     }
 
+    /**
+     * Set the {@link Drawable} the status indicator should display next to the status text.
+     * @param statusIcon The icon drawable.
+     */
+    public void setStatusIcon(Drawable statusIcon) {
+        mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
+    }
+
+    // TODO(sinansahin): With animation.
     // TODO(sinansahin): Destroy the view when not needed.
-
-    /**
-     * Show the status indicator with the initial properties with animations.
-     *
-     * @param statusText The status string that will be visible on the status indicator.
-     * @param statusIcon The icon {@link Drawable} that will appear next to the status text.
-     * @param backgroundColor The background color for the status indicator and the status bar.
-     * @param textColor Status text color.
-     * @param iconTint Status icon tint.
-     */
-    public void show(@NonNull String statusText, Drawable statusIcon, @ColorInt int backgroundColor,
-            @ColorInt int textColor, @ColorInt int iconTint) {
-        // TODO(sinansahin): Once we've moved the connectivity detection code to a separate class,
-        // we should make sure #show(), #updateContent(), and #hide() are called correctly there,
-        // e.g. show shouldn't be called if we're already showing. Then, we can turn these if checks
-        // into asserts.
-        if (mIsShowing) return;
-        mIsShowing = true;
-
-        mMediator.animateShow(statusText, statusIcon, backgroundColor, textColor, iconTint);
+    /** Show the status indicator. */
+    public void show() {
+        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
+        // TODO(crbug.com/1005843): We will need a measure pass before we can get the real height of
+        // this view. We should keep this in mind when inflating the view lazily.
+        mView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                final int height = v.getHeight();
+                for (StatusIndicatorObserver observer : mObservers) {
+                    observer.onStatusIndicatorHeightChanged(height);
+                }
+                mView.removeOnLayoutChangeListener(this);
+            }
+        });
     }
 
-    /**
-     * Update the status indicator text, icon and colors with animations. All of the properties will
-     * be animated even if only one property changes. Support to animate a single property may be
-     * added in the future if needed.
-     *
-     * @param statusText The string that will replace the current text.
-     * @param statusIcon The icon that will replace the current icon.
-     * @param backgroundColor The color that will replace the status indicator background color.
-     * @param textColor The new text color to fit the new background.
-     * @param iconTint The new icon tint to fit the background.
-     * @param animationCompleteCallback The callback that will be run once the animations end.
-     */
-    public void updateContent(@NonNull String statusText, Drawable statusIcon,
-            @ColorInt int backgroundColor, @ColorInt int textColor, @ColorInt int iconTint,
-            Runnable animationCompleteCallback) {
-        if (!mIsShowing) return;
-
-        mMediator.animateUpdate(statusText, statusIcon, backgroundColor, textColor, iconTint,
-                animationCompleteCallback);
-    }
-
-    /**
-     * Hide the status indicator with animations.
-     */
+    // TODO(sinansahin): With animation as well.
+    /** Hide the status indicator. */
     public void hide() {
-        if (!mIsShowing) return;
-        mIsShowing = false;
-
-        mMediator.animateHide();
+        mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE);
+        for (StatusIndicatorObserver observer : mObservers) {
+            observer.onStatusIndicatorHeightChanged(0);
+        }
     }
 
     public void addObserver(StatusIndicatorObserver observer) {
-        mMediator.addObserver(observer);
+        mObservers.add(observer);
     }
 
     public void removeObserver(StatusIndicatorObserver observer) {
-        mMediator.removeObserver(observer);
+        mObservers.remove(observer);
+    }
+
+    /**
+     * Is the status indicator currently visible.
+     * @return True if visible.
+     */
+    public boolean isVisible() {
+        return mModel.get(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE);
     }
 
     /**

@@ -1054,6 +1054,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
                          std::move(callback));
   }
 
+  void CheckHealth(
+      const cryptohome::CheckHealthRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    CallCryptohomeMethod(cryptohome::kCryptohomeCheckHealth, request,
+                         std::move(callback));
+  }
+
   void LockToSingleUserMountUntilReboot(
       const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {

@@ -44,9 +44,6 @@ class MockAccessoryView
                void(const base::string16&,
                     const base::string16&,
                     base::OnceClosure));
-  MOCK_METHOD1(GetElidedValueWidthForRow, int(int));
-  MOCK_METHOD1(GetElidedLabelWidthForRow, int(int));
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAccessoryView);
 };
@@ -182,18 +179,19 @@ TEST_F(AutofillKeyboardAccessoryAdapterTest, UseAdditionalLabelForElidedLabel) {
 
   // The 1st item is usually not visible (something like clear form) and has an
   // empty label. But it needs to be handled since UI might ask for it anyway.
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(0), base::string16());
+  EXPECT_EQ(adapter_as_controller()->GetSuggestionLabelAt(0), base::string16());
 
   // If there is a label, use it but cap at 8 bullets.
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(1),
+  EXPECT_EQ(adapter_as_controller()->GetSuggestionLabelAt(1),
             ASCIIToUTF16("********"));
 
   // If the label is empty, use the additional label:
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(2),
+  EXPECT_EQ(adapter_as_controller()->GetSuggestionLabelAt(2),
             ASCIIToUTF16("psl.origin.eg ********"));
 
   // If the password has less than 8 bullets, show the exact amount.
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(3), ASCIIToUTF16("***"));
+  EXPECT_EQ(adapter_as_controller()->GetSuggestionLabelAt(3),
+            ASCIIToUTF16("***"));
 }
 
 TEST_F(AutofillKeyboardAccessoryAdapterTest, ProvideReorderedSuggestions) {

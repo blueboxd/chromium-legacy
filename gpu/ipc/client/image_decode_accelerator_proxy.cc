@@ -195,8 +195,7 @@ SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
             ChannelIdFromCommandBufferId(raster_decoder_command_buffer_id));
 
   GpuChannelMsg_ScheduleImageDecode_Params params;
-  params.encoded_data =
-      std::vector<uint8_t>(encoded_data.cbegin(), encoded_data.cend());
+  params.encoded_data.assign(encoded_data.begin(), encoded_data.end());
   params.output_size = output_size;
   params.raster_decoder_route_id =
       RouteIdFromCommandBufferId(raster_decoder_command_buffer_id);

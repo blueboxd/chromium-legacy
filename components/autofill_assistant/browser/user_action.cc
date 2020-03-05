@@ -30,11 +30,16 @@ UserAction& UserAction::operator=(UserAction&& other) = default;
 
 // Initializes user action from proto.
 UserAction::UserAction(const UserActionProto& action)
-    : chip_(action.chip()), direct_action_(action.direct_action()) {}
+    : chip_(action.chip()),
+      direct_action_(action.direct_action()),
+      identifier_(action.identifier()) {}
 
 UserAction::UserAction(const ChipProto& chip_proto,
-                       const DirectActionProto& direct_action_proto)
-    : chip_(chip_proto), direct_action_(direct_action_proto) {}
+                       const DirectActionProto& direct_action_proto,
+                       const std::string& identifier)
+    : chip_(chip_proto),
+      direct_action_(direct_action_proto),
+      identifier_(identifier) {}
 
 void UserAction::SetCallback(base::OnceCallback<void()> callback) {
   callback_ = base::BindOnce(&CallIgnoringContext, std::move(callback));

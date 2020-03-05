@@ -8,15 +8,14 @@
     android:id="@+id/status_indicator"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/modern_primary_color">
+    android:background="@android:color/black">
 
     <org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables
         android:id="@+id/status_text"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:minHeight="20dp"
         android:textAlignment="center"
-        android:drawablePadding="8dp"
-        android:textAppearance="@style/TextAppearance.TextSmall.Primary"/>
+        android:drawablePadding="8dp" />
 </org.chromium.components.browser_ui.widget.ViewResourceFrameLayout>

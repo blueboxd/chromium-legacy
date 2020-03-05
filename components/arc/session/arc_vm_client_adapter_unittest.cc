@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -817,6 +818,92 @@ TEST_F(ArcVmClientAdapterTest, TestCreateArcVmClientAdapter) {
   CreateArcVmClientAdapter(version_info::Channel::STABLE);
   CreateArcVmClientAdapter(version_info::Channel::BETA);
   CreateArcVmClientAdapter(version_info::Channel::DEV);
+}
+
+// Tests that the binary translation type is set to None when no library is
+// enabled by USE flags.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNone) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=0"));
+}
+
+// Tests that the binary translation type is set to Houdini when only Houdini
+// library is enabled by USE flags.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-houdini"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libhoudini.so"));
+}
+
+// Tests that the binary translation type is set to Houdini when only Houdini
+// 64-bit library is enabled by USE flags.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini64) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-houdini64"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libhoudini.so"));
+}
+
+// Tests that the binary translation type is set to NDK translation when only
+// NDK translation library is enabled by USE flags.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNdkTranslation) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-ndk-translation"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libndk_translation.so"));
+}
+
+// Tests that the binary translation type is set to NDK translation when both
+// Houdini and NDK translation libraries are enabled by USE flags, and the
+// parameter start_params.native_bridge_experiment is set.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNativeBridgeExperiment) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-houdini", "--enable-ndk-translation"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libndk_translation.so"));
+}
+
+// Tests that the binary translation type is set to Houdini when both Houdini
+// and NDK translation libraries are enabled by USE flags, and the parameter
+// start_params.native_bridge_experiment is not set.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNoNativeBridgeExperiment) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-houdini", "--enable-ndk-translation"});
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.native_bridge_experiment = false;
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libhoudini.so"));
 }
 
 }  // namespace

@@ -76,7 +76,6 @@ class WebMouseEvent;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebImeTextSpan;
-struct WebCursorInfo;
 struct WebURLError;
 struct WebPrintParams;
 }  // namespace blink
@@ -100,6 +99,10 @@ class ScopedPPVar;
 
 namespace printing {
 class MetafileSkia;
+}
+
+namespace ui {
+class Cursor;
 }
 
 namespace content {
@@ -222,9 +225,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                   std::unique_ptr<PluginInstanceThrottlerImpl> throttler);
   bool HandleDocumentLoad(const blink::WebURLResponse& response);
   bool HandleCoalescedInputEvent(const blink::WebCoalescedInputEvent& event,
-                                 blink::WebCursorInfo* cursor_info);
-  bool HandleInputEvent(const blink::WebInputEvent& event,
-                        blink::WebCursorInfo* cursor_info);
+                                 ui::Cursor* cursor);
+  bool HandleInputEvent(const blink::WebInputEvent& event, ui::Cursor* cursor);
   PP_Var GetInstanceObject(v8::Isolate* isolate);
   void ViewChanged(const gfx::Rect& window,
                    const gfx::Rect& clip,
@@ -620,7 +622,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   //   to the container. Set to true if the bound device has been changed.
   void UpdateLayer(bool force_creation);
 
-  void DoSetCursor(std::unique_ptr<blink::WebCursorInfo> cursor);
+  void DoSetCursor(std::unique_ptr<ui::Cursor> cursor);
 
   // Internal helper functions for HandleCompositionXXX().
   bool SendCompositionEventToPlugin(PP_InputEvent_Type type,
@@ -798,7 +800,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   const PPP_Graphics3D* plugin_graphics_3d_interface_;
 
   // Contains the cursor if it's set by the plugin.
-  std::unique_ptr<blink::WebCursorInfo> cursor_;
+  std::unique_ptr<ui::Cursor> cursor_;
 
   // Set to true if this plugin thinks it will always be on top. This allows us
   // to use a more optimized painting path in some cases.

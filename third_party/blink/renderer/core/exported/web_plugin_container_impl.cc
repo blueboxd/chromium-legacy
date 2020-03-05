@@ -35,7 +35,6 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -107,6 +106,8 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/mojom/cursor_type.mojom-shared.h"
 
 namespace blink {
 
@@ -804,10 +805,10 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   if (event.type() == event_type_names::kMousedown)
     FocusPlugin();
 
-  WebCursorInfo cursor_info;
+  ui::Cursor cursor;
   if (web_plugin_ && web_plugin_->HandleInputEvent(
-                         WebCoalescedInputEvent(transformed_event),
-                         &cursor_info) != WebInputEventResult::kNotHandled)
+                         WebCoalescedInputEvent(transformed_event), &cursor) !=
+                         WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 
   // A windowless plugin can change the cursor in response to a mouse move
@@ -817,7 +818,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
   if (!page)
     return;
   page->GetChromeClient().SetCursorForPlugin(
-      cursor_info, &parent->GetFrame().LocalFrameRoot());
+      cursor, &parent->GetFrame().LocalFrameRoot());
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent& event) {
@@ -863,9 +864,9 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
-  WebCursorInfo cursor_info;
+  ui::Cursor cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &cursor_info) !=
+                                    &cursor) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }
@@ -886,9 +887,9 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
   if (web_plugin_->SupportsEditCommands())
     web_frame->Client()->HandleCurrentKeyboardEvent();
 
-  WebCursorInfo cursor_info;
+  ui::Cursor cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &cursor_info) !=
+                                    &cursor) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
   }
@@ -991,8 +992,8 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent& event) {
       WebCoalescedInputEvent transformed_event =
           TransformCoalescedTouchEvent(*event.NativeEvent());
 
-      WebCursorInfo cursor_info;
-      if (web_plugin_->HandleInputEvent(transformed_event, &cursor_info) !=
+      ui::Cursor cursor;
+      if (web_plugin_->HandleInputEvent(transformed_event, &cursor) !=
           WebInputEventResult::kNotHandled)
         event.SetDefaultHandled();
       // FIXME: Can a plugin change the cursor from a touch-event callback?
@@ -1021,9 +1022,9 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
 
-  WebCursorInfo cursor_info;
+  ui::Cursor cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &cursor_info) !=
+                                    &cursor) !=
       WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
     return;
@@ -1038,9 +1039,9 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 
-  WebCursorInfo cursor_info;
+  ui::Cursor cursor;
   if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &cursor_info) !=
+                                    &cursor) !=
       WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }

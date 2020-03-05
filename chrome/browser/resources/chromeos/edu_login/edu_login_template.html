@@ -1,0 +1,17 @@
+<style>
+  .main {
+    height: calc(100% - 60px);
+  }
+
+  .footer {
+    height: 60px;
+    padding-inline-end: 32px;
+    padding-inline-start: 32px;
+  }
+</style>
+<div class="main">
+  <slot name="main"></slot>
+</div>
+<div class="footer">
+  <slot name="buttons"></slot>
+</div>

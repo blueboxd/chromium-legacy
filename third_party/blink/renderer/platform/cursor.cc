@@ -25,7 +25,9 @@
 
 #include "third_party/blink/renderer/platform/cursor.h"
 
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -93,6 +95,18 @@ Cursor& Cursor::operator=(const Cursor& other) {
 }
 
 Cursor::~Cursor() = default;
+
+ui::Cursor Cursor::GetCursor() const {
+  ui::Cursor cursor(type_);
+  cursor.set_image_scale_factor(image_scale_factor_);
+  if (type_ == ui::mojom::CursorType::kCustom) {
+    cursor.set_custom_bitmap(
+        image_ ? image_->AsSkBitmapForCurrentFrame(kRespectImageOrientation)
+               : SkBitmap());
+    cursor.set_custom_hotspot(hot_spot_);
+  }
+  return cursor;
+}
 
 const Cursor& PointerCursor() {
   DEFINE_STATIC_LOCAL(Cursor, c, (ui::mojom::CursorType::kPointer));

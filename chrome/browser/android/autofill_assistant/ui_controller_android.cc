@@ -22,6 +22,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormModel_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantGenericUiModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBoxModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBox_jni.h"
@@ -288,6 +289,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnUserActionsChanged(ui_delegate_->GetUserActions());
     OnCollectUserDataOptionsChanged(ui_delegate->GetCollectUserDataOptions());
     OnUserDataChanged(ui_delegate->GetUserData(), UserData::FieldChange::ALL);
+    OnGenericUserInterfaceChanged(ui_delegate->GetGenericUiProto());
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
@@ -1458,6 +1460,28 @@ void UiControllerAndroid::OnClientSettingsChanged(
   }
 }
 
+void UiControllerAndroid::OnGenericUserInterfaceChanged(
+    const GenericUserInterfaceProto* generic_ui) {
+  // Try to inflate user interface from proto.
+  if (generic_ui != nullptr) {
+    generic_ui_controller_ = CreateGenericUiControllerForProto(*generic_ui);
+    if (generic_ui_controller_ == nullptr) {
+      // If creation of generic UI fails, end the action.
+      EndActionProto action_failed;
+      action_failed.set_status(INVALID_ACTION);
+      ui_delegate_->GetBasicInteractions()->EndAction(action_failed);
+    }
+  } else {
+    generic_ui_controller_.reset();
+  }
+
+  // Set or clear generic UI.
+  Java_AssistantGenericUiModel_setView(
+      AttachCurrentThread(), GetGenericUiModel(),
+      generic_ui_controller_ != nullptr ? generic_ui_controller_->GetRootView()
+                                        : nullptr);
+}
+
 void UiControllerAndroid::OnCounterChanged(int input_index,
                                            int counter_index,
                                            int value) {
@@ -1556,13 +1580,15 @@ void UiControllerAndroid::OnFatalError(
 
 void UiControllerAndroid::ResetGenericUiControllers() {
   JNIEnv* env = AttachCurrentThread();
-  auto jmodel = GetCollectUserDataModel();
   collect_user_data_prepended_generic_ui_controller_.reset();
   collect_user_data_appended_generic_ui_controller_.reset();
+  generic_ui_controller_.reset();
+  auto jcollectuserdatamodel = GetCollectUserDataModel();
   Java_AssistantCollectUserDataModel_setGenericUserInterfacePrepended(
-      env, jmodel, nullptr);
+      env, jcollectuserdatamodel, nullptr);
   Java_AssistantCollectUserDataModel_setGenericUserInterfaceAppended(
-      env, jmodel, nullptr);
+      env, jcollectuserdatamodel, nullptr);
+  Java_AssistantGenericUiModel_setView(env, GetGenericUiModel(), nullptr);
 }
 
 std::unique_ptr<GenericUiControllerAndroid>
@@ -1575,6 +1601,12 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
       proto, jcontext, generic_ui_delegate_.GetJavaObject(),
       ui_delegate_->GetEventHandler(), ui_delegate_->GetUserModel(),
       ui_delegate_->GetBasicInteractions());
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetGenericUiModel() {
+  return Java_AssistantModel_getGenericUiModel(AttachCurrentThread(),
+                                               GetModel());
 }
 
 }  // namespace autofill_assistant

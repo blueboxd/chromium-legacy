@@ -137,6 +137,15 @@ class ScriptExecutorDelegate {
   // Set how the sheet should behave when entering a prompt state.
   virtual void SetExpandSheetForPromptAction(bool expand) = 0;
 
+  // Sets the generic UI to show to the user.
+  virtual void SetGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+          end_action_callback) = 0;
+
+  // Clears the generic UI.
+  virtual void ClearGenericUi() = 0;
+
  protected:
   virtual ~ScriptExecutorDelegate() {}
 };

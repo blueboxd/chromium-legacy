@@ -239,7 +239,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                                         bool request) override {}
   int GetLayerTreeId(LocalFrame& frame) override { return 0; }
 
-  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
+  void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
 

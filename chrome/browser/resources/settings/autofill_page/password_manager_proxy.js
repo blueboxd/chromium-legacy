@@ -153,6 +153,26 @@ class PasswordManagerProxy {
    * Requests the start of the bulk password check.
    */
   startBulkPasswordCheck() {}
+
+  /**
+   * Requests the latest information about compromised credentials.
+   * @return {!Promise<(PasswordManagerProxy.CompromisedCredentialsInfo)>}
+   */
+  getCompromisedCredentialsInfo() {}
+
+  /**
+   * Add an observer to the compromised passwords change.
+   * @param {function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   *      listener
+   */
+  addCompromisedCredentialsListener(listener) {}
+
+  /**
+   * Remove an observer to the compromised passwords change.
+   * @param {function(!PasswordManagerProxy.CompromisedCredentialsInfo):void}
+   *     listener
+   */
+  removeCompromisedCredentialsListener(listener) {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -171,6 +191,12 @@ PasswordManagerProxy.PasswordExportProgress;
 
 /** @typedef {chrome.passwordsPrivate.ExportProgressStatus} */
 PasswordManagerProxy.ExportProgressStatus;
+
+/** @typedef {chrome.passwordsPrivate.CompromisedCredential} */
+PasswordManagerProxy.CompromisedCredential;
+
+/** @typedef {chrome.passwordsPrivate.CompromisedCredentialsInfo} */
+PasswordManagerProxy.CompromisedCredentialsInfo;
 
 /**
  * Implementation that accesses the private API.
@@ -297,6 +323,25 @@ class PasswordManagerImpl {
 
   /** @override */
   startBulkPasswordCheck() {}
+
+  /** @override */
+  getCompromisedCredentialsInfo() {
+    return new Promise(resolve => {
+      chrome.passwordsPrivate.getCompromisedCredentialsInfo(resolve);
+    });
+  }
+
+  /** @override */
+  addCompromisedCredentialsListener(listener) {
+    chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged.addListener(
+        listener);
+  }
+
+  /** @override */
+  removeCompromisedCredentialsListener(listener) {
+    chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged.removeListener(
+        listener);
+  }
 }
 
 cr.addSingletonGetter(PasswordManagerImpl);

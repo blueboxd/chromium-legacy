@@ -111,13 +111,11 @@ void CastSenderImpl::InitializeAudio(
 
   VLOG(1) << "CastSenderImpl@" << this << "::InitializeAudio()";
 
-  audio_sender_.reset(
-      new AudioSender(cast_environment_,
-                      audio_config,
-                      base::Bind(&CastSenderImpl::OnAudioStatusChange,
-                                 weak_factory_.GetWeakPtr(),
-                                 status_change_cb),
-                      transport_sender_));
+  audio_sender_ = std::make_unique<AudioSender>(
+      cast_environment_, audio_config,
+      base::Bind(&CastSenderImpl::OnAudioStatusChange,
+                 weak_factory_.GetWeakPtr(), status_change_cb),
+      transport_sender_);
   if (video_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
            video_sender_->GetTargetPlayoutDelay());
@@ -133,17 +131,13 @@ void CastSenderImpl::InitializeVideo(
 
   VLOG(1) << "CastSenderImpl@" << this << "::InitializeVideo()";
 
-  video_sender_.reset(new VideoSender(
-      cast_environment_,
-      video_config,
+  video_sender_ = std::make_unique<VideoSender>(
+      cast_environment_, video_config,
       base::Bind(&CastSenderImpl::OnVideoStatusChange,
-                 weak_factory_.GetWeakPtr(),
-                 status_change_cb),
-      create_vea_cb,
-      create_video_encode_mem_cb,
-      transport_sender_,
-      base::Bind(&CastSenderImpl::SetTargetPlayoutDelay,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr(), status_change_cb),
+      create_vea_cb, create_video_encode_mem_cb, transport_sender_,
+      base::BindRepeating(&CastSenderImpl::SetTargetPlayoutDelay,
+                          weak_factory_.GetWeakPtr()));
   if (audio_sender_) {
     DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
            video_sender_->GetTargetPlayoutDelay());

@@ -191,9 +191,9 @@ gfx::RectF MouseCursorOverlayController::ComputeRelativeBoundsForOverlay(
         // Compute the hotspot in terms of DIP coordinates.
         const gfx::PointF hotspot =
             scale_factor > 0.0f
-                ? gfx::ScalePoint(gfx::PointF(GetCursorHotstop(cursor)),
+                ? gfx::ScalePoint(gfx::PointF(GetCursorHotspot(cursor)),
                                   1.0f / scale_factor)
-                : gfx::PointF(GetCursorHotstop(cursor));
+                : gfx::PointF(GetCursorHotspot(cursor));
 
         // Finally, put it all together: Scale the absolute bounds of the
         // overlay by the window size to produce relative coordinates.

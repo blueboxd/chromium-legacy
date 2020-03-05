@@ -4,25 +4,18 @@
 
 package org.chromium.chrome.browser.status_indicator;
 
-import static android.graphics.PorterDuff.Mode.SRC_IN;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import android.graphics.Color;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.v4.content.res.ResourcesCompat;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.TextView;
 
-import org.chromium.base.MathUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
-import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -45,7 +37,7 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
     private static final String STATUS_TEXT = "Offline";
 
     private ViewResourceFrameLayout mContainer;
-    private TextViewWithCompoundDrawables mStatusTextView;
+    private TextView mStatusTextView;
     private MockStatusIndicatorSceneLayer mSceneLayer;
 
     private PropertyModel mModel;
@@ -86,9 +78,11 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testTextView() {
-        assertTrue("Wrong initial status text.", TextUtils.isEmpty(mStatusTextView.getText()));
-        assertNull("Wrong initial status icon.", mStatusTextView.getCompoundDrawablesRelative()[0]);
-        assertTrue(
+        Assert.assertTrue(
+                "Wrong initial status text.", TextUtils.isEmpty(mStatusTextView.getText()));
+        Assert.assertNull(
+                "Wrong initial status icon.", mStatusTextView.getCompoundDrawablesRelative()[0]);
+        Assert.assertTrue(
                 "Rest of the compound drawables are not null.", areRestOfCompoundDrawablesNull());
 
         Drawable drawable = ResourcesCompat.getDrawable(getActivity().getResources(),
@@ -99,10 +93,10 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
             mModel.set(StatusIndicatorProperties.STATUS_ICON, drawable);
         });
 
-        assertEquals("Wrong status text.", STATUS_TEXT, mStatusTextView.getText());
-        assertEquals(
-                "Wrong status icon.", drawable, mStatusTextView.getCompoundDrawablesRelative()[0]);
-        assertTrue(
+        assertThat("Wrong status text.", mStatusTextView.getText(), equalTo(STATUS_TEXT));
+        assertThat("Wrong status icon.", mStatusTextView.getCompoundDrawablesRelative()[0],
+                equalTo(drawable));
+        Assert.assertTrue(
                 "Rest of the compound drawables are not null.", areRestOfCompoundDrawablesNull());
     }
 
@@ -110,9 +104,9 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testVisibility() {
-        assertEquals(
-                "Wrong initial Android view visibility.", View.GONE, mContainer.getVisibility());
-        assertFalse("Wrong initial composited view visibility.",
+        assertThat("Wrong initial Android view visibility.", mContainer.getVisibility(),
+                equalTo(View.GONE));
+        Assert.assertFalse("Wrong initial composited view visibility.",
                 mSceneLayer.isSceneOverlayTreeShowing());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -120,73 +114,18 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
             mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, true);
         });
 
-        assertEquals("Android view is not visible.", View.VISIBLE, mContainer.getVisibility());
-        assertTrue("Composited view is not visible.", mSceneLayer.isSceneOverlayTreeShowing());
+        assertThat(
+                "Android view is not visible.", mContainer.getVisibility(), equalTo(View.VISIBLE));
+        Assert.assertTrue(
+                "Composited view is not visible.", mSceneLayer.isSceneOverlayTreeShowing());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE);
             mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false);
         });
 
-        assertEquals("Android view is not gone.", View.GONE, mContainer.getVisibility());
-        assertFalse("Composited view is visible.", mSceneLayer.isSceneOverlayTreeShowing());
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testColorAndTint() {
-        int bgColor = getActivity().getResources().getColor(R.color.modern_primary_color);
-        int textColor = getActivity().getResources().getColor(R.color.default_text_color);
-        assertEquals("Wrong initial background color.", bgColor,
-                ((ColorDrawable) mContainer.getBackground()).getColor());
-        assertEquals("Wrong initial text color", textColor, mStatusTextView.getCurrentTextColor());
-
-        Drawable drawable = ResourcesCompat.getDrawable(getActivity().getResources(),
-                R.drawable.ic_error_white_24dp_filled, getActivity().getTheme());
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.set(StatusIndicatorProperties.STATUS_ICON, drawable);
-            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, Color.BLUE);
-            mModel.set(StatusIndicatorProperties.TEXT_COLOR, Color.RED);
-            mModel.set(StatusIndicatorProperties.ICON_TINT, Color.GREEN);
-        });
-
-        assertEquals("Wrong background color.", Color.BLUE,
-                ((ColorDrawable) mContainer.getBackground()).getColor());
-        assertEquals("Wrong text color.", Color.RED, mStatusTextView.getCurrentTextColor());
-
-        // There is no way to get the color filter below L. We could technically modify
-        // TextViewWithCompoundDrawables to cache it, but it's not worth the effort. Once the min
-        // apk is L, we won't be using color filters anyway.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            assertEquals("Wrong compound drawables tint",
-                    new PorterDuffColorFilter(Color.GREEN, SRC_IN),
-                    mStatusTextView.getCompoundDrawablesRelative()[0].getColorFilter());
-        }
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testTextAlpha() {
-        assertEquals(
-                "Wrong initial text alpha.", 1.f, mStatusTextView.getAlpha(), MathUtils.EPSILON);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.set(StatusIndicatorProperties.TEXT_ALPHA, .5f));
-
-        assertEquals("Wrong text alpha.", .5f, mStatusTextView.getAlpha(), MathUtils.EPSILON);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.set(StatusIndicatorProperties.TEXT_ALPHA, .0f));
-
-        assertEquals("Wrong text alpha.", 0.f, mStatusTextView.getAlpha(), MathUtils.EPSILON);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.set(StatusIndicatorProperties.TEXT_ALPHA, 1.f));
-
-        assertEquals("Wrong text alpha.", 1.f, mStatusTextView.getAlpha(), MathUtils.EPSILON);
+        assertThat("Android view is not gone.", mContainer.getVisibility(), equalTo(View.GONE));
+        Assert.assertFalse("Composited view is visible.", mSceneLayer.isSceneOverlayTreeShowing());
     }
 
     private boolean areRestOfCompoundDrawablesNull() {

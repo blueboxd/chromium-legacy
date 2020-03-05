@@ -37,8 +37,6 @@ class CORE_EXPORT TrustedTypePolicyFactory final
 
   TrustedTypePolicy* defaultPolicy() const;
 
-  Vector<String> getPolicyNames() const;
-
   bool isHTML(ScriptState*, const ScriptValue&);
   bool isScript(ScriptState*, const ScriptValue&);
   bool isScriptURL(ScriptState*, const ScriptValue&);

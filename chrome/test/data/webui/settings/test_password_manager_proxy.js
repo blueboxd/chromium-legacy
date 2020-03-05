@@ -11,7 +11,11 @@
  */
 class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
-    super(['requestPlaintextPassword', 'startBulkPasswordCheck']);
+    super([
+      'requestPlaintextPassword',
+      'startBulkPasswordCheck',
+      'getCompromisedCredentialsInfo',
+    ]);
 
     this.actual_ = new PasswordManagerExpectations();
 
@@ -19,6 +23,7 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     this.data = {
       passwords: [],
       exceptions: [],
+      leakedCredentials: FakeDataMaker.makeCompromisedCredentialsInfo([], ''),
     };
 
     // Holds the last callbacks so they can be called when needed/
@@ -143,4 +148,16 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
   }
+
+  /** @override */
+  getCompromisedCredentialsInfo() {
+    this.methodCalled('getCompromisedCredentialsInfo');
+    return Promise.resolve(this.data.leakedCredentials);
+  }
+
+  /** @override */
+  addCompromisedCredentialsListener(listener) {}
+
+  /** @override */
+  removeCompromisedCredentialsListener(listener) {}
 }

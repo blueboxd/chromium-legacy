@@ -121,6 +121,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // Called after a data source has completed a flush.
   void NotifyDataSourceFlushComplete(perfetto::FlushRequestID id);
 
+  bool InitSharedMemoryIfNeededLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
   mojo::Remote<mojom::ProducerHost> producer_host_;
@@ -129,14 +131,15 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // replies we're still waiting for.
   std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;
 
-  // Guards initialization of |shared_memory_| and |shared_memory_arbiter_|.
-  // TODO(eseckler): Consider accessing these without locks after setup was
-  // completed, since we never destroy or unset them.
-  base::Lock shared_memory_lock_;
-  std::unique_ptr<MojoSharedMemory> shared_memory_
-      GUARDED_BY(shared_memory_lock_);
+  // Guards initialization of SMB and startup tracing.
+  base::Lock lock_;
+  // TODO(eseckler): Consider accessing |shared_memory_| and
+  // |shared_memory_arbiter_| without locks after setup was completed, since we
+  // never destroy or unset them.
+  std::unique_ptr<MojoSharedMemory> shared_memory_ GUARDED_BY(lock_);
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_
-      GUARDED_BY(shared_memory_lock_);
+      GUARDED_BY(lock_);
+  bool startup_tracing_active_ GUARDED_BY(lock_) = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

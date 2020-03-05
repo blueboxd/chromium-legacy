@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CURSOR_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -36,6 +35,10 @@
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor
+
+namespace ui {
+class Cursor;
+}
 
 namespace blink {
 
@@ -60,6 +63,7 @@ class PLATFORM_EXPORT Cursor {
   Cursor& operator=(const Cursor&);
 
   explicit Cursor(ui::mojom::CursorType);
+  ui::Cursor GetCursor() const;
   ui::mojom::CursorType GetType() const {
     DCHECK_GE(type_, static_cast<ui::mojom::CursorType>(0));
     DCHECK_LE(type_, ui::mojom::CursorType::kCustom);

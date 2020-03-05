@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -56,6 +57,7 @@ constexpr const char* kPinLabels[] = {
 
 constexpr const char kLoginPinViewClassName[] = "LoginPinView";
 
+constexpr SkColor kBackspaceIconColor = gfx::kGoogleGrey200;
 // How long does the user have to long-press the backspace button before it
 // auto-submits?
 constexpr int kInitialBackspaceDelayMs = 500;
@@ -242,8 +244,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
                           IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME),
                       on_press) {
     image_ = new views::ImageView();
-    image_->SetImage(gfx::CreateVectorIcon(
-        kLockScreenBackspaceIcon, login_constants::kButtonEnabledColor));
+    image_->SetImage(
+        gfx::CreateVectorIcon(kLockScreenBackspaceIcon, kBackspaceIconColor));
     AddChildView(image_);
     SetEnabled(false);
   }
@@ -257,7 +259,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
   }
 
   void OnEnabledChanged() {
-    SkColor color = login_constants::kButtonEnabledColor;
+    SkColor color = kBackspaceIconColor;
     if (!GetEnabled()) {
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
       color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);

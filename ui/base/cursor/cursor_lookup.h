@@ -18,7 +18,7 @@ class Cursor;
 
 SkBitmap UI_BASE_EXPORT GetCursorBitmap(const Cursor& cursor);
 
-gfx::Point UI_BASE_EXPORT GetCursorHotstop(const Cursor& cursor);
+gfx::Point UI_BASE_EXPORT GetCursorHotspot(const Cursor& cursor);
 
 }  // namespace ui
 

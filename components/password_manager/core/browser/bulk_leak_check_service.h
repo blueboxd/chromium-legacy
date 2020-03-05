@@ -56,12 +56,12 @@ class BulkLeakCheckService : public KeyedService,
 
   class Observer : public base::CheckedObserver {
    public:
-    // BulkLeakCheckService changed its state. |state| and |pending_credentials|
-    // are added for convenience.
-    virtual void OnStateChanged(State state, size_t pending_credentials) = 0;
+    // BulkLeakCheckService changed its state.
+    virtual void OnStateChanged(State state) = 0;
 
-    // Called when |credential| is determined to be leaked.
-    virtual void OnLeakFound(const LeakCheckCredential& credential) = 0;
+    // Called when |credential| is analyzed.
+    virtual void OnCredentialDone(const LeakCheckCredential& credential,
+                                  IsLeaked is_leaked) = 0;
   };
 
   BulkLeakCheckService(

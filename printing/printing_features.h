@@ -31,6 +31,8 @@ PRINTING_EXPORT bool IsXpsPrintCapabilityRequired();
 PRINTING_EXPORT bool ShouldPrintUsingXps(bool source_is_pdf);
 #endif
 
+PRINTING_EXPORT extern const base::Feature kUseFrameAssociatedLoaderFactory;
+
 }  // namespace features
 }  // namespace printing
 

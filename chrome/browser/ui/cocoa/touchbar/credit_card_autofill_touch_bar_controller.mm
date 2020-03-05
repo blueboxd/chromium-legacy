@@ -113,9 +113,9 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 
 - (NSButton*)createCreditCardButtonAtRow:(int)row {
   NSString* label =
-      base::SysUTF16ToNSString(_controller->GetElidedValueAt(row));
+      base::SysUTF16ToNSString(_controller->GetSuggestionValueAt(row));
   NSString* subtext =
-      base::SysUTF16ToNSString(_controller->GetElidedLabelAt(row));
+      base::SysUTF16ToNSString(_controller->GetSuggestionLabelAt(row));
 
   // Create the button title based on the text direction.
   NSString* buttonTitle =

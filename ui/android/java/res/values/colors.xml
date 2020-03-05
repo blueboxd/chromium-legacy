@@ -46,8 +46,6 @@
     <color name="modern_primary_color" tools:ignore="UnusedResources">@color/default_bg_color_light</color>
     <color name="modern_secondary_color" tools:ignore="UnusedResources">@color/modern_grey_100</color>
 
-    <color name="default_bg_color_blue" tools:ignore="UnusedResources">@color/modern_blue_600</color>
-
     <!-- Dark background and branding color. -->
     <color name="dark_primary_color" tools:ignore="UnusedResources">
         @color/modern_grey_900

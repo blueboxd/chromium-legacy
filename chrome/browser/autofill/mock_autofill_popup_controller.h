@@ -54,11 +54,11 @@ class MockAutofillPopupController
     return suggestions_[row];
   }
 
-  const base::string16& GetElidedValueAt(int i) const override {
+  const base::string16& GetSuggestionValueAt(int i) const override {
     return suggestions_[i].value;
   }
 
-  const base::string16& GetElidedLabelAt(int row) const override {
+  const base::string16& GetSuggestionLabelAt(int row) const override {
     return suggestions_[row].label;
   }
 

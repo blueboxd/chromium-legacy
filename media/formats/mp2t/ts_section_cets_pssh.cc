@@ -11,9 +11,8 @@
 namespace media {
 namespace mp2t {
 
-TsSectionCetsPssh::TsSectionCetsPssh(
-    const RegisterPsshBoxesCb& register_pssh_boxes_cb)
-    : register_pssh_boxes_cb_(register_pssh_boxes_cb) {}
+TsSectionCetsPssh::TsSectionCetsPssh(RegisterPsshBoxesCb register_pssh_boxes_cb)
+    : register_pssh_boxes_cb_(std::move(register_pssh_boxes_cb)) {}
 
 TsSectionCetsPssh::~TsSectionCetsPssh() {}
 

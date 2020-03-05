@@ -59,6 +59,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   int GetChildCount() const;
   gfx::NativeViewAccessible ChildAtIndex(int index);
 
+  std::string GetName() const;
+  base::string16 GetNameAsString16() const;
+
   // This needs to be implemented for each platform.
   virtual int GetIndexInParent();
 

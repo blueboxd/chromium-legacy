@@ -30,7 +30,9 @@
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -51,6 +54,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -284,8 +288,17 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
+    chromeos::CryptohomeClient::InitializeFake();
+    chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(false);
+    policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+
     ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
               arc_session_manager()->state());
+  }
+
+  void TearDown() override {
+    chromeos::CryptohomeClient::Shutdown();
+    ArcSessionManagerTestBase::TearDown();
   }
 
  private:
@@ -1600,6 +1613,65 @@ TEST_F(ArcSessionManagerTest, FileExpansion_Fail) {
   arc_session_manager()->OnExpandPropertyFilesForTesting(false);
   ASSERT_TRUE(observer.property_files_expansion_result().has_value());
   EXPECT_FALSE(observer.property_files_expansion_result().value());
+}
+
+class ArcSessionManagerPowerwashTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerPowerwashTest() = default;
+  ~ArcSessionManagerPowerwashTest() override = default;
+  ArcSessionManagerPowerwashTest(const ArcSessionManagerPowerwashTest&) =
+      delete;
+  ArcSessionManagerPowerwashTest& operator=(
+      const ArcSessionManagerPowerwashTest&) = delete;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    chromeos::CryptohomeClient::InitializeFake();
+  }
+
+  void TearDown() override {
+    chromeos::CryptohomeClient::Shutdown();
+    ArcSessionManagerTestBase::TearDown();
+  }
+};
+
+TEST_F(ArcSessionManagerPowerwashTest, PowerwashRequestBlocksArcStart) {
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
+
+  // Set up the situation that provisioning is successfully done in the
+  // previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  // Login unaffiliated user.
+  const AccountId account_id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), "1234567890"));
+  GetFakeUserManager()->AddUserWithAffiliation(account_id, false);
+  GetFakeUserManager()->LoginUser(account_id);
+
+  // Set DeviceRebootOnUserSignout to ALWAYS.
+  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+      /* create_settings_service=*/false};
+  settings_helper.ReplaceDeviceSettingsProviderWithStub();
+  settings_helper.SetInteger(
+      chromeos::kDeviceRebootOnUserSignout,
+      enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
+
+  // Initialize cryptohome to require powerwash.
+  chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(true);
+  policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  arc_session_manager()->RequestEnable();
+  // Wait for manager's state.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
 }
 
 }  // namespace

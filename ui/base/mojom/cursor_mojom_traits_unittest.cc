@@ -59,7 +59,7 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
 
   EXPECT_EQ(ui::mojom::CursorType::kCustom, output.type());
   EXPECT_EQ(kScale, output.image_scale_factor());
-  EXPECT_EQ(kHotspot, GetCursorHotstop(output));
+  EXPECT_EQ(kHotspot, GetCursorHotspot(output));
 
   // Even though the pixel data is the same, the bitmap generation ids differ.
   EXPECT_TRUE(

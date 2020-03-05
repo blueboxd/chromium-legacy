@@ -136,6 +136,19 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
+std::string AXPlatformNodeBase::GetName() const {
+  if (delegate_)
+    return delegate_->GetName();
+  return base::EmptyString();
+}
+
+base::string16 AXPlatformNodeBase::GetNameAsString16() const {
+  std::string name = GetName();
+  if (name.empty())
+    return base::string16();
+  return base::UTF8ToUTF16(name);
+}
+
 int AXPlatformNodeBase::GetIndexInParent() {
   if (delegate_)
     return delegate_->GetIndexInParent();
@@ -471,7 +484,7 @@ base::string16 AXPlatformNodeBase::GetInnerText() const {
   // supposed to skip over nodes that are invisible or ignored, but
   // ViewAXPlatformNodeDelegate does not currently implement this behavior.
   if (IsTextOnlyObject() && !IsInvisibleOrIgnored())
-    return GetString16Attribute(ax::mojom::StringAttribute::kName);
+    return GetNameAsString16();
 
   base::string16 text;
   for (int i = 0; i < GetChildCount(); ++i) {
@@ -1219,8 +1232,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
       // We don't want to expose any associated label in IA2 Hypertext.
       return;
     }
-    hypertext_.hypertext =
-        GetString16Attribute(ax::mojom::StringAttribute::kName);
+    hypertext_.hypertext = GetNameAsString16();
     return;
   }
 
@@ -1234,8 +1246,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
        child = child->GetNextSibling()) {
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
-      hypertext_.hypertext +=
-          child->GetString16Attribute(ax::mojom::StringAttribute::kName);
+      hypertext_.hypertext += child->GetNameAsString16();
     } else {
       int32_t char_offset = static_cast<int32_t>(hypertext_.hypertext.size());
       int32_t child_unique_id = child->GetUniqueId();

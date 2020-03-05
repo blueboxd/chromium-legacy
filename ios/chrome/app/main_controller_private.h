@@ -21,9 +21,6 @@ class GURL;
 // YES if the last time the app was launched was with a previous version.
 @property(nonatomic, readonly) BOOL isFirstLaunchAfterUpgrade;
 
-// Presents a promo's navigation controller.
-- (void)showPromo:(UIViewController*)promo;
-
 @end
 
 // Methods that only exist for tests.

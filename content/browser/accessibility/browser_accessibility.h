@@ -428,6 +428,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // or GetInnerText so it's clear which API is called.
   virtual base::string16 GetText() const;
 
+  base::string16 GetNameAsString16() const;
+
   // AXPlatformNodeDelegate.
   base::string16 GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
@@ -450,6 +452,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
   std::unique_ptr<ChildIterator> ChildrenEnd() override;
 
+  std::string GetName() const override;
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
   base::string16 GetInnerText() const override;

@@ -33,7 +33,9 @@ class UserAction {
 
   // Initializes user action from proto.
   UserAction(const UserActionProto& action);
-  UserAction(const ChipProto& chip, const DirectActionProto& direct_action);
+  UserAction(const ChipProto& chip,
+             const DirectActionProto& direct_action,
+             const std::string& identifier);
 
   // Returns true if the action has no trigger, that is, there is no chip and no
   // direct action.
@@ -46,6 +48,8 @@ class UserAction {
 
   const DirectAction& direct_action() const { return direct_action_; }
   DirectAction& direct_action() { return direct_action_; }
+
+  std::string identifier() const { return identifier_; }
 
   void SetEnabled(bool enabled) { enabled_ = enabled; }
 
@@ -92,6 +96,9 @@ class UserAction {
 
   // Callback triggered to trigger the action.
   Callback callback_;
+
+  // Optional identifier to uniquely identify this user action.
+  std::string identifier_;
 
   DISALLOW_COPY_AND_ASSIGN(UserAction);
 };

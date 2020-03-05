@@ -14,6 +14,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -21,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,6 +40,7 @@
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
+#include "printing/printing_features.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -45,6 +48,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
+#include "third_party/blink/public/platform/web_failing_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -803,6 +807,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   void CopySelection(const WebPreferences& preferences);
 
   FrameReference frame_;
+  FrameReference original_frame_;
   blink::WebNavigationControl* navigation_control_ = nullptr;
   blink::WebNode node_to_print_;
   bool owns_web_view_ = false;
@@ -826,6 +831,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const blink::WebNode& node,
     bool ignore_css_margins)
     : frame_(frame),
+      original_frame_(frame),
       node_to_print_(node),
       should_print_backgrounds_(params.should_print_backgrounds),
       should_print_selection_only_(params.selection_only) {
@@ -990,6 +996,16 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
+  if (base::FeatureList::IsEnabled(
+          features::kUseFrameAssociatedLoaderFactory)) {
+    blink::WebLocalFrame* frame = original_frame_.GetFrame();
+    UMA_HISTOGRAM_BOOLEAN("Printing.FrameIsActiveOnCreateLoaderFactory",
+                          !!frame);
+    if (!frame) {
+      return std::make_unique<blink::WebFailingURLLoaderFactory>();
+    }
+    return frame->Client()->CreateURLLoaderFactory();
+  }
   return blink::Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 

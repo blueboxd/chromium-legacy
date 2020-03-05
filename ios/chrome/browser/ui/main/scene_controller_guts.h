@@ -65,7 +65,10 @@ class ChromeBrowserState;
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
 
+- (BOOL)presentingFirstRunUI;
+
 // Testing only.
+- (void)showFirstRunUI;
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher;
 - (id<TabSwitcher>)tabSwitcher;
 

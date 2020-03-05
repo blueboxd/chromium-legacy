@@ -3984,6 +3984,7 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Get scripts unparsable"/>
   <int value="19" label="No initial scripts"/>
   <int value="20" label="Installing the feature module failed"/>
+  <int value="21" label="User navigation to a different domain in BROWSE mode"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -28538,6 +28539,16 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="5"
       label="Password hash change event where the account is a non-GAIA
              enterprise account"/>
+</enum>
+
+<enum name="GaiaServiceType">
+  <int value="0" label="No Gaia response header"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Logout all existing sessions"/>
+  <int value="3" label="Open an incognito tab"/>
+  <int value="4" label="Add or re-authenticate an account"/>
+  <int value="5" label="Create a new account"/>
+  <int value="6" label="Default, all other cases"/>
 </enum>
 
 <enum name="GaiaSessionRestoreOutcome">

@@ -264,8 +264,17 @@ const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
+// Enables the use of Houdini library for ARM binary translation.
+const char kEnableHoudini[] = "enable-houdini";
+
+// Enables the use of Houdini 64-bit library for ARM binary translation.
+const char kEnableHoudini64[] = "enable-houdini64";
+
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
+
+// Enables the use of NDK translation library for ARM binary translation.
+const char kEnableNdkTranslation[] = "enable-ndk-translation";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";

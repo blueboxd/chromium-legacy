@@ -93,7 +93,7 @@ VideoSender::VideoSender(
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     CastTransport* const transport_sender,
-    const PlayoutDelayChangeCB& playout_delay_change_cb)
+    PlayoutDelayChangeCB playout_delay_change_cb)
     : FrameSender(
           cast_environment,
           transport_sender,
@@ -107,7 +107,7 @@ VideoSender::VideoSender(
                                              video_config.max_frame_rate)),
       frames_in_encoder_(0),
       last_bitrate_(0),
-      playout_delay_change_cb_(playout_delay_change_cb),
+      playout_delay_change_cb_(std::move(playout_delay_change_cb)),
       low_latency_mode_(false),
       last_reported_encoder_utilization_(-1.0),
       last_reported_lossy_utilization_(-1.0) {

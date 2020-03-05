@@ -18,6 +18,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -68,6 +69,8 @@ class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     mock_delegate_ =
         std::make_unique<testing::NiceMock<PasswordsModelDelegateMock>>();
+    ON_CALL(*mock_delegate_, GetPasswordFeatureManager())
+        .WillByDefault(Return(&password_feature_manager_));
     ON_CALL(*mock_delegate_, GetPasswordFormMetricsRecorder())
         .WillByDefault(Return(nullptr));
     PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -99,6 +102,10 @@ class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
 
   PasswordsModelDelegateMock* delegate() { return mock_delegate_.get(); }
 
+  password_manager::MockPasswordFeatureManager* password_feature_manager() {
+    return &password_feature_manager_;
+  }
+
   SaveUpdateWithAccountStoreBubbleController* controller() {
     return controller_.get();
   }
@@ -128,6 +135,8 @@ class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> test_web_contents_;
   std::unique_ptr<SaveUpdateWithAccountStoreBubbleController> controller_;
+  testing::NiceMock<password_manager::MockPasswordFeatureManager>
+      password_feature_manager_;
   std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
   autofill::PasswordForm pending_password_;
 };
@@ -257,7 +266,9 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
       password_manager::metrics_util::NO_DIRECT_INTERACTION);
 }
 
-TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSave) {
+TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSaveInLocalStore) {
+  ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
+      .WillByDefault(Return(autofill::PasswordForm::Store::kProfileStore));
   PretendPasswordWaiting();
 
   EXPECT_TRUE(controller()->enable_editing());
@@ -269,6 +280,53 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSave) {
                                         pending_password().password_value));
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword)
+      .Times(0);
+  controller()->OnSaveClicked();
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+}
+
+TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
+       ClickSaveInAccountStoreWhileOptedIn) {
+  ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
+      .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
+  PretendPasswordWaiting();
+
+  EXPECT_TRUE(controller()->enable_editing());
+  EXPECT_FALSE(controller()->IsCurrentStateUpdate());
+
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*delegate(), OnPasswordsRevealed()).Times(0);
+  EXPECT_CALL(*delegate(), SavePassword(pending_password().username_value,
+                                        pending_password().password_value));
+  EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
+  EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword)
+      .Times(0);
+  controller()->OnSaveClicked();
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+}
+
+TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
+       ClickSaveInAccountStoreWhileNotOptedIn) {
+  ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
+      .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  PretendPasswordWaiting();
+
+  EXPECT_TRUE(controller()->enable_editing());
+  EXPECT_FALSE(controller()->IsCurrentStateUpdate());
+
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*delegate(), SavePassword).Times(0);
+  EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
+  EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword(
+                               _, pending_password().username_value,
+                               pending_password().password_value));
   controller()->OnSaveClicked();
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
 }

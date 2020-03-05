@@ -17,8 +17,6 @@ namespace cast {
 
 namespace {
 
-typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
-
 void InitializeEncoderOnEncoderThread(
     const scoped_refptr<CastEnvironment>& environment,
     SoftwareVideoEncoder* encoder) {

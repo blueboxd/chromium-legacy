@@ -70,6 +70,18 @@ void FakeCrosHealthdService::RunAcPowerRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::RunCpuCacheRoutine(
+    uint32_t length_seconds,
+    RunCpuCacheRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthdService::RunCpuStressRoutine(
+    uint32_t length_seconds,
+    RunCpuStressRoutineCallback callback) {
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
 void FakeCrosHealthdService::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories,
     ProbeTelemetryInfoCallback callback) {

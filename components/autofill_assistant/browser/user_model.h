@@ -54,7 +54,7 @@ class UserModel {
   // a std::string iterable.
   template <class T>
   base::Optional<std::vector<ValueProto>> GetValues(
-      const T& model_identifiers) {
+      const T& model_identifiers) const {
     std::vector<ValueProto> values;
     for (const auto& identifier : model_identifiers) {
       auto value = GetValue(identifier);

@@ -308,7 +308,7 @@ void CursorWindowController::UpdateCursorImage() {
     if (bitmap.isNull())
       return;
     image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    hot_point_ = GetCursorHotstop(cursor_);
+    hot_point_ = GetCursorHotspot(cursor_);
   } else {
     int resource_id;
     if (!ui::GetCursorDataFor(cursor_size_, cursor_.type(), cursor_scale,

@@ -69,6 +69,11 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   void SetExpandSheetForPromptAction(bool expand) override;
+  void SetGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+          end_action_callback) override;
+  void ClearGenericUi() override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }
 

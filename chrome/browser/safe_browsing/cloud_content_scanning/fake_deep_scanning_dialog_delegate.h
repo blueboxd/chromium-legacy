@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
@@ -107,6 +108,8 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   StatusCallback status_callback_;
   EncryptionStatusCallback encryption_callback_;
   std::string dm_token_;
+
+  base::WeakPtrFactory<FakeDeepScanningDialogDelegate> weakptr_factory_{this};
 };
 
 }  // namespace safe_browsing

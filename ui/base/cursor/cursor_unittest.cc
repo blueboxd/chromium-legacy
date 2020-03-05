@@ -39,7 +39,7 @@ TEST(CursorTest, CustomType) {
 
   const gfx::Point kHotspot = gfx::Point(5, 2);
   cursor.set_custom_hotspot(kHotspot);
-  EXPECT_EQ(kHotspot, GetCursorHotstop(cursor));
+  EXPECT_EQ(kHotspot, GetCursorHotspot(cursor));
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(10, 10);

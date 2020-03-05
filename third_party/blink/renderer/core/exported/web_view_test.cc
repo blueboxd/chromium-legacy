@@ -54,7 +54,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -139,6 +138,7 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
@@ -3277,8 +3277,8 @@ class MiddleClickAutoscrollWebWidgetClient
  public:
   // WebWidgetClient methods
 
-  void DidChangeCursor(const WebCursorInfo& cursor) override {
-    last_cursor_type_ = cursor.type;
+  void DidChangeCursor(const ui::Cursor& cursor) override {
+    last_cursor_type_ = cursor.type();
   }
 
   ui::mojom::CursorType GetLastCursorType() const { return last_cursor_type_; }
@@ -3343,8 +3343,8 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
 
     // Even if a plugin tries to change the cursor type, that should be ignored
     // during middle-click autoscroll.
-    web_view->GetChromeClient().SetCursorForPlugin(
-        WebCursorInfo(PointerCursor()), local_frame);
+    web_view->GetChromeClient().SetCursorForPlugin(PointerCursor().GetCursor(),
+                                                   local_frame);
     EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
     // End middle-click autoscroll.
@@ -3355,7 +3355,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(mouse_event));
 
-    web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
+    web_view->GetChromeClient().SetCursorForPlugin(IBeamCursor().GetCursor(),
                                                    local_frame);
     EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
   }

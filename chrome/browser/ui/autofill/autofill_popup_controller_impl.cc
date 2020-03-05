@@ -316,12 +316,12 @@ const Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(int row) const {
   return suggestions_[row];
 }
 
-const base::string16& AutofillPopupControllerImpl::GetElidedValueAt(
+const base::string16& AutofillPopupControllerImpl::GetSuggestionValueAt(
     int row) const {
   return suggestions_[row].value;
 }
 
-const base::string16& AutofillPopupControllerImpl::GetElidedLabelAt(
+const base::string16& AutofillPopupControllerImpl::GetSuggestionLabelAt(
     int row) const {
   return suggestions_[row].label;
 }

@@ -46,7 +46,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
 
   // pepper::FullscreenContainer API.
   void Destroy() override;
-  void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) override;
+  void PepperDidChangeCursor(const ui::Cursor& cursor) override;
   void SetLayer(scoped_refptr<cc::Layer> layer) override;
 
   // RenderWidget overrides.

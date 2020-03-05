@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursor_util.h"
@@ -17,7 +16,7 @@ namespace content {
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (!platform_cursor_) {
     platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
-        GetCursorBitmap(cursor), GetCursorHotstop(cursor),
+        GetCursorBitmap(cursor), GetCursorHotspot(cursor),
         cursor.image_scale_factor());
   }
 

@@ -62,6 +62,8 @@ include_rules = [
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
     "+services/metrics/public/cpp/ukm_source_id.h",
+    "+services/network/public/cpp",
+    "+services/network/public/mojom",
     "+services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
     #TODO(nverne): remove this
@@ -69,6 +71,7 @@ include_rules = [
     "+third_party/ced/src/compact_enc_det/compact_enc_det.h",
     "+third_party/khronos",
     "+third_party/skia",
+    "+ui/base/cursor/cursor.h",
     "+ui/base/resource/scale_factor.h",
     "+ui/gfx",
     "+url",

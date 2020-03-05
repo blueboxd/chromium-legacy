@@ -68,8 +68,8 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   void AcceptSuggestion(int index) override;
   int GetLineCount() const override;
   const autofill::Suggestion& GetSuggestionAt(int row) const override;
-  const base::string16& GetElidedValueAt(int row) const override;
-  const base::string16& GetElidedLabelAt(int row) const override;
+  const base::string16& GetSuggestionValueAt(int row) const override;
+  const base::string16& GetSuggestionLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int index,
                                   base::string16* title,
                                   base::string16* body) override;

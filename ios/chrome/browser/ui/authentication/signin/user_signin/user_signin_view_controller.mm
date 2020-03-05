@@ -158,9 +158,6 @@ enum AuthenticationButtonType {
           0, constants.ButtonHorizontalPadding,
           constants.ButtonBottomPadding + constants.ButtonHeight, 0));
 
-  // Activity indicator constraints.
-  AddSameCenterConstraints(self.view, self.activityIndicator);
-
   // Confirmation button constraints.
   AddSameConstraintsToSidesWithInsets(
       self.confirmationButton, self.view,

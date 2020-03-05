@@ -14,6 +14,14 @@
 
 namespace arc {
 
+// Enum that describes which native bridge mode is used to run arm binaries on
+// x86.
+enum class ArcBinaryTranslationType {
+  NONE,
+  HOUDINI,
+  NDK_TRANSLATION,
+};
+
 // Returns an adapter for arcvm.
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
     version_info::Channel channel);

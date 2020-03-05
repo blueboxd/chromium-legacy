@@ -25,12 +25,17 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
+#include "content/browser/indexed_db/indexed_db_origin_state.h"
+#include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -407,18 +412,6 @@ void IndexedDBContextImpl::BindTestInterface(
   test_receivers_.Add(this, std::move(receiver));
 }
 
-void IndexedDBContextImpl::GetFilePathForTesting(
-    const Origin& origin,
-    GetFilePathForTestingCallback callback) {
-  std::move(callback).Run(GetLevelDBPath(origin));
-}
-
-void IndexedDBContextImpl::ResetCachesForTesting(base::OnceClosure callback) {
-  origin_set_.reset();
-  origin_size_map_.clear();
-  std::move(callback).Run();
-}
-
 void IndexedDBContextImpl::AddObserver(
     mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) {
   IDBTaskRunner()->PostTask(
@@ -432,26 +425,147 @@ void IndexedDBContextImpl::AddObserver(
           base::Unretained(this), std::move(observer)));
 }
 
-void IndexedDBContextImpl::ForceCloseSync(
-    const Origin& origin,
-    storage::mojom::ForceCloseReason reason) {
-  ForceClose(origin, reason, base::DoNothing());
+void IndexedDBContextImpl::GetBaseDataPathForTesting(
+    GetBaseDataPathForTestingCallback callback) {
+  std::move(callback).Run(data_path());
 }
 
-bool IndexedDBContextImpl::ForceSchemaDowngrade(const Origin& origin) {
+void IndexedDBContextImpl::GetFilePathForTesting(
+    const Origin& origin,
+    GetFilePathForTestingCallback callback) {
+  std::move(callback).Run(GetLevelDBPath(origin));
+}
+
+void IndexedDBContextImpl::ResetCachesForTesting(base::OnceClosure callback) {
+  origin_set_.reset();
+  origin_size_map_.clear();
+  std::move(callback).Run();
+}
+
+void IndexedDBContextImpl::ForceSchemaDowngradeForTesting(
+    const url::Origin& origin,
+    ForceSchemaDowngradeForTestingCallback callback) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-  if (is_incognito() || !HasOrigin(origin))
-    return false;
+  if (is_incognito() || !HasOrigin(origin)) {
+    std::move(callback).Run(false);
+    return;
+  }
 
   if (indexeddb_factory_.get()) {
     indexeddb_factory_->ForceSchemaDowngrade(origin);
-    return true;
+    std::move(callback).Run(true);
+    return;
   }
   ForceCloseSync(
       origin,
       storage::mojom::ForceCloseReason::FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE);
-  return false;
+  std::move(callback).Run(false);
+}
+
+void IndexedDBContextImpl::HasV2SchemaCorruptionForTesting(
+    const url::Origin& origin,
+    HasV2SchemaCorruptionForTestingCallback callback) {
+  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
+
+  if (is_incognito() || !HasOrigin(origin)) {
+    std::move(callback).Run(
+        storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
+  }
+
+  if (indexeddb_factory_.get()) {
+    std::move(callback).Run(
+        static_cast<storage::mojom::V2SchemaCorruptionStatus>(
+            indexeddb_factory_->HasV2SchemaCorruption(origin)));
+    return;
+  }
+  return std::move(callback).Run(
+      storage::mojom::V2SchemaCorruptionStatus::CORRUPTION_UNKNOWN);
+}
+
+void IndexedDBContextImpl::WriteToIndexedDBForTesting(
+    const url::Origin& origin,
+    const std::string& key,
+    const std::string& value,
+    base::OnceClosure callback) {
+  IndexedDBOriginStateHandle handle;
+  leveldb::Status s;
+  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+      GetIDBFactory()->GetOrOpenOriginFactory(origin, data_path(),
+                                              /*create_if_missing=*/true);
+  CHECK(s.ok()) << s.ToString();
+  CHECK(handle.IsHeld());
+
+  TransactionalLevelDBDatabase* db =
+      handle.origin_state()->backing_store()->db();
+  std::string value_copy = value;
+  s = db->Put(key, &value_copy);
+  CHECK(s.ok()) << s.ToString();
+  handle.Release();
+
+  GetIDBFactory()->ForceClose(origin, true);
+  std::move(callback).Run();
+}
+
+void IndexedDBContextImpl::GetBlobCountForTesting(
+    const Origin& origin,
+    GetBlobCountForTestingCallback callback) {
+  std::move(callback).Run(GetOriginBlobFileCount(origin));
+}
+
+void IndexedDBContextImpl::GetNextBlobNumberForTesting(
+    const Origin& origin,
+    int64_t database_id,
+    GetNextBlobNumberForTestingCallback callback) {
+  IndexedDBOriginStateHandle handle;
+  leveldb::Status s;
+  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+      GetIDBFactory()->GetOrOpenOriginFactory(origin, data_path(),
+                                              /*create_if_missing=*/true);
+  CHECK(s.ok()) << s.ToString();
+  CHECK(handle.IsHeld());
+
+  TransactionalLevelDBDatabase* db =
+      handle.origin_state()->backing_store()->db();
+
+  const std::string key_gen_key = DatabaseMetaDataKey::Encode(
+      database_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
+  std::string data;
+  bool found = false;
+  bool ok = db->Get(key_gen_key, &data, &found).ok();
+  CHECK(found);
+  CHECK(ok);
+  base::StringPiece slice(data);
+  int64_t number;
+  CHECK(DecodeVarInt(&slice, &number));
+  CHECK(DatabaseMetaDataKey::IsValidBlobNumber(number));
+
+  std::move(callback).Run(number);
+}
+
+void IndexedDBContextImpl::GetPathForBlobForTesting(
+    const url::Origin& origin,
+    int64_t database_id,
+    int64_t blob_number,
+    GetPathForBlobForTestingCallback callback) {
+  IndexedDBOriginStateHandle handle;
+  leveldb::Status s;
+  std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+      GetIDBFactory()->GetOrOpenOriginFactory(origin, data_path(),
+                                              /*create_if_missing=*/true);
+  CHECK(s.ok()) << s.ToString();
+  CHECK(handle.IsHeld());
+
+  IndexedDBBackingStore* backing_store = handle.origin_state()->backing_store();
+  base::FilePath path =
+      backing_store->GetBlobFileName(database_id, blob_number);
+  std::move(callback).Run(path);
+}
+
+void IndexedDBContextImpl::ForceCloseSync(
+    const Origin& origin,
+    storage::mojom::ForceCloseReason reason) {
+  ForceClose(origin, reason, base::DoNothing());
 }
 
 IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
@@ -520,18 +634,6 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
   if (!base::GetFileInfo(idb_directory, &file_info))
     return base::Time();
   return file_info.last_modified;
-}
-
-V2SchemaCorruptionStatus IndexedDBContextImpl::HasV2SchemaCorruption(
-    const Origin& origin) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-
-  if (is_incognito() || !HasOrigin(origin))
-    return V2SchemaCorruptionStatus::kUnknown;
-
-  if (indexeddb_factory_.get())
-    return indexeddb_factory_->HasV2SchemaCorruption(origin);
-  return V2SchemaCorruptionStatus::kUnknown;
 }
 
 size_t IndexedDBContextImpl::GetConnectionCountSync(const Origin& origin) {

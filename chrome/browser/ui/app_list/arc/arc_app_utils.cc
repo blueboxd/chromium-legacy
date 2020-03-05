@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/notification/arc_supervision_transition_notification.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
@@ -285,6 +286,19 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     VLOG(1) << "Attempt to launch " << app_id
             << " while ARC++ is blocked due to incompatible file system.";
     arc::ShowArcMigrationGuideNotification(profile);
+    return false;
+  }
+
+  // Check if ARC apps are not allowed to start because device needs to be
+  // powerwashed. If it is so then show notification instead of starting
+  // the application.
+  policy::PowerwashRequirementsChecker pw_checker(
+      policy::PowerwashRequirementsChecker::Context::kArc, profile);
+  if (pw_checker.GetState() !=
+      policy::PowerwashRequirementsChecker::State::kNotRequired) {
+    VLOG(1) << "Attempt to launch " << app_id
+            << " while ARC++ is blocked due to powerwash request.";
+    pw_checker.ShowNotification();
     return false;
   }
 

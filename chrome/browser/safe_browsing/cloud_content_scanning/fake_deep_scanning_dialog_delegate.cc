@@ -164,7 +164,7 @@ void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                     base::Unretained(this), base::FilePath(),
+                     weakptr_factory_.GetWeakPtr(), base::FilePath(),
                      std::move(request)),
       response_delay);
 }
@@ -179,7 +179,7 @@ void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                     base::Unretained(this), path, std::move(request)),
+                     weakptr_factory_.GetWeakPtr(), path, std::move(request)),
       response_delay);
 }
 

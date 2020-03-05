@@ -2,5 +2,6 @@ AXWebArea
 ++AXGroup
 ++++AXStaticText AXValue='Before portal'
 ++AXButton AXDescription='portal'
+++++AXWebArea AXTitle='Text in iframe'
 ++AXGroup
 ++++AXStaticText AXValue='After portal'

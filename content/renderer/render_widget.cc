@@ -85,7 +85,6 @@
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -131,7 +130,6 @@
 #endif  // defined(OS_POSIX)
 
 using blink::WebImeTextSpan;
-using blink::WebCursorInfo;
 using blink::WebDeviceEmulationParams;
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
@@ -1646,12 +1644,12 @@ void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
   }
 }
 
-void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {
+void RenderWidget::DidChangeCursor(const ui::Cursor& cursor) {
   // TODO(darin): Eliminate this temporary.
-  WebCursor cursor((CursorInfo(cursor_info)));
+  WebCursor webcursor{CursorInfo(cursor)};
   // Only send a SetCursor message if we need to make a change.
-  if (input_handler_->DidChangeCursor(cursor))
-    Send(new WidgetHostMsg_SetCursor(routing_id_, cursor));
+  if (input_handler_->DidChangeCursor(webcursor))
+    Send(new WidgetHostMsg_SetCursor(routing_id_, webcursor));
 }
 
 void RenderWidget::AutoscrollStart(const gfx::PointF& point) {

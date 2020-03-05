@@ -106,10 +106,10 @@ class SafetyCheckHandler
   void OnPasswordsCheckResult(PasswordsStatus status, int num_compromised);
 
   // BulkLeakCheckService::Observer implementation.
-  void OnStateChanged(password_manager::BulkLeakCheckService::State state,
-                      size_t pending_credentials) override;
-  void OnLeakFound(
-      const password_manager::LeakCheckCredential& credential) override;
+  void OnStateChanged(
+      password_manager::BulkLeakCheckService::State state) override;
+  void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
+                        password_manager::IsLeaked is_leaked) override;
 
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;

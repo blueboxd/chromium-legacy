@@ -1637,7 +1637,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   WaitForAccessibilityTree(portal_contents);
 
   EXPECT_NE(nullptr, portal_frame->browser_accessibility_manager());
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(main_frame->browser_accessibility_manager(),
             portal_frame->browser_accessibility_manager()->GetRootManager());
 
   // Activate portal and adopt predecessor.

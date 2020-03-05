@@ -75,6 +75,25 @@ void RemoveFromCollection() {
 }
 
 template <typename C>
+void ClearCollection() {
+  constexpr int kIterations = 10;
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  Persistent<CollectionWrapper<C>> persistent =
+      MakeGarbageCollected<CollectionWrapper<C>>();
+  C* collection = persistent->GetCollection();
+  driver.Start();
+  for (int i = 0; i < kIterations; ++i) {
+    driver.SingleConcurrentStep();
+    for (int j = 0; j < kIterations; ++j) {
+      collection->insert(MakeGarbageCollected<IntegerObject>(i));
+    }
+    collection->clear();
+  }
+  driver.FinishSteps();
+  driver.FinishGC();
+}
+
+template <typename C>
 void SwapCollections() {
   constexpr int kIterations = 10;
   IncrementalMarkingTestDriver driver(ThreadState::Current());
@@ -113,6 +132,10 @@ TEST_F(ConcurrentMarkingTest, RemoveFromHashMap) {
   RemoveFromCollection<HeapHashMapAdapter<Member<IntegerObject>>>();
 }
 
+TEST_F(ConcurrentMarkingTest, ClearHashMap) {
+  ClearCollection<HeapHashMapAdapter<Member<IntegerObject>>>();
+}
+
 TEST_F(ConcurrentMarkingTest, SwapHashMaps) {
   SwapCollections<HeapHashMapAdapter<Member<IntegerObject>>>();
 }
@@ -125,6 +148,10 @@ TEST_F(ConcurrentMarkingTest, AddToHashSet) {
 
 TEST_F(ConcurrentMarkingTest, RemoveFromHashSet) {
   RemoveFromCollection<HeapHashSet<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, ClearHashSet) {
+  ClearCollection<HeapHashSet<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapHashSets) {
@@ -146,6 +173,10 @@ TEST_F(ConcurrentMarkingTest, AddToLinkedHashSet) {
 
 TEST_F(ConcurrentMarkingTest, RemoveFromLinkedHashSet) {
   RemoveFromCollection<HeapLinkedHashSetAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, ClearLinkedHashSet) {
+  ClearCollection<HeapLinkedHashSetAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapLinkedHashSets) {
@@ -170,6 +201,10 @@ TEST_F(ConcurrentMarkingTest, RemoveFromListHashSet) {
   RemoveFromCollection<HeapListHashSetAdapter<Member<IntegerObject>>>();
 }
 
+TEST_F(ConcurrentMarkingTest, ClearListHashSet) {
+  ClearCollection<HeapListHashSetAdapter<Member<IntegerObject>>>();
+}
+
 TEST_F(ConcurrentMarkingTest, SwapListHashSets) {
   SwapCollections<HeapListHashSetAdapter<Member<IntegerObject>>>();
 }
@@ -182,6 +217,10 @@ TEST_F(ConcurrentMarkingTest, AddToHashCountedSet) {
 
 TEST_F(ConcurrentMarkingTest, RemoveFromHashCountedSet) {
   RemoveFromCollection<HeapHashCountedSet<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, ClearHashCountedSet) {
+  ClearCollection<HeapHashCountedSet<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapHashCountedSets) {
@@ -208,6 +247,10 @@ TEST_F(ConcurrentMarkingTest, AddToVector) {
 
 TEST_F(ConcurrentMarkingTest, RemoveFromVector) {
   RemoveFromCollection<HeapVectorAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, ClearVector) {
+  ClearCollection<HeapVectorAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapVectors) {
@@ -237,6 +280,10 @@ TEST_F(ConcurrentMarkingTest, AddToDeque) {
 
 TEST_F(ConcurrentMarkingTest, RemoveFromDeque) {
   RemoveFromCollection<HeapDequeAdapter<Member<IntegerObject>>>();
+}
+
+TEST_F(ConcurrentMarkingTest, ClearDeque) {
+  ClearCollection<HeapDequeAdapter<Member<IntegerObject>>>();
 }
 
 TEST_F(ConcurrentMarkingTest, SwapDeques) {

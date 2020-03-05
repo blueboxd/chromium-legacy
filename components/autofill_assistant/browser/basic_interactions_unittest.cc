@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/interactions.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -123,6 +125,25 @@ TEST_F(BasicInteractionsTest, ComputeValueBooleanNot) {
   multi_bool.mutable_booleans()->add_values(false);
   user_model_.SetValue("value", multi_bool);
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+}
+
+TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
+  EndActionProto proto;
+  ASSERT_DEATH(basic_interactions_.EndAction(proto),
+               "Failed to EndAction: no callback set");
+}
+
+TEST_F(BasicInteractionsTest, EndActionWithCallbackSucceeds) {
+  base::MockCallback<
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>>
+      callback;
+  basic_interactions_.SetEndActionCallback(callback.Get());
+
+  EndActionProto proto;
+  proto.set_status(ACTION_APPLIED);
+
+  EXPECT_CALL(callback, Run(ACTION_APPLIED, &user_model_));
+  EXPECT_TRUE(basic_interactions_.EndAction(proto));
 }
 
 }  // namespace autofill_assistant

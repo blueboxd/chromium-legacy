@@ -32,7 +32,7 @@ scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(
   // set to 200p, for example.
   cursor.set_image_scale_factor(1.0f);
   SkBitmap bitmap = GetCursorBitmap(cursor);
-  gfx::Point hotspot = GetCursorHotstop(cursor);
+  gfx::Point hotspot = GetCursorHotspot(cursor);
   if (!bitmap.isNull())
     return new BitmapCursorOzone(bitmap, hotspot);
   return nullptr;

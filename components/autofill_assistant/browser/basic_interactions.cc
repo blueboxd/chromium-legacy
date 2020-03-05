@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include "base/bind_helpers.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
@@ -131,6 +133,55 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       DVLOG(2) << "Error computing value: kind not set";
       return false;
   }
+}
+
+bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
+  if (proto.model_identifier().empty()) {
+    DVLOG(2) << "Error setting user actions: model_identifier empty";
+    return false;
+  }
+  auto user_actions_value =
+      delegate_->GetUserModel()->GetValue(proto.model_identifier());
+  if (!user_actions_value.has_value()) {
+    DVLOG(2) << "Error setting user actions: " << proto.model_identifier()
+             << " not found in model";
+    return false;
+  }
+  if (!user_actions_value->has_user_actions()) {
+    DVLOG(2) << "Error setting user actions: Expected "
+             << proto.model_identifier() << " to hold UserActions, but found "
+             << user_actions_value->kind_case() << " instead";
+    return false;
+  }
+
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  for (const auto& user_action : user_actions_value->user_actions().values()) {
+    user_actions->push_back({user_action});
+    // No callback needed, the framework relies on generic events which will
+    // be fired automatically when user actions are called.
+    user_actions->back().SetCallback(
+        base::DoNothing::Once<std::unique_ptr<TriggerContext>>());
+  }
+
+  delegate_->SetUserActions(std::move(user_actions));
+  return true;
+}
+
+bool BasicInteractions::EndAction(const EndActionProto& proto) {
+  CHECK(end_action_callback_) << "Failed to EndAction: no callback set";
+  std::move(end_action_callback_)
+      .Run(proto.status(), delegate_->GetUserModel());
+  return true;
+}
+
+void BasicInteractions::ClearEndActionCallback() {
+  end_action_callback_.Reset();
+}
+
+void BasicInteractions::SetEndActionCallback(
+    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+        end_action_callback) {
+  end_action_callback_ = std::move(end_action_callback);
 }
 
 }  // namespace autofill_assistant

@@ -130,7 +130,6 @@ class WebString;
 class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
-struct WebCursorInfo;
 struct WebImeTextSpan;
 }  // namespace blink
 
@@ -145,6 +144,10 @@ class MediaPermission;
 
 namespace service_manager {
 class InterfaceProvider;
+}
+
+namespace ui {
+class Cursor;
 }
 
 namespace url {
@@ -363,7 +366,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // This will update the cursor appearance if it is currently over the plugin
   // instance.
   void PepperDidChangeCursor(PepperPluginInstanceImpl* instance,
-                             const blink::WebCursorInfo& cursor);
+                             const ui::Cursor& cursor);
 
   // Notifies that |instance| has received a mouse event.
   void PepperDidReceiveMouseEvent(PepperPluginInstanceImpl* instance);

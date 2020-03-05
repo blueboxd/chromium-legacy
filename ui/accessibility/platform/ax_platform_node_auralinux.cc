@@ -1894,12 +1894,11 @@ const gchar* GetName(AtkObject* atk_object) {
     return nullptr;
 
   ax::mojom::NameFrom name_from = obj->GetData().GetNameFrom();
-  if (obj->GetStringAttribute(ax::mojom::StringAttribute::kName).empty() &&
+  if (obj->GetName().empty() &&
       name_from != ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
     return nullptr;
 
-  obj->accessible_name_ =
-      obj->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  obj->accessible_name_ = obj->GetName();
   return obj->accessible_name_.c_str();
 }
 
@@ -2708,9 +2707,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       // This should probably be a section (if a container) or static if text.
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kSection: {
-      if (GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
+      if (GetName().empty()) {
         // Do not use ARIA mapping for nameless <section>.
         return ATK_ROLE_SECTION;
       } else {
@@ -4060,8 +4057,7 @@ bool AXPlatformNodeAuraLinux::
       continue;
 
     if (child->IsTextOnlyObject()) {
-      current_offset +=
-          child->GetString16Attribute(ax::mojom::StringAttribute::kName).size();
+      current_offset += child->GetName().size();
     } else {
       // Add an offset for the embedded character.
       current_offset += 1;
@@ -4585,11 +4581,7 @@ AXPlatformNodeAuraLinux::GetHypertextExtentsOfChild(
     // If this object is a text only object, it is included directly into this
     // node's hypertext, otherwise it is represented as an embedded object
     // character.
-    int size =
-        child->IsTextOnlyObject()
-            ? child->GetString16Attribute(ax::mojom::StringAttribute::kName)
-                  .size()
-            : 1;
+    int size = child->IsTextOnlyObject() ? child->GetName().size() : 1;
     if (child == child_to_find)
       return std::make_pair(current_offset, current_offset + size);
     current_offset += size;

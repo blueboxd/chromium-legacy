@@ -20,8 +20,7 @@
 namespace password_manager {
 class PasswordFormManagerForUI;
 class PasswordManagerClient;
-}
-
+}  // namespace password_manager
 
 // ManagePasswordsState keeps the current state for ManagePasswordsUIController
 // as well as up-to-date data for this state.
@@ -37,6 +36,8 @@ class ManagePasswordsState {
   void set_client(password_manager::PasswordManagerClient* client) {
     client_ = client;
   }
+
+  password_manager::PasswordManagerClient* client() { return client_; }
 
   // The methods below discard the current state/data of the object and move it
   // to the specified state.

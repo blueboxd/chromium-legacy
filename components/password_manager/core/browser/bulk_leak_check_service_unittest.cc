@@ -66,11 +66,11 @@ class MockObserver : public BulkLeakCheckService::Observer {
  public:
   MOCK_METHOD(void,
               OnStateChanged,
-              (BulkLeakCheckService::State state, size_t pending_credentials),
+              (BulkLeakCheckService::State state),
               (override));
   MOCK_METHOD(void,
-              OnLeakFound,
-              (const LeakCheckCredential& credential),
+              OnCredentialDone,
+              (const LeakCheckCredential& credential, IsLeaked is_leaked),
               (override));
 };
 
@@ -105,17 +105,18 @@ TEST_F(BulkLeakCheckServiceTest, Running) {
   service().AddObserver(&observer);
 
   auto leak_check = std::make_unique<MockBulkLeakCheck>();
+  auto* weak_leak_check = leak_check.get();
   const std::vector<LeakCheckCredential> credentials = TestCredentials();
-  EXPECT_CALL(*leak_check,
+  EXPECT_CALL(*weak_leak_check,
               CheckCredentials(CredentialsAre(std::cref(credentials))));
-  EXPECT_CALL(*leak_check, GetPendingChecksCount).WillRepeatedly(Return(10));
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(Return(ByMove(std::move(leak_check))));
-  EXPECT_CALL(observer,
-              OnStateChanged(BulkLeakCheckService::State::kRunning, 10));
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kRunning));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
   EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().state());
+  EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
+      .WillRepeatedly(Return(10));
   EXPECT_EQ(10u, service().GetPendingChecksCount());
 }
 
@@ -128,22 +129,18 @@ TEST_F(BulkLeakCheckServiceTest, AppendRunning) {
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(Return(ByMove(std::move(leak_check))));
   EXPECT_CALL(*weak_leak_check, CheckCredentials);
-  EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
-      .WillRepeatedly(Return(10));
-  EXPECT_CALL(observer,
-              OnStateChanged(BulkLeakCheckService::State::kRunning, 10));
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kRunning));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
   const std::vector<LeakCheckCredential> credentials = TestCredentials();
   EXPECT_CALL(*weak_leak_check,
               CheckCredentials(CredentialsAre(std::cref(credentials))));
-  EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
-      .WillRepeatedly(Return(20));
-  EXPECT_CALL(observer,
-              OnStateChanged(BulkLeakCheckService::State::kRunning, 20));
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kRunning));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
   EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().state());
+  EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
+      .WillRepeatedly(Return(20));
   EXPECT_EQ(20u, service().GetPendingChecksCount());
 }
 
@@ -169,7 +166,7 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
         return nullptr;
       }));
   EXPECT_CALL(observer,
-              OnStateChanged(BulkLeakCheckService::State::kSignedOut, 0));
+              OnStateChanged(BulkLeakCheckService::State::kSignedOut));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
   EXPECT_EQ(BulkLeakCheckService::State::kSignedOut, service().state());
@@ -189,14 +186,13 @@ TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
 TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
   auto leak_check = std::make_unique<MockBulkLeakCheck>();
   EXPECT_CALL(*leak_check, CheckCredentials);
-  EXPECT_CALL(*leak_check, GetPendingChecksCount).WillRepeatedly(Return(10));
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(Return(ByMove(std::move(leak_check))));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
   StrictMock<MockObserver> observer;
   service().AddObserver(&observer);
-  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle, 0));
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle));
   service().Cancel();
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
@@ -215,13 +211,13 @@ TEST_F(BulkLeakCheckServiceTest, NotifyAboutLeak) {
 
   StrictMock<MockObserver> observer;
   service().AddObserver(&observer);
-  delegate->OnFinishedCredential(
-      LeakCheckCredential(base::ASCIIToUTF16(kUsername),
-                          base::ASCIIToUTF16("nfidog8h894e5hn")),
-      IsLeaked(false));
-  LeakCheckCredential leaked_credential = TestCredential();
-  EXPECT_CALL(observer,
-              OnLeakFound(CredentialIs(std::cref(leaked_credential))));
+  LeakCheckCredential credential = TestCredential();
+  EXPECT_CALL(observer, OnCredentialDone(CredentialIs(std::cref(credential)),
+                                         IsLeaked(false)));
+  delegate->OnFinishedCredential(TestCredential(), IsLeaked(false));
+
+  EXPECT_CALL(observer, OnCredentialDone(CredentialIs(std::cref(credential)),
+                                         IsLeaked(true)));
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(true));
 }
 
@@ -229,7 +225,6 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
   auto leak_check = std::make_unique<MockBulkLeakCheck>();
   MockBulkLeakCheck* weak_leak_check = leak_check.get();
   EXPECT_CALL(*leak_check, CheckCredentials);
-  EXPECT_CALL(*leak_check, GetPendingChecksCount).WillRepeatedly(Return(10));
   BulkLeakCheckDelegateInterface* delegate = nullptr;
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(
@@ -240,7 +235,10 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
   service().AddObserver(&observer);
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(0));
-  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle, 0));
+  LeakCheckCredential credential = TestCredential();
+  EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle));
+  EXPECT_CALL(observer, OnCredentialDone(CredentialIs(std::cref(credential)),
+                                         IsLeaked(false)));
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(false));
 
   EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
@@ -251,7 +249,6 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
   auto leak_check = std::make_unique<MockBulkLeakCheck>();
   MockBulkLeakCheck* weak_leak_check = leak_check.get();
   EXPECT_CALL(*leak_check, CheckCredentials);
-  EXPECT_CALL(*leak_check, GetPendingChecksCount).WillRepeatedly(Return(10));
   BulkLeakCheckDelegateInterface* delegate = nullptr;
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(
@@ -266,9 +263,9 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
   {
     ::testing::InSequence s;
     EXPECT_CALL(observer,
-                OnLeakFound(CredentialIs(std::cref(leaked_credential))));
-    EXPECT_CALL(observer,
-                OnStateChanged(BulkLeakCheckService::State::kIdle, 0));
+                OnCredentialDone(CredentialIs(std::cref(leaked_credential)),
+                                 IsLeaked(true)));
+    EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kIdle));
   }
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(true));
 
@@ -279,7 +276,6 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
 TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
   auto leak_check = std::make_unique<MockBulkLeakCheck>();
   EXPECT_CALL(*leak_check, CheckCredentials);
-  EXPECT_CALL(*leak_check, GetPendingChecksCount).WillRepeatedly(Return(10));
   BulkLeakCheckDelegateInterface* delegate = nullptr;
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck)
       .WillOnce(
@@ -289,7 +285,7 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
   StrictMock<MockObserver> observer;
   service().AddObserver(&observer);
   EXPECT_CALL(observer,
-              OnStateChanged(BulkLeakCheckService::State::kServiceError, 0));
+              OnStateChanged(BulkLeakCheckService::State::kServiceError));
   delegate->OnError(LeakDetectionError::kInvalidServerResponse);
 
   EXPECT_EQ(BulkLeakCheckService::State::kServiceError, service().state());

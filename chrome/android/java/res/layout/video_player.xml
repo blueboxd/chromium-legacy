@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="0.1dp"
         android:clickable="true"
+        android:contentDescription="@string/accessibility_video_player"
         android:layout_gravity="center">
         <FrameLayout
             android:id="@+id/video_controls_gradient"
@@ -40,6 +41,7 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_gravity="center"
+                android:contentDescription="@string/accessibility_play_video"
                 app:srcCompat="@drawable/ic_play_circle_filled_white_24dp" />
             <TextView
                 android:id="@+id/remaining_time"
@@ -47,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
                 android:layout_marginStart="16dp"
+                android:importantForAccessibility="yes"
                 android:paddingBottom="24dp"
                 style="@style/TextAppearance.TextMedium.Primary.Light" />
             <ImageView
@@ -56,6 +59,7 @@
                 android:layout_gravity="bottom|end"
                 android:layout_marginEnd="14dp"
                 android:paddingBottom="24dp"
+                android:contentDescription="@string/accessibility_mute_video"
                 app:srcCompat="@drawable/ic_volume_on_white_24dp" />
             <SeekBar
                 android:id="@+id/seek_bar"

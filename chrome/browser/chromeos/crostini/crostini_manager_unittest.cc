@@ -20,12 +20,16 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -33,6 +37,7 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -180,9 +185,14 @@ class CrostiniManagerTest : public testing::Test {
 
     g_browser_process->platform_part()
         ->InitializeSchedulerConfigurationManager();
+
+    chromeos::CryptohomeClient::InitializeFake();
+    chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(false);
+    policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
   }
 
   void TearDown() override {
+    chromeos::CryptohomeClient::Shutdown();
     g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     scoped_user_manager_.reset();
     crostini_manager_->Shutdown();
@@ -194,6 +204,11 @@ class CrostiniManagerTest : public testing::Test {
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
   CrostiniManager* crostini_manager() { return crostini_manager_; }
+
+  chromeos::FakeChromeUserManager* fake_user_manager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
 
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
@@ -303,6 +318,77 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
       base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
+}
+
+TEST_F(CrostiniManagerTest, StartTerminaVmPowerwashRequestError) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  // Login unaffiliated user.
+  const AccountId account_id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), "0987654321"));
+  fake_user_manager()->AddUserWithAffiliation(account_id, false);
+  fake_user_manager()->LoginUser(account_id);
+
+  // Set DeviceRebootOnUserSignout to always.
+  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+      /* create_settings_service=*/false};
+  settings_helper.ReplaceDeviceSettingsProviderWithStub();
+  settings_helper.SetInteger(
+      chromeos::kDeviceRebootOnUserSignout,
+      enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
+
+  // Set cryptohome requiring powerwash.
+  chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(true);
+  policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+
+  NotificationDisplayServiceTester notification_service(profile());
+
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path, 0,
+      base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
+  run_loop()->Run();
+  EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
+
+  auto notification = notification_service.GetNotification(
+      "crostini_powerwash_request_instead_of_run");
+  EXPECT_NE(base::nullopt, notification);
+}
+
+TEST_F(CrostiniManagerTest,
+       StartTerminaVmPowerwashRequestErrorDueToCryptohomeError) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  // Login unaffiliated user.
+  const AccountId account_id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), "0987654321"));
+  fake_user_manager()->AddUserWithAffiliation(account_id, false);
+  fake_user_manager()->LoginUser(account_id);
+
+  // Set DeviceRebootOnUserSignout to always.
+  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+      /* create_settings_service=*/false};
+  settings_helper.ReplaceDeviceSettingsProviderWithStub();
+  settings_helper.SetInteger(
+      chromeos::kDeviceRebootOnUserSignout,
+      enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
+
+  // Reset cryptohome state to undefined and make cryptohome unavailable.
+  policy::PowerwashRequirementsChecker::ResetForTesting();
+  chromeos::FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
+  policy::PowerwashRequirementsChecker::Initialize();
+  chromeos::FakeCryptohomeClient::Get()->ReportServiceIsNotAvailable();
+
+  NotificationDisplayServiceTester notification_service(profile());
+
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path, 0,
+      base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
+  run_loop()->Run();
+  EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
+
+  auto notification = notification_service.GetNotification(
+      "crostini_powerwash_request_cryptohome_error");
+  EXPECT_NE(base::nullopt, notification);
 }
 
 TEST_F(CrostiniManagerTest, StartTerminaVmMountError) {

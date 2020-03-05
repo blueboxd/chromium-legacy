@@ -196,6 +196,10 @@ void ProcessMirrorHeader(
   if (!chrome::FindBrowserWithWebContents(web_contents))
     return;
 
+  // Record the service type.
+  UMA_HISTOGRAM_ENUMERATION("AccountManager.ManageAccountsServiceType",
+                            service_type);
+
   // The only allowed operations are:
   // 1. Going Incognito.
   // 2. Displaying a reauthentication window: Enterprise GSuite Accounts could

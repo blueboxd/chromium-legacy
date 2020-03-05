@@ -44,9 +44,13 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
+#import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
+#import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
+#import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
@@ -104,6 +108,9 @@ enum class EnterTabSwitcherSnapshotResult {
 // that it can be set to |NONE| when not in use.
 enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
+// Constants for deferred promo display.
+const NSTimeInterval kDisplayPromoDelay = 0.1;
+
 }  // namespace
 
 @interface SceneController () <UserFeedbackDataSource,
@@ -152,6 +159,10 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
 // TabSwitcher object -- the tab grid.
 @property(nonatomic, strong) id<TabSwitcher> tabSwitcher;
+
+// True if First Run UI (terms of service & sync sign-in) is being presented
+// in a modal dialog.
+@property(nonatomic, assign) BOOL presentingFirstRunUI;
 
 @end
 
@@ -252,7 +263,7 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
               startupInformation:self.mainController
                         appState:self.mainController.appState];
 
-  [self.mainController scheduleShowPromo];
+  [self scheduleShowPromo];
 
   // Before bringing up the UI, make sure the launch mode is correct, and
   // check for previous crashes.
@@ -339,7 +350,8 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 
   if (firstRun) {
-    [self.mainController showFirstRunUI];
+    [self.mainController prepareForFirstRunUI];
+    [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
     self.mainController.restoreHelper = nil;
   }
@@ -360,6 +372,105 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
   self.historyCoordinator = nil;
 
   self.hasInitializedUI = NO;
+}
+
+#pragma mark - First Run
+
+// Initializes the first run UI and presents it to the user.
+- (void)showFirstRunUI {
+  // Register for the first run dismissal notification to reset
+  // |self.presentingFirstRunUI| flag;
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleFirstRunUIWillFinish)
+             name:kChromeFirstRunUIWillFinishNotification
+           object:nil];
+
+  WelcomeToChromeViewController* welcomeToChrome =
+      [[WelcomeToChromeViewController alloc]
+          initWithBrowser:self.mainInterface.browser
+                presenter:self.mainInterface.bvc
+               dispatcher:self.mainInterface.bvc.dispatcher];
+  UINavigationController* navController =
+      [[OrientationLimitingNavigationController alloc]
+          initWithRootViewController:welcomeToChrome];
+  [navController setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
+  navController.modalPresentationStyle = UIModalPresentationFullScreen;
+  CGRect appFrame = [[UIScreen mainScreen] bounds];
+  [[navController view] setFrame:appFrame];
+  self.presentingFirstRunUI = YES;
+  [self.mainInterface.bvc presentViewController:navController
+                                       animated:NO
+                                     completion:nil];
+}
+
+- (void)handleFirstRunUIWillFinish {
+  DCHECK(self.presentingFirstRunUI);
+  self.presentingFirstRunUI = NO;
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:kChromeFirstRunUIWillFinishNotification
+              object:nil];
+}
+
+#pragma mark - Promo support
+
+// Schedules presentation of the first eligible promo found, if any.
+- (void)scheduleShowPromo {
+  // Don't show promos if first run is shown.  (Note:  This flag is only YES
+  // while the first run UI is visible.  However, as this function is called
+  // immediately after the UI is shown, it's a safe check.)
+  if (self.presentingFirstRunUI)
+    return;
+  // Don't show promos in Incognito mode.
+  if (self.currentInterface == self.incognitoInterface)
+    return;
+  // Don't show promos if the app was launched from a URL.
+  if (self.mainController.startupParameters)
+    return;
+
+  // Show the sign-in promo if needed
+  if ([SigninPromoViewController
+          shouldBePresentedForBrowserState:self.mainController
+                                               .mainBrowserState]) {
+    Browser* browser = self.mainInterface.browser;
+    UIViewController* promoController = [[SigninPromoViewController alloc]
+        initWithBrowser:browser
+             dispatcher:self.mainInterface.bvc.dispatcher];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                 (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+                     [self showPromo:promoController];
+                   });
+  }
+}
+
+- (void)showPromo:(UIViewController*)promo {
+  // Make sure we have the BVC here with a valid profile.
+  DCHECK([self.currentInterface.bvc browserState]);
+
+  OrientationLimitingNavigationController* navController =
+      [[OrientationLimitingNavigationController alloc]
+          initWithRootViewController:promo];
+
+  // Avoid presenting the promo if the current device orientation is not
+  // supported. The promo will be presented at a later moment, when the device
+  // orientation is supported.
+  UIInterfaceOrientation orientation =
+      [UIApplication sharedApplication].statusBarOrientation;
+  NSUInteger supportedOrientationsMask =
+      [navController supportedInterfaceOrientations];
+  if (!((1 << orientation) & supportedOrientationsMask))
+    return;
+
+  [navController setModalTransitionStyle:[promo modalTransitionStyle]];
+  [navController setNavigationBarHidden:YES];
+  [[navController view] setFrame:[[UIScreen mainScreen] bounds]];
+
+  [self.mainInterface.bvc presentViewController:navController
+                                       animated:YES
+                                     completion:nil];
 }
 
 #pragma mark - ApplicationCommands

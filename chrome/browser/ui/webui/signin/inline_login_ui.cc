@@ -28,11 +28,20 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
+#include "ui/strings/grit/ui_strings.h"
 #else
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+void AddEduStrings(content::WebUIDataSource* source) {
+  source->AddLocalizedString("okButton", IDS_APP_OK);
+  source->AddLocalizedString("backButton", IDS_EDU_LOGIN_BACK);
+  source->AddLocalizedString("nextButton", IDS_EDU_LOGIN_NEXT);
+}
+#endif  // defined(OS_CHROMEOS)
 
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
@@ -58,6 +67,15 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 #if defined(OS_CHROMEOS)
   source->AddResourcePath("edu", IDU_EDU_LOGIN_EDU_LOGIN_HTML);
   source->AddResourcePath("app.js", IDU_EDU_LOGIN_EDU_LOGIN_JS);
+  source->AddResourcePath("edu_login_button.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS);
+  source->AddResourcePath("edu_login_template.js",
+                          IDR_EDU_LOGIN_EDU_LOGIN_TEMPLATE_JS);
+  source->AddResourcePath("edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS);
+  source->AddResourcePath("browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS);
+  source->AddResourcePath("edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS);
+
+  AddEduStrings(source);
 #endif
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);

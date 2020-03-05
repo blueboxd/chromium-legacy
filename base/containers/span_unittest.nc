@@ -37,24 +37,6 @@ void WontCompile() {
   span<int, 1> span(array);
 }
 
-#elif defined(NCTEST_SPAN_FROM_STD_ARRAY_WITH_NON_MATCHING_STATIC_EXTENT_DISALLOWED) // [r"fatal error: no matching constructor for initialization of 'span<int, 2>'"]
-
-// A span with static extent constructed from std::array must match the size of
-// the array.
-void WontCompile() {
-  std::array<int, 3> array = {1, 2, 3};
-  span<int, 2> span(array);
-}
-
-#elif defined(NCTEST_SPAN_FROM_CONST_STD_ARRAY_WITH_NON_MATCHING_STATIC_EXTENT_DISALLOWED) // [r"fatal error: no matching constructor for initialization of 'span<const int, 2>'"]
-
-// A span with static extent constructed from std::array must match the size of
-// the array.
-void WontCompile() {
-  const std::array<int, 3> array = {1, 2, 3};
-  span<const int, 2> span(array);
-}
-
 #elif defined(NCTEST_SPAN_FROM_OTHER_SPAN_WITH_MISMATCHING_EXTENT_DISALLOWED) // [r"fatal error: no matching constructor for initialization of 'span<int, 4>'"]
 
 // A span with static extent constructed from another span must match the

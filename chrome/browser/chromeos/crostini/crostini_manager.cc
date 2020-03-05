@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
@@ -1216,6 +1217,17 @@ void CrostiniManager::StartTerminaVm(std::string name,
   if (!GetAnomalyDetectorClient()->IsGuestFileCorruptionSignalConnected()) {
     LOG(ERROR) << "GuestFileCorruptionSignal not connected, will not be "
                   "able to detect file system corruption.";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  // When Crostini is blocked because of powerwash request, do not start VM,
+  // but show notification requesting powerwash.
+  policy::PowerwashRequirementsChecker pw_checker(
+      policy::PowerwashRequirementsChecker::Context::kCrostini, profile_);
+  if (pw_checker.GetState() !=
+      policy::PowerwashRequirementsChecker::State::kNotRequired) {
+    pw_checker.ShowNotification();
     std::move(callback).Run(/*success=*/false);
     return;
   }

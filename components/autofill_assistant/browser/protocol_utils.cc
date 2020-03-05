@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
 #include "components/autofill_assistant/browser/actions/show_form_action.h"
+#include "components/autofill_assistant/browser/actions/show_generic_ui_action.h"
 #include "components/autofill_assistant/browser/actions/show_info_box_action.h"
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
@@ -300,6 +301,10 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
       case ActionProto::ActionInfoCase::kWaitForDocument: {
         client_action =
             std::make_unique<WaitForDocumentAction>(delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kShowGenericUi: {
+        client_action = std::make_unique<ShowGenericUiAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

@@ -332,6 +332,21 @@
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_AGAIN" desc="Button to start bulk password check manually in passwords check section.">
     Check again
   </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS" desc="Title for list of compromised credentials after passwords bulk check.">
+    Compromised passwords
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORDS_ADVICE" desc="Description of what user should do after compromised passwords are found.">
+    Change these passwords immediately to keep your account safe:
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_BUTTON" desc="Button inside password check section which opens url for changing leaked password.">
+    Change password
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REASON_LEAKED" desc="Password compromise reason shown when a password was found in a data breach.">
+    Found in data breach
+  </message>
+  <message name="IDS_SETTINGS_COMPROMISED_PASSWORD_REASON_PHISHED" desc="Password compromise reason shown when a password was reused on a phishing site.">
+    Entered on deceptive site
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
   </message>

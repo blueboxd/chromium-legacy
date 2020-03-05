@@ -56,6 +56,10 @@ class PasswordsModelDelegateMock
                void(const AccountInfo& account, bool is_default_promo_account));
   MOCK_METHOD0(OnDialogHidden, void());
   MOCK_METHOD0(AuthenticateUser, bool());
+  MOCK_METHOD3(AuthenticateUserForAccountStoreOptInAndSavePassword,
+               void(CoreAccountId,
+                    const base::string16&,
+                    const base::string16&));
   MOCK_CONST_METHOD0(ArePasswordsRevealedWhenBubbleIsOpened, bool());
 
  private:

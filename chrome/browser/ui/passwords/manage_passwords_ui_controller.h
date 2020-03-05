@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/common/buildflags.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -142,6 +143,10 @@ class ManagePasswordsUIController
                   bool is_default_promo_account) override;
   void OnDialogHidden() override;
   bool AuthenticateUser() override;
+  void AuthenticateUserForAccountStoreOptInAndSavePassword(
+      CoreAccountId account_id,
+      const base::string16& username,
+      const base::string16& password) override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;
 
 #if defined(UNIT_TEST)
@@ -242,6 +247,19 @@ class ManagePasswordsUIController
 
   // Shows an authentication dialog and returns true if auth is successful.
   virtual bool ShowAuthenticationDialog();
+
+  // Gets invoked gaia reauth flow is finished. If the reauth was successful,
+  // and the |form_manager| is still the same, |username| and |password| are
+  // saved against the current origin, and sets the user to be opted in for
+  // account store. If the reauth was unsuccessful, it changes the default
+  // destination to profle store and reopens the save bubble.
+  void AuthenticateUserForAccountStoreOptInCallback(
+      const GURL& origin,
+      password_manager::PasswordFormManagerForUI* form_manager,
+      const base::string16& username,
+      const base::string16& password,
+      password_manager::PasswordManagerClient::ReauthSucceeded
+          reauth_succeeded);
 
   // Timeout in seconds for the manual fallback for saving.
   static int save_fallback_timeout_in_seconds_;

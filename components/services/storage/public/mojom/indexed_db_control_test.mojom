@@ -9,12 +9,45 @@ import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";
 
+enum V2SchemaCorruptionStatus {
+  CORRUPTION_UNKNOWN,
+  CORRUPTION_NO,
+  CORRUPTION_YES,
+};
+
 // A test-only interface extending storage.mojom.IndexedDBControl.
 interface IndexedDBControlTest {
+
+  // Gets the root data path for storage.
+  GetBaseDataPathForTesting() => (mojo_base.mojom.FilePath path);
+
   // Gets the file name of the local storage file for the given origin.
   GetFilePathForTesting(url.mojom.Origin origin) =>
       (mojo_base.mojom.FilePath path);
 
   // Forgets the origins/sizes read from disk.
   ResetCachesForTesting() => ();
+
+  // Downgrades databases to V2.
+  ForceSchemaDowngradeForTesting(url.mojom.Origin origin) => (bool downgraded);
+
+  // Returns the corruption status for a given database.
+  HasV2SchemaCorruptionForTesting(url.mojom.Origin origin) =>
+      (V2SchemaCorruptionStatus status);
+
+  // Does a direct write to a database with a given key/value pair.
+  WriteToIndexedDBForTesting(url.mojom.Origin origin, string key,
+                             string value) => ();
+
+  // Returns the number of blobs for a given origin.
+  GetBlobCountForTesting(url.mojom.Origin origin) => (int64 num_blobs);
+
+  // Returns the next blob id for a given origin.
+  GetNextBlobNumberForTesting(url.mojom.Origin origin, int64 database_id) =>
+      (int64 next_blob_number);
+
+  // Returns the path for a given origin/database/blob.
+  GetPathForBlobForTesting(url.mojom.Origin origin, int64 database_id,
+                           int64 blob_number) =>
+      (mojo_base.mojom.FilePath path);
 };

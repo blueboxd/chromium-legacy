@@ -7,11 +7,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if _MSC_VER >= 1700
-// C4752: found Intel(R) Advanced Vector Extensions; consider using /arch:AVX.
-#pragma warning(disable: 4752)
-#endif
-
 // Tests whether we can run extended instructions represented by the CPU
 // information. This test actually executes some extended instructions (such as
 // MMX, SSE, etc.) supported by the CPU and sees we can run them without
@@ -110,8 +105,6 @@ TEST(CPU, RunExtendedInstructions) {
     __asm popcnt eax, eax;
   }
 
-// Visual C 2012 required for AVX.
-#if _MSC_VER >= 1700
   if (cpu.has_avx()) {
     // Execute an AVX instruction.
     __asm vzeroupper;
@@ -121,7 +114,6 @@ TEST(CPU, RunExtendedInstructions) {
     // Execute an AVX 2 instruction.
     __asm vpunpcklbw ymm0, ymm0, ymm0
   }
-#endif  // _MSC_VER >= 1700
 #endif  // defined(COMPILER_GCC)
 #endif  // defined(ARCH_CPU_X86_FAMILY)
 }

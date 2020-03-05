@@ -99,7 +99,6 @@
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -120,10 +119,13 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -166,7 +168,6 @@ using ppapi::thunk::PPB_ImageData_API;
 using ppapi::Var;
 using ppapi::ArrayBufferVar;
 using ppapi::ViewData;
-using blink::WebCursorInfo;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
@@ -281,7 +282,7 @@ STATIC_ASSERT_MATCHING_ENUM(kMiddlePanningVertical,
                             PP_MOUSECURSOR_TYPE_MIDDLEPANNINGVERTICAL);
 STATIC_ASSERT_MATCHING_ENUM(kMiddlePanningHorizontal,
                             PP_MOUSECURSOR_TYPE_MIDDLEPANNINGHORIZONTAL);
-// Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
+// Do not assert kCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
 #undef STATIC_ASSERT_MATCHING_ENUM
@@ -1088,22 +1089,22 @@ gfx::Rect PepperPluginInstanceImpl::GetCaretBounds() const {
 
 bool PepperPluginInstanceImpl::HandleCoalescedInputEvent(
     const blink::WebCoalescedInputEvent& event,
-    WebCursorInfo* cursor_info) {
+    ui::Cursor* cursor) {
   if (blink::WebInputEvent::IsTouchEventType(event.Event().GetType()) &&
       ((filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH) ||
        (input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH))) {
     bool result = false;
     for (size_t i = 0; i < event.CoalescedEventSize(); ++i) {
-      result |= HandleInputEvent(event.CoalescedEvent(i), cursor_info);
+      result |= HandleInputEvent(event.CoalescedEvent(i), cursor);
     }
     return result;
   }
-  return HandleInputEvent(event.Event(), cursor_info);
+  return HandleInputEvent(event.Event(), cursor);
 }
 
 bool PepperPluginInstanceImpl::HandleInputEvent(
     const blink::WebInputEvent& event,
-    WebCursorInfo* cursor_info) {
+    ui::Cursor* cursor) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
   if (!render_frame_)
@@ -1168,7 +1169,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   }
 
   if (cursor_)
-    *cursor_info = *cursor_;
+    *cursor = *cursor_;
   return rv;
 }
 
@@ -1509,7 +1510,7 @@ void PepperPluginInstanceImpl::SelectAll() {
   // in sync.
   ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED, ui::VKEY_A, kPlatformModifier);
 
-  WebCursorInfo dummy_cursor_info;
+  ui::Cursor dummy_cursor_info;
   HandleInputEvent(MakeWebKeyboardEvent(char_event), &dummy_cursor_info);
   HandleInputEvent(MakeWebKeyboardEvent(keyup_event), &dummy_cursor_info);
 }
@@ -2258,9 +2259,9 @@ void PepperPluginInstanceImpl::OnMouseLockLost() {
 
 void PepperPluginInstanceImpl::HandleMouseLockedInputEvent(
     const blink::WebMouseEvent& event) {
-  // |cursor_info| is ignored since it is hidden when the mouse is locked.
-  blink::WebCursorInfo cursor_info;
-  HandleInputEvent(event, &cursor_info);
+  // |cursor| is ignored since it is hidden when the mouse is locked.
+  ui::Cursor cursor;
+  HandleInputEvent(event, &cursor);
 }
 
 void PepperPluginInstanceImpl::SimulateInputEvent(
@@ -2686,8 +2687,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
-    DoSetCursor(std::make_unique<WebCursorInfo>(
-        static_cast<ui::mojom::CursorType>(type)));
+    DoSetCursor(
+        std::make_unique<ui::Cursor>(static_cast<ui::mojom::CursorType>(type)));
     return PP_TRUE;
   }
 
@@ -2702,17 +2703,18 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   auto custom_cursor =
-      std::make_unique<WebCursorInfo>(ui::mojom::CursorType::kCustom);
-  custom_cursor->hot_spot.SetPoint(hot_spot->x, hot_spot->y);
+      std::make_unique<ui::Cursor>(ui::mojom::CursorType::kCustom);
+  custom_cursor->set_custom_hotspot(gfx::Point(hot_spot->x, hot_spot->y));
 
   SkBitmap bitmap(image_data->GetMappedBitmap());
   // Make a deep copy, so that the cursor remains valid even after the original
   // image data gets freed.
-  SkBitmap& dst = custom_cursor->custom_image;
+  SkBitmap dst = GetCursorBitmap(*custom_cursor);
   if (!dst.tryAllocPixels(bitmap.info()) ||
       !bitmap.readPixels(dst.info(), dst.getPixels(), dst.rowBytes(), 0, 0)) {
     return PP_FALSE;
   }
+  custom_cursor->set_custom_bitmap(dst);
 
   DoSetCursor(std::move(custom_cursor));
   return PP_TRUE;
@@ -3029,8 +3031,7 @@ void PepperPluginInstanceImpl::SetAlwaysOnTop(bool on_top) {
   always_on_top_ = on_top;
 }
 
-void PepperPluginInstanceImpl::DoSetCursor(
-    std::unique_ptr<WebCursorInfo> cursor) {
+void PepperPluginInstanceImpl::DoSetCursor(std::unique_ptr<ui::Cursor> cursor) {
   cursor_ = std::move(cursor);
   if (fullscreen_container_)
     fullscreen_container_->PepperDidChangeCursor(*cursor_);

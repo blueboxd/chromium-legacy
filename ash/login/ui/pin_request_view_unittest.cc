@@ -206,6 +206,10 @@ TEST_F(PinRequestViewTest, SubmitButton) {
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
   SimulateFailedValidation();
 
+  // The submit button on the PIN keyboard shouldn't be shown.
+  LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
+  EXPECT_FALSE(test_pin_keyboard.GetSubmitButton()->parent());
+
   auto* generator = GetEventGenerator();
   // Updating input code (here last digit) should clear error state.
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);

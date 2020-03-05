@@ -153,8 +153,7 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
 }
 
 void SafetyCheckHandler::OnStateChanged(
-    password_manager::BulkLeakCheckService::State state,
-    size_t pending_credentials) {
+    password_manager::BulkLeakCheckService::State state) {
   using password_manager::BulkLeakCheckService;
   switch (state) {
     case BulkLeakCheckService::State::kIdle:
@@ -184,8 +183,9 @@ void SafetyCheckHandler::OnStateChanged(
   observed_leak_check_.Remove(leak_service_);
 }
 
-void SafetyCheckHandler::OnLeakFound(
-    const password_manager::LeakCheckCredential& credential) {
+void SafetyCheckHandler::OnCredentialDone(
+    const password_manager::LeakCheckCredential& credential,
+    password_manager::IsLeaked is_leaked) {
   // Do nothing because we only want to know the total number of compromised
   // credentials at the end of the bulk leak check.
 }

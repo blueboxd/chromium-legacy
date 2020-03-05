@@ -119,12 +119,10 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
-#import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
-#import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -210,9 +208,6 @@ NSString* const kStartSpotlightBookmarksIndexing =
 // Constants for deferring the enterprise managed device check.
 NSString* const kEnterpriseManagedDeviceCheck = @"EnterpriseManagedDeviceCheck";
 
-// Constants for deferred promo display.
-const NSTimeInterval kDisplayPromoDelay = 0.1;
-
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
   component_updater::ComponentUpdateService* cus =
@@ -287,10 +282,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // An object to record metrics related to the user's first action.
   std::unique_ptr<FirstUserActionRecorder> _firstUserActionRecorder;
-
-  // True if First Run UI (terms of service & sync sign-in) is being presented
-  // in a modal dialog.
-  BOOL _isPresentingFirstRunUI;
 
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> _localStatePrefObserverBridge;
@@ -375,10 +366,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Schedule the deletion of the temporary passwords files that might
 // be left over from incomplete export operations.
 - (void)scheduleDeleteTempPasswordsDirectory;
-// Initializes the first run UI and presents it to the user.
-- (void)showFirstRunUI;
-// Schedules presentation of the first eligible promo found, if any.
-- (void)scheduleShowPromo;
 // Crashes the application if requested.
 - (void)crashIfRequested;
 // Handles the notification that first run modal dialog UI is about to complete.
@@ -411,7 +398,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize launchOptions = _launchOptions;
 @synthesize browserInitializationStage = _browserInitializationStage;
 // - StartupInformation
-@synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
 @synthesize startupParameters = _startupParameters;
 @synthesize appLaunchTime = _appLaunchTime;
@@ -638,8 +624,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)handleFirstRunUIWillFinish {
-  DCHECK(_isPresentingFirstRunUI);
-  _isPresentingFirstRunUI = NO;
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
                 name:kChromeFirstRunUIWillFinishNotification
@@ -703,6 +687,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 #pragma mark - StartupInformation implementation.
+
+- (BOOL)isPresentingFirstRunUI {
+  return self.sceneController.presentingFirstRunUI;
+}
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
   return _firstUserActionRecorder.get();
@@ -1126,8 +1114,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return ![self.otrTabModel isEmpty];
 }
 
-
-- (void)showFirstRunUI {
+- (void)prepareForFirstRunUI {
   // Register for notification when First Run is completed.
   // Some initializations are held back until First Run modal dialog
   // is dismissed.
@@ -1141,21 +1128,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
          selector:@selector(handleFirstRunUIDidFinish)
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
-
-  WelcomeToChromeViewController* welcomeToChrome =
-      [[WelcomeToChromeViewController alloc]
-          initWithBrowser:self.interfaceProvider.mainInterface.browser
-                presenter:self.mainBVC
-               dispatcher:self.mainBVC.dispatcher];
-  UINavigationController* navController =
-      [[OrientationLimitingNavigationController alloc]
-          initWithRootViewController:welcomeToChrome];
-  [navController setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
-  navController.modalPresentationStyle = UIModalPresentationFullScreen;
-  CGRect appFrame = [[UIScreen mainScreen] bounds];
-  [[navController view] setFrame:appFrame];
-  _isPresentingFirstRunUI = YES;
-  [self.mainBVC presentViewController:navController animated:NO completion:nil];
 }
 
 - (void)crashIfRequested {
@@ -1167,68 +1139,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     *x = 0;
   }
 }
-
-#pragma mark - Promo support
-
-- (void)scheduleShowPromo {
-  // Don't show promos if first run is shown.  (Note:  This flag is only YES
-  // while the first run UI is visible.  However, as this function is called
-  // immediately after the UI is shown, it's a safe check.)
-  if (_isPresentingFirstRunUI)
-    return;
-  // Don't show promos in Incognito mode.
-  if (self.currentBVC == self.otrBVC)
-    return;
-  // Don't show promos if the app was launched from a URL.
-  if (self.startupParameters)
-    return;
-
-  // Show the sign-in promo if needed
-  if ([SigninPromoViewController
-          shouldBePresentedForBrowserState:self.mainBrowserState]) {
-    Browser* browser = self.interfaceProvider.mainInterface.browser;
-    UIViewController* promoController = [[SigninPromoViewController alloc]
-        initWithBrowser:browser
-             dispatcher:self.mainBVC.dispatcher];
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                 (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{
-                     [self showPromo:promoController];
-                   });
-  }
-}
-
-- (void)showPromo:(UIViewController*)promo {
-  // Make sure we have the BVC here with a valid profile.
-  DCHECK([self.currentBVC browserState]);
-
-  OrientationLimitingNavigationController* navController =
-      [[OrientationLimitingNavigationController alloc]
-          initWithRootViewController:promo];
-
-  // Avoid presenting the promo if the current device orientation is not
-  // supported. The promo will be presented at a later moment, when the device
-  // orientation is supported.
-  UIInterfaceOrientation orientation =
-      [UIApplication sharedApplication].statusBarOrientation;
-  NSUInteger supportedOrientationsMask =
-      [navController supportedInterfaceOrientations];
-  if (!((1 << orientation) & supportedOrientationsMask))
-    return;
-
-  [navController setModalTransitionStyle:[promo modalTransitionStyle]];
-  [navController setNavigationBarHidden:YES];
-  [[navController view] setFrame:[[UIScreen mainScreen] bounds]];
-
-  [self.mainBVC presentViewController:navController
-                             animated:YES
-                           completion:nil];
-}
-
-
-
-
 
 #pragma mark - Preferences Management
 
@@ -1429,6 +1339,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
                      fromSourceApplication:sourceApplication];
+}
+
+// Defined in FirstRunAppInterface for EGTests.
+- (void)showFirstRunUI {
+  [self.sceneController showFirstRunUI];
 }
 
 @end

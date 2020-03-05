@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
@@ -170,6 +171,48 @@ class DeepScanningDialogViewsBehaviorBrowserTest
   bool expected_scan_result_;
 };
 
+// Tests the behavior of the dialog in the following ways:
+// - It closes when the "Cancel" button is clicked.
+// - It returns a negative verdict on the scanned content.
+// - The "CancelledByUser" metrics are recorded.
+class DeepScanningDialogViewsCancelPendingScanBrowserTest
+    : public DeepScanningBrowserTestBase,
+      public DeepScanningDialogViews::TestObserver {
+ public:
+  DeepScanningDialogViewsCancelPendingScanBrowserTest() {
+    DeepScanningDialogViews::SetObserverForTesting(this);
+  }
+
+  void ViewsFirstShown(DeepScanningDialogViews* views,
+                       base::TimeTicks timestamp) override {
+    // Simulate the user clicking "Cancel" after the dialog is first shown.
+    views->CancelDialog();
+  }
+
+  void DestructorCalled(DeepScanningDialogViews* views) override {
+    // The test is over once the views are destroyed.
+    CallQuitClosure();
+  }
+
+  void ValidateMetrics() const {
+    ASSERT_EQ(
+        2u,
+        histograms_.GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+    ASSERT_EQ(1u, histograms_
+                      .GetTotalCountsForPrefix(
+                          "SafeBrowsing.DeepScan.Upload.Duration")
+                      .size());
+    ASSERT_EQ(1u,
+              histograms_
+                  .GetTotalCountsForPrefix(
+                      "SafeBrowsing.DeepScan.Upload.CancelledByUser.Duration")
+                  .size());
+  }
+
+ private:
+  base::HistogramTester histograms_;
+};
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
@@ -249,5 +292,48 @@ INSTANTIATE_TEST_SUITE_P(
         /*malware_success*/ testing::Bool(),
         /*response_delay*/
         testing::Values(kNoDelay, kSmallDelay, kNormalDelay)));
+
+IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
+                       Test) {
+  // Setup policies to enable deep scanning, its UI and the responses to be
+  // simulated.
+  SetDlpPolicy(CHECK_UPLOADS);
+  SetStatusCallbackResponse(SimpleDeepScanningClientResponseForTesting(
+      /*dlp=*/true, /*malware=*/base::nullopt));
+
+  // Always set this policy so the UI is shown.
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  // Set up delegate test values.
+  FakeDeepScanningDialogDelegate::SetResponseDelay(kSmallDelay);
+  SetUpDelegate();
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.do_malware_scan = false;
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/baz.doc"));
+
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            for (bool result : result.paths_results)
+              ASSERT_FALSE(result);
+            *called = true;
+          },
+          &called),
+      DeepScanAccessPoint::UPLOAD);
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  ValidateMetrics();
+}
 
 }  // namespace safe_browsing

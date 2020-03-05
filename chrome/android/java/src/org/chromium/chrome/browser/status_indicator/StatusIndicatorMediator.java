@@ -4,55 +4,22 @@
 
 package org.chromium.chrome.browser.status_indicator;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.HashSet;
-
-class StatusIndicatorMediator
-        implements ChromeFullscreenManager.FullscreenListener, View.OnLayoutChangeListener {
-    private static final int STATUS_BAR_COLOR_TRANSITION_DURATION_MS = 200;
-    private static final int FADE_TEXT_DURATION_MS = 150;
-    private static final int UPDATE_COLOR_TRANSITION_DURATION_MS = 400;
-
+class StatusIndicatorMediator implements ChromeFullscreenManager.FullscreenListener,
+                                         StatusIndicatorCoordinator.StatusIndicatorObserver {
     private PropertyModel mModel;
     private ChromeFullscreenManager mFullscreenManager;
-    private HashSet<StatusIndicatorCoordinator.StatusIndicatorObserver> mObservers =
-            new HashSet<>();
-    private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
-    private Runnable mOnCompositorShowAnimationEnd;
-
     private int mIndicatorHeight;
+
     private boolean mIsHiding;
 
-    /**
-     * Constructs the status indicator mediator.
-     * @param model The {@link PropertyModel} for the status indicator.
-     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen to for the changes in
-     *                          controls offsets.
-     * @param statusBarWithoutIndicatorColorSupplier A supplier that will get the status bar color
-     *                                               without taking the status indicator into
-     *                                               account.
-     */
-    StatusIndicatorMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
-            Supplier<Integer> statusBarWithoutIndicatorColorSupplier) {
+    StatusIndicatorMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager) {
         mModel = model;
         mFullscreenManager = fullscreenManager;
-        mStatusBarWithoutIndicatorColorSupplier = statusBarWithoutIndicatorColorSupplier;
     }
 
     @Override
@@ -63,15 +30,11 @@ class StatusIndicatorMediator
         // min-height.
         mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, compositedVisible);
 
-        final boolean isCompletelyShown = topControlsMinHeightOffset == mIndicatorHeight;
         // Android view should only be visible when the indicator is fully shown.
         mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY,
-                mIsHiding ? View.GONE : (isCompletelyShown ? View.VISIBLE : View.INVISIBLE));
-
-        if (mOnCompositorShowAnimationEnd != null && isCompletelyShown) {
-            mOnCompositorShowAnimationEnd.run();
-            mOnCompositorShowAnimationEnd = null;
-        }
+                mIsHiding ? View.GONE
+                          : (topControlsMinHeightOffset == mIndicatorHeight ? View.VISIBLE
+                                                                            : View.INVISIBLE));
 
         final boolean doneHiding = !compositedVisible && mIsHiding;
         if (doneHiding) {
@@ -81,249 +44,7 @@ class StatusIndicatorMediator
     }
 
     @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-            int oldTop, int oldRight, int oldBottom) {
-        if (mIndicatorHeight == v.getHeight()) return;
-
-        heightChanged(v.getHeight());
-    }
-
-    void addObserver(StatusIndicatorCoordinator.StatusIndicatorObserver observer) {
-        mObservers.add(observer);
-    }
-
-    void removeObserver(StatusIndicatorCoordinator.StatusIndicatorObserver observer) {
-        mObservers.remove(observer);
-    }
-
-    // Animations
-
-    // TODO(sinansahin): We might want to end the running animations if we need to hide before we're
-    // done showing/updating and vice versa.
-
-    /**
-     * Transitions the status bar color to the expected status indicator color background. Also,
-     * initializes other properties, e.g. status text, status icon, and colors.
-     *
-     * These animations are transitioning the status bar color to the provided background color
-     * (skipped if the background is the same as the current status bar color), then sliding in the
-     * status indicator, and then fading in the status text with the icon.
-     *
-     * The animation timeline looks like this:
-     *
-     * Status bar transitions |*--------*
-     * Indicator slides in    |         *--------*
-     * Text fades in          |                  *------*
-     *
-     * @param statusText Status text to show.
-     * @param statusIcon Compound drawable to show next to text.
-     * @param backgroundColor Background color for the indicator.
-     * @param textColor Status text color.
-     * @param iconTint Compound drawable tint.
-     */
-    void animateShow(@NonNull String statusText, Drawable statusIcon, @ColorInt int backgroundColor,
-            @ColorInt int textColor, @ColorInt int iconTint) {
-        Runnable initializeProperties = () -> {
-            mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
-            mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
-            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, 0.f);
-            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, backgroundColor);
-            mModel.set(StatusIndicatorProperties.TEXT_COLOR, textColor);
-            mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
-            mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
-            mOnCompositorShowAnimationEnd = () -> animateTextFadeIn();
-        };
-
-        final int statusBarColor = mStatusBarWithoutIndicatorColorSupplier.get();
-        // If we aren't changing the status bar color, skip the status bar color animation and
-        // continue with the rest of the animations.
-        if (statusBarColor == backgroundColor) {
-            initializeProperties.run();
-            return;
-        }
-
-        ValueAnimator animation = ValueAnimator.ofInt(statusBarColor, backgroundColor);
-        animation.setEvaluator(new ArgbEvaluator());
-        animation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        animation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
-        animation.addUpdateListener(anim -> {
-            for (StatusIndicatorCoordinator.StatusIndicatorObserver observer : mObservers) {
-                observer.onStatusIndicatorColorChanged((int) anim.getAnimatedValue());
-            }
-        });
-        animation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                initializeProperties.run();
-            }
-        });
-        animation.start();
-    }
-
-    private void animateTextFadeIn() {
-        ValueAnimator animation = ValueAnimator.ofFloat(0.f, 1.f);
-        animation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        animation.setDuration(FADE_TEXT_DURATION_MS);
-        animation.addUpdateListener((anim -> {
-            final float currentAlpha = (float) anim.getAnimatedValue();
-            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-        }));
-        animation.start();
-    }
-
-    // TODO(sinansahin): See if/how we can skip some of the animations if the properties didn't
-    // change. This might require UX guidance.
-
-    /**
-     * Updates the contents and background of the status indicator with animations.
-     *
-     * These animations are transitioning the status bar and the background color to the provided
-     * background color while fading out the status text with the icon, and then fading in the new
-     * status text with the icon (with the provided color and tint).
-     *
-     * The animation timeline looks like this:
-     *
-     * Old text fades out               |*------*
-     * Background/status bar transition |*------------------*
-     * New text fades in                |                   *------*
-     *
-     * @param statusText New status text to show.
-     * @param statusIcon New compound drawable to show next to text.
-     * @param backgroundColor New background color for the indicator.
-     * @param textColor New status text color.
-     * @param iconTint New compound drawable tint.
-     * @param animationCompleteCallback Callback to run after the animation is done.
-     */
-    void animateUpdate(@NonNull String statusText, Drawable statusIcon,
-            @ColorInt int backgroundColor, @ColorInt int textColor, @ColorInt int iconTint,
-            Runnable animationCompleteCallback) {
-        final boolean changed =
-                !statusText.equals(mModel.get(StatusIndicatorProperties.STATUS_TEXT))
-                || statusIcon != mModel.get(StatusIndicatorProperties.STATUS_ICON)
-                || backgroundColor != mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR)
-                || textColor != mModel.get(StatusIndicatorProperties.TEXT_COLOR)
-                || iconTint != mModel.get(StatusIndicatorProperties.ICON_TINT);
-        assert changed
-            : "#animateUpdate() shouldn't be called without any change to the status indicator.";
-
-        // 1. Fade out old text.
-        ValueAnimator fadeOldOut = ValueAnimator.ofFloat(1.f, 0.f);
-        fadeOldOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        fadeOldOut.setDuration(FADE_TEXT_DURATION_MS);
-        fadeOldOut.addUpdateListener(anim -> {
-            final float currentAlpha = (float) anim.getAnimatedValue();
-            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-        });
-        fadeOldOut.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
-                mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
-                mModel.set(StatusIndicatorProperties.TEXT_COLOR, textColor);
-                mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
-            }
-        });
-
-        // 2. Simultaneously transition the background.
-        ValueAnimator colorAnimation = ValueAnimator.ofInt(
-                mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR), backgroundColor);
-        colorAnimation.setEvaluator(new ArgbEvaluator());
-        colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        colorAnimation.setDuration(UPDATE_COLOR_TRANSITION_DURATION_MS);
-        colorAnimation.addUpdateListener(anim -> {
-            final int currentColor = (int) anim.getAnimatedValue();
-            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
-            notifyColorChange(currentColor);
-        });
-
-        // 3. Fade in new text, after #1 and #2 are done.
-        ValueAnimator fadeNewIn = ValueAnimator.ofFloat(0.f, 1.f);
-        fadeNewIn.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        fadeNewIn.setDuration(FADE_TEXT_DURATION_MS);
-        fadeNewIn.addUpdateListener(anim -> {
-            final float currentAlpha = (float) anim.getAnimatedValue();
-            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-        });
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.play(fadeOldOut).with(colorAnimation);
-        animatorSet.play(fadeNewIn).after(colorAnimation);
-        animatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                animationCompleteCallback.run();
-            }
-        });
-        animatorSet.start();
-    }
-
-    /**
-     * Hide the status indicator with animations.
-     *
-     * These animations are transitioning the status bar and background color to the system color
-     * while fading the text out, and then sliding the indicator out.
-     *
-     * The animation timeline looks like this:
-     *
-     * Status bar and background transition |*--------*
-     * Text fades out                       |*------*
-     * Indicator slides out                 |         *--------*
-     */
-    void animateHide() {
-        // 1. Transition the background.
-        ValueAnimator colorAnimation =
-                ValueAnimator.ofInt(mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR),
-                        mStatusBarWithoutIndicatorColorSupplier.get());
-        colorAnimation.setEvaluator(new ArgbEvaluator());
-        colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        colorAnimation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
-        colorAnimation.addUpdateListener(anim -> {
-            final int currentColor = (int) anim.getAnimatedValue();
-            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
-            notifyColorChange(currentColor);
-        });
-        colorAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                notifyColorChange(Color.TRANSPARENT);
-            }
-        });
-
-        // 2. Fade out the text simultaneously with #1.
-        ValueAnimator fadeOut = ValueAnimator.ofFloat(1.f, 0.f);
-        fadeOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-        fadeOut.setDuration(FADE_TEXT_DURATION_MS);
-        fadeOut.addUpdateListener(anim -> mModel.set(
-                StatusIndicatorProperties.TEXT_ALPHA, (float) anim.getAnimatedValue()));
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.play(colorAnimation).with(fadeOut);
-        animatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                heightChanged(0);
-            }
-        });
-        animatorSet.start();
-    }
-
-    // Observer notifiers
-
-    private void notifyHeightChange(int height) {
-        for (StatusIndicatorCoordinator.StatusIndicatorObserver observer : mObservers) {
-            observer.onStatusIndicatorHeightChanged(height);
-        }
-    }
-
-    private void notifyColorChange(@ColorInt int color) {
-        for (StatusIndicatorCoordinator.StatusIndicatorObserver observer : mObservers) {
-            observer.onStatusIndicatorColorChanged(color);
-        }
-    }
-
-    // Other internal methods
-
-    private void heightChanged(int newHeight) {
+    public void onStatusIndicatorHeightChanged(int newHeight) {
         mIndicatorHeight = newHeight;
 
         if (mIndicatorHeight > 0) {
@@ -332,7 +53,5 @@ class StatusIndicatorMediator
         } else {
             mIsHiding = true;
         }
-
-        notifyHeightChange(newHeight);
     }
 }

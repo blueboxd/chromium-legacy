@@ -1916,7 +1916,7 @@ void HashTable<Key,
   EnterAccessForbiddenScope();
   DeleteAllBucketsAndDeallocate(table_, table_size_);
   LeaveAccessForbiddenScope();
-  table_ = nullptr;
+  AsAtomicPtr(&table_)->store(nullptr, std::memory_order_relaxed);
   table_size_ = 0;
   key_count_ = 0;
 }

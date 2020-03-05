@@ -11,7 +11,6 @@
     [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions);
     [Unforgeable] readonly attribute TrustedTypePolicy defaultPolicy;
     // All the policy object names that have been created
-    [Affects=Nothing, Unforgeable] sequence<DOMString> getPolicyNames();
     [CallWith=ScriptState, Unforgeable] boolean isHTML(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isScript(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isScriptURL(any checkedObject);

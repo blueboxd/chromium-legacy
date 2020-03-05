@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/mac/mac_sdk_overrides.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//components/nacl/features.gni")
 
 declare_args() {
   # The MACOSX_DEPLOYMENT_TARGET variable used when compiling. This partially
@@ -149,18 +148,4 @@ if (mac_sdk_version != mac_sdk_min &&
   print(
       "********************************************************************************")
   assert(false, "SDK is incompatible with Xcode")
-}
-
-if (enable_nacl && machine_os_build_major >= 19) {
-  print(
-      "********************************************************************************")
-  print(
-      " WARNING: The NaCL SDK is 32-bit only. macOS 10.15+ removed support for 32-bit")
-  print(
-      "          executables. To fix, set enable_nacl=false in args.gn, or downgrade to")
-  print(
-      "          macOS 10.14. For more information, see https://crbug.com/1049832.")
-  print(
-      "********************************************************************************")
-  assert(false, "NaCL SDK is incompatible with host macOS version")
 }

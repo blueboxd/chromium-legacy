@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/base_event_utils.h"

@@ -55,7 +55,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void UpdateVisibility(bool visible) override;
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,
-      blink::WebCursorInfo* cursor_info) override;
+      ui::Cursor* cursor) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidReceiveData(const char* data, size_t data_length) override;
   void DidFinishLoading() override;

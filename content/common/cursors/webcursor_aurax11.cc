@@ -6,7 +6,6 @@
 
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/cursor/cursor_lookup.h"
@@ -22,7 +21,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   SkBitmap bitmap = GetCursorBitmap(cursor);
 
   XcursorImage* image =
-      ui::SkBitmapToXcursorImage(&bitmap, GetCursorHotstop(cursor));
+      ui::SkBitmapToXcursorImage(&bitmap, GetCursorHotspot(cursor));
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }

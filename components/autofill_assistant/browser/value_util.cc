@@ -14,7 +14,7 @@ bool RepeatedFieldEquals(const T& values_a, const T& values_b) {
     return false;
   }
   for (int i = 0; i < values_a.size(); i++) {
-    if (values_a[i] != values_b[i]) {
+    if (!(values_a[i] == values_b[i])) {
       return false;
     }
   }
@@ -43,24 +43,50 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
   switch (value_a.kind_case()) {
     case ValueProto::kStrings:
       return value_a.strings().values() == value_b.strings().values();
-      break;
     case ValueProto::kBooleans:
       return value_a.booleans().values() == value_b.booleans().values();
-      break;
     case ValueProto::kInts:
       return value_a.ints().values() == value_b.ints().values();
-      break;
+    case ValueProto::kUserActions:
+      return value_a.user_actions().values() == value_b.user_actions().values();
     case ValueProto::KIND_NOT_SET:
       return true;
   }
   return true;
 }
 
-// Comapres two |ModelValue| instances and returns true if they exactly match.
+// Compares two |ModelValue| instances and returns true if they exactly match.
 bool operator==(const ModelProto::ModelValue& value_a,
                 const ModelProto::ModelValue& value_b) {
   return value_a.identifier() == value_b.identifier() &&
          value_a.value() == value_b.value();
+}
+
+// Compares two |ChipProto| instances and returns true if they exactly match.
+bool operator==(const ChipProto& value_a, const ChipProto& value_b) {
+  return value_a.type() == value_b.type() && value_a.icon() == value_b.icon() &&
+         value_a.text() == value_b.text() &&
+         value_a.sticky() == value_b.sticky();
+}
+
+// Compares two |DirectActionProto| instances and returns true if they exactly
+// match.
+bool operator==(const DirectActionProto& value_a,
+                const DirectActionProto& value_b) {
+  return RepeatedFieldEquals(value_a.names(), value_b.names()) &&
+         RepeatedFieldEquals(value_a.required_arguments(),
+                             value_b.required_arguments()) &&
+         RepeatedFieldEquals(value_a.optional_arguments(),
+                             value_b.optional_arguments());
+}
+
+// Compares two |UserActionProto| instances and returns true if they exactly
+// match.
+bool operator==(const UserActionProto& value_a,
+                const UserActionProto& value_b) {
+  return value_a.chip() == value_b.chip() &&
+         value_a.direct_action() == value_b.direct_action() &&
+         value_a.identifier() == value_b.identifier();
 }
 
 // Intended for debugging. Writes a string representation of |values| to |out|.
@@ -90,6 +116,12 @@ std::ostream& operator<<(std::ostream& out,
   return WriteRepeatedField(out, values);
 }
 
+// Intended for debugging. '<<' operator specialization for UserActionProto.
+std::ostream& operator<<(std::ostream& out, const UserActionProto& value) {
+  out << value.identifier();
+  return out;
+}
+
 // Intended for debugging.  Writes a string representation of |value| to |out|.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
   switch (value.kind_case()) {
@@ -101,6 +133,9 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
       break;
     case ValueProto::kInts:
       out << value.ints().values();
+      break;
+    case ValueProto::kUserActions:
+      out << value.user_actions().values();
       break;
     case ValueProto::KIND_NOT_SET:
       break;
@@ -134,6 +169,14 @@ ValueProto SimpleValue(int i) {
   return value;
 }
 
+ModelProto::ModelValue SimpleModelValue(const std::string& identifier,
+                                        const ValueProto& value) {
+  ModelProto::ModelValue model_value;
+  model_value.set_identifier(identifier);
+  *model_value.mutable_value() = value;
+  return model_value;
+}
+
 bool AreAllValuesOfType(const std::vector<ValueProto>& values,
                         ValueProto::KindCase target_type) {
   if (values.empty()) {
@@ -164,6 +207,10 @@ bool AreAllValuesOfSize(const std::vector<ValueProto>& values,
         break;
       case ValueProto::kInts:
         if (value.ints().values_size() != target_size)
+          return false;
+        break;
+      case ValueProto::kUserActions:
+        if (value.user_actions().values_size() != target_size)
           return false;
         break;
       case ValueProto::KIND_NOT_SET:
@@ -206,6 +253,13 @@ base::Optional<ValueProto> CombineValues(
         std::for_each(
             value.ints().values().begin(), value.ints().values().end(),
             [&](const auto& i) { result.mutable_ints()->add_values(i); });
+        break;
+      case ValueProto::kUserActions:
+        std::for_each(value.user_actions().values().begin(),
+                      value.user_actions().values().end(),
+                      [&](const auto& action) {
+                        *result.mutable_user_actions()->add_values() = action;
+                      });
         break;
       case ValueProto::KIND_NOT_SET:
         NOTREACHED();

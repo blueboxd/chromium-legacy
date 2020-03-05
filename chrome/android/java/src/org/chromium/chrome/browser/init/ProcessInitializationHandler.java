@@ -81,6 +81,7 @@ import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
@@ -183,6 +184,11 @@ public class ProcessInitializationHandler {
                 new UuidBasedUniqueIdentificationGenerator(
                         application, ChromePreferenceKeys.SYNC_SESSIONS_UUID),
                 false);
+
+        // Set up the DownloadCollectionBridge early as display names may be immediately retrieved
+        // after native is loaded.
+        DownloadCollectionBridge.setDownloadCollectionBridge(
+                AppHooks.get().getDownloadCollectionBridge());
 
         // De-jelly can also be controlled by a system property. As sandboxed processes can't
         // read this property directly, convert it to the equivalent command line flag.

@@ -26,6 +26,7 @@
 #include "services/tracing/perfetto/test_utils.h"
 #include "services/tracing/public/cpp/perfetto/dummy_producer.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -695,6 +696,108 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   EXPECT_EQ(1u + 3u + 7u, system_consumer.received_test_packets());
 
   PerfettoProducer::DeleteSoonForTesting(std::move(local_producer_client));
+  PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
+}
+
+// Attempts to start a system trace while a local startup trace is active. The
+// system trace should only be started after the local trace is completed.
+TEST_F(SystemPerfettoTest, SystemTraceWhileLocalStartupTracing) {
+  // We're using mojom::kTraceEventDataSourceName for the local producer to
+  // emulate starting the real TraceEventDataSource which owns startup tracing.
+  auto mock_trace_event_ds = TestDataSource::CreateAndRegisterDataSource(
+      mojom::kTraceEventDataSourceName, 2);
+
+  // Wait for data source to register.
+  RunUntilIdle();
+
+  auto system_service = CreateMockSystemService();
+
+  // Create local producer.
+  base::RunLoop local_data_source_enabled_runloop;
+  base::RunLoop local_data_source_disabled_runloop;
+  auto local_producer = std::make_unique<MockProducerClient>(
+      /* num_data_sources = */ 1,
+      local_data_source_enabled_runloop.QuitClosure(),
+      local_data_source_disabled_runloop.QuitClosure());
+
+  // Setup startup tracing for local producer.
+  CHECK(local_producer->SetupStartupTracing());
+
+  // Attempt to start a system tracing session. Because startup tracing is
+  // already active, the system producer shouldn't activate yet.
+  base::RunLoop system_no_more_packets_runloop;
+  MockConsumer system_consumer(
+      {kPerfettoTestDataSourceName}, system_service->GetService(),
+      [&system_no_more_packets_runloop](bool has_more) {
+        if (!has_more) {
+          system_no_more_packets_runloop.Quit();
+        }
+      });
+
+  base::RunLoop system_data_source_enabled_runloop;
+  base::RunLoop system_data_source_disabled_runloop;
+  auto system_producer = CreateMockPosixSystemProducer(
+      system_service.get(),
+      /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
+      &system_data_source_disabled_runloop);
+
+  RunUntilIdle();
+
+  // Now connect the local ProducerHost & consumer, taking over startup tracing.
+  base::RunLoop local_no_more_packets_runloop;
+  std::unique_ptr<MockConsumer> local_consumer(new MockConsumer(
+      {mojom::kTraceEventDataSourceName}, local_service()->GetService(),
+      [&local_no_more_packets_runloop](bool has_more) {
+        if (!has_more) {
+          local_no_more_packets_runloop.Quit();
+        }
+      }));
+  auto local_producer_host = std::make_unique<MockProducerHost>(
+      kPerfettoProducerName, mojom::kTraceEventDataSourceName, local_service(),
+      local_producer.get());
+  local_data_source_enabled_runloop.Run();
+  local_consumer->WaitForAllDataSourcesStarted();
+
+  // Ensures that the Trace data gets written and committed.
+  RunUntilIdle();
+
+  // Stop local session. This should reconnect the system producer & start the
+  // system session.
+  local_consumer->StopTracing();
+  local_data_source_disabled_runloop.Run();
+  local_consumer->WaitForAllDataSourcesStopped();
+  local_no_more_packets_runloop.Run();
+  // Local consumer should have received 2 packets from |mock_trace_event_ds|.
+  EXPECT_EQ(2u, local_consumer->received_test_packets());
+
+  // Wait for system producer to get enabled. Wait have to wait for the
+  // individual data source to write data, because it might be queued until the
+  // local trace has fully finished.
+  base::RunLoop system_data_source_wrote_data_runloop;
+  data_sources_[0]->set_start_tracing_callback(
+      system_data_source_wrote_data_runloop.QuitClosure());
+
+  system_data_source_enabled_runloop.Run();
+  system_data_source_wrote_data_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
+
+  // Stop the trace on the correct sequence to ensure everything is committed.
+  base::RunLoop stop_tracing;
+  PerfettoTracedProcess::GetTaskRunner()->PostTask(
+      [&system_consumer, &stop_tracing]() {
+        system_consumer.StopTracing();
+        stop_tracing.Quit();
+      });
+  stop_tracing.Run();
+
+  system_data_source_disabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
+  system_no_more_packets_runloop.Run();
+
+  // Local consumer should have received 1 packet from the |data_sources_[0]|.
+  EXPECT_EQ(1u, system_consumer.received_test_packets());
+
+  PerfettoProducer::DeleteSoonForTesting(std::move(local_producer));
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 

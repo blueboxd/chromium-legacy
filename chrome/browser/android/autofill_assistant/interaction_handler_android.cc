@@ -41,6 +41,23 @@ void TryComputeValue(base::WeakPtr<BasicInteractions> basic_interactions,
   basic_interactions->ComputeValue(proto);
 }
 
+void SetUserActionsIgnoreReturn(
+    base::WeakPtr<BasicInteractions> basic_interactions,
+    const SetUserActionsProto& proto) {
+  if (!basic_interactions) {
+    return;
+  }
+  basic_interactions->SetUserActions(proto);
+}
+
+void TryEndAction(base::WeakPtr<BasicInteractions> basic_interactions,
+                  const EndActionProto& proto) {
+  if (!basic_interactions) {
+    return;
+  }
+  basic_interactions->EndAction(proto);
+}
+
 void ShowInfoPopup(const InfoPopupProto& proto,
                    base::android::ScopedJavaGlobalRef<jobject> jcontext) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -162,6 +179,11 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(), proto.on_view_clicked().view_identifier()});
     }
+    case EventProto::kOnUserActionCalled: {
+      return base::Optional<EventHandler::EventKey>(
+          {proto.kind_case(),
+           proto.on_user_action_called().user_action_identifier()});
+    }
     case EventProto::KIND_NOT_SET:
       VLOG(1) << "Error creating event: kind not set";
       return base::nullopt;
@@ -216,6 +238,20 @@ CreateInteractionCallbackFromProto(
           base::BindRepeating(&TryComputeValue,
                               basic_interactions->GetWeakPtr(),
                               proto.compute_value()));
+    case CallbackProto::kSetUserActions:
+      if (proto.set_user_actions().model_identifier().empty()) {
+        VLOG(1) << "Error creating SetUserActions interaction: "
+                   "model_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&SetUserActionsIgnoreReturn,
+                              basic_interactions->GetWeakPtr(),
+                              proto.set_user_actions()));
+    case CallbackProto::kEndAction:
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&TryEndAction, basic_interactions->GetWeakPtr(),
+                              proto.end_action()));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

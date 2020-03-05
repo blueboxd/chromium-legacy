@@ -18,7 +18,7 @@ class TimeTicks;
 
 // Whether First Run UI (terms of service & sync sign-in) is being presented
 // in a modal dialog.
-@property(nonatomic) BOOL isPresentingFirstRunUI;
+@property(nonatomic, readonly) BOOL isPresentingFirstRunUI;
 // Whether the current session began from a cold start. NO if the app has
 // entered the background at least once since start up.
 @property(nonatomic) BOOL isColdStart;

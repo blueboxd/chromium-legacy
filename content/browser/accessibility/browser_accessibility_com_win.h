@@ -401,6 +401,10 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr);
 
+  // Retrieves the name, allocates a new BSTR if non-empty and returns S_OK. If
+  // name is empty, returns S_FALSE.
+  HRESULT GetNameAsBstr(BSTR* value_bstr);
+
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
 

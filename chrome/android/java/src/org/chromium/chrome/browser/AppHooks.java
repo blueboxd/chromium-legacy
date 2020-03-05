@@ -17,7 +17,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.directactions.DirectActionCoordinator;
@@ -43,7 +42,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.password_manager.GooglePasswordManagerUIProvider;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
@@ -56,9 +54,9 @@ import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceRenderer;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 
@@ -85,17 +83,6 @@ public abstract class AppHooks {
     public static AppHooks get() {
         if (sInstance == null) sInstance = new AppHooksImpl();
         return sInstance;
-    }
-
-    /**
-     * Initiate AndroidEdu device check.
-     * TODO(https://crbug.com/1044616) This method needs to be removed once we will remove the
-     *  downstream overriden method
-     * @param callback Callback that should receive the results of the AndroidEdu device check.
-     */
-    public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onSchoolCheckDone(false));
-        assert false : "This method should not be called!";
     }
 
     /**
@@ -326,6 +313,13 @@ public abstract class AppHooks {
      */
     public FeatureHighlightProvider createFeatureHighlightProvider() {
         return new FeatureHighlightProvider();
+    }
+
+    /**
+     * @return A new {@link DownloadCollectionBridge} instance.
+     */
+    public DownloadCollectionBridge getDownloadCollectionBridge() {
+        return DownloadCollectionBridge.getDownloadCollectionBridge();
     }
 
     /**

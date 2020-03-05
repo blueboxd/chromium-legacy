@@ -426,6 +426,9 @@ _CONFIG = [
             # STL types such as std::unique_ptr are encouraged.
             'std::.+',
 
+            # UI Cursor
+            'ui::Cursor',
+
             # UI Keyconverter
             'ui::DomCode',
             'ui::DomKey',

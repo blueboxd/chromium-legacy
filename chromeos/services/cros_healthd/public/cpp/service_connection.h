@@ -81,6 +81,22 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunAcPowerRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the CPU cache routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunCpuCacheRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::RunCpuCacheRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the CPU stress routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunCpuStressRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::RunCpuStressRoutineCallback
+          callback) = 0;
+
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

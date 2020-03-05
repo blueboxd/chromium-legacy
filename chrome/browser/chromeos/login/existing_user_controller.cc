@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
@@ -449,6 +450,9 @@ void ExistingUserController::UpdateLoginDisplay(
           RebootOnSignOutPolicy::REBOOT_ON_SIGNOUT_MODE_UNSPECIFIED &&
       reboot_on_signout_policy != RebootOnSignOutPolicy::NEVER) {
     SessionTerminationManager::Get()->RebootIfNecessary();
+    // Initialize PowerwashRequirementsChecker so its instances will be able to
+    // use stored cryptohome powerwash state later
+    policy::PowerwashRequirementsChecker::Initialize();
   }
   bool show_users_on_signin;
   user_manager::UserList filtered_users;

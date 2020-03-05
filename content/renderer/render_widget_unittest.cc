@@ -43,6 +43,7 @@
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_external_widget.h"
 #include "third_party/blink/public/web/web_external_widget_client.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -293,16 +294,15 @@ class RenderWidgetUnittest : public testing::Test {
 };
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
-  blink::WebCursorInfo cursor_info;
-  cursor_info.type = ui::mojom::CursorType::kPointer;
+  ui::Cursor cursor;
 
-  widget()->DidChangeCursor(cursor_info);
+  widget()->DidChangeCursor(cursor);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);
   EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
             WidgetHostMsg_SetCursor::ID);
   widget()->sink()->ClearMessages();
 
-  widget()->DidChangeCursor(cursor_info);
+  widget()->DidChangeCursor(cursor);
   EXPECT_EQ(widget()->sink()->message_count(), 0U);
 
   EXPECT_CALL(*widget()->mock_web_external_widget_client(), HandleInputEvent(_))
@@ -312,7 +312,7 @@ TEST_F(RenderWidgetUnittest, CursorChange) {
                            HandledEventCallback());
   EXPECT_EQ(widget()->sink()->message_count(), 0U);
 
-  widget()->DidChangeCursor(cursor_info);
+  widget()->DidChangeCursor(cursor);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);
   EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
             WidgetHostMsg_SetCursor::ID);

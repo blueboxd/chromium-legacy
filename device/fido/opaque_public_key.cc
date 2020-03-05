@@ -8,9 +8,8 @@ namespace device {
 
 OpaquePublicKey::OpaquePublicKey(
     base::span<const uint8_t> cose_encoded_public_key)
-    : PublicKey(),
-      cose_encoding_(std::vector<uint8_t>(cose_encoded_public_key.cbegin(),
-                                          cose_encoded_public_key.cend())) {}
+    : cose_encoding_(cose_encoded_public_key.begin(),
+                     cose_encoded_public_key.end()) {}
 
 OpaquePublicKey::~OpaquePublicKey() = default;
 

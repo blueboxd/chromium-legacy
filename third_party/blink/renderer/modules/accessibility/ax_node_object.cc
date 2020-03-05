@@ -74,6 +74,8 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
@@ -2216,6 +2218,19 @@ String AXNodeObject::TextAlternative(bool recursive,
   if (!GetNode() && !GetLayoutObject())
     return String();
 
+  // Exclude offscreen objects inside a portal.
+  // NOTE: If an object is found to be offscreen, this also omits its children,
+  // which may not be offscreen in some cases.
+  Page* page = GetNode() ? GetNode()->GetDocument().GetPage() : nullptr;
+  if (page && page->InsidePortal()) {
+    LayoutRect bounds = GetBoundsInFrameCoordinates();
+    IntSize document_size =
+        GetNode()->GetDocument().GetLayoutView()->GetLayoutSize();
+    bool is_visible = bounds.Intersects(LayoutRect(IntPoint(), document_size));
+    if (!is_visible)
+      return String();
+  }
+
   String text_alternative = AriaTextAlternative(
       recursive, in_aria_labelled_by_traversal, visited, name_from,
       related_objects, name_sources, &found_text_alternative);
@@ -2705,6 +2720,12 @@ bool AXNodeObject::CanHaveChildren() const {
 
   if (GetNode() && IsA<HTMLMapElement>(GetNode()))
     return false;  // Does not have a role, so check here
+
+  // The AXTree of a portal should only have one node: the root document node.
+  if (GetNode() && GetNode()->IsDocumentNode() &&
+      GetNode()->GetDocument().GetPage() &&
+      GetNode()->GetDocument().GetPage()->InsidePortal())
+    return false;
 
   switch (native_role_) {
     case ax::mojom::Role::kCheckBox:

@@ -88,13 +88,36 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void BindTestInterface(
       mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver)
       override;
+  void AddObserver(
+      mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) override;
 
   // mojom::IndexedDBControlTest implementation:
+  void GetBaseDataPathForTesting(
+      GetBaseDataPathForTestingCallback callback) override;
   void GetFilePathForTesting(const url::Origin& origin,
                              GetFilePathForTestingCallback callback) override;
   void ResetCachesForTesting(base::OnceClosure callback) override;
-  void AddObserver(
-      mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) override;
+  void ForceSchemaDowngradeForTesting(
+      const url::Origin& origin,
+      ForceSchemaDowngradeForTestingCallback callback) override;
+  void HasV2SchemaCorruptionForTesting(
+      const url::Origin& origin,
+      HasV2SchemaCorruptionForTestingCallback callback) override;
+  void WriteToIndexedDBForTesting(const url::Origin& origin,
+                                  const std::string& key,
+                                  const std::string& value,
+                                  base::OnceClosure callback) override;
+  void GetBlobCountForTesting(const url::Origin& origin,
+                              GetBlobCountForTestingCallback callback) override;
+  void GetNextBlobNumberForTesting(
+      const url::Origin& origin,
+      int64_t database_id,
+      GetNextBlobNumberForTestingCallback callback) override;
+  void GetPathForBlobForTesting(
+      const url::Origin& origin,
+      int64_t database_id,
+      int64_t blob_number,
+      GetPathForBlobForTestingCallback callback) override;
 
   // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
   void ForceCloseSync(const url::Origin& origin,
@@ -135,8 +158,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Used by IndexedDBInternalsUI to populate internals page.
   base::ListValue* GetAllOriginsDetails();
 
-  bool ForceSchemaDowngrade(const url::Origin& origin);
-  V2SchemaCorruptionStatus HasV2SchemaCorruption(const url::Origin& origin);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
   std::vector<base::FilePath> GetStoragePaths(const url::Origin& origin) const;

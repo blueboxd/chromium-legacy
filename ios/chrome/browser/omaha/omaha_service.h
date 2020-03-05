@@ -37,8 +37,9 @@ class OmahaService {
   using UpgradeRecommendedCallback =
       base::Callback<void(const UpgradeRecommendedDetails&)>;
 
-  // Starts the service. Also set the |URLLoaderFactory| necessary to
-  // access the Omaha server. This method should only be called once.
+  // Starts the service. Also set the |URLLoaderFactory| necessary to access the
+  // Omaha server. This method should only be called once.  Does nothing if
+  // Omaha should not be enabled for this build variant.
   static void Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
                         pending_url_loader_factory,
                     const UpgradeRecommendedCallback& callback);
@@ -81,7 +82,8 @@ class OmahaService {
 
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
-  // Raw GetInstance method. Necessary for using singletons.
+  // Raw GetInstance method. Necessary for using singletons. Returns nullptr if
+  // Omaha should not be enabled for this build variant.
   static OmahaService* GetInstance();
 
   // Private constructor, only used by the singleton.

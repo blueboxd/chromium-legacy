@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarousel
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormModel;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantGenericUiCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
@@ -61,6 +62,7 @@ class AssistantBottomBarCoordinator
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private AssistantCollectUserDataCoordinator mPaymentRequestCoordinator;
+    private final AssistantGenericUiCoordinator mGenericUiCoordinator;
 
     // The transition triggered whenever the layout of the BottomSheet content changes.
     private final TransitionSet mLayoutTransition =
@@ -117,6 +119,8 @@ class AssistantBottomBarCoordinator
         mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, controller,
                 mContent.getToolbarView(), mHeaderCoordinator.getView(),
                 mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
+        mGenericUiCoordinator =
+                new AssistantGenericUiCoordinator(activity, model.getGenericUiModel());
 
         // We don't want to animate the carousels children views as they are already animated by the
         // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
@@ -138,6 +142,7 @@ class AssistantBottomBarCoordinator
         scrollableContentContainer.addView(mDetailsCoordinator.getView());
         scrollableContentContainer.addView(mPaymentRequestCoordinator.getView());
         scrollableContentContainer.addView(mFormCoordinator.getView());
+        scrollableContentContainer.addView(mGenericUiCoordinator.getView());
         mRootViewContainer.addView(mActionsCoordinator.getView());
 
         // Set children top margins to have a spacing between them.
@@ -146,6 +151,7 @@ class AssistantBottomBarCoordinator
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
+        setChildMarginTop(mGenericUiCoordinator.getView(), childSpacing);
 
         // Hide the carousels when they are empty.
         hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel());

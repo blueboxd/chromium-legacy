@@ -29,11 +29,11 @@ public class UrlBarController {
     /**
      * Creates a URL bar view based on the options provided.
      * @param options The options provided to tweak the URL bar display.
-     * @since 81
+     * @since 82
      */
     public View createUrlBarView(UrlBarOptions options) {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
             throw new UnsupportedOperationException();
         }
 

@@ -42,13 +42,16 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 
 class PagePopup;
 class PagePopupClient;
 class WebAutofillClient;
 class WebViewImpl;
-struct WebCursorInfo;
 
 // Handles window-level notifications from core on behalf of a WebView.
 class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
@@ -192,7 +195,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   // ChromeClient methods:
   String AcceptLanguages() override;
-  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override;
+  void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override;
 
   // ChromeClientImpl:
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);
@@ -280,7 +283,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  private:
   bool IsChromeClientImpl() const override { return true; }
 
-  void SetCursor(const WebCursorInfo&, LocalFrame*);
+  void SetCursor(const ui::Cursor&, LocalFrame*);
 
   // Returns WebAutofillClient associated with the WebLocalFrame. This takes and
   // returns nullable.

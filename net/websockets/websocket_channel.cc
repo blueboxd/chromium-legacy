@@ -267,7 +267,7 @@ void WebSocketChannel::SendAddChannelRequest(
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
       network_isolation_key, additional_headers,
-      base::Bind(&WebSocketStream::CreateAndConnectStream));
+      base::BindOnce(&WebSocketStream::CreateAndConnectStream));
 }
 
 void WebSocketChannel::SetState(State new_state) {
@@ -408,10 +408,10 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
-    const WebSocketStreamRequestCreationCallback& callback) {
+    WebSocketStreamRequestCreationCallback callback) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers, callback);
+      network_isolation_key, additional_headers, std::move(callback));
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -431,7 +431,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const SiteForCookies& site_for_cookies,
     const net::NetworkIsolationKey& network_isolation_key,
     const HttpRequestHeaders& additional_headers,
-    const WebSocketStreamRequestCreationCallback& callback) {
+    WebSocketStreamRequestCreationCallback callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   if (!socket_url.SchemeIsWSOrWSS()) {
     // TODO(ricea): Kill the renderer (this error should have been caught by
@@ -442,7 +442,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
   }
   socket_url_ = socket_url;
   auto connect_delegate = std::make_unique<ConnectDelegate>(this);
-  stream_request_ = callback.Run(
+  stream_request_ = std::move(callback).Run(
       socket_url_, requested_subprotocols, origin, site_for_cookies,
       network_isolation_key, additional_headers, url_request_context_,
       NetLogWithSource(), std::move(connect_delegate));

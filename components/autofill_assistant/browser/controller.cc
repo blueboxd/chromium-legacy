@@ -288,6 +288,25 @@ void Controller::RequireUI() {
   client_->AttachUI();
 }
 
+void Controller::SetGenericUi(
+    std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+        end_action_callback) {
+  generic_user_interface_ = std::move(generic_ui);
+  basic_interactions_.SetEndActionCallback(std::move(end_action_callback));
+  for (ControllerObserver& observer : observers_) {
+    observer.OnGenericUserInterfaceChanged(generic_user_interface_.get());
+  }
+}
+
+void Controller::ClearGenericUi() {
+  generic_user_interface_.reset();
+  basic_interactions_.ClearEndActionCallback();
+  for (ControllerObserver& observer : observers_) {
+    observer.OnGenericUserInterfaceChanged(nullptr);
+  }
+}
+
 void Controller::AddListener(ScriptExecutorDelegate::Listener* listener) {
   auto found = std::find(listeners_.begin(), listeners_.end(), listener);
   if (found == listeners_.end())
@@ -321,6 +340,8 @@ bool Controller::PerformUserActionWithContext(
   UserAction user_action = std::move((*user_actions_)[index]);
   SetUserActions(nullptr);
   user_action.Call(std::move(context));
+  event_handler_.DispatchEvent(
+      {EventProto::kOnUserActionCalled, user_action.identifier()});
   return true;
 }
 
@@ -491,6 +512,10 @@ bool Controller::ShouldPromptActionExpandSheet() const {
 
 BasicInteractions* Controller::GetBasicInteractions() {
   return &basic_interactions_;
+}
+
+const GenericUserInterfaceProto* Controller::GetGenericUiProto() const {
+  return generic_user_interface_.get();
 }
 
 void Controller::AddObserver(ControllerObserver* observer) {
@@ -1331,7 +1356,7 @@ void Controller::UpdateCollectUserDataActions() {
   for (size_t i = 0; i < collect_user_data_options_->additional_actions.size();
        ++i) {
     auto action = collect_user_data_options_->additional_actions[i];
-    user_actions->push_back({action.chip(), action.direct_action()});
+    user_actions->push_back({action});
     user_actions->back().SetCallback(
         base::BindOnce(&Controller::OnCollectUserDataAdditionalActionTriggered,
                        weak_ptr_factory_.GetWeakPtr(), i));
@@ -1587,7 +1612,7 @@ void Controller::DidFinishNavigation(
     if (current_host != script_domain_ &&
         !IsSubdomainOf(current_host, script_domain_)) {
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-                    Metrics::DropOutReason::NAVIGATION);
+                    Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE);
     }
   }
 

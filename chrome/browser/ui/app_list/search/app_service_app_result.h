@@ -12,7 +12,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
 

@@ -1,0 +1,4 @@
+rootWebArea
+++genericContainer
+++++portal
+++++++rootWebArea name='visible text'

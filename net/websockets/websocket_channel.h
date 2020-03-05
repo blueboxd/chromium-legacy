@@ -51,7 +51,7 @@ class NET_EXPORT WebSocketChannel {
  public:
   // The type of a WebSocketStream creator callback. Must match the signature of
   // WebSocketStream::CreateAndConnectStream().
-  typedef base::Callback<std::unique_ptr<WebSocketStreamRequest>(
+  typedef base::OnceCallback<std::unique_ptr<WebSocketStreamRequest>(
       const GURL&,
       const std::vector<std::string>&,
       const url::Origin&,
@@ -132,7 +132,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
-      const WebSocketStreamRequestCreationCallback& callback);
+      WebSocketStreamRequestCreationCallback callback);
 
   // The default timout for the closing handshake is a sensible value (see
   // kClosingHandshakeTimeoutSeconds in websocket_channel.cc). However, we can
@@ -194,7 +194,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const net::NetworkIsolationKey& network_isolation_key,
       const HttpRequestHeaders& additional_headers,
-      const WebSocketStreamRequestCreationCallback& callback);
+      WebSocketStreamRequestCreationCallback callback);
 
   // Called when a URLRequest is created for handshaking.
   void OnCreateURLRequest(URLRequest* request);

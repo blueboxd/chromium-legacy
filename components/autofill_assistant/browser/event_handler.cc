@@ -37,6 +37,9 @@ std::ostream& operator<<(std::ostream& out,
     case EventProto::kOnViewClicked:
       out << "kOnViewClicked";
       break;
+    case EventProto::kOnUserActionCalled:
+      out << "kOnUserActionCalled";
+      break;
     case EventProto::KIND_NOT_SET:
       break;
   }

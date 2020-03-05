@@ -36,6 +36,8 @@ std::vector<mojom::DiagnosticRoutineEnum> MakeAvailableRoutines() {
       mojom::DiagnosticRoutineEnum::kBatteryCapacity,
       mojom::DiagnosticRoutineEnum::kBatteryHealth,
       mojom::DiagnosticRoutineEnum::kSmartctlCheck,
+      mojom::DiagnosticRoutineEnum::kCpuCache,
+      mojom::DiagnosticRoutineEnum::kCpuStress,
   };
 }
 
@@ -289,6 +291,32 @@ TEST_F(CrosHealthdServiceConnectionTest, RunAcPowerRoutine) {
   ServiceConnection::GetInstance()->RunAcPowerRoutine(
       mojom::AcPowerStatusEnum::kConnected,
       /*expected_power_type=*/"power_type",
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(CrosHealthdServiceConnectionTest, RunCpuCacheRoutine) {
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunCpuCacheRoutine(
+      base::TimeDelta().FromSeconds(10),
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(CrosHealthdServiceConnectionTest, RunCpuStressRoutine) {
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunCpuStressRoutine(
+      base::TimeDelta().FromSeconds(10),
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();

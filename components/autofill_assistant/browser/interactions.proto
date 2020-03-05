@@ -32,6 +32,8 @@ message CallbackProto {
     ShowInfoPopupProto show_info_popup = 2;
     ShowListPopupProto show_list_popup = 3;
     ComputeValueProto compute_value = 4;
+    SetUserActionsProto set_user_actions = 5;
+    EndActionProto end_action = 6;
   }
 }
 
@@ -39,6 +41,7 @@ message EventProto {
   oneof kind {
     OnModelValueChangedEventProto on_value_changed = 1;
     OnViewClickedEventProto on_view_clicked = 2;
+    OnUserActionCalled on_user_action_called = 3;
   }
 }
 
@@ -52,6 +55,12 @@ message OnModelValueChangedEventProto {
 message OnViewClickedEventProto {
   // The identifier of the view to observe.
   optional string view_identifier = 1;
+}
+
+// Event that is triggered when |user_action_identifier| is called.
+message OnUserActionCalled {
+  // The identifier of the user action to observe.
+  optional string user_action_identifier = 1;
 }
 
 // Callback that writes the specified value to |model_identifier|.
@@ -124,4 +133,22 @@ message ShowListPopupProto {
   optional string selected_item_indices_model_identifier = 3;
   // Whether to allow the selection of multiple items or not.
   optional bool allow_multiselect = 4;
+}
+
+// Sets the list of available user actions. User actions are either direct
+// actions performed via assistant and/or chips that users can tap.
+message SetUserActionsProto {
+  // The model identifier containing the user actions. Must point to a
+  // UserActionList value.
+  optional string model_identifier = 1;
+}
+
+// Ends the generic Ui action (this is usually tied to a chip).
+//
+// This behaves exactly the same as tapping a regular chip would in any other
+// action, i.e., the result of the action (|status| + model) is written to the
+// action response, which will be sent to the backend.
+message EndActionProto {
+  // The status to report to the backend.
+  optional ProcessedActionStatusProto status = 1;
 }

@@ -30,6 +30,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -87,6 +88,27 @@ std::string MonotonicTimestamp() {
   return base::NumberToString(time);
 }
 
+ArcBinaryTranslationType IdentifyBinaryTranslationType(
+    const StartParams& start_params) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  bool is_houdini_available =
+      command_line->HasSwitch(chromeos::switches::kEnableHoudini) ||
+      command_line->HasSwitch(chromeos::switches::kEnableHoudini64);
+  bool is_ndk_translation_available =
+      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation);
+
+  if (!is_houdini_available && !is_ndk_translation_available)
+    return ArcBinaryTranslationType::NONE;
+
+  const bool prefer_ndk_translation =
+      !is_houdini_available || start_params.native_bridge_experiment;
+
+  if (is_ndk_translation_available && prefer_ndk_translation)
+    return ArcBinaryTranslationType::NDK_TRANSLATION;
+
+  return ArcBinaryTranslationType::HOUDINI;
+}
+
 std::vector<std::string> GenerateKernelCmdline(
     const StartParams& start_params,
     const UpgradeParams& upgrade_params,
@@ -96,12 +118,24 @@ std::vector<std::string> GenerateKernelCmdline(
     const std::string& channel,
     const std::string& serial_number) {
   DCHECK(!serial_number.empty());
+
+  std::string native_bridge;
+  switch (IdentifyBinaryTranslationType(start_params)) {
+    case ArcBinaryTranslationType::NONE:
+      native_bridge = "0";
+      break;
+    case ArcBinaryTranslationType::HOUDINI:
+      native_bridge = "libhoudini.so";
+      break;
+    case ArcBinaryTranslationType::NDK_TRANSLATION:
+      native_bridge = "libndk_translation.so";
+      break;
+  }
+
   std::vector<std::string> result = {
       "androidboot.hardware=bertha",
       "androidboot.container=1",
-      // TODO(b/139480143): when |start_params.native_bridge_experiment| is
-      // enabled, switch to ndk_translation.
-      "androidboot.native_bridge=libhoudini.so",
+      base::StringPrintf("androidboot.native_bridge=%s", native_bridge.c_str()),
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.vm=%d", is_host_on_vm),

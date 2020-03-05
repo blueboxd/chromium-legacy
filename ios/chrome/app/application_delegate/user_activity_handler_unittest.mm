@@ -379,7 +379,6 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
   // Use an object to capture the startup paramters set by UserActivityHandler.
   FakeStartupInformation* fakeStartupInformation =
       [[FakeStartupInformation alloc] init];
-  [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   BOOL result =
       [UserActivityHandler continueUserActivity:userActivity
@@ -668,7 +667,6 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
 
   FakeStartupInformation* fakeStartupInformation =
       [[FakeStartupInformation alloc] init];
-  [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   NSArray* parametersToTest = @[
     @[ @"OpenNewSearch", @NO, @(FOCUS_OMNIBOX) ],

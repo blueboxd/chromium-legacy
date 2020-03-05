@@ -44,8 +44,9 @@ class Metrics {
     GET_SCRIPTS_UNPARSABLE = 18,
     NO_INITIAL_SCRIPTS = 19,
     DFM_INSTALL_FAILED = 20,
+    DOMAIN_CHANGE_DURING_BROWSE_MODE = 21,
 
-    kMaxValue = DFM_INSTALL_FAILED
+    kMaxValue = DOMAIN_CHANGE_DURING_BROWSE_MODE
   };
 
   // The different ways that autofill assistant can stop.
@@ -217,6 +218,9 @@ class Metrics {
         break;
       case DropOutReason::DFM_INSTALL_FAILED:
         out << "DFM_INSTALL_FAILED";
+        break;
+      case DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE:
+        out << "DOMAIN_CHANGE_DURING_BROWSE_MODE";
         break;
         // Do not add default case to force compilation error for new values.
     }

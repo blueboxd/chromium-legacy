@@ -46,6 +46,7 @@ namespace ash {
 //    -------    -------    -------
 //
 // The <- represents the delete button while -> represents the submit button.
+// The submit button can be hidden.
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
@@ -91,7 +92,7 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // |on_backspace| is called when the user wants to erase the most recently
   // tapped key; must be non-null.
   // |on_submit| is called when the user wants to submit the PIN / password;
-  // must be non-null.
+  // pass null in order to hide the submit button.
   LoginPinView(Style keyboard_style,
                const OnPinKey& on_key,
                const OnPinBackspace& on_backspace,
@@ -100,8 +101,6 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
 
   // Notify accessibility that location of rows and LoginPinView changed.
   void NotifyAccessibilityLocationChanged();
-
-  void SetBackButtonVisible(bool visible);
 
   // Called when the password field text changed.
   void OnPasswordTextChanged(bool is_empty);
@@ -112,8 +111,6 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
 
   // Builds and returns a new view which contains a row of the PIN keyboard.
   NonAccessibleView* BuildAndAddRow();
-
-  bool is_back_button_visible_ = false;
 
   BackspacePinButton* backspace_;
   SubmitPinButton* submit_button_;

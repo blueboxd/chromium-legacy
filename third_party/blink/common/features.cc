@@ -82,11 +82,6 @@ const base::Feature kNavigationPredictor {
 #endif
 };
 
-// Start service workers on a background thread.
-// https://crbug.com/692909
-const base::Feature kOffMainThreadServiceWorkerStartup{
-    "OffMainThreadServiceWorkerStartup", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",

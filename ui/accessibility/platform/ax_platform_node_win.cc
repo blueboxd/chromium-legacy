@@ -1079,8 +1079,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
     return S_FALSE;
 
   bool has_name = target->HasStringAttribute(ax::mojom::StringAttribute::kName);
-  base::string16 name =
-      target->GetString16Attribute(ax::mojom::StringAttribute::kName);
+  base::string16 name = target->GetNameAsString16();
   auto status = GetData().GetImageAnnotationStatus();
   switch (status) {
     case ax::mojom::ImageAnnotationStatus::kNone:
@@ -2563,8 +2562,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnDescription(LONG column,
     if (!cell)
       continue;
 
-    base::string16 cell_name =
-        cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
+    base::string16 cell_name = cell->GetNameAsString16();
     if (!cell_name.empty()) {
       *description = SysAllocString(cell_name.c_str());
       return S_OK;
@@ -2749,8 +2747,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowDescription(LONG row,
     if (!cell)
       continue;
 
-    base::string16 cell_name =
-        cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
+    base::string16 cell_name = cell->GetNameAsString16();
     if (!cell_name.empty()) {
       *description = SysAllocString(cell_name.c_str());
       return S_OK;
@@ -4033,8 +4030,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       } else if (data.GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
                  data.GetNameFrom() == ax::mojom::NameFrom::kTitle) {
         V_VT(result) = VT_BSTR;
-        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                                 &V_BSTR(result));
+        GetNameAsBstr(&V_BSTR(result));
       } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
         V_VT(result) = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kTooltip,
@@ -4142,8 +4138,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_NamePropertyId:
       if (IsNameExposed()) {
         result->vt = VT_BSTR;
-        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                                 &result->bstrVal);
+        GetNameAsBstr(&result->bstrVal);
       }
       break;
 
@@ -5057,9 +5052,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_TEXT;
 
     case ax::mojom::Role::kSection: {
-      if (GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
+      if (GetNameAsString16().empty()) {
         // Do not use ARIA mapping for nameless <section>.
         return ROLE_SYSTEM_GROUPING;
       }
@@ -5512,9 +5505,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kSection: {
-      if (GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
+      if (GetNameAsString16().empty()) {
         // Do not use ARIA mapping for nameless <section>.
         ia2_role = IA2_ROLE_SECTION;
       } else {
@@ -5942,9 +5933,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"region";
 
     case ax::mojom::Role::kSection: {
-      if (GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
+      if (GetNameAsString16().empty()) {
         // Do not use ARIA mapping for nameless <section>.
         return L"group";
       }
@@ -6830,7 +6819,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     // Doing so helps Narrator find all the content of live regions.
     if (!data.GetBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute) &&
         !data.GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
-        data.GetStringAttribute(ax::mojom::StringAttribute::kName).empty() &&
+        GetNameAsString16().empty() &&
         data.GetStringAttribute(ax::mojom::StringAttribute::kDescription)
             .empty() &&
         !data.HasState(ax::mojom::State::kFocusable) && !data.IsClickable()) {
@@ -6942,9 +6931,13 @@ bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
   switch (data.role) {
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kGraphicsDocument:
-    case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kWebArea:
       return true;
+
+    case ax::mojom::Role::kRootWebArea: {
+      AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
+      return !parent || parent->GetData().role != ax::mojom::Role::kPortal;
+    }
 
     case ax::mojom::Role::kIframe:
       return false;
@@ -7313,6 +7306,13 @@ HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
 
+  return S_OK;
+}
+
+HRESULT AXPlatformNodeWin::GetNameAsBstr(BSTR* value_bstr) const {
+  base::string16 str = GetNameAsString16();
+  *value_bstr = SysAllocString(str.c_str());
+  DCHECK(*value_bstr);
   return S_OK;
 }
 

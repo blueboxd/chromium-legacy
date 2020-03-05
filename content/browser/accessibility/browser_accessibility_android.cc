@@ -278,12 +278,13 @@ bool BrowserAccessibilityAndroid::IsExpanded() const {
 }
 
 bool BrowserAccessibilityAndroid::IsFocusable() const {
-  // If it's an iframe element, or the root element of a child frame,
-  // only mark it as focusable if the element has an explicit name.
-  // Otherwise mark it as not focusable to avoid the user landing on
-  // empty container elements in the tree.
+  // If it's an iframe element, or the root element of a child frame that isn't
+  // inside a portal, only mark it as focusable if the element has an explicit
+  // name. Otherwise mark it as not focusable to avoid the user landing on empty
+  // container elements in the tree.
   if (IsIframe() ||
-      (GetRole() == ax::mojom::Role::kRootWebArea && PlatformGetParent()))
+      (GetRole() == ax::mojom::Role::kRootWebArea && PlatformGetParent() &&
+       PlatformGetParent()->GetRole() != ax::mojom::Role::kPortal))
     return HasStringAttribute(ax::mojom::StringAttribute::kName);
 
   return HasState(ax::mojom::State::kFocusable);
@@ -346,6 +347,11 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   // The root is not interesting if it doesn't have a title, even
   // though it's focusable.
   if (GetRole() == ax::mojom::Role::kRootWebArea && GetInnerText().empty())
+    return false;
+
+  // The root inside a portal is not interesting.
+  if (GetRole() == ax::mojom::Role::kRootWebArea && PlatformGetParent() &&
+      PlatformGetParent()->GetRole() == ax::mojom::Role::kPortal)
     return false;
 
   // Mark as uninteresting if it's hidden, even if it is focusable.
@@ -476,7 +482,7 @@ base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
         base::StringPrintf("#%02X%02X%02X", red, green, blue));
   }
 
-  base::string16 text = GetString16Attribute(ax::mojom::StringAttribute::kName);
+  base::string16 text = GetNameAsString16();
   if (text.empty())
     text = value;
 
@@ -513,8 +519,7 @@ base::string16 BrowserAccessibilityAndroid::GetHint() const {
   // If we're returning the value as the main text, the name needs to be
   // part of the hint.
   if (ShouldExposeValueAsName()) {
-    base::string16 name =
-        GetString16Attribute(ax::mojom::StringAttribute::kName);
+    base::string16 name = GetNameAsString16();
     if (!name.empty())
       strings.push_back(name);
   }

@@ -430,6 +430,10 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   return [value isKindOfClass:[NSString class]] ? value : nil;
 }
 
+- (NSString*)getName {
+  return base::SysUTF8ToNSString(_node->GetName());
+}
+
 - (std::unique_ptr<AnnouncementSpec>)announcementForEvent:
     (ax::mojom::Event)eventType {
   // Only alerts and live region changes should be announced.
@@ -441,7 +445,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (liveStatus == "off")
     return nullptr;
 
-  NSString* name = [self getStringAttribute:ax::mojom::StringAttribute::kName];
+  NSString* name = [self getName];
   NSString* announcementText =
       [name length] > 0 ? name
                         : base::SysUTF16ToNSString(_node->GetInnerText());
@@ -739,7 +743,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     return [self AXSelected];
 
   if (ui::IsNameExposedInAXValueForRole(role))
-    return [self getStringAttribute:ax::mojom::StringAttribute::kName];
+    return [self getName];
 
   if (_node->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
     // Mixed checkbox state not currently supported in views, but could be.
@@ -803,7 +807,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (ui::IsNameExposedInAXValueForRole(_node->GetData().role))
     return @"";
 
-  return [self getStringAttribute:ax::mojom::StringAttribute::kName];
+  return [self getName];
 }
 
 // Misc attributes.

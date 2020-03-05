@@ -27,7 +27,7 @@ scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(mojom::CursorType type) {
   Cursor cursor(type);
   cursor.set_image_scale_factor(1);
   SkBitmap bitmap = GetCursorBitmap(cursor);
-  gfx::Point hotspot = GetCursorHotstop(cursor);
+  gfx::Point hotspot = GetCursorHotspot(cursor);
   if (!bitmap.isNull())
     return new X11CursorOzone(bitmap, hotspot);
   return nullptr;

@@ -25,7 +25,7 @@ SkBitmap GetCursorBitmap(const Cursor& cursor) {
 #endif
 }
 
-gfx::Point GetCursorHotstop(const Cursor& cursor) {
+gfx::Point GetCursorHotspot(const Cursor& cursor) {
   if (cursor.type() == mojom::CursorType::kCustom)
     return cursor.custom_hotspot();
 #if defined(USE_AURA)

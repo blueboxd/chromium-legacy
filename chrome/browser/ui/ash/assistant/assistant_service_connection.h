@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "chromeos/services/assistant/service.h"
 
 class Profile;

@@ -108,6 +108,8 @@ class UiControllerAndroid : public ControllerObserver {
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
   void OnFormChanged(const FormProto* form) override;
   void OnClientSettingsChanged(const ClientSettings& settings) override;
+  void OnGenericUserInterfaceChanged(
+      const GenericUserInterfaceProto* generic_ui) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -203,6 +205,7 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetInfoBoxModel();
   base::android::ScopedJavaLocalRef<jobject> GetCollectUserDataModel();
   base::android::ScopedJavaLocalRef<jobject> GetFormModel();
+  base::android::ScopedJavaLocalRef<jobject> GetGenericUiModel();
 
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
@@ -243,11 +246,12 @@ class UiControllerAndroid : public ControllerObserver {
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  // Native controllers for generic UI in collect user data action.
+  // Native controllers for generic UI.
   std::unique_ptr<GenericUiControllerAndroid>
       collect_user_data_prepended_generic_ui_controller_;
   std::unique_ptr<GenericUiControllerAndroid>
       collect_user_data_appended_generic_ui_controller_;
+  std::unique_ptr<GenericUiControllerAndroid> generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};

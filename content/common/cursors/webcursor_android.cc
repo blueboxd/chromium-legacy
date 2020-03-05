@@ -5,7 +5,6 @@
 #include "content/common/cursors/webcursor.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 
 namespace content {
 

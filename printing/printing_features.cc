@@ -36,5 +36,10 @@ bool ShouldPrintUsingXps(bool source_is_pdf) {
 }
 #endif  // defined(OS_WIN)
 
+// When enabled, PrintRenderFrameHelper uses a frame-associated
+// URLLoaderFactory rather than renderer-associated one.
+const base::Feature kUseFrameAssociatedLoaderFactory{
+    "UseFrameAssociatedLoaderFactory", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace printing

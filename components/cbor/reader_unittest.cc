@@ -19,7 +19,7 @@ namespace cbor {
 namespace {
 
 std::vector<uint8_t> WithExtraneousData(base::span<const uint8_t> original) {
-  std::vector<uint8_t> ret(original.cbegin(), original.cend());
+  std::vector<uint8_t> ret(original.begin(), original.end());
   // Add a valid one byte long CBOR data item, namely, an unsigned integer
   // with value "1".
   ret.push_back(0x01);

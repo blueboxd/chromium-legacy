@@ -252,6 +252,50 @@ void DeviceCommandRunRoutineJob::RunImpl(CallbackWithResult succeeded_callback,
                   std::move(failed_callback)));
       break;
     }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuCache: {
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      // The CPU cache routine expects one integer >= 0.
+      if (!length_seconds.has_value() || length_seconds.value() < 0) {
+        SYSLOG(ERROR) << "Invalid parameters for CPU cache routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunCpuCacheRoutine(
+              base::TimeDelta::FromSeconds(length_seconds.value()),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
+    case chromeos::cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress: {
+      constexpr char kLengthSecondsFieldName[] = "lengthSeconds";
+      base::Optional<int> length_seconds =
+          params_dict_.FindIntKey(kLengthSecondsFieldName);
+      // The CPU stress routine expects one integer >= 0.
+      if (!length_seconds.has_value() || length_seconds.value() < 0) {
+        SYSLOG(ERROR) << "Invalid parameters for CPU stress routine.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(failed_callback),
+                                      std::make_unique<Payload>(
+                                          MakeInvalidParametersResponse())));
+        break;
+      }
+      chromeos::cros_healthd::ServiceConnection::GetInstance()
+          ->RunCpuStressRoutine(
+              base::TimeDelta::FromSeconds(length_seconds.value()),
+              base::BindOnce(
+                  &DeviceCommandRunRoutineJob::OnCrosHealthdResponseReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(succeeded_callback),
+                  std::move(failed_callback)));
+      break;
+    }
   }
 }
 

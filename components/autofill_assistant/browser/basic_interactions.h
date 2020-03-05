@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_BASIC_INTERACTIONS_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_BASIC_INTERACTIONS_H_
 
+#include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/interactions.pb.h"
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
+class UserModel;
 
 // Provides basic interactions for use by the generic UI framework. These
 // methods are intended to be bound to by the corresponding interaction
@@ -33,8 +35,26 @@ class BasicInteractions {
   // success, false on error.
   bool SetValue(const SetModelValueProto& proto);
 
+  // Replaces the set of available user actions as specified by |proto|. Returns
+  // true on success, false on error.
+  bool SetUserActions(const SetUserActionsProto& proto);
+
+  // Ends the current action. Can only be called during a ShowGenericUiAction.
+  bool EndAction(const EndActionProto& proto);
+
+  // Sets the callback to end the current ShowGenericUiAction.
+  void SetEndActionCallback(
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+          end_action_callback);
+
+  // Clears the |end_action_callback_|.
+  void ClearEndActionCallback();
+
  private:
   ScriptExecutorDelegate* delegate_;
+  // Only valid during a ShowGenericUiAction.
+  base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+      end_action_callback_;
   base::WeakPtrFactory<BasicInteractions> weak_ptr_factory_{this};
 };
 

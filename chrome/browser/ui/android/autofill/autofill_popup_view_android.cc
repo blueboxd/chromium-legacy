@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -76,10 +77,9 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
 
   for (size_t i = 0; i < count; ++i) {
     ScopedJavaLocalRef<jstring> value = base::android::ConvertUTF16ToJavaString(
-        env, controller_->GetElidedValueAt(i));
-    ScopedJavaLocalRef<jstring> label =
-        base::android::ConvertUTF16ToJavaString(
-            env, controller_->GetElidedLabelAt(i));
+        env, controller_->GetSuggestionValueAt(i));
+    ScopedJavaLocalRef<jstring> label = base::android::ConvertUTF16ToJavaString(
+        env, controller_->GetSuggestionLabelAt(i));
     int android_icon_id = 0;
 
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);

@@ -55,8 +55,6 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
   const std::vector<autofill::Suggestion> GetSuggestions() override {
     return suggestions_;
   }
-  MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
-  MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
 
   // AutofillPopupController
   MOCK_METHOD0(OnSuggestionsChanged, void());
@@ -68,11 +66,11 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
     return suggestions_.at(row);
   }
 
-  const base::string16& GetElidedValueAt(int row) const override {
+  const base::string16& GetSuggestionValueAt(int row) const override {
     return suggestions_.at(row).value;
   }
 
-  const base::string16& GetElidedLabelAt(int row) const override {
+  const base::string16& GetSuggestionLabelAt(int row) const override {
     return suggestions_.at(row).label;
   }
 

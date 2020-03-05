@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
     ":password_check",
+    ":password_check_list_item",
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
@@ -89,6 +90,17 @@ js_library("credit_card_list_entry") {
 }
 
 js_library("password_check") {
+  deps = [
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("password_check_list_item") {
+  deps = [
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("password_list_item") {
@@ -305,6 +317,7 @@ group("polymer3_elements") {
     ":credit_card_edit_dialog_module",
     ":credit_card_list_entry_module",
     ":modulize",
+    ":password_check_list_item_module",
     ":password_check_module",
     ":password_edit_dialog_module",
     ":password_list_item_module",
@@ -350,6 +363,12 @@ polymer_modulizer("credit_card_list_entry") {
 polymer_modulizer("password_check") {
   js_file = "password_check.js"
   html_file = "password_check.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("password_check_list_item") {
+  js_file = "password_check_list_item.js"
+  html_file = "password_check_list_item.html"
   html_type = "dom-module"
 }
 

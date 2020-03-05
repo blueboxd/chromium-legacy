@@ -272,8 +272,9 @@ IN_PROC_BROWSER_TEST_F(EulaOfflineTest, LoadOffline) {
                   .find(kOfflineEULAWarning) != std::string::npos);
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-// TODO(http://crbug.com/1041188): flaky on ChromeOS MSAN.
+#if defined(OS_CHROMEOS) && \
+    (defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER))
+// TODO(http://crbug.com/1041188): flaky on ChromeOS MSAN and LSAN.
 #define MAYBE_LoadOnline DISABLED_LoadOnline
 #else
 #define MAYBE_LoadOnline LoadOnline

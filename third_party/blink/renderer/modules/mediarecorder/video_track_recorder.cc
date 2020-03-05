@@ -241,6 +241,7 @@ void VideoTrackRecorderImpl::Encoder::StartFrameEncode(
 
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_ARGB ||
+        video_frame->format() == media::PIXEL_FORMAT_ABGR ||
         video_frame->format() == media::PIXEL_FORMAT_I420A ||
         video_frame->format() == media::PIXEL_FORMAT_NV12 ||
         video_frame->format() == media::PIXEL_FORMAT_XRGB)) {
@@ -313,6 +314,7 @@ void VideoTrackRecorderImpl::Encoder::RetrieveFrameOnMainThread(
     // TODO(crbug/1023390): Add browsertest for these.
     DCHECK(video_frame->HasTextures());
     DCHECK(video_frame->format() == media::PIXEL_FORMAT_ARGB ||
+           video_frame->format() == media::PIXEL_FORMAT_ABGR ||
            video_frame->format() == media::PIXEL_FORMAT_XRGB);
 
     const gfx::Size& old_visible_size = video_frame->visible_rect().size();

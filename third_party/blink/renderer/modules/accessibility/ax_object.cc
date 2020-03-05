@@ -1352,6 +1352,11 @@ bool AXObject::CanSetFocusAttribute() const {
   if (!node)
     return false;
 
+  // Elements inside a portal should not be focusable.
+  if (GetDocument() && GetDocument()->GetPage() &&
+      GetDocument()->GetPage()->InsidePortal())
+    return false;
+
   if (IsWebArea())
     return true;
 
@@ -3592,7 +3597,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kPluginObject:
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kRowGroup:
     case ax::mojom::Role::kScrollBar:
     case ax::mojom::Role::kScrollView:
@@ -3677,6 +3681,20 @@ bool AXObject::NameFromContents(bool recursive) const {
                     "this role type";
       NOTREACHED();
       break;
+
+    // A root web area normally only computes its name from the document title,
+    // but a root web area inside a portal's main frame should compute its name
+    // from its contents. This name is used by the portal element that hosts
+    // this portal.
+    case ax::mojom::Role::kRootWebArea: {
+      DCHECK(GetNode());
+      const Document& document = GetNode()->GetDocument();
+      bool is_main_frame =
+          document.GetFrame() && document.GetFrame()->IsMainFrame();
+      bool is_inside_portal =
+          document.GetPage() && document.GetPage()->InsidePortal();
+      return is_inside_portal && is_main_frame;
+    }
 
     case ax::mojom::Role::kUnknown:
     case ax::mojom::Role::kMaxValue:

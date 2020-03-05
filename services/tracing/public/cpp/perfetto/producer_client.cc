@@ -45,7 +45,7 @@ void ProducerClient::Connect(
 
   mojo::ScopedSharedBufferHandle shm;
   {
-    base::AutoLock lock(shared_memory_lock_);
+    base::AutoLock lock(lock_);
     shm = shared_memory_->Clone();
   }
   CHECK(shm.is_valid());
@@ -73,7 +73,7 @@ void ProducerClient::BindInProcessSharedMemoryArbiter(
 
   perfetto::SharedMemoryArbiter* arbiter;
   {
-    base::AutoLock lock(shared_memory_lock_);
+    base::AutoLock lock(lock_);
     // Shared memory should have been created before connecting to ProducerHost.
     DCHECK(shared_memory_arbiter_);
     // |shared_memory_arbiter_| is never destroyed, thus OK to call
@@ -84,7 +84,12 @@ void ProducerClient::BindInProcessSharedMemoryArbiter(
 }
 
 bool ProducerClient::SetupStartupTracing() {
-  return InitSharedMemoryIfNeeded();
+  base::AutoLock lock(lock_);
+  if (!InitSharedMemoryIfNeededLocked()) {
+    return false;
+  }
+  startup_tracing_active_ = true;
+  return true;
 }
 
 void ProducerClient::BindStartupTargetBuffer(
@@ -106,7 +111,7 @@ void ProducerClient::BindStartupTargetBuffer(
 }
 
 perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
-  base::AutoLock lock(shared_memory_lock_);
+  base::AutoLock lock(lock_);
   // |shared_memory_arbiter_| is never destroyed, thus OK to return a
   // reference here.
   return shared_memory_arbiter_.get();
@@ -141,7 +146,8 @@ void ProducerClient::NewDataSourceAdded(
 
 bool ProducerClient::IsTracingActive() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return data_sources_tracing_ > 0;
+  base::AutoLock lock(lock_);
+  return data_sources_tracing_ > 0 || startup_tracing_active_;
 }
 
 void ProducerClient::OnTracingStart() {
@@ -153,7 +159,7 @@ void ProducerClient::OnTracingStart() {
   if (!in_process_arbiter_task_runner_) {
     perfetto::SharedMemoryArbiter* arbiter;
     {
-      base::AutoLock lock(shared_memory_lock_);
+      base::AutoLock lock(lock_);
       // |shared_memory_arbiter_| is never destroyed, thus OK to call
       // BindToProducerEndpoint() without holding the lock.
       arbiter = shared_memory_arbiter_.get();
@@ -186,9 +192,17 @@ void ProducerClient::StartDataSource(
                 if (!weak_ptr) {
                   return;
                 }
+
                 DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
                 data_source->StartTracingWithID(id, weak_ptr.get(),
                                                 data_source_config);
+
+                // Starting TraceEventDataSource takes over startup tracing.
+                if (data_source->name() == mojom::kTraceEventDataSourceName) {
+                  base::AutoLock lock(weak_ptr->lock_);
+                  weak_ptr->startup_tracing_active_ = false;
+                }
+
                 // TODO(eseckler): Consider plumbing this callback through
                 // |data_source|.
                 std::move(callback).Run();
@@ -346,14 +360,18 @@ void ProducerClient::ResetSequenceForTesting() {
 }
 
 perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() {
-  base::AutoLock lock(shared_memory_lock_);
+  base::AutoLock lock(lock_);
   // |shared_memory_| is never destroyed except in tests, thus OK to return a
   // reference here.
   return shared_memory_.get();
 }
 
 bool ProducerClient::InitSharedMemoryIfNeeded() {
-  base::AutoLock lock(shared_memory_lock_);
+  base::AutoLock lock(lock_);
+  return InitSharedMemoryIfNeededLocked();
+}
+
+bool ProducerClient::InitSharedMemoryIfNeededLocked() {
   if (shared_memory_) {
     return true;
   }

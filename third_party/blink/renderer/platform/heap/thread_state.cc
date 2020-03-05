@@ -954,14 +954,13 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
 
   base::TimeDelta marking_duration = event.foreground_marking_time();
-  constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
+  constexpr size_t kMinMarkedBytesForReportingThroughput = 1024 * 1024;
   if (base::TimeTicks::IsHighResolution() &&
-      (event.object_size_in_bytes_before_sweeping >
-       kMinObjectSizeForReportingThroughput) &&
+      (event.marked_bytes > kMinMarkedBytesForReportingThroughput) &&
       !marking_duration.is_zero()) {
     DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
     const int main_thread_marking_throughput_mb_per_s = static_cast<int>(
-        static_cast<double>(event.object_size_in_bytes_before_sweeping) /
+        static_cast<double>(event.marked_bytes) /
         marking_duration.InMillisecondsF() * 1000 / 1024 / 1024);
     UMA_HISTOGRAM_COUNTS_100000("BlinkGC.MainThreadMarkingThroughput",
                                 main_thread_marking_throughput_mb_per_s);

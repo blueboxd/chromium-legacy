@@ -767,6 +767,19 @@ void FakeCryptohomeClient::GetCurrentSpaceForGid(
     gid_t android_gid,
     DBusMethodCallback<int64_t> callback) {}
 
+void FakeCryptohomeClient::CheckHealth(
+    const cryptohome::CheckHealthRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  cryptohome::BaseReply reply;
+  if (cryptohome_error_ == cryptohome::CRYPTOHOME_ERROR_NOT_SET) {
+    cryptohome::CheckHealthReply* state_reply =
+        reply.MutableExtension(cryptohome::CheckHealthReply::reply);
+    state_reply->set_requires_powerwash(requires_powerwash_);
+  }
+
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (!is_available)

@@ -203,9 +203,7 @@ void SignOut() {
 - (void)testRegularPlusIncognito {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
-  }
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails");
 #endif
 
   uint64_t originalClientID = [MetricsAppInterface UKMClientID];
@@ -240,9 +238,7 @@ void SignOut() {
 - (void)testIncognitoPlusRegular {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
-  }
+  EARL_GREY_TEST_DISABLED(@"EG1 Fails");
 #endif
 
   uint64_t originalClientID = [MetricsAppInterface UKMClientID];

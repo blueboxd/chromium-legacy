@@ -1941,9 +1941,8 @@ void RenderFrameImpl::PepperPluginCreated(RendererPpapiHost* host) {
     observer.DidCreatePepperPlugin(host);
 }
 
-void RenderFrameImpl::PepperDidChangeCursor(
-    PepperPluginInstanceImpl* instance,
-    const blink::WebCursorInfo& cursor) {
+void RenderFrameImpl::PepperDidChangeCursor(PepperPluginInstanceImpl* instance,
+                                            const ui::Cursor& cursor) {
   // Update the cursor appearance immediately if the requesting plugin is the
   // one which receives the last mouse event. Otherwise, the new cursor won't be
   // picked up until the plugin gets the next input event. That is bad if, e.g.,

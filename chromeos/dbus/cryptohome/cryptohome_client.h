@@ -23,6 +23,7 @@ class AccountIdentifier;
 class AddKeyRequest;
 class AuthorizationRequest;
 class BaseReply;
+class CheckHealthRequest;
 class CheckKeyRequest;
 class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
@@ -663,6 +664,11 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
   // gid (a shifted gid).
   virtual void GetCurrentSpaceForGid(const gid_t android_gid,
                                      DBusMethodCallback<int64_t> callback) = 0;
+
+  // Calls CheckHealth to get current health state.
+  virtual void CheckHealth(
+      const cryptohome::CheckHealthRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

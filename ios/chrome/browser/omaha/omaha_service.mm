@@ -22,9 +22,11 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/arch_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -280,8 +282,15 @@ class XmlWrapper : public OmahaXmlWriter {
 
 // static
 OmahaService* OmahaService::GetInstance() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static base::NoDestructor<OmahaService> instance;
+
+  if (tests_hook::DisableUpdateService())
+    return nullptr;
   return instance.get();
+#else
+  return nullptr;
+#endif
 }
 
 // static
@@ -290,15 +299,21 @@ void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
                          const UpgradeRecommendedCallback& callback) {
   DCHECK(pending_url_loader_factory);
   DCHECK(!callback.is_null());
-  OmahaService* result = GetInstance();
-  result->set_upgrade_recommended_callback(callback);
+
+  OmahaService* service = GetInstance();
+  if (!service) {
+    return;
+  }
+
+  service->set_upgrade_recommended_callback(callback);
   // This should only be called once.
-  DCHECK(!result->pending_url_loader_factory_ || !result->url_loader_factory_);
-  result->pending_url_loader_factory_ = std::move(pending_url_loader_factory);
-  result->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
+  DCHECK(!service->pending_url_loader_factory_ ||
+         !service->url_loader_factory_);
+  service->pending_url_loader_factory_ = std::move(pending_url_loader_factory);
+  service->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
   base::PostTask(FROM_HERE, {web::WebThread::IO},
                  base::BindOnce(&OmahaService::SendOrScheduleNextPing,
-                                base::Unretained(result)));
+                                base::Unretained(service)));
 }
 
 OmahaService::OmahaService()
@@ -378,9 +393,18 @@ void OmahaService::Initialize() {
 // static
 void OmahaService::GetDebugInformation(
     const base::Callback<void(base::DictionaryValue*)> callback) {
-  base::PostTask(FROM_HERE, {web::WebThread::IO},
-                 base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
-                                base::Unretained(GetInstance()), callback));
+  OmahaService* service = GetInstance();
+
+  if (!service) {
+    auto result = std::make_unique<base::DictionaryValue>();
+    // Invoke the callback with an empty response.
+    base::PostTask(FROM_HERE, {web::WebThread::UI},
+                   base::BindOnce(callback, base::Owned(result.release())));
+  } else {
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
+                                  base::Unretained(service), callback));
+  }
 }
 
 // static

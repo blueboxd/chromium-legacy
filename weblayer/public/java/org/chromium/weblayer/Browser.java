@@ -45,7 +45,7 @@ public class Browser {
 
         try {
             mImpl.setClient(new BrowserClientImpl());
-            if (WebLayer.getSupportedMajorVersionInternal() >= 81) {
+            if (WebLayer.getSupportedMajorVersionInternal() >= 82) {
                 mUrlBarController = new UrlBarController(mImpl.getUrlBarController());
             } else {
                 mUrlBarController = null;
@@ -254,12 +254,12 @@ public class Browser {
 
     /**
      * Returns the UrlBarController.
-     * @since 81
+     * @since 82
      */
     @NonNull
     public UrlBarController getUrlBarController() {
         ThreadCheck.ensureOnUiThread();
-        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
             throw new UnsupportedOperationException();
         }
         return mUrlBarController;

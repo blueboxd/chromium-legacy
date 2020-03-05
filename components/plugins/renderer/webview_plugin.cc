@@ -34,7 +34,6 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
 
-using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebDragOperationsMask;
 using blink::WebFrameWidget;
@@ -209,7 +208,7 @@ void WebViewPlugin::UpdateFocus(bool focused,
 
 blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
-    WebCursorInfo* cursor) {
+    ui::Cursor* cursor) {
   const blink::WebInputEvent& event = coalesced_event.Event();
   // For tap events, don't handle them. They will be converted to
   // mouse events later and passed to here.
@@ -323,8 +322,7 @@ void WebViewPlugin::WebViewHelper::DidInvalidateRect(const WebRect& rect) {
     plugin_->container_->InvalidateRect(rect);
 }
 
-void WebViewPlugin::WebViewHelper::DidChangeCursor(
-    const WebCursorInfo& cursor) {
+void WebViewPlugin::WebViewHelper::DidChangeCursor(const ui::Cursor& cursor) {
   plugin_->current_cursor_ = cursor;
 }
 

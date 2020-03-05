@@ -60,13 +60,16 @@ class Point;
 class PointF;
 }
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 class WebDragData;
 class WebGestureEvent;
 struct WebFloatRect;
 class WebString;
 class WebWidget;
-struct WebCursorInfo;
 class WebLocalFrame;
 
 class WebWidgetClient {
@@ -87,7 +90,7 @@ class WebWidgetClient {
   virtual void DidMeaningfulLayout(WebMeaningfulLayout) {}
 
   // Called when the cursor for the widget changes.
-  virtual void DidChangeCursor(const WebCursorInfo&) {}
+  virtual void DidChangeCursor(const ui::Cursor&) {}
 
   virtual void AutoscrollStart(const gfx::PointF&) {}
   virtual void AutoscrollFling(const gfx::Vector2dF& velocity) {}

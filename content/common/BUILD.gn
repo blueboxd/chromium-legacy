@@ -235,6 +235,7 @@ source_set("common") {
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
     "//ui/accessibility",
+    "//ui/base/cursor",
     "//ui/base/mojom:cursor_type",
     "//ui/events/ipc",
   ]
@@ -290,7 +291,6 @@ source_set("common") {
     "//third_party/boringssl",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/cursor",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events/blink",

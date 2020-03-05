@@ -58,6 +58,14 @@ class ServiceConnectionImpl : public ServiceConnection {
       const base::Optional<std::string>& expected_power_type,
       mojom::CrosHealthdDiagnosticsService::RunAcPowerRoutineCallback callback)
       override;
+  void RunCpuCacheRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::RunCpuCacheRoutineCallback callback)
+      override;
+  void RunCpuStressRoutine(
+      const base::TimeDelta& exec_duration,
+      mojom::CrosHealthdDiagnosticsService::RunCpuStressRoutineCallback
+          callback) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -163,6 +171,25 @@ void ServiceConnectionImpl::RunAcPowerRoutine(
   BindCrosHealthdDiagnosticsServiceIfNeeded();
   cros_healthd_diagnostics_service_->RunAcPowerRoutine(
       expected_status, expected_power_type, std::move(callback));
+}
+
+void ServiceConnectionImpl::RunCpuCacheRoutine(
+    const base::TimeDelta& exec_duration,
+    mojom::CrosHealthdDiagnosticsService::RunCpuCacheRoutineCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunCpuCacheRoutine(
+      exec_duration.InSeconds(), std::move(callback));
+}
+
+void ServiceConnectionImpl::RunCpuStressRoutine(
+    const base::TimeDelta& exec_duration,
+    mojom::CrosHealthdDiagnosticsService::RunCpuStressRoutineCallback
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdDiagnosticsServiceIfNeeded();
+  cros_healthd_diagnostics_service_->RunCpuStressRoutine(
+      exec_duration.InSeconds(), std::move(callback));
 }
 
 void ServiceConnectionImpl::ProbeTelemetryInfo(

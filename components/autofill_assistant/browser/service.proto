@@ -235,72 +235,6 @@ message SupportedScriptProto {
   optional PresentationProto presentation = 2;
 }
 
-// A message to describe a chip.
-message ChipProto {
-  // The type of the chip.
-  optional ChipType type = 1;
-
-  // The icon shown on the chip. Not required if text is set.
-  optional ChipIcon icon = 2;
-
-  // The text shown on the chip. Not required if icon is set.
-  optional string text = 3;
-
-  // Whether the chip is sticky. When the bottom sheet is configured with the
-  // ConfigureBottomSheetProto::PeekMode::HANDLE_HEADER peek mode and the
-  // sheet is minimized, the first sticky action will be displayed instead of
-  // the profile icon.
-  optional bool sticky = 4;
-}
-
-enum ChipType {
-  UNKNOWN_CHIP_TYPE = 0;
-
-  // Chip is a highlighted (blue) action chip.
-  HIGHLIGHTED_ACTION = 1;
-
-  // Chip is a normal action chip.
-  NORMAL_ACTION = 3;
-
-  // A cancel chip, which closes AA in a way that allows the user to undo.
-  //
-  // The action associated with the chip is only executed after enough time has
-  // passed that undo is not possible.
-  //
-  // The presence of this chip inhibit the addition of an implicit close or
-  // cancel button.
-  CANCEL_ACTION = 4;
-
-  // A close chip, which closes AA immediately.
-  //
-  // The presence of this chip inhibit the addition of an implicit close or
-  // cancel button. Otherwise, buttons of this type work and look like a
-  // NORMAL_ACTION.
-  CLOSE_ACTION = 5;
-
-  // Chip is a highlighted (blue) action chip.
-  //
-  // The presence of this chip inhibit the addition of an implicit close or
-  // cancel button. Otherwise, buttons of this type work and look like a
-  // HIGHLIGHTED_ACTION.
-  DONE_ACTION = 6;
-
-  reserved 2;
-}
-
-enum ChipIcon {
-  NO_ICON = 0;
-
-  // https://icons.googleplex.com/#icon=ic_clear
-  ICON_CLEAR = 1;
-
-  // https://icons.googleplex.com/#icon=ic_done
-  ICON_DONE = 2;
-
-  // https://icons.googleplex.com/#icon=ic_refresh
-  ICON_REFRESH = 3;
-}
-
 enum ScriptStatusProto {
   // Never explicitly set. Reading this value means the enum field is either
   // not set or set to a value not listed here.
@@ -499,6 +433,7 @@ message ActionProto {
     ShowFormProto show_form = 43;
     PopupMessageProto popup_message = 44;
     WaitForDocumentProto wait_for_document = 45;
+    ShowGenericUiProto show_generic_ui = 49;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -506,7 +441,7 @@ message ActionProto {
   // action sent to the client after this one. Default is false.
   optional bool clean_contextual_ui = 33;
 
-  reserved 34, 47;
+  reserved 34, 46, 47, 48;
 }
 
 // Result of |CollectUserDataProto| to be sent to the server.
@@ -569,6 +504,8 @@ message ProcessedActionProto {
     FormProto.Result form_result = 21;
 
     WaitForDocumentProto.Result wait_for_document_result = 25;
+    // Should be set as a result of ShowGenericUiProto.
+    ShowGenericUiProto.Result show_generic_ui_result = 28;
   }
 
   // Reports information about navigation that happened while
@@ -583,6 +520,8 @@ message ProcessedActionProto {
   // action, such as a prompt choice, through a direct action instead of
   // selecting a chip on the UI. This is meant for monitoring and debugging.
   optional bool direct_action = 24;
+
+  reserved 26, 27;
 }
 
 // Extended information about the action status, which provides more details
@@ -696,111 +635,6 @@ message AutofillErrorInfoProto {
 
   // Errors that occurred during fallback filling of autofill fields.
   repeated AutofillFieldError autofill_field_error = 5;
-}
-
-// Next: 22
-enum ProcessedActionStatusProto {
-  UNKNOWN_ACTION_STATUS = 0;
-
-  // Element could not be found.
-  ELEMENT_RESOLUTION_FAILED = 1;
-
-  // The action was applied successfully.
-  ACTION_APPLIED = 2;
-
-  // The action failed (generic error).
-  //
-  // This usually means that the client needs to be fixed: either the error
-  // should be assigned a more specific error code, or a bug in the client code
-  // needs to be fixed.
-  //
-  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
-  OTHER_ACTION_STATUS = 3;
-
-  // The action failed to collect the requested user data.
-  COLLECT_USER_DATA_ERROR = 4;
-
-  // Server asked the client to execute an unknown or unsupported action.
-  UNSUPPORTED_ACTION = 5;
-
-  // The action decided to fallback to manual mode, stopping the script.
-  //
-  // This can happen:
-  // - if an autofill action or an update details action cancels the script,
-  //   possibly, not necessarily, as a result of a user action.
-  // - if an interrupt explicitly stops the main script, for wait for dom
-  MANUAL_FALLBACK = 6;
-
-  // The WaitForDom action failed because an interrupt that ran during
-  // that action failed.
-  INTERRUPT_FAILED = 7;
-
-  // The script was canceled by the user, while it was running.
-  //
-  // This only report such events that happen while a script is running. It can
-  // affect any action. It is a signal that the action or script ran in an
-  // abnormal situation and its outcome cannot be trusted.
-  USER_ABORTED_ACTION = 8;
-
-  // The Autofill Action failed to get the full card information.
-  //
-  // Possible causes:
-  // - the user filled in the wrong CVC number.
-  // - the card has expired
-  GET_FULL_CARD_FAILED = 9;
-
-  // The action did not have what it needs. This is generally a bug in the
-  // script.
-  //
-  // This is currently returned by the autofill action, when it could not find
-  // the credit card or the address it needs in the client memory. This is
-  // usually the sign that the CollectUserDataAction was not run or failed.
-  //
-  PRECONDITION_FAILED = 10;
-
-  // The action definition returned by the server was rejected.
-  INVALID_ACTION = 11;
-
-  // Executing the action as defined is unsupported.
-  UNSUPPORTED = 12;
-
-  // Timed out waiting for the document to load.
-  TIMED_OUT = 13;
-
-  // Failed to get a stable position for the element, usually to click on it.
-  ELEMENT_UNSTABLE = 14;
-
-  reserved 15;
-
-  // The value passed to the select option action does not exist in the element.
-  // This is usually a scripting error.
-  OPTION_VALUE_NOT_FOUND = 16;
-
-  // The client got an unexpected error from a JavaScript snippet executed
-  // through devtools. This means that there's a bug in the client code.
-  //
-  // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
-  UNEXPECTED_JS_ERROR = 17;
-
-  // There were more than one matching element in the DOM in a context where
-  // only one is supported. This is generally a scripting error: the selector is
-  // not specific enough.
-  TOO_MANY_ELEMENTS = 18;
-
-  // The browser failed to navigate to a new document for its main frame. Note
-  // that this doesn't include page load errors, which are reported as
-  // TIMED_OUT.
-  NAVIGATION_ERROR = 19;
-
-  // A selector included into the current action is invalid.
-  INVALID_SELECTOR = 20;
-
-  // The requested autofill info (e.g., Chrome password manager login) was not
-  // available. It might have been recently deleted.
-  AUTOFILL_INFO_NOT_AVAILABLE = 21;
-
-  // An unexpected error occurred during element resolution.
-  FRAME_HOST_NOT_FOUND = 22;
 }
 
 // The pseudo type values come from
@@ -1238,6 +1072,31 @@ message WaitForDocumentProto {
     // match min_ready_state.
     optional DocumentReadyState end_ready_state = 2;
   }
+}
+
+// Show backend-specified user interface elements to the user.
+//
+// Note that this action will behave similar to a prompt, i.e., it requires a
+// specific EndAction interaction (usually tied to tapping a Chip) to end.
+//
+// Client errors:
+//   INVALID_ACTION if |generic_user_interface| was ill-defined or incomplete,
+//   or if the client failed to instantiate the UI for some reason. The Chrome
+//   log should contain additional information about the issue, if verbose
+//   logging is enabled (suggested level: 2 or 3).
+message ShowGenericUiProto {
+  message Result {
+    // The model containing the values for all keys specified in
+    // |output_model_identifiers|.
+    optional ModelProto model = 1;
+  }
+
+  // The generic user interface to show.
+  optional GenericUserInterfaceProto generic_user_interface = 1;
+
+  // The set of model identifiers to write to the result. Note: this must be a
+  // subset of the input model identifiers!
+  repeated string output_model_identifiers = 2;
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just
@@ -2054,32 +1913,6 @@ message SelectionInputProto {
   // The minimum number of choices that should be selected to consider this
   // input valid.
   optional int32 min_selected_choices = 4 [default = 1];
-}
-
-// Defines a mapping to an Android Q direct action.
-message DirectActionProto {
-  // Map to direct actions with the given names.
-  repeated string names = 1;
-
-  // Arguments to report as required for the direct action.
-  //
-  // This is included into the definition reported to the caller without being
-  // interpreted. Requirement is not enforced.
-  repeated string required_arguments = 2;
-
-  // Arguments to report as optional for the direct action.
-  //
-  // This is included into the definition reported to the caller without being
-  // interpreted.
-  repeated string optional_arguments = 3;
-}
-
-// An action that can be performed via the UI and/or via Direct Actions (in
-// Android Q+).
-message UserActionProto {
-  optional ChipProto chip = 1;
-
-  optional DirectActionProto direct_action = 2;
 }
 
 // Action to show a popup bubble on top of the bottom sheet, anchored at the

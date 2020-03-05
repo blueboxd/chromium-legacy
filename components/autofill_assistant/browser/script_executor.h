@@ -226,6 +226,11 @@ class ScriptExecutor : public ActionDelegate,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
       base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   void RequireUI() override;
+  void SetGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+          end_action_callback) override;
+  void ClearGenericUi() override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

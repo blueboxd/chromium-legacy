@@ -592,6 +592,18 @@ void ScriptExecutor::RequireUI() {
   delegate_->RequireUI();
 }
 
+void ScriptExecutor::SetGenericUi(
+    std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+    base::OnceCallback<void(ProcessedActionStatusProto, const UserModel*)>
+        end_action_callback) {
+  delegate_->SetGenericUi(std::move(generic_ui),
+                          std::move(end_action_callback));
+}
+
+void ScriptExecutor::ClearGenericUi() {
+  delegate_->ClearGenericUi();
+}
+
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool success = result && ProcessNextActionResponse(response);
   VLOG(2) << __func__ << " result=" << result;

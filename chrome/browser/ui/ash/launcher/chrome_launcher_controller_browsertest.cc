@@ -420,6 +420,7 @@ class ShelfWebAppBrowserTest
     cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    ShelfAppBrowserTest::SetUpCommandLine(command_line);
     cert_verifier_.SetUpCommandLine(command_line);
   }
   void SetUpOnMainThread() override {
@@ -2080,9 +2081,8 @@ IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, SettingsAndTaskManagerWindows) {
   // crbug.com/230464.
 }
 
-// Check that tabbed hosted and bookmark apps have correct shelf presence.
-// TODO(crbug.com/1054116): Port bookmark test to ShelfWebAppBrowserTest.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
+// Check that tabbed hosted and web apps have correct shelf presence.
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, TabbedHostedAndWebApps) {
   // Load and pin a hosted app.
   const Extension* hosted_app =
       LoadExtension(test_data_dir_.AppendASCII("app1/"));
@@ -2090,37 +2090,34 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
   controller_->PinAppWithID(hosted_app->id());
   const ash::ShelfID hosted_app_shelf_id(hosted_app->id());
 
-  // Load and pin a bookmark app.
-  const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
-      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
-      extensions::Extension::FROM_BOOKMARK);
-  ASSERT_TRUE(bookmark_app);
-  controller_->PinAppWithID(bookmark_app->id());
-  const ash::ShelfID bookmark_app_shelf_id(bookmark_app->id());
+  // Load and pin a web app.
+  const GURL web_app_url = GetSecureAppURL();
+  const web_app::AppId web_app_id = InstallWebApp(web_app_url);
+  controller_->PinAppWithID(web_app_id);
+  const ash::ShelfID web_app_shelf_id(web_app_id);
 
   // The apps should be closed.
   EXPECT_EQ(ash::STATUS_CLOSED,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_CLOSED,
-            shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+            shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Navigate to the app's launch URLs in two tabs.
   ui_test_utils::NavigateToURL(
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
+      browser(), web_app_url, WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
 
   // The apps should now be running.
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_RUNNING,
-            shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+            shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Now use the launcher controller to activate the apps.
   controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
                            display::kInvalidDisplayId);
-  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
+  controller_->ActivateApp(web_app_id, ash::LAUNCH_FROM_APP_LIST, 0,
                            display::kInvalidDisplayId);
 
   // There should be no new browsers or tabs as both apps were already open.
@@ -2128,9 +2125,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
-// Check that windowed hosted and bookmark apps have correct shelf presence.
-// TODO(crbug.com/1054116): Port bookmark test to ShelfWebAppBrowserTest.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
+// Check that windowed hosted and web apps have correct shelf presence.
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
   // Load and pin a hosted app.
   const Extension* hosted_app =
       LoadExtension(test_data_dir_.AppendASCII("app1/"));
@@ -2138,46 +2134,42 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   controller_->PinAppWithID(hosted_app->id());
   const ash::ShelfID hosted_app_shelf_id(hosted_app->id());
 
-  // Load and pin a bookmark app.
-  const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
-      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
-      extensions::Extension::FROM_BOOKMARK);
-  ASSERT_TRUE(bookmark_app);
-  controller_->PinAppWithID(bookmark_app->id());
-  const ash::ShelfID bookmark_app_shelf_id(bookmark_app->id());
+  // Load and pin a web app.
+  const GURL web_app_url = GetSecureAppURL();
+  const web_app::AppId web_app_id = InstallWebApp(web_app_url);
+  controller_->PinAppWithID(web_app_id);
+  const ash::ShelfID web_app_shelf_id(web_app_id);
 
   // Set both apps to open in windows.
   extensions::SetLaunchType(browser()->profile(), hosted_app->id(),
                             extensions::LAUNCH_TYPE_WINDOW);
-  extensions::SetLaunchType(browser()->profile(), bookmark_app->id(),
+  extensions::SetLaunchType(browser()->profile(), web_app_id,
                             extensions::LAUNCH_TYPE_WINDOW);
 
   // The apps should be closed.
   EXPECT_EQ(ash::STATUS_CLOSED,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_CLOSED,
-            shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+            shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Navigate to the app's launch URLs in two tabs.
   ui_test_utils::NavigateToURL(
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
+      browser(), web_app_url, WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
 
   // The apps should still be closed.
   EXPECT_EQ(ash::STATUS_CLOSED,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_CLOSED,
-            shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+            shelf_model()->ItemByID(web_app_shelf_id)->status);
 
   // Now use the launcher controller to activate the apps.
   ActivateAppAndFlushMojoCallsForAppService(hosted_app->id(),
                                             ash::LAUNCH_FROM_APP_LIST, 0,
                                             display::kInvalidDisplayId);
-  ActivateAppAndFlushMojoCallsForAppService(bookmark_app->id(),
-                                            ash::LAUNCH_FROM_APP_LIST, 0,
-                                            display::kInvalidDisplayId);
+  ActivateAppAndFlushMojoCallsForAppService(
+      web_app_id, ash::LAUNCH_FROM_APP_LIST, 0, display::kInvalidDisplayId);
 
   // There should be two new browsers.
   EXPECT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
@@ -2186,7 +2178,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_RUNNING,
-            shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+            shelf_model()->ItemByID(web_app_shelf_id)->status);
 }
 
 // Windowed progressive web apps should have shelf activity indicator showing

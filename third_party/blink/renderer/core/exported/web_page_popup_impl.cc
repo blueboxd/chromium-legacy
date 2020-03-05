@@ -33,7 +33,6 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
@@ -71,6 +70,7 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -177,7 +177,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
 
   void SetCursor(const Cursor& cursor, LocalFrame* local_frame) override {
-    popup_->WidgetClient()->DidChangeCursor(WebCursorInfo(cursor));
+    popup_->WidgetClient()->DidChangeCursor(cursor.GetCursor());
   }
 
   void SetEventListenerProperties(

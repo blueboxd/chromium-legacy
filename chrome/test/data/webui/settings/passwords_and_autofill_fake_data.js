@@ -140,6 +140,38 @@ FakeDataMaker.patternMaker_ = function(pattern, base) {
   });
 };
 
+/**
+ * Creates a new compromised credential.
+ * @param {string=} url
+ * @param {string=} username
+ * @param {string=} type
+ * @return {chrome.passwordsPrivate.CompromisedCredential}
+ * @private
+ */
+FakeDataMaker.makeCompromisedCredentials = function(url, username, type) {
+  return {
+    formattedOrigin: url,
+    changePasswordUrl: 'http://${url}/',
+    username: username,
+    elapsedTimeSinceCompromise:
+        (Math.floor(Math.random() * 60)).toString() + ' min ago',
+    compromiseType: type,
+  };
+};
+
+/**
+ * Creates a new compromised credential info.
+ * @param {!Array<!chrome.passwordsPrivate.CompromisedCredential>} list
+ * @param {string=} lastCheck
+ * @return {chrome.passwordsPrivate.CompromisedCredentialsInfo}
+ * @private
+ */
+FakeDataMaker.makeCompromisedCredentialsInfo = function(list, lastCheck) {
+  return {
+    compromisedCredentials: list,
+    elapsedTimeSinceLastCheck: lastCheck,
+  };
+};
 
 /**
  * Helper class for creating password-section sub-element from fake data and

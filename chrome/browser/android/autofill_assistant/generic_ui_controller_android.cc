@@ -224,11 +224,10 @@ GenericUiControllerAndroid::CreateFromProto(
   JNIEnv* env = base::android::AttachCurrentThread();
   auto views = std::make_unique<
       std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>>();
-  auto jroot_view =
-      CreateJavaView(env, jcontext, jdelegate, proto.root_view(), views.get());
-  if (!jroot_view) {
-    return nullptr;
-  }
+  auto jroot_view = proto.has_root_view()
+                        ? CreateJavaView(env, jcontext, jdelegate,
+                                         proto.root_view(), views.get())
+                        : nullptr;
 
   // Create interactions.
   auto interaction_handler =

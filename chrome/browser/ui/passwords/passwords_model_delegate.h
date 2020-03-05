@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -126,6 +127,15 @@ class PasswordsModelDelegate {
   // method returns false. The password in the reopened bubble will be revealed
   // if the authentication was successful.
   virtual bool AuthenticateUser() = 0;
+
+  // Called from the Save/Update bubble controller when gaia re-auth is needed
+  // to save passwords. This method triggers the reauth flow. Upon successful
+  // reauth, it saves the password if it's still relevant. Otherwise, it changes
+  // the default destination to local and reopens the save bubble.
+  virtual void AuthenticateUserForAccountStoreOptInAndSavePassword(
+      CoreAccountId account_id,
+      const base::string16& username,
+      const base::string16& password) = 0;
 
   // Returns true if the password values should be revealed when the bubble is
   // opened.

@@ -148,7 +148,7 @@ public class PickerVideoPlayer
                 // away) to indicate that playback has reached the end of the video (and didn't
                 // break before reaching the end). This also allows the user to restart playback
                 // from the start, by pressing Play.
-                mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+                switchToPlayButton();
                 updateProgress();
                 showOverlayControls(/*animateAway=*/false);
                 if (sProgressCallback != null) {
@@ -284,6 +284,8 @@ public class PickerVideoPlayer
         String formattedProgress =
                 mResources.getString(R.string.photo_picker_video_duration, current, total);
         mRemainingTime.setText(formattedProgress);
+        mRemainingTime.setContentDescription(
+                mResources.getString(R.string.accessibility_playback_time, current, total));
         int percentage = mVideoView.getDuration() == 0
                 ? 0
                 : mVideoView.getCurrentPosition() * 100 / mVideoView.getDuration();
@@ -296,7 +298,7 @@ public class PickerVideoPlayer
 
     private void startVideoPlayback() {
         mMediaPlayer.start();
-        mLargePlayButton.setImageResource(R.drawable.ic_pause_circle_outline_white_24dp);
+        switchToPauseButton();
         showOverlayControls(/*animateAway=*/true);
     }
 
@@ -304,7 +306,7 @@ public class PickerVideoPlayer
         stopPlaybackMonitor();
 
         mMediaPlayer.pause();
-        mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+        switchToPlayButton();
         showOverlayControls(/*animateAway=*/false);
     }
 
@@ -314,6 +316,18 @@ public class PickerVideoPlayer
         } else {
             startVideoPlayback();
         }
+    }
+
+    private void switchToPlayButton() {
+        mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+        mLargePlayButton.setContentDescription(
+                mResources.getString(R.string.accessibility_play_video));
+    }
+
+    private void switchToPauseButton() {
+        mLargePlayButton.setImageResource(R.drawable.ic_pause_circle_outline_white_24dp);
+        mLargePlayButton.setContentDescription(
+                mResources.getString(R.string.accessibility_pause_video));
     }
 
     private void syncOverlayControlsSize() {
@@ -327,9 +341,13 @@ public class PickerVideoPlayer
         if (mAudioOn) {
             mMediaPlayer.setVolume(1f, 1f);
             mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
+            mMuteButton.setContentDescription(
+                    mResources.getString(R.string.accessibility_mute_video));
         } else {
             mMediaPlayer.setVolume(0f, 0f);
             mMuteButton.setImageResource(R.drawable.ic_volume_off_white_24dp);
+            mMuteButton.setContentDescription(
+                    mResources.getString(R.string.accessibility_unmute_video));
         }
     }
 

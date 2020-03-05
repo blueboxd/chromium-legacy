@@ -30,12 +30,12 @@ void CastReceiverSessionDelegate::Start(
                                                      audio_config,
                                                      video_config,
                                                      cast_transport_.get());
-  on_audio_decoded_cb_ = base::Bind(
-      &CastReceiverSessionDelegate::OnDecodedAudioFrame,
-      weak_factory_.GetWeakPtr());
-  on_video_decoded_cb_ = base::Bind(
-      &CastReceiverSessionDelegate::OnDecodedVideoFrame,
-      weak_factory_.GetWeakPtr());
+  on_audio_decoded_cb_ =
+      base::BindRepeating(&CastReceiverSessionDelegate::OnDecodedAudioFrame,
+                          weak_factory_.GetWeakPtr());
+  on_video_decoded_cb_ =
+      base::BindRepeating(&CastReceiverSessionDelegate::OnDecodedVideoFrame,
+                          weak_factory_.GetWeakPtr());
 }
 
 void CastReceiverSessionDelegate::ReceivePacket(

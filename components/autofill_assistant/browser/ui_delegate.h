@@ -222,7 +222,9 @@ class UiDelegate {
   // Whether the sheet should be auto expanded when entering the prompt state.
   virtual bool ShouldPromptActionExpandSheet() const = 0;
 
- protected:
+  // The generic user interface to show, if any.
+  virtual const GenericUserInterfaceProto* GetGenericUiProto() const = 0;
+
  protected:
   UiDelegate() = default;
 };

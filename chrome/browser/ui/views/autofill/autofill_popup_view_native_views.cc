@@ -524,7 +524,7 @@ AutofillPopupItemView::ViewWithLabel AutofillPopupItemView::CreateValueLabel() {
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
   ViewWithLabel view_and_label;
   base::string16 text =
-      popup_view()->controller()->GetElidedValueAt(line_number());
+      popup_view()->controller()->GetSuggestionValueAt(line_number());
   if (popup_view()
           ->controller()
           ->GetSuggestionAt(line_number())
@@ -536,7 +536,7 @@ AutofillPopupItemView::ViewWithLabel AutofillPopupItemView::CreateValueLabel() {
   }
 
   auto text_label = CreateLabelWithStyleAndContext(
-      popup_view()->controller()->GetElidedValueAt(line_number()),
+      popup_view()->controller()->GetSuggestionValueAt(line_number()),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, GetPrimaryTextStyle());
 
   const gfx::Font::Weight font_weight = GetPrimaryTextWeight();
@@ -693,7 +693,7 @@ PasswordPopupSuggestionView::PasswordPopupSuggestionView(
     int line_number,
     int frontend_id)
     : AutofillPopupSuggestionView(popup_view, line_number, frontend_id) {
-  origin_ = popup_view->controller()->GetElidedLabelAt(line_number);
+  origin_ = popup_view->controller()->GetSuggestionLabelAt(line_number);
   masked_password_ =
       popup_view->controller()->GetSuggestionAt(line_number).additional_label;
 }
@@ -918,7 +918,7 @@ void AutofillPopupWarningView::CreateContent() {
       gfx::Insets(vertical_margin, horizontal_margin)));
 
   auto text_label = std::make_unique<views::Label>(
-      controller->GetElidedValueAt(line_number()),
+      controller->GetSuggestionValueAt(line_number()),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_RED);
   text_label->SetEnabledColor(popup_view()->GetWarningColor());
   text_label->SetMultiLine(true);

@@ -33,7 +33,6 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
-#include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
 #include "content/common/widget.mojom.h"
@@ -368,7 +367,7 @@ class CONTENT_EXPORT RenderWidget
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
-  void DidChangeCursor(const blink::WebCursorInfo&) override;
+  void DidChangeCursor(const ui::Cursor& cursor) override;
   void AutoscrollStart(const gfx::PointF& point) override;
   void AutoscrollFling(const gfx::Vector2dF& velocity) override;
   void AutoscrollEnd() override;

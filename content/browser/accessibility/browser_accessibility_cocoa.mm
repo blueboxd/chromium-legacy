@@ -1116,8 +1116,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   ax::mojom::NameFrom nameFrom = static_cast<ax::mojom::NameFrom>(
       _owner->GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-  std::string name =
-      _owner->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  std::string name = _owner->GetName();
 
   auto status = _owner->GetData().GetImageAnnotationStatus();
   switch (status) {
@@ -1541,8 +1540,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   ax::mojom::NameFrom nameFrom = static_cast<ax::mojom::NameFrom>(
       _owner->GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
   if (nameFrom == ax::mojom::NameFrom::kPlaceholder) {
-    return NSStringForStringAttribute(_owner,
-                                      ax::mojom::StringAttribute::kName);
+    return base::SysUTF8ToNSString(_owner->GetName());
   }
 
   return NSStringForStringAttribute(_owner,
@@ -1787,8 +1785,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!label)
     return false;
 
-  std::string labelName =
-      label->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  std::string labelName = label->GetName();
   return !labelName.empty();
 }
 

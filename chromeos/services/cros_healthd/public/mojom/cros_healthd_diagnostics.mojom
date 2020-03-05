@@ -21,6 +21,8 @@ enum DiagnosticRoutineEnum {
   kUrandom = 2,
   kSmartctlCheck = 3,
   kAcPower = 4,
+  kCpuCache = 5,
+  kCpuStress = 6,
 };
 
 // Enumeration of each of the possible statuses for a diagnostics routine.

@@ -29,7 +29,7 @@ class CastTransport;
 class VideoEncoder;
 class VideoFrameFactory;
 
-typedef base::Callback<void(base::TimeDelta)> PlayoutDelayChangeCB;
+using PlayoutDelayChangeCB = base::RepeatingCallback<void(base::TimeDelta)>;
 
 // Not thread safe. Only called from the main cast thread.
 // This class owns all objects related to sending video, objects that create RTP
@@ -45,7 +45,7 @@ class VideoSender : public FrameSender {
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
               CastTransport* const transport_sender,
-              const PlayoutDelayChangeCB& playout_delay_change_cb);
+              PlayoutDelayChangeCB playout_delay_change_cb);
 
   ~VideoSender() override;
 

@@ -53,6 +53,8 @@ class MockControllerObserver : public ControllerObserver {
                void(const UiDelegate::OverlayColors& colors));
   MOCK_METHOD1(OnFormChanged, void(const FormProto* form));
   MOCK_METHOD1(OnClientSettingsChanged, void(const ClientSettings& settings));
+  MOCK_METHOD1(OnGenericUserInterfaceChanged,
+               void(const GenericUserInterfaceProto* generic_ui));
 };
 
 }  // namespace autofill_assistant

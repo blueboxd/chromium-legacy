@@ -21,15 +21,28 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b);
 bool operator==(const ModelProto::ModelValue& value_a,
                 const ModelProto::ModelValue& value_b);
 
+// Custom comparison operator for |ChipProto|.
+bool operator==(const ChipProto& value_a, const ChipProto& value_b);
+
+// Custom comparison operator for |DirectActionProto|.
+bool operator==(const DirectActionProto& value_a,
+                const DirectActionProto& value_b);
+
+// Custom comparison operator for |UserActionProto|.
+bool operator==(const UserActionProto& value_a, const UserActionProto& value_b);
+
 // Intended for debugging.
 std::ostream& operator<<(std::ostream& out, const ValueProto& value);
 std::ostream& operator<<(std::ostream& out,
                          const ModelProto::ModelValue& value);
+std::ostream& operator<<(std::ostream& out, const UserActionProto& value);
 
 // Convenience constructors.
 ValueProto SimpleValue(bool value);
 ValueProto SimpleValue(const std::string& value);
 ValueProto SimpleValue(int value);
+ModelProto::ModelValue SimpleModelValue(const std::string& identifier,
+                                        const ValueProto& value);
 
 // Returns true if all |values| share the specified |target_type|.
 bool AreAllValuesOfType(const std::vector<ValueProto>& values,

@@ -647,7 +647,7 @@ class EventTestPlugin : public FakeWebPlugin {
 
   WebInputEventResult HandleInputEvent(
       const WebCoalescedInputEvent& coalesced_event,
-      WebCursorInfo*) override {
+      ui::Cursor*) override {
     const WebInputEvent& event = coalesced_event.Event();
     coalesced_event_count_ = coalesced_event.CoalescedEventSize();
     last_event_type_ = event.GetType();

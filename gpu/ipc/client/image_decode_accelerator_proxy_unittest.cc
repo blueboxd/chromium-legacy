@@ -111,8 +111,7 @@ TEST_F(ImageDecodeAcceleratorProxyTest, ScheduleImageDecodeSendsMessage) {
   const gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   GpuChannelMsg_ScheduleImageDecode_Params expected_params;
-  expected_params.encoded_data =
-      std::vector<uint8_t>(encoded_data.cbegin(), encoded_data.cend());
+  expected_params.encoded_data.assign(encoded_data.begin(), encoded_data.end());
   expected_params.output_size = kOutputSize;
   expected_params.raster_decoder_route_id = kRasterCmdBufferRouteId;
   expected_params.transfer_cache_entry_id = 1u;

@@ -9,9 +9,11 @@
 
 using base::android::AttachCurrentThread;
 
-class InstalledAppProviderTest : public ::testing::Test {
+// TODO(crbug.com/1058790): Reduce the test suite flakiness and re-enable the
+// tests.
+class DISABLED_InstalledAppProviderTest : public ::testing::Test {
  public:
-  InstalledAppProviderTest()
+  DISABLED_InstalledAppProviderTest()
       : task_environment_(content::BrowserTaskEnvironment::MainThreadType::UI),
         j_test_(
             Java_InstalledAppProviderTest_Constructor(AttachCurrentThread())) {}
@@ -29,4 +31,4 @@ class InstalledAppProviderTest : public ::testing::Test {
   base::android::ScopedJavaGlobalRef<jobject> j_test_;
 };
 
-JAVA_TESTS(InstalledAppProviderTest, j_test())
+JAVA_TESTS(DISABLED_InstalledAppProviderTest, j_test())

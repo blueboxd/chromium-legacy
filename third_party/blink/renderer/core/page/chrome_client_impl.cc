@@ -40,7 +40,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
@@ -112,6 +111,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace blink {
 
@@ -719,10 +719,10 @@ Cursor ChromeClientImpl::LastSetCursorForTesting() const {
 void ChromeClientImpl::SetCursor(const Cursor& cursor,
                                  LocalFrame* local_frame) {
   last_set_mouse_cursor_for_testing_ = cursor;
-  SetCursor(WebCursorInfo(cursor), local_frame);
+  SetCursor(cursor.GetCursor(), local_frame);
 }
 
-void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor,
+void ChromeClientImpl::SetCursor(const ui::Cursor& cursor,
                                  LocalFrame* local_frame) {
   if (cursor_overridden_)
     return;
@@ -740,7 +740,7 @@ void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor,
     widget->Client()->DidChangeCursor(cursor);
 }
 
-void ChromeClientImpl::SetCursorForPlugin(const WebCursorInfo& cursor,
+void ChromeClientImpl::SetCursorForPlugin(const ui::Cursor& cursor,
                                           LocalFrame* local_frame) {
   SetCursor(cursor, local_frame);
 }

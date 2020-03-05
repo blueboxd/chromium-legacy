@@ -11,10 +11,12 @@ source_set("omaha") {
   deps = [
     "//base",
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/metrics",
     "//components/prefs",
     "//components/profile_metrics",
     "//components/version_info",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state_metrics",

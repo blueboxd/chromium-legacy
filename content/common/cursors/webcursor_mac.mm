@@ -12,7 +12,6 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point_conversions.h"

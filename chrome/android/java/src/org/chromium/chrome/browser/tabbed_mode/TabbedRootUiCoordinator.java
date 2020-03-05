@@ -4,17 +4,13 @@
 
 package org.chromium.chrome.browser.tabbed_mode;
 
-import android.os.Handler;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -52,8 +48,6 @@ import org.chromium.ui.base.WindowAndroid;
 public class TabbedRootUiCoordinator extends RootUiCoordinator implements NativeInitObserver {
     private static boolean sEnableStatusIndicatorForTests;
 
-    private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
-
     private @Nullable ImmersiveModeManager mImmersiveModeManager;
     private TabbedSystemUiCoordinator mSystemUiCoordinator;
     private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
@@ -88,8 +82,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
         if (mStatusIndicatorCoordinator != null) {
             mStatusIndicatorCoordinator.removeObserver(mStatusIndicatorObserver);
-            mStatusIndicatorCoordinator.removeObserver(mActivity.getStatusBarColorController());
-            mStatusIndicatorCoordinator.destroy();
         }
 
         if (mToolbarButtonInProductHelpController != null) {
@@ -182,23 +174,17 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
         final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
-                mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
-                mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator);
+                mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
-        mStatusIndicatorObserver = new StatusIndicatorCoordinator.StatusIndicatorObserver() {
-            @Override
-            public void onStatusIndicatorHeightChanged(int indicatorHeight) {
-                final int resourceId = mActivity.getControlContainerHeightResource();
-                final int topControlsNewHeight =
-                        mActivity.getResources().getDimensionPixelSize(resourceId)
-                        + indicatorHeight;
-                fullscreenManager.setAnimateBrowserControlsHeightChanges(true);
-                fullscreenManager.setTopControlsHeight(topControlsNewHeight, indicatorHeight);
-                fullscreenManager.setAnimateBrowserControlsHeightChanges(false);
-            }
-        };
+        mStatusIndicatorObserver = (indicatorHeight -> {
+            final int resourceId = mActivity.getControlContainerHeightResource();
+            final int topControlsNewHeight =
+                    mActivity.getResources().getDimensionPixelSize(resourceId) + indicatorHeight;
+            fullscreenManager.setAnimateBrowserControlsHeightChanges(true);
+            fullscreenManager.setTopControlsHeight(topControlsNewHeight, indicatorHeight);
+            fullscreenManager.setAnimateBrowserControlsHeightChanges(false);
+        });
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);
-        mStatusIndicatorCoordinator.addObserver(mActivity.getStatusBarColorController());
 
         // Don't listen to the ConnectivityDetector if the feature is disabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
@@ -208,30 +194,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mConnectivityDetector = new ConnectivityDetector((state) -> {
             final boolean offline = state != ConnectivityDetector.ConnectionState.VALIDATED;
             if (offline) {
-                final int backgroundColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.offline_indicator_offline_color);
-                final int textColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_text_color_light);
-                final int iconTint = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_icon_color_light);
-                mStatusIndicatorCoordinator.show(
-                        mActivity.getString(R.string.offline_indicator_v2_offline_text), null,
-                        backgroundColor, textColor, iconTint);
+                mStatusIndicatorCoordinator.show();
             } else {
-                final int backgroundColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.offline_indicator_back_online_color);
-                final int textColor = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_text_color_inverse);
-                final int iconTint = ApiCompatibilityUtils.getColor(
-                        mActivity.getResources(), R.color.default_icon_color_inverse);
-                Runnable hide = () -> {
-                    final Handler handler = new Handler();
-                    handler.postDelayed(() -> mStatusIndicatorCoordinator.hide(),
-                            STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
-                };
-                mStatusIndicatorCoordinator.updateContent(
-                        mActivity.getString(R.string.offline_indicator_v2_back_online_text), null,
-                        backgroundColor, textColor, iconTint, hide);
+                mStatusIndicatorCoordinator.hide();
             }
         });
     }

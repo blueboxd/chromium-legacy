@@ -73,8 +73,8 @@ void AutofillKeyboardAccessoryView::Show() {
 
     Java_AutofillKeyboardAccessoryViewBridge_addToAutofillSuggestionArray(
         env, data_array, position++,
-        ConvertUTF16ToJavaString(env, controller_->GetElidedValueAt(i)),
-        ConvertUTF16ToJavaString(env, controller_->GetElidedLabelAt(i)),
+        ConvertUTF16ToJavaString(env, controller_->GetSuggestionValueAt(i)),
+        ConvertUTF16ToJavaString(env, controller_->GetSuggestionLabelAt(i)),
         android_icon_id, suggestion.frontend_id,
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr));
   }

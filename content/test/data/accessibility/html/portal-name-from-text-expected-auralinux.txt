@@ -1,0 +1,5 @@
+[document web]
+++[section]
+++++[push button] name='Text in iframe'
+++++++[document web] name='Text in iframe'
+<-- End-of-file -->

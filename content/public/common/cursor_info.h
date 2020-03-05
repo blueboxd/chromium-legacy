@@ -6,25 +6,29 @@
 #define CONTENT_PUBLIC_COMMON_CURSOR_INFO_H_
 
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/gfx/geometry/point.h"
+
+namespace ui {
+class Cursor;
+}
 
 namespace content {
 
 // This struct represents the data sufficient to create a cross-platform cursor:
-// either a predefined cursor type (from WebCursorInfo) or custom image.
-// This structure is highly similar to blink::WebCursorInfo.
+// either a predefined cursor type (from ui::Cursor) or custom image.
+// This structure is highly similar to ui::Cursor.
 struct CONTENT_EXPORT CursorInfo {
   CursorInfo() = default;
   explicit CursorInfo(ui::mojom::CursorType cursor);
-  explicit CursorInfo(const blink::WebCursorInfo& info);
+  explicit CursorInfo(const ui::Cursor& info);
 
   // Equality operator; performs bitmap content comparison as needed.
   bool operator==(const CursorInfo& other) const;
 
-  // Get a blink::WebCursorInfo struct with fields matching this struct.
-  blink::WebCursorInfo GetWebCursorInfo() const;
+  // Get a ui::Cursor struct with fields matching this struct.
+  ui::Cursor GetCursor() const;
 
   // One of the predefined cursors.
   ui::mojom::CursorType type = ui::mojom::CursorType::kPointer;

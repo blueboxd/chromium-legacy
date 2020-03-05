@@ -121,6 +121,11 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
           env, base::android::ToJavaIntArray(env, ints.get(),
                                              proto.ints().values_size()));
     }
+    case ValueProto::kUserActions: {
+      // Unused.
+      NOTREACHED();
+      return nullptr;
+    }
     case ValueProto::KIND_NOT_SET:
       return Java_AssistantValue_create(env);
   }

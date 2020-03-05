@@ -43,13 +43,16 @@ extern const char kDiceResponseHeader[];
 // perform.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin
+// NOTE: This enum is persisted to histograms. Do not change or reorder
+// values.
 enum GAIAServiceType : int {
   GAIA_SERVICE_TYPE_NONE = 0,    // No Gaia response header.
   GAIA_SERVICE_TYPE_SIGNOUT,     // Logout all existing sessions.
   GAIA_SERVICE_TYPE_INCOGNITO,   // Open an incognito tab.
-  GAIA_SERVICE_TYPE_ADDSESSION,  // Add a secondary account.
+  GAIA_SERVICE_TYPE_ADDSESSION,  // Add or re-authenticate an account.
   GAIA_SERVICE_TYPE_SIGNUP,      // Create a new account.
   GAIA_SERVICE_TYPE_DEFAULT,     // All other cases.
+  kMaxValue = GAIA_SERVICE_TYPE_DEFAULT
 };
 
 enum class DiceAction {

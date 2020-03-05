@@ -1285,7 +1285,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_domText(BSTR* dom_text) {
   if (!dom_text)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName, dom_text);
+  return GetNameAsBstr(dom_text);
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_clippedSubstringBounds(
@@ -1510,8 +1510,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   win_attributes_->ia2_state = ComputeIA2State();
   win_attributes_->ia2_attributes = ComputeIA2Attributes();
 
-  win_attributes_->name =
-      owner()->GetString16Attribute(ax::mojom::StringAttribute::kName);
+  win_attributes_->name = owner()->GetNameAsString16();
 
   win_attributes_->description =
       owner()->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
@@ -1660,6 +1659,18 @@ HRESULT BrowserAccessibilityComWin::GetStringAttributeAsBstr(
   if (!owner()->GetString16Attribute(attribute, &str))
     return S_FALSE;
 
+  *value_bstr = SysAllocString(str.c_str());
+  DCHECK(*value_bstr);
+
+  return S_OK;
+}
+
+HRESULT BrowserAccessibilityComWin::GetNameAsBstr(BSTR* value_bstr) {
+  base::string16 str;
+  if (!owner())
+    return E_FAIL;
+
+  str = owner()->GetNameAsString16();
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
 

@@ -7,12 +7,12 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace blink {
-struct WebCursorInfo;
-}  // namespace blink
-
 namespace cc {
 class Layer;
+}
+
+namespace ui {
+class Cursor;
 }
 
 namespace content {
@@ -26,7 +26,7 @@ class FullscreenContainer {
   virtual void Destroy() = 0;
 
   // Notifies the container that the mouse cursor has changed.
-  virtual void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) = 0;
+  virtual void PepperDidChangeCursor(const ui::Cursor& cursor) = 0;
 
   virtual void SetLayer(scoped_refptr<cc::Layer> layer) = 0;
 

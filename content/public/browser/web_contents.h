@@ -942,6 +942,17 @@ class WebContents : public PageNavigator,
                             bool bypass_cache,
                             ImageDownloadCallback callback) = 0;
 
+  // Same as DownloadImage(), but uses the ImageDownloader from the specified
+  // frame instead of the main frame.
+  virtual int DownloadImageInFrame(
+      const GlobalFrameRoutingId& initiator_frame_routing_id,
+      const GURL& url,
+      bool is_favicon,
+      uint32_t preferred_size,
+      uint32_t max_bitmap_size,
+      bool bypass_cache,
+      ImageDownloadCallback callback) = 0;
+
   // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
                     const base::string16& search_text,

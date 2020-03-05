@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extension_permissions_view.h"
 
+#include "chrome/browser/extensions/install_prompt_permissions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/expandable_container_view.h"
@@ -33,6 +34,13 @@ void ExtensionPermissionsView::AddItem(
     details_container.push_back(permission_details);
     AddChildView(std::make_unique<ExpandableContainerView>(details_container,
                                                            available_width_));
+  }
+}
+
+void ExtensionPermissionsView::AddPermissions(
+    const extensions::InstallPromptPermissions& permissions) {
+  for (size_t i = 0; i < permissions.permissions.size(); ++i) {
+    AddItem(permissions.permissions[i], permissions.details[i]);
   }
 }
 

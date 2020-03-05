@@ -19,13 +19,6 @@ class FontPreloadManagerTest : public SimTest {
     scoped_feature_list_.InitAndEnableFeature(
         features::kFontPreloadingDelaysRendering);
     SimTest::SetUp();
-    // We need async parsing for link preloading.
-    Document::SetThreadedParsingEnabledForTesting(true);
-  }
-
-  void TearDown() override {
-    Document::SetThreadedParsingEnabledForTesting(false);
-    SimTest::TearDown();
   }
 
  protected:
@@ -52,12 +45,6 @@ TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
             href="https://example.com/font.woff">
   )HTML");
 
-  // Set a generous timeout to make sure it doesn't fire before font loads.
-  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
-
-  // Run async parsing, which triggers link preloading.
-  test::RunPendingTasks();
-
   // Rendering is blocked due to ongoing font preloading.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
@@ -73,7 +60,6 @@ TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
   EXPECT_EQ(State::kLoaded, GetState());
 
   main_resource.Complete("</head><body>some text</body>");
-  test::RunPendingTasks();
 
   // Rendering starts after BODY has arrived, as the font was loaded earlier.
   EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
@@ -93,19 +79,12 @@ TEST_F(FontPreloadManagerTest, FastFontFinishAfterBody) {
             href="https://example.com/font.woff">
   )HTML");
 
-  // Set a generous timeout to make sure it doesn't fire before font loads.
-  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
-
-  // Run async parsing, which triggers link preloading.
-  test::RunPendingTasks();
-
   // Rendering is blocked due to ongoing font preloading.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kLoading, GetState());
 
   main_resource.Complete("</head><body>some text</body>");
-  test::RunPendingTasks();
 
   // Rendering is still blocked by font, even if we already have BODY, because
   // the font was *not* loaded earlier.
@@ -134,13 +113,6 @@ TEST_F(FontPreloadManagerTest, SlowFontTimeoutBeforeBody) {
             href="https://example.com/font.woff">
   )HTML");
 
-  // Use a generous timeout to make sure it doesn't automatically fire. We'll
-  // manually fire it later.
-  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
-
-  // Run async parsing, which triggers link preloading.
-  test::RunPendingTasks();
-
   // Rendering is blocked due to ongoing font preloading.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
@@ -155,7 +127,6 @@ TEST_F(FontPreloadManagerTest, SlowFontTimeoutBeforeBody) {
   EXPECT_EQ(State::kUnblocked, GetState());
 
   main_resource.Complete("</head><body>some text</body>");
-  test::RunPendingTasks();
 
   // Rendering starts after BODY has arrived.
   EXPECT_FALSE(Compositor().DeferMainFrameUpdate());
@@ -177,20 +148,12 @@ TEST_F(FontPreloadManagerTest, SlowFontTimeoutAfterBody) {
             href="https://example.com/font.woff">
   )HTML");
 
-  // Use a generous timeout to make sure it doesn't automatically fire. We'll
-  // manually fire it later.
-  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
-
-  // Run async parsing, which triggers link preloading.
-  test::RunPendingTasks();
-
   // Rendering is blocked due to ongoing font preloading.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
   EXPECT_EQ(State::kLoading, GetState());
 
   main_resource.Complete("</head><body>some text</body>");
-  test::RunPendingTasks();
 
   // Rendering is still blocked by font, even if we already have BODY.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());

@@ -639,3 +639,12 @@ async function mountCrostini(appId, initialEntries = BASIC_CROSTINI_ENTRY_SET) {
   const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
   await remoteCall.waitForFiles(appId, files);
 }
+
+/**
+ * Returns true if the Files app is running with the flag FilesNg.
+ * @param {string} appId Files app windowId.
+ */
+async function isFilesNg(appId) {
+  const body = await remoteCall.waitForElement(appId, 'body');
+  return body.attributes['class'] === 'files-ng';
+}

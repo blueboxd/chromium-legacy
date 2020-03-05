@@ -42,18 +42,18 @@ class CORE_EXPORT ContentCaptureManager
   virtual void Trace(Visitor*);
 
   ContentCaptureTask* GetContentCaptureTaskForTesting() const {
-    return content_capture_idle_task_.get();
+    return content_capture_idle_task_;
   }
 
  protected:
-  virtual scoped_refptr<ContentCaptureTask> CreateContentCaptureTask();
+  virtual ContentCaptureTask* CreateContentCaptureTask();
   TaskSession& GetTaskSessionForTesting() const { return *task_session_; }
 
  private:
   void NotifyNodeDetached(const Node& node);
   void ScheduleTask(ContentCaptureTask::ScheduleReason reason);
 
-  scoped_refptr<ContentCaptureTask> content_capture_idle_task_;
+  Member<ContentCaptureTask> content_capture_idle_task_;
 
   Member<LocalFrame> local_frame_root_;
 

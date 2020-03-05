@@ -56,8 +56,6 @@ source_set("web_test_messages") {
     # the message headers.
     "common/web_test/blink_test_messages.cc",
     "common/web_test/blink_test_messages.h",
-    "common/web_test/web_test_messages.cc",
-    "common/web_test/web_test_messages.h",
   ]
 
   deps = [
@@ -198,8 +196,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/web_test_first_device_bluetooth_chooser.h",
     "browser/web_test/web_test_javascript_dialog_manager.cc",
     "browser/web_test/web_test_javascript_dialog_manager.h",
-    "browser/web_test/web_test_message_filter.cc",
-    "browser/web_test/web_test_message_filter.h",
     "browser/web_test/web_test_permission_manager.cc",
     "browser/web_test/web_test_permission_manager.h",
     "browser/web_test/web_test_push_messaging_service.cc",

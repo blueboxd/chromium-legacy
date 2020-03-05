@@ -35,7 +35,6 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
 #include "content/shell/browser/web_test/web_test_client_impl.h"
-#include "content/shell/browser/web_test/web_test_message_filter.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
@@ -145,8 +144,6 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
 void WebTestContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
   ShellContentBrowserClient::RenderProcessWillLaunch(host);
-
-  host->AddFilter(new WebTestMessageFilter(host->GetID()));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(

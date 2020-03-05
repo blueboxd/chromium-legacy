@@ -48,6 +48,7 @@ public class RadioButtonRenderTest extends DummyUiActivityTestCase {
 
     private RadioButtonWithDescription mRadioButtonWithDescription1;
     private RadioButtonWithDescription mRadioButtonWithDescription2;
+    private RadioButtonWithDescription mRadioButtonWithDescription3;
 
     private RadioButtonWithEditText mRadioButtonWithEditText1;
     private RadioButtonWithEditText mRadioButtonWithEditText2;
@@ -76,6 +77,7 @@ public class RadioButtonRenderTest extends DummyUiActivityTestCase {
 
             mRadioButtonWithDescription1 = content.findViewById(R.id.test_radio_description_1);
             mRadioButtonWithDescription2 = content.findViewById(R.id.test_radio_description_2);
+            mRadioButtonWithDescription3 = content.findViewById(R.id.test_radio_description_3);
             mRadioButtonWithEditText1 = content.findViewById(R.id.test_radio_edit_text_1);
             mRadioButtonWithEditText2 = content.findViewById(R.id.test_radio_edit_text_2);
             mRadioButtonWithEditText3 = content.findViewById(R.id.test_radio_edit_text_3);
@@ -85,6 +87,7 @@ public class RadioButtonRenderTest extends DummyUiActivityTestCase {
         Assert.assertNotNull(mLayout);
         Assert.assertNotNull(mRadioButtonWithDescription1);
         Assert.assertNotNull(mRadioButtonWithDescription2);
+        Assert.assertNotNull(mRadioButtonWithDescription3);
         Assert.assertNotNull(mRadioButtonWithEditText1);
         Assert.assertNotNull(mRadioButtonWithEditText2);
         Assert.assertNotNull(mRadioButtonWithEditText3);
@@ -97,6 +100,7 @@ public class RadioButtonRenderTest extends DummyUiActivityTestCase {
     public void testRadioButtonWithDescriptionLayout() throws Exception {
         mRenderTestRule.render(mRadioButtonWithDescription1, "test_radio_description_1");
         mRenderTestRule.render(mRadioButtonWithDescription2, "test_radio_description_2");
+        mRenderTestRule.render(mRadioButtonWithDescription3, "test_radio_description_3");
         mRenderTestRule.render(mRadioButtonWithEditText1, "test_radio_edit_text_1");
         mRenderTestRule.render(mRadioButtonWithEditText2, "test_radio_edit_text_2");
         mRenderTestRule.render(mRadioButtonWithEditText3, "test_radio_edit_text_3");

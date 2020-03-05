@@ -24,9 +24,8 @@ class LocalFrame;
 
 // This class is used to capture the on-screen content and send them out
 // through WebContentCaptureClient.
-class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
-  USING_FAST_MALLOC(ContentCaptureTask);
-
+class CORE_EXPORT ContentCaptureTask
+    : public GarbageCollected<ContentCaptureTask> {
  public:
   enum class ScheduleReason {
     kFirstContentChange,
@@ -69,6 +68,8 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   base::TimeDelta GetTaskNextFireIntervalForTesting() const;
   void CancelTaskForTesting();
 
+  void Trace(Visitor*);
+
  protected:
   // All protected data and methods are for testing purpose.
   // Return true if the task should pause.
@@ -103,8 +104,8 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   // Indicates if there is content change since last run.
   bool has_content_change_ = false;
 
-  UntracedMember<LocalFrame> local_frame_root_;
-  UntracedMember<TaskSession> task_session_;
+  Member<LocalFrame> local_frame_root_;
+  Member<TaskSession> task_session_;
   std::unique_ptr<TaskRunnerTimer<ContentCaptureTask>> delay_task_;
   TaskState task_state_ = TaskState::kStop;
 

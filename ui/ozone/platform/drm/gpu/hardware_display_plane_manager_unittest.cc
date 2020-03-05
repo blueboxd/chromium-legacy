@@ -909,8 +909,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, ForceOpaqueFormatsForAddFramebuffer) {
     uint32_t used_fourcc;   // FourCC expected to be used in AddFramebuffer.
   } kFourCCFormats[] = {
       {DRM_FORMAT_ABGR2101010, DRM_FORMAT_XBGR2101010},
-      // TODO(mcasas): use AR30 when the CLs in crrev.com/c/2068722 have landed.
-      {DRM_FORMAT_XRGB2101010, DRM_FORMAT_XRGB2101010},
+      {DRM_FORMAT_ARGB2101010, DRM_FORMAT_XRGB2101010},
   };
 
   for (const auto& format_pair : kFourCCFormats) {

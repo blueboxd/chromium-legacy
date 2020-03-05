@@ -177,10 +177,17 @@ class TestClient final : public mojom::QuicTransportClient {
   bool has_seen_mojo_connection_error_ = false;
 };
 
+quic::ParsedQuicVersion GetTestVersion() {
+  quic::ParsedQuicVersion version = quic::DefaultVersionForQuicTransport();
+  quic::QuicEnableVersion(version);
+  return version;
+}
+
 class QuicTransportTest : public testing::Test {
  public:
   QuicTransportTest()
-      : origin_(url::Origin::Create(GURL("https://example.org/"))),
+      : version_(GetTestVersion()),
+        origin_(url::Origin::Create(GURL("https://example.org/"))),
         task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()),
         network_context_remote_(mojo::NullRemote()),
@@ -198,8 +205,7 @@ class QuicTransportTest : public testing::Test {
     network_context_.url_request_context()->set_cert_verifier(&cert_verifier_);
     network_context_.url_request_context()->set_host_resolver(&host_resolver_);
     auto* quic_context = network_context_.url_request_context()->quic_context();
-    quic_context->params()->supported_versions.push_back(
-        quic::ParsedQuicVersion{quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99});
+    quic_context->params()->supported_versions.push_back(version_);
     quic_context->params()->origins_to_force_quic_on.insert(
         net::HostPortPair("test.example.com", 0));
   }
@@ -239,6 +245,8 @@ class QuicTransportTest : public testing::Test {
   }
 
  private:
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+  quic::ParsedQuicVersion version_;
   const url::Origin origin_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;

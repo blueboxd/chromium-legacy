@@ -112,11 +112,6 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
     std::move(on_present_result_callback_).Run(true);
   }
 
-  if (pending_vr_start_action_) {
-    vr_shell_->RecordVrStartAction(*pending_vr_start_action_);
-    pending_vr_start_action_ = base::nullopt;
-  }
-
   JNIEnv* env = AttachCurrentThread();
   std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
   MetricsUtilAndroid::LogGvrVersionForVrViewerType(viewer_type, *vr_core_info);
@@ -147,19 +142,6 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
   std::move(on_present_result_callback_).Run(static_cast<bool>(success));
 }
 
-void VrShellDelegate::RecordVrStartAction(
-    JNIEnv* env,
-    jint start_action) {
-  VrStartAction action = static_cast<VrStartAction>(start_action);
-
-  if (!vr_shell_) {
-    pending_vr_start_action_ = action;
-    return;
-  }
-
-  vr_shell_->RecordVrStartAction(action);
-}
-
 void VrShellDelegate::OnPresentResult(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRRuntimeSessionOptionsPtr options,
@@ -170,7 +152,6 @@ void VrShellDelegate::OnPresentResult(
 
   if (!success) {
     std::move(callback).Run(nullptr);
-    possible_presentation_start_action_ = base::nullopt;
     return;
   }
 
@@ -182,15 +163,6 @@ void VrShellDelegate::OnPresentResult(
         &VrShellDelegate::OnPresentResult, base::Unretained(this),
         std::move(display_info), std::move(options), std::move(callback));
     return;
-  }
-
-  // If possible_presentation_start_action_ is not set at this point, then this
-  // request present probably came from blink, and has already been reported
-  // from there.
-  if (possible_presentation_start_action_) {
-    vr_shell_->RecordPresentationStartAction(
-        *possible_presentation_start_action_, *options);
-    possible_presentation_start_action_ = base::nullopt;
   }
 
   DVLOG(1) << __FUNCTION__ << ": connecting presenting service";

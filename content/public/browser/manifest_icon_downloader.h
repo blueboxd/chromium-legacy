@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 
 class GURL;
 class SkBitmap;
@@ -38,12 +39,16 @@ class CONTENT_EXPORT ManifestIconDownloader final {
   // Returns whether the download has started.
   // It will return false if the current context or information do not allow to
   // download the image.
+  // |global_frame_routing_id| specifies the frame in which to initiate the
+  // download.
   static bool Download(content::WebContents* web_contents,
                        const GURL& icon_url,
                        int ideal_icon_size_in_px,
                        int minimum_icon_size_in_px,
                        IconFetchCallback callback,
-                       bool square_only = true);
+                       bool square_only = true,
+                       const GlobalFrameRoutingId& initiator_frame_routing_id =
+                           GlobalFrameRoutingId());
 
   // This threshold has been chosen arbitrarily and is open to any necessary
   // changes in the future.

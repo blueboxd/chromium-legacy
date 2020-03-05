@@ -765,6 +765,8 @@ class FileManager extends cr.EventTarget {
     metrics.startInterval('Load.InitUI');
     if (util.isFilesNg()) {
       this.dialogDom_.classList.add('files-ng');
+    } else {
+      this.dialogDom_.classList.remove('files-ng');
     }
     this.initEssentialUI_();
     this.initAdditionalUI_();
@@ -895,6 +897,8 @@ class FileManager extends cr.EventTarget {
       // Move the dialog header to the side of the splitter above the list view.
       const dialogMain = queryRequiredElement('.dialog-main');
       dialogMain.insertBefore(dialogHeader, dialogMain.firstChild);
+    } else {
+      dialogHeader.classList.remove('files-ng');
     }
 
     // Create the root view of FileManager.

@@ -15,6 +15,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
+#include "chrome/browser/vr/metrics/webxr_session_tracker.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
@@ -282,17 +283,18 @@ void VRServiceImpl::OnInlineSessionCreated(
   DVLOG(2) << __func__ << ": session_id=" << id.GetUnsafeValue()
            << " runtime_id=" << request.runtime_id;
 
-  // Note: We might be recording an inline session that was created by WebVR.
-  auto* session_metrics_tracker =
-      GetSessionMetricsHelper()->RecordInlineSessionStart(id.GetUnsafeValue());
+  mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+      session_metrics_recorder = GetSessionMetricsHelper()->StartInlineSession(
+          *(request.options), request.enabled_features, id.GetUnsafeValue());
 
   OnSessionCreated(std::move(request), std::move(session),
-                   session_metrics_tracker);
+                   std::move(session_metrics_recorder));
 }
 
 void VRServiceImpl::OnImmersiveSessionCreated(
     SessionRequestData request,
     device::mojom::XRSessionPtr session) {
+  DCHECK(request.options);
   if (!session) {
     std::move(request.callback)
         .Run(device::mojom::RequestSessionResult::NewFailureReason(
@@ -301,21 +303,13 @@ void VRServiceImpl::OnImmersiveSessionCreated(
   }
 
   // Get the metrics tracker for the new immersive session
-  auto* session_metrics_tracker =
-      GetSessionMetricsHelper()->GetImmersiveSessionTracker();
-
-  // If the immersive session tracker hasn't already been started, start it.
-  // This only happens during certain tests, but this is ideally where we should
-  // be creating the session tracker anyway so the other cases should be
-  // removed.
-  // TODO(https://crbug.com/1021314)
-  if (!session_metrics_tracker) {
-    session_metrics_tracker =
-        GetSessionMetricsHelper()->RecordImmersiveSessionStart();
-  }
+  mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+      session_metrics_recorder =
+          GetSessionMetricsHelper()->StartImmersiveSession(
+              *(request.options), request.enabled_features);
 
   OnSessionCreated(std::move(request), std::move(session),
-                   session_metrics_tracker);
+                   std::move(session_metrics_recorder));
 }
 
 void VRServiceImpl::OnInlineSessionDisconnected(
@@ -323,7 +317,7 @@ void VRServiceImpl::OnInlineSessionDisconnected(
   DVLOG(2) << __func__ << ": session_id=" << session_id.GetUnsafeValue();
   // Notify metrics helper that inline session was stopped.
   auto* metrics_helper = GetSessionMetricsHelper();
-  metrics_helper->RecordInlineSessionStop(session_id.GetUnsafeValue());
+  metrics_helper->StopAndRecordInlineSession(session_id.GetUnsafeValue());
 }
 
 SessionMetricsHelper* VRServiceImpl::GetSessionMetricsHelper() {
@@ -334,8 +328,7 @@ SessionMetricsHelper* VRServiceImpl::GetSessionMetricsHelper() {
   if (!metrics_helper) {
     // This will only happen if we are not already in VR; set start params
     // accordingly.
-    metrics_helper =
-        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
+    metrics_helper = SessionMetricsHelper::CreateForWebContents(web_contents);
   }
 
   return metrics_helper;
@@ -344,7 +337,8 @@ SessionMetricsHelper* VRServiceImpl::GetSessionMetricsHelper() {
 void VRServiceImpl::OnSessionCreated(
     SessionRequestData request,
     device::mojom::XRSessionPtr session,
-    WebXRSessionTracker* session_metrics_tracker) {
+    mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+        session_metrics_recorder) {
   DVLOG(2) << __func__ << ": session_runtime_id=" << request.runtime_id;
 
   // Not checking for validity of |session|, since that's done by
@@ -363,13 +357,9 @@ void VRServiceImpl::OnSessionCreated(
   client->OnVisibilityStateChanged(visibility_state_);
   session_clients_.Add(std::move(client));
 
-  session_metrics_tracker->RecordRequestedFeatures(*(request.options),
-                                                   request.enabled_features);
-
   auto success = device::mojom::RequestSessionSuccess::New();
   success->session = std::move(session);
-  success->metrics_recorder =
-      session_metrics_tracker->BindMetricsRecorderPipe();
+  success->metrics_recorder = std::move(session_metrics_recorder);
 
   std::move(request.callback)
       .Run(device::mojom::RequestSessionResult::NewSuccess(std::move(success)));
@@ -584,8 +574,6 @@ void VRServiceImpl::DoRequestSession(SessionRequestData request) {
   }
 
   if (device::XRSessionModeUtils::IsImmersive(runtime_options->mode)) {
-    GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);
-
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&VRServiceImpl::OnImmersiveSessionCreated,
                        weak_ptr_factory_.GetWeakPtr(), std::move(request));
@@ -640,14 +628,7 @@ void VRServiceImpl::SetFramesThrottled(bool throttled) {
 void VRServiceImpl::OnExitPresent() {
   DVLOG(2) << __func__;
 
-  // If the immersive session tracker hasn't already been stopped, stop it.
-  // This only happens during certain tests, but this is ideally where we should
-  // be stopping the session tracker anyway so the other cases should be
-  // removed.
-  // TODO(https://crbug.com/1021314)
-  if (GetSessionMetricsHelper()->GetImmersiveSessionTracker()) {
-    GetSessionMetricsHelper()->RecordImmersiveSessionStop();
-  }
+  GetSessionMetricsHelper()->StopAndRecordImmersiveSession();
 
   for (auto& client : session_clients_)
     client->OnExitPresent();

@@ -34,6 +34,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -54,6 +55,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -723,6 +725,9 @@ IN_PROC_BROWSER_TEST_F(
   extensions::TestExtensionDir ext_dir;
   ext_dir.WriteManifest(kManifest);
   ext_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kRulesScript);
+  // |declarativeWebRequest| API is not available on the STABLE channel yet
+  // (see https://crbug.com/1057599).
+  extensions::ScopedCurrentChannel release_channel(version_info::Channel::BETA);
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(ext_dir.UnpackedPath());
@@ -867,6 +872,9 @@ IN_PROC_BROWSER_TEST_F(
   ext_dir.WriteFile(
       FILE_PATH_LITERAL("background.js"),
       content::JsReplace(kRulesScriptTemplate, kRedirectTargetUrl));
+  // |declarativeWebRequest| API is not available on the STABLE channel yet
+  // (see https://crbug.com/1057599).
+  extensions::ScopedCurrentChannel release_channel(version_info::Channel::BETA);
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(ext_dir.UnpackedPath());

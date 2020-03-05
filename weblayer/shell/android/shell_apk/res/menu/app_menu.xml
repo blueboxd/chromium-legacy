@@ -6,6 +6,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="HardcodedText">
+    <item android:id="@+id/reload_menu_id"
+        android:title="Reload" />
     <item android:id="@+id/find_begin_menu_id"
         android:title="Find in page" />
     <item android:id="@+id/find_end_menu_id"

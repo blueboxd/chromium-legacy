@@ -166,7 +166,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       CompositorFrame frame,
       base::Optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
-      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback);
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback);
 
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
@@ -200,13 +200,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   friend class CompositorFrameSinkSupportTest;
   friend class DisplayTest;
   friend class FrameSinkManagerTest;
-
-  SubmitResult MaybeSubmitCompositorFrameInternal(
-      const LocalSurfaceId& local_surface_id,
-      CompositorFrame frame,
-      base::Optional<HitTestRegionList> hit_test_region_list,
-      uint64_t submit_time,
-      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback);
 
   // Creates a surface reference from the top-level root to |surface_id|.
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);

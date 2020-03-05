@@ -22,15 +22,16 @@ namespace external_service_support {
 
 class ExternalConnectorImpl : public ExternalConnector {
  public:
+  explicit ExternalConnectorImpl(const std::string& broker_path);
   explicit ExternalConnectorImpl(
-      mojo::Remote<external_mojo::mojom::ExternalConnector> connector);
-  explicit ExternalConnectorImpl(
+      const std::string& broker_path,
       mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
-          unbound_state);
+          connector_pending_remote);
   ~ExternalConnectorImpl() override;
 
   // ExternalConnector implementation:
-  void SetConnectionErrorCallback(base::OnceClosure callback) override;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddConnectionErrorCallback(base::RepeatingClosure callback) override;
   void RegisterService(const std::string& service_name,
                        ExternalService* service) override;
   void RegisterService(
@@ -56,10 +57,24 @@ class ExternalConnectorImpl : public ExternalConnector {
                                 mojo::ScopedMessagePipeHandle interface_pipe);
   void OnMojoDisconnect();
   bool BindConnectorIfNecessary();
+  void InitializeBrokerConnection();
+  void AttemptBrokerConnection();
+
+  std::string broker_path_;
 
   mojo::Remote<external_mojo::mojom::ExternalConnector> connector_;
-  mojo::PendingRemote<external_mojo::mojom::ExternalConnector> unbound_state_;
-  base::OnceClosure connection_error_callback_;
+
+  base::CallbackList<void()> error_callbacks_;
+
+  // If connecting to a broker, |connector_pending_receiver_for_broker_| is used
+  // to keep |connector_| bound while waiting for the broker.
+  mojo::PendingReceiver<external_mojo::mojom::ExternalConnector>
+      connector_pending_receiver_for_broker_;
+
+  // If cloned, |connector_pending_remote_from_clone_| is stored until an IO
+  // operation is performed to ensure it happens on the correct sequence.
+  mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
+      connector_pending_remote_from_clone_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

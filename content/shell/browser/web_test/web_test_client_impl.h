@@ -69,6 +69,8 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void DeleteAllCookies() override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int32_t quota) override;
+  void InitiateCaptureDump(bool capture_navigation_history,
+                           bool capture_pixels) override;
   void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
   void RegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,

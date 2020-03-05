@@ -208,28 +208,45 @@ cr.define('settings', function() {
         type: Object,
         value() {
           const map = new Map();
-          // <if expr="use_nss_certs">
-          if (settings.routes.CERTIFICATES) {
-            map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
-          }
-          // </if>
-          if (settings.routes.SITE_SETTINGS) {
-            map.set(
-                settings.routes.SITE_SETTINGS.path,
-                '#site-settings-subpage-trigger');
+
+          if (this.privacySettingsRedesignEnabled_) {
+            if (settings.routes.SECURITY) {
+              map.set(settings.routes.SECURITY.path, '#securityLinkRow');
+            }
+
+            if (settings.routes.COOKIES) {
+              map.set(settings.routes.COOKIES.path, '#cookiesLinkRow');
+            }
+
+            if (settings.routes.SITE_SETTINGS) {
+              map.set(
+                  settings.routes.SITE_SETTINGS.path, '#permissionsLinkRow');
+            }
+          } else {
+            // <if expr="use_nss_certs">
+            if (settings.routes.CERTIFICATES) {
+              map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
+            }
+            // </if>
+            if (settings.routes.SITE_SETTINGS) {
+              map.set(
+                  settings.routes.SITE_SETTINGS.path,
+                  '#site-settings-subpage-trigger');
+            }
+
+            if (settings.routes.SITE_SETTINGS_SITE_DATA) {
+              map.set(
+                  settings.routes.SITE_SETTINGS_SITE_DATA.path,
+                  '#site-data-trigger');
+            }
+
+            if (settings.routes.SECURITY_KEYS) {
+              map.set(
+                  settings.routes.SECURITY_KEYS.path,
+                  '#security-keys-subpage-trigger');
+            }
           }
 
-          if (settings.routes.SITE_SETTINGS_SITE_DATA) {
-            map.set(
-                settings.routes.SITE_SETTINGS_SITE_DATA.path,
-                '#site-data-trigger');
-          }
-
-          if (settings.routes.SECURITY_KEYS) {
-            map.set(
-                settings.routes.SECURITY_KEYS.path,
-                '#security-keys-subpage-trigger');
-          }
           return map;
         },
       },
@@ -267,6 +284,38 @@ cr.define('settings', function() {
           this.handleSyncStatus_.bind(this));
       this.addWebUIListener(
           'sync-status-changed', this.handleSyncStatus_.bind(this));
+    },
+
+    /**
+     * @return {Element}
+     * @private
+     */
+    getControlForSiteSettingsSubpage_() {
+      return this.$$(
+          this.privacySettingsRedesignEnabled_ ?
+              '#permissionsLinkRow' :
+              '#site-settings-subpage-trigger');
+    },
+
+    /**
+     * @return {Element}
+     * @private
+     */
+    getControlForCertificatesSubpage_() {
+      return this.$$(
+          this.privacySettingsRedesignEnabled_ ? '#securityLinkRow' :
+                                                 '#manageCertificates');
+    },
+
+    /**
+     * @return {Element}
+     * @private
+     */
+    getControlForSecurityKeysSubpage_() {
+      return this.$$(
+          this.privacySettingsRedesignEnabled_ ?
+              '#securityLinkRow' :
+              '#security-keys-subpage-trigger');
     },
 
     /**
@@ -484,6 +533,13 @@ cr.define('settings', function() {
     },
 
     /** @private */
+    onCookiesClick_() {
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS_COOKIES);
+      settings.Router.getInstance().navigateTo(settings.routes.COOKIES);
+    },
+
+    /** @private */
     onDialogClosed_() {
       settings.Router.getInstance().navigateTo(
           settings.routes.CLEAR_BROWSER_DATA.parent);
@@ -491,10 +547,20 @@ cr.define('settings', function() {
     },
 
     /** @private */
+    onPermissionsPageClick_() {
+      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+    },
+
+    /** @private */
     onSecurityKeysTap_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
       settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
+    },
+
+    /** @private */
+    onSecurityPageClick_() {
+      settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
     },
 
     /** @private */

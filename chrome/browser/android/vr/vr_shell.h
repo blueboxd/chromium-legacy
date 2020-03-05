@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
-#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/speech_recognizer.h"
@@ -193,12 +192,6 @@ class VrShell : VoiceResultDelegate,
   void ExitPresent();
   void ExitFullscreen();
   void LogUnsupportedModeUserMetric(UiUnsupportedMode mode);
-  void RecordVrStartAction(VrStartAction action);
-  // TODO(https://crbug.com/965744): Rename below method to better reflect its
-  // purpose (recording a start of immersive VR session).
-  void RecordPresentationStartAction(
-      PresentationStartAction action,
-      const device::mojom::XRRuntimeSessionOptions& options);
   void OnUnsupportedMode(UiUnsupportedMode mode);
   void OnExitVrPromptResult(UiUnsupportedMode reason,
                             ExitVrPromptChoice choice);

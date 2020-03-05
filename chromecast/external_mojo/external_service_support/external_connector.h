@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_list.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -32,13 +32,19 @@ class ExternalConnector {
       const std::string& broker_path,
       base::OnceCallback<void(std::unique_ptr<ExternalConnector>)> callback);
 
+  static std::unique_ptr<ExternalConnector> Create(
+      const std::string& broker_path);
+
   virtual ~ExternalConnector() = default;
 
-  // Sets the callback that will be called if this class loses its connection to
-  // the Mojo broker. Note that once the connection is lost, this instance
-  // becomes nonfunctional (all public methods are no-ops); a new connection
-  // must be made instead.
-  virtual void SetConnectionErrorCallback(base::OnceClosure callback) = 0;
+  // Adds a callback that will be called if this class loses its connection to
+  // the Mojo broker. The calling class must retain the returned Subscription
+  // until it intends to unregister.
+  // By the time |callback| is executed, a new attempt at connecting will be
+  // started, and this object is valid. Note that some prior messages may be
+  // lost.
+  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddConnectionErrorCallback(base::RepeatingClosure callback) = 0;
 
   // Registers a service that other Mojo processes/services can bind to. Others
   // can call BindInterface(|service_name|, interface_name) to bind to this

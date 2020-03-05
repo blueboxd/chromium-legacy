@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.status_indicator;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -15,6 +14,7 @@ import android.view.ViewGroup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +32,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 
 /**
@@ -46,6 +47,11 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 public class StatusIndicatorTest {
     // clang-format on
+
+    @ClassRule
+    public static DisableAnimationsTestRule mDisableAnimationsTestRule =
+            new DisableAnimationsTestRule();
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -82,15 +88,15 @@ public class StatusIndicatorTest {
                 mActivityTestRule.getActivity().getFullscreenManager();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        assertThat("Wrong initial Android view visibility.",
-                mStatusIndicatorContainer.getVisibility(), equalTo(View.GONE));
+        Assert.assertEquals("Wrong initial Android view visibility.", View.GONE,
+                mStatusIndicatorContainer.getVisibility());
         Assert.assertFalse("Wrong initial composited view visibility.",
                 mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
-        assertThat("Wrong initial control container top margin.",
-                mControlContainerLayoutParams.topMargin, equalTo(0));
+        Assert.assertEquals("Wrong initial control container top margin.", 0,
+                mControlContainerLayoutParams.topMargin);
 
-        TestThreadUtils.runOnUiThreadBlocking(mStatusIndicatorCoordinator::show);
-
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.show(
+        "Status", null, Color.BLACK, Color.WHITE, Color.WHITE));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // TODO(sinansahin): Investigate setting the duration for the browser controls animations to
@@ -101,18 +107,31 @@ public class StatusIndicatorTest {
                 fullscreenManager::getTopControlsMinHeightOffset));
 
         // Now, the Android view should be visible.
-        assertThat("Wrong Android view visibility.", mStatusIndicatorContainer.getVisibility(),
-                equalTo(View.VISIBLE));
+        Assert.assertEquals("Wrong Android view visibility.", View.VISIBLE,
+                mStatusIndicatorContainer.getVisibility());
+        Assert.assertEquals("Wrong background color.", Color.BLACK,
+                ((ColorDrawable) mStatusIndicatorContainer.getBackground()).getColor());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.updateContent(
+                "Exit status", null, Color.WHITE, Color.BLACK, Color.BLACK, () -> {}));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        // The Android view should be visible.
+        Assert.assertEquals("Wrong Android view visibility.", View.VISIBLE,
+                mStatusIndicatorContainer.getVisibility());
+        Assert.assertEquals("Wrong background color.", Color.WHITE,
+                ((ColorDrawable) mStatusIndicatorContainer.getBackground()).getColor());
 
         TestThreadUtils.runOnUiThreadBlocking(mStatusIndicatorCoordinator::hide);
-
-        // The Android view visibility should be {@link View.GONE} after #hide().
-        assertThat("Wrong Android view visibility.", mStatusIndicatorContainer.getVisibility(),
-                equalTo(View.GONE));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Wait until the status indicator finishes animating, or becomes fully hidden.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(0, fullscreenManager::getTopControlsMinHeightOffset));
+
+        // The Android view visibility should be {@link View.GONE} after #hide().
+        Assert.assertEquals("Wrong Android view visibility.", View.GONE,
+                mStatusIndicatorContainer.getVisibility());
 
         Assert.assertFalse("Composited view shouldn't be visible.",
                 mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());

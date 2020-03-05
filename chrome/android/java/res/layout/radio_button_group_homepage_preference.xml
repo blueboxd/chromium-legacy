@@ -33,14 +33,12 @@
         android:id="@+id/radio_button_chrome_ntp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
         app:primaryText="@string/options_homepage_chrome_homepage" />
 
     <org.chromium.components.browser_ui.widget.RadioButtonWithEditText
         android:id="@+id/radio_button_uri_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
         android:hint="@string/options_homepage_edit_hint"
         android:inputType="textUri" />
 

@@ -1633,7 +1633,18 @@ html[dir='rtl'] .banner-close {
 body.files-ng .thumbnail-grid {
   padding-inline-end: 20px;
   padding-inline-start: 16px;
+}
+
+body.files-ng grid .grid-title {
+  color: var(--google-grey-700);
+  font-family: 'Roboto Medium';
+  padding-inline-start: 16px;
   padding-top: 20px;
+  width: 100%;
+}
+
+body.files-ng grid .grid-title.files {
+  padding-top: calc(20px + 16px);
 }
 
 body[type='full-page'] .thumbnail-frame > .img-container {
@@ -1895,6 +1906,10 @@ body.files-ng #list-container .thumbnail-grid .thumbnail-item[lead].directory
 
 .thumbnail-grid > .spacer.folder-spacer {
   height: 5px;
+}
+
+body.files-ng .thumbnail-grid > .spacer {
+  height: 0;
 }
 
 body:not(.check-select) .thumbnail-grid.image-dominant

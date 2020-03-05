@@ -30,6 +30,8 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "components/sync/model/sync_change.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -49,6 +51,17 @@ namespace base {
 class FilePath;
 class Version;
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+class SkBitmap;
+namespace content {
+class WebContents;
+}
+
+namespace extensions {
+class Extension;
+}
+#endif
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -143,6 +156,16 @@ class SupervisedUserService : public KeyedService,
 
   bool IsSupervisedUserIframeFilterEnabled() const;
 
+  // Returns true if the user is a type of Family Link Child account,
+  // but will not return true for a Legacy Supervised user (or non child users).
+  bool IsChild() const;
+
+  bool IsSupervisedUserExtensionInstallEnabled() const;
+
+  // Returns true if there is a custodian for the child.  A child can have
+  // up to 2 custodians, and this returns true if they have at least 1.
+  bool HasACustodian() const;
+
   void AddObserver(SupervisedUserServiceObserver* observer);
   void RemoveObserver(SupervisedUserServiceObserver* observer);
 
@@ -176,7 +199,14 @@ class SupervisedUserService : public KeyedService,
       std::unique_ptr<PermissionRequestCreator> permission_creator);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Updates the map of approved extensions to add approval for |extension|.
+  void AddExtensionApproval(const extensions::Extension& extension);
+
+  // Updates the map of approved extensions to remove approval for |extension|.
+  void RemoveExtensionApproval(const extensions::Extension& extension);
+
   // Updates the map of approved extensions.
+  // If possible, use the simpler methods declared above.
   // If |type| is SyncChangeType::ADD, then add custodian approval for enabling
   // the extension by adding the approved version to the map of approved
   // extensions. If |type| is SyncChangeType::DELETE, then remove the extension
@@ -189,6 +219,29 @@ class SupervisedUserService : public KeyedService,
 
   void SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
       bool enabled);
+
+  bool CanInstallExtensions() const;
+
+  bool IsExtensionAllowed(const extensions::Extension& extension) const;
+
+  // Show a parent permission dialog displaying |message| and call |callback|
+  // when it completes.
+  std::unique_ptr<ParentPermissionDialog> ShowParentPermissionDialog(
+      const base::string16& message,
+      content::WebContents* contents,
+      const SkBitmap& icon,
+      ParentPermissionDialog::DoneCallback callback,
+      bool reprompt_after_incorrect_credential);
+
+  // Show a parent permission dialog for |extension| and call |callback| when it
+  // completes.
+  std::unique_ptr<ParentPermissionDialog>
+  ShowParentPermissionDialogForExtension(
+      const extensions::Extension* extension,
+      content::WebContents* contents,
+      const SkBitmap& icon,
+      ParentPermissionDialog::DoneCallback callback,
+      bool reprompt_after_incorrect_credential);
 
   void MarkExtensionMatureForTesting(const std::string& extension_id,
                                      bool maturity_rating);
@@ -213,8 +266,6 @@ class SupervisedUserService : public KeyedService,
 
   void SetActive(bool active);
 
-  bool ProfileIsSupervised() const;
-
   void OnCustodianInfoChanged();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -230,6 +281,10 @@ class SupervisedUserService : public KeyedService,
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
                             bool is_update) override;
+
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // An extension can be in one of the following states:
   //

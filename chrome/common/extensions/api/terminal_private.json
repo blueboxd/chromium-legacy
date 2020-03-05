@@ -228,6 +228,25 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "getA11yStatus",
+        "type": "function",
+        "description": "Returns a boolean indicating whether the accessibility spoken feedback is on.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called with the a11y status.",
+            "parameters": [
+              {
+                "name": "a11yStatus",
+                "type": "boolean",
+                "description": "True if a11y spoken feedback is on."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
@@ -268,6 +287,18 @@
                 "preserveNull": true
               },
             "preserveNull": true
+          }
+        ]
+      },
+      {
+        "name": "onA11yStatusChanged",
+        "type": "function",
+        "description": "Fired when a11y spoken feedback is enabled/disabled.",
+        "parameters": [
+          {
+            "name": "status",
+            "type": "boolean",
+            "description": "True if a11y spoken feedback is on."
           }
         ]
       }

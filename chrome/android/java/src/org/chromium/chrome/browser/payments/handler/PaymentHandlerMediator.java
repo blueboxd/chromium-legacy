@@ -27,6 +27,9 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 /* package */ class PaymentHandlerMediator extends WebContentsObserver
         implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener {
+    // The value is picked in order to allow users to see the tab behind this UI.
+    private static final float FULL_HEIGHT_RATIO = 0.9f;
+
     private final PropertyModel mModel;
     // Whenever invoked, invoked outside of the WebContentsObserver callbacks.
     private final Runnable mHider;
@@ -42,6 +45,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     private final int mShadowHeightPx;
     private final View mToolbarView;
     private final View mTabView;
+    private boolean mHasToolbarLaidOut;
 
     /**
      * Build a new mediator that handle events from outside the payment handler component.
@@ -60,6 +64,7 @@ import org.chromium.ui.modelutil.PropertyModel;
             View toolbarView, int shadowHeightPx) {
         super(webContents);
         assert webContents != null;
+        mHasToolbarLaidOut = false;
         mTabView = tabView;
         mShadowHeightPx = shadowHeightPx;
         mWebContentsRef = webContents;
@@ -76,9 +81,15 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     // View.OnLayoutChangeListener:
+    // This is the Tab View's layout change listener, invoked in response to phone rotation.
+    // TODO(crbug.com/1057825): It should listen to the BottomSheet container's layout change
+    // instead of the Tab View layout change for better encapsulation.
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
+        // Early return because this callback can be invoked before the toolbar has been laid out.
+        if (!mHasToolbarLaidOut) return;
+
         mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 
@@ -99,17 +110,14 @@ import org.chromium.ui.modelutil.PropertyModel;
         return point[1];
     }
 
-    /** @return The height of the content visible area of PaymentHandlerView.*/
+    /** @return The height of visible area of the bottom sheet's content part. */
     private int contentVisibleHeight() {
-        int tabViewBottom = getYLocationOnScreen(mTabView) + mTabView.getHeight();
-        int toolbarBottom = getYLocationOnScreen(mToolbarView) + mToolbarView.getHeight();
-        // Exclude the shadow height because the toolbar view height includes it.
-        return tabViewBottom - toolbarBottom + mShadowHeightPx;
+        return (int) (mTabView.getHeight() * FULL_HEIGHT_RATIO) - mToolbarView.getHeight()
+                + mShadowHeightPx;
     }
 
     @Override
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-        mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 
     @Override
@@ -181,5 +189,11 @@ import org.chromium.ui.modelutil.PropertyModel;
         // TODO(maxlg): send an error message to users.
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
         mHandler.post(mHider);
+    }
+
+    @Override
+    public void onToolbarLaidOut() {
+        mHasToolbarLaidOut = true;
+        mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 }

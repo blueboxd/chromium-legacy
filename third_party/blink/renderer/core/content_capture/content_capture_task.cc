@@ -268,4 +268,9 @@ void ContentCaptureTask::CancelTaskForTesting() {
     delay_task_->Stop();
 }
 
+void ContentCaptureTask::Trace(Visitor* visitor) {
+  visitor->Trace(local_frame_root_);
+  visitor->Trace(task_session_);
+}
+
 }  // namespace blink

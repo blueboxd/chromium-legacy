@@ -51,8 +51,7 @@ const breadCrumbTemplate = `
       min-width: 1.2em;
 
       /* elide wide text */
-      // TODO(crbug.com/1035691) Find out expected width.
-      max-width: 40em;
+      max-width: 200px;
       overflow: hidden;
       padding: calc(8px - 1px);
       /* text rendering debounce: center. */
@@ -65,6 +64,15 @@ const breadCrumbTemplate = `
       color: var(--google-grey-900);
       cursor: default;
       font-weight: 500;
+    }
+
+    button[elider] {
+      -webkit-mask-image: url(../../images/files/ui/menu_ng.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: currentColor;
+      min-width: 20px;
+      transform: rotate(90deg);
     }
 
     button:focus {
@@ -81,19 +89,24 @@ const breadCrumbTemplate = `
     }
 
     :host([checked]) #elided {
-      border: 1px solid gray;
       background-color: white;
+      border-radius: 2px;
+      box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
       display: block;
       margin-block-start: 0.2em;
       margin-inline-start: -0.2em;
       max-height: 40vh;
+      padding: 8px 0;
       position: absolute;
       overflow: hidden auto;
       z-index: 502;
     }
 
     :host([checked]) #elided button {
+      color: rgb(51, 51, 51);
       display: block;
+      font-family: 'Roboto';
+      font-size: 13px;
       min-width: 14em;  /* menu width */
       max-width: 14em;
       text-align: start;

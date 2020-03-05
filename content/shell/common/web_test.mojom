@@ -91,4 +91,7 @@ interface WebTestClient {
   // For the duration of the current test this causes all file choosers to
   // return the passed in |path|.
   SetFilePathForMockFileDialog(mojo_base.mojom.FilePath path);
+
+  // Initialize to dump the main frame with a navigation history or pixels.
+  InitiateCaptureDump(bool capture_navigation_history, bool capture_pixels);
 };

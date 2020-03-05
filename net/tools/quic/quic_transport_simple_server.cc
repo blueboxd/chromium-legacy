@@ -23,8 +23,6 @@ namespace {
 
 using quic::CryptoHandshakeMessage;
 using quic::ParsedQuicVersion;
-using quic::PROTOCOL_TLS1_3;
-using quic::QUIC_VERSION_99;
 using quic::QuicChromiumClock;
 using quic::QuicCryptoServerStreamBase;
 using quic::QuicSocketAddress;
@@ -54,7 +52,7 @@ QuicTransportSimpleServer::QuicTransportSimpleServer(
     std::vector<url::Origin> accepted_origins,
     std::unique_ptr<quic::ProofSource> proof_source)
     : port_(port),
-      version_manager_({ParsedQuicVersion{PROTOCOL_TLS1_3, QUIC_VERSION_99}}),
+      version_manager_({quic::DefaultVersionForQuicTransport()}),
       clock_(QuicChromiumClock::GetInstance()),
       crypto_config_(kSourceAddressTokenSecret,
                      quic::QuicRandom::GetInstance(),

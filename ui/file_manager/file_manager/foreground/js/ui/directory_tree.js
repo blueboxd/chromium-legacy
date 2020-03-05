@@ -2459,6 +2459,8 @@ DirectoryTree.decorate =
         directorytree.styleRowElementDepth =
             directorytree.styleRowElementDepthFilesNG;
         el.setAttribute('files-ng', '');
+      } else {
+        el.removeAttribute('files-ng');
       }
 
       Object.freeze(directorytree);

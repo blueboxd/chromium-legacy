@@ -3,13 +3,13 @@ from mod_pywebsocket.handshake.hybi import compute_accept
 
 
 def web_socket_do_extra_handshake(request):
-    msg = 'HTTP/1.1 101 Switching Protocols\r\n'
-    msg += 'Upgrade: websocket\r\n'
-    msg += 'Connection: Upgrade\r\n'
-    msg += 'Sec-WebSocket-Accept: %s\r\n' % compute_accept(
-        request.headers_in['Sec-WebSocket-Key'])[0]
-    msg += 'Sec-WebSocket-Protocol: MismatchProtocol\r\n'
-    msg += '\r\n'
+    msg = (b'HTTP/1.1 101 Switching Protocols\r\n'
+           b'Upgrade: websocket\r\n'
+           b'Connection: Upgrade\r\n'
+           b'Sec-WebSocket-Accept: %s\r\n'
+           b'Sec-WebSocket-Protocol: MismatchProtocol\r\n'
+           b'\r\n') % compute_accept(request.headers_in['Sec-WebSocket-Key'].encode('UTF-8'))[0]
+
     request.connection.write(msg)
     # Prevents pywebsocket from sending its own handshake message.
     raise handshake.AbortedByUserException('Abort the connection')

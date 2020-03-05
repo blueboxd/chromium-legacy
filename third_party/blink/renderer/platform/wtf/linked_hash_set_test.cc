@@ -33,6 +33,45 @@ TEST(NewLinkedHashSetTest, Construct) {
   EXPECT_EQ(test.size(), 0u);
 }
 
+TEST(NewLinkedHashSetTest, Iterator) {
+  using Set = NewLinkedHashSet<int>;
+
+  Set set;
+  EXPECT_TRUE(set.begin() == set.end());
+
+  set.insert(1);
+  Set::const_iterator it = set.begin();
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_TRUE(it == set.end());
+
+  set.insert(2);
+  set.insert(3);
+
+  it = set.begin();
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 2);
+  ++it;
+  EXPECT_EQ(*it, 3);
+  ++it;
+  EXPECT_TRUE(it == set.end());
+  --it;
+  EXPECT_EQ(*it, 3);
+  --it;
+  EXPECT_EQ(*it, 2);
+  --it;
+  EXPECT_EQ(*it, 1);
+  EXPECT_TRUE(it == set.begin());
+  EXPECT_TRUE(it != set.end());
+
+  int i = 1;
+  for (auto it : set) {
+    EXPECT_EQ(it, i);
+    i++;
+  }
+}
+
 TEST(NewLinkedHashSetTest, InsertAndEraseForInteger) {
   using Set = NewLinkedHashSet<int>;
   Set set;

@@ -373,7 +373,7 @@ void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
   owned_bitmaps_.erase(id);
 }
 
-SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
+SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
     base::Optional<HitTestRegionList> hit_test_region_list,
@@ -392,6 +392,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
   CHECK(callback_received_begin_frame_);
   CHECK(callback_received_receive_ack_);
 
+  begin_frame_tracker_.ReceivedAck(frame.metadata.begin_frame_ack);
   ++ack_pending_count_;
 
   base::ScopedClosureRunner frame_rejected_callback(
@@ -697,22 +698,6 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
     begin_frame_source_->AddObserver(this);
   else
     begin_frame_source_->RemoveObserver(this);
-}
-
-SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
-    const LocalSurfaceId& local_surface_id,
-    CompositorFrame frame,
-    base::Optional<HitTestRegionList> hit_test_region_list,
-    uint64_t submit_time,
-    mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
-  begin_frame_tracker_.ReceivedAck(frame.metadata.begin_frame_ack);
-
-  SubmitResult result = MaybeSubmitCompositorFrameInternal(
-      local_surface_id, std::move(frame), std::move(hit_test_region_list),
-      submit_time, std::move(callback));
-  UMA_HISTOGRAM_ENUMERATION(
-      "Compositing.CompositorFrameSinkSupport.SubmitResult", result);
-  return result;
 }
 
 void CompositorFrameSinkSupport::AttachCaptureClient(

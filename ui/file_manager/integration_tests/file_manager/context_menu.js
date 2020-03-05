@@ -570,7 +570,7 @@ async function checkMyFilesRootItemContextMenu(itemName, commandStates) {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Navigate to My files.
-  await remoteCall.waitAndClickElement(appId, '#breadcrumb-path-0');
+  await navigateWithDirectoryTree(appId, '/My files');
 
   // Wait for the navigation to complete.
   const expectedRows = [

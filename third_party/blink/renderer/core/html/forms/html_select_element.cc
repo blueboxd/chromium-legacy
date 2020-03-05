@@ -35,14 +35,11 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer.h"
-#include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -54,7 +51,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
-#include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/html/forms/select_type.h"
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -1419,8 +1415,6 @@ void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(option_to_scroll_to_);
   visitor->Trace(suggested_option_);
   visitor->Trace(select_type_);
-  visitor->Trace(popup_);
-  visitor->Trace(popup_updater_);
   HTMLFormControlElementWithState::Trace(visitor);
 }
 
@@ -1586,6 +1580,10 @@ void HTMLSelectElement::HidePopup() {
   select_type_->HidePopup();
 }
 
+PopupMenu* HTMLSelectElement::PopupForTesting() const {
+  return select_type_->PopupForTesting();
+}
+
 void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
   select_type_->DidRecalcStyle(change);
@@ -1615,79 +1613,6 @@ void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
 
 void HTMLSelectElement::ResetTypeAheadSessionForTesting() {
   type_ahead_.ResetSession();
-}
-
-// PopupUpdater notifies updates of the specified SELECT element subtree to
-// a PopupMenu object.
-class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
- public:
-  explicit PopupUpdater(HTMLSelectElement& select)
-      : select_(select), observer_(MutationObserver::Create(this)) {
-    MutationObserverInit* init = MutationObserverInit::Create();
-    init->setAttributeOldValue(true);
-    init->setAttributes(true);
-    // Observe only attributes which affect popup content.
-    init->setAttributeFilter({"disabled", "label", "selected", "value"});
-    init->setCharacterData(true);
-    init->setCharacterDataOldValue(true);
-    init->setChildList(true);
-    init->setSubtree(true);
-    observer_->observe(select_, init, ASSERT_NO_EXCEPTION);
-  }
-
-  ExecutionContext* GetExecutionContext() const override {
-    return select_->GetDocument().ToExecutionContext();
-  }
-
-  void Deliver(const MutationRecordVector& records,
-               MutationObserver&) override {
-    // We disconnect the MutationObserver when a popup is closed.  However
-    // MutationObserver can call back after disconnection.
-    if (!select_->PopupIsVisible())
-      return;
-    for (const auto& record : records) {
-      if (record->type() == "attributes") {
-        const auto& element = *To<Element>(record->target());
-        if (record->oldValue() == element.getAttribute(record->attributeName()))
-          continue;
-      } else if (record->type() == "characterData") {
-        if (record->oldValue() == record->target()->nodeValue())
-          continue;
-      }
-      select_->DidMutateSubtree();
-      return;
-    }
-  }
-
-  void Dispose() { observer_->disconnect(); }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(select_);
-    visitor->Trace(observer_);
-    MutationObserver::Delegate::Trace(visitor);
-  }
-
- private:
-  Member<HTMLSelectElement> select_;
-  Member<MutationObserver> observer_;
-};
-
-void HTMLSelectElement::ObserveTreeMutation() {
-  DCHECK(!popup_updater_);
-  popup_updater_ = MakeGarbageCollected<PopupUpdater>(*this);
-}
-
-void HTMLSelectElement::UnobserveTreeMutation() {
-  if (!popup_updater_)
-    return;
-  popup_updater_->Dispose();
-  popup_updater_ = nullptr;
-}
-
-void HTMLSelectElement::DidMutateSubtree() {
-  DCHECK(PopupIsVisible());
-  DCHECK(popup_);
-  popup_->UpdateFromElement(PopupMenu::kByDOMChange);
 }
 
 void HTMLSelectElement::CloneNonAttributePropertiesFrom(

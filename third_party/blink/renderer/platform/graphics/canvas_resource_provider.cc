@@ -1278,9 +1278,12 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
 }
 
 void CanvasResourceProvider::SkipQueuedDrawCommands() {
-  if (!recorder_)
-    return;
+  // Note that this function only gets called when canvas needs a full repaint,
+  // so always update the |mode_| to discard the old copy of canvas content.
   mode_ = SkSurface::kDiscard_ContentChangeMode;
+
+  if (!recorder_ || !recorder_->ListHasDrawOps())
+    return;
   recorder_->finishRecordingAsPicture();
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(Size().Width(), Size().Height());

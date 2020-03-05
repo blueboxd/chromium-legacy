@@ -248,7 +248,8 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveArRuntime() {
 
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
     VRServiceImpl* service) {
-  DVLOG(1) << __func__;
+  // This seems to be occurring every frame on Windows
+  DVLOG(3) << __func__;
   // Get an immersive VR runtime if there is one.
   auto* immersive_runtime = GetImmersiveVrRuntime();
   if (immersive_runtime) {

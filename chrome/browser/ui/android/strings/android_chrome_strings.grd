@@ -2983,6 +2983,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         See downloads
       </message>
 
+      <!-- Offline indicator v2 -->
+      <message name="IDS_OFFLINE_INDICATOR_V2_OFFLINE_TEXT" desc="Text to be displayed in the status indicator above the toolbar that lets the users know they are offline.">
+        No internet connection
+      </message>
+      <message name="IDS_OFFLINE_INDICATOR_V2_BACK_ONLINE_TEXT" desc="Text to be displayed in the status indicator above the toolbar when the device goes back online.">
+        Back online
+      </message>
+
       <!-- Find in page -->
       <message name="IDS_HINT_FIND_IN_PAGE" desc="Hint text to show for the find in page search field when the search field is empty.">
         Find in page

@@ -288,4 +288,13 @@ void WebTestClientImpl::SetDatabaseQuota(int32_t quota) {
       base::BindOnce(&SetDatabaseQuotaOnIOThread, quota_manager_, quota));
 }
 
+void WebTestClientImpl::InitiateCaptureDump(bool capture_navigation_history,
+                                            bool capture_pixels) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (BlinkTestController::Get()) {
+    BlinkTestController::Get()->OnInitiateCaptureDump(
+        capture_navigation_history, capture_pixels);
+  }
+}
+
 }  // namespace content

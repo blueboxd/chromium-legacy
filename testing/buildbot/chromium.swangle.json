@@ -153,7 +153,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -330,7 +330,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -507,7 +507,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -684,7 +684,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -861,7 +861,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1038,7 +1038,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1215,7 +1215,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1392,7 +1392,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1569,7 +1569,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1746,7 +1746,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -1923,7 +1923,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],
@@ -2100,7 +2100,7 @@
       },
       {
         "args": [
-          "--gtest_filter=*Vulkan_SwiftShader",
+          "--gtest_filter=*Vulkan_SwiftShader*",
           "--test-launcher-batch-limit=512",
           "--test-launcher-retry-limit=0"
         ],

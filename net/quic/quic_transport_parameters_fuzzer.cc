@@ -19,9 +19,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   quic::TransportParameters transport_parameters;
   std::vector<uint8_t> remaining_bytes =
       data_provider.ConsumeRemainingBytes<uint8_t>();
-  quic::ParseTransportParameters(
-      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99),
-      perspective, remaining_bytes.data(), remaining_bytes.size(),
-      &transport_parameters);
+  quic::ParsedQuicVersion version = quic::UnsupportedQuicVersion();
+  for (const quic::ParsedQuicVersion& vers : quic::AllSupportedVersions()) {
+    if (vers.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+      version = vers;
+      break;
+    }
+  }
+  CHECK_NE(version.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
+  std::string error_details;
+  quic::ParseTransportParameters(version, perspective, remaining_bytes.data(),
+                                 remaining_bytes.size(), &transport_parameters,
+                                 &error_details);
   return 0;
 }

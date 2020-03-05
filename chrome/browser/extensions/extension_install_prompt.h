@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/install_prompt_permissions.h"
+#include "chrome/common/buildflags.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -107,6 +108,14 @@ class ExtensionInstallPrompt {
     base::string16 GetRetainedFilesHeading() const;
     base::string16 GetRetainedDevicesHeading() const;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    void set_user_is_child(bool user_is_child) {
+      user_is_child_ = user_is_child;
+    }
+
+    bool user_is_child() const { return user_is_child_; }
+#endif
+
     bool ShouldShowPermissions() const;
     bool ShouldDisplayWithholdingUI() const;
 
@@ -166,6 +175,11 @@ class ExtensionInstallPrompt {
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
     extensions::InstallPromptPermissions prompt_permissions_;
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    // True if the current user is a child.
+    bool user_is_child_ = false;
+#endif
 
     bool is_requesting_host_permissions_;
 

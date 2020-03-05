@@ -1024,6 +1024,9 @@ inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
 // TODO(keinakashima): replace existing LinkedHashSet with NewLinkedHashSet
 // after completion
 
+template <typename NewLinkedHashSet>
+class NewLinkedHashSetConstIterator;
+
 template <typename ValueArg>
 class NewLinkedHashSetNode {
   USING_FAST_MALLOC(NewLinkedHashSetNode);
@@ -1147,6 +1150,8 @@ class NewLinkedHashSet {
   using Map = HashMap<Value, wtf_size_t>;
 
  public:
+  friend class NewLinkedHashSetConstIterator<NewLinkedHashSet>;
+  using const_iterator = NewLinkedHashSetConstIterator<NewLinkedHashSet>;
   // TODO(keinakashima): add security check
   struct AddResult final {
     STACK_ALLOCATED();
@@ -1173,7 +1178,9 @@ class NewLinkedHashSet {
   wtf_size_t size() const { return value_to_index_.size(); }
   bool IsEmpty() const { return value_to_index_.IsEmpty(); }
 
-  // TODO(keinakashima): implement iterators
+  const_iterator begin() const { return MakeConstIterator(UsedFirstIndex()); }
+  const_iterator end() const { return MakeConstIterator(anchor_index_); }
+  // TODO(keinakashima): implement reverse const iterator
 
   const Value& front() const;
   void RemoveFirst();
@@ -1212,6 +1219,10 @@ class NewLinkedHashSet {
     return free_head_index_;
   }
 
+  const_iterator MakeConstIterator(wtf_size_t index) const {
+    return const_iterator(index, this);
+  }
+
   // Inserts new value before given position to a linked list in vector
   // Returns a pointer to the stored value
   template <typename IncomingValueType>
@@ -1226,6 +1237,63 @@ class NewLinkedHashSet {
   Vector<Node> nodes_;
   wtf_size_t free_head_index_ = anchor_index_;
   static constexpr wtf_size_t anchor_index_ = 0;
+};
+
+// TODO(keinakashima): add modification check
+// TODO(keinakashima): implement DCHECK that prevents mutations while iterating
+template <typename NewLinkedHashSetType>
+class NewLinkedHashSetConstIterator {
+ private:
+  using Node = typename NewLinkedHashSetType::Node;
+  using ReferenceType = const typename NewLinkedHashSetType::Value&;
+  using PointerType = const typename NewLinkedHashSetType::Value*;
+
+ protected:
+  NewLinkedHashSetConstIterator(wtf_size_t index,
+                                const NewLinkedHashSetType* container)
+      : index_(index), container_(container) {}
+
+ public:
+  ReferenceType operator*() const { return *Get(); }
+  PointerType operator->() const { return Get(); }
+
+  NewLinkedHashSetConstIterator& operator++() {
+    DCHECK(0 <= index_ && index_ < container_->nodes_.size());
+    index_ = container_->nodes_[index_].GetNextIndexForUsedNode();
+    return *this;
+  }
+
+  NewLinkedHashSetConstIterator& operator--() {
+    DCHECK(0 <= index_ && index_ < container_->nodes_.size());
+    index_ = container_->nodes_[index_].GetPrevIndexForUsedNode();
+    return *this;
+  }
+
+  NewLinkedHashSetConstIterator operator++(int) = delete;
+  NewLinkedHashSetConstIterator operator--(int) = delete;
+
+  bool operator==(const NewLinkedHashSetConstIterator& other) {
+    DCHECK_EQ(container_, other.container_);
+    return index_ == other.index_;
+  }
+
+  bool operator!=(const NewLinkedHashSetConstIterator& other) {
+    return !(*this == other);
+  }
+
+ protected:
+  PointerType Get() const {
+    DCHECK(0 <= index_ && index_ < container_->nodes_.size());
+    const Node& node = container_->nodes_[index_];
+    return &node.GetValueForUsedNode();
+  }
+
+ private:
+  wtf_size_t index_;
+  const NewLinkedHashSetType* container_;
+
+  template <typename T>
+  friend class NewLinkedHashSet;
 };
 
 template <typename T>

@@ -40,6 +40,7 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case ETC1:
       return kRGB_888x_SkColorType;
     case RGBA_1010102:
+      return kBGRA_1010102_SkColorType;
     case BGRA_1010102:
       return kRGBA_1010102_SkColorType;
 
@@ -147,7 +148,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_UNSIGNED_BYTE,                    // RGBX_8888
       GL_ZERO,                             // BGRX_8888
       GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // RGBA_1010102
-      GL_ZERO,                             // BGRA_1010102
+      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // BGRA_1010102
       GL_ZERO,                             // YVU_420
       GL_ZERO,                             // YUV_420_BIPLANAR
       GL_ZERO,                             // P010
@@ -177,7 +178,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_RGB,        // RGBX_8888
       GL_ZERO,       // BGRX_8888
       GL_RGBA,       // RGBA_1010102
-      GL_ZERO,       // BGRA_1010102
+      GL_RGBA,       // BGRA_1010102
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
       GL_ZERO,       // P010

@@ -106,6 +106,8 @@ class LoggedInUserMixin : public InProcessBrowserTestMixin {
 
   const AccountId& GetAccountId() { return user_.account_id; }
 
+  FakeGaiaMixin* GetFakeGaiaMixin() { return &fake_gaia_; }
+
  private:
   LoginManagerMixin::TestUserInfo user_;
   LoginManagerMixin login_manager_;

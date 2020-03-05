@@ -30,7 +30,7 @@
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 #define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
-#define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
+#define DRM_FORMAT_ARGB2101010 FOURCC('A', 'R', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 #define DRM_FORMAT_P010 FOURCC('P', '0', '1', '0')
@@ -72,7 +72,7 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_1010102:
       return DRM_FORMAT_ABGR2101010;
     case gfx::BufferFormat::BGRA_1010102:
-      return DRM_FORMAT_XRGB2101010;
+      return DRM_FORMAT_ARGB2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -104,6 +104,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRX_8888;
     case DRM_FORMAT_ABGR2101010:
       return gfx::BufferFormat::RGBA_1010102;
+    case DRM_FORMAT_ARGB2101010:
+      return gfx::BufferFormat::BGRA_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
     case DRM_FORMAT_NV12:

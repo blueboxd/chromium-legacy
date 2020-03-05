@@ -6,8 +6,12 @@ package org.chromium.chrome.browser.payments.handler.toolbar;
 
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
+import android.view.View;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.ssl.ChromeSecurityStateModelDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
@@ -25,7 +29,8 @@ import java.net.URISyntaxException;
  * PaymentHandlerToolbar mediator, which is responsible for receiving events from the view and
  * notifies the backend (the coordinator).
  */
-/* package */ class PaymentHandlerToolbarMediator extends WebContentsObserver {
+/* package */ class PaymentHandlerToolbarMediator
+        extends WebContentsObserver implements View.OnClickListener {
     // Abbreviated for the length limit.
     private static final String TAG = "PaymentHandlerTb";
     /** The delay (four video frames - for 60Hz) after which the hide progress will be hidden. */
@@ -43,20 +48,23 @@ import java.net.URISyntaxException;
     /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
     private final WebContents mWebContentsRef;
     private final boolean mIsSmallDevice;
+    private final ChromeActivity mChromeActivity;
 
     /**
      * Build a new mediator that handle events from outside the payment handler toolbar component.
      * @param model The {@link PaymentHandlerToolbarProperties} that holds all the view state for
      *         the payment handler toolbar component.
+     * @param chromeActivity The {@link ChromeActivity}.
      * @param webContents The web-contents that loads the payment app.
      * @param isSmallDevice Whether the device screen is considered small.
      */
-    /* package */ PaymentHandlerToolbarMediator(
-            PropertyModel model, WebContents webContents, boolean isSmallDevice) {
+    /* package */ PaymentHandlerToolbarMediator(PropertyModel model, ChromeActivity chromeActivity,
+            WebContents webContents, boolean isSmallDevice) {
         super(webContents);
         mIsSmallDevice = isSmallDevice;
         mWebContentsRef = webContents;
         mModel = model;
+        mChromeActivity = chromeActivity;
     }
 
     /** Set an observer for this class. */
@@ -137,4 +145,14 @@ import java.net.URISyntaxException;
         mModel.set(PaymentHandlerToolbarProperties.SECURITY_ICON,
                 getSecurityIconResource(securityLevel));
     }
+
+    // (PaymentHandlerToolbarView security icon's) OnClickListener:
+    @Override
+    public void onClick(View view) {
+        if (mChromeActivity == null) return;
+        PageInfoController.show(mChromeActivity, mWebContentsRef, null,
+                PageInfoController.OpenedFromSource.TOOLBAR,
+                /*offlinePageLoadUrlDelegate=*/
+                new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(mWebContentsRef));
+    };
 }

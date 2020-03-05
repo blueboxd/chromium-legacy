@@ -50,6 +50,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void ShowPopup();
   virtual void HidePopup();
   virtual void PopupDidHide();
+  virtual PopupMenu* PopupForTesting() const;
 
   enum SkipDirection { kSkipBackwards = -1, kSkipForwards = 1 };
   CORE_EXPORT HTMLOptionElement* NextSelectableOption(HTMLOptionElement*) const;

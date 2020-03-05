@@ -236,14 +236,6 @@ public class VrShellDelegate
             setVrModeEnabled(sInstance.mActivity, true);
             if (VrDelegate.DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
 
-            if (!sInstance.mRequestedWebVr && !sInstance.mStartedFromVrIntent) {
-                // If we didn't request WebVR then we're not coming from a request present call.
-                // If we didn't set mStartedFromVrIntent this isn't an intent from another app.
-                // Therefore we can assume this was triggered by NFC.
-                VrShellDelegateJni.get().recordVrStartAction(
-                        sInstance.mNativeVrShellDelegate, VrStartAction.HEADSET_ACTIVATION);
-            }
-
             // We add a black overlay view so that we can show black while the VR UI is loading.
             if (!sInstance.mInVr) {
                 VrModuleProvider.getDelegate().addBlackOverlayViewForActivity(sInstance.mActivity);
@@ -1156,11 +1148,6 @@ public class VrShellDelegate
             return;
         }
 
-        if (!mInVr) {
-            VrShellDelegateJni.get().recordVrStartAction(
-                    mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
-        }
-
         mStartedFromVrIntent = true;
         // Setting DON succeeded will cause us to enter VR when resuming.
         mDonSucceeded = true;
@@ -1900,7 +1887,6 @@ public class VrShellDelegate
         long init(VrShellDelegate caller);
         void onLibraryAvailable();
         void setPresentResult(long nativeVrShellDelegate, VrShellDelegate caller, boolean result);
-        void recordVrStartAction(long nativeVrShellDelegate, int startAction);
         void onPause(long nativeVrShellDelegate, VrShellDelegate caller);
         void onResume(long nativeVrShellDelegate, VrShellDelegate caller);
         void destroy(long nativeVrShellDelegate, VrShellDelegate caller);

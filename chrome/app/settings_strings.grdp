@@ -1618,9 +1618,15 @@
   <message name="IDS_SETTINGS_PERMISSIONS" desc="Name of the settings page which allows users to manage permissions and site content settings">
     Permissions and content settings
   </message>
+  <message name="IDS_SETTINGS_PERMISSIONS_DESCRIPTION" desc="Description of the controls available on the permisisons and site content settings page">
+    Control what information websites can use and what content they can show you
+  </message>
   <message name="IDS_SETTINGS_SECURITY" desc="Name of the settings page which allows
   users to manage security settings">
     Security
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_DESCRIPTION" desc="Description of the controls available on the security settings page">
+    Safe Browsing and advanced security settings
   </message>
   <message name="IDS_SETTINGS_SECURITY_ADVANCED_SECTION_LABEL" desc="Name of the section in the
     security settings page which groups advanced security settings">
@@ -1894,6 +1900,9 @@
   </message>
   <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
     Cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_PAGE_DESCRIPTION" desc="Description of the settings page which controls cookie settings">
+    Allows websites to remember your visit and track you across the web
   </message>
   <message name="IDS_SETTINGS_COOKIES_SITE_SPECIFIC_EXCEPTIONS" desc="Title of cookies page section for managing site specific cookie settings">
     Manage site specific exceptions

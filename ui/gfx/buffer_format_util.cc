@@ -44,6 +44,7 @@ size_t AlphaBitsForBufferFormat(BufferFormat format) {
       return 4;
     case BufferFormat::RGBA_8888:
       return 8;
+    case BufferFormat::BGRA_1010102:
     case BufferFormat::RGBA_1010102:
       return 2;
     case BufferFormat::BGRA_8888:
@@ -56,7 +57,6 @@ size_t AlphaBitsForBufferFormat(BufferFormat format) {
     case BufferFormat::BGR_565:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
-    case BufferFormat::BGRA_1010102:
     case BufferFormat::YVU_420:
     case BufferFormat::YUV_420_BIPLANAR:
     case BufferFormat::P010:

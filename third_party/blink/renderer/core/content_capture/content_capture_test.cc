@@ -120,21 +120,26 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
       LocalFrame& local_frame_root,
       WebContentCaptureClientTestHelper& content_capture_client)
       : ContentCaptureManager(local_frame_root) {
-    content_capture_task_ = base::MakeRefCounted<ContentCaptureTaskTestHelper>(
+    content_capture_task_ = MakeGarbageCollected<ContentCaptureTaskTestHelper>(
         local_frame_root, GetTaskSessionForTesting(), content_capture_client);
   }
 
-  scoped_refptr<ContentCaptureTaskTestHelper> GetContentCaptureTask() {
+  ContentCaptureTaskTestHelper* GetContentCaptureTask() {
     return content_capture_task_;
   }
 
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(content_capture_task_);
+    ContentCaptureManager::Trace(visitor);
+  }
+
  protected:
-  scoped_refptr<ContentCaptureTask> CreateContentCaptureTask() override {
+  ContentCaptureTask* CreateContentCaptureTask() override {
     return content_capture_task_;
   }
 
  private:
-  scoped_refptr<ContentCaptureTaskTestHelper> content_capture_task_;
+  Member<ContentCaptureTaskTestHelper> content_capture_task_;
 };
 
 class ContentCaptureLocalFrameClientHelper : public EmptyLocalFrameClient {
@@ -208,7 +213,7 @@ class ContentCaptureTest : public PageTestBase {
     return content_capture_client_.get();
   }
 
-  scoped_refptr<ContentCaptureTaskTestHelper> GetContentCaptureTask() const {
+  ContentCaptureTaskTestHelper* GetContentCaptureTask() const {
     return GetContentCaptureManager()->GetContentCaptureTask();
   }
 
@@ -526,7 +531,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
 
 TEST_F(ContentCaptureTest, RescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
-  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
   task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
@@ -543,7 +548,7 @@ TEST_F(ContentCaptureTest, RescheduleTask) {
 
 TEST_F(ContentCaptureTest, NotRescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
-  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
   task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);

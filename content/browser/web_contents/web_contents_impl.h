@@ -485,6 +485,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     ImageDownloadCallback callback) override;
+  int DownloadImageInFrame(
+      const GlobalFrameRoutingId& initiator_frame_routing_id,
+      const GURL& url,
+      bool is_favicon,
+      uint32_t preferred_size,
+      uint32_t max_bitmap_size,
+      bool bypass_cache,
+      WebContents::ImageDownloadCallback callback) override;
   void Find(int request_id,
             const base::string16& search_text,
             blink::mojom::FindOptionsPtr options) override;

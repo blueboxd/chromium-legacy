@@ -10231,6 +10231,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CompositorFrameSinkSubmitResult">
+  <obsolete>
+    Expired 2020-03-01.
+  </obsolete>
   <int value="0" label="Accepted"/>
   <int value="1" label="CopyOutputResults not allowed"/>
   <int value="2" label="Surface Invariants Violation (deprecated)"/>
@@ -20949,6 +20952,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
       label="ACCESSIBILITY_PRIVATE_ON_CUSTOM_SPOKEN_FEEDBACK_TOGGLED"/>
   <int value="453"
       label="PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED"/>
+  <int value="454" label="TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -22471,6 +22475,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1453" label="PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD"/>
   <int value="1454" label="PASSWORDSPRIVATE_CHANGECOMPROMISEDCREDENTIAL"/>
   <int value="1455" label="PASSWORDSPRIVATE_REMOVECOMPROMISEDCREDENTIAL"/>
+  <int value="1456" label="TERMINALPRIVATE_GETA11YSTATUS"/>
 </enum>
 
 <enum name="ExtensionIconState">

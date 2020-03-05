@@ -4433,6 +4433,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Text for the install button on the extension install prompt, for a theme.">
         Add theme
       </message>
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_ASK_A_PARENT_BUTTON" desc="Text for the ask-a-parent button on the extension install prompt.">
+        Ask a parent
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_GO_GET_A_PARENT_FOR_EXTENSION_LABEL" desc="Text for the title section of the parent permission dialog asking child to get a parent to approve.">
+        Go get a parent to approve "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_EXTENSION" desc="The 'extension' extension type">
+        extension
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_EXTENSION_TYPE_APP" desc="The 'app' extension type">
+        app
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_CHILD_WANTS_TO_INSTALL_LABEL" desc="Text for the header section of the parent permission dialog explaining that the child is installing a extension that is requesting permissions.">
+        <ph name="CHILD_NAME">$1<ex>Junior</ex></ph> wants to install an <ph name="EXTENSION_TYPE">$2<ex>extension</ex></ph> that can:
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_APPROVE_BUTTON" desc="Text for the approve button on the parent permission prompt.">
+        Approve
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_CANCEL_BUTTON" desc="Text for the cancel button on the parent permission prompt.">
+        Cancel
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_SELECT_PARENT_LABEL" desc="Text for the label shown above the parent selector.">
+        Choose parent account for approval
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_ENTER_PASSWORD_LABEL" desc="Text for the label shown above the parent password entry field.">
+        Enter password
+      </message>
+      <message name="IDS_PARENT_PERMISSION_PROMPT_PASSWORD_INCORRECT_LABEL" desc="Text for the label shown when the previously entered password was incorrect.">
+        Password incorrect
+      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_REQUEST_BUTTON" desc="Text for the request button on the extension request prompt.">
         Send
       </message>

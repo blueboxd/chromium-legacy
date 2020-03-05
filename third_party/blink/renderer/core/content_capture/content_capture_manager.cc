@@ -30,15 +30,14 @@ void ContentCaptureManager::ScheduleTaskIfNeeded() {
 
 void ContentCaptureManager::ScheduleTask(
     ContentCaptureTask::ScheduleReason reason) {
-  if (!content_capture_idle_task_.get()) {
+  if (!content_capture_idle_task_) {
     content_capture_idle_task_ = CreateContentCaptureTask();
   }
   content_capture_idle_task_->Schedule(reason);
 }
 
-scoped_refptr<ContentCaptureTask>
-ContentCaptureManager::CreateContentCaptureTask() {
-  return base::MakeRefCounted<ContentCaptureTask>(*local_frame_root_,
+ContentCaptureTask* ContentCaptureManager::CreateContentCaptureTask() {
+  return MakeGarbageCollected<ContentCaptureTask>(*local_frame_root_,
                                                   *task_session_);
 }
 
@@ -61,6 +60,7 @@ void ContentCaptureManager::OnNodeTextChanged(Node& node) {
 }
 
 void ContentCaptureManager::Trace(Visitor* visitor) {
+  visitor->Trace(content_capture_idle_task_);
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);
   visitor->Trace(sent_nodes_);
@@ -69,7 +69,7 @@ void ContentCaptureManager::Trace(Visitor* visitor) {
 void ContentCaptureManager::Shutdown() {
   if (content_capture_idle_task_) {
     content_capture_idle_task_->Shutdown();
-    content_capture_idle_task_.reset();
+    content_capture_idle_task_ = nullptr;
   }
 }
 

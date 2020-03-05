@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,7 +20,7 @@ import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
 
 /** PaymentHandlerToolbar UI. */
-/* package */ class PaymentHandlerToolbarView {
+/* package */ class PaymentHandlerToolbarView implements OnGlobalLayoutListener {
     private final int mToolbarHeightPx;
     private final int mShadowHeightPx;
 
@@ -45,6 +46,8 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
                 context.getResources().getDimensionPixelSize(R.dimen.action_bar_shadow_height);
 
         mToolbarView = LayoutInflater.from(context).inflate(R.layout.sheet_tab_toolbar, null);
+        mToolbarView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+
         mOriginView = mToolbarView.findViewById(R.id.origin);
         mTitleView = mToolbarView.findViewById(R.id.title);
         mProgressBar = mToolbarView.findViewById(R.id.progress_bar);
@@ -84,5 +87,12 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
     /** @return The layout of the PaymentHandlerToolbar. */
     /* package */ View getView() {
         return mToolbarView;
+    }
+
+    // OnGlobalLayoutListener:
+    @Override
+    public void onGlobalLayout() {
+        mObserver.onToolbarLaidOut();
+        mToolbarView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }
 }

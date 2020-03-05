@@ -9,6 +9,10 @@
 
 #include "ui/views/view.h"
 
+namespace extensions {
+struct InstallPromptPermissions;
+}  // namespace extensions
+
 // A custom view for the permissions section of the extension info. It contains
 // the labels for each permission and the views for their associated details, if
 // there are any.
@@ -16,8 +20,13 @@ class ExtensionPermissionsView : public views::View {
  public:
   explicit ExtensionPermissionsView(int available_width);
 
+  // Adds a single pair of |permission_text| and |permission_details| to
+  // be rendered in the view.
   void AddItem(const base::string16& permission_text,
                const base::string16& permission_details);
+
+  // Adds the set of |permissions| to be rendered in the view.
+  void AddPermissions(const extensions::InstallPromptPermissions& permissions);
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;

@@ -938,6 +938,11 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   mocha.run();
 });
 
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageRedesignTests', function() {
+  settings_privacy_page.registerPrivacyPageRedesignTests();
+  mocha.run();
+});
+
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F(
     'CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPageSoundTests', function() {

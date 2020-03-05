@@ -11,6 +11,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -87,6 +88,14 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
                 getPaddingTop() == 0 ? verticalPadding : getPaddingTop(),
                 getPaddingEnd() == 0 ? lateralPadding : getPaddingEnd(),
                 getPaddingBottom() == 0 ? verticalPadding : getPaddingBottom());
+
+        // Set the background if not specified in xml
+        if (getBackground() == null) {
+            TypedValue background = new TypedValue();
+            getContext().getTheme().resolveAttribute(
+                    android.R.attr.selectableItemBackground, background, true);
+            setBackgroundResource(background.resourceId);
+        }
 
         // We want RadioButtonWithDescription to handle the clicks itself.
         setOnClickListener(this);

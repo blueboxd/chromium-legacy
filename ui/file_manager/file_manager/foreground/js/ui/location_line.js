@@ -196,6 +196,7 @@ class LocationLine extends cr.EventTarget {
     let breadcrumbs = document.querySelector('bread-crumb');
     if (!breadcrumbs) {
       breadcrumbs = document.createElement('bread-crumb');
+      breadcrumbs.id = 'breadcrumbs';
       this.breadcrumbs_.appendChild(breadcrumbs);
       breadcrumbs.setSignalCallback(this.breadCrumbSignal_.bind(this));
     }

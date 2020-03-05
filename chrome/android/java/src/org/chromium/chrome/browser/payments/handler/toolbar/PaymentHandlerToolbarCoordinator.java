@@ -5,13 +5,10 @@
 package org.chromium.chrome.browser.payments.handler.toolbar;
 
 import android.view.View;
-import android.view.View.OnClickListener;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -40,6 +37,12 @@ public class PaymentHandlerToolbarCoordinator {
 
         /** Called when the close button is clicked. */
         void onToolbarCloseButtonClicked();
+
+        /**
+         * Called when the toolbar has just laid out, called exactly once, because it's used only
+         * for calculating the height, which does not change in the toolbar after the first layout.
+         */
+        void onToolbarLaidOut();
     }
 
     /**
@@ -53,14 +56,6 @@ public class PaymentHandlerToolbarCoordinator {
     public PaymentHandlerToolbarCoordinator(
             ChromeActivity context, WebContents webContents, URI url) {
         mWebContents = webContents;
-        OnClickListener securityIconOnClickListener = v -> {
-            if (context == null) return;
-            PageInfoController.show(context, webContents, null,
-                    PageInfoController.OpenedFromSource.TOOLBAR,
-                    /*offlinePageLoadUrlDelegate=*/
-                    new OfflinePageUtils.WebContentsOfflinePageLoadUrlDelegate(webContents));
-        };
-        mToolbarView = new PaymentHandlerToolbarView(context, securityIconOnClickListener);
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
                                       .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
                                       .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
@@ -70,7 +65,9 @@ public class PaymentHandlerToolbarCoordinator {
                                       .with(PaymentHandlerToolbarProperties.URL, url)
                                       .build();
         boolean isSmallDevice = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
-        mMediator = new PaymentHandlerToolbarMediator(model, webContents, isSmallDevice);
+        mMediator = new PaymentHandlerToolbarMediator(model, context, webContents, isSmallDevice);
+        mToolbarView =
+                new PaymentHandlerToolbarView(context, /*securityIconOnClickListener=*/mMediator);
         webContents.addObserver(mMediator);
         PropertyModelChangeProcessor changeProcessor = PropertyModelChangeProcessor.create(
                 model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);

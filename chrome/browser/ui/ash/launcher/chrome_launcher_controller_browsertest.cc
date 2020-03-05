@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_test_api.h"
@@ -66,17 +67,26 @@
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -85,6 +95,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -360,6 +371,72 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestNoDefaultBrowser);
+};
+
+class ShelfWebAppBrowserTest
+    : public ShelfAppBrowserTest,
+      public ::testing::WithParamInterface<web_app::ProviderType> {
+ protected:
+  ShelfWebAppBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    if (GetParam() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
+
+  ~ShelfWebAppBrowserTest() override = default;
+
+  web_app::ProviderType provider_type() const { return GetParam(); }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  GURL GetSecureAppURL() {
+    return https_server()->GetURL("app.com", "/ssl/google.html");
+  }
+
+  web_app::AppId InstallWebApp(const GURL& app_url) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetWithoutFilename();
+    return web_app::InstallWebApp(browser()->profile(),
+                                  std::move(web_app_info));
+  }
+
+  // ShelfAppBrowserTest:
+  void SetUp() override {
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    ShelfAppBrowserTest::SetUp();
+  }
+  void SetUpInProcessBrowserTestFixture() override {
+    ShelfAppBrowserTest::SetUpInProcessBrowserTestFixture();
+    cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+  void TearDownInProcessBrowserTestFixture() override {
+    ShelfAppBrowserTest::TearDownInProcessBrowserTestFixture();
+    cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    cert_verifier_.SetUpCommandLine(command_line);
+  }
+  void SetUpOnMainThread() override {
+    ShelfAppBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(https_server()->Start());
+    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+
+    web_app::WebAppProviderBase::GetProviderBase(browser()->profile())
+        ->shortcut_manager()
+        .SuppressShortcutsForTesting();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer https_server_;
+  content::ContentMockCertVerifier cert_verifier_;
 };
 
 // Test that we can launch a platform app and get a running item.
@@ -1026,15 +1103,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPinnedHostedApp) {
 }
 
 // Verifies that native browser window properties are properly set when showing
-// an unpinned bookmark app.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForUnpinnedBookmarkApp) {
-  // Load and navigate to a bookmark app.
-  const Extension* extension = InstallExtensionWithSourceAndFlags(
-      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
-      extensions::Extension::FROM_BOOKMARK);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(
-      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+// an unpinned web app.
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, AppIDForUnpinnedWebApp) {
+  // Load and navigate to a web app.
+  const GURL app_url = GetSecureAppURL();
+  const web_app::AppId web_app_id = InstallWebApp(app_url);
+
+  ui_test_utils::NavigateToURL(browser(), app_url);
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = shelf_model()->items()[browser_index].id;
@@ -1046,25 +1121,23 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForUnpinnedBookmarkApp) {
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
   EXPECT_EQ(browser_id, shelf_id);
-  // The app ID should have the actual extension ID.
+  // The app ID should have the actual web app ID.
   std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
   ASSERT_TRUE(app_id);
-  EXPECT_EQ(extension->id(), *app_id);
+  EXPECT_EQ(web_app_id, *app_id);
 }
 
 // Verifies that native browser window properties are properly set when showing
-// a pinned bookmark app.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPinnedBookmarkApp) {
-  // Load and pin a bookmark app.
-  const Extension* extension = InstallExtensionWithSourceAndFlags(
-      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
-      extensions::Extension::FROM_BOOKMARK);
-  ASSERT_TRUE(extension);
-  controller_->PinAppWithID(extension->id());
+// a pinned web app.
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, AppIDForPinnedWebApp) {
+  // Load and navigate to a web app.
+  const GURL app_url = GetSecureAppURL();
+  const web_app::AppId web_app_id = InstallWebApp(app_url);
+
+  controller_->PinAppWithID(web_app_id);
 
   // Navigate to the app's launch URL.
-  ui_test_utils::NavigateToURL(
-      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(extension));
+  ui_test_utils::NavigateToURL(browser(), app_url);
 
   // When an app shportcut exists, the window shelf ID should point to the app
   // shortcut.
@@ -1072,15 +1145,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPinnedBookmarkApp) {
       browser()->window()->GetNativeWindow();
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(native_window->GetProperty(ash::kShelfIDKey));
-  EXPECT_EQ(extension->id(), shelf_id.app_id);
+  EXPECT_EQ(web_app_id, shelf_id.app_id);
   std::string* app_id = native_window->GetProperty(ash::kAppIDKey);
   ASSERT_TRUE(app_id);
-  EXPECT_EQ(extension->id(), *app_id);
+  EXPECT_EQ(web_app_id, *app_id);
 }
 
 // Verifies that native browser window properties are properly set when showing
 // a PWA tab.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPWA) {
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, AppIDForPWA) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
@@ -1091,7 +1164,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForPWA) {
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
   web_app::WebAppInstallObserver observer(profile());
   chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
-  web_app::AppId app_id = observer.AwaitNextInstall();
+  const web_app::AppId app_id = observer.AwaitNextInstall();
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 
   // Find the native window for the app.
@@ -1964,7 +2037,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
 }
 
 // Ensure opening settings and task manager windows create new shelf items.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest, SettingsAndTaskManagerWindows) {
   // Install the Settings App.
   web_app::WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
@@ -2008,6 +2081,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
 }
 
 // Check that tabbed hosted and bookmark apps have correct shelf presence.
+// TODO(crbug.com/1054116): Port bookmark test to ShelfWebAppBrowserTest.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
   // Load and pin a hosted app.
   const Extension* hosted_app =
@@ -2055,6 +2129,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
 }
 
 // Check that windowed hosted and bookmark apps have correct shelf presence.
+// TODO(crbug.com/1054116): Port bookmark test to ShelfWebAppBrowserTest.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   // Load and pin a hosted app.
   const Extension* hosted_app =
@@ -2116,7 +2191,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
 
 // Windowed progressive web apps should have shelf activity indicator showing
 // after install.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest,
                        WindowedPwasHaveActivityIndicatorSet) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2140,7 +2215,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
 
 // Windowed shortcut apps should have shelf activity indicator showing after
 // install.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+IN_PROC_BROWSER_TEST_P(ShelfWebAppBrowserTest,
                        WindowedShortcutAppsHaveActivityIndicatorSet) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2195,8 +2270,10 @@ class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
 
   // ShelfAppBrowserTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kShelfHotseat);
+    // Disable contextual nudges to prevent in-app to home nudge from being
+    // announced in the ChromeVox test.
+    scoped_feature_list_.InitWithFeatures({chromeos::features::kShelfHotseat},
+                                          {ash::features::kContextualNudges});
     ShelfAppBrowserTest::SetUp();
   }
 
@@ -2349,3 +2426,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithDesks, MultipleDesks) {
               ->GetAppMenuItemsForTesting(shelf_model()->items()[browser_index])
               .size());
 }
+
+// TODO(crbug.com/1054116): Also test with kWebApps.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ShelfWebAppBrowserTest,
+    ::testing::Values(web_app::ProviderType::kBookmarkApps),
+    web_app::ProviderTypeParamToString);

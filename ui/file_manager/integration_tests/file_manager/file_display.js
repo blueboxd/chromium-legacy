@@ -307,7 +307,10 @@ testcase.fileDisplayUsbPartitionSort = async () => {
   // Sort by type in ascending order.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
-  await remoteCall.waitForElement(appId, '.table-header-sort-image-asc');
+  const iconSortedAsc = (await isFilesNg(appId)) ?
+      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
+      '.table-header-sort-image-asc';
+  await remoteCall.waitForElement(appId, iconSortedAsc);
 
   // Check that partitions are sorted in ascending order based on the partition
   // type.
@@ -321,7 +324,10 @@ testcase.fileDisplayUsbPartitionSort = async () => {
   // Sort by type in descending order.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
-  await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
+  const iconSortedDesc = (await isFilesNg(appId)) ?
+      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
+      '.table-header-sort-image-desc';
+  await remoteCall.waitForElement(appId, iconSortedDesc);
 
   // Check that partitions are sorted in descending order based on the partition
   // type.

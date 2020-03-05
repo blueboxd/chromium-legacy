@@ -11142,7 +11142,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="XR.PageSession" singular="True">
-  <owner>offenwanger@chromium.org</owner>
+  <obsolete>
+    Removed 2/2020
+  </obsolete>
   <owner>xr-dev@chromium.org</owner>
   <summary>
     Records properties of page use in XR, including VR browsing and WebXR
@@ -11446,6 +11448,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="IsLegacyWebVR" enum="Boolean">
+    <obsolete>
+      Removed 2/2020
+    </obsolete>
     <summary>
       Boolean value indicating whether a session was created using the legacy
       WebVR API rather than WebXR.

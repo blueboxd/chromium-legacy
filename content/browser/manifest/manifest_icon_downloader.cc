@@ -50,18 +50,20 @@ void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
   web_contents()->GetMainFrame()->AddMessageToConsole(level, message);
 }
 
-bool ManifestIconDownloader::Download(WebContents* web_contents,
-                                      const GURL& icon_url,
-                                      int ideal_icon_size_in_px,
-                                      int minimum_icon_size_in_px,
-                                      IconFetchCallback callback,
-                                      bool square_only /* = true */) {
+bool ManifestIconDownloader::Download(
+    WebContents* web_contents,
+    const GURL& icon_url,
+    int ideal_icon_size_in_px,
+    int minimum_icon_size_in_px,
+    IconFetchCallback callback,
+    bool square_only,
+    const GlobalFrameRoutingId& initiator_frame_routing_id) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   if (!web_contents || !icon_url.is_valid())
     return false;
 
-  web_contents->DownloadImage(
-      icon_url,
+  web_contents->DownloadImageInFrame(
+      initiator_frame_routing_id, icon_url,
       false,                  // is_favicon
       ideal_icon_size_in_px,  // preferred_size
       0,                      // max_bitmap_size - 0 means no maximum size.

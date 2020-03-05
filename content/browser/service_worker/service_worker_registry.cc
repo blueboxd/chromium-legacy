@@ -86,6 +86,7 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
                                             std::move(database_task_runner),
                                             quota_manager_proxy,
                                             special_storage_policy)) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
 }
 
@@ -94,6 +95,7 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     ServiceWorkerRegistry* old_registry)
     : context_(context),
       storage_(ServiceWorkerStorage::Create(old_registry->storage())) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
 }
 
@@ -102,6 +104,7 @@ ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
     NewRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->GetNewRegistrationId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewRegistrationId,
       weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
@@ -112,6 +115,7 @@ void ServiceWorkerRegistry::CreateNewVersion(
     const GURL& script_url,
     blink::mojom::ScriptType script_type,
     NewVersionCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(registration);
   storage()->GetNewVersionId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewVersionId, weak_factory_.GetWeakPtr(),
@@ -121,6 +125,7 @@ void ServiceWorkerRegistry::CreateNewVersion(
 void ServiceWorkerRegistry::FindRegistrationForClientUrl(
     const GURL& client_url,
     FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // To connect this TRACE_EVENT with the callback, Time::Now() is used as a
   // trace event id.
   int64_t trace_event_id =
@@ -138,6 +143,7 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
 void ServiceWorkerRegistry::FindRegistrationForScope(
     const GURL& scope,
     FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (is_storage_disabled_) {
     RunSoon(
         FROM_HERE,
@@ -164,6 +170,7 @@ void ServiceWorkerRegistry::FindRegistrationForId(
     int64_t registration_id,
     const GURL& origin,
     FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Registration lookup is expected to abort when storage is disabled.
   if (is_storage_disabled_) {
     CompleteFindNow(nullptr, blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -193,6 +200,7 @@ void ServiceWorkerRegistry::FindRegistrationForId(
 void ServiceWorkerRegistry::FindRegistrationForIdOnly(
     int64_t registration_id,
     FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Registration lookup is expected to abort when storage is disabled.
   if (is_storage_disabled_) {
     CompleteFindNow(nullptr, blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -222,6 +230,7 @@ void ServiceWorkerRegistry::FindRegistrationForIdOnly(
 void ServiceWorkerRegistry::GetRegistrationsForOrigin(
     const GURL& origin,
     GetRegistrationsCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->GetRegistrationsForOrigin(
       origin,
       base::BindOnce(&ServiceWorkerRegistry::DidGetRegistrationsForOrigin,
@@ -230,6 +239,7 @@ void ServiceWorkerRegistry::GetRegistrationsForOrigin(
 
 void ServiceWorkerRegistry::GetAllRegistrationsInfos(
     GetRegistrationsInfosCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->GetAllRegistrations(
       base::BindOnce(&ServiceWorkerRegistry::DidGetAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -237,6 +247,7 @@ void ServiceWorkerRegistry::GetAllRegistrationsInfos(
 
 ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
     const GURL& scope) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // TODO(bashi): Should we check state of ServiceWorkerStorage?
   for (const auto& registration : uninstalling_registrations_) {
     if (registration.second->scope() == scope) {
@@ -250,6 +261,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
 std::vector<scoped_refptr<ServiceWorkerRegistration>>
 ServiceWorkerRegistry::GetUninstallingRegistrationsForOrigin(
     const GURL& origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   std::vector<scoped_refptr<ServiceWorkerRegistration>> results;
   for (const auto& registration : uninstalling_registrations_) {
     if (registration.second->scope().GetOrigin() == origin) {
@@ -263,6 +275,7 @@ void ServiceWorkerRegistry::StoreRegistration(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(registration);
   DCHECK(version);
 
@@ -329,6 +342,7 @@ void ServiceWorkerRegistry::DeleteRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration,
     const GURL& origin,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (is_storage_disabled_) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
@@ -352,6 +366,7 @@ void ServiceWorkerRegistry::DeleteRegistration(
 
 void ServiceWorkerRegistry::NotifyInstallingRegistration(
     ServiceWorkerRegistration* registration) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(installing_registrations_.find(registration->id()) ==
          installing_registrations_.end());
   installing_registrations_[registration->id()] = registration;
@@ -361,6 +376,7 @@ void ServiceWorkerRegistry::NotifyDoneInstallingRegistration(
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version,
     blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   installing_registrations_.erase(registration->id());
   if (status != blink::ServiceWorkerStatusCode::kOk && version) {
     ResourceList resources;
@@ -376,6 +392,7 @@ void ServiceWorkerRegistry::NotifyDoneInstallingRegistration(
 void ServiceWorkerRegistry::NotifyDoneUninstallingRegistration(
     ServiceWorkerRegistration* registration,
     ServiceWorkerRegistration::Status new_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   registration->SetStatus(new_status);
   uninstalling_registrations_.erase(registration->id());
 }
@@ -383,6 +400,7 @@ void ServiceWorkerRegistry::NotifyDoneUninstallingRegistration(
 void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
                                                 const GURL& origin,
                                                 StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->UpdateToActiveState(
       registration_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidUpdateToActiveState,
@@ -394,6 +412,7 @@ void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
     const GURL& origin,
     base::Time last_update_check_time,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->UpdateLastUpdateCheckTime(
       registration_id, origin, last_update_check_time,
       CreateDatabaseStatusCallback(std::move(callback)));
@@ -404,6 +423,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadEnabled(
     const GURL& origin,
     bool enable,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->UpdateNavigationPreloadEnabled(
       registration_id, origin, enable,
       CreateDatabaseStatusCallback(std::move(callback)));
@@ -414,6 +434,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
     const GURL& origin,
     const std::string& value,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->UpdateNavigationPreloadHeader(
       registration_id, origin, value,
       CreateDatabaseStatusCallback(std::move(callback)));
@@ -421,6 +442,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
 
 void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
                                                        const GURL& origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->StoreUncommittedResourceId(
       resource_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
@@ -428,11 +450,13 @@ void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
 }
 
 void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DoomUncommittedResources(std::set<int64_t>(&resource_id, &resource_id + 1));
 }
 
 void ServiceWorkerRegistry::DoomUncommittedResources(
     const std::set<int64_t>& resource_ids) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->DoomUncommittedResources(
       resource_ids,
       base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
@@ -442,6 +466,7 @@ void ServiceWorkerRegistry::DoomUncommittedResources(
 void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
                                         const std::vector<std::string>& keys,
                                         GetUserDataCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       keys.empty()) {
     RunSoon(FROM_HERE,
@@ -468,6 +493,7 @@ void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
     int64_t registration_id,
     const std::string& key_prefix,
     GetUserDataCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_prefix.empty()) {
     RunSoon(FROM_HERE,
@@ -486,6 +512,7 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
     int64_t registration_id,
     const std::string& key_prefix,
     GetUserKeysAndDataCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_prefix.empty()) {
     RunSoon(FROM_HERE,
@@ -506,6 +533,7 @@ void ServiceWorkerRegistry::StoreUserData(
     const GURL& origin,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_value_pairs.empty()) {
     RunSoon(FROM_HERE,
@@ -531,6 +559,7 @@ void ServiceWorkerRegistry::StoreUserData(
 void ServiceWorkerRegistry::ClearUserData(int64_t registration_id,
                                           const std::vector<std::string>& keys,
                                           StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       keys.empty()) {
     RunSoon(FROM_HERE,
@@ -557,6 +586,7 @@ void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
     int64_t registration_id,
     const std::vector<std::string>& key_prefixes,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_prefixes.empty()) {
     RunSoon(FROM_HERE,
@@ -582,6 +612,7 @@ void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
 void ServiceWorkerRegistry::ClearUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (key_prefix.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
@@ -598,6 +629,7 @@ void ServiceWorkerRegistry::ClearUserDataForAllRegistrationsByKeyPrefix(
 void ServiceWorkerRegistry::GetUserDataForAllRegistrations(
     const std::string& key,
     GetUserDataForAllRegistrationsCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (key.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
@@ -615,6 +647,7 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrations(
 void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
     const std::string& key_prefix,
     GetUserDataForAllRegistrationsCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (key_prefix.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
@@ -649,6 +682,7 @@ void ServiceWorkerRegistry::DisableDeleteAndStartOverForTesting() {
 ServiceWorkerRegistration*
 ServiceWorkerRegistry::FindInstallingRegistrationForClientUrl(
     const GURL& client_url) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(!client_url.has_ref());
 
   LongestScopeMatcher matcher(client_url);
@@ -664,6 +698,7 @@ ServiceWorkerRegistry::FindInstallingRegistrationForClientUrl(
 
 ServiceWorkerRegistration*
 ServiceWorkerRegistry::FindInstallingRegistrationForScope(const GURL& scope) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   for (const auto& registration : installing_registrations_)
     if (registration.second->scope() == scope)
       return registration.second.get();
@@ -673,6 +708,7 @@ ServiceWorkerRegistry::FindInstallingRegistrationForScope(const GURL& scope) {
 ServiceWorkerRegistration*
 ServiceWorkerRegistry::FindInstallingRegistrationForId(
     int64_t registration_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   RegistrationRefsById::const_iterator found =
       installing_registrations_.find(registration_id);
   if (found == installing_registrations_.end())
@@ -684,6 +720,7 @@ scoped_refptr<ServiceWorkerRegistration>
 ServiceWorkerRegistry::GetOrCreateRegistration(
     const storage::mojom::ServiceWorkerRegistrationData& data,
     const ResourceList& resources) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(data.registration_id);
   if (registration)
@@ -737,6 +774,7 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
 
 base::Optional<scoped_refptr<ServiceWorkerRegistration>>
 ServiceWorkerRegistry::FindFromLiveRegistrationsForId(int64_t registration_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
   if (registration) {
@@ -762,6 +800,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     storage::mojom::ServiceWorkerRegistrationDataPtr data,
     std::unique_ptr<ResourceList> resources,
     storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
           storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
@@ -811,6 +850,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
     storage::mojom::ServiceWorkerRegistrationDataPtr data,
     std::unique_ptr<ResourceList> resources,
     storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
           storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
@@ -836,6 +876,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
     storage::mojom::ServiceWorkerRegistrationDataPtr data,
     std::unique_ptr<ResourceList> resources,
     storage::mojom::ServiceWorkerDatabaseStatus database_status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (database_status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       database_status !=
           storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
@@ -872,6 +913,7 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::unique_ptr<RegistrationList> registration_data_list,
     std::unique_ptr<std::vector<ResourceList>> resources_list) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(origin_filter.is_valid());
 
   blink::ServiceWorkerStatusCode status =
@@ -914,6 +956,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
     GetRegistrationsInfosCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::unique_ptr<RegistrationList> registration_data_list) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
 
@@ -1013,6 +1056,7 @@ void ServiceWorkerRegistry::DidStoreRegistration(
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
 
@@ -1056,6 +1100,7 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     int64_t deleted_version_id,
     const std::vector<int64_t>& newly_purgeable_resources) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
 
@@ -1118,6 +1163,7 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
     GetUserKeysAndDataCallback callback,
     const base::flat_map<std::string, std::string>& data_map,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
@@ -1128,6 +1174,7 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
 void ServiceWorkerRegistry::DidStoreUserData(
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // |status| can be NOT_FOUND when the associated registration did not exist in
   // the database. In the case, we don't have to schedule the corruption
   // recovery.
@@ -1141,6 +1188,7 @@ void ServiceWorkerRegistry::DidStoreUserData(
 void ServiceWorkerRegistry::DidClearUserData(
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
@@ -1150,6 +1198,7 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
     GetUserDataForAllRegistrationsCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk)
     ScheduleDeleteAndStartOver();
   std::move(callback).Run(user_data, DatabaseStatusToStatusCode(status));
@@ -1159,6 +1208,7 @@ void ServiceWorkerRegistry::DidGetNewRegistrationId(
     blink::mojom::ServiceWorkerRegistrationOptions options,
     NewRegistrationCallback callback,
     int64_t registration_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
     std::move(callback).Run(nullptr);
     return;
@@ -1173,6 +1223,7 @@ void ServiceWorkerRegistry::DidGetNewVersionId(
     blink::mojom::ScriptType script_type,
     NewVersionCallback callback,
     int64_t version_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
     std::move(callback).Run(nullptr);
     return;
@@ -1183,6 +1234,7 @@ void ServiceWorkerRegistry::DidGetNewVersionId(
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (!should_schedule_delete_and_start_over_) {
     // Recovery process has already been scheduled.
     return;

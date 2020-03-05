@@ -350,7 +350,7 @@ QUIC_FLAG(bool,
 
 // If true, enable QUIC version h3-25.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v2,
+          FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v3,
           false)
 
 // If true, fix QUIC bandwidth sampler to avoid over estimating bandwidth in
@@ -379,3 +379,12 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_window_update_if_disconnected,
           true)
+
+// If true, arm the 1st PTO with earliest in flight sent time.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_arm_pto_with_earliest_sent_time,
+          false)
+
+// If true, QuicSession::WritevData() will support writing data at a specified
+// encryption level.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_writevdata_at_level, false)

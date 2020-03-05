@@ -1399,6 +1399,12 @@
   <message name="IDS_FILE_BROWSER_A11Y_VOLUME_EJECT" desc="Text to be used by screen reader to indicate users that the eject volume action has finished.">
     <ph name="VOLUME_NAME">$1<ex>file_name.rar</ex></ph> has been ejected.
   </message>
+  <message name="IDS_FILE_BROWSER_GRID_VIEW_FOLDERS_TITLE" desc="Title displayed in Grid View above the folders.">
+    Folders
+  </message>
+  <message name="IDS_FILE_BROWSER_GRID_VIEW_FILES_TITLE" desc="Title dislayed in Grid View above the files.">
+    Files
+  </message>
 
 <!-- Common for Audio player and Media player -->
   <message name="IDS_MEDIA_PLAYER_PLAY_BUTTON_LABEL" desc="Label for the Play button of media players (audio player / video player).">

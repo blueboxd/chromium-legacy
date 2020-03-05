@@ -91,7 +91,9 @@ INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmapScanoutBGRA,
 
 using GLImageScanoutTypeDisabled = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
-                                    gfx::BufferFormat::RGBA_1010102>>;
+                                    gfx::BufferFormat::RGBA_1010102>,
+    GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
+                                    gfx::BufferFormat::BGRA_1010102>>;
 
 // This test is disabled since we need mesa support for AB30 that is not
 // available on many boards yet.

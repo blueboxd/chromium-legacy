@@ -199,10 +199,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ManifestManager::ProvideTo(frame);
   InstalledAppController::ProvideTo(frame);
-  if (frame.IsMainFrame()) {
-    // Only main frame has ImageDownloader service.
-    ImageDownloaderImpl::ProvideTo(frame);
-  }
+  ImageDownloaderImpl::ProvideTo(frame);
   MediaInspectorContextImpl::ProvideToLocalFrame(frame);
 }
 

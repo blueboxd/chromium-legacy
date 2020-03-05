@@ -1342,6 +1342,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (IsFilesNgTest()) {
     enabled_features.emplace_back(chromeos::features::kFilesNG);
+  } else {
+    disabled_features.emplace_back(chromeos::features::kFilesNG);
   }
 
   if (IsArcTest()) {

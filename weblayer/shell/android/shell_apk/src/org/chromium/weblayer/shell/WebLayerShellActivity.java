@@ -169,6 +169,11 @@ public class WebLayerShellActivity extends FragmentActivity {
             PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, v);
             popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
             popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.reload_menu_id) {
+                    mBrowser.getActiveTab().getNavigationController().reload();
+                    return true;
+                }
+
                 if (item.getItemId() == R.id.find_begin_menu_id) {
                     // TODO(estade): add a UI for FIP. For now, just search for "cat", or go
                     // to the next result if a search has already been initiated.

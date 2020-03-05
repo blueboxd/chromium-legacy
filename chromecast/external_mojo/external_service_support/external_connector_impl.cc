@@ -27,54 +27,36 @@ void ExternalConnector::Connect(
     const std::string& broker_path,
     base::OnceCallback<void(std::unique_ptr<ExternalConnector>)> callback) {
   DCHECK(callback);
+  std::move(callback).Run(Create(broker_path));
+}
 
-  mojo::PlatformChannelEndpoint endpoint =
-      mojo::NamedPlatformChannel::ConnectToServer(broker_path);
-  if (!endpoint.is_valid()) {
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ExternalConnector::Connect, broker_path,
-                       std::move(callback)),
-        kConnectRetryDelay);
-    return;
-  }
+// static
+std::unique_ptr<ExternalConnector> ExternalConnector::Create(
+    const std::string& broker_path) {
+  return std::make_unique<ExternalConnectorImpl>(broker_path);
+}
 
-  auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
-  auto pipe = invitation.ExtractMessagePipe(0);
-  if (!pipe) {
-    LOG(ERROR) << "Invalid message pipe";
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ExternalConnector::Connect, broker_path,
-                       std::move(callback)),
-        kConnectRetryDelay);
-    return;
-  }
-  mojo::Remote<external_mojo::mojom::ExternalConnector> connector(
-      mojo::PendingRemote<external_mojo::mojom::ExternalConnector>(
-          std::move(pipe), 0));
-  std::move(callback).Run(
-      std::make_unique<ExternalConnectorImpl>(std::move(connector)));
+ExternalConnectorImpl::ExternalConnectorImpl(const std::string& broker_path)
+    : broker_path_(broker_path) {
+  InitializeBrokerConnection();
 }
 
 ExternalConnectorImpl::ExternalConnectorImpl(
-    mojo::Remote<external_mojo::mojom::ExternalConnector> connector)
-    : connector_(std::move(connector)) {
-  connector_.set_disconnect_handler(base::BindOnce(
-      &ExternalConnectorImpl::OnMojoDisconnect, base::Unretained(this)));
-}
-
-ExternalConnectorImpl::ExternalConnectorImpl(
-    mojo::PendingRemote<external_mojo::mojom::ExternalConnector> unbound_state)
-    : unbound_state_(std::move(unbound_state)) {
+    const std::string& broker_path,
+    mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
+        connector_pending_remote)
+    : broker_path_(broker_path),
+      connector_pending_remote_from_clone_(
+          std::move(connector_pending_remote)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ExternalConnectorImpl::~ExternalConnectorImpl() = default;
 
-void ExternalConnectorImpl::SetConnectionErrorCallback(
-    base::OnceClosure callback) {
-  connection_error_callback_ = std::move(callback);
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+ExternalConnectorImpl::AddConnectionErrorCallback(
+    base::RepeatingClosure callback) {
+  return error_callbacks_.Add(std::move(callback));
 }
 
 void ExternalConnectorImpl::RegisterService(const std::string& service_name,
@@ -134,7 +116,8 @@ std::unique_ptr<ExternalConnector> ExternalConnectorImpl::Clone() {
   if (BindConnectorIfNecessary()) {
     connector_->Clone(std::move(receiver));
   }
-  return std::make_unique<ExternalConnectorImpl>(std::move(connector_remote));
+  return std::make_unique<ExternalConnectorImpl>(broker_path_,
+                                                 std::move(connector_remote));
 }
 
 void ExternalConnectorImpl::SendChromiumConnectorRequest(
@@ -147,9 +130,10 @@ void ExternalConnectorImpl::SendChromiumConnectorRequest(
 void ExternalConnectorImpl::OnMojoDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connector_.reset();
-  if (connection_error_callback_) {
-    std::move(connection_error_callback_).Run();
-  }
+  connector_pending_remote_from_clone_.reset();
+  connector_pending_receiver_for_broker_.reset();
+  InitializeBrokerConnection();
+  error_callbacks_.Notify();
 }
 
 bool ExternalConnectorImpl::BindConnectorIfNecessary() {
@@ -160,16 +144,55 @@ bool ExternalConnectorImpl::BindConnectorIfNecessary() {
     return true;
   }
 
-  if (!unbound_state_.is_valid()) {
-    // OnMojoDisconnect was already called, but |this| was not destroyed.
-    return false;
-  }
+  DCHECK(connector_pending_remote_from_clone_.is_valid());
 
-  connector_.Bind(std::move(unbound_state_));
+  connector_.Bind(std::move(connector_pending_remote_from_clone_));
   connector_.set_disconnect_handler(base::BindOnce(
       &ExternalConnectorImpl::OnMojoDisconnect, base::Unretained(this)));
 
   return true;
+}
+
+void ExternalConnectorImpl::InitializeBrokerConnection() {
+  // Setup the connector_ to be valid and bound.
+  // Once |connector_pending_receiver_for_broker_| is bound in the mojo broker,
+  // messages will be delivered.
+  mojo::PendingRemote<external_mojo::mojom::ExternalConnector> connector_remote;
+  connector_pending_receiver_for_broker_ =
+      connector_remote.InitWithNewPipeAndPassReceiver();
+  connector_.Bind(std::move(connector_remote));
+  connector_.set_disconnect_handler(base::BindOnce(
+      &ExternalConnectorImpl::OnMojoDisconnect, base::Unretained(this)));
+
+  AttemptBrokerConnection();
+}
+
+void ExternalConnectorImpl::AttemptBrokerConnection() {
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::NamedPlatformChannel::ConnectToServer(broker_path_);
+  if (!endpoint.is_valid()) {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ExternalConnectorImpl::AttemptBrokerConnection,
+                       weak_factory_.GetWeakPtr()),
+        kConnectRetryDelay);
+    return;
+  }
+
+  auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
+  auto remote_pipe = invitation.ExtractMessagePipe(0);
+  if (!remote_pipe) {
+    LOG(ERROR) << "Invalid message pipe";
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ExternalConnectorImpl::AttemptBrokerConnection,
+                       weak_factory_.GetWeakPtr()),
+        kConnectRetryDelay);
+    return;
+  }
+
+  mojo::FuseMessagePipes(connector_pending_receiver_for_broker_.PassPipe(),
+                         std::move(remote_pipe));
 }
 
 }  // namespace external_service_support

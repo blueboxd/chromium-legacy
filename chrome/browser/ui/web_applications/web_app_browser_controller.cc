@@ -58,9 +58,10 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
     return *app_icon_;
   app_icon_ = GetFallbackAppIcon();
 
-  if (provider_.icon_manager().HasSmallestIcon(GetAppId(), gfx::kFaviconSize)) {
+  if (provider_.icon_manager().HasSmallestIcon(GetAppId(),
+                                               web_app::kWebAppIconSmall)) {
     provider_.icon_manager().ReadSmallestIcon(
-        GetAppId(), gfx::kFaviconSize,
+        GetAppId(), web_app::kWebAppIconSmall,
         base::BindOnce(&WebAppBrowserController::OnReadIcon,
                        weak_ptr_factory_.GetWeakPtr()));
   }

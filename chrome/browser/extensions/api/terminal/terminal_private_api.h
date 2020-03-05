@@ -183,6 +183,17 @@ class TerminalPrivateSetSettingsFunction : public ExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
+class TerminalPrivateGetA11yStatusFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getA11yStatus",
+                             TERMINALPRIVATE_GETA11YSTATUS)
+
+ protected:
+  ~TerminalPrivateGetA11yStatusFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_

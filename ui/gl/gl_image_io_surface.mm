@@ -69,14 +69,10 @@ GLenum TextureFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:  // See https://crbug.com/595948.
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::BGRA_1010102:
       return GL_RGBA;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
-    case gfx::BufferFormat::BGRA_1010102:
-      // Technically we should use GL_RGB but CGLTexImageIOSurface2D() (and
-      // OpenGL ES 3.0, for the case) support only GL_RGBA (the hardware ignores
-      // the alpha channel anyway), see https://crbug.com/797347.
-      return GL_RGBA;
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:

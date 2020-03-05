@@ -1189,7 +1189,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
 #if defined(OS_MACOSX)
-  // Mac can create GLImages out of XR30 IOSurfaces only after High Sierra.
+  // Mac can create GLImages out of AR30 IOSurfaces only after High Sierra.
   feature_flags_.chromium_image_ar30 = base::mac::IsAtLeastOS10_13();
 #elif !defined(OS_WIN)
   // TODO(mcasas): connect in Windows, https://crbug.com/803451

@@ -243,6 +243,7 @@ class FileGrid extends cr.ui.Grid {
 
     const afterFiller = this.afterFiller_;
     const columns = this.columns;
+    let previousTitle = '';
 
     for (let item = this.beforeFiller_.nextSibling; item !== afterFiller;) {
       const next = item.nextSibling;
@@ -254,6 +255,25 @@ class FileGrid extends cr.ui.Grid {
       }
       const index = item.listIndex;
       const nextIndex = index + 1;
+
+      if (util.isFilesNg()) {
+        const entry = this.dataModel.item(index);
+        if (entry.isDirectory && previousTitle !== 'dir') {
+          // For first Directory we add a title div before the element.
+          const title = document.createElement('div');
+          title.innerText = str('GRID_VIEW_FOLDERS_TITLE');
+          title.classList.add('grid-title', 'folders');
+          this.insertBefore(title, item);
+          previousTitle = 'dir';
+        } else if (!entry.isDirectory && previousTitle !== 'file') {
+          // For first File we add a title div before the element.
+          const title = document.createElement('div');
+          title.innerText = str('GRID_VIEW_FILES_TITLE');
+          title.classList.add('grid-title', 'files');
+          this.insertBefore(title, item);
+          previousTitle = 'file';
+        }
+      }
 
       // Invisible pinned item could be outside of the
       // [beginIndex, endIndex). Ignore it.

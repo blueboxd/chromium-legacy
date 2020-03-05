@@ -85,7 +85,7 @@ public class PaymentHandlerCoordinator {
         PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
                 mWebContents, uiObserver, activity.getActivityTab().getView(),
                 mToolbarCoordinator.getView(), mToolbarCoordinator.getShadowHeightPx());
-        activity.getActivityTab().getView().addOnLayoutChangeListener(mediator);
+        activity.getWindow().getDecorView().addOnLayoutChangeListener(mediator);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
         mWebContents.addObserver(mediator);
@@ -104,7 +104,9 @@ public class PaymentHandlerCoordinator {
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
             mWebContents.destroy();
             uiObserver.onPaymentHandlerUiClosed();
-            activity.getActivityTab().getView().removeOnLayoutChangeListener(mediator);
+            assert activity.getWindow() != null;
+            assert activity.getWindow().getDecorView() != null;
+            activity.getWindow().getDecorView().removeOnLayoutChangeListener(mediator);
             mediator.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);

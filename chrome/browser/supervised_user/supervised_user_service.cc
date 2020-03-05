@@ -151,7 +151,7 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnSiteListsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  SetActive(ProfileIsSupervised());
+  SetActive(IsChild());
 }
 
 void SupervisedUserService::SetDelegate(Delegate* delegate) {
@@ -263,6 +263,20 @@ bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
       supervised_users::kSupervisedUserIframeFilter);
 }
 
+bool SupervisedUserService::IsChild() const {
+  return profile_->IsSupervised();
+}
+
+bool SupervisedUserService::IsSupervisedUserExtensionInstallEnabled() const {
+  return base::FeatureList::IsEnabled(
+      supervised_users::kSupervisedUserInitiatedExtensionInstall);
+}
+
+bool SupervisedUserService::HasACustodian() const {
+  return !GetCustodianEmailAddress().empty() ||
+         !GetSecondCustodianEmailAddress().empty();
+}
+
 void SupervisedUserService::AddObserver(
     SupervisedUserServiceObserver* observer) {
   observer_list_.AddObserver(observer);
@@ -314,6 +328,18 @@ void SupervisedUserService::SetPrimaryPermissionCreatorForTest(
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+void SupervisedUserService::AddExtensionApproval(
+    const extensions::Extension& extension) {
+  UpdateApprovedExtensions(extension.id(), extension.VersionString(),
+                           syncer::SyncChange::SyncChangeType::ACTION_ADD);
+}
+
+void SupervisedUserService::RemoveExtensionApproval(
+    const extensions::Extension& extension) {
+  UpdateApprovedExtensions(extension.id(), extension.VersionString(),
+                           syncer::SyncChange::SyncChangeType::ACTION_DELETE);
+}
+
 void SupervisedUserService::UpdateApprovedExtensions(
     const std::string& extension_id,
     const std::string& version,
@@ -382,6 +408,52 @@ void SupervisedUserService::MarkExtensionMatureForTesting(
   mature_extension_checker_->CheckMatureDataForExtension(extension_id);
   mature_extension_checker_->MarkExtensionMatureForTesting(extension_id,
                                                            maturity_rating);
+}
+
+bool SupervisedUserService::CanInstallExtensions() const {
+  return IsSupervisedUserExtensionInstallEnabled() && HasACustodian() &&
+         GetSupervisedUserExtensionsMayRequestPermissionsPref();
+}
+
+bool SupervisedUserService::IsExtensionAllowed(
+    const extensions::Extension& extension) const {
+  return GetExtensionState(extension) ==
+         SupervisedUserService::ExtensionState::ALLOWED;
+}
+
+std::unique_ptr<ParentPermissionDialog>
+SupervisedUserService::ShowParentPermissionDialog(
+    const base::string16& message,
+    content::WebContents* contents,
+    const SkBitmap& icon,
+    ParentPermissionDialog::DoneCallback callback,
+    bool reprompt_after_incorrect_credential) {
+  auto parent_permission_dialog =
+      std::make_unique<ParentPermissionDialog>(profile_, std::move(callback));
+
+  parent_permission_dialog->set_reprompt_after_incorrect_credential(
+      reprompt_after_incorrect_credential);
+  parent_permission_dialog->ShowPrompt(contents, message, icon);
+
+  return parent_permission_dialog;
+}
+
+std::unique_ptr<ParentPermissionDialog>
+SupervisedUserService::ShowParentPermissionDialogForExtension(
+    const extensions::Extension* extension,
+    content::WebContents* contents,
+    const SkBitmap& icon,
+    ParentPermissionDialog::DoneCallback callback,
+    bool reprompt_after_incorrect_credential) {
+  auto parent_permission_dialog =
+      std::make_unique<ParentPermissionDialog>(profile_, std::move(callback));
+
+  parent_permission_dialog->set_reprompt_after_incorrect_credential(
+      reprompt_after_incorrect_credential);
+  parent_permission_dialog->ShowPromptForExtensionInstallation(contents,
+                                                               extension, icon);
+
+  return parent_permission_dialog;
 }
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -472,10 +544,6 @@ void SupervisedUserService::SetActive(bool active) {
   }
 }
 
-bool SupervisedUserService::ProfileIsSupervised() const {
-  return profile_->IsSupervised();
-}
-
 void SupervisedUserService::OnCustodianInfoChanged() {
   for (SupervisedUserServiceObserver& observer : observer_list_)
     observer.OnCustodianInfoChanged();
@@ -527,7 +595,7 @@ void SupervisedUserService::OnPermissionRequestIssued(
 }
 
 void SupervisedUserService::OnSupervisedUserIdChanged() {
-  SetActive(ProfileIsSupervised());
+  SetActive(IsChild());
 }
 
 void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
@@ -711,7 +779,7 @@ void SupervisedUserService::Shutdown() {
     return;
   DCHECK(!did_shutdown_);
   did_shutdown_ = true;
-  if (ProfileIsSupervised()) {
+  if (IsChild()) {
     base::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
   }
   SetActive(false);
@@ -795,7 +863,7 @@ std::string SupervisedUserService::GetDebugPolicyProviderName() const {
 
 bool SupervisedUserService::UserMayLoad(const Extension* extension,
                                         base::string16* error) const {
-  DCHECK(ProfileIsSupervised());
+  DCHECK(IsChild());
   if (base::FeatureList::IsEnabled(
           supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
     // Issue RPC call to check for mature content here only because
@@ -820,7 +888,7 @@ bool SupervisedUserService::MustRemainDisabled(
     const Extension* extension,
     extensions::disable_reason::DisableReason* reason,
     base::string16* error) const {
-  DCHECK(ProfileIsSupervised());
+  DCHECK(IsChild());
   ExtensionState state = GetExtensionState(*extension);
   // Only extensions that require approval should be disabled.
   // Blocked extensions should be not loaded at all, and are taken care of
@@ -876,6 +944,13 @@ void SupervisedUserService::OnExtensionInstalled(
   }
 }
 
+void SupervisedUserService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  RemoveExtensionApproval(*extension);
+}
+
 void SupervisedUserService::ChangeExtensionStateIfNecessary(
     const std::string& extension_id) {
   // If the profile is not supervised, do nothing.
@@ -884,7 +959,7 @@ void SupervisedUserService::ChangeExtensionStateIfNecessary(
   // shouldn't be needed.
   if (!active_)
     return;
-  DCHECK(ProfileIsSupervised());
+  DCHECK(IsChild());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   const Extension* extension = registry->GetInstalledExtension(extension_id);
   // If the extension is not installed (yet), do nothing.

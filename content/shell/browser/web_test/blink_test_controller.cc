@@ -70,7 +70,6 @@
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
 #include "content/shell/common/web_test/blink_test_messages.h"
-#include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"

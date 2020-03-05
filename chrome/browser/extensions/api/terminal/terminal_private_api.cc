@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
@@ -124,18 +125,16 @@ int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
   return window ? window->session_id().id() : -1;
 }
 
-void SettingsChanged(Profile* profile) {
-  const base::DictionaryValue* value = profile->GetPrefs()->GetDictionary(
-      crostini::prefs::kCrostiniTerminalSettings);
-
+void PreferenceChanged(Profile* profile,
+                       const std::string& pref_name,
+                       extensions::events::HistogramValue histogram,
+                       const char* eventName) {
   auto args = std::make_unique<base::ListValue>();
-  args->Append(value->CreateDeepCopy());
-
+  args->Append(profile->GetPrefs()->Get(pref_name)->CreateDeepCopy());
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   if (event_router) {
-    auto event = std::make_unique<extensions::Event>(
-        extensions::events::TERMINAL_PRIVATE_ON_SETTINGS_CHANGED,
-        terminal_private::OnSettingsChanged::kEventName, std::move(args));
+    auto event = std::make_unique<extensions::Event>(histogram, eventName,
+                                                     std::move(args));
     event_router->BroadcastEvent(std::move(event));
   }
 }
@@ -149,8 +148,20 @@ TerminalPrivateAPI::TerminalPrivateAPI(content::BrowserContext* context)
       pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
   Profile* profile = Profile::FromBrowserContext(context);
   pref_change_registrar_->Init(profile->GetPrefs());
-  pref_change_registrar_->Add(crostini::prefs::kCrostiniTerminalSettings,
-                              base::BindRepeating(&SettingsChanged, profile));
+  pref_change_registrar_->Add(
+      crostini::prefs::kCrostiniTerminalSettings,
+      base::BindRepeating(
+          &PreferenceChanged, profile,
+          crostini::prefs::kCrostiniTerminalSettings,
+          extensions::events::TERMINAL_PRIVATE_ON_SETTINGS_CHANGED,
+          terminal_private::OnSettingsChanged::kEventName));
+  pref_change_registrar_->Add(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+      base::BindRepeating(
+          &PreferenceChanged, profile,
+          ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+          extensions::events::TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED,
+          terminal_private::OnA11yStatusChanged::kEventName));
 }
 
 TerminalPrivateAPI::~TerminalPrivateAPI() = default;
@@ -516,6 +527,17 @@ ExtensionFunction::ResponseAction TerminalPrivateSetSettingsFunction::Run() {
   service->Set(crostini::prefs::kCrostiniTerminalSettings,
                params->settings.additional_properties);
   return RespondNow(NoArguments());
+}
+
+TerminalPrivateGetA11yStatusFunction::~TerminalPrivateGetA11yStatusFunction() =
+    default;
+
+ExtensionFunction::ResponseAction TerminalPrivateGetA11yStatusFunction::Run() {
+  return RespondNow(
+      OneArgument(Profile::FromBrowserContext(browser_context())
+                      ->GetPrefs()
+                      ->Get(ash::prefs::kAccessibilitySpokenFeedbackEnabled)
+                      ->CreateDeepCopy()));
 }
 
 }  // namespace extensions

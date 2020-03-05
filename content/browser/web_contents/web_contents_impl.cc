@@ -108,6 +108,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/focused_node_details.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -4295,10 +4296,28 @@ int WebContentsImpl::DownloadImage(
     uint32_t max_bitmap_size,
     bool bypass_cache,
     WebContents::ImageDownloadCallback callback) {
+  return DownloadImageInFrame(GlobalFrameRoutingId(), url, is_favicon,
+                              preferred_size, max_bitmap_size, bypass_cache,
+                              std::move(callback));
+}
+
+int WebContentsImpl::DownloadImageInFrame(
+    const GlobalFrameRoutingId& initiator_frame_routing_id,
+    const GURL& url,
+    bool is_favicon,
+    uint32_t preferred_size,
+    uint32_t max_bitmap_size,
+    bool bypass_cache,
+    WebContents::ImageDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
+
+  RenderFrameHostImpl* initiator_frame =
+      initiator_frame_routing_id.child_id
+          ? RenderFrameHostImpl::FromID(initiator_frame_routing_id)
+          : GetMainFrame();
   const mojo::Remote<blink::mojom::ImageDownloader>& mojo_image_downloader =
-      GetMainFrame()->GetMojoImageDownloader();
+      initiator_frame->GetMojoImageDownloader();
   const int download_id = ++next_image_download_id;
   if (!mojo_image_downloader) {
     // If the renderer process is dead (i.e. crash, or memory pressure on

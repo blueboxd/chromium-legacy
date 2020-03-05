@@ -22,6 +22,14 @@ async function showGridView(rootPath, expectedSet) {
   // Open Files app on |rootPath|.
   const appId = await setupAndWaitUntilReady(rootPath);
 
+  // Dismiss the Drive banner so Grid View can display the all entries.
+  if (rootPath === RootPath.DRIVE) {
+    if (await isFilesNg(appId)) {
+      await remoteCall.waitAndClickElement(
+          appId, '.drive-welcome-wrapper .banner-close');
+    }
+  }
+
   // Click the grid view button.
   await remoteCall.waitForElement(appId, '#view-button');
   await remoteCall.callRemoteTestUtil(
@@ -101,4 +109,18 @@ testcase.showGridViewKeyboardSelectionA11y = async () => {
 testcase.showGridViewMouseSelectionA11y = async () => {
   const isGridView = true;
   return testcase.fileListMouseSelectionA11y(isGridView);
+};
+
+/**
+ * Tests that Grid View shows "Folders" and "Files" titles before folders and
+ * files respectively.
+ */
+testcase.showGridViewTitles = async () => {
+  const appId = await showGridView(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
+
+  const titles = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, ['.thumbnail-grid .grid-title']);
+  chrome.test.assertEq(2, titles.length, 'Grid view should show 2 titles');
+  const titleTexts = titles.map((title) => title.text).sort();
+  chrome.test.checkDeepEq(['Files', 'Folders'], titleTexts);
 };

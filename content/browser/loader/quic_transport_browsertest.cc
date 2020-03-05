@@ -91,9 +91,12 @@ class QuicTransportSimpleServerWithThread final {
   std::unique_ptr<base::Thread> io_thread_;
 };
 
-class QuicTransportTest : public ContentBrowserTest {
+class QuicTransportBrowserTest : public ContentBrowserTest {
  public:
-  QuicTransportTest() : server_({}) { server_.Start(); }
+  QuicTransportBrowserTest() : server_({}) {
+    quic::QuicEnableVersion(quic::DefaultVersionForQuicTransport());
+    server_.Start();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
@@ -103,9 +106,9 @@ class QuicTransportTest : public ContentBrowserTest {
         switches::kOriginToForceQuicOn,
         base::StringPrintf("localhost:%d", server_.server_address().port()));
     command_line->AppendSwitch(switches::kEnableQuic);
-    // TODO(crbug.com/1055027): Don't hardcode the ALPN string.
-    command_line->AppendSwitchASCII(switches::kQuicVersion,
-                                    base::StringPrintf("h3-26"));
+    command_line->AppendSwitchASCII(
+        switches::kQuicVersion,
+        quic::AlpnForVersion(quic::DefaultVersionForQuicTransport()));
     // The value is calculated from net/data/ssl/certificates/quic-chain.pem.
     command_line->AppendSwitchASCII(
         network::switches::kIgnoreCertificateErrorsSPKIList,
@@ -129,10 +132,11 @@ class QuicTransportTest : public ContentBrowserTest {
   }
 
  protected:
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   QuicTransportSimpleServerWithThread server_;
 };
 
-IN_PROC_BROWSER_TEST_F(QuicTransportTest, Echo) {
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, Echo) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
@@ -171,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportTest, Echo) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
-IN_PROC_BROWSER_TEST_F(QuicTransportTest, ClientIndicationFailure) {
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, ClientIndicationFailure) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
@@ -204,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(QuicTransportTest, ClientIndicationFailure) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
-IN_PROC_BROWSER_TEST_F(QuicTransportTest, CreateSendStream) {
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CreateSendStream) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));

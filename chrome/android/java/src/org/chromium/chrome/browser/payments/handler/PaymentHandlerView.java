@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments.handler;
 
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +32,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     private final FrameLayout mContentView;
     private final ThinWebView mThinWebView;
     private final WebContents mWebContents;
-    private final Handler mReflowHandler = new Handler();
     private final int mTabHeight;
     private final int mToolbarHeightPx;
     private final ChromeActivity mActivity;
@@ -85,13 +83,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      *         in pixels.
      */
     /* package */ void onContentVisibleHeightChanged(int heightPx) {
-        // Reflow the web-content when the bottom-sheet size stops changing.
-        mReflowHandler.removeCallbacksAndMessages(null);
-        mReflowHandler.postDelayed(() -> reflowWebContents(heightPx), /*delayMillis=*/100);
-    }
-
-    /* Resize ThinWebView to reflow the web-contents. */
-    private void reflowWebContents(int heightPx) {
         // Scale mThinWebView to make the web-content fit into the visible content area of the
         // PaymentHandler UI.
         if (mThinWebView.getView() == null || mWebContents.isDestroyed()) return;
@@ -118,7 +109,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 
     @Override
     public float getFullHeightRatio() {
-        return 0.9f;
+        return BottomSheetContent.HeightMode.WRAP_CONTENT;
     }
 
     @Override
@@ -135,7 +126,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 
     @Override
     public void destroy() {
-        mReflowHandler.removeCallbacksAndMessages(null);
         mThinWebView.destroy();
     }
 

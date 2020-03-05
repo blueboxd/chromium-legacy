@@ -15,6 +15,12 @@ cr.define('settings_privacy_page', function() {
       /** @type {SettingsPrivacyPageElement} */
       let page;
 
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: false,
+        });
+      });
+
       setup(function() {
         testMetricsBrowserProxy = new TestMetricsBrowserProxy();
         settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
@@ -117,6 +123,12 @@ cr.define('settings_privacy_page', function() {
       /** @type {SettingsPrivacyPageElement} */
       let page;
 
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: false,
+        });
+      });
+
       setup(function() {
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
@@ -140,6 +152,12 @@ cr.define('settings_privacy_page', function() {
     suite('PrivacyPage', function() {
       /** @type {SettingsPrivacyPageElement} */
       let page;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: false,
+        });
+      });
 
       setup(function() {
         const testBrowserProxy = new TestPrivacyPageBrowserProxy();
@@ -182,8 +200,9 @@ cr.define('settings_privacy_page', function() {
       });
 
       test('safeBrowsingReportingToggle', function() {
-        const safeBrowsingToggle = page.$.safeBrowsingToggle;
-        const safeBrowsingReportingToggle = page.$.safeBrowsingReportingToggle;
+        const safeBrowsingToggle = page.$$('#safeBrowsingToggle');
+        const safeBrowsingReportingToggle =
+            page.$$('#safeBrowsingReportingToggle');
         assertTrue(safeBrowsingToggle.checked);
         assertFalse(safeBrowsingReportingToggle.disabled);
         assertTrue(safeBrowsingReportingToggle.checked);
@@ -200,6 +219,76 @@ cr.define('settings_privacy_page', function() {
         assertTrue(safeBrowsingToggle.checked);
         assertFalse(safeBrowsingReportingToggle.disabled);
         assertTrue(safeBrowsingReportingToggle.checked);
+      });
+
+      test('ElementVisibility', async function() {
+        await test_util.flushTasks();
+        assertFalse(test_util.isChildVisible(page, '#cookiesLinkRow'));
+        assertFalse(test_util.isChildVisible(page, '#securityLinkRow'));
+        assertFalse(test_util.isChildVisible(page, '#permissionsLinkRow'));
+
+        assertTrue(test_util.isChildVisible(page, '#clearBrowsingData'));
+        assertTrue(
+            test_util.isChildVisible(page, '#site-settings-subpage-trigger'));
+        assertTrue(test_util.isChildVisible(page, '#moreExpansion'));
+
+        page.$$('#moreExpansion').click();
+
+        assertTrue(test_util.isChildVisible(page, '#safeBrowsingToggle'));
+        assertTrue(
+            test_util.isChildVisible(page, '#passwordsLeakDetectionToggle'));
+        assertTrue(
+            test_util.isChildVisible(page, '#safeBrowsingReportingToggle'));
+        assertTrue(test_util.isChildVisible(page, '#doNotTrack'));
+        assertTrue(test_util.isChildVisible(page, '#canMakePaymentToggle'));
+        if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
+          assertTrue(
+              test_util.isChildVisible(page, '#security-keys-subpage-trigger'));
+        }
+      });
+    });
+  }
+
+  function registerPrivacyPageRedesignTests() {
+    suite('PrivacyPageRedesignEnabled', function() {
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: true,
+        });
+      });
+
+      setup(function() {
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+        return test_util.flushTasks();
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('ElementVisibility', function() {
+        assertTrue(test_util.isChildVisible(page, '#clearBrowsingData'));
+        assertTrue(test_util.isChildVisible(page, '#cookiesLinkRow'));
+        assertTrue(test_util.isChildVisible(page, '#securityLinkRow'));
+        assertTrue(test_util.isChildVisible(page, '#permissionsLinkRow'));
+
+        ['#site-settings-subpage-trigger',
+         '#moreExpansion',
+         '#safeBrowsingToggle',
+         '#passwordsLeakDetectionToggle',
+         '#safeBrowsingToggle',
+         '#safeBrowsingReportingToggle',
+         '#doNotTrack',
+         '#canMakePaymentToggle',
+         '#security-keys-subpage-trigger',
+        ].forEach(selector => {
+          assertFalse(test_util.isChildVisible(page, selector));
+        });
       });
     });
   }
@@ -224,6 +313,12 @@ cr.define('settings_privacy_page', function() {
             .queryEffectiveChildren('settings-subpage')
             .queryEffectiveChildren('#block-autoplay-setting');
       }
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: false,
+        });
+      });
 
       setup(() => {
         loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
@@ -325,6 +420,7 @@ cr.define('settings_privacy_page', function() {
   return {
     registerNativeCertificateManagerTests,
     registerPrivacyPageTests,
+    registerPrivacyPageRedesignTests,
     registerPrivacyPageSoundTests,
     registerUMALoggingTests,
   };

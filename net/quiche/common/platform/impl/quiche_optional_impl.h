@@ -12,6 +12,8 @@ namespace quiche {
 template <typename T>
 using QuicheOptionalImpl = base::Optional<T>;
 
+#define QuicheNullOptImpl base::nullopt
+
 }  // namespace quiche
 
 #endif  // NET_QUICHE_COMMON_PLATFORM_IMPL_QUICHE_OPTIONAL_IMPL_H_

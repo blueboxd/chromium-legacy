@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -185,12 +186,20 @@ base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
   switch (type_) {
     case INSTALL_PROMPT:
     case WEBSTORE_WIDGET_PROMPT:
-      if (extension_->is_app())
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      if (user_is_child()) {
+        id = IDS_EXTENSION_INSTALL_PROMPT_ASK_A_PARENT_BUTTON;
+      } else
+#endif
+          // NOTE: strange indentation formatting is due to intervening
+          // BUILDFLAG above.
+          if (extension_->is_app()) {
         id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
-      else if (extension_->is_theme())
+      } else if (extension_->is_theme()) {
         id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME;
-      else
+      } else {
         id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION;
+      }
       break;
     case RE_ENABLE_PROMPT:
       id = IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON;

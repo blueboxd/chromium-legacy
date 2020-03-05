@@ -155,9 +155,11 @@ class VRServiceImpl : public device::mojom::VRService,
       mojo::PendingRemote<device::mojom::XRSessionController> controller);
   void OnImmersiveSessionCreated(SessionRequestData request,
                                  device::mojom::XRSessionPtr session);
-  void OnSessionCreated(SessionRequestData request,
-                        device::mojom::XRSessionPtr session,
-                        WebXRSessionTracker* session_metrics_tracker);
+  void OnSessionCreated(
+      SessionRequestData request,
+      device::mojom::XRSessionPtr session,
+      mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+          session_metrics_recorder);
 
   scoped_refptr<XRRuntimeManager> runtime_manager_;
   mojo::RemoteSet<device::mojom::XRSessionClient> session_clients_;

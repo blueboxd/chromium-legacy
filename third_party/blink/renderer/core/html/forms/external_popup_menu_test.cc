@@ -178,7 +178,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
   ASSERT_TRUE(select->PopupIsVisible());
 
   WebExternalPopupMenuClient* client =
-      static_cast<ExternalPopupMenu*>(select->Popup());
+      static_cast<ExternalPopupMenu*>(select->PopupForTesting());
   client->DidAcceptIndex(2);
   EXPECT_FALSE(select->PopupIsVisible());
   ASSERT_EQ("2", select->InnerElement().innerText().Utf8());
@@ -198,7 +198,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   ASSERT_TRUE(select->PopupIsVisible());
 
   WebExternalPopupMenuClient* client =
-      static_cast<ExternalPopupMenu*>(select->Popup());
+      static_cast<ExternalPopupMenu*>(select->PopupForTesting());
   int indices[] = {2};
   WebVector<int> indices_vector(indices, 1);
   client->DidAcceptIndices(indices_vector);
@@ -220,7 +220,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect) {
   ASSERT_TRUE(select->PopupIsVisible());
 
   WebExternalPopupMenuClient* client =
-      static_cast<ExternalPopupMenu*>(select->Popup());
+      static_cast<ExternalPopupMenu*>(select->PopupForTesting());
   WebVector<int> indices;
   client->DidAcceptIndices(indices);
   EXPECT_FALSE(select->PopupIsVisible());

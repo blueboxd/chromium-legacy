@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
-#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -192,24 +191,11 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
   if (web_contents_ != contents) {
     if (web_contents_) {
-      auto* metrics_helper =
-          SessionMetricsHelper::FromWebContents(web_contents_);
-      metrics_helper->SetWebVREnabled(false);
-      metrics_helper->SetVRActive(false);
       if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents_))
         browser->GetBubbleManager()->RemoveBubbleManagerObserver(this);
       DesktopMediaPickerManager::Get()->RemoveObserver(this);
     }
     if (contents) {
-      auto* metrics_helper = SessionMetricsHelper::FromWebContents(contents);
-      if (!metrics_helper) {
-        metrics_helper = SessionMetricsHelper::CreateForWebContents(
-            contents, Mode::kWebXrVrPresentation);
-      } else {
-        metrics_helper->SetWebVREnabled(true);
-        metrics_helper->SetVRActive(true);
-      }
-      metrics_helper->RecordVrStartAction(VrStartAction::kPresentationRequest);
       if (Browser* browser = chrome::FindBrowserWithWebContents(contents))
         browser->GetBubbleManager()->AddBubbleManagerObserver(this);
       DesktopMediaPickerManager::Get()->AddObserver(this);
@@ -270,7 +256,8 @@ void VRUiHostImpl::SetFramesThrottled(bool throttled) {
 void VRUiHostImpl::SetVRDisplayInfo(
     device::mojom::VRDisplayInfoPtr display_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DVLOG(1) << __func__;
+  // On Windows this is getting logged every frame, so set to 3.
+  DVLOG(3) << __func__;
 
   if (!IsValidInfo(display_info)) {
     XRRuntimeManager::ExitImmersivePresentation();

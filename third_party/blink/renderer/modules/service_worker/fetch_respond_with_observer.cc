@@ -323,8 +323,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     auto initiator_origin =
         url::Origin::Create(GURL(service_worker_global_scope->Url()));
     if (network::CrossOriginResourcePolicy::IsBlockedByHeaderValue(
-            request_url_, initiator_origin, corp_header_value, request_mode_,
-            initiator_origin, requestor_coep_)) {
+            request_url_, request_url_, initiator_origin, corp_header_value,
+            request_mode_, initiator_origin, requestor_coep_)) {
       OnResponseRejected(ServiceWorkerResponseError::kDisallowedByCorp);
       return;
     }

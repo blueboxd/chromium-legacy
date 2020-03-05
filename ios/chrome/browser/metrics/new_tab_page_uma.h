@@ -38,10 +38,6 @@ void RecordAction(ChromeBrowserState* browser_state,
                   web::WebState* web_state,
                   ActionType action);
 
-// DEPRECATED -- use the version above which passes web_state instead.
-// TODO(crbug.com/1032550) : Remove this function.
-void RecordAction(ChromeBrowserState* browser_state, ActionType action);
-
 void RecordActionFromOmnibox(ChromeBrowserState* browser_state,
                              web::WebState* web_state,
                              const GURL& url,

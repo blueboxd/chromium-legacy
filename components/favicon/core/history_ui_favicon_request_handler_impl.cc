@@ -117,7 +117,6 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback callback,
-    FaviconRequestPlatform request_platform,
     HistoryUiFaviconRequestOrigin request_origin_for_uma,
     const GURL& icon_url_for_uma) {
   // First attempt to find the icon locally.
@@ -128,8 +127,8 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
           &HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable,
           weak_ptr_factory_.GetWeakPtr(), CanQueryGoogleServer(), page_url,
           desired_size_in_pixel,
-          /*response_callback=*/std::move(callback), request_platform,
-          request_origin_for_uma, icon_url_for_uma, base::Time::Now()),
+          /*response_callback=*/std::move(callback), request_origin_for_uma,
+          icon_url_for_uma, base::Time::Now()),
       &cancelable_task_tracker_);
 }
 
@@ -154,7 +153,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback response_callback,
-    FaviconRequestPlatform platform,
     HistoryUiFaviconRequestOrigin origin_for_uma,
     const GURL& icon_url_for_uma,
     base::Time request_start_time_for_uma,

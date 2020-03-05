@@ -180,6 +180,7 @@ namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
 class BackForwardCacheMetrics;
+class CrossOriginEmbedderPolicyReporter;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -1260,6 +1261,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::CrossOriginEmbedderPolicy policy) {
     cross_origin_embedder_policy_ = policy;
   }
+  CrossOriginEmbedderPolicyReporter* coep_reporter() {
+    return coep_reporter_.get();
+  }
 
   // Semi-formal definition of COOP:
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
@@ -1409,6 +1413,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
+  void ContentsPreferredSizeChanged(const gfx::Size& pref_size) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1736,7 +1741,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::mojom::URLLoaderFactoryParamsPtr
   CreateURLLoaderFactoryParamsForMainWorld(
       const url::Origin& main_world_origin,
-      network::mojom::ClientSecurityStatePtr client_security_state);
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
@@ -2700,6 +2707,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // This time is used to record the last WebXR DOM Overlay setup request.
   base::TimeTicks last_xr_overlay_setup_time_;
+
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

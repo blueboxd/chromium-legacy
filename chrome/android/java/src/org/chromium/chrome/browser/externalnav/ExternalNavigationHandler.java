@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalIntentsSwitches;
@@ -487,12 +486,8 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
     private boolean shouldStayInWebapp(ExternalNavigationParams params) {
-        @WebappScopePolicy.NavigationDirective
-        int webappScopePolicyDirective = mDelegate.applyWebappScopePolicyForUrl(params.getUrl());
-        if (webappScopePolicyDirective
-                == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
+        if (mDelegate.shouldStayInWebapp(params)) {
             if (DEBUG) Log.i(TAG, "Stay in PWA window");
             return true;
         }

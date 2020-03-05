@@ -2939,4 +2939,68 @@ TEST_F(NestedFlexLayoutTest, Layout_Flex) {
   EXPECT_EQ(gfx::Rect(6, 2, 1, 6), grandchild(2, 2)->bounds());
 }
 
+TEST_F(NestedFlexLayoutTest, UsingDefaultFlexRule) {
+  AddChildren(2);
+  AddGrandchild(1, gfx::Size(5, 5));
+  AddGrandchild(2, gfx::Size(5, 5));
+  AddGrandchild(2, gfx::Size(5, 5));
+
+  child(1)->SetProperty(
+      kFlexBehaviorKey,
+      FlexSpecification(layout(1)->GetDefaultFlexRule()).WithOrder(2));
+  child(2)->SetProperty(kFlexBehaviorKey,
+                        FlexSpecification(layout(2)->GetDefaultFlexRule()));
+  grandchild(1, 1)->SetProperty(kFlexBehaviorKey, kUnboundedScaleToZero);
+  grandchild(2, 1)->SetProperty(kFlexBehaviorKey, kDropOut);
+  grandchild(2, 2)->SetProperty(kFlexBehaviorKey, kDropOut);
+
+  // Extra flex space is allocated to the first child view.
+  host_->SetSize(gfx::Size(17, 5));
+  host_->Layout();
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_EQ(gfx::Size(7, 5), child(1)->size());
+  EXPECT_TRUE(grandchild(1, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(7, 5), grandchild(1, 1)->size());
+  EXPECT_TRUE(child(2)->GetVisible());
+  EXPECT_EQ(gfx::Size(10, 5), child(2)->size());
+  EXPECT_TRUE(grandchild(2, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 1)->size());
+  EXPECT_TRUE(grandchild(2, 2)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 2)->size());
+
+  // Leftover flex space is still allocated to the first child view even after
+  // one of the grandchildren drops out.
+  host_->SetSize(gfx::Size(8, 5));
+  host_->Layout();
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_EQ(gfx::Size(3, 5), child(1)->size());
+  EXPECT_TRUE(grandchild(1, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(3, 5), grandchild(1, 1)->size());
+  EXPECT_TRUE(child(2)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), child(2)->size());
+  EXPECT_TRUE(grandchild(2, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 1)->size());
+  EXPECT_FALSE(grandchild(2, 2)->GetVisible());
+
+  // Leftover flex space is still allocated to the first child view even after
+  // two of the grandchildren drop out.
+  host_->SetSize(gfx::Size(4, 5));
+  host_->Layout();
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_EQ(gfx::Size(4, 5), child(1)->size());
+  EXPECT_TRUE(grandchild(1, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(4, 5), grandchild(1, 1)->size());
+  EXPECT_FALSE(child(2)->GetVisible());
+
+  // If there is no leftover space, the first child view is hidden.
+  host_->SetSize(gfx::Size(5, 5));
+  host_->Layout();
+  EXPECT_FALSE(child(1)->GetVisible());
+  EXPECT_TRUE(child(2)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), child(2)->size());
+  EXPECT_TRUE(grandchild(2, 1)->GetVisible());
+  EXPECT_EQ(gfx::Size(5, 5), grandchild(2, 1)->size());
+  EXPECT_FALSE(grandchild(2, 2)->GetVisible());
+}
+
 }  // namespace views

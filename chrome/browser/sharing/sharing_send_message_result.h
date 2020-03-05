@@ -19,7 +19,8 @@ enum class SharingSendMessageResult {
   kAckTimeout = 4,
   kInternalError = 5,
   kEncryptionError = 6,
-  kMaxValue = kEncryptionError,
+  kCommitTimeout = 7,
+  kMaxValue = kCommitTimeout,
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_SEND_MESSAGE_RESULT_H_

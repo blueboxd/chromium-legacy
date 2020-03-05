@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/web_application_info.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -98,15 +99,15 @@ std::vector<SquareSizePx> GetSquareSizePxs(
 void SetWebAppFileHandlers(
     const std::vector<blink::Manifest::FileHandler>& file_handlers,
     WebApp* web_app) {
-  WebApp::FileHandlers web_app_file_handlers;
+  apps::FileHandlers web_app_file_handlers;
   for (const auto& file_handler : file_handlers) {
-    WebApp::FileHandler web_app_file_handler;
+    apps::FileHandler web_app_file_handler;
     web_app_file_handler.action = file_handler.action;
 
     // Convert from string16 to string in the accept map.
     for (const auto& pair : file_handler.accept) {
-      WebApp::FileHandlerAccept accept_entry;
-      accept_entry.mimetype = base::UTF16ToUTF8(pair.first);
+      apps::FileHandler::AcceptEntry accept_entry;
+      accept_entry.mime_type = base::UTF16ToUTF8(pair.first);
       for (const auto& file_extension : pair.second) {
         // Remove leading ".".
         const auto utf8_file_extension = base::UTF16ToUTF8(file_extension);

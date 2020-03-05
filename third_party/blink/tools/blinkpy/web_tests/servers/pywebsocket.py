@@ -43,7 +43,7 @@ _DEFAULT_WS_PORT = 8880
 
 class PyWebSocket(server_base.ServerBase):
 
-    def __init__(self, port_obj, output_dir):
+    def __init__(self, port_obj, output_dir, python_executable=sys.executable):
         super(PyWebSocket, self).__init__(port_obj, output_dir)
         self._name = 'pywebsocket'
         self._log_prefixes = (_WS_LOG_PREFIX,)
@@ -60,14 +60,23 @@ class PyWebSocket(server_base.ServerBase):
         pywebsocket_script = self._filesystem.join(pywebsocket_base, 'mod_pywebsocket', 'standalone.py')
 
         self._start_cmd = [
-            sys.executable, '-u', pywebsocket_script,
-            '--server-host', 'localhost',
-            '--port', str(self._port),
-            '--document-root', self._web_socket_tests,
-            '--scan-dir', self._web_socket_tests,
-            '--cgi-paths', '/',
-            '--log-file', self._error_log,
-            '--websock-handlers-map-file', self._filesystem.join(self._web_socket_tests, 'handler_map.txt'),
+            python_executable,
+            '-u',
+            pywebsocket_script,
+            '--server-host',
+            'localhost',
+            '--port',
+            str(self._port),
+            '--document-root',
+            self._web_socket_tests,
+            '--scan-dir',
+            self._web_socket_tests,
+            '--cgi-paths',
+            '/',
+            '--log-file',
+            self._error_log,
+            '--websock-handlers-map-file',
+            self._filesystem.join(self._web_socket_tests, 'handler_map.txt'),
         ]
         # TODO(burnik): Check if this is really needed (and why). If not, just set PYTHONPATH.
         self._env = self._port_obj.setup_environ_for_server()

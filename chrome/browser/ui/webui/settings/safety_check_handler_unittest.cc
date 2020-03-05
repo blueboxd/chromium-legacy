@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/ui/webui/help/test_version_updater.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
@@ -87,6 +88,12 @@ bool SafetyCheckHandlerTest::HasSafetyCheckStatusChangedWithData(
     }
   }
   return false;
+}
+
+TEST_F(SafetyCheckHandlerTest, PerformSafetyCheck_MetricsRecorded) {
+  base::UserActionTester user_action_tester;
+  safety_check_->PerformSafetyCheck();
+  EXPECT_EQ(1, user_action_tester.GetActionCount("SafetyCheck.Started"));
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Updated) {

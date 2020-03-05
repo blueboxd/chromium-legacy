@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
@@ -61,6 +63,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+
     // The dialog we are testing.
     private PhotoPickerDialog mDialog;
 
@@ -82,26 +87,35 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     private List<PickerBitmap> mCurrentPhotoSelection;
 
     // A callback that fires when something is selected in the dialog.
-    public final CallbackHelper onSelectionCallback = new CallbackHelper();
+    public final CallbackHelper mOnSelectionCallback = new CallbackHelper();
 
     // A callback that fires when an action is taken in the dialog (cancel/done etc).
-    public final CallbackHelper onActionCallback = new CallbackHelper();
+    public final CallbackHelper mOnActionCallback = new CallbackHelper();
 
     // A callback that fires when the decoder is ready.
-    public final CallbackHelper onDecoderReadyCallback = new CallbackHelper();
+    public final CallbackHelper mOnDecoderReadyCallback = new CallbackHelper();
+
+    // A callback that fires when the decoder is idle.
+    public final CallbackHelper mOnDecoderIdleCallback = new CallbackHelper();
 
     // A callback that fires when a PickerBitmapView is animated in the dialog.
-    public final CallbackHelper onAnimatedCallback = new CallbackHelper();
+    public final CallbackHelper mOnAnimatedCallback = new CallbackHelper();
 
     // A callback that fires when playback starts for a video.
-    public final CallbackHelper onVideoPlayingCallback = new CallbackHelper();
+    public final CallbackHelper mOnVideoPlayingCallback = new CallbackHelper();
 
     // A callback that fires when playback ends for a video.
-    public final CallbackHelper onVideoEndedCallback = new CallbackHelper();
+    public final CallbackHelper mOnVideoEndedCallback = new CallbackHelper();
 
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
+        PickerVideoPlayer.setProgressCallback(this);
+        PickerBitmapView.setAnimationListenerForTest(this);
+        DecoderServiceHost.setStatusCallback(this);
+    }
+
+    private void setupTestFiles() {
         mTestFiles = new ArrayList<>();
         mTestFiles.add(new PickerBitmap(Uri.parse("a"), 5L, PickerBitmap.TileTypes.PICTURE));
         mTestFiles.add(new PickerBitmap(Uri.parse("b"), 4L, PickerBitmap.TileTypes.PICTURE));
@@ -110,10 +124,33 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mTestFiles.add(new PickerBitmap(Uri.parse("e"), 1L, PickerBitmap.TileTypes.PICTURE));
         mTestFiles.add(new PickerBitmap(Uri.parse("f"), 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
-        PickerVideoPlayer.setProgressCallback(this);
-        PickerBitmapView.setAnimationListenerForTest(this);
+    }
 
-        DecoderServiceHost.setStatusCallback(this);
+    private void setupTestFilesWith80ColoredSquares() {
+        mTestFiles = new ArrayList<>();
+        String green = "green100x100.jpg";
+        String yellow = "yellow100x100.jpg";
+        String red = "red100x100.jpg";
+        String blue = "blue100x100.jpg";
+        String filePath =
+                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/photo_picker/");
+
+        // The actual value of lastModified is not important, except that each entry must have a
+        // unique lastModified stamp in order to ensure a stable order (tiles are ordered in
+        // descending order by lastModified). Also, by decrementing this when adding entries (as
+        // opposed to incrementing) the tiles will appear in same order as they are added.
+        long lastModified = 1000;
+        for (int i = 0; i < 50; ++i) {
+            mTestFiles.add(new PickerBitmap(Uri.fromFile(new File(filePath + green)),
+                    lastModified--, PickerBitmap.TileTypes.PICTURE));
+            mTestFiles.add(new PickerBitmap(Uri.fromFile(new File(filePath + yellow)),
+                    lastModified--, PickerBitmap.TileTypes.PICTURE));
+            mTestFiles.add(new PickerBitmap(Uri.fromFile(new File(filePath + red)), lastModified--,
+                    PickerBitmap.TileTypes.PICTURE));
+            mTestFiles.add(new PickerBitmap(Uri.fromFile(new File(filePath + blue)), lastModified--,
+                    PickerBitmap.TileTypes.PICTURE));
+        }
+        PickerCategoryView.setTestFiles(mTestFiles);
     }
 
     // PhotoPickerDialog.PhotoPickerListener:
@@ -123,26 +160,31 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mLastActionRecorded = action;
         mLastSelectedPhotos = photos != null ? photos.clone() : null;
         if (mLastSelectedPhotos != null) Arrays.sort(mLastSelectedPhotos);
-        onActionCallback.notifyCalled();
+        mOnActionCallback.notifyCalled();
     }
 
     // DecoderServiceHost.DecoderStatusCallback:
 
     @Override
     public void serviceReady() {
-        onDecoderReadyCallback.notifyCalled();
+        mOnDecoderReadyCallback.notifyCalled();
+    }
+
+    @Override
+    public void decoderIdle() {
+        mOnDecoderIdleCallback.notifyCalled();
     }
 
     // PickerCategoryView.VideoStatusCallback:
 
     @Override
     public void onVideoPlaying() {
-        onVideoPlayingCallback.notifyCalled();
+        mOnVideoPlayingCallback.notifyCalled();
     }
 
     @Override
     public void onVideoEnded() {
-        onVideoEndedCallback.notifyCalled();
+        mOnVideoEndedCallback.notifyCalled();
     }
 
     // SelectionObserver:
@@ -150,17 +192,17 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Override
     public void onSelectionStateChange(List<PickerBitmap> photosSelected) {
         mCurrentPhotoSelection = new ArrayList<>(photosSelected);
-        onSelectionCallback.notifyCalled();
+        mOnSelectionCallback.notifyCalled();
     }
 
     // AnimationListener:
     @Override
-    public void onAnimationStart(Animation animation) {
-        onAnimatedCallback.notifyCalled();
-    }
+    public void onAnimationStart(Animation animation) {}
 
     @Override
-    public void onAnimationEnd(Animation animation) {}
+    public void onAnimationEnd(Animation animation) {
+        mOnAnimatedCallback.notifyCalled();
+    }
 
     @Override
     public void onAnimationRepeat(Animation animation) {}
@@ -192,8 +234,14 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     private void waitForDecoder() throws Exception {
-        int callCount = onDecoderReadyCallback.getCallCount();
-        onDecoderReadyCallback.waitForCallback(
+        int callCount = mOnDecoderReadyCallback.getCallCount();
+        mOnDecoderReadyCallback.waitForCallback(
+                callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    }
+
+    private void waitForDecoderIdle() throws Exception {
+        int callCount = mOnDecoderIdleCallback.getCallCount();
+        mOnDecoderIdleCallback.waitForCallback(
                 callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
@@ -201,10 +249,10 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         RecyclerView recyclerView = getRecyclerView();
         RecyclerViewTestUtils.waitForView(recyclerView, position);
 
-        int callCount = onSelectionCallback.getCallCount();
+        int callCount = mOnSelectionCallback.getCallCount();
         TouchCommon.singleClickView(
                 recyclerView.findViewHolderForAdapterPosition(position).itemView);
-        onSelectionCallback.waitForCallback(callCount, 1);
+        mOnSelectionCallback.waitForCallback(callCount, 1);
 
         // Validate the correct selection took place.
         Assert.assertEquals(expectedSelectionCount, mCurrentPhotoSelection.size());
@@ -216,9 +264,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mDialog.findViewById(R.id.action_bar);
         Button done = (Button) toolbar.findViewById(R.id.done);
-        int callCount = onActionCallback.getCallCount();
+        int callCount = mOnActionCallback.getCallCount();
         TouchCommon.singleClickView(done);
-        onActionCallback.waitForCallback(callCount, 1);
+        mOnActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
     }
 
@@ -227,17 +275,17 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
         View cancel = new View(mActivityTestRule.getActivity());
-        int callCount = onActionCallback.getCallCount();
+        int callCount = mOnActionCallback.getCallCount();
         categoryView.onClick(cancel);
-        onActionCallback.waitForCallback(callCount, 1);
+        mOnActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(PhotoPickerAction.CANCEL, mLastActionRecorded);
     }
 
     private void playVideo(Uri uri) throws Exception {
-        int callCount = onVideoPlayingCallback.getCallCount();
+        int callCount = mOnVideoPlayingCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mDialog.getCategoryViewForTesting().startVideoPlaybackAsync(uri); });
-        onVideoPlayingCallback.waitForCallback(callCount, 1);
+        mOnVideoPlayingCallback.waitForCallback(callCount, 1);
     }
 
     private void dismissDialog() {
@@ -247,6 +295,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Test
     @LargeTest
     public void testNoSelection() throws Throwable {
+        setupTestFiles();
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
@@ -264,6 +313,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Test
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
+        setupTestFiles();
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
@@ -272,14 +322,14 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         int expectedSelectionCount = 1;
 
         // Click the first view.
-        int callCount = onAnimatedCallback.getCallCount();
+        int callCount = mOnAnimatedCallback.getCallCount();
         clickView(0, expectedSelectionCount);
-        onAnimatedCallback.waitForCallback(callCount, 1);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
 
         // Click the second view.
-        callCount = onAnimatedCallback.getCallCount();
+        callCount = mOnAnimatedCallback.getCallCount();
         clickView(1, expectedSelectionCount);
-        onAnimatedCallback.waitForCallback(callCount, 1);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
 
         clickDone();
 
@@ -293,6 +343,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Test
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
+        setupTestFiles();
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         Assert.assertTrue(mDialog.isShowing());
         waitForDecoder();
@@ -301,19 +352,19 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         int expectedSelectionCount = 1;
 
         // Click first view.
-        int callCount = onAnimatedCallback.getCallCount();
+        int callCount = mOnAnimatedCallback.getCallCount();
         clickView(0, expectedSelectionCount++);
-        onAnimatedCallback.waitForCallback(callCount, 1);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
 
         // Click third view.
-        callCount = onAnimatedCallback.getCallCount();
+        callCount = mOnAnimatedCallback.getCallCount();
         clickView(2, expectedSelectionCount++);
-        onAnimatedCallback.waitForCallback(callCount, 1);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
 
         // Click fifth view.
-        callCount = onAnimatedCallback.getCallCount();
+        callCount = mOnAnimatedCallback.getCallCount();
         clickView(4, expectedSelectionCount++);
-        onAnimatedCallback.waitForCallback(callCount, 1);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
 
         clickDone();
 
@@ -335,6 +386,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
                 () -> { return StrictMode.allowThreadDiskReads(); });
 
         try {
+            setupTestFiles();
             createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
             Assert.assertTrue(mDialog.isShowing());
             waitForDecoder();
@@ -348,12 +400,12 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
             String fileName = "chrome/test/data/android/photo_picker/noogler_1sec.mp4";
             File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
 
-            int callCount = onVideoEndedCallback.getCallCount();
+            int callCount = mOnVideoEndedCallback.getCallCount();
 
             playVideo(Uri.fromFile(file));
             Assert.assertTrue(container.getVisibility() == View.VISIBLE);
 
-            onVideoEndedCallback.waitForCallback(callCount, 1);
+            mOnVideoEndedCallback.waitForCallback(callCount, 1);
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 View mute = categoryView.findViewById(R.id.mute);
@@ -361,18 +413,50 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
             });
 
             // Clicking the play button should restart playback.
-            callCount = onVideoEndedCallback.getCallCount();
+            callCount = mOnVideoEndedCallback.getCallCount();
 
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 View playbutton = categoryView.findViewById(R.id.video_player_play_button);
                 categoryView.getVideoPlayerForTesting().onClick(playbutton);
             });
 
-            onVideoEndedCallback.waitForCallback(callCount, 1);
+            mOnVideoEndedCallback.waitForCallback(callCount, 1);
 
             dismissDialog();
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(() -> { StrictMode.setThreadPolicy(oldPolicy); });
         }
+    }
+
+    @Test
+    @LargeTest
+    @Feature("RenderTest")
+    public void testBorderPersistence() throws Exception {
+        setupTestFilesWith80ColoredSquares();
+        createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
+        waitForDecoderIdle();
+
+        mRenderTestRule.render(mDialog.getCategoryViewForTesting(), "initial_load");
+
+        // Click the first view.
+        int expectedSelectionCount = 1;
+        int callCount = mOnAnimatedCallback.getCallCount();
+        clickView(0, expectedSelectionCount);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
+
+        mRenderTestRule.render(mDialog.getCategoryViewForTesting(), "first_view_clicked");
+
+        // Now test that you can scroll the image out of view and back in again, and the selection
+        // border should be maintained.
+        RecyclerView recyclerView = getRecyclerView();
+        RecyclerViewTestUtils.scrollToBottom(recyclerView);
+
+        callCount = mOnAnimatedCallback.getCallCount();
+        RecyclerViewTestUtils.scrollToView(recyclerView, 0);
+        mOnAnimatedCallback.waitForCallback(callCount, 1);
+
+        mRenderTestRule.render(mDialog.getCategoryViewForTesting(), "first_view_clicked");
+
+        dismissDialog();
     }
 }

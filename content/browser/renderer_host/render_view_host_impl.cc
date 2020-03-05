@@ -400,6 +400,9 @@ bool RenderViewHostImpl::CreateRenderView(
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
+
+  if (enabled_preferred_size_mode_)
+    EnablePreferredSizeMode();
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {
@@ -823,8 +826,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
-                        OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -980,7 +981,12 @@ void RenderViewHostImpl::OnHardwareConfigurationChanged() {
 }
 
 void RenderViewHostImpl::EnablePreferredSizeMode() {
-  Send(new ViewMsg_EnablePreferredSizeChangedMode(GetRoutingID()));
+  if (is_active()) {
+    static_cast<RenderFrameHostImpl*>(GetMainFrame())
+        ->GetAssociatedLocalMainFrame()
+        ->EnablePreferredSizeChangedMode();
+  }
+  enabled_preferred_size_mode_ = true;
 }
 
 void RenderViewHostImpl::ExecutePluginActionAtLocation(

@@ -14,6 +14,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
+#include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_guts.h"
@@ -223,6 +224,65 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 #pragma mark - private
+
+// Starts up a single chrome window and its UI.
+- (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
+                 needRestoration:(BOOL)needsRestoration {
+  DCHECK(!self.browserViewWrangler);
+  DCHECK(self.appURLLoadingService);
+
+  self.browserViewWrangler = [[BrowserViewWrangler alloc]
+             initWithBrowserState:self.mainController.mainBrowserState
+             webStateListObserver:self
+       applicationCommandEndpoint:self
+      browsingDataCommandEndpoint:self.mainController
+             appURLLoadingService:self.appURLLoadingService];
+
+  // Ensure the main tab model is created. This also creates the BVC.
+  [self.browserViewWrangler createMainBrowser];
+
+  // Only create the restoration helper if the browser state was backed up
+  // successfully.
+  if (needsRestoration) {
+    self.mainController.restoreHelper =
+        [[CrashRestoreHelper alloc] initWithBrowser:self.mainInterface.browser];
+  }
+
+  [self openTabFromLaunchOptions:self.mainController.launchOptions
+              startupInformation:self.mainController
+                        appState:self.mainController.appState];
+
+  [self.mainController scheduleShowPromo];
+
+  // Before bringing up the UI, make sure the launch mode is correct, and
+  // check for previous crashes.
+  BOOL startInIncognito =
+      [[NSUserDefaults standardUserDefaults] boolForKey:kIncognitoCurrentKey];
+  BOOL switchFromIncognito =
+      startInIncognito && ![self.mainController canLaunchInIncognito];
+
+  if (isPostCrashLaunch || switchFromIncognito) {
+    [self clearIOSSpecificIncognitoData];
+    if (switchFromIncognito)
+      [self.browserViewWrangler
+          switchGlobalStateToMode:ApplicationMode::NORMAL];
+  }
+  if (switchFromIncognito)
+    startInIncognito = NO;
+
+  [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
+                                          : ApplicationMode::NORMAL)];
+
+  [self.browserViewWrangler updateDeviceSharingManager];
+
+  if (!self.mainController.startupParameters) {
+    // The startup parameters may create new tabs or navigations. If the restore
+    // infobar is displayed now, it may be dismissed immediately and the user
+    // will never be able to restore the session.
+    [self.mainController.restoreHelper showRestorePrompt];
+    self.mainController.restoreHelper = nil;
+  }
+}
 
 // Determines which UI should be shown on startup, and shows it.
 - (void)createInitialUI:(ApplicationMode)launchMode {

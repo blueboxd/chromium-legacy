@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 
 /**
@@ -32,8 +31,6 @@ public class ExternalNavigationParams {
     /** A redirect handler. */
     private final TabRedirectHandler mRedirectHandler;
 
-    private final Tab mTab;
-
     /** Whether the intent should force a new tab to open. */
     private final boolean mOpenInNewTab;
 
@@ -60,7 +57,7 @@ public class ExternalNavigationParams {
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
-            TabRedirectHandler redirectHandler, Tab tab, boolean openInNewTab,
+            TabRedirectHandler redirectHandler, boolean openInNewTab,
             boolean isBackgroundTabNavigation, boolean isMainFrame, String nativeClientPackageName,
             boolean hasUserGesture,
             boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
@@ -71,7 +68,6 @@ public class ExternalNavigationParams {
         mIsRedirect = isRedirect;
         mApplicationMustBeInForeground = appMustBeInForeground;
         mRedirectHandler = redirectHandler;
-        mTab = tab;
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
         mIsMainFrame = isMainFrame;
@@ -114,11 +110,6 @@ public class ExternalNavigationParams {
     /** @return The redirect handler. */
     public TabRedirectHandler getRedirectHandler() {
         return mRedirectHandler;
-    }
-
-    /** @return The current tab. */
-    public Tab getTab() {
-        return mTab;
     }
 
     /**
@@ -183,8 +174,6 @@ public class ExternalNavigationParams {
         /** A redirect handler. */
         private TabRedirectHandler mRedirectHandler;
 
-        private Tab mTab;
-
         /** Whether the intent should force a new tab to open. */
         private boolean mOpenInNewTab;
 
@@ -235,12 +224,6 @@ public class ExternalNavigationParams {
             return this;
         }
 
-        /** Sets the current tab. */
-        public Builder setTab(Tab tab) {
-            mTab = tab;
-            return this;
-        }
-
         /** Sets whether we want to open the intent URL in new tab, if handled by Chrome. */
         public Builder setOpenInNewTab(boolean v) {
             mOpenInNewTab = v;
@@ -282,10 +265,9 @@ public class ExternalNavigationParams {
         /** @return A fully constructed {@link ExternalNavigationParams} object. */
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
-                    mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler, mTab,
-                    mOpenInNewTab, mIsBackgroundTabNavigation, mIsMainFrame,
-                    mNativeClientPackageName, mHasUserGesture,
-                    mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
+                    mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler, mOpenInNewTab,
+                    mIsBackgroundTabNavigation, mIsMainFrame, mNativeClientPackageName,
+                    mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
         }
     }
 }

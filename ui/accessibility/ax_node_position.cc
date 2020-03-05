@@ -87,6 +87,13 @@ int AXNodePosition::AnchorChildCount() const {
   return int{GetAnchor()->children().size()};
 }
 
+int AXNodePosition::AnchorUnignoredChildCount() const {
+  if (!GetAnchor())
+    return 0;
+
+  return static_cast<int>(GetAnchor()->GetUnignoredChildCount());
+}
+
 int AXNodePosition::AnchorIndexInParent() const {
   return GetAnchor() ? int{GetAnchor()->index_in_parent()} : INVALID_INDEX;
 }

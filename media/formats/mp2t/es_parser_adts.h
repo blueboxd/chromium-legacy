@@ -31,13 +31,14 @@ namespace mp2t {
 
 class MEDIA_EXPORT EsParserAdts : public EsParser {
  public:
-  typedef base::Callback<void(const AudioDecoderConfig&)> NewAudioConfigCB;
+  using NewAudioConfigCB =
+      base::RepeatingCallback<void(const AudioDecoderConfig&)>;
 
-  EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
+  EsParserAdts(NewAudioConfigCB new_audio_config_cb,
                EmitBufferCB emit_buffer_cb,
                bool sbr_in_mimetype);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
+  EsParserAdts(NewAudioConfigCB new_audio_config_cb,
                EmitBufferCB emit_buffer_cb,
                GetDecryptConfigCB get_decrypt_config_cb,
                EncryptionScheme init_encryption_scheme,

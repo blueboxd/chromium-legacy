@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
+#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -198,6 +199,14 @@ void DedicatedWorkerHost::StartScriptLoad(
   service_worker_handle_ = std::make_unique<ServiceWorkerMainResourceHandle>(
       storage_partition_impl->GetServiceWorkerContext());
 
+  const auto& parent_coep =
+      nearest_ancestor_render_frame_host->last_committed_client_security_state()
+          ->cross_origin_embedder_policy;
+  coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
+      worker_process_host_->GetStoragePartition(), script_url,
+      parent_coep.reporting_endpoint,
+      parent_coep.report_only_reporting_endpoint);
+
   WorkerScriptFetchInitiator::Start(
       worker_process_host_->GetID(), script_url, creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
@@ -301,13 +310,17 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver =
           pending_default_factory.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_remote;
+  DCHECK(coep_reporter_);
+  coep_reporter_->Clone(coep_reporter_remote.InitWithNewPipeAndPassReceiver());
 
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForFrame(
           ancestor_render_frame_host, origin_,
           mojo::Clone(ancestor_render_frame_host
                           ->last_committed_client_security_state()),
-          worker_process_host_);
+          std::move(coep_reporter_remote), worker_process_host_);
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),
       /*frame=*/nullptr, worker_process_host_->GetID(),

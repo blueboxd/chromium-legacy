@@ -28,10 +28,15 @@ import org.chromium.ui.base.WindowAndroid;
  * This class should be used only on the UI thread.
  */
 public class NfcSystemLevelSetting {
+    private static Boolean sNfcSupportForTesting;
     private static Boolean sSystemNfcSettingForTesting;
 
     @CalledByNative
-    private static boolean isNfcAccessPossible() {
+    public static boolean isNfcAccessPossible() {
+        if (sNfcSupportForTesting != null) {
+            return sNfcSupportForTesting;
+        }
+
         Context context = ContextUtils.getApplicationContext();
         int permission =
                 context.checkPermission(Manifest.permission.NFC, Process.myPid(), Process.myUid());
@@ -88,6 +93,12 @@ public class NfcSystemLevelSetting {
     @VisibleForTesting
     public static void setNfcSettingForTesting(Boolean enabled) {
         sSystemNfcSettingForTesting = enabled;
+    }
+
+    /** Disable/enable Android NFC support for testing use only. */
+    @VisibleForTesting
+    public static void setNfcSupportForTesting(Boolean enabled) {
+        sNfcSupportForTesting = enabled;
     }
 
     @NativeMethods

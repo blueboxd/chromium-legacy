@@ -1115,19 +1115,14 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"safetyCheckSectionTitle", IDS_SETTINGS_SAFETY_CHECK_SECTION_TITLE},
       {"safetyCheckParentPrimaryLabelBefore",
        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_BEFORE},
-      {"safetyCheckParentPrimaryLabelChecking",
-       IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_CHECKING},
+      {"safetyCheckRunning", IDS_SETTINGS_SAFETY_CHECK_RUNNING},
       {"safetyCheckParentPrimaryLabelAfter",
        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER},
       {"safetyCheckParentButton", IDS_SETTINGS_SAFETY_CHECK_PARENT_BUTTON},
       {"safetyCheckUpdatesPrimaryLabel",
        IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL},
-      {"safetyCheckUpdatesSubLabelDisabledByAdmin",
-       IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_DISABLED_BY_ADMIN},
       {"safetyCheckUpdatesSubLabelFailedOffline",
        IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED_OFFLINE},
-      {"safetyCheckUpdatesSubLabelFailed",
-       IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED},
       {"safetyCheckPasswordsSubLabelSafe",
        IDS_SAFETY_CHECK_PASSWORDS_SUB_LABEL_SAFE},
       {"safetyCheckPasswordsSubLabelCompromisedSingular",
@@ -1154,8 +1149,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_ENABLED},
       {"safetyCheckSafeBrowsingSubLabelDisabled",
        IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED},
-      {"safetyCheckSafeBrowsingSubLabelDisabledByAdmin",
-       IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_ADMIN},
       {"safetyCheckSafeBrowsingSubLabelDisabledByExtension",
        IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_EXTENSION},
       {"safetyCheckSafeBrowsingButton",
@@ -1205,6 +1198,21 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
   html_source->AddBoolean("showSecureDnsSetting",
                           features::kDnsOverHttpsShowUiParam.Get());
+  html_source->AddString(
+      "safetyCheckUpdatesSubLabelFailed",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_FAILED,
+          base::ASCIIToUTF16(chrome::kChromeFixUpdateProblems)));
+  html_source->AddString(
+      "safetyCheckUpdatesSubLabelDisabledByAdmin",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_UPDATES_SUB_LABEL_DISABLED_BY_ADMIN,
+          base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL)));
+  html_source->AddString(
+      "safetyCheckSafeBrowsingSubLabelDisabledByAdmin",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_SUB_LABEL_DISABLED_BY_ADMIN,
+          base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL)));
 
   AddPersonalizationOptionsStrings(html_source);
 }

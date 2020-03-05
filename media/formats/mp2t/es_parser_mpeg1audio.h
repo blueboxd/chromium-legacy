@@ -29,7 +29,8 @@ namespace mp2t {
 
 class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
  public:
-  typedef base::Callback<void(const AudioDecoderConfig&)> NewAudioConfigCB;
+  using NewAudioConfigCB =
+      base::RepeatingCallback<void(const AudioDecoderConfig&)>;
 
   EsParserMpeg1Audio(const NewAudioConfigCB& new_audio_config_cb,
                      EmitBufferCB emit_buffer_cb,

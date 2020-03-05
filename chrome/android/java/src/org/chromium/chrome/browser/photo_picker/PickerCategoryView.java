@@ -341,6 +341,9 @@ public class PickerCategoryView extends RelativeLayout
         processBitmaps();
     }
 
+    @Override
+    public void decoderIdle() {}
+
     // RecyclerView.RecyclerListener:
 
     @Override

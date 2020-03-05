@@ -110,9 +110,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 // started.
 IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
 
-// Used to instruct the RenderView to send back updates to the preferred size.
-IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
@@ -163,10 +160,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
                             GURL /* url */,
                             bool /* result */,
                             std::string /* proxy list */)
-
-// Notifies that the preferred size of the content changed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
-                    gfx::Size /* pref_size */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to access a PPAPI

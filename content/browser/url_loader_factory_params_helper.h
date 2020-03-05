@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_URL_LOADER_FACTORY_PARAMS_HELPER_H_
 #define CONTENT_BROWSER_URL_LOADER_FACTORY_PARAMS_HELPER_H_
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/origin.h"
 
@@ -43,6 +45,8 @@ class URLLoaderFactoryParamsHelper {
       RenderFrameHostImpl* frame,
       const url::Origin& origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
       RenderProcessHost* process);
 
   // Creates URLLoaderFactoryParams to be used by |isolated_world_origin| hosted

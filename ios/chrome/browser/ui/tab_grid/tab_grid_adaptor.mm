@@ -9,7 +9,6 @@
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
-#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"

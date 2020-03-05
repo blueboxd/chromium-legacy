@@ -2681,6 +2681,49 @@ WebSize WebViewImpl::ContentsPreferredMinimumSize() {
   return IntSize(width_scaled, height_scaled);
 }
 
+void WebViewImpl::UpdatePreferredSize() {
+  // We don't always want to send the change messages over IPC, only if we've
+  // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
+  // message.
+  if (!send_preferred_size_changes_ || !MainFrameImpl())
+    return;
+
+  if (!needs_preferred_size_update_)
+    return;
+  needs_preferred_size_update_ = false;
+
+  WebSize web_size = ContentsPreferredMinimumSize();
+  WebRect web_rect(0, 0, web_size.width, web_size.height);
+  MainFrameImpl()->LocalRootFrameWidget()->Client()->ConvertViewportToWindow(
+      &web_rect);
+  WebSize size(web_rect.width, web_rect.height);
+
+  if (size != preferred_size_) {
+    preferred_size_ = size;
+    local_main_frame_host_remote_->ContentsPreferredSizeChanged(
+        gfx::Size(size));
+  }
+}
+
+void WebViewImpl::EnablePreferredSizeChangedMode() {
+  if (send_preferred_size_changes_)
+    return;
+  send_preferred_size_changes_ = true;
+  needs_preferred_size_update_ = true;
+
+  // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
+  // force an update here which will call |DidUpdateMainFrameLayout|.
+  if (MainFrameWidget()) {
+    MainFrameWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kLayout,
+                                       DocumentUpdateReason::kSizeChange);
+  }
+
+  // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
+  // We explicitly update the preferred size here to ensure the preferred size
+  // notification is sent.
+  UpdatePreferredSize();
+}
+
 float WebViewImpl::DefaultMinimumPageScaleFactor() const {
   return GetPageScaleConstraintsSet().DefaultConstraints().minimum_scale;
 }
@@ -3006,6 +3049,7 @@ void WebViewImpl::MainFrameLayoutUpdated() {
     return;
 
   AsView().client->DidUpdateMainFrameLayout();
+  needs_preferred_size_update_ = true;
 }
 
 void WebViewImpl::DidChangeContentsSize() {
@@ -3426,6 +3470,10 @@ void WebViewImpl::ClearAutoplayFlags() {
 
 int32_t WebViewImpl::AutoplayFlagsForTest() {
   return AsView().page->AutoplayFlags();
+}
+
+WebSize WebViewImpl::GetPreferredSizeForTest() {
+  return preferred_size_;
 }
 
 void WebViewImpl::StopDeferringMainFrameUpdate() {

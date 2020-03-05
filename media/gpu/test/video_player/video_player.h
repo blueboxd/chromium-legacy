@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_PLAYER_H_
 #define MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_PLAYER_H_
 
+#include <limits.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -155,7 +156,8 @@ class VideoPlayer {
 
   // Automatically pause decoding once the video player has seen the specified
   // number of events occur.
-  std::pair<VideoPlayerEvent, size_t> play_until_;
+  std::pair<VideoPlayerEvent, size_t> play_until_{
+      VideoPlayerEvent::kNumEvents, std::numeric_limits<size_t>::max()};
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VideoPlayer);

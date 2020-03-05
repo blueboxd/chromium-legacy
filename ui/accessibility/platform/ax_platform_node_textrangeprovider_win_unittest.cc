@@ -4954,9 +4954,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ 12,
-      /*expected_text*/ L".3..4..5..13..14..11.",
-      /*expected_count*/ 12);
+      /*count*/ 13,
+      /*expected_text*/ L".3..4..5.\xFFFC.13..14..11.",
+      /*expected_count*/ 13);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

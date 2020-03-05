@@ -56,6 +56,9 @@ extern const char kChooserUsbOverviewURL[];
 // Link to the forum for Chrome Beta.
 extern const char kChromeBetaForumURL[];
 
+// The URL for the help center article to fix Chrome update problems.
+extern const char kChromeFixUpdateProblems[];
+
 // Link to the release notes page managed by marketing.
 extern const char kChromeReleaseNotesURL[];
 
@@ -219,6 +222,9 @@ extern const char kSyncLearnMoreURL[];
 
 extern const char kUpgradeHelpCenterBaseURL[];
 
+// Help center URL for who the account administrator is.
+extern const char kWhoIsMyAdministratorHelpURL[];
+
 #if defined(OS_ANDROID)
 extern const char kAndroidAppScheme[];
 #endif
@@ -275,7 +281,6 @@ extern const char kEolNotificationURL[];
 
 // The URL for providing more information about Google nameservers.
 extern const char kGoogleNameserversLearnMoreURL[];
-
 // The URL for the "learn more" link for Instant Tethering.
 extern const char kInstantTetheringLearnMoreURL[];
 

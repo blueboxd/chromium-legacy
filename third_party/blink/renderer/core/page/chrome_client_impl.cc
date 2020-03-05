@@ -524,6 +524,10 @@ bool ChromeClientImpl::DoubleTapToZoomEnabled() const {
   return web_view_->SettingsImpl()->DoubleTapToZoomEnabled();
 }
 
+void ChromeClientImpl::EnablePreferredSizeChangedMode() {
+  web_view_->EnablePreferredSizeChangedMode();
+}
+
 void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }

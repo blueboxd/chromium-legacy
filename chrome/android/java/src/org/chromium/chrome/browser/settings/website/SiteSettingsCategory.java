@@ -22,6 +22,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -335,6 +336,7 @@ public class SiteSettingsCategory {
         Intent globalIntent = getIntentToEnableOsGlobalPermission(activity);
         String perAppMessage = getMessageForEnablingOsPerAppPermission(activity, !specificCategory);
         String globalMessage = getMessageForEnablingOsGlobalPermission(activity);
+        String unsupportedMessage = getMessageIfNotSupported(activity);
 
         Resources resources = activity.getResources();
         int color = ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color);
@@ -351,7 +353,10 @@ public class SiteSettingsCategory {
             }
         }
 
-        if (globalIntent != null) {
+        if (!supportedGlobally()) {
+            osWarningExtra.setTitle(unsupportedMessage);
+            osWarningExtra.setIcon(getDisabledInAndroidIcon(activity));
+        } else if (globalIntent != null) {
             SpannableString messageWithLink = SpanApplier.applySpans(
                     globalMessage, new SpanInfo("<link>", "</link>", linkSpan));
             osWarningExtra.setTitle(messageWithLink);
@@ -379,6 +384,22 @@ public class SiteSettingsCategory {
                 R.color.pref_accent_color);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;
+    }
+
+    /**
+     * Returns whether the permission is supported on this device. Some permissions
+     * like NFC are backed up by hardware support and may not be available.
+     */
+    protected boolean supportedGlobally() {
+        return true;
+    }
+
+    /**
+     * Returns the message to display when permission is not supported.
+     */
+    @Nullable
+    protected String getMessageIfNotSupported(Activity activity) {
+        return null;
     }
 
     /**

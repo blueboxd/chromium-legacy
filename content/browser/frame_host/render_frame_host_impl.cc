@@ -78,6 +78,7 @@
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -1450,6 +1451,10 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_remote;
+  DCHECK(coep_reporter_);
+  coep_reporter_->Clone(coep_reporter_remote.InitWithNewPipeAndPassReceiver());
   // We use the last committed Origin and ClientSecurityState. If the caller
   // wanted a factory associated to a navigation about to commit, the params
   // generated won't be correct. There is no good way of fixing this before
@@ -1457,7 +1462,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   return CreateNetworkServiceDefaultFactoryInternal(
       CreateURLLoaderFactoryParamsForMainWorld(
           last_committed_origin_,
-          mojo::Clone(last_committed_client_security_state_)),
+          mojo::Clone(last_committed_client_security_state_),
+          std::move(coep_reporter_remote)),
       std::move(default_factory_receiver));
 }
 
@@ -3267,6 +3273,11 @@ void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
   delegate_->OnPageScaleFactorChanged(this, scale);
 }
 
+void RenderFrameHostImpl::ContentsPreferredSizeChanged(
+    const gfx::Size& pref_size) {
+  render_view_host_->OnDidContentsPreferredSizeChange(pref_size);
+}
+
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
   delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
@@ -3488,10 +3499,17 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = false;
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter_remote;
+    if (coep_reporter_) {
+      coep_reporter_->Clone(
+          coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+    }
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         CreateURLLoaderFactoryParamsForMainWorld(
             last_committed_origin_,
-            mojo::Clone(last_committed_client_security_state_)),
+            mojo::Clone(last_committed_client_security_state_),
+            std::move(coep_reporter_remote)),
         default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
@@ -5372,6 +5390,9 @@ void RenderFrameHostImpl::CommitNavigation(
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebBundleHandle> web_bundle_handle) {
+  if (navigation_request) {
+    navigation_request->CreateCoepReporter(GetProcess()->GetStoragePartition());
+  }
   web_bundle_handle_ = std::move(web_bundle_handle);
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
@@ -5586,13 +5607,22 @@ void RenderFrameHostImpl::CommitNavigation(
       // when all interstitials are committed and we are guaranteed to have a
       // NavigationRequest in this function.
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
+      CrossOriginEmbedderPolicyReporter* const coep_reporter =
+          navigation_request ? navigation_request->coep_reporter() : nullptr;
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter_remote;
+      if (coep_reporter) {
+        coep_reporter->Clone(
+            coep_reporter_remote.InitWithNewPipeAndPassReceiver());
+      }
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               CreateURLLoaderFactoryParamsForMainWorld(
                   main_world_origin_for_url_loader_factory,
                   navigation_request
                       ? mojo::Clone(navigation_request->client_security_state())
-                      : network::mojom::ClientSecurityState::New()),
+                      : network::mojom::ClientSecurityState::New(),
+                  std::move(coep_reporter_remote)),
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5897,7 +5927,8 @@ void RenderFrameHostImpl::FailedNavigation(
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       CreateURLLoaderFactoryParamsForMainWorld(
-          origin, mojo::Clone(navigation_request->client_security_state())),
+          origin, mojo::Clone(navigation_request->client_security_state()),
+          /*coep_reporter=*/mojo::NullRemote()),
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
       std::make_unique<blink::PendingURLLoaderFactoryBundle>(
@@ -6428,9 +6459,12 @@ RenderFrameHostImpl::GetExpectedMainWorldOriginForUrlLoaderFactory() {
 network::mojom::URLLoaderFactoryParamsPtr
 RenderFrameHostImpl::CreateURLLoaderFactoryParamsForMainWorld(
     const url::Origin& main_world_origin,
-    network::mojom::ClientSecurityStatePtr client_security_state) {
+    network::mojom::ClientSecurityStatePtr client_security_state,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
   return URLLoaderFactoryParamsHelper::CreateForFrame(
-      this, main_world_origin, std::move(client_security_state), GetProcess());
+      this, main_world_origin, std::move(client_security_state),
+      std::move(coep_reporter), GetProcess());
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -7551,6 +7585,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   network::mojom::ClientSecurityStatePtr client_security_state =
       navigation_request->TakeClientSecurityState();
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter =
+      navigation_request->TakeCoepReporter();
 
   frame_tree_node()->navigator()->DidNavigate(this, *params,
                                               std::move(navigation_request),
@@ -7568,6 +7604,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     renderer_reported_scheduler_tracked_features_ = 0;
     browser_reported_scheduler_tracked_features_ = 0;
     last_committed_client_security_state_ = std::move(client_security_state);
+    coep_reporter_ = std::move(coep_reporter);
   }
 
   return true;

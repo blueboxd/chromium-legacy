@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/sharing/features.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/dummy_metadata_change_list.h"
@@ -20,6 +21,14 @@ void ReplyToCallback(SharingMessageBridge::CommitFinishedCallback callback,
       "Sync.SharingMessage.CommitResult", commit_error.error_code(),
       sync_pb::SharingMessageCommitError::ErrorCode_ARRAYSIZE);
   std::move(callback).Run(commit_error);
+}
+
+void ReplyToCallback(
+    SharingMessageBridge::CommitFinishedCallback callback,
+    sync_pb::SharingMessageCommitError::ErrorCode commit_error_code) {
+  sync_pb::SharingMessageCommitError error_message;
+  error_message.set_error_code(commit_error_code);
+  ReplyToCallback(std::move(callback), error_message);
 }
 
 syncer::ClientTagHash GetClientTagHashFromStorageKey(
@@ -55,19 +64,15 @@ void SharingMessageBridgeImpl::SendSharingMessage(
     std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
     CommitFinishedCallback on_commit_callback) {
   if (!change_processor()->IsTrackingMetadata()) {
-    sync_pb::SharingMessageCommitError sync_disabled_error_message;
-    sync_disabled_error_message.set_error_code(
-        sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF);
-    ReplyToCallback(std::move(on_commit_callback), sync_disabled_error_message);
+    ReplyToCallback(std::move(on_commit_callback),
+                    sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF);
     return;
   }
 
   if (net::NetworkChangeNotifier::GetConnectionType() ==
       net::NetworkChangeNotifier::CONNECTION_NONE) {
-    sync_pb::SharingMessageCommitError network_error_message;
-    network_error_message.set_error_code(
-        sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR);
-    ReplyToCallback(std::move(on_commit_callback), network_error_message);
+    ReplyToCallback(std::move(on_commit_callback),
+                    sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR);
     return;
   }
 
@@ -78,9 +83,14 @@ void SharingMessageBridgeImpl::SendSharingMessage(
   specifics->set_message_id(message_id);
   std::unique_ptr<syncer::EntityData> entity_data =
       MoveToEntityData(std::move(specifics));
-  const auto result =
-      commit_callbacks_.emplace(GetClientTagHashFromStorageKey(message_id),
-                                std::move(on_commit_callback));
+  const syncer::ClientTagHash client_tag_hash =
+      GetClientTagHashFromStorageKey(message_id);
+  const auto result = commit_callbacks_.emplace(
+      client_tag_hash,
+      std::make_unique<TimedCallback>(
+          std::move(on_commit_callback),
+          base::BindOnce(&SharingMessageBridgeImpl::ProcessCommitTimeout,
+                         base::Unretained(this), client_tag_hash)));
   DCHECK(result.second);
   change_processor()->Put(message_id, std::move(entity_data),
                           metadata_change_list.get());
@@ -177,7 +187,7 @@ void SharingMessageBridgeImpl::OnCommitAttemptFailed(
   sync_error_message.set_error_code(sharing_message_error_code);
   for (auto& cth_and_callback : commit_callbacks_) {
     change_processor()->UntrackEntityForClientTagHash(cth_and_callback.first);
-    ReplyToCallback(std::move(cth_and_callback.second), sync_error_message);
+    cth_and_callback.second->Run(sync_error_message);
   }
   commit_callbacks_.clear();
 }
@@ -190,10 +200,18 @@ void SharingMessageBridgeImpl::ApplyStopSyncChanges(
   for (auto& cth_and_callback : commit_callbacks_) {
     // We do not need to untrack data here because the change processor will
     // remove all entities anyway.
-    ReplyToCallback(std::move(cth_and_callback.second),
-                    sync_disabled_error_message);
+    cth_and_callback.second->Run(sync_disabled_error_message);
   }
   commit_callbacks_.clear();
+}
+
+void SharingMessageBridgeImpl::ProcessCommitTimeout(
+    syncer::ClientTagHash client_tag_hash) {
+  change_processor()->UntrackEntityForClientTagHash(client_tag_hash);
+  sync_pb::SharingMessageCommitError error_message;
+  error_message.set_error_code(
+      sync_pb::SharingMessageCommitError::SYNC_TIMEOUT);
+  ProcessCommitResponse(client_tag_hash, error_message);
 }
 
 void SharingMessageBridgeImpl::ProcessCommitResponse(
@@ -201,9 +219,33 @@ void SharingMessageBridgeImpl::ProcessCommitResponse(
     const sync_pb::SharingMessageCommitError& commit_error_message) {
   const auto iter = commit_callbacks_.find(client_tag_hash);
   if (iter == commit_callbacks_.end()) {
-    NOTREACHED();
+    // This may happen if tasks from OnUpdateReceived and OneShotTimer were
+    // added at one time.
     return;
   }
-  ReplyToCallback(std::move(iter->second), commit_error_message);
+  iter->second->Run(commit_error_message);
   commit_callbacks_.erase(iter);
+}
+
+SharingMessageBridgeImpl::TimedCallback::TimedCallback(
+    CommitFinishedCallback commit_callback,
+    base::OnceClosure timeout_callback)
+    : commit_callback_(std::move(commit_callback)) {
+  const base::TimeDelta time_delta =
+      base::TimeDelta::FromSeconds(kSharingMessageBridgeTimeoutSeconds.Get());
+  timer_.Start(FROM_HERE, time_delta, std::move(timeout_callback));
+}
+
+SharingMessageBridgeImpl::TimedCallback::~TimedCallback() = default;
+
+void SharingMessageBridgeImpl::TimedCallback::Run(
+    const sync_pb::SharingMessageCommitError& commit_error) {
+  DCHECK(commit_callback_);
+
+  ReplyToCallback(std::move(commit_callback_), commit_error);
+  // |timer_| may be already stopped if Run is called from
+  // ProcessCommitTimeout.
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+  }
 }

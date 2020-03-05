@@ -1781,15 +1781,21 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(String url) {
+        public boolean shouldStayInWebapp(ExternalNavigationParams params) {
+            @WebappScopePolicy.NavigationDirective
+            int webappScopePolicyDirective = WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
+
             for (IntentActivity intentActivity : mIntentActivities) {
                 if (intentActivity.packageName().equals(mReferrerWebappPackageName)) {
                     WebappInfo info = newWebappInfoFromScope(intentActivity.urlPrefix());
-                    return WebappScopePolicy.applyPolicyForNavigationToUrl(
-                            intentActivity.webappScopePolicy(), info, url);
+                    webappScopePolicyDirective = WebappScopePolicy.applyPolicyForNavigationToUrl(
+                            intentActivity.webappScopePolicy(), info, params.getUrl());
+                    break;
                 }
             }
-            return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
+
+            return webappScopePolicyDirective
+                    == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS;
         }
 
         @Override

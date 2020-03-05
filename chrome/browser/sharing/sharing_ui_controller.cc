@@ -57,6 +57,7 @@ base::string16 SharingUiController::GetTitle(SharingDialogType dialog_type) {
     case SharingSendMessageResult::kDeviceNotFound:
     case SharingSendMessageResult::kNetworkError:
     case SharingSendMessageResult::kAckTimeout:
+    case SharingSendMessageResult::kCommitTimeout:
       return l10n_util::GetStringFUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_GENERIC_ERROR,
           base::ToLowerASCII(GetContentType()));
@@ -81,6 +82,7 @@ base::string16 SharingUiController::GetErrorDialogText() const {
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND,
           GetTargetDeviceName());
 
+    case SharingSendMessageResult::kCommitTimeout:
     case SharingSendMessageResult::kNetworkError:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_NETWORK_ERROR);

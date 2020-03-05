@@ -1072,7 +1072,9 @@ void RenderViewImpl::DidReceiveSetFocusEventForWidget() {
 void RenderViewImpl::DidCommitCompositorFrameForWidget() {
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
-  UpdatePreferredSize();
+
+  if (GetWebView())
+    GetWebView()->UpdatePreferredSize();
 }
 
 void RenderViewImpl::DidCompletePageScaleAnimationForWidget() {
@@ -1172,8 +1174,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
-                        OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomToFindInPageRect, OnZoomToFindInPageRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
@@ -1573,9 +1573,6 @@ void RenderViewImpl::FocusedElementChanged(const WebElement& from_element,
 void RenderViewImpl::DidUpdateMainFrameLayout() {
   for (auto& observer : observers_)
     observer.DidUpdateMainFrameLayout();
-
-  // The main frame may have changed size.
-  needs_preferred_size_update_ = true;
 }
 
 void RenderViewImpl::RegisterRendererPreferenceWatcher(
@@ -1634,29 +1631,6 @@ const std::string& RenderViewImpl::GetAcceptLanguages() {
   return renderer_preferences_.accept_languages;
 }
 
-void RenderViewImpl::UpdatePreferredSize() {
-  // We don't always want to send the change messages over IPC, only if we've
-  // been put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
-  // message.
-  if (!send_preferred_size_changes_ || !GetWebView() || !main_render_frame_)
-    return;
-
-  if (!needs_preferred_size_update_)
-    return;
-  needs_preferred_size_update_ = false;
-
-  blink::WebSize web_size = GetWebView()->ContentsPreferredMinimumSize();
-  blink::WebRect web_rect(0, 0, web_size.width, web_size.height);
-  main_render_frame_->GetLocalRootRenderWidget()->ConvertViewportToWindow(
-      &web_rect);
-  gfx::Size size(web_rect.width, web_rect.height);
-
-  if (size != preferred_size_) {
-    preferred_size_ = size;
-    Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(), size));
-  }
-}
-
 blink::WebString RenderViewImpl::AcceptLanguages() {
   return WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
@@ -1711,30 +1685,6 @@ void RenderViewImpl::ApplyPageVisibilityState(
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, GetWebView());
-}
-
-void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
-  if (send_preferred_size_changes_)
-    return;
-  send_preferred_size_changes_ = true;
-
-  if (!GetWebView())
-    return;
-
-  needs_preferred_size_update_ = true;
-
-  // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
-  // force an update here which will call |DidUpdateMainFrameLayout|.
-  if (GetWebView()->MainFrameWidget()) {
-    GetWebView()->MainFrameWidget()->UpdateLifecycle(
-        WebWidget::LifecycleUpdate::kLayout,
-        blink::DocumentUpdateReason::kSizeChange);
-  }
-
-  // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
-  // We explicitly update the preferred size here to ensure the preferred size
-  // notification is sent.
-  UpdatePreferredSize();
 }
 
 void RenderViewImpl::OnSetRendererPrefs(

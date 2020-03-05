@@ -12,6 +12,8 @@ source_set("helpers") {
     "image.h",
     "image_quality_metrics.cc",
     "image_quality_metrics.h",
+    "video.cc",
+    "video.h",
     "video_frame_helpers.cc",
     "video_frame_helpers.h",
     "video_test_environment.cc",
@@ -99,8 +101,6 @@ static_library("video_player_thumbnail_renderer") {
 static_library("video_player") {
   testonly = true
   sources = [
-    "video.cc",
-    "video.h",
     "video_player/frame_renderer.h",
     "video_player/frame_renderer_dummy.cc",
     "video_player/frame_renderer_dummy.h",
@@ -128,7 +128,6 @@ static_library("video_player_test_environment") {
   deps = [
     ":frame_file_writer",
     ":helpers",
-    ":video_player",
     "//media/gpu",
   ]
 }

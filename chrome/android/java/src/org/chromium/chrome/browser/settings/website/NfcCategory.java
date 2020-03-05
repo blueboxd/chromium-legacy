@@ -22,6 +22,16 @@ public class NfcCategory extends SiteSettingsCategory {
     }
 
     @Override
+    protected boolean supportedGlobally() {
+        return NfcSystemLevelSetting.isNfcAccessPossible();
+    }
+
+    @Override
+    protected String getMessageIfNotSupported(Activity activity) {
+        return activity.getResources().getString(R.string.android_nfc_unsupported);
+    }
+
+    @Override
     protected boolean enabledGlobally() {
         return NfcSystemLevelSetting.isNfcSystemLevelSettingEnabled();
     }

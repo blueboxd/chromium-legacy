@@ -537,6 +537,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void PluginActionAt(const gfx::Point& location,
                       mojom::blink::PluginActionType action) override;
   void SetInitialFocus(bool reverse) override;
+  void EnablePreferredSizeChangedMode() override;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

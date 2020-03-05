@@ -645,6 +645,9 @@ struct URLLoaderFactoryParams {
   // Used to enforce security properties on the requests loaded by the
   // URLLoader based on the Fetch client state.
   ClientSecurityState? client_security_state;
+
+  // Used to report CORP violations caused by COEP.
+  CrossOriginEmbedderPolicyReporter? coep_reporter;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()

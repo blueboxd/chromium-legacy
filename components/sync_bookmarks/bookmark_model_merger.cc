@@ -432,6 +432,11 @@ void BookmarkModelMerger::MergeSubtree(
   // If there are remote child updates, try to match them.
   for (size_t remote_index = 0; remote_index < remote_node.children().size();
        ++remote_index) {
+    // TODO(crbug.com/1050776): change to DCHECK after investigating.
+    // Here is expected that all nodes to the left of current |remote_index| are
+    // filled with remote updates. All local nodes which are not merged will be
+    // added later.
+    CHECK_LE(remote_index, local_subtree_root->children().size());
     const RemoteTreeNode& remote_child =
         remote_node.children().at(remote_index);
     const bookmarks::BookmarkNode* matching_local_node =
@@ -475,6 +480,7 @@ const bookmarks::BookmarkNode* BookmarkModelMerger::FindMatchingLocalNode(
     const RemoteTreeNode& remote_child,
     const bookmarks::BookmarkNode* local_parent,
     size_t local_child_start_index) const {
+  DCHECK(local_parent);
   // Try to match child by GUID. If we can't, try to match child by semantics.
   const bookmarks::BookmarkNode* matching_local_node_by_guid =
       FindMatchingLocalNodeByGUID(remote_child);
@@ -508,6 +514,7 @@ const bookmarks::BookmarkNode*
 BookmarkModelMerger::UpdateBookmarkNodeFromSpecificsIncludingGUID(
     const bookmarks::BookmarkNode* local_node,
     const RemoteTreeNode& remote_node) {
+  DCHECK(local_node);
   DCHECK(!local_node->is_permanent_node());
   // Ensure bookmarks have the same URL, otherwise they would not have been
   // matched.
@@ -562,13 +569,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
       CreateBookmarkNodeFromSpecifics(specifics.bookmark(), local_parent, index,
                                       remote_update_entity.is_folder,
                                       bookmark_model_, favicon_service_);
-  if (!bookmark_node) {
-    // We ignore bookmarks we can't add.
-    DLOG(ERROR) << "Failed to create bookmark node with title "
-                << specifics.bookmark().title() << " and url "
-                << specifics.bookmark().url();
-    return;
-  }
+  DCHECK(bookmark_node);
   bookmark_tracker_->Add(remote_update_entity.id, bookmark_node,
                          remote_node.response_version(),
                          remote_update_entity.creation_time,
@@ -576,8 +577,11 @@ void BookmarkModelMerger::ProcessRemoteCreation(
 
   // Recursively, match by GUID or, if not possible, create local node for all
   // child remote nodes.
-  int i = 0;
+  size_t i = 0;
   for (const RemoteTreeNode& remote_child : remote_node.children()) {
+    // TODO(crbug.com/1050776): change to DCHECK after investigating of some
+    // crashes.
+    CHECK_LE(i, bookmark_node->children().size());
     const bookmarks::BookmarkNode* local_child =
         FindMatchingLocalNodeByGUID(remote_child);
     if (!local_child) {
@@ -594,6 +598,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
 void BookmarkModelMerger::ProcessLocalCreation(
     const bookmarks::BookmarkNode* parent,
     size_t index) {
+  DCHECK_LE(index, parent->children().size());
   const SyncedBookmarkTracker::Entity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
   // Since we are merging top down, parent entity must be tracked.
@@ -625,6 +630,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
     const SyncedBookmarkTracker::Entity* predecessor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(
             parent->children()[index - 1].get());
+    DCHECK(predecessor_entity);
     pos = syncer::UniquePosition::After(
         syncer::UniquePosition::FromProto(
             predecessor_entity->metadata()->unique_position()),
@@ -653,6 +659,7 @@ size_t BookmarkModelMerger::FindMatchingChildBySemanticsStartingAt(
     const RemoteTreeNode& remote_node,
     const bookmarks::BookmarkNode* local_parent,
     size_t starting_child_index) const {
+  DCHECK(local_parent);
   const auto& children = local_parent->children();
   DCHECK_LE(starting_child_index, children.size());
   const EntityData& remote_entity = remote_node.entity();

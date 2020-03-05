@@ -290,6 +290,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual bool DoubleTapToZoomEnabled() const { return false; }
 
+  virtual void EnablePreferredSizeChangedMode() {}
+
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
   // Call during pinch gestures, or when page-scale changes on main-frame load.
   virtual void PageScaleFactorChanged() const {}

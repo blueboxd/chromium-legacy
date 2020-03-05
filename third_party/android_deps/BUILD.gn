@@ -135,16 +135,6 @@ java_group("com_android_support_coordinatorlayout_java") {
   input_jars_paths = [ "${target_out_dir}/com_android_support_coordinatorlayout_java_orig/classes.jar" ]
 }
 
-java_group("com_android_support_cursoradapter_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_cursoradapter_cursoradapter_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_cursoradapter_java_orig/classes.jar",
-  ]
-}
-
 java_group("com_android_support_customview_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
@@ -162,16 +152,6 @@ java_group("com_android_support_design_java") {
   ]
   input_jars_paths =
       [ "${target_out_dir}/com_android_support_design_java_orig/classes.jar" ]
-}
-
-java_group("com_android_support_documentfile_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_documentfile_documentfile_java",
-  ]
-  input_jars_paths = [
-    "${target_out_dir}/com_android_support_documentfile_java_orig/classes.jar",
-  ]
 }
 
 java_group("com_android_support_drawerlayout_java") {
@@ -284,29 +264,12 @@ java_group("com_android_support_preference_v7_java") {
   ]
 }
 
-java_group("com_android_support_print_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_print_print_java",
-  ]
-  input_jars_paths =
-      [ "${target_out_dir}/com_android_support_print_java_orig/classes.jar" ]
-}
-
 java_group("com_android_support_recyclerview_v7_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",
     ":androidx_recyclerview_recyclerview_java",
   ]
   input_jars_paths = [ "${target_out_dir}/com_android_support_recyclerview_v7_java_orig/classes.jar" ]
-}
-
-java_group("com_android_support_slidingpanelayout_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_slidingpanelayout_slidingpanelayout_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_slidingpanelayout_java_orig/classes.jar" ]
 }
 
 java_group("com_android_support_support_annotations_java") {

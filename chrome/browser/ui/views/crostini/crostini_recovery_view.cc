@@ -35,10 +35,15 @@ bool crostini::ShowCrostiniRecoveryView(
     const std::string& app_id,
     int64_t display_id,
     crostini::LaunchCrostiniAppCallback callback) {
-  base::UmaHistogramEnumeration(kCrostiniRecoverySourceHistogram, ui_surface,
-                                crostini::CrostiniUISurface::kCount);
-  return CrostiniRecoveryView::Show(profile, app_id, display_id,
-                                    std::move(callback));
+  bool allow_app_launch = CrostiniRecoveryView::Show(
+      profile, app_id, display_id, std::move(callback));
+  if (!allow_app_launch) {
+    // App launches are prevented by the view's can_launch_apps_. In this case,
+    // we want to sample the Show call.
+    base::UmaHistogramEnumeration(kCrostiniRecoverySourceHistogram, ui_surface,
+                                  crostini::CrostiniUISurface::kCount);
+  }
+  return allow_app_launch;
 }
 
 bool CrostiniRecoveryView::Show(Profile* profile,

@@ -365,11 +365,16 @@ template("create_signed_bundle") {
       code_signing_args += [ "--disable-code-signature" ]
     }
     if (defined(invoker.extra_system_frameworks)) {
-      # All framework in extra_system_frameworks are expected to be
-      # system framework and the path to be already system absolute
-      # so do not use rebase_path here.
+      # All framework in extra_system_frameworks are expected to be system
+      # framework and the path to be already system absolute so do not use
+      # rebase_path here unless ios_enable_relative_sdk_path is trued.
       foreach(_framework, invoker.extra_system_frameworks) {
-        code_signing_args += [ "-F=" + _framework ]
+        if (ios_enable_relative_sdk_path) {
+          _framework_path = rebase_path(_framework, root_build_dir)
+        } else {
+          _framework_path = _framework
+        }
+        code_signing_args += [ "-F=$_framework_path" ]
       }
     }
     if (defined(invoker.partial_info_plist)) {
@@ -1800,9 +1805,8 @@ template("ios_xctest_test") {
     # Xcode needs the following frameworks installed in the application (and
     # signed) for the XCTest to run, so install them using
     # extra_system_frameworks.
-    _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
     extra_system_frameworks = [
-      "$_ios_platform_library/Frameworks/XCTest.framework",
+      "$ios_sdk_platform_path/Developer/Library/Frameworks/XCTest.framework",
       "$ios_sdk_platform_path/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework",
       "$ios_sdk_platform_path/Developer/usr/lib/libXCTestBundleInject.dylib",
     ]

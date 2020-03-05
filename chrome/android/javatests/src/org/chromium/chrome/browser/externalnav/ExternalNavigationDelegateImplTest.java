@@ -60,6 +60,16 @@ import java.util.List;
             mIsSerpReferrer = value;
         }
 
+        @Override
+        protected void startAutofillAssistantWithIntent(
+                Intent targetIntent, String browserFallbackUrl) {
+            mWasAutofillAssistantStarted = true;
+        }
+
+        public boolean wasAutofillAssistantStarted() {
+            return mWasAutofillAssistantStarted;
+        }
+
         // Convenience for testing that reduces boilerplate in constructing arguments to the
         // production method that are common across tests.
         public boolean handleWithAutofillAssistant(ExternalNavigationParams params) {
@@ -77,6 +87,7 @@ import java.util.List;
         }
 
         private boolean mIsSerpReferrer;
+        private boolean mWasAutofillAssistantStarted;
     }
 
     @Rule
@@ -251,15 +262,13 @@ import java.util.List;
                 new ExternalNavigationDelegateImplForTesting();
         delegate.setIsSerpReferrer(true);
 
-        // Note: Leave the tab of |params| null to ensure that the delegate doesn't ask
-        // AutofillAssistantFacade to actually start the activity, which this test is not set up
-        // for.
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
                         .build();
 
         Assert.assertTrue(delegate.handleWithAutofillAssistant(params));
+        Assert.assertTrue(delegate.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -278,6 +287,7 @@ import java.util.List;
                         .build();
 
         Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -296,6 +306,7 @@ import java.util.List;
                         .build();
 
         Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -314,5 +325,6 @@ import java.util.List;
                         .build();
 
         Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 }

@@ -126,7 +126,6 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         }
 
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(url, incognito)
-                .setTab(mTab)
                 .setOpenInNewTab(true)
                 .build();
         mLastOverrideUrlLoadingResult = mExternalNavHandler.shouldOverrideUrlLoading(params);
@@ -221,7 +220,6 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         return new ExternalNavigationParams
                 .Builder(navigationParams.url, mTab.isIncognito(), navigationParams.referrer,
                         navigationParams.pageTransitionType, navigationParams.isRedirect)
-                .setTab(mTab)
                 .setApplicationMustBeInForeground(true)
                 .setRedirectHandler(tabRedirectHandler)
                 .setOpenInNewTab(shouldCloseTab)

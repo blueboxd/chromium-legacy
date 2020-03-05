@@ -9,7 +9,6 @@
 
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
-#include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
@@ -31,7 +30,8 @@ class ChromeBrowserState;
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
 
-- (void)createInitialUI:(ApplicationMode)launchMode;
+- (void)startUpChromeUIPostCrash:(BOOL)isPostCrashLaunch
+                 needRestoration:(BOOL)needsRestoration;
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;

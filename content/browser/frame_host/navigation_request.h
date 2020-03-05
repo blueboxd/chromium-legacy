@@ -57,6 +57,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class AppCacheNavigationHandle;
+class CrossOriginEmbedderPolicyReporter;
 class WebBundleHandleTracker;
 class WebBundleNavigationInfo;
 class FrameNavigationEntry;
@@ -549,6 +550,11 @@ class CONTENT_EXPORT NavigationRequest
   void set_require_coop_browsing_instance_swap() {
     require_coop_browsing_instance_swap_ = true;
   }
+  CrossOriginEmbedderPolicyReporter* coep_reporter() {
+    return coep_reporter_.get();
+  }
+  void CreateCoepReporter(StoragePartition* storage_partition);
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> TakeCoepReporter();
 
  private:
   friend class NavigationRequestTest;
@@ -1161,6 +1167,8 @@ class CONTENT_EXPORT NavigationRequest
   // Holds a set of values needed to enforce several WebPlatform security APIs
   // at the network request level.
   network::mojom::ClientSecurityStatePtr client_security_state_;
+
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 

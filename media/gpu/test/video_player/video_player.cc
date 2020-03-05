@@ -129,7 +129,7 @@ void VideoPlayer::Play() {
   DVLOGF(4);
 
   // Play until the end of the video.
-  PlayUntil(VideoPlayerEvent::kNumEvents, 0);
+  PlayUntil(VideoPlayerEvent::kNumEvents, std::numeric_limits<size_t>::max());
 }
 
 void VideoPlayer::PlayUntil(VideoPlayerEvent event, size_t event_count) {

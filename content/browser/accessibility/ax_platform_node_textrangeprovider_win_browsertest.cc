@@ -2269,13 +2269,14 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
         <label for="input1">Some text </label>
         <input id="input1">
         <p> after input</p>
+        <button><div></div></button>
       </div>
     </body>
   </html>)HTML";
 
-  const std::vector<const wchar_t*> words = {L"Some ", L"text ",
-                                             kEmbeddedCharacterAsString.c_str(),
-                                             L"after ", L"input"};
+  const std::vector<const wchar_t*> words = {
+      L"Some ",  L"text ", kEmbeddedCharacterAsString.c_str(),
+      L"after ", L"input", kEmbeddedCharacterAsString.c_str()};
 
   AssertMoveByUnitForMarkup(TextUnit_Word, html_markup, words);
 }

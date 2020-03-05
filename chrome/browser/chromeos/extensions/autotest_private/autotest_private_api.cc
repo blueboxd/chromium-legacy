@@ -3915,7 +3915,8 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetMetricsEnabled::Params> params(
       api::autotest_private::SetMetricsEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  DVLOG(1) << "AutotestPrivateSetMetricsEnabledFunction " << params->enabled;
+  VLOG(1) << "AutotestPrivateSetMetricsEnabledFunction " << std::boolalpha
+          << params->enabled;
 
   target_value_ = params->enabled;
 
@@ -3927,6 +3928,7 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
   // Set the preference to indicate metrics are enabled/disabled.
   stats_reporting_controller->SetEnabled(profile, target_value_);
   if (stats_reporting_controller->IsEnabled() == target_value_) {
+    VLOG(1) << "Value at target; returning early";
     return RespondNow(NoArguments());
   }
   stats_reporting_observer_subscription_ =
@@ -3938,7 +3940,11 @@ AutotestPrivateSetMetricsEnabledFunction::Run() {
 }
 
 void AutotestPrivateSetMetricsEnabledFunction::OnStatsReportingStateChanged() {
-  if (chromeos::StatsReportingController::Get()->IsEnabled() == target_value_) {
+  bool actual = chromeos::StatsReportingController::Get()->IsEnabled();
+  VLOG(1) << "AutotestPrivateSetMetricsEnabledFunction: actual: "
+          << std::boolalpha << actual << " and expected: " << std::boolalpha
+          << target_value_;
+  if (actual == target_value_) {
     Respond(NoArguments());
   } else {
     Respond(Error("Failed to set metrics consent"));

@@ -388,10 +388,6 @@ class AX_EXPORT AXNode final {
   // of a list marker node. Returns false otherwise.
   bool IsInListMarker() const;
 
-  // Returns true if this object is used only for representing text, including
-  // inline text boxes.
-  bool IsTextOnlyObject() const;
-
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.

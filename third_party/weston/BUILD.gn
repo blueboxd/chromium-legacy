@@ -58,6 +58,8 @@ config("weston_config") {
     "-Wno-shift-negative-value",
     "-Wno-string-conversion",
   ]
+
+  ldflags = [ "-Wl,-rpath=\$ORIGIN" ]
 }
 
 pkg_config("pixman") {

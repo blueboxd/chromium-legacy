@@ -39,8 +39,8 @@ bool EsParserMpeg1AudioTest::Process(
     const std::vector<Packet>& pes_packets,
     bool force_timing) {
   EsParserMpeg1Audio es_parser(
-      base::Bind(&EsParserMpeg1AudioTest::NewAudioConfig,
-                 base::Unretained(this)),
+      base::BindRepeating(&EsParserMpeg1AudioTest::NewAudioConfig,
+                          base::Unretained(this)),
       base::BindRepeating(&EsParserMpeg1AudioTest::EmitBuffer,
                           base::Unretained(this)),
       &media_log_);

@@ -62,5 +62,9 @@ template("polymer_modulizer") {
     if (defined(invoker.auto_imports)) {
       args += invoker.auto_imports
     }
+
+    if (defined(invoker.ignore_imports)) {
+      args += [ "--ignore_imports" ] + invoker.ignore_imports
+    }
   }
 }

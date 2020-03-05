@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 #include "chrome/test/base/testing_profile.h"
@@ -224,8 +225,14 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Gets the syncer::SyncableService for the given sync type.
-  syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
-    return sync_cache_->GetSyncableService(model_type);
+  SyncStorageBackend* GetSyncableService(syncer::ModelType model_type) {
+    // SyncValueStoreCache::GetSyncableService internally enforces |model_type|
+    // to be APP_SETTINGS or EXTENSION_SETTINGS, and the dynamic type of the
+    // returned service is always SyncStorageBackend, so it can be downcast.
+    DCHECK(model_type == syncer::APP_SETTINGS ||
+           model_type == syncer::EXTENSION_SETTINGS);
+    return static_cast<SyncStorageBackend*>(
+        sync_cache_->GetSyncableService(model_type));
   }
 
   // Gets all the sync data from the SyncableService for a sync type as a map

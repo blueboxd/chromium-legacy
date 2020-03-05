@@ -2190,6 +2190,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_PAGE_INFO_ANDROID_LOCATION_BLOCKED" desc="The label used in the Page Info dialog to indicate that location has been been disabled for the device in Android settings">
         Turned off for this device
       </message>
+      <message name="IDS_PAGE_INFO_ANDROID_NFC_UNSUPPORTED" desc="The label used in the Page Info dialog to indicate NFC is not supported by this device">
+        This device can't read NFC
+      </message>
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display in the page info bubble when viewing and offline page.">
         You are viewing an offline copy of this page from <ph name="CREATION_TIME">%1$s<ex>Feb 9, 2016</ex></ph>
       </message>
@@ -4047,6 +4050,9 @@ Only you can see what your camera is looking at. The site can't see your camera'
       </message>
       <message name="IDS_ANDROID_NFC_OFF_GLOBALLY" desc="The message to show when NFC has been turned off globally in Android. Contains a link to the settings menu to enable NFC.">
         NFC is off for this device. Turn it on in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Android Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_ANDROID_NFC_UNSUPPORTED" desc="The message to show when NFC is not supported globally in Android">
+        This device can't read NFC
       </message>
     </messages>
   </release>

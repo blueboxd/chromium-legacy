@@ -13,10 +13,8 @@
 namespace media {
 namespace mp2t {
 
-TsSectionPat::TsSectionPat(const RegisterPmtCb& register_pmt_cb)
-    : register_pmt_cb_(register_pmt_cb),
-      version_number_(-1) {
-}
+TsSectionPat::TsSectionPat(RegisterPmtCb register_pmt_cb)
+    : register_pmt_cb_(std::move(register_pmt_cb)), version_number_(-1) {}
 
 TsSectionPat::~TsSectionPat() {
 }
@@ -119,4 +117,3 @@ void TsSectionPat::ResetPsiSection() {
 
 }  // namespace mp2t
 }  // namespace media
-

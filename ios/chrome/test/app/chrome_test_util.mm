@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
-#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -101,13 +100,6 @@ UIViewController* GetActiveViewController() {
   UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
   DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
   UIViewController* main_view_controller = main_window.rootViewController;
-  if ([main_view_controller
-          conformsToProtocol:@protocol(ViewControllerSwapping)]) {
-    // This is either the stack_view or the iPad tab_switcher, in which case it
-    // is best to call |-activeViewController|.
-    return [static_cast<id<ViewControllerSwapping>>(main_view_controller)
-        activeViewController];
-  }
 
   // The active view controller is either the TabGridViewController or its
   // presented BVC. The BVC is itself contained inside of a

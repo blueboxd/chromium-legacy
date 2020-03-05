@@ -251,20 +251,20 @@ const char kNTPHelpURL[] =
             item);
     switch (mostVisitedItem.collectionShortcutType) {
       case NTPCollectionShortcutTypeBookmark:
-        [self.dispatcher showBookmarksManager];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowBookmarks"));
+        [self.dispatcher showBookmarksManager];
         break;
       case NTPCollectionShortcutTypeReadingList:
-        [self.dispatcher showReadingList];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowReadingList"));
+        [self.dispatcher showReadingList];
         break;
       case NTPCollectionShortcutTypeRecentTabs:
-        [self.dispatcher showRecentTabs];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowRecentTabs"));
+        [self.dispatcher showRecentTabs];
         break;
       case NTPCollectionShortcutTypeHistory:
-        [self.dispatcher showHistory];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
+        [self.dispatcher showHistory];
         break;
       case NTPCollectionShortcutTypeCount:
         NOTREACHED();

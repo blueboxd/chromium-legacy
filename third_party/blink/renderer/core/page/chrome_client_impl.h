@@ -132,6 +132,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   float InputEventsScaleForEmulation() const override;
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
   bool DoubleTapToZoomEnabled() const override;
+  void EnablePreferredSizeChangedMode() override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
   void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override;

@@ -268,9 +268,7 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
         parent, index, NodeTitleFromSpecificsTitle(specifics.title()),
         GURL(specifics.url()), &metainfo, create_time, specifics.guid());
   }
-  if (node) {
-    SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
-  }
+  SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
   return node;
 }
 

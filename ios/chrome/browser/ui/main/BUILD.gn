@@ -7,7 +7,6 @@ import("//ios/build/chrome_build.gni")
 source_set("scene_guts") {
   sources = [ "scene_controller_guts.h" ]
   deps = [
-    "//ios/chrome/app:mode",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser:utils",
     "//ios/chrome/browser/ui/tab_grid",
@@ -36,6 +35,7 @@ source_set("scene") {
     "//components/signin/public/identity_manager",
     "//components/url_formatter",
     "//ios/chrome/app:app",
+    "//ios/chrome/app:mode",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser",

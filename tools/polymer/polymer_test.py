@@ -37,6 +37,8 @@ class PolymerModulizerTest(unittest.TestCase):
       '--html_type',  html_type,
       '--namespace_rewrites',
       'Polymer.PaperRippleBehavior|PaperRippleBehavior',
+      '--ignore_imports',
+      'ui/webui/resources/html/ignore_me.html',
       '--auto_imports',
       'ui/webui/resources/html/polymer.html|Polymer,html',
       'third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior.html|PaperRippleBehavior',

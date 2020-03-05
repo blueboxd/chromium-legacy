@@ -988,7 +988,7 @@ TEST_F(SurfaceSynchronizationTest,
   const ui::LatencyComponentType latency_type2 =
       ui::LATENCY_COMPONENT_TYPE_LAST;
 
-  // Submit a frame with no unresolved dependecy.
+  // Submit a frame with no unresolved dependency.
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1);
 
@@ -1122,9 +1122,89 @@ TEST_F(SurfaceSynchronizationTest,
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
 
+// Checks whether SurfaceAllocationGroup properly aggregates LatencyInfo of
+// multiple surfaces. In this variation of the test, multiple older surfaces
+// with pending frames exist during aggregation of an activated frame on a newer
+// surface.
+TEST_F(SurfaceSynchronizationTest,
+       LatencyInfoAggregation_MultipleOldSurfacesWithPendingFrames) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId parent_id3 = MakeSurfaceId(kParentFrameSink, 3);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+
+  const ui::LatencyComponentType latency_type1 =
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
+  const ui::LatencyComponentType latency_type2 =
+      ui::LATENCY_COMPONENT_TYPE_LAST;
+
+  // Submit a frame with unresolved dependencies to parent_id1.
+  ui::LatencyInfo info1;
+  info1.AddLatencyNumber(latency_type1);
+
+  CompositorFrame frame1 = MakeCompositorFrame(
+      {child_id1}, empty_surface_ranges(), std::vector<TransferableResource>());
+  frame1.metadata.latency_info.push_back(info1);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame1));
+
+  // Submit a frame with unresolved dependencies to parent_id2.
+  ui::LatencyInfo info2;
+  info2.AddLatencyNumber(latency_type2);
+
+  CompositorFrame frame2 = MakeCompositorFrame(
+      {child_id2}, empty_surface_ranges(), std::vector<TransferableResource>());
+  frame2.metadata.latency_info.push_back(info2);
+
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         std::move(frame2));
+
+  // Verify that the both old surfaces have pending frames.
+  Surface* old_surface1 = GetSurfaceForId(parent_id1);
+  Surface* old_surface2 = GetSurfaceForId(parent_id2);
+  ASSERT_NE(nullptr, old_surface1);
+  ASSERT_NE(nullptr, old_surface2);
+  EXPECT_FALSE(old_surface1->HasActiveFrame());
+  EXPECT_FALSE(old_surface2->HasActiveFrame());
+  EXPECT_TRUE(old_surface1->HasPendingFrame());
+  EXPECT_TRUE(old_surface2->HasPendingFrame());
+
+  // Submit a frame with no dependencies to the new surface parent_id3.
+  parent_support().SubmitCompositorFrame(parent_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the new surface has an active frame only.
+  Surface* surface = GetSurfaceForId(parent_id3);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->HasActiveFrame());
+  EXPECT_FALSE(surface->HasPendingFrame());
+
+  // Verify that the aggregated LatencyInfo has LatencyInfo from both old
+  // surfaces.
+  std::vector<ui::LatencyInfo> info_list;
+  surface->allocation_group()->TakeAggregatedLatencyInfoUpTo(surface,
+                                                             &info_list);
+  EXPECT_EQ(2u, info_list.size());
+
+  ui::LatencyInfo aggregated_latency_info = info_list[0];
+  aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
+
+  // Two components are the original ones, and the third one is
+  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
+  // submit.
+  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
+
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, nullptr));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type2, nullptr));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(
+      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
+}
+
 // This test verifies that when a new surface is created, the LatencyInfo of the
 // previous surface does not get carried over into the new surface.
-TEST_F(SurfaceSynchronizationTest, LatencyInfoNotCarriedOVer) {
+TEST_F(SurfaceSynchronizationTest, LatencyInfoNotCarriedOver) {
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =

@@ -42,6 +42,7 @@ class Origin;
 
 namespace content {
 
+class CrossOriginEmbedderPolicyReporter;
 class DedicatedWorkerServiceImpl;
 class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
@@ -228,6 +229,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       network_service_connection_error_handler_holder_;
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
+
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

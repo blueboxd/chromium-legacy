@@ -917,9 +917,9 @@ public class DownloadManagerService implements DownloadController.Observer,
                 getDownloadFailureMessage(item.getDownloadInfo().getFileName(), reason);
 
         if (mDownloadSnackbarController.getSnackbarManager() != null) {
-            mDownloadSnackbarController.onDownloadFailed(
-                    failureMessage,
-                    reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS);
+            mDownloadSnackbarController.onDownloadFailed(failureMessage,
+                    reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS,
+                    item.getDownloadInfo().isOffTheRecord());
         } else {
             Toast.makeText(ContextUtils.getApplicationContext(), failureMessage, Toast.LENGTH_SHORT)
                     .show();

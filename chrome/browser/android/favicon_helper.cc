@@ -138,7 +138,6 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
       base::BindOnce(&FaviconHelper::OnFaviconBitmapResultAvailable,
                      weak_ptr_factory_.GetWeakPtr(),
                      ScopedJavaGlobalRef<jobject>(j_favicon_image_callback)),
-      favicon::FaviconRequestPlatform::kMobile,
       favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
       /*icon_url_for_uma=*/
       open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL());

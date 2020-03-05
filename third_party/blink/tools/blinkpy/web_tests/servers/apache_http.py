@@ -71,6 +71,15 @@ class ApacheHTTP(server_base.ServerBase):
 
         self._is_win = self._port_obj.host.platform.is_win()
 
+        assert self._filesystem.exists(test_dir), \
+            "'%s' does not exist." % test_dir
+        assert self._filesystem.exists(output_dir), \
+            "'%s' does not exist." % output_dir
+        assert self._filesystem.exists(inspector_sources_dir), \
+            "'%s' does not exist." % inspector_sources_dir
+        assert self._filesystem.exists(generated_sources_dir), \
+            "'%s' does not exist." % generated_sources_dir
+
         start_cmd = [
             executable,
             '-f', '%s' % self._port_obj.path_to_apache_config_file(),

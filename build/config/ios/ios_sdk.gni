@@ -111,14 +111,8 @@ if (ios_sdk_path == "") {
   script_name = "//build/config/mac/sdk_info.py"
   _ios_sdk_result = exec_script(script_name, ios_sdk_info_args, "scope")
   ios_sdk_platform_abs_path = _ios_sdk_result.sdk_platform_path
-  if (ios_enable_relative_sdk_path) {
-    ios_sdk_path = rebase_path(_ios_sdk_result.sdk_path, root_build_dir)
-    ios_sdk_platform_path =
-        rebase_path(_ios_sdk_result.sdk_platform_path, root_build_dir)
-  } else {
-    ios_sdk_path = _ios_sdk_result.sdk_path
-    ios_sdk_platform_path = _ios_sdk_result.sdk_platform_path
-  }
+  ios_sdk_path = _ios_sdk_result.sdk_path
+  ios_sdk_platform_path = _ios_sdk_result.sdk_platform_path
   ios_sdk_version = _ios_sdk_result.sdk_version
   ios_sdk_build = _ios_sdk_result.sdk_build
   xcode_version = _ios_sdk_result.xcode_version

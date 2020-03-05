@@ -150,8 +150,8 @@ void SurfaceAllocationGroup::TakeAggregatedLatencyInfoUpTo(
   surface->TakeActiveLatencyInfo(out);
   auto it = FindLatestSurfaceUpTo(surface->surface_id());
   DCHECK_EQ(*it, surface);
-  while (it > surfaces_.begin() && !(*it)->is_latency_info_taken())
-    (*--it)->TakeActiveAndPendingLatencyInfo(out);
+  while (it > surfaces_.begin() && !(*--it)->is_latency_info_taken())
+    (*it)->TakeActiveAndPendingLatencyInfo(out);
 }
 
 void SurfaceAllocationGroup::OnFirstSurfaceActivation(Surface* surface) {

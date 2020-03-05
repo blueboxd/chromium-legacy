@@ -73,10 +73,17 @@ config("compiler") {
 # that is iOS-only. Please see that target for advice on what should go in
 # :runtime_library vs. :compiler.
 config("runtime_library") {
-  common_flags = [
-    "-isysroot",
-    sysroot,
-  ]
+  if (ios_enable_relative_sdk_path) {
+    common_flags = [
+      "-isysroot",
+      rebase_path(sysroot, root_build_dir),
+    ]
+  } else {
+    common_flags = [
+      "-isysroot",
+      sysroot,
+    ]
+  }
 
   if (use_ios_simulator) {
     common_flags += [ "-mios-simulator-version-min=$ios_deployment_target" ]

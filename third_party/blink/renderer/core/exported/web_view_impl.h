@@ -177,6 +177,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
+  void UpdatePreferredSize() override;
+  void EnablePreferredSizeChangedMode() override;
   void SetDisplayMode(blink::mojom::DisplayMode) override;
   void ZoomToFindInPageRect(const WebRect&) override;
   void SetDeviceScaleFactor(float) override;
@@ -380,6 +382,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void AddAutoplayFlags(int32_t) override;
   void ClearAutoplayFlags() override;
   int32_t AutoplayFlagsForTest() override;
+  WebSize GetPreferredSizeForTest() override;
 
   WebSize Size();
   IntSize MainFrameSize();
@@ -683,6 +686,17 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool debug_inside_input_handling_ = false;
 
   FloatSize elastic_overscroll_;
+
+  // If true, we send IPC messages when |preferred_size_| changes.
+  bool send_preferred_size_changes_ = false;
+
+  // Whether the preferred size may have changed and |UpdatePreferredSize| needs
+  // to be called.
+  bool needs_preferred_size_update_ = true;
+
+  // Cache the preferred size of the page in order to prevent sending the IPC
+  // when layout() recomputes but doesn't actually change sizes.
+  WebSize preferred_size_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
 

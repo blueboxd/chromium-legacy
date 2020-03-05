@@ -105,6 +105,10 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
     return flex_allocation_order_;
   }
 
+  // Returns a flex rule that allows flex layouts to be nested with expected
+  // behavior.
+  FlexRule GetDefaultFlexRule() const;
+
   // Moves and uses |value| as the default value for layout property |key|.
   template <class T, class U>
   FlexLayout& SetDefault(const ui::ClassProperty<T>* key, U&& value) {
@@ -242,6 +246,10 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
     layout_defaults_.ClearProperty(key);
     return *this;
   }
+
+  static gfx::Size DefaultFlexRuleImpl(const FlexLayout* flex_layout,
+                                       const View* view,
+                                       const SizeBounds& size_bounds);
 
   LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
 

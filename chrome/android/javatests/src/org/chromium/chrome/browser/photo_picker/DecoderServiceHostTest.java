@@ -49,10 +49,10 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
     private Context mContext;
 
     // A callback that fires when the decoder is ready.
-    public final CallbackHelper onDecoderReadyCallback = new CallbackHelper();
+    public final CallbackHelper mOnDecoderReadyCallback = new CallbackHelper();
 
     // A callback that fires when something is finished decoding in the dialog.
-    public final CallbackHelper onDecodedCallback = new CallbackHelper();
+    public final CallbackHelper mOnDecodedCallback = new CallbackHelper();
 
     private String mLastDecodedPath;
     private boolean mLastIsVideo;
@@ -73,8 +73,11 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
 
     @Override
     public void serviceReady() {
-        onDecoderReadyCallback.notifyCalled();
+        mOnDecoderReadyCallback.notifyCalled();
     }
+
+    @Override
+    public void decoderIdle() {}
 
     // DecoderServiceHost.ImagesDecodedCallback:
 
@@ -88,18 +91,18 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
         mLastVideoDuration = videoDuration;
         mLastRatio = ratio;
 
-        onDecodedCallback.notifyCalled();
+        mOnDecodedCallback.notifyCalled();
     }
 
     private void waitForDecoder() throws Exception {
-        int callCount = onDecoderReadyCallback.getCallCount();
-        onDecoderReadyCallback.waitForCallback(
+        int callCount = mOnDecoderReadyCallback.getCallCount();
+        mOnDecoderReadyCallback.waitForCallback(
                 callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     private void waitForThumbnailDecode() throws Exception {
-        int callCount = onDecodedCallback.getCallCount();
-        onDecodedCallback.waitForCallback(callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        int callCount = mOnDecodedCallback.getCallCount();
+        mOnDecodedCallback.waitForCallback(callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     private void decodeImage(DecoderServiceHost host, Uri uri, @PickerBitmap.TileTypes int fileType,

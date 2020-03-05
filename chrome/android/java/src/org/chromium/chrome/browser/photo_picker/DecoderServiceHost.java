@@ -108,6 +108,11 @@ public class DecoderServiceHost
          * A function to define to receive a notification once the service is up and running.
          */
         void serviceReady();
+
+        /**
+         * Called when the decoder is idle.
+         */
+        void decoderIdle();
     }
 
     /**
@@ -339,6 +344,10 @@ public class DecoderServiceHost
             mFailedVideoDecodesRuntime = 0;
             mFailedVideoDecodesIo = 0;
             mFailedVideoDecodesUnknown = 0;
+        }
+
+        for (DecoderStatusCallback callback : mCallbacks) {
+            callback.decoderIdle();
         }
     }
 

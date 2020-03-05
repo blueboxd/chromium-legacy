@@ -211,7 +211,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                  const gfx::PresentationFeedback& feedback);
   void DidRejectCompositorFrame(
       uint32_t frame_token,
-      std::vector<TransferableResource> frame_resource_list);
+      std::vector<TransferableResource> frame_resource_list,
+      std::vector<ui::LatencyInfo> latency_info);
 
   // Update the display root reference with |surface|.
   void UpdateDisplayRootReference(const Surface* surface);

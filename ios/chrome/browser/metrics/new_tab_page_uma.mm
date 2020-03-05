@@ -34,15 +34,6 @@ void RecordAction(ChromeBrowserState* browser_state,
   counter->Add(action);
 }
 
-void RecordAction(ChromeBrowserState* browser_state, ActionType action) {
-  DCHECK(browser_state);
-  WebStateList* web_state_list =
-      TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state)
-          .webStateList;
-  return RecordAction(browser_state, web_state_list->GetActiveWebState(),
-                      action);
-}
-
 void RecordActionFromOmnibox(ChromeBrowserState* browser_state,
                              web::WebState* web_state,
                              const GURL& url,

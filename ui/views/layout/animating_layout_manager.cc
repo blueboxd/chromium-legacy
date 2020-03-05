@@ -22,14 +22,6 @@ namespace views {
 
 namespace {
 
-// Returns true if the specified |size| can fit in the specified |bounds|.
-// Returns false if either the width or height of |bounds| is specified and is
-// smaller than the corresponding element of |size|.
-bool CanFitInBounds(const gfx::Size& size, const SizeBounds& bounds) {
-  return (!bounds.width() || (*bounds.width() >= size.width())) &&
-         (!bounds.height() || (*bounds.height() >= size.height()));
-}
-
 // Returns the ChildLayout data for the child view in the proposed layout, or
 // nullptr if not found.
 const ChildLayout* FindChildViewInLayout(const ProposedLayout& layout,

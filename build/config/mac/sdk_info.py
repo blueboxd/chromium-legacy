@@ -13,10 +13,13 @@ import re
 import subprocess
 import sys
 
+# src directory
+ROOT_SRC_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+
 # src/build/xcode_links
-XCODE_LINK_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(
-        os.path.realpath(__file__)))), "xcode_links")
+XCODE_LINK_DIR = os.path.join(ROOT_SRC_DIR, "build", "xcode_links")
 
 # This script prints information about the build system, the operating
 # system and the iOS or Mac SDK (depending on the platform "iphonesimulator",
@@ -112,7 +115,8 @@ def CreateXcodeSymlinkUnderChromiumSource(src):
   if os.path.islink(dst):
     os.unlink(dst)
   os.symlink(src, dst)
-  return dst
+
+  return '//' + os.path.relpath(dst, ROOT_SRC_DIR)
 
 
 if __name__ == '__main__':

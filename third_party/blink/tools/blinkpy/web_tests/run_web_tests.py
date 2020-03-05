@@ -37,7 +37,10 @@ from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
 from blinkpy.web_tests.controllers.manager import Manager
 from blinkpy.web_tests.models import test_run_results
-from blinkpy.web_tests.port.factory import configuration_options, platform_options, wpt_options
+from blinkpy.web_tests.port.factory import configuration_options
+from blinkpy.web_tests.port.factory import platform_options
+from blinkpy.web_tests.port.factory import wpt_options
+from blinkpy.web_tests.port.factory import python_server_options
 from blinkpy.web_tests.views import printing
 
 _log = logging.getLogger(__name__)
@@ -109,6 +112,8 @@ def parse_args(args):
 
     option_group_definitions.append(
         ('web-platform-tests (WPT) Options', wpt_options()))
+
+    option_group_definitions.append(('Python Server Options', python_server_options()))
 
     option_group_definitions.append(
         ('Android-specific Options', [

@@ -321,10 +321,11 @@ bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
     if (it == pids_.end() &&
         ts_packet->pid() == TsSection::kPidPat) {
       // Create the PAT state here if needed.
-      std::unique_ptr<TsSection> pat_section_parser(new TsSectionPat(
-          base::Bind(&Mp2tStreamParser::RegisterPmt, base::Unretained(this))));
-      std::unique_ptr<PidState> pat_pid_state(new PidState(
-          ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser)));
+      auto pat_section_parser =
+          std::make_unique<TsSectionPat>(base::BindRepeating(
+              &Mp2tStreamParser::RegisterPmt, base::Unretained(this)));
+      auto pat_pid_state = std::make_unique<PidState>(
+          ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser));
       pat_pid_state->Enable();
       it = pids_
                .insert(
@@ -405,7 +406,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateH264Parser(int pes_pid) {
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateAacParser(int pes_pid) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_audio_buffer = base::BindRepeating(
       &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);
@@ -416,7 +417,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateAacParser(int pes_pid) {
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateMpeg1AudioParser(
     int pes_pid) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_audio_buffer = base::BindRepeating(
       &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);
@@ -453,7 +454,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedAacParser(
     int pes_pid,
     bool emit_clear_buffers) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_audio_buffer = base::BindRepeating(
       &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);

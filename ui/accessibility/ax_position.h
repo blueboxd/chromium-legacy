@@ -342,13 +342,10 @@ class AXPosition {
         // If this is a "before text" or an "after text" tree position, it's
         // pointing to the anchor itself, which we've determined to be
         // unignored.
-        DCHECK(AnchorChildCount() || child_index_ == BEFORE_TEXT ||
-               child_index_ == 0)
+        DCHECK(!IsLeaf() || child_index_ == BEFORE_TEXT || child_index_ == 0)
             << "\"Before text\" and \"after text\" tree positions are only "
                "valid on leaf nodes.";
-        if (child_index_ == BEFORE_TEXT)
-          return false;
-        if (!AnchorChildCount())
+        if (child_index_ == BEFORE_TEXT || IsLeaf())
           return false;
 
         // If this position is an "after children" position, consider the
@@ -381,7 +378,7 @@ class AXPosition {
         // If the corresponding leaf position is ignored, the current text
         // offset will point to ignored text. Therefore, consider this position
         // to be ignored.
-        if (AnchorChildCount())
+        if (!IsLeaf())
           return AsLeafTreePosition()->IsIgnored();
         return false;
     }
@@ -395,16 +392,19 @@ class AXPosition {
     return GetAnchor() && kind_ == AXPositionKind::TREE_POSITION;
   }
 
-  bool IsLeafTreePosition() const {
-    return IsTreePosition() && !AnchorChildCount();
-  }
+  bool IsLeafTreePosition() const { return IsTreePosition() && IsLeaf(); }
 
   bool IsTextPosition() const {
     return GetAnchor() && kind_ == AXPositionKind::TEXT_POSITION;
   }
 
-  bool IsLeafTextPosition() const {
-    return IsTextPosition() && !AnchorChildCount();
+  bool IsLeafTextPosition() const { return IsTextPosition() && IsLeaf(); }
+
+  bool IsLeaf() const {
+    if (IsNullPosition())
+      return false;
+
+    return !AnchorChildCount() || IsEmptyObjectReplacedByCharacter();
   }
 
   // Returns true if this is a valid position, e.g. the child_index_ or
@@ -445,7 +445,7 @@ class AXPosition {
       case AXPositionKind::TREE_POSITION:
         if (text_offset_ > 0)
           return false;
-        if (AnchorChildCount() || text_offset_ == 0)
+        if (!IsLeaf() || text_offset_ == 0)
           return child_index_ == 0;
         return child_index_ == BEFORE_TEXT;
       case AXPositionKind::TEXT_POSITION:
@@ -1005,7 +1005,7 @@ class AXPosition {
     AXPositionInstance copy = Clone();
     DCHECK(copy);
     DCHECK_GE(copy->text_offset_, 0);
-    if (!copy->AnchorChildCount()) {
+    if (copy->IsLeaf()) {
       const int max_text_offset = copy->MaxTextOffset();
       copy->child_index_ =
           (max_text_offset != 0 && copy->text_offset_ != max_text_offset)
@@ -1064,7 +1064,7 @@ class AXPosition {
   // position at any point before reaching the leaf node could potentially lose
   // information.
   AXPositionInstance AsLeafTreePosition() const {
-    if (IsNullPosition() || !AnchorChildCount())
+    if (IsNullPosition() || IsLeaf())
       return AsTreePosition();
 
     // If our text offset is greater than 0, or if our affinity is set to
@@ -1092,7 +1092,7 @@ class AXPosition {
             tree_position->CreateChildPositionAt(tree_position->child_index_);
       }
       DCHECK(tree_position && !tree_position->IsNullPosition());
-    } while (tree_position->AnchorChildCount());
+    } while (!tree_position->IsLeaf());
 
     DCHECK(tree_position && tree_position->IsLeafTreePosition());
     return tree_position;
@@ -1107,7 +1107,7 @@ class AXPosition {
     // Check if it is a "before text" position.
     if (copy->child_index_ == BEFORE_TEXT) {
       // "Before text" positions can only appear on leaf nodes.
-      DCHECK(!copy->AnchorChildCount());
+      DCHECK(copy->IsLeaf());
       // If the current text offset is valid, we don't touch it to potentially
       // allow converting from a text position to a tree position and back
       // without losing information.
@@ -1169,7 +1169,7 @@ class AXPosition {
   }
 
   AXPositionInstance AsLeafTextPosition() const {
-    if (IsNullPosition() || !AnchorChildCount())
+    if (IsNullPosition() || IsLeaf())
       return AsTextPosition();
 
     // Adjust the text offset.
@@ -1205,7 +1205,7 @@ class AXPosition {
       }
 
       text_position = std::move(child_position);
-    } while (text_position->AnchorChildCount());
+    } while (!text_position->IsLeaf());
 
     DCHECK(text_position);
     DCHECK(text_position->IsLeafTextPosition());
@@ -1563,9 +1563,8 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
       case AXPositionKind::TREE_POSITION:
-        if (!AnchorChildCount()) {
+        if (IsLeaf())
           return CreateTreePosition(tree_id_, anchor_id_, BEFORE_TEXT);
-        }
         return CreateTreePosition(tree_id_, anchor_id_, 0 /* child_index */);
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, 0 /* text_offset */,
@@ -1579,7 +1578,9 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
       case AXPositionKind::TREE_POSITION:
-        return CreateTreePosition(tree_id_, anchor_id_, AnchorChildCount());
+        return CreateTreePosition(
+            tree_id_, anchor_id_,
+            IsEmptyObjectReplacedByCharacter() ? 0 : AnchorChildCount());
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, MaxTextOffset(),
                                   ax::mojom::TextAffinity::kDownstream);
@@ -1602,7 +1603,7 @@ class AXPosition {
     AXPositionInstance position =
         AsTreePosition()->CreateDocumentAncestorPosition();
     if (!position->IsNullPosition()) {
-      while (position->AnchorChildCount()) {
+      while (!position->IsLeaf()) {
         position =
             position->CreateChildPositionAt(position->AnchorChildCount() - 1);
       }
@@ -1614,7 +1615,7 @@ class AXPosition {
   }
 
   AXPositionInstance CreateChildPositionAt(int child_index) const {
-    if (IsNullPosition())
+    if (IsNullPosition() || IsLeaf())
       return CreateNullPosition();
 
     if (child_index < 0 || child_index >= AnchorChildCount())
@@ -1634,7 +1635,7 @@ class AXPosition {
             CreateTreePosition(tree_id, child_id, 0 /* child_index */);
         // If the child's anchor is a leaf node, make this a "before text"
         // position.
-        if (!child_position->AnchorChildCount())
+        if (child_position->IsLeaf())
           child_position->child_index_ = BEFORE_TEXT;
         return child_position;
       }
@@ -1814,7 +1815,7 @@ class AXPosition {
       *crossed_line_breaking_object = false;
 
     // If this is an ancestor text position, resolve to its leaf text position.
-    if (IsTextPosition() && AnchorChildCount())
+    if (IsTextPosition() && !IsLeaf())
       return AsLeafTextPosition();
 
     AbortMovePredicate abort_move_predicate =
@@ -2892,19 +2893,27 @@ class AXPosition {
   }
 
   // Returns true if this position is on an empty object node that needs to
-  // be represented by an empty object replacement character. It does when
-  // the node has no child, is not a text object and we are on a platform that
-  // enables this feature.
+  // be represented by an empty object replacement character. It does when the
+  // node has no unignored child, is not a text object and we are on a platform
+  // that enables this feature.
   bool IsEmptyObjectReplacedByCharacter() const {
     if (g_ax_embedded_object_behavior ==
             AXEmbeddedObjectBehavior::kSuppressCharacter ||
-        AnchorChildCount()) {
+        IsNullPosition() || AnchorUnignoredChildCount()) {
       return false;
     }
+
     // All unignored leaf nodes in the AXTree except the document and the text
-    // nodes should be replaced by the embedded object character.
-    return !IsIgnored() && !IsDocument(GetRole()) &&
-           !GetAnchor()->IsTextOnlyObject();
+    // nodes should be replaced by the embedded object character. Also, nodes
+    // that only have ignored children (e.g., a button that contains only an
+    // empty div) need to be treated as leaf nodes.
+    //
+    // Calling AXPosition::IsIgnored here is not possible as it would create an
+    // infinite loop. However, GetAnchor()->IsIgnored() is sufficient here
+    // because we know that the anchor at this position doesn't have an
+    // unignored child, making this a leaf tree or text position.
+    return !GetAnchor()->IsIgnored() && !IsDocument(GetRole()) &&
+           !IsInTextObject() && !IsIframe(GetRole());
   }
 
   void swap(AXPosition& other) {
@@ -3002,7 +3011,7 @@ class AXPosition {
   // to move by grapheme boundaries on non-leaf nodes and computing plus caching
   // the inner text for all nodes is costly.
   std::unique_ptr<base::i18n::BreakIterator> GetGraphemeIterator() const {
-    if (!IsTextPosition() || AnchorChildCount())
+    if (!IsTextPosition() || !IsLeaf())
       return {};
 
     name_ = GetText();
@@ -3042,6 +3051,15 @@ class AXPosition {
                            AXTreeID* tree_id,
                            int32_t* child_id) const = 0;
   virtual int AnchorChildCount() const = 0;
+  // When a child is ignored, it looks for unignored nodes of that child's
+  // children until there are no more descendants.
+  //
+  // E.g.
+  // ++TextField
+  // ++++GenericContainer ignored
+  // ++++++StaticText "Hello"
+  // When we call the following method on TextField, it would return 1.
+  virtual int AnchorUnignoredChildCount() const = 0;
   virtual int AnchorIndexInParent() const = 0;
   virtual base::stack<AXNodeType*> GetAncestorAnchors() const = 0;
   virtual void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const = 0;
@@ -3116,7 +3134,7 @@ class AXPosition {
     AXPositionInstance current_position = AsTreePosition();
     DCHECK(!current_position->IsNullPosition());
 
-    if (AnchorChildCount()) {
+    if (!IsLeaf()) {
       const int child_index = current_position->child_index_;
       if (child_index < current_position->AnchorChildCount()) {
         AXPositionInstance child_position =
@@ -3199,7 +3217,7 @@ class AXPosition {
       return CreateNullPosition();
     }
 
-    while (rightmost_leaf->AnchorChildCount()) {
+    while (!rightmost_leaf->IsLeaf()) {
       parent_position = std::move(rightmost_leaf);
       rightmost_leaf = parent_position->CreateChildPositionAt(
           parent_position->AnchorChildCount() - 1);
@@ -3219,13 +3237,12 @@ class AXPosition {
   AXPositionInstance CreateNextTextAnchorPosition(
       const AbortMovePredicate& abort_predicate) const {
     // If this is an ancestor text position, resolve to its leaf text position.
-    if (IsTextPosition() && AnchorChildCount())
+    if (IsTextPosition() && !IsLeaf())
       return AsLeafTextPosition();
 
     AXPositionInstance next_leaf = CreateNextAnchorPosition(abort_predicate);
-    while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
+    while (!next_leaf->IsNullPosition() && !next_leaf->IsLeaf())
       next_leaf = next_leaf->CreateNextAnchorPosition(abort_predicate);
-    }
 
     DCHECK(next_leaf);
     return next_leaf->AsLeafTextPosition();
@@ -3236,13 +3253,12 @@ class AXPosition {
   AXPositionInstance CreatePreviousTextAnchorPosition(
       const AbortMovePredicate& abort_predicate) const {
     // If this is an ancestor text position, resolve to its leaf text position.
-    if (IsTextPosition() && AnchorChildCount())
+    if (IsTextPosition() && !IsLeaf())
       return AsLeafTextPosition();
 
     AXPositionInstance previous_leaf =
         CreatePreviousAnchorPosition(abort_predicate);
-    while (!previous_leaf->IsNullPosition() &&
-           previous_leaf->AnchorChildCount()) {
+    while (!previous_leaf->IsNullPosition() && !previous_leaf->IsLeaf()) {
       previous_leaf =
           previous_leaf->CreatePreviousAnchorPosition(abort_predicate);
     }
@@ -3257,9 +3273,8 @@ class AXPosition {
       const AbortMovePredicate& abort_predicate) const {
     AXPositionInstance next_leaf =
         AsTreePosition()->CreateNextAnchorPosition(abort_predicate);
-    while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
+    while (!next_leaf->IsNullPosition() && !next_leaf->IsLeaf())
       next_leaf = next_leaf->CreateNextAnchorPosition(abort_predicate);
-    }
 
     DCHECK(next_leaf);
     return next_leaf;
@@ -3271,8 +3286,7 @@ class AXPosition {
       const AbortMovePredicate& abort_predicate) const {
     AXPositionInstance previous_leaf =
         AsTreePosition()->CreatePreviousAnchorPosition(abort_predicate);
-    while (!previous_leaf->IsNullPosition() &&
-           previous_leaf->AnchorChildCount()) {
+    while (!previous_leaf->IsNullPosition() && !previous_leaf->IsLeaf()) {
       previous_leaf =
           previous_leaf->CreatePreviousAnchorPosition(abort_predicate);
     }
@@ -3415,7 +3429,7 @@ class AXPosition {
           move_from, move_to, move_type, direction);
     }
 
-    if (crossed_line_breaking_object_token && !move_to.AnchorChildCount()) {
+    if (crossed_line_breaking_object_token && move_to.IsLeaf()) {
       // If there's a sequence of whitespace-only anchors, collapse so only the
       // last whitespace-only anchor is considered a paragraph boundary.
       return direction != AXMoveDirection::kNextInTree ||
@@ -3666,13 +3680,14 @@ class AXPosition {
         // following loop skips over empty text leaf nodes, which is expected
         // since those positions are equivalent to both, the previous non-empty
         // leaf node's end and the next non-empty leaf node's start.
-        while (text_position->AtEndOfAnchor())
+        while (text_position->AtEndOfAnchor()) {
           text_position = text_position->CreateNextLeafTextPosition();
+        }
         if (!text_position->IsNullPosition())
           ++text_position->text_offset_;
         break;
       case ax::mojom::MoveDirection::kBackward:
-        // IF we are at a text offset greater than 0, we will simply decrease
+        // If we are at a text offset greater than 0, we will simply decrease
         // the offset by one; otherwise, create a position at the end of the
         // previous leaf node with non-empty text and decrease its offset.
         //

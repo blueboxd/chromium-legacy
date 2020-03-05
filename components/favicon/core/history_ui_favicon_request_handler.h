@@ -22,12 +22,6 @@ enum class HistoryUiFaviconRequestOrigin {
   kRecentTabs,
 };
 
-// Platform making the request.
-enum class FaviconRequestPlatform {
-  kMobile,
-  kDesktop,
-};
-
 // Keyed service for handling favicon requests made by a history UI, forwarding
 // them to local storage, sync or Google server accordingly. This service should
 // only be used by the UIs listed in the HistoryUiFaviconRequestOrigin enum.
@@ -39,13 +33,10 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
   // is enabled. If a non-empty |icon_url_for_uma| (optional) is passed, it will
   // be used to record UMA about the grouping of requests to the favicon server.
-  // |request_platform| specifies whether the caller is mobile or desktop code.
-  // TODO(victorvianna): Remove platform parameter since it's no longer needed.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback callback,
-      FaviconRequestPlatform request_platform,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
       const GURL& icon_url_for_uma) = 0;
 

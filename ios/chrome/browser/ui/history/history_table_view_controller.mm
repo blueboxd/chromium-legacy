@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
@@ -1062,9 +1063,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
-  // TODO(crbug.com/1032550) : Update this call to pass in the current WebState.
-  new_tab_page_uma::RecordAction(_browser->GetBrowserState(),
-                                 new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
+  new_tab_page_uma::RecordAction(
+      _browser->GetBrowserState(),
+      _browser->GetWebStateList()->GetActiveWebState(),
+      new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;

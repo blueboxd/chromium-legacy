@@ -62,10 +62,12 @@ void StatsReportingController::RegisterLocalStatePrefs(
 void StatsReportingController::SetEnabled(Profile* profile, bool enabled) {
   DCHECK(profile);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << "SetEnabled(" << std::boolalpha << enabled << ")";
 
   if (GetOwnershipStatus() == DeviceSettingsService::OWNERSHIP_TAKEN) {
     // The device has an owner. If the current profile is that owner, we will
     // write the value on their behalf, otherwise no action is taken.
+    VLOG(1) << "Already has owner";
     SetWithServiceAsync(GetOwnerSettingsService(profile), enabled);
   } else {
     // The device has no owner, or we do not know yet whether the device has an
@@ -74,6 +76,7 @@ void StatsReportingController::SetEnabled(Profile* profile, bool enabled) {
     // We store the new value in the local state, so that even if Chrome is
     // restarted before ownership is taken, we will still persist it eventually.
     // See OnOwnershipTaken.
+    VLOG(1) << "Pending owner; setting kPendingPref";
     local_state_->SetBoolean(kPendingPref, enabled);
     NotifyObservers();
   }
@@ -103,6 +106,7 @@ void StatsReportingController::OnOwnershipTaken(
     ownership::OwnerSettingsService* service) {
   DCHECK_EQ(GetOwnershipStatus(), DeviceSettingsService::OWNERSHIP_TAKEN);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << "OnOwnershipTaken";
 
   bool pending_value;
   if (GetPendingValue(&pending_value)) {
@@ -128,8 +132,10 @@ StatsReportingController::~StatsReportingController() {
 void StatsReportingController::SetWithServiceAsync(
     ownership::OwnerSettingsService* service,  // Can be null for non-owners.
     bool enabled) {
+  VLOG(1) << "SetWithServiceAsync(" << std::boolalpha << enabled << ")";
   bool not_yet_ready = service && !service->IsReady();
   if (not_yet_ready) {
+    VLOG(1) << "Service not yet ready. Adding listener.";
     // Service is not yet ready. Listen for changes in its readiness so we can
     // write the value once it is ready. Uses weak pointers, so if everything
     // is shutdown and deleted in the meantime, this callback isn't run.
@@ -146,6 +152,7 @@ void StatsReportingController::SetWithServiceCallback(
     const base::WeakPtr<ownership::OwnerSettingsService>& service,
     bool enabled,
     bool is_owner) {
+  VLOG(1) << "SetWithServiceCallback(" << std::boolalpha << enabled << ")";
   if (service)  // Make sure service wasn't deleted in the meantime.
     SetWithService(service.get(), enabled);
 }
@@ -153,6 +160,7 @@ void StatsReportingController::SetWithServiceCallback(
 void StatsReportingController::SetWithService(
     ownership::OwnerSettingsService* service,  // Can be null for non-owners.
     bool enabled) {
+  VLOG(1) << "SetWithService(" << std::boolalpha << enabled << ")";
   if (service && service->IsOwner()) {
     service->SetBoolean(kStatsReportingPref, enabled);
     ClearPendingValue();
@@ -167,9 +175,13 @@ void StatsReportingController::SetWithService(
 void StatsReportingController::NotifyObservers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool current_value = IsEnabled();
+  VLOG(1) << "Maybe notifying observers of " << std::boolalpha << current_value;
   if (current_value != value_notified_to_observers_) {
+    VLOG(1) << "Notifying observers";
     value_notified_to_observers_ = current_value;
     callback_list_.Notify();
+  } else {
+    VLOG(1) << "Not notifying (already notified)";
   }
 }
 
@@ -192,6 +204,7 @@ bool StatsReportingController::GetPendingValue(bool* result) {
 }
 
 void StatsReportingController::ClearPendingValue() {
+  VLOG(1) << "ClearPendingValue";
   local_state_->ClearPref(kPendingPref);
 }
 

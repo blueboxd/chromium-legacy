@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
@@ -39,30 +40,38 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
   // delivered to a cross-origin or cross-site context.
   static base::Optional<BlockedByResponseReason> IsBlocked(
       const GURL& request_url,
+      const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      const CrossOriginEmbedderPolicy& embedder_policy) WARN_UNUSED_RESULT;
+      const CrossOriginEmbedderPolicy& embedder_policy,
+      mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr)
+      WARN_UNUSED_RESULT;
 
   // Same as IsBlocked(), but this method can take a raw value of
   // Cross-Origin-Resource-Policy header instead of using a URLResponseHead.
   static base::Optional<BlockedByResponseReason> IsBlockedByHeaderValue(
       const GURL& request_url,
+      const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
       base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
       base::Optional<url::Origin> request_initiator_site_lock,
-      const CrossOriginEmbedderPolicy& embedder_policy) WARN_UNUSED_RESULT;
+      const CrossOriginEmbedderPolicy& embedder_policy,
+      mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr)
+      WARN_UNUSED_RESULT;
 
   // The CORP check for navigation requests. This is expected to be called
   // from the navigation algorithm.
   static base::Optional<BlockedByResponseReason> IsNavigationBlocked(
       const GURL& request_url,
+      const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,
       base::Optional<url::Origin> request_initiator_site_lock,
-      const CrossOriginEmbedderPolicy& embedder_policy);
+      const CrossOriginEmbedderPolicy& embedder_policy,
+      mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr);
 
   // Parsing of the Cross-Origin-Resource-Policy http response header.
   enum ParsedHeader {

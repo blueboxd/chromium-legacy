@@ -443,12 +443,14 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   void EnablePreferredSizeMode() {
-    view()->OnEnablePreferredSizeChangedMode();
+    blink::WebView* webview = view()->GetWebView();
+    webview->EnablePreferredSizeChangedMode();
   }
 
-  const gfx::Size& GetPreferredSize() {
-    view()->UpdatePreferredSize();
-    return view()->preferred_size_;
+  gfx::Size GetPreferredSize() {
+    blink::WebView* webview = view()->GetWebView();
+    webview->UpdatePreferredSize();
+    return gfx::Size(webview->GetPreferredSizeForTest());
   }
 
   int GetScrollbarWidth() {

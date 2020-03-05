@@ -404,7 +404,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
-  void OnEnablePreferredSizeChangedMode();
   void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);
   void OnMoveOrResizeStarted();
   void OnExitFullscreen();
@@ -432,9 +431,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // and put it in the same position in the .cc file.
 
   // Misc private functions ----------------------------------------------------
-  // Check whether the preferred size has changed. This should only be called
-  // with up-to-date layout.
-  void UpdatePreferredSize();
 
   // Request the window to close from the renderer by sending the request to the
   // browser.
@@ -522,13 +518,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // false, but set to true by some tests.
   bool send_content_state_immediately_ = false;
 
-  // If true, we send IPC messages when |preferred_size_| changes.
-  bool send_preferred_size_changes_ = false;
-
-  // Whether the preferred size may have changed and |UpdatePreferredSize| needs
-  // to be called.
-  bool needs_preferred_size_update_ = true;
-
   // Loading state -------------------------------------------------------------
 
   // Timer used to delay the updating of nav state (see
@@ -587,10 +576,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // This class owns this member, and is responsible for calling
   // WebView::Close().
   blink::WebView* webview_ = nullptr;
-
-  // Cache the preferred size of the page in order to prevent sending the IPC
-  // when layout() recomputes but doesn't actually change sizes.
-  gfx::Size preferred_size_;
 
   // Used to indicate the zoom level to be used during subframe loads, since
   // they should match page zoom level.

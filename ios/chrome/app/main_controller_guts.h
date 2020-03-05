@@ -9,10 +9,13 @@
 
 #import "base/ios/block_types.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 
+@class AppState;
 @class BrowserViewController;
 class ChromeBrowserState;
 @class TabGridCoordinator;
@@ -21,7 +24,7 @@ class ChromeBrowserState;
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
 // ownership of Scene-related objects to SceneController.
-@protocol MainControllerGuts
+@protocol MainControllerGuts <StartupInformation, BrowsingDataCommands>
 
 // If YES, the tab switcher is currently active.
 @property(nonatomic, assign, getter=isTabSwitcherActive)
@@ -46,6 +49,8 @@ class ChromeBrowserState;
 - (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
 - (UIWindow*)window;
+- (NSDictionary*)launchOptions;
+- (AppState*)appState;
 
 - (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
@@ -53,6 +58,9 @@ class ChromeBrowserState;
                           completionBlock:(ProceduralBlock)completionBlock;
 
 - (void)showFirstRunUI;
+- (void)scheduleShowPromo;
+// Returns whether or not the app can launch in incognito mode.
+- (BOOL)canLaunchInIncognito;
 
 @end
 

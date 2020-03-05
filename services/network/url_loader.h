@@ -30,6 +30,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -98,6 +99,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const mojom::URLLoaderFactoryParams* factory_params,
+      mojom::CrossOriginEmbedderPolicyReporter* reporter,
       uint32_t request_id,
       int keepalive_request_size,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
@@ -305,6 +307,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to
   // store a raw pointer to mojom::URLLoaderFactoryParams.
   const mojom::URLLoaderFactoryParams* const factory_params_;
+  // This also belongs to URLLoaderFactory and outlives this loader.
+  mojom::CrossOriginEmbedderPolicyReporter* const coep_reporter_;
 
   int render_frame_id_;
   uint32_t request_id_;

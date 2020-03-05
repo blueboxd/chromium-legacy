@@ -47,7 +47,11 @@ WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
 void WaylandWindow::UpdateBufferScale(bool update_bounds) {
   DCHECK(connection_->wayland_output_manager());
   const auto* screen = connection_->wayland_output_manager()->wayland_screen();
-  DCHECK(screen);
+
+  // The client might not create screen at all.
+  if (!screen)
+    return;
+
   const auto widget = GetWidget();
 
   int32_t new_scale = 0;

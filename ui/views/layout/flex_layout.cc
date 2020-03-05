@@ -363,6 +363,11 @@ FlexLayout& FlexLayout::SetFlexAllocationOrder(
   return *this;
 }
 
+FlexRule FlexLayout::GetDefaultFlexRule() const {
+  return base::BindRepeating(&FlexLayout::DefaultFlexRuleImpl,
+                             base::Unretained(this));
+}
+
 ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
@@ -854,6 +859,17 @@ void FlexLayout::AllocateFlexSpace(
     if (dirty)
       UpdateLayoutFromChildren(bounds, data, child_spacing);
   }
+}
+
+// static
+gfx::Size FlexLayout::DefaultFlexRuleImpl(const FlexLayout* flex_layout,
+                                          const View* view,
+                                          const SizeBounds& size_bounds) {
+  if (size_bounds == SizeBounds())
+    return flex_layout->GetPreferredSize(view);
+  if (size_bounds == SizeBounds(0, 0))
+    return flex_layout->GetMinimumSize(view);
+  return flex_layout->CalculateProposedLayout(size_bounds).host_size;
 }
 
 }  // namespace views

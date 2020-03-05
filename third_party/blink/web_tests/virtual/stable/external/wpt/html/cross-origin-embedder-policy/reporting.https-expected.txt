@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL report-to parameter for COEP and COEP-report-only assert_not_equals: got disallowed value null
+Harness: the test ran to completion.
+

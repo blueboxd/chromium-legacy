@@ -96,7 +96,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                        base::Unretained(this)),
         std::move(receiver), 0 /* options */, resource_request,
         std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
-        0, /* request_id */
+        /*coep_reporter=*/nullptr, 0, /* request_id */
         0 /* keepalive_request_size */, resource_scheduler_client_,
         nullptr /* keepalive_statistics_recorder */,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,

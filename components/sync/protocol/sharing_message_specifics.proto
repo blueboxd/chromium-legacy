@@ -72,6 +72,8 @@ message SharingMessageCommitError {
     SYNC_NETWORK_ERROR = 9;
     // Error code for server error or unparsable server response.
     SYNC_SERVER_ERROR = 10;
+    // Message wasn't committed before timeout.
+    SYNC_TIMEOUT = 11;
   }
 
   optional ErrorCode error_code = 1;

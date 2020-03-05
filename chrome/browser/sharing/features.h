@@ -50,6 +50,10 @@ extern const base::Feature kSharingAckMessageTTL;
 // The FCM TTL in seconds for sharing ack messages.
 extern const base::FeatureParam<int> kSharingAckMessageTTLSeconds;
 
+// Feature flag for configuring the timeout in the sharing message bridge.
+extern const base::Feature kSharingMessageBridgeTimeout;
+extern const base::FeatureParam<int> kSharingMessageBridgeTimeoutSeconds;
+
 // Feature flag for sending sharing message via Sync.
 extern const base::Feature kSharingSendViaSync;
 

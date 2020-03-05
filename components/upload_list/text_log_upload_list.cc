@@ -27,6 +27,32 @@ std::vector<std::string> SplitIntoComponents(const std::string& line) {
                            base::SPLIT_WANT_ALL);
 }
 
+bool CheckCsvUploadListOutOfRange(const std::string& line,
+                                  const base::Time& begin,
+                                  const base::Time& end) {
+  std::vector<std::string> components = SplitIntoComponents(line);
+  double seconds_since_epoch;
+  if (components.size() > kUploadTimeIndex &&
+      !components[kUploadTimeIndex].empty() &&
+      base::StringToDouble(components[kUploadTimeIndex],
+                           &seconds_since_epoch)) {
+    base::Time upload_time = base::Time::FromDoubleT(seconds_since_epoch);
+    if (begin <= upload_time && upload_time <= end)
+      return false;
+  }
+
+  if (components.size() > kCaptureTimeIndex &&
+      !components[kCaptureTimeIndex].empty() &&
+      base::StringToDouble(components[kCaptureTimeIndex],
+                           &seconds_since_epoch)) {
+    base::Time capture_time = base::Time::FromDoubleT(seconds_since_epoch);
+    if (begin <= capture_time && capture_time <= end)
+      return false;
+  }
+
+  return true;
+}
+
 // Tries to parse one upload log line based on CSV format, then converts it to
 // a UploadInfo entry. If the conversion succeeds, it returns true and a valid
 // |info|. Otherwise, it returns false.
@@ -98,27 +124,8 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
 
   std::ostringstream new_contents_stream;
   for (const std::string& line : log_entries) {
-    std::vector<std::string> components = SplitIntoComponents(line);
-    double seconds_since_epoch;
-    if (components.size() > kUploadTimeIndex &&
-        !components[kUploadTimeIndex].empty() &&
-        base::StringToDouble(components[kUploadTimeIndex],
-                             &seconds_since_epoch)) {
-      base::Time upload_time = base::Time::FromDoubleT(seconds_since_epoch);
-      if (begin <= upload_time && upload_time <= end)
-        continue;
-    }
-
-    if (components.size() > kCaptureTimeIndex &&
-        !components[kCaptureTimeIndex].empty() &&
-        base::StringToDouble(components[kCaptureTimeIndex],
-                             &seconds_since_epoch)) {
-      base::Time capture_time = base::Time::FromDoubleT(seconds_since_epoch);
-      if (begin <= capture_time && capture_time <= end)
-        continue;
-    }
-
-    new_contents_stream << line << std::endl;
+    if (CheckCsvUploadListOutOfRange(line, begin, end))
+      new_contents_stream << line << std::endl;
   }
 
   std::string new_contents = new_contents_stream.str();

@@ -24,12 +24,13 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -215,9 +216,16 @@ void AutocompleteProviderClientImpl::PrefetchImage(const GURL& url) {}
 bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
     const GURL& url,
     const AutocompleteInput* input) {
-  TabModel* tab_model =
-      TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state_);
-  WebStateList* web_state_list = tab_model.webStateList;
-  return web_state_list && web_state_list->GetIndexOfInactiveWebStateWithURL(
-                               url) != WebStateList::kInvalidIndex;
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(browser_state_);
+  std::set<Browser*> browsers = browser_state_->IsOffTheRecord()
+                                    ? browser_list->AllIncognitoBrowsers()
+                                    : browser_list->AllRegularBrowsers();
+  for (Browser* browser : browsers) {
+    if (browser->GetWebStateList()->GetIndexOfInactiveWebStateWithURL(url) !=
+        WebStateList::kInvalidIndex) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/sharing/features.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -51,7 +52,8 @@ class OfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 class SharingMessageBridgeTest : public testing::Test {
  protected:
-  SharingMessageBridgeTest() {
+  SharingMessageBridgeTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     EXPECT_CALL(*processor(), ModelReadyToSync(NotNull()));
     bridge_ = std::make_unique<SharingMessageBridgeImpl>(
         mock_processor_.CreateForwardingProcessor());
@@ -66,6 +68,12 @@ class SharingMessageBridgeTest : public testing::Test {
     auto specifics = std::make_unique<SharingMessageSpecifics>();
     specifics->set_payload(payload);
     return specifics;
+  }
+
+  void FastForwardThroughTimeout() {
+    const base::TimeDelta time_delta =
+        base::TimeDelta::FromSeconds(kSharingMessageBridgeTimeoutSeconds.Get());
+    task_environment_.FastForwardBy(time_delta);
   }
 
  private:
@@ -222,6 +230,30 @@ TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSyncStoppedEvent) {
   histogram_tester.ExpectUniqueSample(
       "Sync.SharingMessage.CommitResult",
       SharingMessageCommitError::SYNC_TURNED_OFF, 1);
+}
+
+TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnTimeout) {
+  base::HistogramTester histogram_tester;
+  syncer::EntityData entity_data;
+  EXPECT_CALL(*processor(), Put(_, _, _))
+      .WillRepeatedly(SaveArgPointeeMove<1>(&entity_data));
+
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+
+  bridge()->SendSharingMessage(CreateSpecifics("test_payload"), callback.Get());
+  ASSERT_EQ(bridge()->GetCallbacksCountForTesting(), 1u);
+
+  EXPECT_CALL(callback,
+              Run(HasErrorCode(SharingMessageCommitError::SYNC_TIMEOUT)));
+  EXPECT_CALL(*processor(),
+              UntrackEntityForClientTagHash(entity_data.client_tag_hash));
+
+  FastForwardThroughTimeout();
+
+  EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
+  histogram_tester.ExpectUniqueSample("Sync.SharingMessage.CommitResult",
+                                      SharingMessageCommitError::SYNC_TIMEOUT,
+                                      1);
 }
 
 TEST_P(SharingMessageBridgeErrorsTest,

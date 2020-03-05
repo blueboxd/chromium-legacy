@@ -2100,6 +2100,10 @@ void LocalFrame::SetInitialFocus(bool reverse) {
               : mojom::blink::FocusType::kForward);
 }
 
+void LocalFrame::EnablePreferredSizeChangedMode() {
+  GetPage()->GetChromeClient().EnablePreferredSizeChangedMode();
+}
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(

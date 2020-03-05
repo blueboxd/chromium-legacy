@@ -848,8 +848,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
       mojom::RequestMode::kNoCors;
   // COEP is not supported when OOR-CORS is disabled.
   if (CrossOriginResourcePolicy::IsBlocked(
-          request_url, request_initiator, response, kOverreachingRequestMode,
-          request_initiator_site_lock, CrossOriginEmbedderPolicy())) {
+          request_url, request_url, request_initiator, response,
+          kOverreachingRequestMode, request_initiator_site_lock,
+          CrossOriginEmbedderPolicy())) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;

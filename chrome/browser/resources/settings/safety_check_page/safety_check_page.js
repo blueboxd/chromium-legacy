@@ -271,7 +271,7 @@ Polymer({
       case ParentStatus.BEFORE:
         return this.i18n('safetyCheckParentPrimaryLabelBefore');
       case ParentStatus.CHECKING:
-        return this.i18n('safetyCheckParentPrimaryLabelChecking');
+        return this.i18n('safetyCheckRunning');
       case ParentStatus.AFTER:
         return this.i18n('safetyCheckParentPrimaryLabelAfter');
       default:
@@ -369,7 +369,7 @@ Polymer({
   getUpdatesSubLabelText_: function() {
     switch (this.updatesStatus_) {
       case settings.SafetyCheckUpdatesStatus.CHECKING:
-        return '';
+        return this.i18n('safetyCheckRunning');
       case settings.SafetyCheckUpdatesStatus.UPDATED:
         return this.i18n('aboutUpgradeUpToDate');
       case settings.SafetyCheckUpdatesStatus.UPDATING:
@@ -377,11 +377,11 @@ Polymer({
       case settings.SafetyCheckUpdatesStatus.RELAUNCH:
         return this.i18n('aboutUpgradeRelaunch');
       case settings.SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN:
-        return this.i18n('safetyCheckUpdatesSubLabelDisabledByAdmin');
+        return this.i18nAdvanced('safetyCheckUpdatesSubLabelDisabledByAdmin');
       case settings.SafetyCheckUpdatesStatus.FAILED_OFFLINE:
         return this.i18n('safetyCheckUpdatesSubLabelFailedOffline');
       case settings.SafetyCheckUpdatesStatus.FAILED:
-        return this.i18n('safetyCheckUpdatesSubLabelFailed');
+        return this.i18nAdvanced('safetyCheckUpdatesSubLabelFailed');
       default:
         assertNotReached();
     }
@@ -408,7 +408,7 @@ Polymer({
   getPasswordsSubLabelText_: function() {
     switch (this.passwordsStatus_) {
       case settings.SafetyCheckPasswordsStatus.CHECKING:
-        return '';
+        return this.i18n('safetyCheckRunning');
       case settings.SafetyCheckPasswordsStatus.SAFE:
         return this.i18n('safetyCheckPasswordsSubLabelSafe');
       case settings.SafetyCheckPasswordsStatus.COMPROMISED:
@@ -570,7 +570,8 @@ Polymer({
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED:
         return this.i18n('safetyCheckSafeBrowsingSubLabelDisabled');
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_ADMIN:
-        return this.i18n('safetyCheckSafeBrowsingSubLabelDisabledByAdmin');
+        return this.i18nAdvanced(
+            'safetyCheckSafeBrowsingSubLabelDisabledByAdmin');
       case settings.SafetyCheckSafeBrowsingStatus.DISABLED_BY_EXTENSION:
         return this.i18n('safetyCheckSafeBrowsingSubLabelDisabledByExtension');
       default:
@@ -715,7 +716,7 @@ Polymer({
   getExtensionsSubLabelText_: function() {
     switch (this.extensionsStatus_) {
       case settings.SafetyCheckExtensionsStatus.CHECKING:
-        return '';
+        return this.i18n('safetyCheckRunning');
       case settings.SafetyCheckExtensionsStatus.ERROR:
         return this.i18n('safetyCheckExtensionsSubLabelError');
       case settings.SafetyCheckExtensionsStatus.SAFE:

@@ -213,8 +213,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return willChromeHandleIntent(intent, false);
     }
 
-    @Override
-    public @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(String url) {
+    /**
+     * If the current activity is a webapp, applies the webapp's scope policy and returns the
+     * result. Returns {@link WebappScopePolicy#NavigationDirective#NORMAL_BEHAVIOR} if the current
+     * activity is not a webapp.
+     * Protected to allow subclasses to customize the logic.
+     */
+    protected @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(String url) {
         Context context = getAvailableContext();
         if (context instanceof WebappActivity) {
             WebappActivity webappActivity = (WebappActivity) context;
@@ -222,6 +227,18 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     webappActivity.scopePolicy(), webappActivity.getWebappInfo(), url);
         }
         return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
+    }
+
+    // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
+    @Override
+    public boolean shouldStayInWebapp(ExternalNavigationParams params) {
+        @WebappScopePolicy.NavigationDirective
+        int webappScopePolicyDirective = applyWebappScopePolicyForUrl(params.getUrl());
+        if (webappScopePolicyDirective
+                == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -631,6 +648,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     /**
+     * Starts the autofill assistant with the given intent. Exists to allow tests to stub out this
+     * functionality.
+     */
+    protected void startAutofillAssistantWithIntent(
+            Intent targetIntent, String browserFallbackUrl) {
+        AutofillAssistantFacade.start(
+                ((TabImpl) mTab).getActivity(), targetIntent.getExtras(), browserFallbackUrl);
+    }
+
+    /**
      * @return Whether or not we have a valid {@link Tab} available.
      */
     private boolean hasValidTab() {
@@ -654,9 +681,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
                         targetIntent)
                 && isSerpReferrer()) {
-            if (params.getTab() != null) {
-                AutofillAssistantFacade.start(((TabImpl) params.getTab()).getActivity(),
-                        targetIntent.getExtras(), browserFallbackUrl);
+            if (mTab != null) {
+                startAutofillAssistantWithIntent(targetIntent, browserFallbackUrl);
             }
             return true;
         }

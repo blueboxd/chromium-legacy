@@ -13,7 +13,6 @@ source_set("tab_grid") {
     "tab_grid_mediator.h",
     "tab_grid_mediator.mm",
     "tab_switcher.h",
-    "view_controller_swapping.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

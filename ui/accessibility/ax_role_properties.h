@@ -15,6 +15,11 @@ namespace ui {
 //
 // Please keep these functions in alphabetic order.
 
+// Returns true for objects which have the characteristic "Children
+// Presentational: True". This concept is defined in the ARIA specification. See
+// https://www.w3.org/TR/wai-aria-1.1/#childrenArePresentational.
+AX_EXPORT bool HasPresentationalChildren(const ax::mojom::Role role);
+
 // Checks if the given role is an alert or alert-dialog type.
 AX_EXPORT bool IsAlert(const ax::mojom::Role role);
 
@@ -49,6 +54,9 @@ AX_EXPORT bool IsHeading(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a heading or a table header.
 AX_EXPORT bool IsHeadingOrTableHeader(const ax::mojom::Role role);
+
+// Returns true if the provided role belongs to an iframe.
+AX_EXPORT bool IsIframe(const ax::mojom::Role role);
 
 // Returns true if the provided role is for any kind of image or video.
 AX_EXPORT bool IsImageOrVideo(const ax::mojom::Role role);
@@ -144,10 +152,6 @@ AX_EXPORT bool SupportsToggle(const ax::mojom::Role role);
 
 // Returns true if the node should be read only by default
 AX_EXPORT bool ShouldHaveReadonlyStateByDefault(const ax::mojom::Role role);
-
-// Returns true for objects which have the characteristic "Children
-// Presentational: True".
-AX_EXPORT bool HasPresentationalChildren(const ax::mojom::Role role);
 
 }  // namespace ui
 

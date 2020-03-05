@@ -94,33 +94,39 @@ class PermissionParamsListBuilder {
         permissionParams.iconResource = getImageResourceForPermission(permission.type);
         if (permission.setting == ContentSettingValues.ALLOW) {
             LocationUtils locationUtils = LocationUtils.getInstance();
-            Intent intentOverride = null;
-            String[] androidPermissions = null;
             if (permission.type == ContentSettingsType.GEOLOCATION
                     && !locationUtils.isSystemLocationSettingEnabled()) {
                 permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
-                intentOverride = locationUtils.getSystemLocationSettingsIntent();
+                permissionParams.clickCallback = createPermissionClickCallback(
+                        locationUtils.getSystemLocationSettingsIntent(),
+                        null /* androidPermissions */);
+            } else if (permission.type == ContentSettingsType.NFC
+                    && !NfcSystemLevelSetting.isNfcAccessPossible()) {
+                permissionParams.warningTextResource = R.string.page_info_android_nfc_unsupported;
             } else if (permission.type == ContentSettingsType.NFC
                     && !NfcSystemLevelSetting.isNfcSystemLevelSettingEnabled()) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                intentOverride = NfcSystemLevelSetting.getNfcSystemLevelSettingIntent();
+                permissionParams.clickCallback = createPermissionClickCallback(
+                        NfcSystemLevelSetting.getNfcSystemLevelSettingIntent(),
+                        null /* androidPermissions */);
             } else if (shouldShowNotificationsDisabledWarning(permission)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                intentOverride = ApiCompatibilityUtils.getNotificationSettingsIntent();
+                permissionParams.clickCallback = createPermissionClickCallback(
+                        ApiCompatibilityUtils.getNotificationSettingsIntent(),
+                        null /* androidPermissions */);
             } else if (!hasAndroidPermission(permission.type)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                androidPermissions =
-                        PermissionUtil.getAndroidPermissionsForContentSetting(permission.type);
+                permissionParams.clickCallback = createPermissionClickCallback(
+                        null /* intentOverride */,
+                        PermissionUtil.getAndroidPermissionsForContentSetting(permission.type));
             }
 
             if (permissionParams.warningTextResource != 0) {
                 permissionParams.iconResource = R.drawable.exclamation_triangle;
                 permissionParams.iconTintColorResource = R.color.default_icon_color_blue;
-                permissionParams.clickCallback =
-                        createPermissionClickCallback(intentOverride, androidPermissions);
             }
         }
 

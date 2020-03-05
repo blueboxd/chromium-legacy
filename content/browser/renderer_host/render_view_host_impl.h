@@ -414,6 +414,17 @@ class CONTENT_EXPORT RenderViewHostImpl
   // True if the current main document finished executing onload() handler.
   bool is_document_on_load_completed_in_main_frame_ = false;
 
+  // This is a sentinel that tracks whether EnablePreferredSizeMode()
+  // has been called. It happens some times that this method is called
+  // - prior the main frame is actually being ready (active), and the
+  // call does not effectively take place.
+  //
+  // - after the RenderFrame instance has changed in the renderer side.
+  //
+  // In both cases, the variable is used to EnablePreferredSizeMode()
+  // manually from SetMainFrameRoutingId().
+  bool enabled_preferred_size_mode_ = false;
+
   WillEnterBackForwardCacheCallbackForTesting
       will_enter_back_forward_cache_callback_for_testing_;
 

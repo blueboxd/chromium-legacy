@@ -66,15 +66,6 @@ const breadCrumbTemplate = `
       font-weight: 500;
     }
 
-    button[elider] {
-      -webkit-mask-image: url(../../images/files/ui/menu_ng.svg);
-      -webkit-mask-position: center;
-      -webkit-mask-repeat: no-repeat;
-      background-color: currentColor;
-      min-width: 20px;
-      transform: rotate(90deg);
-    }
-
     button:focus {
       border: 1px solid blue;
       outline: none;

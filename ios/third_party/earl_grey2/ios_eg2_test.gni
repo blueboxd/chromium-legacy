@@ -29,9 +29,8 @@ template("ios_eg2_test_app_host") {
     # Xcode needs the following frameworks installed in the application (and
     # signed) for the XCTest to run, so install them using
     # extra_system_frameworks.
-    _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
     extra_system_frameworks = [
-      "$_ios_platform_library/Frameworks/XCTest.framework",
+      "$ios_sdk_platform_path/Developer/Library/Frameworks/XCTest.framework",
       "$ios_sdk_platform_path/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework",
     ]
 

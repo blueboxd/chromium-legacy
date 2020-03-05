@@ -39,6 +39,7 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 class PaintCanvas;
@@ -278,6 +279,13 @@ class WebView {
   // WebView.
   virtual WebSize ContentsPreferredMinimumSize() = 0;
 
+  // Check whether the preferred size has changed. This should only be called
+  // with up-to-date layout.
+  virtual void UpdatePreferredSize() = 0;
+
+  // Indicates that view's preferred size changes will be sent to the browser.
+  virtual void EnablePreferredSizeChangedMode() = 0;
+
   // Requests a page-scale animation based on the specified rect.
   virtual void ZoomToFindInPageRect(const WebRect&) = 0;
 
@@ -459,6 +467,7 @@ class WebView {
   virtual void AddAutoplayFlags(int32_t flags) = 0;
   virtual void ClearAutoplayFlags() = 0;
   virtual int32_t AutoplayFlagsForTest() = 0;
+  virtual WebSize GetPreferredSizeForTest() = 0;
 
   // Non-composited support -----------------------------------------------
 

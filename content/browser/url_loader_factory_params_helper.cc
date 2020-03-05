@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
@@ -42,6 +43,8 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     const base::Optional<base::UnguessableToken>& top_frame_token,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
     network::mojom::ClientSecurityStatePtr client_security_state,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     bool allow_universal_access_from_file_urls,
     bool is_for_isolated_world) {
   DCHECK(process);
@@ -66,6 +69,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
   params->client_security_state = std::move(client_security_state);
+  params->coep_reporter = std::move(coep_reporter);
 
   if (params->disable_web_security) {
     // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
@@ -96,20 +100,22 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
     RenderFrameHostImpl* frame,
     const url::Origin& frame_origin,
     network::mojom::ClientSecurityStatePtr client_security_state,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     RenderProcessHost* process) {
-  return CreateParams(process,
-                      frame_origin,  // origin
-                      frame_origin,  // request_initiator_site_lock
-                      // top_frame_origin
-                      frame->ComputeTopFrameOrigin(frame_origin),
-                      false,  // is_trusted
-                      frame->GetTopFrameToken(),
-                      frame->GetNetworkIsolationKey(),
-                      std::move(client_security_state),
-                      frame->GetRenderViewHost()
-                          ->GetWebkitPreferences()
-                          .allow_universal_access_from_file_urls,
-                      false);  // is_for_isolated_world
+  return CreateParams(
+      process,
+      frame_origin,  // origin
+      frame_origin,  // request_initiator_site_lock
+      // top_frame_origin
+      frame->ComputeTopFrameOrigin(frame_origin),
+      false,  // is_trusted
+      frame->GetTopFrameToken(), frame->GetNetworkIsolationKey(),
+      std::move(client_security_state), std::move(coep_reporter),
+      frame->GetRenderViewHost()
+          ->GetWebkitPreferences()
+          .allow_universal_access_from_file_urls,
+      false);  // is_for_isolated_world
 }
 
 // static
@@ -127,6 +133,7 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
                       frame->GetTopFrameToken(),
                       frame->GetNetworkIsolationKey(),
                       std::move(client_security_state),
+                      mojo::NullRemote(),  // coep_reporter
                       frame->GetRenderViewHost()
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
@@ -150,6 +157,7 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
                       frame->GetTopFrameToken(),
                       base::nullopt,  // network_isolation_key
                       std::move(client_security_state),
+                      mojo::NullRemote(),  // coep_reporter
                       frame->GetRenderViewHost()
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
@@ -168,7 +176,9 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
                       base::nullopt,      // top_frame_origin
                       false,              // is_trusted
                       base::nullopt,      // top_frame_token
-                      network_isolation_key, nullptr,
+                      network_isolation_key,
+                      nullptr,             // client_security_state
+                      mojo::NullRemote(),  // coep_reporter
                       false,   // allow_universal_access_from_file_urls
                       false);  // is_for_isolated_world
 }
@@ -202,9 +212,11 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
       request_initiator_site_lock,  // request_initiator_site_lock
       base::nullopt,                // top_frame_origin
       false,                        // is_trusted
-      top_frame_token, network_isolation_key, nullptr,
-      false,   // allow_universal_access_from_file_urls
-      false);  // is_for_isolated_world
+      top_frame_token, network_isolation_key,
+      nullptr,             // client_security_state
+      mojo::NullRemote(),  // coep_reporter
+      false,               // allow_universal_access_from_file_urls
+      false);              // is_for_isolated_world
 }
 
 }  // namespace content

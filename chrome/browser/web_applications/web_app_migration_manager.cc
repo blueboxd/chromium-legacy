@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -160,8 +161,8 @@ void WebAppMigrationManager::MigrateBookmarkAppFileHandlers(const AppId& app_id,
   NOTIMPLEMENTED();
   // TODO(crbug.com/1020037): Convert
   // bookmark_app_file_handler_manager.GetAllFileHandlers(app_id) to
-  // WebApp::FileHandlers representation.
-  WebApp::FileHandlers file_handlers;
+  // apps::FileHandlers representation.
+  apps::FileHandlers file_handlers;
   web_app->SetFileHandlers(std::move(file_handlers));
 }
 

@@ -828,6 +828,10 @@ bool CrostiniManager::IsUncleanStartup() const {
   return is_unclean_startup_;
 }
 
+void CrostiniManager::SetUncleanStartupForTesting(bool is_unclean_startup) {
+  is_unclean_startup_ = is_unclean_startup;
+}
+
 base::Optional<ContainerInfo> CrostiniManager::GetContainerInfo(
     std::string vm_name,
     std::string container_name) {

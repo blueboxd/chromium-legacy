@@ -630,6 +630,21 @@ public class SiteSettingsTest {
     }
 
     /**
+     * Tests system NFC support in Preferences.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testSystemNfcSupport() {
+        String[] binaryToggleWithOsWarningExtra =
+                new String[] {"binary_toggle", "os_permissions_warning_extra"};
+
+        // Disable system nfc support and check for the right preferences.
+        NfcSystemLevelSetting.setNfcSupportForTesting(false);
+        checkPreferencesForCategory(SiteSettingsCategory.Type.NFC, binaryToggleWithOsWarningExtra);
+    }
+
+    /**
      * Tests that {@link SingleWebsiteSettings#resetSite} doesn't crash
      * (see e.g. the crash on host names in issue 600232).
      */

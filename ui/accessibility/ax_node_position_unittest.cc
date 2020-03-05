@@ -7331,6 +7331,9 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   // ++++++++10 kInlineTextBox
   // ++++11 kGenericContainer ignored
   // ++++12 kGenericContainer
+  // ++++13 kStaticText
+  // ++++14 kButton
+  // ++++++15 kGenericContainer ignored
   AXNodeData root_1;
   AXNodeData static_text_2;
   AXNodeData inline_box_3;
@@ -7343,6 +7346,9 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   AXNodeData inline_box_10;
   AXNodeData generic_container_11;
   AXNodeData generic_container_12;
+  AXNodeData static_text_13;
+  AXNodeData button_14;
+  AXNodeData generic_container_15;
 
   root_1.id = 1;
   static_text_2.id = 2;
@@ -7356,11 +7362,15 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   inline_box_10.id = 10;
   generic_container_11.id = 11;
   generic_container_12.id = 12;
+  static_text_13.id = 13;
+  button_14.id = 14;
+  generic_container_15.id = 15;
 
   root_1.role = ax::mojom::Role::kRootWebArea;
   root_1.child_ids = {static_text_2.id,        text_field_4.id,
                       static_text_6.id,        heading_8.id,
-                      generic_container_11.id, generic_container_12.id};
+                      generic_container_11.id, generic_container_12.id,
+                      static_text_13.id,       button_14.id};
 
   static_text_2.role = ax::mojom::Role::kStaticText;
   static_text_2.SetName("Hello ");
@@ -7408,10 +7418,20 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   generic_container_12.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
+  static_text_13.role = ax::mojom::Role::kStaticText;
+  static_text_13.SetName("hey");
+
+  button_14.role = ax::mojom::Role::kButton;
+  button_14.child_ids = {generic_container_15.id};
+
+  generic_container_15.role = ax::mojom::Role::kGenericContainer;
+  generic_container_15.AddState(ax::mojom::State::kIgnored);
+
   SetTree(CreateAXTree({root_1, static_text_2, inline_box_3, text_field_4,
                         generic_container_5, static_text_6, inline_box_7,
                         heading_8, static_text_9, inline_box_10,
-                        generic_container_11, generic_container_12}));
+                        generic_container_11, generic_container_12,
+                        static_text_13, button_14, generic_container_15}));
 
   // CreateStartWordStartPosition tests.
   TestPositionType position = AXNodePosition::CreateTextPosition(
@@ -7509,7 +7529,8 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
 
   expected_text =
       base::WideToUTF16(L"Hello ") + AXNodePosition::kEmbeddedCharacter +
-      base::WideToUTF16(L" world3.14") + AXNodePosition::kEmbeddedCharacter;
+      base::WideToUTF16(L" world3.14") + AXNodePosition::kEmbeddedCharacter +
+      base::WideToUTF16(L"hey") + AXNodePosition::kEmbeddedCharacter;
   ASSERT_EQ(expected_text, position->GetText());
 
   // MaxTextOffset() with an embedded object replacement character.
@@ -7531,16 +7552,17 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   position = position->CreateParentPosition();
   expectations =
       "TextPosition anchor_id=1 text_offset=6 affinity=downstream "
-      "annotated_text=Hello <\xEF\xBF\xBC> world3.14\xEF\xBF\xBC";
+      "annotated_text=Hello <\xEF\xBF\xBC> "
+      "world3.14\xEF\xBF\xBChey\xEF\xBF\xBC";
   ASSERT_EQ(position->ToString(), expectations);
-  ASSERT_EQ(18, position->MaxTextOffset());
+  ASSERT_EQ(22, position->MaxTextOffset());
 
   // MaxTextOffset() on a node parent of text nodes and an embedded object
   // replacement character.
   position = AXNodePosition::CreateTextPosition(
       GetTreeID(), root_1.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  ASSERT_EQ(18, position->MaxTextOffset());
+  ASSERT_EQ(22, position->MaxTextOffset());
 
   // The following is to test a specific edge case with heading navigation,
   // occurring in AXPosition::CreatePreviousFormatStartPosition.
@@ -7560,6 +7582,27 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_TRUE(text_position->IsTextPosition());
   EXPECT_EQ(generic_container_12.id, text_position->anchor_id());
   EXPECT_EQ(0, text_position->text_offset());
+
+  // The following is to test a specific edge case that occurs when all the
+  // children of a node are ignored and that node could be considered as an
+  // empty object replaced by character (e.g., a button).
+  //
+  // The button element should be treated as a leaf node even though it has a
+  // child. Because its only child is ignored, the button should be considered
+  // as an empty object replaced by character and we should be able to create a
+  // leaf position in the button node.
+  text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), static_text_13.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+
+  text_position = text_position->CreateNextParagraphEndPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  EXPECT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->IsLeafTextPosition());
+  EXPECT_EQ(button_14.id, text_position->anchor_id());
+  EXPECT_EQ(1, text_position->text_offset());
 }
 
 //

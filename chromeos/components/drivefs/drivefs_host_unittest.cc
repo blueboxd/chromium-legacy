@@ -552,6 +552,28 @@ TEST_F(DriveFsHostTest, TeamDriveTracking) {
       host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
 }
 
+TEST_F(DriveFsHostTest, TeamDriveTrackingIgnoreChanges) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_EQ(
+      std::set<std::string>(),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+
+  delegate_->OnTeamDriveChanged(
+      "a", mojom::DriveFsDelegate::CreateOrDelete::kCreated);
+  delegate_.FlushForTesting();
+  EXPECT_EQ(
+      std::set<std::string>(),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+
+  delegate_->OnTeamDriveChanged(
+      "b", mojom::DriveFsDelegate::CreateOrDelete::kDeleted);
+  delegate_.FlushForTesting();
+  EXPECT_EQ(
+      std::set<std::string>(),
+      host_delegate_->GetDriveNotificationManager().team_drive_ids_for_test());
+}
+
 TEST_F(DriveFsHostTest, Invalidation) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 

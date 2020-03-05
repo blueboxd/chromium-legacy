@@ -47,6 +47,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
                    AXTreeID* tree_id,
                    AXNode::AXID* child_id) const override;
   int AnchorChildCount() const override;
+  int AnchorUnignoredChildCount() const override;
   int AnchorIndexInParent() const override;
   base::stack<AXNode*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, AXNode::AXID* parent_id) const override;

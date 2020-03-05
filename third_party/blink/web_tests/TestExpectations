@@ -6749,3 +6749,5 @@ crbug.com/1058244 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/s
 
 # Ecosystem-Infra Sheriff 2020-03-04
 crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/suspended-context-messageport.https.html [ Failure ]
+
+crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]

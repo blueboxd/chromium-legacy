@@ -7,15 +7,14 @@
 
 #include <bitset>
 #include <iosfwd>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -73,40 +72,7 @@ class WebApp {
     return downloaded_icon_sizes_;
   }
 
-  // Represents a single file handler "accept" entry, mapping a MIME type to a
-  // set of file extensions that can be handled by the handler.
-  struct FileHandlerAccept {
-    FileHandlerAccept();
-    ~FileHandlerAccept();
-    // Copyable and move-assignable to support Copy-on-Write with Commit.
-    FileHandlerAccept(const FileHandlerAccept& file_handler_accept);
-    FileHandlerAccept& operator=(FileHandlerAccept&& file_handler_accept);
-
-    // A MIME type that can be handled by the file handler.
-    std::string mimetype;
-    // A set of one or more file extensions that can be handled by the file
-    // handler, corresponding to the MIME type.
-    base::flat_set<std::string> file_extensions;
-  };
-
-  // Represents a single entry in the "file_handlers" field of the web
-  // application manifest.
-  struct FileHandler {
-    FileHandler();
-    ~FileHandler();
-    // Copyable and move-assignable to support Copy-on-Write with Commit.
-    FileHandler(const FileHandler& file_handler);
-    FileHandler& operator=(FileHandler&& file_handler);
-
-    // The URL that will be navigated to when dispatching on a file with a
-    // matching MIME type or file extension.
-    GURL action;
-    // A collection of MIME type to file extensions mappings that the handler
-    // will match on.
-    std::vector<FileHandlerAccept> accept;
-  };
-  using FileHandlers = std::vector<FileHandler>;
-  const FileHandlers& file_handlers() const { return file_handlers_; }
+  const apps::FileHandlers& file_handlers() const { return file_handlers_; }
 
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
@@ -152,7 +118,7 @@ class WebApp {
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
-  void SetFileHandlers(FileHandlers file_handlers);
+  void SetFileHandlers(apps::FileHandlers file_handlers);
 
   void SetSyncData(SyncData sync_data);
 
@@ -182,33 +148,19 @@ class WebApp {
   bool is_in_sync_install_ = false;
   std::vector<WebApplicationIconInfo> icon_infos_;
   std::vector<SquareSizePx> downloaded_icon_sizes_;
-  FileHandlers file_handlers_;
+  apps::FileHandlers file_handlers_;
 
   SyncData sync_data_;
 };
 
 // For logging and debug purposes.
 std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data);
-std::ostream& operator<<(std::ostream& out,
-                         const WebApp::FileHandlerAccept& file_handler_accept);
-std::ostream& operator<<(std::ostream& out,
-                         const WebApp::FileHandler& file_handler);
 std::ostream& operator<<(std::ostream& out, const WebApp& app);
 
 bool operator==(const WebApp::SyncData& sync_data1,
                 const WebApp::SyncData& sync_data2);
 bool operator!=(const WebApp::SyncData& sync_data1,
                 const WebApp::SyncData& sync_data2);
-
-bool operator==(const WebApp::FileHandlerAccept& file_handler_accept1,
-                const WebApp::FileHandlerAccept& file_handler_accept2);
-bool operator!=(const WebApp::FileHandlerAccept& file_handler_accept1,
-                const WebApp::FileHandlerAccept& file_handler_accept2);
-
-bool operator==(const WebApp::FileHandler& file_handler1,
-                const WebApp::FileHandler& file_handler2);
-bool operator!=(const WebApp::FileHandler& file_handler1,
-                const WebApp::FileHandler& file_handler2);
 
 bool operator==(const WebApp& app1, const WebApp& app2);
 bool operator!=(const WebApp& app1, const WebApp& app2);

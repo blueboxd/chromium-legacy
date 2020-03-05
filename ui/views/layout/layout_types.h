@@ -82,6 +82,11 @@ constexpr bool operator<(const SizeBounds& lhs, const SizeBounds& rhs) {
          std::tie(rhs.height(), rhs.width());
 }
 
+// Returns true if the specified |size| can fit in the specified |bounds|.
+// Returns false if either the width or height of |bounds| is specified and is
+// smaller than the corresponding element of |size|.
+bool CanFitInBounds(const gfx::Size& size, const SizeBounds& bounds);
+
 // These are declared here for use in gtest-based unit tests but is defined in
 // the views_test_support target. Depend on that to use this in your unit test.
 // This should not be used in production code - call ToString() instead.

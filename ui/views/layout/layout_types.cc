@@ -23,4 +23,9 @@ std::string SizeBounds::ToString() const {
                        height_ ? base::NumberToString(*height_) : "_"});
 }
 
+bool CanFitInBounds(const gfx::Size& size, const SizeBounds& bounds) {
+  return (!bounds.width() || (*bounds.width() >= size.width())) &&
+         (!bounds.height() || (*bounds.height() >= size.height()));
+}
+
 }  // namespace views

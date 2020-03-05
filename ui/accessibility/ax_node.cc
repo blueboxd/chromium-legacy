@@ -955,8 +955,4 @@ bool AXNode::IsInListMarker() const {
   return false;
 }
 
-bool AXNode::IsTextOnlyObject() const {
-  return IsText();
-}
-
 }  // namespace ui

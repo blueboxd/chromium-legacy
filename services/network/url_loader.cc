@@ -477,6 +477,7 @@ URLLoader::URLLoader(
     mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const mojom::URLLoaderFactoryParams* factory_params,
+    mojom::CrossOriginEmbedderPolicyReporter* coep_reporter,
     uint32_t request_id,
     int keepalive_request_size,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
@@ -493,6 +494,7 @@ URLLoader::URLLoader(
       resource_type_(request.resource_type),
       is_load_timing_enabled_(request.enable_load_timing),
       factory_params_(factory_params),
+      coep_reporter_(coep_reporter),
       render_frame_id_(request.render_frame_id),
       request_id_(request_id),
       keepalive_request_size_(keepalive_request_size),
@@ -958,9 +960,10 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
   if (base::Optional<BlockedByResponseReason> blocked_reason =
           CrossOriginResourcePolicy::IsBlocked(
-              url_request_->url(), url_request_->initiator(), *response,
-              request_mode_, factory_params_->request_initiator_site_lock,
-              cross_origin_embedder_policy)) {
+              url_request_->url(), url_request_->original_url(),
+              url_request_->initiator(), *response, request_mode_,
+              factory_params_->request_initiator_site_lock,
+              cross_origin_embedder_policy, coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
     DeleteSelf();
@@ -1120,9 +1123,10 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
           : kEmpty;
   if (base::Optional<BlockedByResponseReason> blocked_reason =
           CrossOriginResourcePolicy::IsBlocked(
-              url_request_->url(), url_request_->initiator(), *response_,
-              request_mode_, factory_params_->request_initiator_site_lock,
-              cross_origin_embedder_policy)) {
+              url_request_->url(), url_request_->original_url(),
+              url_request_->initiator(), *response_, request_mode_,
+              factory_params_->request_initiator_site_lock,
+              cross_origin_embedder_policy, coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
     DeleteSelf();

@@ -401,6 +401,24 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
     web_app_menu_button_->SetColor(foreground_color_);
   }
 
+  views::FlexRule GetFlexRule() const {
+    // Prefer height consistency over accommodating edge case icons that may
+    // bump up the container height (e.g. extension action icons with badges).
+    // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
+    // the right-hand container and turn this into a DCHECK that the container
+    // height is the same as the app menu button height.
+    const auto* const layout =
+        static_cast<views::FlexLayout*>(GetLayoutManager());
+    return base::BindRepeating(
+        [](WebAppMenuButton* menu_button, views::FlexRule input_flex_rule,
+           const views::View* view, const views::SizeBounds& available_size) {
+          const gfx::Size preferred = input_flex_rule.Run(view, available_size);
+          return gfx::Size(preferred.width(),
+                           menu_button->GetPreferredSize().height());
+        },
+        base::Unretained(web_app_menu_button_), layout->GetDefaultFlexRule());
+  }
+
   ContentSettingsContainer* content_settings_container() {
     return content_settings_container_;
   }
@@ -442,17 +460,6 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   void FadeInContentSettingIcons() {
     if (content_settings_container_)
       content_settings_container_->FadeIn();
-  }
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override {
-    // Prefer height consistency over accommodating edge case icons that may
-    // bump up the container height (e.g. extension action icons with badges).
-    // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
-    // the right-hand container and turn this into a DCHECK that the container
-    // height is the same as the app menu button height.
-    return gfx::Size(views::View::CalculatePreferredSize().width(),
-                     web_app_menu_button_->GetPreferredSize().height());
   }
 
   void ChildPreferredSizeChanged(views::View* child) override {
@@ -717,9 +724,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
       std::make_unique<ToolbarButtonContainer>(widget, browser_view));
   right_container_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred)
-          .WithOrder(1));
+      views::FlexSpecification(right_container_->GetFlexRule()).WithOrder(1));
 
   UpdateStatusIconsVisibility();
 

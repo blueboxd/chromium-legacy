@@ -13,7 +13,7 @@ static void EmitBuffer(scoped_refptr<media::StreamParserBuffer> buffer) {}
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  media::mp2t::EsParserAdts es_parser(base::Bind(&NewAudioConfig),
+  media::mp2t::EsParserAdts es_parser(base::BindRepeating(&NewAudioConfig),
                                       base::BindRepeating(&EmitBuffer), true);
   if (!es_parser.Parse(data, size, media::kNoTimestamp,
                        media::kNoDecodeTimestamp())) {

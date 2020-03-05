@@ -647,10 +647,16 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
 
   // If we won't be getting a presented notification, we'll notify the client
   // when the frame is unref'd.
-  if (!frame_data->will_be_notified_of_presentation && surface_client_)
+  if (!frame_data->will_be_notified_of_presentation && surface_client_) {
     surface_client_->OnSurfacePresented(frame_data->frame.metadata.frame_token,
                                         base::TimeTicks(), gfx::SwapTimings(),
                                         gfx::PresentationFeedback::Failure());
+  }
+
+  // Usually the LatencyInfo was already taken during aggregation or when the
+  // surface was replaced. If neither happened, terminate the LatencyInfo now.
+  for (ui::LatencyInfo& info : frame_data->frame.metadata.latency_info)
+    info.Terminate();
 }
 
 void Surface::ClearCopyRequests() {

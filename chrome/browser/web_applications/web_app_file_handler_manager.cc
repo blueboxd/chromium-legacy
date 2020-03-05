@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
 
 namespace web_app {
 
@@ -27,8 +28,7 @@ WebAppFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
   DCHECK(web_app_registrar);
   const WebApp* web_app = web_app_registrar->GetAppById(app_id);
 
-  const std::vector<WebApp::FileHandler>& file_handlers =
-      web_app->file_handlers();
+  const apps::FileHandlers& file_handlers = web_app->file_handlers();
   std::vector<apps::FileHandlerInfo> file_handler_infos;
 
   for (const auto& file_handler : file_handlers) {
@@ -38,7 +38,7 @@ WebAppFileHandlerManager::GetAllFileHandlers(const AppId& app_id) {
     info.verb = apps::file_handler_verbs::kOpenWith;
 
     for (const auto& accept_entry : file_handler.accept) {
-      info.types.insert(accept_entry.mimetype);
+      info.types.insert(accept_entry.mime_type);
       info.extensions.insert(accept_entry.file_extensions.begin(),
                              accept_entry.file_extensions.end());
     }

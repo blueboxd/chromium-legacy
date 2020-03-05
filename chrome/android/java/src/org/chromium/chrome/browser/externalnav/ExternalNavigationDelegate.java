@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
-import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 
 import java.util.List;
 
@@ -33,12 +32,10 @@ interface ExternalNavigationDelegate {
     boolean willChromeHandleIntent(Intent intent);
 
     /**
-     * If the current activity is a webapp, applies the webapp's scope policy and returns the
-     * result. Returns {@link WebappScopePolicy#NavigationDirective#NORMAL_BEHAVIOR} if the current
-     * activity is not a webapp.
+     * Returns whether the context in which the intent is occurring is a webapp in which the
+     * navigation should stay.
      */
-    @WebappScopePolicy.NavigationDirective
-    int applyWebappScopePolicyForUrl(String url);
+    boolean shouldStayInWebapp(ExternalNavigationParams params);
 
     /**
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent

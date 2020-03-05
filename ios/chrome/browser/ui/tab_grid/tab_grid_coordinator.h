@@ -9,7 +9,6 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/chrome_root_coordinator.h"
-#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
@@ -17,7 +16,7 @@
 
 class Browser;
 
-@interface TabGridCoordinator : ChromeRootCoordinator<ViewControllerSwapping>
+@interface TabGridCoordinator : ChromeRootCoordinator
 
 - (instancetype)initWithWindow:(UIWindow*)window
      applicationCommandEndpoint:
@@ -33,6 +32,13 @@ class Browser;
 @property(nonatomic, assign) Browser* regularBrowser;
 @property(nonatomic, assign) Browser* incognitoBrowser;
 
+// The view controller, if any, that is active.
+@property(nonatomic, readonly, strong) UIViewController* activeViewController;
+
+// The view controller that is doing the view controller swapping.
+// This may or may not be the same as |activeViewController|.
+@property(nonatomic, readonly, strong) UIViewController* viewController;
+
 // If this property is YES, calls to |showTabSwitcher:completion:| and
 // |showTabViewController:completion:| will present the given view controllers
 // without animation.  This should only be used by unittests.
@@ -41,6 +47,19 @@ class Browser;
 // Stops all child coordinators then calls |completion|. |completion| is called
 // whether or not child coordinators exist.
 - (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion;
+
+// Displays the given TabSwitcher, replacing any TabSwitchers or view
+// controllers that may currently be visible.
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher;
+
+// Displays the given view controller, replacing any TabSwitchers or other view
+// controllers that may currently be visible.  Runs the given |completion| block
+// after the view controller is visible.
+- (void)showTabViewController:(UIViewController*)viewController
+                   completion:(ProceduralBlock)completion;
+
+// Perform any initial setup required for the appearance of |tabSwitcher|.
+- (void)prepareToShowTabSwitcher:(id<TabSwitcher>)tabSwitcher;
 
 @end
 

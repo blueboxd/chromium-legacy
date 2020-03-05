@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/settings/safety_check_handler.h"
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +56,7 @@ SafetyCheckHandler::~SafetyCheckHandler() = default;
 
 void SafetyCheckHandler::PerformSafetyCheck() {
   AllowJavascript();
+  base::RecordAction(base::UserMetricsAction("SafetyCheck.Started"));
   if (!version_updater_) {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }

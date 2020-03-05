@@ -140,8 +140,9 @@ bool ResponseBlockedByCrossOriginResourcePolicy(
     corp_header_value = corp_header->second;
 
   return CrossOriginResourcePolicy::IsBlockedByHeaderValue(
-             response->url_list.back(), document_origin, corp_header_value,
-             RequestMode::kNoCors, document_origin, document_coep)
+             response->url_list.back(), response->url_list.front(),
+             document_origin, corp_header_value, RequestMode::kNoCors,
+             document_origin, document_coep)
       .has_value();
 }
 

@@ -103,6 +103,8 @@ std::string SharingSendMessageResultToString(SharingSendMessageResult result) {
       return "InternalError";
     case SharingSendMessageResult::kEncryptionError:
       return "EncryptionError";
+    case SharingSendMessageResult::kCommitTimeout:
+      return "CommitTimeout";
   }
 }
 

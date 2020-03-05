@@ -37,5 +37,11 @@ const base::Feature kSharingAckMessageTTL{"SharingAckMessageTTL",
 const base::FeatureParam<int> kSharingAckMessageTTLSeconds = {
     &kSharingAckMessageTTL, "SharingAckMessageTTLSeconds", 8};
 
+const base::Feature kSharingMessageBridgeTimeout{
+    "SharingMessageBridgeTimeout", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kSharingMessageBridgeTimeoutSeconds = {
+    &kSharingMessageBridgeTimeout, "SharingMessageBridgeTimeoutSeconds", 5};
+
 const base::Feature kSharingSendViaSync{"SharingSendViaSync",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

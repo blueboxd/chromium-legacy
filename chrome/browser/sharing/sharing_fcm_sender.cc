@@ -317,6 +317,9 @@ void SharingFCMSender::OnMessageSentViaSync(
     case sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR:
       send_message_result = SharingSendMessageResult::kNetworkError;
       break;
+    case sync_pb::SharingMessageCommitError::SYNC_TIMEOUT:
+      send_message_result = SharingSendMessageResult::kCommitTimeout;
+      break;
   }
 
   std::move(callback).Run(send_message_result, message_id, channel_type);

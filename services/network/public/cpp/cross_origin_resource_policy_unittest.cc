@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,6 +14,42 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
+
+namespace {
+class TestCoepReporter final : public mojom::CrossOriginEmbedderPolicyReporter {
+ public:
+  struct Report {
+    Report(const GURL& blocked_url, bool report_only)
+        : blocked_url(blocked_url), report_only(report_only) {}
+
+    const GURL blocked_url;
+    const bool report_only;
+  };
+
+  TestCoepReporter() = default;
+  ~TestCoepReporter() override = default;
+  TestCoepReporter(const TestCoepReporter&) = delete;
+  TestCoepReporter& operator=(const TestCoepReporter&) = delete;
+
+  // mojom::CrossOriginEmbedderPolicyReporter implementation.
+  void QueueCorpViolationReport(const GURL& blocked_url,
+                                bool report_only) override {
+    reports_.push_back(Report(blocked_url, report_only));
+  }
+  void Clone(
+      mojo::PendingReceiver<network::mojom::CrossOriginEmbedderPolicyReporter>
+          receiver) override {
+    NOTREACHED();
+  }
+
+  const std::vector<Report>& reports() const { return reports_; }
+  void ClearReports() { reports_.clear(); }
+
+ private:
+  std::vector<Report> reports_;
+};
+
+}  // namespace
 
 CrossOriginResourcePolicy::ParsedHeader ParseHeader(
     const std::string& test_headers) {
@@ -140,7 +177,8 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
           "HTTP/1.1 200 OK\n"
           "cross-origin-resource-policy: cross-origin\n"));
 
-  GURL destination("https://www.example.com/");
+  GURL original_destination("https://original.example.com/x/y");
+  GURL destination("https://www.example.com/z/u");
 
   url::Origin destination_origin =
       url::Origin::Create(GURL("https://www.example.com"));
@@ -183,16 +221,199 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   };
 
   for (const auto& test_case : test_cases) {
+    TestCoepReporter reporter;
     CrossOriginEmbedderPolicy embedder_policy;
+    const bool should_be_blocked_due_to_coep =
+        (test_case.expectation_with_coep_none !=
+         test_case.expectation_with_coep_require_corp);
+
+    // COEP: none, COEP-report-only: none
     EXPECT_EQ(test_case.expectation_with_coep_none,
               CrossOriginResourcePolicy::IsBlocked(
-                  destination, test_case.origin, *test_case.response_info,
-                  test_case.request_mode, test_case.origin, embedder_policy));
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.request_mode,
+                  test_case.origin, embedder_policy, &reporter));
+
+    EXPECT_TRUE(reporter.reports().empty());
+
+    reporter.ClearReports();
+    // COEP: require-corp, COEP-report-only: none
     embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
     EXPECT_EQ(test_case.expectation_with_coep_require_corp,
               CrossOriginResourcePolicy::IsBlocked(
-                  destination, test_case.origin, *test_case.response_info,
-                  test_case.request_mode, test_case.origin, embedder_policy));
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.request_mode,
+                  test_case.origin, embedder_policy, &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(1u, reporter.reports().size());
+      EXPECT_FALSE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
+
+    reporter.ClearReports();
+    // COEP: none, COEP-report-only: require-corp
+    embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kNone;
+    embedder_policy.report_only_value =
+        mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    EXPECT_EQ(test_case.expectation_with_coep_none,
+              CrossOriginResourcePolicy::IsBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.request_mode,
+                  test_case.origin, embedder_policy, &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(1u, reporter.reports().size());
+      EXPECT_TRUE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
+
+    reporter.ClearReports();
+    // COEP: require-corp, COEP-report-only: require-corp
+    embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    embedder_policy.report_only_value =
+        mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    EXPECT_EQ(test_case.expectation_with_coep_require_corp,
+              CrossOriginResourcePolicy::IsBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.request_mode,
+                  test_case.origin, embedder_policy, &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(2u, reporter.reports().size());
+      EXPECT_TRUE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+      EXPECT_FALSE(reporter.reports()[1].report_only);
+      EXPECT_EQ(reporter.reports()[1].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
+  }
+}
+
+TEST(CrossOriginResourcePolicyTest, NavigationWithCOEP) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
+
+  mojom::URLResponseHead corp_none;
+  mojom::URLResponseHead corp_same_origin;
+  mojom::URLResponseHead corp_cross_origin;
+
+  corp_same_origin.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(
+          "HTTP/1.1 200 OK\n"
+          "cross-origin-resource-policy: same-origin\n"));
+
+  corp_cross_origin.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(
+          "HTTP/1.1 200 OK\n"
+          "cross-origin-resource-policy: cross-origin\n"));
+
+  GURL original_destination("https://original.example.com/x/y");
+  GURL destination("https://www.example.com/z/u");
+
+  url::Origin destination_origin =
+      url::Origin::Create(GURL("https://www.example.com"));
+  url::Origin another_origin =
+      url::Origin::Create(GURL("https://www2.example.com"));
+
+  constexpr auto kAllow = base::nullopt;
+  using mojom::RequestMode;
+
+  struct TestCase {
+    const url::Origin origin;
+    mojom::URLResponseHeadPtr response_info;
+    const base::Optional<BlockedByResponseReason> expectation_with_coep_none;
+    const base::Optional<BlockedByResponseReason>
+        expectation_with_coep_require_corp;
+  } test_cases[] = {
+      // We don't have a cross-origin-resource-policy header on a response. That
+      // leads to blocking when COEP: kRequireCorp is used.
+      {another_origin, corp_none.Clone(), kAllow,
+       BlockedByResponseReason::
+           kCorpNotSameOriginAfterDefaultedToSameOriginByCoep},
+      // We have "cross-origin-resource-policy: same-origin",
+      // COEP the response is blocked.
+      {another_origin, corp_same_origin.Clone(), kAllow,
+       BlockedByResponseReason::kCorpNotSameOrigin},
+      // We have "cross-origin-resource-policy: cross-origin", so regardless of
+      // COEP the response is allowed.
+      {another_origin, corp_cross_origin.Clone(), kAllow, kAllow},
+      // The origin of the request URL and request's origin match, so regardless
+      // of COEP the response is allowed.
+      {destination_origin, corp_same_origin.Clone(), kAllow, kAllow},
+  };
+
+  for (const auto& test_case : test_cases) {
+    TestCoepReporter reporter;
+    CrossOriginEmbedderPolicy embedder_policy;
+    const bool should_be_blocked_due_to_coep =
+        (test_case.expectation_with_coep_none !=
+         test_case.expectation_with_coep_require_corp);
+
+    // COEP: none, COEP-report-only: none
+    EXPECT_EQ(test_case.expectation_with_coep_none,
+              CrossOriginResourcePolicy::IsNavigationBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.origin, embedder_policy,
+                  &reporter));
+
+    EXPECT_TRUE(reporter.reports().empty());
+
+    reporter.ClearReports();
+    // COEP: require-corp, COEP-report-only: none
+    embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    EXPECT_EQ(test_case.expectation_with_coep_require_corp,
+              CrossOriginResourcePolicy::IsNavigationBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.origin, embedder_policy,
+                  &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(1u, reporter.reports().size());
+      EXPECT_FALSE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
+
+    reporter.ClearReports();
+    // COEP: none, COEP-report-only: require-corp
+    embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kNone;
+    embedder_policy.report_only_value =
+        mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    EXPECT_EQ(test_case.expectation_with_coep_none,
+              CrossOriginResourcePolicy::IsNavigationBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.origin, embedder_policy,
+                  &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(1u, reporter.reports().size());
+      EXPECT_TRUE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
+
+    reporter.ClearReports();
+    // COEP: require-corp, COEP-report-only: require-corp
+    embedder_policy.value = mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    embedder_policy.report_only_value =
+        mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+    EXPECT_EQ(test_case.expectation_with_coep_require_corp,
+              CrossOriginResourcePolicy::IsNavigationBlocked(
+                  destination, original_destination, test_case.origin,
+                  *test_case.response_info, test_case.origin, embedder_policy,
+                  &reporter));
+    if (should_be_blocked_due_to_coep) {
+      ASSERT_EQ(2u, reporter.reports().size());
+      EXPECT_TRUE(reporter.reports()[0].report_only);
+      EXPECT_EQ(reporter.reports()[0].blocked_url, original_destination);
+      EXPECT_FALSE(reporter.reports()[1].report_only);
+      EXPECT_EQ(reporter.reports()[1].blocked_url, original_destination);
+    } else {
+      EXPECT_TRUE(reporter.reports().empty());
+    }
   }
 }
 }  // namespace network

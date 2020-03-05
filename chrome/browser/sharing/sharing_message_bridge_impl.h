@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/timer/timer.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -54,13 +55,35 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   }
 
  private:
+  class TimedCallback {
+   public:
+    // Stores the |commit_callback| and starts a timer to call the
+    // |timeout_callback| if timeout happens.
+    TimedCallback(CommitFinishedCallback commit_callback,
+                  base::OnceClosure timeout_callback);
+
+    ~TimedCallback();
+
+    // Runs callback object with the given |commit_error| and stops the timer.
+    void Run(const sync_pb::SharingMessageCommitError& commit_error);
+
+   private:
+    base::OneShotTimer timer_;
+    CommitFinishedCallback commit_callback_;
+  };
+
+  // Process timeout which happened for a callback with associated
+  // |client_tag_hash|.
+  void ProcessCommitTimeout(syncer::ClientTagHash client_tag_hash);
+
   // Sends commit outcome via callback for |client_tag_hash| and removes it from
   // callbacks mapping.
   void ProcessCommitResponse(
       const syncer::ClientTagHash& client_tag_hash,
       const sync_pb::SharingMessageCommitError& commit_error);
 
-  std::map<syncer::ClientTagHash, CommitFinishedCallback> commit_callbacks_;
+  std::map<syncer::ClientTagHash, std::unique_ptr<TimedCallback>>
+      commit_callbacks_;
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_MESSAGE_BRIDGE_IMPL_H_

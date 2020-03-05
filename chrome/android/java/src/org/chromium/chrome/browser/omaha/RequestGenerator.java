@@ -16,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 import org.xmlpull.v1.XmlSerializer;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
@@ -199,23 +198,11 @@ public abstract class RequestGenerator {
     public int getNumGoogleAccountsOnDevice() {
         // RequestGenerator may be invoked from JobService or AlarmManager (through OmahaService),
         // so have to make sure AccountManagerFacade instance is initialized.
-        int numAccounts = 0;
-        try {
-            // TODO(waffles@chromium.org): Ideally, this should be asynchronous.
-            PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
-                    () -> ProcessInitializationHandler.getInstance().initializePreNative());
-            numAccounts = AccountManagerFacade.get().getGoogleAccounts().size();
-        } catch (Exception e) {
-            Log.e(TAG, "Can't get number of accounts.", e);
-        }
-        switch (numAccounts) {
-            case 0:
-                return 0;
-            case 1:
-                return 1;
-            default:
-                return 2;
-        }
+        // TODO(waffles@chromium.org): Ideally, this should be asynchronous.
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
+                () -> ProcessInitializationHandler.getInstance().initializePreNative());
+        int numAccounts = AccountManagerFacade.get().tryGetGoogleAccounts().size();
+        return numAccounts < 2 ? numAccounts : 2;
     }
 
     /**

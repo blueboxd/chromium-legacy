@@ -197,10 +197,6 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
   DISALLOW_COPY_AND_ASSIGN(EnableViaPrompt);
 };
 
-bool UsesRemoteViews(const extensions::Extension* extension) {
-  return extension->is_hosted_app() && extension->from_bookmark();
-}
-
 bool ProfileMenuItemComparator(const chrome::mojom::ProfileMenuItemPtr& a,
                                const chrome::mojom::ProfileMenuItemPtr& b) {
   return a->menu_index < b->menu_index;
@@ -333,16 +329,19 @@ void ExtensionAppShimHandler::Delegate::CloseAppWindows(
   }
 }
 
-const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
-    content::BrowserContext* context,
-    const std::string& extension_id) {
-  return ExtensionAppShimHandler::MaybeGetAppExtension(context, extension_id);
-}
-
-bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
+bool ExtensionAppShimHandler::Delegate::AppIsInstalled(
     Profile* profile,
     const std::string& app_id) {
-  const Extension* extension = MaybeGetAppExtension(profile, app_id);
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  return profile && extension;
+}
+
+bool ExtensionAppShimHandler::Delegate::AppCanCreateHost(
+    Profile* profile,
+    const std::string& app_id) {
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
   if (!profile || !extension)
     return false;
   if (extension->is_hosted_app() &&
@@ -353,6 +352,26 @@ bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
   // Note that this will return true for non-hosted apps (e.g, Chrome Remote
   // Desktop).
   return true;
+}
+
+bool ExtensionAppShimHandler::Delegate::AppIsMultiProfile(
+    Profile* profile,
+    const std::string& app_id) {
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  if (!profile || !extension)
+    return false;
+  return extension->from_bookmark();
+}
+
+bool ExtensionAppShimHandler::Delegate::AppUsesRemoteCocoa(
+    Profile* profile,
+    const std::string& app_id) {
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  if (!profile || !extension)
+    return false;
+  return extension->is_hosted_app() && extension->from_bookmark();
 }
 
 std::unique_ptr<AppShimHost> ExtensionAppShimHandler::Delegate::CreateHost(
@@ -368,7 +387,8 @@ void ExtensionAppShimHandler::Delegate::EnableExtension(
     Profile* profile,
     const std::string& app_id,
     base::OnceCallback<void()> callback) {
-  const Extension* extension = MaybeGetAppExtension(profile, app_id);
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
   if (extension)
     std::move(callback).Run();
   else
@@ -380,7 +400,7 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
     const std::string& app_id,
     const std::vector<base::FilePath>& files) {
   const extensions::Extension* extension =
-      MaybeGetAppExtension(profile, app_id);
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
   DCHECK(extension);
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
@@ -427,7 +447,8 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     bool recreate_shims,
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
-  const Extension* extension = MaybeGetAppExtension(profile, app_id);
+  const Extension* extension =
+      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
   if (!extension) {
     std::move(launched_callback).Run(base::Process());
     return;
@@ -436,7 +457,7 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
   // Only force recreation of shims when RemoteViews is in use (that is, for
   // PWAs). Otherwise, shims may be created unexpectedly.
   // https://crbug.com/941160
-  if (recreate_shims && UsesRemoteViews(extension)) {
+  if (recreate_shims && AppUsesRemoteCocoa(profile, app_id)) {
     // Load the resources needed to build the app shim (icons, etc), and then
     // recreate the shim and launch it.
     web_app::GetShortcutInfoForApp(
@@ -493,13 +514,13 @@ AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
   return profile_state->GetHost();
 }
 
-AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
-  const Extension* extension =
-      apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
-  if (!extension || !extension->is_hosted_app())
+AppShimHost* ExtensionAppShimHandler::GetHostForRemoteCocoaBrowser(
+    Browser* browser) {
+  const std::string app_id =
+      web_app::GetAppIdFromApplicationName(browser->app_name());
+  if (!delegate_->AppUsesRemoteCocoa(browser->profile(), app_id))
     return nullptr;
-  ProfileState* profile_state =
-      GetOrCreateProfileState(browser->profile(), extension);
+  auto* profile_state = GetOrCreateProfileState(browser->profile(), app_id);
   if (!profile_state)
     return nullptr;
   return profile_state->GetHost();
@@ -580,9 +601,9 @@ void ExtensionAppShimHandler::OnShimProcessConnectedForRegisterOnly(
   // not do this (if there exists no ProfileState, then the shim should just
   // exit), but many tests assume this behavior, and need to be updated.
   Profile* profile = delegate_->ProfileForPath(bootstrap->GetProfilePath());
-  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
-  if (profile && extension && delegate_->AllowShimToConnect(profile, app_id))
-    GetOrCreateProfileState(profile, extension);
+  bool app_installed = delegate_->AppIsInstalled(profile, app_id);
+  if (profile && app_installed && delegate_->AppCanCreateHost(profile, app_id))
+    GetOrCreateProfileState(profile, app_id);
 
   // Because this was a register-only launch, it must have been launched by
   // Chrome, and so there should probably still exist the ProfileState through
@@ -689,9 +710,7 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
       launch_result = chrome::mojom::AppShimLaunchResult::kProfileNotFound;
       continue;
     }
-    const Extension* extension =
-        delegate_->MaybeGetAppExtension(profile, app_id);
-    if (!extension) {
+    if (!delegate_->AppIsInstalled(profile, app_id)) {
       launch_result = chrome::mojom::AppShimLaunchResult::kAppNotFound;
       continue;
     }
@@ -699,8 +718,8 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     // Create a ProfileState for this app, if appropriate (e.g, not for
     // open-in-a-tab bookmark apps).
     ProfileState* profile_state = nullptr;
-    if (delegate_->AllowShimToConnect(profile, app_id))
-      profile_state = GetOrCreateProfileState(profile, extension);
+    if (delegate_->AppCanCreateHost(profile, app_id))
+      profile_state = GetOrCreateProfileState(profile, app_id);
 
     // If there exist any open window for this profile, then bring them to the
     // front.
@@ -867,8 +886,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   // need to watch for 'app successfully launched' or at least 'background page
   // exists/was created' and time out with failure if we don't see that sign of
   // life within a certain window.
-  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
-  if (extension) {
+  if (delegate_->AppIsInstalled(profile, app_id)) {
     std::move(callback).Run(profile);
   } else {
     delegate_->EnableExtension(
@@ -936,9 +954,7 @@ void ExtensionAppShimHandler::OnShimFocus(AppShimHost* host) {
     return;
 
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
-  if (!extension) {
+  if (!delegate_->AppIsInstalled(profile, host->GetAppId())) {
     CloseShimForApp(profile, host->GetAppId());
     return;
   }
@@ -981,11 +997,10 @@ void ExtensionAppShimHandler::OnShimSelectedProfile(
 void ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded(
     const std::string& app_id,
     Profile* profile) {
-  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
-  if (!extension)
+  if (!delegate_->AppIsInstalled(profile, app_id))
     return;
 
-  auto found_app = apps_.find(extension->id());
+  auto found_app = apps_.find(app_id);
   if (found_app == apps_.end())
     return;
   AppState* app_state = found_app->second.get();
@@ -1045,10 +1060,9 @@ void ExtensionAppShimHandler::OnAppStart(content::BrowserContext* context,
 void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
                                              const std::string& app_id) {
   Profile* profile = Profile::FromBrowserContext(context);
-  const Extension* extension = delegate_->MaybeGetAppExtension(context, app_id);
-  if (!extension)
+  if (!delegate_->AppIsInstalled(profile, app_id))
     return;
-  if (auto* profile_state = GetOrCreateProfileState(profile, extension))
+  if (auto* profile_state = GetOrCreateProfileState(profile, app_id))
     profile_state->GetHost()->LaunchShim();
 }
 
@@ -1063,36 +1077,37 @@ void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
                                         const std::string& app_id) {}
 
 void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {
-  // Don't keep track of browsers that are not associated with an app.
-  const Extension* extension = MaybeGetAppForBrowser(browser);
-  if (!extension)
+  Profile* profile = browser->profile();
+  const std::string app_id =
+      web_app::GetAppIdFromApplicationName(browser->app_name());
+  if (!delegate_->AppUsesRemoteCocoa(profile, app_id))
     return;
-  if (auto* profile_state =
-          GetOrCreateProfileState(browser->profile(), extension)) {
+  if (auto* profile_state = GetOrCreateProfileState(profile, app_id)) {
     profile_state->browsers.insert(browser);
     if (profile_state->browsers.size() == 1)
-      OnAppActivated(browser->profile(), extension->id());
+      OnAppActivated(browser->profile(), app_id);
   }
 }
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
-  // Note that |browser| may no longer have an extension, if it was unloaded
-  // before |browser| was closed. Search for |browser| in all |apps_|.
-  for (auto iter_app = apps_.begin(); iter_app != apps_.end(); ++iter_app) {
-    AppState* app_state = iter_app->second.get();
-    const std::string& app_id = iter_app->first;
-    for (auto iter_profile = app_state->profiles.begin();
-         iter_profile != app_state->profiles.end(); ++iter_profile) {
-      ProfileState* profile_state = iter_profile->second.get();
-      auto found = profile_state->browsers.find(browser);
-      if (found != profile_state->browsers.end()) {
-        // If we have no browser windows open after erasing this window, then
-        // close the ProfileState (and potentially the shim as well).
-        profile_state->browsers.erase(found);
-        if (profile_state->browsers.empty())
-          OnAppDeactivated(browser->profile(), app_id);
-        return;
-      }
+  const std::string app_id =
+      web_app::GetAppIdFromApplicationName(browser->app_name());
+  auto found_app = apps_.find(app_id);
+  if (found_app == apps_.end())
+    return;
+  AppState* app_state = found_app->second.get();
+
+  for (auto iter_profile = app_state->profiles.begin();
+       iter_profile != app_state->profiles.end(); ++iter_profile) {
+    ProfileState* profile_state = iter_profile->second.get();
+    auto found = profile_state->browsers.find(browser);
+    if (found != profile_state->browsers.end()) {
+      // If we have no browser windows open after erasing this window, then
+      // close the ProfileState (and potentially the shim as well).
+      profile_state->browsers.erase(found);
+      if (profile_state->browsers.empty())
+        OnAppDeactivated(browser->profile(), app_id);
+      return;
     }
   }
 }
@@ -1166,19 +1181,17 @@ void ExtensionAppShimHandler::UpdateAppProfileMenu(AppState* app_state) {
 }
 
 ExtensionAppShimHandler::ProfileState*
-ExtensionAppShimHandler::GetOrCreateProfileState(
-    Profile* profile,
-    const extensions::Extension* extension) {
+ExtensionAppShimHandler::GetOrCreateProfileState(Profile* profile,
+                                                 const std::string& app_id) {
   if (web_app::AppShimLaunchDisabled())
     return nullptr;
 
-  const bool is_multi_profile = extension->from_bookmark();
+  const bool is_multi_profile = delegate_->AppIsMultiProfile(profile, app_id);
   const base::FilePath profile_path =
       is_multi_profile ? base::FilePath() : profile->GetPath();
-  const std::string app_id = extension->id();
-  const bool use_remote_cocoa = UsesRemoteViews(extension);
+  const bool use_remote_cocoa = delegate_->AppUsesRemoteCocoa(profile, app_id);
 
-  auto found_app = apps_.find(extension->id());
+  auto found_app = apps_.find(app_id);
   if (found_app == apps_.end()) {
     std::unique_ptr<AppShimHost> multi_profile_host;
     if (is_multi_profile) {

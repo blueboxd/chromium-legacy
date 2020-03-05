@@ -1115,14 +1115,23 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
         mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
             EffectiveMouseEventTargetElement(frame_set_being_resized_.Get()),
             String(), event_type_names::kMouseup, mouse_event);
-    ReleaseMouseCaptureFromLocalRoot();
+    // crbug.com/1053385 release mouse capture only if there are no more mouse
+    // buttons depressed
+    if (MouseEvent::WebInputEventModifiersToButtons(
+            mouse_event.GetModifiers()) == 0)
+      ReleaseMouseCaptureFromLocalRoot();
     return result;
   }
 
   if (last_scrollbar_under_mouse_) {
     mouse_event_manager_->InvalidateClick();
     last_scrollbar_under_mouse_->MouseUp(mouse_event);
-    ReleaseMouseCaptureFromLocalRoot();
+    // crbug.com/1053385 release mouse capture only if there are no more mouse
+    // buttons depressed
+    if (MouseEvent::WebInputEventModifiersToButtons(
+            mouse_event.GetModifiers()) == 0) {
+      ReleaseMouseCaptureFromLocalRoot();
+    }
     return DispatchMousePointerEvent(
         WebInputEvent::kPointerUp, mouse_event_manager_->GetElementUnderMouse(),
         String(), mouse_event, Vector<WebMouseEvent>(),
@@ -1153,14 +1162,19 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
         (GetSelectionController().HasExtendedSelection() &&
          IsSelectionOverLink(mev)));
   }
-
   scroll_manager_->ClearResizeScrollableArea(false);
 
   if (event_result == WebInputEventResult::kNotHandled)
     event_result = mouse_event_manager_->HandleMouseReleaseEvent(mev);
 
   mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
-  ReleaseMouseCaptureFromLocalRoot();
+
+  // crbug.com/1053385 release mouse capture only if there are no more mouse
+  // buttons depressed
+  if (MouseEvent::WebInputEventModifiersToButtons(mouse_event.GetModifiers()) ==
+      0)
+    ReleaseMouseCaptureFromLocalRoot();
+
   return event_result;
 }
 

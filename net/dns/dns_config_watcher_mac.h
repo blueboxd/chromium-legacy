@@ -15,7 +15,7 @@ namespace internal {
 // Watches DNS configuration on Mac.
 class DnsConfigWatcher {
  public:
-  bool Watch(const base::Callback<void(bool succeeded)>& callback);
+  bool Watch(const base::RepeatingCallback<void(bool succeeded)>& callback);
 
   // Returns an error if the DNS configuration is invalid.
   // Returns CONFIG_PARSE_POSIX_OK otherwise.

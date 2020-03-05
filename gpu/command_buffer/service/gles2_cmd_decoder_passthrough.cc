@@ -1589,8 +1589,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.post_sub_buffer = surface_->SupportsPostSubBuffer();
   caps.swap_buffers_with_bounds = surface_->SupportsSwapBuffersWithBounds();
   caps.surfaceless = !offscreen_ && surface_->IsSurfaceless();
-  caps.flips_vertically =
-      !offscreen_ && (surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft);
+  caps.surface_origin =
+      !offscreen_ ? surface_->GetOrigin() : gfx::SurfaceOrigin::kBottomLeft;
   caps.msaa_is_slow = feature_info_->workarounds().msaa_is_slow;
   caps.avoid_stencil_buffers =
       feature_info_->workarounds().avoid_stencil_buffers;

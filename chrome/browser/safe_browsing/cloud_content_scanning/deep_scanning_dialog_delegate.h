@@ -115,6 +115,9 @@ class DeepScanningDialogDelegate {
 
     // File size in bytes. -1 represents an unknown size.
     uint64_t size = 0;
+
+    // File mime type.
+    std::string mime_type;
   };
 
   // File contents used as input for |file_info_| and the BinaryUploadService.
@@ -133,19 +136,24 @@ class DeepScanningDialogDelegate {
     std::string sha256;
   };
 
-  // Enum to identify special cases when deep scanning doesn't happen either
-  // because the file is too large or encrypted. This is used to show
-  // appropriate messages in the upload UI dialog to inform the user of why
-  // their file(s) we not scanned and blocked.
-  enum class DeepScanUploadStatus {
-    // The data was uploaded and scanned.
-    NORMAL,
+  // Enum to identify which message to show once scanning is complete. Ordered
+  // by precedence for when multiple files have conflicting results.
+  // TODO(crbug.com/1055785): Refactor this to whatever solution is chosen.
+  enum class DeepScanningFinalResult {
+    // Show that an issue was found and that the upload is blocked.
+    FAILURE = 0,
 
-    // The file(s) were not uploaded since they were too large.
-    LARGE_FILES,
+    // Show that files were not uploaded since they were too large.
+    LARGE_FILES = 1,
 
-    // The file(s) were not uploaded since they were encrypted.
-    ENCRYPTED_FILES,
+    // Show that files were not uploaded since they were encrypted.
+    ENCRYPTED_FILES = 2,
+
+    // Show that DLP checks failed, but that the user can proceed if they want.
+    WARNING = 3,
+
+    // Show that no issue was found and that the user may proceed.
+    SUCCESS = 4,
   };
 
   // Callback used with ShowForWebContents() that informs caller of verdict
@@ -169,9 +177,15 @@ class DeepScanningDialogDelegate {
       delete;
   virtual ~DeepScanningDialogDelegate();
 
+  // Called when the user decides to bypass the verdict they obtained from DLP.
+  // This will allow the upload of files marked as DLP warnings.
+  void BypassWarnings();
+
   // Called when the user decides to cancel the file upload. This will stop the
-  // upload to Chrome since the scan wasn't allowed to complete.
-  void Cancel();
+  // upload to Chrome since the scan wasn't allowed to complete. If |warning| is
+  // true, it means the user clicked Cancel after getting a warning, meaning the
+  // "CancelledByUser" metrics should not be recorded.
+  void Cancel(bool warning);
 
   // Returns true if the deep scanning feature is enabled in the upload
   // direction via enterprise policies.  If the appropriate enterprise policies
@@ -261,10 +275,10 @@ class DeepScanningDialogDelegate {
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request);
 
-  // Closes the tab modal dialog.  Returns false if the UI was not enabled to
-  // indicate no action was taken.  Otherwise returns true.
-  // Virtual to override in tests.
-  virtual bool CloseTabModalDialog();
+  // Updates the tab modal dialog to show the scanning results. Returns false if
+  // the UI was not enabled to indicate no action was taken. Virtual to override
+  // in tests.
+  virtual bool UpdateDialog();
 
   // Calls the CompletionCallback |callback_| if all requests associated with
   // scans of |data_| are finished.  This function may delete |this| so no
@@ -288,6 +302,10 @@ class DeepScanningDialogDelegate {
                                    DeepScanningClientResponse response,
                                    std::string mime_type);
 
+  // Updates |final_result_| following the precedence established by the
+  // DeepScanningFinalResult enum.
+  void UpdateFinalResult(DeepScanningFinalResult message);
+
   // The web contents that is attempting to access the data.
   content::WebContents* web_contents_ = nullptr;
 
@@ -297,6 +315,12 @@ class DeepScanningDialogDelegate {
   const Data data_;
   Result result_;
   std::vector<FileInfo> file_info_;
+
+  // Set to true if the full text got a DLP warning verdict.
+  bool text_warning_ = false;
+
+  // Indexes of files that got DLP warning verdicts.
+  std::set<size_t> file_warnings_;
 
   // Set to true once the scan of text has completed.  If the scan request has
   // no text requiring deep scanning, this is set to true immediately.
@@ -316,9 +340,8 @@ class DeepScanningDialogDelegate {
   // Access point to use to record UMA metrics.
   DeepScanAccessPoint access_point_;
 
-  // Upload status indicating if one of the files was not scanned because of
-  // policies.
-  DeepScanUploadStatus upload_status_ = DeepScanUploadStatus::NORMAL;
+  // Scanning result to be shown to the user once every request is done.
+  DeepScanningFinalResult final_result_ = DeepScanningFinalResult::SUCCESS;
 
   base::TimeTicks upload_start_time_;
 

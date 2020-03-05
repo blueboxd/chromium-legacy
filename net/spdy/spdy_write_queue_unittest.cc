@@ -55,7 +55,7 @@ class RequeingBufferProducer : public SpdyBufferProducer {
   explicit RequeingBufferProducer(SpdyWriteQueue* queue) {
     buffer_ = std::make_unique<SpdyBuffer>(kOriginal, base::size(kOriginal));
     buffer_->AddConsumeCallback(
-        base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
+        base::BindRepeating(RequeingBufferProducer::ConsumeCallback, queue));
   }
 
   std::unique_ptr<SpdyBuffer> ProduceBuffer() override {

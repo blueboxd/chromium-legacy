@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -426,8 +427,11 @@ void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
   if (auto* image_element = DynamicTo<HTMLImageElement>(node)) {
-    media_element_parser_helpers::ReportUnsizedMediaViolation(
+    media_element_parser_helpers::CheckUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());
+  } else if (auto* video_element = DynamicTo<HTMLVideoElement>(node)) {
+    media_element_parser_helpers::CheckUnsizedMediaViolation(
+        this, video_element->IsDefaultIntrinsicSize());
   }
 }
 

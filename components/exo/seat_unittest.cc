@@ -485,7 +485,7 @@ TEST_F(SeatTest, DragDropAbort) {
   Surface origin, icon;
 
   // Give origin a root window for DragDropOperation.
-  CurrentContext()->AddChild(origin.window());
+  GetContext()->AddChild(origin.window());
 
   seat.StartDrag(&source, &origin, &icon,
                  ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);

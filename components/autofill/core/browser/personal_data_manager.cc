@@ -1728,7 +1728,7 @@ std::string PersonalDataManager::SaveImportedProfile(
 
   std::vector<AutofillProfile> profiles;
   std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, &web_profiles_, app_locale_, &profiles);
+      imported_profile, web_profiles_, app_locale_, &profiles);
   SetProfiles(&profiles);
   return guid;
 }

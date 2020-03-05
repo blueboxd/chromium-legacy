@@ -40,6 +40,14 @@ std::vector<std::string> ConvertToVector(const base::ListValue* list) {
   return string_list;
 }
 
+void AddPrintersFromMap(
+    const std::unordered_map<std::string, Printer>& printer_map,
+    std::vector<Printer>* printer_list) {
+  for (auto& printer_kv : printer_map) {
+    printer_list->push_back(printer_kv.second);
+  }
+}
+
 class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
                                        public BulkPrintersCalculator::Observer {
  public:
@@ -182,17 +190,23 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 
   void RecalculateCurrentPrintersList() {
     complete_ = true;
-    printers_ = recommended_printers_;
+    std::vector<Printer> current_printers;
+    AddPrintersFromMap(recommended_printers_, &current_printers);
+
     if (device_printers_) {
       complete_ = complete_ && device_printers_is_complete_;
       const auto& printers = device_printers_->GetPrinters();
-      printers_.insert(printers.begin(), printers.end());
+      AddPrintersFromMap(printers, &current_printers);
     }
     if (user_printers_) {
       complete_ = complete_ && user_printers_is_complete_;
       const auto& printers = user_printers_->GetPrinters();
-      printers_.insert(printers.begin(), printers.end());
+      AddPrintersFromMap(printers, &current_printers);
     }
+
+    // Save current_printers.
+    printers_.swap(current_printers);
+
     for (auto& observer : observers_) {
       observer.OnPrintersChanged(complete_, printers_);
     }
@@ -240,7 +254,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 
   // current final results
   bool complete_ = false;
-  std::unordered_map<std::string, Printer> printers_;
+  std::vector<Printer> printers_;
 
   // Calculators for bulk printers from device and user policies. Unowned.
   base::WeakPtr<BulkPrintersCalculator> device_printers_;

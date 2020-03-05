@@ -165,8 +165,8 @@ android_resources("chrome_app_java_resources") {
     "//content/public/android:content_java_resources",
     "//third_party/android_data_chart:android_data_chart_java_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
     "//third_party/android_deps:com_android_support_design_java",
-    "//third_party/android_deps:com_android_support_gridlayout_v7_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
   ]
@@ -180,6 +180,15 @@ if (enable_vr) {
   android_resources("chrome_vr_java_resources") {
     resource_dirs = [ "//chrome/android/java/res_vr" ]
     deps = [ ":chrome_app_java_resources" ]
+  }
+}
+
+# TODO (crbug/1058764) Unfork credential leak dialog password change when prototype is done.
+if (enable_password_change_in_leaked_dialog) {
+  android_resources("password_change_resources") {
+    resource_dirs = [ "//chrome/android/java/res_password_change" ]
+    deps = [ ":chrome_app_java_resources" ]
+    custom_package = "org.chromium.chrome.password_change"
   }
 }
 
@@ -363,19 +372,19 @@ android_library("chrome_java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_collection_collection_java",
+    "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
     "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_customview_java",
 
     # TODO(bjoyce): Change to AndroidX materials after
     # ClearBrowsingDataTabsFramgent.java is converted to AndroidX.
+    "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
     "//third_party/android_deps:com_android_support_design_java",
-    "//third_party/android_deps:com_android_support_gridlayout_v7_java",
     "//third_party/android_deps:com_android_support_interpolator_java",
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
-    "//third_party/android_deps:com_android_support_support_v13_java",
     "//third_party/android_deps:com_android_support_viewpager_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
@@ -471,6 +480,9 @@ android_library("chrome_java") {
     deps += [ ":chrome_vr_java_resources" ]
   }
 
+  if (enable_password_change_in_leaked_dialog) {
+    deps += [ ":password_change_resources" ]
+  }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ "//chrome/android/feed:chrome_feed_java_resources" ]
@@ -2753,6 +2765,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchConfiguration.java",
+    "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchNotificationServiceBridge.java",
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchedPagesNotifier.java",
     "java/src/org/chromium/chrome/browser/omaha/notification/UpdateNotificationServiceBridge.java",
     "java/src/org/chromium/chrome/browser/omnibox/ChromeAutocompleteSchemeClassifier.java",
@@ -2875,6 +2888,10 @@ generate_jni("chrome_jni_headers") {
 
   if (enable_vr) {
     sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
+  }
+
+  if (enable_password_change_in_leaked_dialog) {
+    sources += [ "java/src/org/chromium/chrome/browser/password_manager/CredentialLeakDialogPasswordChangeBridge.java" ]
   }
 }
 

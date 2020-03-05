@@ -6,12 +6,10 @@
 
 #import <UIKit/UIKit.h>
 
-
 @protocol ApplicationCommands;
+class Browser;
 @protocol BrowserCommands;
 @protocol BookmarkInteractionControllerDelegate;
-
-class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -21,8 +19,6 @@ namespace web {
 class WebState;
 }
 
-class WebStateList;
-
 // The BookmarkInteractionController abstracts the management of the various
 // UIViewControllers used to create, remove and edit a bookmark.
 @interface BookmarkInteractionController : NSObject
@@ -30,11 +26,9 @@ class WebStateList;
 // This object's delegate.
 @property(nonatomic, weak) id<BookmarkInteractionControllerDelegate> delegate;
 
-- (instancetype)
-    initWithBrowserState:(ChromeBrowserState*)browserState
-        parentController:(UIViewController*)parentController
-              dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
-            webStateList:(WebStateList*)webStateList NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowser:(Browser*)browser
+               parentController:(UIViewController*)parentController
+    NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Presents the bookmark UI for a single bookmark.

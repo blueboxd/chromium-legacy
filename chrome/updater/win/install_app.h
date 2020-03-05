@@ -7,11 +7,15 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+
 namespace updater {
+
+class App;
 
 // Sets the updater up, shows up a splash screen, then installs an application
 // while displaying the UI progress window.
-int InstallApp(const std::string& app_id);
+scoped_refptr<App> MakeAppInstall(const std::string& app_id);
 
 }  // namespace updater
 

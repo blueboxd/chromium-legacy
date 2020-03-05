@@ -70,7 +70,7 @@ namespace net {
 namespace internal {
 
 bool DnsConfigWatcher::Watch(
-    const base::Callback<void(bool succeeded)>& callback) {
+    const base::RepeatingCallback<void(bool succeeded)>& callback) {
   if (!GetDnsInfoApi().dns_configuration_notify_key)
     return false;
   return watcher_.Watch(GetDnsInfoApi().dns_configuration_notify_key(),

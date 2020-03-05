@@ -14,6 +14,7 @@ import(
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/browser/share/android/test_java_sources.gni")
+import("//chrome/common/features.gni")
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -48,5 +49,17 @@ if (enable_arcore) {
     "java/src/org/chromium/chrome/browser/vr/ArCoreShim.java",
     "java/src/org/chromium/chrome/browser/vr/ArDelegateImpl.java",
     "java/src/org/chromium/chrome/browser/vr/ArImmersiveOverlay.java",
+  ]
+}
+
+if (enable_password_change_in_leaked_dialog) {
+  chrome_java_sources += [
+    "java/src/org/chromium/chrome/browser/password_manager/CredentialLeakDialogPasswordChangeBridge.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeContents.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeCoordinator.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeMediator.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeProperties.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeView.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogPasswordChangeViewBinder.java",
   ]
 }

@@ -3602,6 +3602,9 @@ are declared in tools/grit/grit_rule.gni.
           Profile Importer
         </message>
       </if>
+      <message name="IDS_UTILITY_PROCESS_QRCODE_GENERATOR_SERVICE_NAME" desc="The name of the utility process used for encoding QR codes.">
+        QR Code Generator
+      </message>
       <if expr="is_win">
         <message name="IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME" desc="The name of the utility process used for getting the WiFi credentials">
           WiFi Credentials Getter
@@ -10470,8 +10473,26 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged files when they doesn't comply with enterprise security policies">
       These files violate your organization's security policies and can't be dropped.
     </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
+      This upload violates your organization's security policies. Do you want to proceed anyway?
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of pasted data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
+      This pasted data violates your organization's security policies. Do you want to proceed anyway?
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
+      This dropped data violates your organization's security policies. Do you want to proceed anyway?
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged files when they doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
+      These dropped files violate your organization's security policies. Do you want to proceed anyway?
+    </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_TIMEOUT_MESSAGE" desc="Message shown in tab modal dialog after a deep scan times out.">
       Something went wrong. Scanning could not be completed. Please try again.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_PROCEED_BUTTON" desc="Text shown in the proceed button of a tab modal dialog after performing a deep scan of data to ignore the obtained warning and proceed with the upload.">
+      Proceed anyway
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_WARNING_BUTTON" desc="Text shown in the cancel button of a tab modal dialog after performing a deep scan of data to acknowledge the obtained warning and close the dialog.">
+      Cancel
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON" desc="Text shown in the cancel button of a tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
       Cancel upload

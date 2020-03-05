@@ -12,8 +12,8 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/all_web_state_list_observation_registrar.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_tab_model_list_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_web_state_list_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -36,7 +36,7 @@ class SnapshotCacheWrapper : public KeyedService {
 
  private:
   __strong SnapshotCache* snapshot_cache_;
-  std::unique_ptr<SnapshotCacheTabModelListObserver> tab_model_list_observer_;
+  std::unique_ptr<AllWebStateListObservationRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotCacheWrapper);
 };
@@ -45,10 +45,9 @@ SnapshotCacheWrapper::SnapshotCacheWrapper(ChromeBrowserState* browser_state,
                                            SnapshotCache* snapshot_cache)
     : snapshot_cache_(snapshot_cache) {
   DCHECK(snapshot_cache);
-  tab_model_list_observer_ =
-      std::make_unique<SnapshotCacheTabModelListObserver>(
-          browser_state,
-          std::make_unique<SnapshotCacheWebStateListObserver>(snapshot_cache));
+  registrar_ = std::make_unique<AllWebStateListObservationRegistrar>(
+      browser_state,
+      std::make_unique<SnapshotCacheWebStateListObserver>(snapshot_cache));
 }
 
 SnapshotCacheWrapper::~SnapshotCacheWrapper() {
@@ -56,7 +55,7 @@ SnapshotCacheWrapper::~SnapshotCacheWrapper() {
 }
 
 void SnapshotCacheWrapper::Shutdown() {
-  tab_model_list_observer_.reset();
+  registrar_.reset();
   [snapshot_cache_ shutdown];
   snapshot_cache_ = nil;
 }

@@ -414,6 +414,29 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidConcurrency) {
   registered_task_source.DidProcessTask();
 }
 
+// Verifies that a stale concurrency with no call to NotifyConcurrencyIncrease()
+// causes a DCHECK death after a timeout.
+TEST_F(ThreadPoolJobTaskSourceTest, StaleConcurrency) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  auto task_source = MakeRefCounted<JobTaskSource>(
+      FROM_HERE, TaskTraits{}, BindRepeating([](JobDelegate*) {}),
+      BindRepeating([]() -> size_t { return 1; }),
+      &pooled_task_runner_delegate_);
+
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(task_source);
+  ASSERT_EQ(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kAllowedSaturated);
+  auto task = registered_task_source.TakeTask();
+
+  // A DCHECK should trigger when |JobTaskSource::primary_task_| returns and
+  // ~JobDelegate() invokes AssertExpectedConcurrency(0)
+  EXPECT_DCHECK_DEATH(std::move(task.task).Run());
+
+  registered_task_source.DidProcessTask();
+}
+
 TEST_F(ThreadPoolJobTaskSourceTest, InvalidTakeTask) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),

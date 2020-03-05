@@ -286,7 +286,7 @@ PrefService* AshTestHelper::GetLocalStatePrefService() {
   return Shell::Get()->local_state_;
 }
 
-aura::Window* AshTestHelper::CurrentContext() {
+aura::Window* AshTestHelper::GetContext() {
   aura::Window* root_window = Shell::GetRootWindowForNewWindows();
   if (!root_window)
     root_window = Shell::GetPrimaryRootWindow();

@@ -202,7 +202,7 @@ TEST_F(ZAuraSurfaceTest,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   auto lock_widget = std::make_unique<views::Widget>();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = CurrentContext();
+  params.context = GetContext();
   params.bounds = gfx::Rect(0, 0, 100, 100);
   lock_widget->Init(std::move(params));
   ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),

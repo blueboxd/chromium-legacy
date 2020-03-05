@@ -176,7 +176,7 @@ void LayoutSVGImage::UpdateLayout() {
   DCHECK(!needs_transform_update_);
 
   if (auto* svg_image_element = DynamicTo<SVGImageElement>(GetElement())) {
-    media_element_parser_helpers::ReportUnsizedMediaViolation(
+    media_element_parser_helpers::CheckUnsizedMediaViolation(
         this, svg_image_element->IsDefaultIntrinsicSize());
   }
   ClearNeedsLayout();

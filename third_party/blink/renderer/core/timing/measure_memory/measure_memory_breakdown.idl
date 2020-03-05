@@ -7,7 +7,6 @@
 // A single entry of performance.measureMemory() result.
 dictionary MeasureMemoryBreakdown {
   unsigned long long bytes;
-  unsigned long long globals;
-  sequence<DOMString> origins;
+  sequence<DOMString> attribution;
   DOMString type;
 };

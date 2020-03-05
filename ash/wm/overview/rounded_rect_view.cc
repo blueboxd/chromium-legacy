@@ -5,7 +5,6 @@
 #include "ash/wm/overview/rounded_rect_view.h"
 
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/skia_util.h"
 
 namespace ash {
 
@@ -14,34 +13,24 @@ RoundedRectView::RoundedRectView(int corner_radius, SkColor background_color)
 
 RoundedRectView::~RoundedRectView() = default;
 
-void RoundedRectView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-
-  SkScalar radius = SkIntToScalar(corner_radius_);
-  const SkScalar kRadius[8] = {radius, radius, radius, radius,
-                               radius, radius, radius, radius};
-  SkPath path;
-  gfx::Rect bounds(size());
-  path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
-
-  canvas->ClipPath(path, true);
-  canvas->DrawColor(background_color_);
-}
-
-void RoundedRectView::SetBackgroundColor(SkColor background_color) {
-  if (background_color_ == background_color)
-    return;
-
-  background_color_ = background_color;
-  SchedulePaint();
-}
-
 void RoundedRectView::SetCornerRadius(int radius) {
   if (corner_radius_ == radius)
     return;
 
   corner_radius_ = radius;
   SchedulePaint();
+}
+
+void RoundedRectView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(background_color_);
+  flags.setAntiAlias(true);
+
+  gfx::RectF bounds(GetLocalBounds());
+  canvas->DrawRoundRect(bounds, corner_radius_, flags);
 }
 
 }  // namespace ash

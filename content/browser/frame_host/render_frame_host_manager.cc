@@ -2363,7 +2363,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
                        mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
 
   bool cross_origin_policy_swap =
-      request->response() &&
+      request->response() && frame_tree_node_->IsMainFrame() &&
       ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
           render_frame_host_->cross_origin_opener_policy(),
           render_frame_host_->cross_origin_embedder_policy().value,

@@ -217,11 +217,10 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
 
   SimpleIndexLoadResult* load_result = new SimpleIndexLoadResult();
   std::unique_ptr<SimpleIndexLoadResult> load_result_scoped(load_result);
-  base::Closure reply = base::Bind(
-      &SimpleIndex::MergeInitializingSet,
-      AsWeakPtr(),
-      base::Passed(&load_result_scoped));
-  index_file_->LoadIndexEntries(cache_mtime, reply, load_result);
+  base::OnceClosure reply =
+      base::BindOnce(&SimpleIndex::MergeInitializingSet, AsWeakPtr(),
+                     base::Passed(&load_result_scoped));
+  index_file_->LoadIndexEntries(cache_mtime, std::move(reply), load_result);
 }
 
 void SimpleIndex::SetMaxSize(uint64_t max_bytes) {
@@ -659,17 +658,17 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   }
   last_write_to_disk_ = start;
 
-  base::Closure after_write;
+  base::OnceClosure after_write;
   if (cleanup_tracker_) {
     // Make anyone synchronizing with our cleanup wait for the index to be
     // written back.
-    after_write = base::Bind(
-        base::DoNothing::Repeatedly<scoped_refptr<BackendCleanupTracker>>(),
+    after_write = base::BindOnce(
+        base::DoNothing::Once<scoped_refptr<BackendCleanupTracker>>(),
         cleanup_tracker_);
   }
 
   index_file_->WriteToDisk(cache_type_, reason, entries_set_, cache_size_,
-                           start, app_on_background_, after_write);
+                           start, app_on_background_, std::move(after_write));
 }
 
 }  // namespace disk_cache

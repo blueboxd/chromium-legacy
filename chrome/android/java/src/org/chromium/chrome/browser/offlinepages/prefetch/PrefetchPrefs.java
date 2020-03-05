@@ -16,6 +16,23 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
  *    reacting to it
  */
 public class PrefetchPrefs {
+    /**
+     * Sets the flag to tell whether prefetch notifications are under suppression in scheduler
+     * framework.
+     */
+    public static void setIsUnderSuppression(boolean isUnderSuppression) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.PREFETCH_NOTIFICATION_THROTTLED, !isUnderSuppression);
+    }
+
+    /**
+     * Returns the flag to tell whether prefetch notifications are under suppression in scheduler
+     * framework.
+     */
+    public static boolean isUnderSuppression() {
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.PREFETCH_NOTIFICATION_THROTTLED, false);
+    }
 
     /**
      * Sets the flag to tell whether prefetch notifications are enabled in user settings.

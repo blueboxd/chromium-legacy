@@ -163,7 +163,7 @@ CSPDirectiveList* CSPDirectiveList::Create(ContentSecurityPolicy* policy,
             ->GetText() +
         "\".\n";
     directives->SetEvalDisabledErrorMessage(message);
-  } else if (directives->trusted_types_) {
+  } else if (directives->RequiresTrustedTypes()) {
     String message =
         "Refused to evaluate a string as JavaScript because this document "
         "requires 'Trusted Type' assignment.";
@@ -793,7 +793,7 @@ bool CSPDirectiveList::ShouldDisableEvalBecauseScriptSrc() const {
 }
 
 bool CSPDirectiveList::ShouldDisableEvalBecauseTrustedTypes() const {
-  return trusted_types_;
+  return RequiresTrustedTypes();
 }
 
 bool CSPDirectiveList::AllowPluginType(

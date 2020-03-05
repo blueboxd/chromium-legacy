@@ -6,10 +6,6 @@
 
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 
-ChromeTestViewsDelegate::ChromeTestViewsDelegate()
-    : views::TestViewsDelegate() {
-  // Overrides the LayoutProvider created by TestViewsDelegate.
+ChromeTestViewsDelegate::ChromeTestViewsDelegate() {
   set_layout_provider(ChromeLayoutProvider::CreateLayoutProvider());
 }
-
-ChromeTestViewsDelegate::~ChromeTestViewsDelegate() {}

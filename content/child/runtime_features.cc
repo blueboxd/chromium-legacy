@@ -355,6 +355,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LayoutNG", blink::features::kLayoutNG, kUseFeatureState},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
+          {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
           {"ShadowDOMV0", blink::features::kWebComponentsV0Enabled,
            kEnableOnly},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},

@@ -1844,6 +1844,13 @@ void NavigationRequest::OnResponseStarted(
       }
     }
 
+    // The Cross-Origin-Opener-Policy header should be ignored if delivered in
+    // insecure contexts.
+    if (!IsOriginSecure(common_params_->url)) {
+      response_head_->cross_origin_opener_policy =
+          network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+    }
+
     // Popups with a sandboxing flag, inherited from their opener, are not
     // allowed to navigate to a document with a Cross-Origin-Opener-Policy that
     // is not "unsafe-none". This ensures a COOP document does not inherit any
@@ -1902,10 +1909,8 @@ void NavigationRequest::OnResponseStarted(
   if (render_frame_host_) {
     render_frame_host_->set_cross_origin_embedder_policy(
         cross_origin_embedder_policy);
-    if (IsOriginSecure(common_params_->url)) {
-      render_frame_host_->set_cross_origin_opener_policy(
-          response_head_->cross_origin_opener_policy);
-    }
+    render_frame_host_->set_cross_origin_opener_policy(
+        response_head_->cross_origin_opener_policy);
   }
   client_security_state_->cross_origin_embedder_policy =
       cross_origin_embedder_policy;

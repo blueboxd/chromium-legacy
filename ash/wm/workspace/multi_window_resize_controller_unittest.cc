@@ -141,7 +141,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params1.delegate = new TestWidgetDelegate;
   params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params1.bounds = gfx::Rect(100, 200);
-  params1.context = CurrentContext();
+  params1.context = GetContext();
   w1->Init(std::move(params1));
   w1->Show();
 
@@ -150,7 +150,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params2.delegate = new TestWidgetDelegate;
   params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params2.bounds = gfx::Rect(100, 0, 100, 100);
-  params2.context = CurrentContext();
+  params2.context = GetContext();
   w2->Init(std::move(params2));
   w2->Show();
 
@@ -159,7 +159,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params3.delegate = new TestWidgetDelegate;
   params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params3.bounds = gfx::Rect(100, 100, 100, 100);
-  params3.context = CurrentContext();
+  params3.context = GetContext();
   w3->Init(std::move(params3));
   w3->Show();
 

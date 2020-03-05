@@ -14,6 +14,12 @@
       url(images/2x/info.png) 2x);
 }
 
+@media (prefers-color-scheme: dark) {
+  .ssl .legacy-tls.icon {
+    filter: invert(1);
+  }
+}
+
 .ssl-opt-in .checkbox::after {
   border-color: #696969;
 }

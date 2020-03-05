@@ -3289,6 +3289,15 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
+    {"prefetch-notification-scheduling-integration",
+     flag_descriptions::kPrefetchNotificationSchedulingIntegrationName,
+     flag_descriptions::kPrefetchNotificationSchedulingIntegrationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kPrefetchNotificationSchedulingIntegration)},
+#endif
+
+#if defined(OS_ANDROID)
     {"update-notification-scheduling-show-immediately",
      flag_descriptions::kUpdateNotificationServiceImmediateShowOptionName,
      flag_descriptions::

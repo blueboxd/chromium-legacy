@@ -1,0 +1,25 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package perfetto.protos;
+
+import "protos/perfetto/metrics/metrics.proto";
+
+// A collection of metrics related to GestureScroll events. See the sql file for
+// a detailed description of the variables below.
+
+message JankyTimePerScrollProcessingTime {
+  optional double janky_time_per_scroll_processing_time_percentage = 1;
+  optional int64 gesture_scroll_milliseconds = 2;
+  optional int64 janky_gesture_scroll_milliseconds = 3;
+  optional int64 gesture_scroll_processing_milliseconds = 4;
+  optional int64 num_janky_gesture_scroll_updates = 5;
+}
+
+extend TraceMetrics {
+  optional JankyTimePerScrollProcessingTime
+      janky_time_per_scroll_processing_time = 454;
+}

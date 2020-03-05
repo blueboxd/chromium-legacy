@@ -11,8 +11,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementOnScreen;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
@@ -24,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -101,12 +102,13 @@ public class AutofillAssistantOverlayIntegrationTest {
                 list);
         runScript(script);
 
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_one"));
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM.
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
         tapElement(mTestRule, "touch_area_one");
-        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(false));
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_one"));
         // Tapping on the element should be blocked by the overlay.
         tapElement(mTestRule, "touch_area_four");
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
@@ -146,13 +148,14 @@ public class AutofillAssistantOverlayIntegrationTest {
                 list);
         runScript(script);
 
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_five"));
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM. The element should be after a
         // big element forcing the page to scroll.
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_five"), is(true));
         tapElement(mTestRule, "touch_area_five");
-        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_five"), is(false));
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_five"));
         // Tapping on the element should be blocked by the overlay.
         tapElement(mTestRule, "touch_area_six");
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_six"), is(true));
@@ -163,7 +166,6 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "flaky on Android L; crbug.com/1058599")
     public void testShowCastOnIFrameElement() throws Exception {
         ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
                                                 .addSelectors("#iframe")
@@ -194,14 +196,14 @@ public class AutofillAssistantOverlayIntegrationTest {
                 list);
         runScript(script);
 
+        waitUntil(() -> checkElementOnScreen(mTestRule, "iframe", "touch_area_1"));
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM.
         assertThat(
                 checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_1"), is(true));
         tapElement(mTestRule, "iframe", "touch_area_1");
-        assertThat(checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_1"),
-                is(false));
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_1"));
         // Tapping on the element should be blocked by the overlay.
         tapElement(mTestRule, "iframe", "touch_area_2");
         assertThat(
@@ -213,7 +215,6 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "flaky on Android L; crbug.com/1058599")
     public void testShowCastOnIFrameElementInScrollIFrame() throws Exception {
         ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
                                                 .addSelectors("#iframe")
@@ -244,6 +245,7 @@ public class AutofillAssistantOverlayIntegrationTest {
                 list);
         runScript(script);
 
+        waitUntil(() -> checkElementOnScreen(mTestRule, "iframe", "touch_area_3"));
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM. The element should be after a
@@ -251,8 +253,7 @@ public class AutofillAssistantOverlayIntegrationTest {
         assertThat(
                 checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_3"), is(true));
         tapElement(mTestRule, "iframe", "touch_area_3");
-        assertThat(checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_3"),
-                is(false));
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "iframe", "touch_area_3"));
         // Tapping on the element should be blocked by the overlay.
         tapElement(mTestRule, "iframe", "touch_area_4");
         assertThat(

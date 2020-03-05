@@ -281,16 +281,25 @@ class XmlWrapper : public OmahaXmlWriter {
 @end
 
 // static
-OmahaService* OmahaService::GetInstance() {
+bool OmahaService::IsEnabled() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  static base::NoDestructor<OmahaService> instance;
-
-  if (tests_hook::DisableUpdateService())
-    return nullptr;
-  return instance.get();
+  return !tests_hook::DisableUpdateService();
 #else
-  return nullptr;
+  return false;
 #endif
+}
+
+// static
+OmahaService* OmahaService::GetInstance() {
+  // base::NoDestructor creates its OmahaService as soon as this method is
+  // entered for the first time. In build variants where Omaha is disabled, that
+  // can lead to a scenario where the OmahaService is started but never
+  // stopped. Guard against this by ensuring that GetInstance() can only be
+  // called when Omaha is enabled.
+  DCHECK(IsEnabled());
+
+  static base::NoDestructor<OmahaService> instance;
+  return instance.get();
 }
 
 // static
@@ -300,11 +309,11 @@ void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
   DCHECK(pending_url_loader_factory);
   DCHECK(!callback.is_null());
 
-  OmahaService* service = GetInstance();
-  if (!service) {
+  if (!OmahaService::IsEnabled()) {
     return;
   }
 
+  OmahaService* service = GetInstance();
   service->set_upgrade_recommended_callback(callback);
   // This should only be called once.
   DCHECK(!service->pending_url_loader_factory_ ||
@@ -316,25 +325,35 @@ void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
                                 base::Unretained(service)));
 }
 
+// static
+void OmahaService::Stop() {
+  if (!OmahaService::IsEnabled()) {
+    return;
+  }
+
+  OmahaService* service = GetInstance();
+  service->StopInternal();
+}
+
 OmahaService::OmahaService()
     : schedule_(true),
       application_install_date_(0),
       sending_install_event_(false) {
-  Initialize();
+  StartInternal();
 }
 
 OmahaService::OmahaService(bool schedule)
     : schedule_(schedule),
       application_install_date_(0),
       sending_install_event_(false) {
-  Initialize();
+  StartInternal();
 }
 
 OmahaService::~OmahaService() {}
 
-void OmahaService::Initialize() {
-  // Initialize the provider at the same time as the rest of the service.
-  ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Initialize();
+void OmahaService::StartInternal() {
+  // Start the provider at the same time as the rest of the service.
+  ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Start();
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   next_tries_time_ = base::Time::FromCFAbsoluteTime(
@@ -390,20 +409,24 @@ void OmahaService::Initialize() {
     PersistStates();
 }
 
+void OmahaService::StopInternal() {
+  ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Stop();
+}
+
 // static
 void OmahaService::GetDebugInformation(
     const base::Callback<void(base::DictionaryValue*)> callback) {
-  OmahaService* service = GetInstance();
+  if (OmahaService::IsEnabled()) {
+    OmahaService* service = GetInstance();
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
+                                  base::Unretained(service), callback));
 
-  if (!service) {
+  } else {
     auto result = std::make_unique<base::DictionaryValue>();
     // Invoke the callback with an empty response.
     base::PostTask(FROM_HERE, {web::WebThread::UI},
                    base::BindOnce(callback, base::Owned(result.release())));
-  } else {
-    base::PostTask(FROM_HERE, {web::WebThread::IO},
-                   base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
-                                  base::Unretained(service), callback));
   }
 }
 

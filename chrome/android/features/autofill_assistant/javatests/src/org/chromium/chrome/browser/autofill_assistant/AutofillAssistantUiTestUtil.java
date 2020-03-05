@@ -67,6 +67,7 @@ import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -372,6 +373,21 @@ class AutofillAssistantUiTestUtil {
         });
     }
 
+    public static void waitUntil(Callable<Boolean> condition) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Timeout while waiting for condition") {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            return condition.call();
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                },
+                DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+    }
+
     /**
      * Creates a {@link BottomSheetController} for the activity, suitable for testing.
      *
@@ -506,6 +522,15 @@ class AutofillAssistantUiTestUtil {
                     Math.min(rect.bottom, rect.top + rectJson.getInt(3)));
         }
         return rect;
+    }
+
+    public static boolean checkElementOnScreen(
+            CustomTabActivityTestRule testRule, String... elementIds) throws Exception {
+        Rect coords = getAbsoluteBoundingRect(testRule, elementIds);
+        DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
+
+        return (coords.left < displayMetrics.widthPixels && 0 <= coords.right)
+                && (coords.top < displayMetrics.heightPixels && 0 <= coords.bottom);
     }
 
     /** Checks whether the specified element exists in the DOM tree. */

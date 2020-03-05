@@ -454,6 +454,19 @@ PanelSearchMenu = class extends PanelMenu {
     const item = this.items_[this.activeIndex_];
     this.searchBar.setAttribute('aria-activedescendant', item.element.id);
     item.element.classList.add('active');
+
+    // Scroll item into view, if necessary. Only check y-axis.
+    const itemBounds = item.element.getBoundingClientRect();
+    const menuBarBounds = this.menuBarItemElement.getBoundingClientRect();
+    const topThreshold = menuBarBounds.bottom;
+    const bottomThreshold = window.innerHeight;
+    if (itemBounds.bottom > bottomThreshold) {
+      // Item is too far down, so align to top.
+      item.element.scrollIntoView(true /* alignToTop */);
+    } else if (itemBounds.top < topThreshold) {
+      // Item is too far up, so align to bottom.
+      item.element.scrollIntoView(false /* alignToTop */);
+    }
   }
 
   /** @override */

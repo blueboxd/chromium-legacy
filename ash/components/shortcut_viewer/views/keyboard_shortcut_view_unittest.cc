@@ -29,9 +29,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   KeyboardShortcutViewTest() = default;
   ~KeyboardShortcutViewTest() override = default;
 
-  views::Widget* Toggle() {
-    return KeyboardShortcutView::Toggle(CurrentContext());
-  }
+  views::Widget* Toggle() { return KeyboardShortcutView::Toggle(GetContext()); }
 
   // ash::AshTestBase:
   void SetUp() override {

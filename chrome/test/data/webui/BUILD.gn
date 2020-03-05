@@ -129,6 +129,7 @@ js2gtest("browser_tests_js_webui") {
 
   if (is_chromeos) {
     sources += [
+      "../../../browser/resources/chromeos/login/security_token_pin_browsertest.js",
       "../../../browser/ui/webui/chromeos/account_migration_welcome_test.js",
       "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
       "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",

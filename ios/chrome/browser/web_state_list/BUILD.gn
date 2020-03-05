@@ -8,8 +8,6 @@ source_set("web_state_list") {
     "active_web_state_observation_forwarder.mm",
     "all_web_state_observation_forwarder.h",
     "all_web_state_observation_forwarder.mm",
-    "tab_insertion_browser_agent.h",
-    "tab_insertion_browser_agent.mm",
     "web_state_list.h",
     "web_state_list.mm",
     "web_state_list_delegate.h",
@@ -33,11 +31,25 @@ source_set("web_state_list") {
     "//components/favicon/core",
     "//components/favicon/ios",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/sessions:restoration_observer",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/web",
     "//ios/web/public/session",
+  ]
+  libs = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("agents") {
+  sources = [
+    "tab_insertion_browser_agent.h",
+    "tab_insertion_browser_agent.mm",
+  ]
+  deps = [
+    ":web_state_list",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
+    "//ios/web/public",
   ]
   libs = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -69,6 +81,7 @@ source_set("unit_tests") {
     "web_state_opener_unittest.mm",
   ]
   deps = [
+    ":agents",
     ":test_support",
     ":web_state_list",
     "//base",

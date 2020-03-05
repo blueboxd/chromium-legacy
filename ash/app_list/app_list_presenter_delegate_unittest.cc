@@ -221,7 +221,7 @@ class PopulatedAppListTest : public AshTestBase,
   void CreateAndOpenAppList() {
     app_list_view_ = new AppListView(app_list_test_delegate_.get());
     app_list_view_->InitView(
-        false /*is_tablet_mode*/, CurrentContext(),
+        false /*is_tablet_mode*/, GetContext(),
         base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
                             /*is_tablet_mode=*/false));
     app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);

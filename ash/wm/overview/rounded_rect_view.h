@@ -15,14 +15,13 @@ namespace ash {
 
 // A View having rounded corners and a specified background color which is
 // only painted within the bounds defined by the rounded corners.
-// TODO(varkha): This duplicates code from RoundedImageView. Refactor these
-// classes and move into ui/views.
 class RoundedRectView : public views::View {
  public:
   RoundedRectView(int corner_radius, SkColor background_color);
+  RoundedRectView(const RoundedRectView&) = delete;
+  RoundedRectView& operator=(const RoundedRectView&) = delete;
   ~RoundedRectView() override;
 
-  void SetBackgroundColor(SkColor background_color);
   void SetCornerRadius(int radius);
 
   // views::View:
@@ -30,9 +29,7 @@ class RoundedRectView : public views::View {
 
  private:
   int corner_radius_;
-  SkColor background_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundedRectView);
+  const SkColor background_color_;
 };
 
 }  // namespace ash

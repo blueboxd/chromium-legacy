@@ -31,10 +31,10 @@ using ScreenUtilTest = AshTestBase;
 TEST_F(ScreenUtilTest, Bounds) {
   UpdateDisplay("600x600,500x500");
   views::Widget* primary = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
   views::Widget* secondary = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   // Maximized bounds.
@@ -73,7 +73,7 @@ TEST_F(ScreenUtilTest, Bounds) {
 TEST_F(ScreenUtilTest, StabilityTest) {
   UpdateDisplay("600x600,500x500");
   views::Widget* secondary = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(610, 10, 100, 100));
   EXPECT_EQ(Shell::GetAllRootWindows()[1],
             secondary->GetNativeView()->GetRootWindow());
   secondary->Show();
@@ -88,10 +88,10 @@ TEST_F(ScreenUtilTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
 
   views::Widget* primary = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
   views::Widget* secondary = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   gfx::Rect r1(10, 10, 100, 100);
@@ -115,7 +115,7 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(10, 10, 100, 100));
   aura::Window* window = widget->GetNativeWindow();
 
   UpdateDisplay("500x400");
@@ -144,7 +144,7 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   views::Widget* widget = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+      nullptr, GetContext(), gfx::Rect(10, 10, 100, 100));
   aura::Window* window = widget->GetNativeWindow();
 
   display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
@@ -207,7 +207,7 @@ TEST_F(ScreenUtilTest, SnapBoundsToDisplayEdge) {
 
   gfx::Rect bounds(1555, 0, 45, 1066);
   views::Widget* widget =
-      views::Widget::CreateWindowWithContext(nullptr, CurrentContext(), bounds);
+      views::Widget::CreateWindowWithContext(nullptr, GetContext(), bounds);
   aura::Window* window = widget->GetNativeWindow();
 
   gfx::Rect snapped_bounds =

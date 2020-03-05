@@ -1292,7 +1292,7 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
   // just a FIN with no payload.
   if (effective_len != 0) {
     DecreaseSendWindowSize(static_cast<int32_t>(effective_len));
-    data_buffer->AddConsumeCallback(base::Bind(
+    data_buffer->AddConsumeCallback(base::BindRepeating(
         &SpdySession::OnWriteBufferConsumed, weak_factory_.GetWeakPtr(),
         static_cast<size_t>(effective_len)));
   }
@@ -3192,8 +3192,8 @@ void SpdySession::OnStreamFrameData(spdy::SpdyStreamId stream_id,
     buffer = std::make_unique<SpdyBuffer>(data, len);
 
     DecreaseRecvWindowSize(static_cast<int32_t>(len));
-    buffer->AddConsumeCallback(base::Bind(&SpdySession::OnReadBufferConsumed,
-                                          weak_factory_.GetWeakPtr()));
+    buffer->AddConsumeCallback(base::BindRepeating(
+        &SpdySession::OnReadBufferConsumed, weak_factory_.GetWeakPtr()));
   } else {
     DCHECK_EQ(len, 0u);
   }

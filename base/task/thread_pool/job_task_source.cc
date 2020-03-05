@@ -201,6 +201,14 @@ void JobTaskSource::Cancel(TaskSource::Transaction* transaction) {
   // WillRunTask() never succeed. std::memory_order_relaxed is sufficient
   // because this task source never needs to be re-enqueued after Cancel().
   state_.Cancel();
+
+#if DCHECK_IS_ON()
+  {
+    AutoLock auto_lock(version_lock_);
+    ++increase_version_;
+    version_condition_.Broadcast();
+  }
+#endif  // DCHECK_IS_ON()
 }
 
 bool JobTaskSource::WaitForParticipationOpportunity() {
@@ -277,6 +285,19 @@ size_t JobTaskSource::GetRemainingConcurrency() const {
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {
+#if DCHECK_IS_ON()
+  {
+    AutoLock auto_lock(version_lock_);
+    ++increase_version_;
+    version_condition_.Broadcast();
+  }
+#endif  // DCHECK_IS_ON()
+
+  // Avoid unnecessary locks when NotifyConcurrencyIncrease() is spuriously
+  // called.
+  if (GetRemainingConcurrency() == 0)
+    return;
+
   {
     // Lock is taken to access |join_flag_| below and signal
     // |worker_released_condition_|.
@@ -285,13 +306,6 @@ void JobTaskSource::NotifyConcurrencyIncrease() {
       worker_released_condition_->Signal();
   }
 
-#if DCHECK_IS_ON()
-  {
-    AutoLock auto_lock(version_lock_);
-    ++increase_version_;
-    version_condition_.Broadcast();
-  }
-#endif  // DCHECK_IS_ON()
   // Make sure the task source is in the queue if not already.
   // Caveat: it's possible but unlikely that the task source has already reached
   // its intended concurrency and doesn't need to be enqueued if there
@@ -326,7 +340,8 @@ bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
   const base::TimeTicks start_time = subtle::TimeTicksNowIgnoringOverride();
   do {
     DCHECK_LE(recorded_version, increase_version_);
-    if (recorded_version != increase_version_)
+    const auto state = state_.Load();
+    if (recorded_version != increase_version_ || state.is_canceled())
       return true;
     // Waiting is acceptable because it is in DCHECK-only code.
     ScopedAllowBaseSyncPrimitivesOutsideBlockingScope

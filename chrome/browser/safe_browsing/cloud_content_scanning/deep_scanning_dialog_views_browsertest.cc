@@ -80,7 +80,9 @@ class DeepScanningDialogViewsBehaviorBrowserTest
     views_first_shown_ = true;
   }
 
-  void DialogUpdated(DeepScanningDialogViews* views, bool result) override {
+  void DialogUpdated(
+      DeepScanningDialogViews* views,
+      DeepScanningDialogDelegate::DeepScanningFinalResult result) override {
     DCHECK_EQ(views, dialog_);
     dialog_updated_timestamp_ = base::TimeTicks::Now();
 
@@ -93,13 +95,16 @@ class DeepScanningDialogViewsBehaviorBrowserTest
 
     // The dialog can only be updated to the success or failure case.
     EXPECT_TRUE(dialog_->is_result());
-    EXPECT_EQ(dialog_->is_success(), result);
+    bool is_success =
+        result == DeepScanningDialogDelegate::DeepScanningFinalResult::SUCCESS;
+    EXPECT_EQ(dialog_->is_success(), is_success);
     EXPECT_EQ(dialog_->is_success(), expected_scan_result_);
 
     // The dialog's buttons should be Cancel in the fail case and nothing in the
     // success case.
-    ui::DialogButton expected_buttons =
-        result ? ui::DIALOG_BUTTON_NONE : ui::DIALOG_BUTTON_CANCEL;
+    ui::DialogButton expected_buttons = dialog_->is_success()
+                                            ? ui::DIALOG_BUTTON_NONE
+                                            : ui::DIALOG_BUTTON_CANCEL;
     EXPECT_EQ(expected_buttons, dialog_->GetDialogButtons());
 
     // The dialog should only be updated once some time after being shown.
@@ -211,6 +216,70 @@ class DeepScanningDialogViewsCancelPendingScanBrowserTest
 
  private:
   base::HistogramTester histograms_;
+};
+
+// Tests the behavior of the dialog in the following ways:
+// - It shows the appropriate buttons depending when showing a warning.
+// - It calls the appropriate methods when the user bypasses/respects the
+//   warning.
+// - It shows up in the warning state immediately if the response is fast.
+class DeepScanningDialogViewsWarningBrowserTest
+    : public DeepScanningBrowserTestBase,
+      public DeepScanningDialogViews::TestObserver,
+      public testing::WithParamInterface<std::tuple<base::TimeDelta, bool>> {
+ public:
+  DeepScanningDialogViewsWarningBrowserTest() {
+    DeepScanningDialogViews::SetObserverForTesting(this);
+  }
+
+  void ViewsFirstShown(DeepScanningDialogViews* views,
+                       base::TimeTicks timestamp) override {
+    // The dialog is first shown in the pending state if the response is slow or
+    // in the warning state if it's not slow.
+    ASSERT_TRUE(views->is_pending() || views->is_warning());
+
+    // If the warning dialog was shown immediately, ensure that was expected and
+    // set |warning_shown_immediately_| for future assertions.
+    if (views->is_warning()) {
+      ASSERT_EQ(response_delay(), kNoDelay);
+      warning_shown_immediately_ = true;
+      ASSERT_EQ(views->GetDialogButtons(),
+                ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+      SimulateClickAndEndTest(views);
+    } else {
+      ASSERT_EQ(response_delay(), kSmallDelay);
+      ASSERT_EQ(views->GetDialogButtons(), ui::DIALOG_BUTTON_CANCEL);
+    }
+  }
+
+  void DialogUpdated(
+      DeepScanningDialogViews* views,
+      DeepScanningDialogDelegate::DeepScanningFinalResult result) override {
+    ASSERT_FALSE(warning_shown_immediately_);
+    ASSERT_TRUE(views->is_warning());
+
+    // The dialog's buttons should be Ok and Cancel.
+    ASSERT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
+              views->GetDialogButtons());
+
+    SimulateClickAndEndTest(views);
+  }
+
+  void SimulateClickAndEndTest(DeepScanningDialogViews* views) {
+    if (user_bypasses_warning())
+      views->AcceptDialog();
+    else
+      views->CancelDialog();
+
+    CallQuitClosure();
+  }
+
+  base::TimeDelta response_delay() { return std::get<0>(GetParam()); }
+
+  bool user_bypasses_warning() { return std::get<1>(GetParam()); }
+
+ private:
+  bool warning_shown_immediately_ = false;
 };
 
 }  // namespace
@@ -335,5 +404,60 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
 
   ValidateMetrics();
 }
+
+IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
+  // Setup policies.
+  SetDlpPolicy(CHECK_UPLOADS);
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  // Setup the DLP warning response.
+  DeepScanningClientResponse response;
+  response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  DlpDeepScanningVerdict::TriggeredRule* rule =
+      response.mutable_dlp_scan_verdict()->add_triggered_rules();
+  rule->set_rule_name("warning_rule_name");
+  rule->set_action(DlpDeepScanningVerdict::TriggeredRule::WARN);
+  SetStatusCallbackResponse(response);
+
+  // Set up delegate test values.
+  FakeDeepScanningDialogDelegate::SetResponseDelay(response_delay());
+  SetUpDelegate();
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.text.emplace_back(base::UTF8ToUTF16("bar"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar.doc"));
+
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, bool user_bypasses_warning,
+             const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            ASSERT_EQ(result.text_results.size(), 2u);
+            ASSERT_EQ(result.text_results[0], user_bypasses_warning);
+            ASSERT_EQ(result.text_results[1], user_bypasses_warning);
+            ASSERT_EQ(result.paths_results.size(), 2u);
+            ASSERT_EQ(result.paths_results[0], user_bypasses_warning);
+            ASSERT_EQ(result.paths_results[1], user_bypasses_warning);
+            *called = true;
+          },
+          &called, user_bypasses_warning()),
+      DeepScanAccessPoint::UPLOAD);
+  run_loop.Run();
+  EXPECT_TRUE(called);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DeepScanningDialogViewsWarningBrowserTest,
+    DeepScanningDialogViewsWarningBrowserTest,
+    testing::Combine(testing::Values(kNoDelay, kSmallDelay), testing::Bool()));
 
 }  // namespace safe_browsing

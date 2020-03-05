@@ -214,9 +214,6 @@ struct PublicKeyCredentialRequestOptions {
   // relying party.
   mojo_base.mojom.TimeDelta? timeout;
 
-  // TODO(nsatragno): remove this after updating android-internal.
-  mojo_base.mojom.TimeDelta adjusted_timeout;
-
   // An ASCII serialization of the origin claimed by the relying party.
   string relying_party_id;
 
@@ -305,9 +302,6 @@ struct PublicKeyCredentialCreationOptions {
   // Time to wait for an authenticator to complete an operation provided by the
   // relying party.
   mojo_base.mojom.TimeDelta? timeout;
-
-  // TODO(nsatragno): remove this after updating android-internal.
-  mojo_base.mojom.TimeDelta adjusted_timeout;
 
   // A list of credentials the relying party knows about. If an
   // authenticator has one of these credentials, it should not

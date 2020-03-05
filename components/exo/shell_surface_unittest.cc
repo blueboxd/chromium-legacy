@@ -103,9 +103,8 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   EXPECT_TRUE(compositor->IsLocked());
 
   shell_surface->AcknowledgeConfigure(kSerial);
-  std::unique_ptr<Buffer> fullscreen_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(
-          CurrentContext()->bounds().size())));
+  std::unique_ptr<Buffer> fullscreen_buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(GetContext()->bounds().size())));
   surface->Attach(fullscreen_buffer.get());
   surface->Commit();
 
@@ -162,7 +161,7 @@ TEST_F(ShellSurfaceTest, Maximize) {
   EXPECT_FALSE(HasBackdrop());
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_EQ(CurrentContext()->bounds().width(),
+  EXPECT_EQ(GetContext()->bounds().width(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
 
@@ -263,12 +262,12 @@ TEST_F(ShellSurfaceTest, SetFullscreen) {
   surface->Attach(buffer.get());
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_EQ(CurrentContext()->bounds().ToString(),
+  EXPECT_EQ(GetContext()->bounds().ToString(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
   shell_surface->SetFullscreen(false);
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_NE(CurrentContext()->bounds().ToString(),
+  EXPECT_NE(GetContext()->bounds().ToString(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
 }
 
@@ -655,7 +654,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
 
   shell_surface->SetFullscreen(true);
   shell_surface->AcknowledgeConfigure(0);
-  EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
+  EXPECT_EQ(GetContext()->bounds().size().ToString(),
             suggested_size.ToString());
   EXPECT_EQ(ash::WindowStateType::kFullscreen, has_state_type);
   shell_surface->SetFullscreen(false);
@@ -690,7 +689,7 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
   shell_surface->Maximize();
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_EQ(CurrentContext()->bounds().width(),
+  EXPECT_EQ(GetContext()->bounds().width(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 
   ash::WMEvent event(ash::WM_EVENT_TOGGLE_FULLSCREEN);
@@ -700,7 +699,7 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
   ash::WindowState::Get(window)->OnWMEvent(&event);
 
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_EQ(CurrentContext()->bounds().ToString(),
+  EXPECT_EQ(GetContext()->bounds().ToString(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
 
   // Leave fullscreen mode.
@@ -708,7 +707,7 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
   EXPECT_FALSE(HasBackdrop());
 
   // Check that shell surface is maximized.
-  EXPECT_EQ(CurrentContext()->bounds().width(),
+  EXPECT_EQ(GetContext()->bounds().width(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
@@ -754,14 +753,14 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
   // Enter snapped mode.
   ash::WindowState::Get(window)->OnWMEvent(&event);
 
-  EXPECT_EQ(CurrentContext()->bounds().width() / 2,
+  EXPECT_EQ(GetContext()->bounds().width() / 2,
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 
   surface->Attach(buffer.get());
   surface->Commit();
 
   // Commit shouldn't change widget bounds when snapped.
-  EXPECT_EQ(CurrentContext()->bounds().width() / 2,
+  EXPECT_EQ(GetContext()->bounds().width() / 2,
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 

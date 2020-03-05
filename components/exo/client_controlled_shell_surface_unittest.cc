@@ -842,7 +842,7 @@ TEST_F(ClientControlledShellSurfaceTest, SetFullscreen) {
   shell_surface->SetFullscreen(false);
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
-  EXPECT_NE(CurrentContext()->bounds().ToString(),
+  EXPECT_NE(GetContext()->bounds().ToString(),
             shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
 }
 

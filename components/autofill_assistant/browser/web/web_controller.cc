@@ -245,6 +245,7 @@ void OnWaitForDocumentReadyState(
   SafeGetIntValue(result->GetResult(), &ready_state);
   std::move(callback).Run(status, static_cast<DocumentReadyState>(ready_state));
 }
+
 }  // namespace
 
 // static
@@ -335,8 +336,7 @@ void WebController::ClickOrTapElement(
     base::OnceCallback<void(const ClientStatus&)> callback) {
   std::string element_object_id = target_element->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(element_object_id).Build());
+  AddRuntimeCallArgumentObjectId(element_object_id, &argument);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_object_id)
@@ -367,9 +367,7 @@ void WebController::OnScrollIntoView(
   if (click_type == ClickAction::JAVASCRIPT) {
     std::string element_object_id = target_element->object_id;
     std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-    argument.emplace_back(runtime::CallArgument::Builder()
-                              .SetObjectId(element_object_id)
-                              .Build());
+    AddRuntimeCallArgumentObjectId(element_object_id, &argument);
     devtools_client_->GetRuntime()->CallFunctionOn(
         runtime::CallFunctionOnParams::Builder()
             .SetObjectId(element_object_id)
@@ -625,11 +623,7 @@ void WebController::OnFindElementForWaitForDocumentReadyState(
   AppendWaitForDocumentReadyStateFunction(&function_declaration);
 
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
-  arguments.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(
-              base::Value(static_cast<int>(min_ready_state))))
-          .Build());
+  AddRuntimeCallArgument(static_cast<int>(min_ready_state), &arguments);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element ? element->object_id : "")
@@ -699,17 +693,9 @@ void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
   }
 
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
-  arguments.emplace_back(runtime::CallArgument::Builder()
-                             .SetObjectId(target_element->object_id)
-                             .Build());
-  arguments.emplace_back(runtime::CallArgument::Builder()
-                             .SetValue(base::Value::ToUniquePtrValue(
-                                 base::Value(top_padding.pixels())))
-                             .Build());
-  arguments.emplace_back(runtime::CallArgument::Builder()
-                             .SetValue(base::Value::ToUniquePtrValue(
-                                 base::Value(top_padding.ratio())))
-                             .Build());
+  AddRuntimeCallArgumentObjectId(target_element->object_id, &arguments);
+  AddRuntimeCallArgument(top_padding.pixels(), &arguments);
+  AddRuntimeCallArgument(top_padding.ratio(), &arguments);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(target_element->object_id)
@@ -926,15 +912,8 @@ void WebController::OnFindElementForSelectOption(
   }
 
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
-  arguments.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
-          .Build());
-  arguments.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(
-              base::Value(static_cast<int>(select_strategy))))
-          .Build());
+  AddRuntimeCallArgument(value, &arguments);
+  AddRuntimeCallArgument(static_cast<int>(select_strategy), &arguments);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_result->object_id)
@@ -995,8 +974,7 @@ void WebController::OnFindElementForHighlightElement(
 
   const std::string& object_id = element_result->object_id;
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  AddRuntimeCallArgumentObjectId(object_id, &argument);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -1300,10 +1278,7 @@ void WebController::OnFindElementForSetFieldValue(
   }
 
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
-          .Build());
+  AddRuntimeCallArgument(value, &argument);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_result->object_id)
@@ -1362,14 +1337,8 @@ void WebController::OnFindElementForSetAttribute(
   }
 
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
-  arguments.emplace_back(runtime::CallArgument::Builder()
-                             .SetValue(base::Value::ToUniquePtrValue(
-                                 base::Value(attribute_values)))
-                             .Build());
-  arguments.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
-          .Build());
+  AddRuntimeCallArgument(attribute_values, &arguments);
+  AddRuntimeCallArgument(value, &arguments);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_result->object_id)

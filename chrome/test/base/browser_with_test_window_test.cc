@@ -51,8 +51,7 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
-  ash::AshTestHelper::InitParams init_params;
-  ash_test_helper_.SetUp(init_params);
+  ash_test_helper_.SetUp();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif
@@ -127,7 +126,7 @@ void BrowserWithTestWindowTest::TearDown() {
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
 #if defined(OS_CHROMEOS)
-  return ash_test_helper_.CurrentContext();
+  return ash_test_helper_.GetContext();
 #elif defined(TOOLKIT_VIEWS)
   return views_test_helper_->GetContext();
 #else

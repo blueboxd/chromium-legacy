@@ -76,7 +76,7 @@ TEST_F(ScreenRotationAnimationTest, DestroyLayerDuringAnimation) {
   // finishes all of its animation before destroying its layer.
   std::unique_ptr<ui::Layer> layer = std::make_unique<ui::Layer>();
 
-  ui::Layer* root_layer = CurrentContext()->layer();
+  ui::Layer* root_layer = GetContext()->layer();
   layer->SetBounds(gfx::Rect(root_layer->bounds().size()));
   root_layer->Add(layer.get());
 

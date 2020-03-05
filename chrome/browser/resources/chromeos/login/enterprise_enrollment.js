@@ -137,6 +137,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the SAML SSO page is visible.
+     * @private
+     */
+    isSamlSsoVisible_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -246,7 +255,7 @@ Polymer({
                                       'samlNotice',
                                       this.authenticator_.authDomain);
                             }
-                            this.classList.toggle('saml', isSAML);
+                            this.isSamlSsoVisible_ = isSAML;
                             if (Oobe.getInstance().currentScreen == this)
                               Oobe.getInstance().updateScreenSize(this);
                             this.lastBackMessageValue_ = false;
@@ -310,7 +319,7 @@ Polymer({
 
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
-    this.classList.remove('saml');
+    this.isSamlSsoVisible_ = false;
 
     var gaiaParams = {};
     gaiaParams.gaiaUrl = data.gaiaUrl;
@@ -621,4 +630,14 @@ Polymer({
     this.showStep(ENROLLMENT_STEP.AD_JOIN);
   },
 
+  /**
+   * Whether to show popup overlay under the dialog
+   * @param {boolean} authenticatorDialogDisplayed
+   * @param {boolean} isSamlSsoVisible
+   * @return {boolean} True iff overlay popup should be displayed
+   * @private
+   */
+  showPopupOverlay_(authenticatorDialogDisplayed, isSamlSsoVisible) {
+    return authenticatorDialogDisplayed || isSamlSsoVisible;
+  },
 });

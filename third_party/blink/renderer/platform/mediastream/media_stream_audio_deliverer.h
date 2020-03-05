@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
 
 #include <algorithm>
-#include <vector>
 
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -58,7 +58,7 @@ class MediaStreamAudioDeliverer {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     base::AutoLock auto_lock(consumers_lock_);
     const bool had_consumers =
-        !consumers_.empty() || !pending_consumers_.empty();
+        !consumers_.IsEmpty() || !pending_consumers_.IsEmpty();
     auto it = std::find(consumers_.begin(), consumers_.end(), consumer);
     if (it != consumers_.end()) {
       consumers_.erase(it);
@@ -68,18 +68,19 @@ class MediaStreamAudioDeliverer {
       if (it != pending_consumers_.end())
         pending_consumers_.erase(it);
     }
-    return had_consumers && consumers_.empty() && pending_consumers_.empty();
+    return had_consumers && consumers_.IsEmpty() &&
+           pending_consumers_.IsEmpty();
   }
 
   // Returns the current list of connected Consumers. This is normally used to
   // send a notification to all consumers. This method must be called on the
   // main thread.
-  void GetConsumerList(std::vector<Consumer*>* consumer_list) const {
+  void GetConsumerList(Vector<Consumer*>* consumer_list) const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     base::AutoLock auto_lock(consumers_lock_);
     *consumer_list = consumers_;
-    consumer_list->insert(consumer_list->end(), pending_consumers_.begin(),
-                          pending_consumers_.end());
+    consumer_list->AppendRange(pending_consumers_.begin(),
+                               pending_consumers_.end());
   }
 
   // Change the format of the audio passed in the next call to OnData(). This
@@ -94,8 +95,7 @@ class MediaStreamAudioDeliverer {
         return;
       params_ = params;
     }
-    pending_consumers_.insert(pending_consumers_.end(), consumers_.begin(),
-                              consumers_.end());
+    pending_consumers_.AppendRange(consumers_.begin(), consumers_.end());
     consumers_.clear();
   }
 
@@ -109,13 +109,13 @@ class MediaStreamAudioDeliverer {
 
     // Call OnSetFormat() for all pending consumers and move them to the
     // active-delivery list.
-    if (!pending_consumers_.empty()) {
+    if (!pending_consumers_.IsEmpty()) {
       const media::AudioParameters params = GetAudioParameters();
       DCHECK(params.IsValid());
       for (Consumer* consumer : pending_consumers_)
         consumer->OnSetFormat(params);
-      consumers_.insert(consumers_.end(), pending_consumers_.begin(),
-                        pending_consumers_.end());
+      consumers_.AppendRange(pending_consumers_.begin(),
+                             pending_consumers_.end());
       pending_consumers_.clear();
     }
 
@@ -137,11 +137,11 @@ class MediaStreamAudioDeliverer {
   // added via AddConsumer() that need to have an initial OnSetFormat() call
   // before audio data is first delivered. Consumers are moved from this list to
   // |consumers_| on the audio thread.
-  std::vector<Consumer*> pending_consumers_;
+  Vector<Consumer*> pending_consumers_;
 
   // Consumers that are up to date on the current audio format and are receiving
   // audio data are placed in this list.
-  std::vector<Consumer*> consumers_;
+  Vector<Consumer*> consumers_;
 
   // Protects concurrent access to |params_|.
   mutable base::Lock params_lock_;

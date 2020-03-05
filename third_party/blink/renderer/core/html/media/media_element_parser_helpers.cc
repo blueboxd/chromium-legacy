@@ -12,18 +12,16 @@ namespace blink {
 
 namespace media_element_parser_helpers {
 
-void ReportUnsizedMediaViolation(const LayoutObject* layout_object,
-                                 bool send_report) {
+void CheckUnsizedMediaViolation(const LayoutObject* layout_object,
+                                bool send_report) {
   const ComputedStyle& style = layout_object->StyleRef();
-  if (!style.LogicalWidth().IsSpecified() &&
-      !style.LogicalHeight().IsSpecified()) {
-    layout_object->GetDocument().CountPotentialFeaturePolicyViolation(
-        mojom::blink::FeaturePolicyFeature::kUnsizedMedia);
-    if (send_report) {
-      layout_object->GetDocument().ReportFeaturePolicyViolation(
-          mojom::blink::FeaturePolicyFeature::kUnsizedMedia,
-          mojom::FeaturePolicyDisposition::kEnforce);
-    }
+  bool is_unsized = !style.LogicalWidth().IsSpecified() &&
+                    !style.LogicalHeight().IsSpecified();
+  if (is_unsized) {
+    layout_object->GetDocument().IsFeatureEnabled(
+        mojom::blink::FeaturePolicyFeature::kUnsizedMedia,
+        send_report ? ReportOptions::kReportOnFailure
+                    : ReportOptions::kDoNotReport);
   }
 }
 

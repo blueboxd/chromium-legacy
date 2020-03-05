@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.payments.micro;
 
 import android.support.annotation.Nullable;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.junit.Rule;
 import org.junit.Test;

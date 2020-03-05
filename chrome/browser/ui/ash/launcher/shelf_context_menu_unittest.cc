@@ -103,7 +103,7 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   views::Widget* CreateArcWindow(const std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget();
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     widget->Show();
     widget->Activate();

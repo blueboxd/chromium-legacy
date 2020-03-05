@@ -164,6 +164,7 @@ java_group("com_android_support_drawerlayout_java") {
   ]
 }
 
+# TODO(bjoyce): Remove after recyclerviewer is migrated.
 java_group("com_android_support_gridlayout_v7_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",

@@ -107,7 +107,6 @@
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_prompt_controller.h"
-#include "chrome/browser/password_manager/credential_leak_controller_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
@@ -129,6 +128,11 @@
 #endif
 
 #if defined(OS_ANDROID)
+#if defined(ENABLE_PASSWORD_CHANGE)
+#include "chrome/browser/password_manager/credential_leak_password_change_controller_android.h"
+#else
+#include "chrome/browser/password_manager/credential_leak_controller_android.h"
+#endif
 using password_manager::CredentialCache;
 #endif
 
@@ -548,9 +552,15 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     const GURL& origin) {
 #if defined(OS_ANDROID)
   HideSavePasswordInfobar(web_contents());
+#if defined(ENABLE_PASSWORD_CHANGE)
+  (new CredentialLeakPasswordChangeControllerAndroid(
+       leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
+      ->ShowDialog();
+#else
   (new CredentialLeakControllerAndroid(
        leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
+#endif
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
@@ -777,8 +787,9 @@ password_manager::PasswordStore*
 ChromePasswordManagerClient::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
   // itself when it shouldn't access the PasswordStore.
-  return PasswordStoreFactory::GetForProfile(
-             profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+  return PasswordStoreFactory::GetForProfile(profile_,
+                                             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
 
 password_manager::PasswordStore*
@@ -804,8 +815,7 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   if (log_manager_->IsLoggingActive()) {
     logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
         log_manager_.get()));
-    logger->LogMessage(
-        Logger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD);
+    logger->LogMessage(Logger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD);
   }
 
   content::NavigationEntry* entry =

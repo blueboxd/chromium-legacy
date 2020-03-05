@@ -788,9 +788,6 @@ grit("generate_aw_strings") {
 grit("generate_webui_resources") {
   source = "../ui/webui/resources/webui_resources.grd"
 
-  # The .grd contains references to generated files.
-  source_is_generated = true
-
   # webui/resources has way too many resources. The whitelist is trim this down
   # to a reasonable size
   _whitelist = "ui/grit_resources_whitelist.txt"
@@ -798,6 +795,8 @@ grit("generate_webui_resources") {
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   outputs = [
     "grit/webui_resources.h",
@@ -805,13 +804,15 @@ grit("generate_webui_resources") {
     "grit/webui_resources_map.h",
     "webui_resources.pak",
   ]
+  deps = [
+    "//ui/webui/resources/js:modulize",
+    "//ui/webui/resources/js/cr:modulize",
+    "//ui/webui/resources/js/cr/ui:modulize",
+  ]
 }
 
 grit("generate_mojo_resources") {
   source = "../mojo/public/js/mojo_bindings_resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   # See :generate_webui_resources for an explanation of the whitelist
   _whitelist = "ui/grit_resources_whitelist.txt"
@@ -828,15 +829,15 @@ grit("generate_mojo_resources") {
     "grit/mojo_bindings_resources_map.h",
     "mojo_bindings_resources.pak",
   ]
-  deps = [ "//mojo/public/js:bindings_lite" ]
+  deps = [
+    "//mojo/public/js:bindings_lite",
+    "//mojo/public/mojom/base:base_js",
+  ]
 }
 
 grit("generate_components_resources") {
   # Note that dev_ui_components_resources.grd is Chrome-only, so excluded.
   source = "../components/resources/components_resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
 
   use_brotli = true
 
@@ -851,13 +852,18 @@ grit("generate_components_resources") {
     rebase_path(_whitelist, root_build_dir),
     "-E",
     "about_credits_file=" + rebase_path(_about_credits_file, root_build_dir),
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   outputs = [
     "grit/components_resources.h",
     "components_resources.pak",
   ]
 
-  deps = [ "//components/resources:about_credits" ]
+  deps = [
+    "//components/resources:about_credits",
+    "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
+  ]
 }
 
 grit("generate_components_strings") {

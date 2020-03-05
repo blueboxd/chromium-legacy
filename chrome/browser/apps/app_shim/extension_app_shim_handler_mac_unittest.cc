@@ -59,8 +59,9 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(ShowAppWindows, bool(Profile*, const std::string&));
   MOCK_METHOD2(CloseAppWindows, void(Profile*, const std::string&));
 
-  MOCK_METHOD2(MaybeGetAppExtension,
-               const Extension*(content::BrowserContext*, const std::string&));
+  MOCK_METHOD2(AppIsInstalled, bool(Profile*, const std::string&));
+  MOCK_METHOD2(AppUsesRemoteCocoa, bool(Profile*, const std::string&));
+  MOCK_METHOD2(AppIsMultiProfile, bool(Profile*, const std::string&));
   MOCK_METHOD3(EnableExtension,
                void(Profile*, const std::string&, base::OnceCallback<void()>));
   MOCK_METHOD3(LaunchApp,
@@ -95,11 +96,10 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD0(MaybeTerminate, void());
 
-  void SetAllowShimToConnect(bool should_create_host) {
+  void SetAppCanCreateHost(bool should_create_host) {
     allow_shim_to_connect_ = should_create_host;
   }
-  bool AllowShimToConnect(Profile* profile,
-                          const std::string& app_id) override {
+  bool AppCanCreateHost(Profile* profile, const std::string& app_id) override {
     return allow_shim_to_connect_;
   }
 
@@ -369,6 +369,14 @@ class ExtensionAppShimHandlerTest : public testing::Test {
             .AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK)
             .Build();
 
+    EXPECT_CALL(*delegate_, AppIsMultiProfile(_, kTestAppIdA))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*delegate_, AppIsMultiProfile(_, kTestAppIdB))
+        .WillRepeatedly(Return(false));
+
+    EXPECT_CALL(*delegate_, AppUsesRemoteCocoa(_, _))
+        .WillRepeatedly(Return(true));
+
     extension_b_ = extensions::ExtensionBuilder("Fake Name")
                        .SetLocation(extensions::Manifest::INTERNAL)
                        .SetPath(extension_path)
@@ -406,14 +414,14 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_c_))
         .WillRepeatedly(Return(&profile_c_));
 
-    EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
-        .WillRepeatedly(Return(extension_a_.get()));
-    EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_b_, kTestAppIdA))
-        .WillRepeatedly(Return(extension_a_.get()));
-    EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_c_, kTestAppIdA))
-        .WillRepeatedly(Return(nullptr));
-    EXPECT_CALL(*delegate_, MaybeGetAppExtension(_, kTestAppIdB))
-        .WillRepeatedly(Return(extension_b_.get()));
+    EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*delegate_, AppIsInstalled(&profile_b_, kTestAppIdA))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*delegate_, AppIsInstalled(&profile_c_, kTestAppIdA))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*delegate_, AppIsInstalled(_, kTestAppIdB))
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
         .WillRepeatedly(Return());
   }
@@ -573,8 +581,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
   // App not found.
-  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
-      .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
+  EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
   EXPECT_CALL(*delegate_, OpenAppURLInBrowserWindow(profile_path_a_, _));
@@ -585,8 +593,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   // App not found.
-  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
-      .WillOnce(Return(static_cast<const Extension*>(NULL)))
+  EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
+      .WillOnce(Return(false))
       .WillRepeatedly(Return(extension_a_.get()));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
@@ -807,7 +815,7 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
 }
 
 TEST_F(ExtensionAppShimHandlerTest, DontCreateHost) {
-  delegate_->SetAllowShimToConnect(false);
+  delegate_->SetAppCanCreateHost(false);
 
   // The app should be launched.
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(1);
@@ -840,8 +848,8 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
   EXPECT_NE(nullptr, host_aa_.get());
 
   // Set up the mock to return a null extension, as if it were uninstalled.
-  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
-      .WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(false));
 
   // Now trying to focus should automatically close the shim, and not try to
   // get the window list.
@@ -853,6 +861,8 @@ TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
   // Create a host for our profile.
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, kTestAppIdA, false))
+      .Times(1);
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_FALSE(host_aa_->did_connect_to_host());

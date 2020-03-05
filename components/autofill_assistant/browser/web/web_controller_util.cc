@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
+#include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
+
 namespace autofill_assistant {
 
 ClientStatus UnexpectedErrorStatus(const std::string& file, int line) {
@@ -86,6 +88,13 @@ bool SafeGetBool(const runtime::RemoteObject* result, bool* out) {
   }
   *out = false;
   return false;
+}
+
+void AddRuntimeCallArgumentObjectId(
+    const std::string& object_id,
+    std::vector<std::unique_ptr<runtime::CallArgument>>* arguments) {
+  arguments->emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
 }
 
 }  //  namespace autofill_assistant

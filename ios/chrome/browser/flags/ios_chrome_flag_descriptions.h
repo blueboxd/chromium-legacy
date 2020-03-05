@@ -269,6 +269,10 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
+// Title and description for the flag to open Downloaded files in Files.app.
+extern const char kOpenDownloadsInFilesAppName[];
+extern const char kOpenDownloadsInFilesAppDescription[];
+
 // Title and description for the flag to enable the new design of the page info.
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];

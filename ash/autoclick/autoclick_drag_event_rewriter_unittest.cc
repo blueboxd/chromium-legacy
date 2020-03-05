@@ -69,16 +69,16 @@ class AutoclickDragEventRewriterTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     generator_ = AshTestBase::GetEventGenerator();
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &drag_event_rewriter_);
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &event_recorder_);
   }
 
   void TearDown() override {
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         &event_recorder_);
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         &drag_event_rewriter_);
     generator_ = nullptr;
     AshTestBase::TearDown();

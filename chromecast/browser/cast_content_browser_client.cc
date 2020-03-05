@@ -437,6 +437,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
     static const char* const kForwardSwitches[] = {
+        switches::kCastAppBackgroundColor,
         switches::kForceMediaResolutionHeight,
         switches::kForceMediaResolutionWidth,
         network::switches::kUnsafelyTreatInsecureOriginAsSecure};

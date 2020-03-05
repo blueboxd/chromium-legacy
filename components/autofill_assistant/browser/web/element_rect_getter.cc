@@ -54,15 +54,11 @@ void ElementRectGetter::GetBoundingClientRect(
   }
 
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
-  arguments.emplace_back(
-      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  AddRuntimeCallArgumentObjectId(object_id, &arguments);
   // Only the main frame should add window scrolling. Do not add scrolling from
   // iFrame, those are already accounted for in the client bounding rect.
   bool addWindowScroll = index == 0;
-  arguments.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(addWindowScroll)))
-          .Build());
+  AddRuntimeCallArgument(addWindowScroll, &arguments);
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)

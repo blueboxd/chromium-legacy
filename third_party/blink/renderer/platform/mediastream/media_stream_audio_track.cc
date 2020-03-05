@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -82,7 +81,7 @@ void MediaStreamAudioTrack::SetEnabled(bool enabled) {
   if (enabled == previously_enabled)
     return;
 
-  std::vector<WebMediaStreamAudioSink*> sinks_to_notify;
+  Vector<WebMediaStreamAudioSink*> sinks_to_notify;
   deliverer_.GetConsumerList(&sinks_to_notify);
   for (WebMediaStreamAudioSink* sink : sinks_to_notify)
     sink->OnEnabledChanged(enabled);
@@ -92,7 +91,7 @@ void MediaStreamAudioTrack::SetContentHint(
     WebMediaStreamTrack::ContentHintType content_hint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<WebMediaStreamAudioSink*> sinks_to_notify;
+  Vector<WebMediaStreamAudioSink*> sinks_to_notify;
   deliverer_.GetConsumerList(&sinks_to_notify);
   for (WebMediaStreamAudioSink* sink : sinks_to_notify)
     sink->OnContentHintChanged(content_hint);
@@ -117,7 +116,7 @@ void MediaStreamAudioTrack::StopAndNotify(base::OnceClosure callback) {
   if (!stop_callback_.is_null())
     std::move(stop_callback_).Run();
 
-  std::vector<WebMediaStreamAudioSink*> sinks_to_end;
+  Vector<WebMediaStreamAudioSink*> sinks_to_end;
   deliverer_.GetConsumerList(&sinks_to_end);
   for (WebMediaStreamAudioSink* sink : sinks_to_end) {
     deliverer_.RemoveConsumer(sink);

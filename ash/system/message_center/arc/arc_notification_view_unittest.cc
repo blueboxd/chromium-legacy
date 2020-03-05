@@ -89,7 +89,7 @@ class ArcNotificationViewTest : public AshTestBase {
 
     views::Widget::InitParams init_params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    init_params.context = CurrentContext();
+    init_params.context = GetContext();
     init_params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
         desks_util::GetActiveDeskContainerId());
     init_params.ownership =

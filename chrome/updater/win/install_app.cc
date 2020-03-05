@@ -31,6 +31,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/atl.h"
+#include "chrome/updater/app/app.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/installer.h"
@@ -388,12 +389,13 @@ class InstallAppController : public ui::ProgressWndEvents,
                              public WTL::CMessageFilter {
  public:
   explicit InstallAppController(
-      scoped_refptr<update_client::Configurator> configurator);
+      scoped_refptr<update_client::Configurator> configurator,
+      base::OnceCallback<void(int)> done);
   ~InstallAppController() override;
   InstallAppController(const InstallAppController&) = delete;
   InstallAppController& operator=(const InstallAppController&) = delete;
 
-  int InstallApp(const std::string& app_id);
+  void InstallApp(const std::string& app_id);
 
  private:
   // Overrides for update_client::UpdateClient::Observer. This function is
@@ -428,7 +430,6 @@ class InstallAppController : public ui::ProgressWndEvents,
   void InstallComplete();
   void HandleInstallResult(Events event,
                            const update_client::CrxUpdateItem& update_item);
-  void QuitRunLoop();
   void FlushPrefs();
 
   // Returns the thread id of the thread which owns the progress window.
@@ -442,9 +443,6 @@ class InstallAppController : public ui::ProgressWndEvents,
   // Provides an execution environment for the UI code. Typically, it runs
   // a single task which is the UI run loop.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  // The run loop associated with the updater main thread.
-  base::RunLoop runloop_;
 
   // The application ID and the associated application name. The application
   // name is displayed by the UI and it must be i18n.
@@ -466,12 +464,16 @@ class InstallAppController : public ui::ProgressWndEvents,
   // The adapter for the inter-thread calls between the updater main thread
   // and the UI thread.
   std::unique_ptr<InstallProgressObserverIPC> install_progress_observer_ipc_;
+
+  // Called when InstallApp is done.
+  base::OnceCallback<void(int)> completion_callback_;
 };
 
 // TODO(sorin): fix the hardcoding of the application name.
 // https:crbug.com/1014298
 InstallAppController::InstallAppController(
-    scoped_refptr<update_client::Configurator> configurator)
+    scoped_refptr<update_client::Configurator> configurator,
+    base::OnceCallback<void(int)> completion_callback)
     : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
@@ -480,14 +482,15 @@ InstallAppController::InstallAppController(
       app_name_(kAppNameChrome),
       config_(configurator),
       persisted_data_(
-          base::MakeRefCounted<PersistedData>(config_->GetPrefService())) {}
+          base::MakeRefCounted<PersistedData>(config_->GetPrefService())),
+      completion_callback_(std::move(completion_callback)) {}
 
 InstallAppController::~InstallAppController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   FlushPrefs();
 }
 
-int InstallAppController::InstallApp(const std::string& app_id) {
+void InstallAppController::InstallApp(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
@@ -499,8 +502,6 @@ int InstallAppController::InstallApp(const std::string& app_id) {
                      base::Unretained(this)),
       base::BindOnce(&InstallAppController::DoInstallApp,
                      base::Unretained(this)));
-  runloop_.Run();
-  return 0;
 }
 
 void InstallAppController::DoInstallApp() {
@@ -671,9 +672,8 @@ void InstallAppController::RunUI() {
   // This object is owned by the UI thread must be destroyed on this thread.
   progress_wnd_ = nullptr;
 
-  main_task_runner_->PostTask(FROM_HERE,
-                              base::BindOnce(&InstallAppController::QuitRunLoop,
-                                             base::Unretained(this)));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(completion_callback_), 0));
 }
 
 void InstallAppController::DoExit() {
@@ -699,11 +699,6 @@ void InstallAppController::FlushPrefs() {
   runloop.Run();
 }
 
-void InstallAppController::QuitRunLoop() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  runloop_.QuitWhenIdleClosure().Run();
-}
-
 DWORD InstallAppController::GetUIThreadID() const {
   DCHECK(progress_wnd_);
   return ::GetWindowThreadProcessId(progress_wnd_->m_hWnd, nullptr);
@@ -711,52 +706,64 @@ DWORD InstallAppController::GetUIThreadID() const {
 
 }  // namespace
 
-int SetupUpdater() {
+class AppInstall : public App {
+ public:
+  explicit AppInstall(const std::string& app_id);
+
+ private:
+  ~AppInstall() override = default;
+  void Initialize() override;
+  void FirstTaskRun() override;
+
+  void SetupDone(int result);
+
+  std::string app_id_;
+  scoped_refptr<Configurator> config_;
+  std::unique_ptr<InstallAppController> app_install_controller_;
+};
+
+AppInstall::AppInstall(const std::string& app_id) : app_id_(app_id) {}
+
+void AppInstall::Initialize() {
+  base::i18n::InitializeICU();
+  config_ = base::MakeRefCounted<Configurator>();
+}
+
+void AppInstall::FirstTaskRun() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   ui::SplashScreen splash_screen(kAppNameChrome);
   splash_screen.Show();
 
-  base::RunLoop runloop;
-  int setup_result = 0;
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce([]() { return Setup(false); }),
       base::BindOnce(
-          [](ui::SplashScreen* splash_screen, base::OnceClosure quit_closure,
-             int* result_out, int result) {
-            *result_out = result;
-            splash_screen->Dismiss(base::BindOnce(
-                [](base::OnceClosure quit_closure) {
-                  std::move(quit_closure).Run();
-                },
-                std::move(quit_closure)));
+          [](ui::SplashScreen* splash_screen,
+             base::OnceCallback<void(int)> done, int result) {
+            splash_screen->Dismiss(base::BindOnce(std::move(done), result));
           },
-          &splash_screen, runloop.QuitWhenIdleClosure(), &setup_result));
-  runloop.Run();
-  return setup_result;
+          &splash_screen, base::BindOnce(&AppInstall::SetupDone, this)));
 }
 
-int InstallApp(const std::string& app_id) {
-  base::i18n::InitializeICU();
-  auto config = base::MakeRefCounted<Configurator>();
+void AppInstall::SetupDone(int result) {
+  if (result != 0) {
+    Shutdown(result);
+    return;
+  }
 
-  // Use MessagePumpType::UI to handle native window messages on the main
-  // thread of the updater.
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
-  base::ScopedDisallowBlocking no_blocking_allowed_on_main_thread;
-
-  int result = SetupUpdater();
-  if (result != 0)
-    return result;
-
-  // Register the updater app id for updates.
-  base::MakeRefCounted<PersistedData>(config->GetPrefService())
+  base::MakeRefCounted<PersistedData>(config_->GetPrefService())
       ->SetProductVersion(kUpdaterAppId, base::Version(UPDATER_VERSION_STRING));
 
-  return InstallAppController(config).InstallApp(app_id);
+  app_install_controller_ = std::make_unique<InstallAppController>(
+      config_, base::BindOnce(&AppInstall::Shutdown, this));
+  app_install_controller_->InstallApp(app_id_);
+}
+
+scoped_refptr<App> MakeAppInstall(const std::string& app_id) {
+  return base::MakeRefCounted<AppInstall>(app_id);
 }
 
 }  // namespace updater

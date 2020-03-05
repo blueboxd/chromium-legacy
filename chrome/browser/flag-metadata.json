@@ -2105,7 +2105,7 @@
   {
     "name": "enable-zero-state-app-reinstall-suggestions",
     "owners": ["robsc", "napper", "jennyz"],
-    "expiry_milestone": 80
+    "expiry_milestone": 90
   },
   {
     "name": "enable-zero-state-suggestions",
@@ -3046,6 +3046,11 @@
     "name": "prefetch-main-resource-network-isolation-key",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "prefetch-notification-scheduling-integration",
+    "owners": [ "hesen" ],
+    "expiry_milestone": 88
   },
   {
     "name": "prefetch-privacy-changes",

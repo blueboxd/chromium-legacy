@@ -126,12 +126,12 @@ TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
   draggable_view->set_drag_controller(NULL);
   draggable_view->SetBounds(0, 0, 100, 100);
   views::Widget* source =
-      CreateWidget(draggable_view, gfx::Rect(0, 0, 100, 100), CurrentContext());
+      CreateWidget(draggable_view, gfx::Rect(0, 0, 100, 100), GetContext());
 
   TargetView* target_view = new TargetView();
   target_view->SetBounds(0, 0, 100, 100);
   views::Widget* target =
-      CreateWidget(target_view, gfx::Rect(400, 0, 100, 100), CurrentContext());
+      CreateWidget(target_view, gfx::Rect(400, 0, 100, 100), GetContext());
 
   // Make sure they're on the different root windows.
   EXPECT_EQ(root_windows[0], source->GetNativeView()->GetRootWindow());

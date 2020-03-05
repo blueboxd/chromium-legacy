@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import subprocess
+import threading
 
 from collections import namedtuple
 
@@ -21,6 +22,11 @@ METRICS_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),
 
 MetricFiles = namedtuple('MetricFiles', ('sql', 'proto', 'config'))
 
+# This will be set to a path once trace processor has been fetched
+# to avoid downloading several times during one Results Processor run.
+_fetched_trace_processor = None
+_fetch_lock = threading.Lock()
+
 
 def _SqlString(s):
   """Produce a valid SQL string constant."""
@@ -28,10 +34,17 @@ def _SqlString(s):
 
 
 def _EnsureTraceProcessor(trace_processor_path):
+  global _fetched_trace_processor
+
   if trace_processor_path is None:
-    trace_processor_path = binary_deps_manager.FetchHostBinary(TP_BINARY_NAME)
-    logging.info('Trace processor binary downloaded to %s',
-                 trace_processor_path)
+    with _fetch_lock:
+      if not _fetched_trace_processor:
+        _fetched_trace_processor = binary_deps_manager.FetchHostBinary(
+            TP_BINARY_NAME)
+        logging.info('Trace processor binary downloaded to %s',
+                     _fetched_trace_processor)
+    trace_processor_path = _fetched_trace_processor
+
   if not os.path.isfile(trace_processor_path):
     raise RuntimeError("Can't find trace processor executable at %s" %
                        trace_processor_path)

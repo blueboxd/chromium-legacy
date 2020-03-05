@@ -4293,8 +4293,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.commit_overlay_planes = supports_commit_overlay_planes_;
   caps.surfaceless = surfaceless_;
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
-  caps.flips_vertically =
-      !is_offscreen && (surface_->GetOrigin() == gfx::SurfaceOrigin::kTopLeft);
+  caps.surface_origin =
+      !is_offscreen ? surface_->GetOrigin() : gfx::SurfaceOrigin::kBottomLeft;
   caps.msaa_is_slow = workarounds().msaa_is_slow;
   caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
   caps.multisample_compatibility =

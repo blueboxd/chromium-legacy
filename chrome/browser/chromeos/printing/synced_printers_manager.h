@@ -15,12 +15,6 @@
 #include "chromeos/printing/printer_translator.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class Profile;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace chromeos {
 
 class PrintersSyncBridge;
@@ -31,28 +25,21 @@ class PrintersSyncBridge;
 // PrintersSyncBridge.
 //
 // This class is thread-safe.
+// TODO(crbug/1030127): Rename to SavedPrintersManager & remove KeyedService.
+// TODO(crbug/1030127): Remove lock and add a sequence_checker.
 class SyncedPrintersManager : public KeyedService {
  public:
   class Observer {
    public:
     virtual void OnSavedPrintersChanged() = 0;
-    virtual void OnEnterprisePrintersChanged() {}
   };
 
   static std::unique_ptr<SyncedPrintersManager> Create(
-      Profile* profile,
       std::unique_ptr<PrintersSyncBridge> sync_bridge);
   ~SyncedPrintersManager() override = default;
 
-  // Register the printing preferences with the |registry|.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   // Returns the printers that are saved in preferences.
   virtual std::vector<Printer> GetSavedPrinters() const = 0;
-
-  // Replaces given vector with vector of printers from enterprise policy.
-  // Returns true if the enterprise policy was loaded and is valid.
-  virtual bool GetEnterprisePrinters(std::vector<Printer>* printers) const = 0;
 
   // Returns the printer with id |printer_id|, or nullptr if no such printer
   // exists.  Searches both Saved and Enterprise printers.

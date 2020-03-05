@@ -442,12 +442,22 @@ public class ExternalNavigationHandler {
      * The "about:", "chrome:", "chrome-native:", "chrome-devtools:", and "devtools:" schemes
      * are internal to the browser; don't want these to be dispatched to other apps.
      */
-    private boolean hasInternalScheme(ExternalNavigationParams params) {
-        if (params.getUrl().startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
+    private boolean hasInternalScheme(
+            ExternalNavigationParams params, Intent targetIntent, boolean hasIntentScheme) {
+        String url;
+        if (hasIntentScheme) {
+            // TODO(https://crbug.com/783819): When this function is converted to GURL, we should
+            // also call fixUpUrl on this user-provided URL as the fixed-up URL is what we would end
+            // up navigating to.
+            url = targetIntent.getDataString();
+        } else {
+            url = params.getUrl();
+        }
+        if (url.startsWith(ContentUrlConstants.ABOUT_SCHEME)
+                || url.startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
+                || url.startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
+                || url.startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
             if (DEBUG) Log.i(TAG, "Navigating to a chrome-internal page");
             return true;
         }
@@ -455,8 +465,15 @@ public class ExternalNavigationHandler {
     }
 
     /** The "content:" scheme is disabled in Clank. Do not try to start an activity. */
-    private boolean hasContentScheme(ExternalNavigationParams params) {
-        if (!params.getUrl().startsWith(UrlConstants.CONTENT_URL_SHORT_PREFIX)) return false;
+    private boolean hasContentScheme(
+            ExternalNavigationParams params, Intent targetIntent, boolean hasIntentScheme) {
+        String url;
+        if (hasIntentScheme) {
+            url = targetIntent.getDataString();
+        } else {
+            url = params.getUrl();
+        }
+        if (!url.startsWith(UrlConstants.CONTENT_URL_SHORT_PREFIX)) return false;
         if (DEBUG) Log.i(TAG, "Navigation to content: URL");
         return true;
     }
@@ -819,9 +836,15 @@ public class ExternalNavigationHandler {
         // TODO: handle other WTAI schemes.
         if (isUnhandledWtaiProtocol(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
-        if (hasInternalScheme(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
+        boolean hasIntentScheme = params.getUrl().startsWith(UrlConstants.INTENT_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.APP_INTENT_URL_SHORT_PREFIX);
+        if (hasInternalScheme(params, targetIntent, hasIntentScheme)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
 
-        if (hasContentScheme(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
+        if (hasContentScheme(params, targetIntent, hasIntentScheme)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
 
         if (isYoutubePairingCode(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
@@ -833,8 +856,6 @@ public class ExternalNavigationHandler {
 
         if (!maybeSetSmsPackage(targetIntent)) maybeRecordPhoneIntentMetrics(targetIntent);
 
-        boolean hasIntentScheme = params.getUrl().startsWith(UrlConstants.INTENT_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.APP_INTENT_URL_SHORT_PREFIX);
         if (hasIntentScheme) recordIntentActionMetrics(targetIntent);
 
         Intent debugIntent = new Intent(targetIntent);

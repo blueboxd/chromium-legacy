@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/surface_origin.h"
 
 // From gl2.h. We want to avoid including gl headers because client-side and
 // service-side headers conflict.
@@ -163,7 +164,7 @@ struct GPU_EXPORT Capabilities {
   bool occlusion_query_boolean = false;
   bool timer_queries = false;
   bool surfaceless = false;
-  bool flips_vertically = false;
+  gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
   bool msaa_is_slow = false;
   bool disable_one_component_textures = false;
   bool gpu_rasterization = false;

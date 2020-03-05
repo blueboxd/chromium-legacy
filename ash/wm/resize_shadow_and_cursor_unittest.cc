@@ -56,7 +56,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
     AshTestBase::SetUp();
 
     views::Widget* widget = views::Widget::CreateWindowWithContext(
-        new TestWidgetDelegate(), CurrentContext(), gfx::Rect(0, 0, 200, 100));
+        new TestWidgetDelegate(), GetContext(), gfx::Rect(0, 0, 200, 100));
     widget->Show();
     window_ = widget->GetNativeView();
 

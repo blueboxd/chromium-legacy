@@ -11,10 +11,18 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
-from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder, HARNESS_ERROR, SUBTEST_FAIL, SKIP_TEST, TEST_PASS, TEST_FAIL
+from blinkpy.w3c.wpt_metadata_builder import (
+    WPTMetadataBuilder,
+    HARNESS_ERROR,
+    SKIP_TEST,
+    SUBTEST_FAIL,
+    TEST_FAIL,
+    TEST_PASS,
+    TEST_PRECONDITION_FAILED,
+)
 
 
-def _make_expectation(port, test_path, test_statuses, test_names=[]):
+def _make_expectation(port, test_path, test_statuses, test_names=[], trailing_comments=""):
     """Creates an expectation object for a single test or directory.
 
     Args:
@@ -23,13 +31,14 @@ def _make_expectation(port, test_path, test_statuses, test_names=[]):
         test_status: the statuses of the test
         test_names: a set of tests under the 'test_path'. Should be non-empty
             when the 'test_path' is a directory instead of a single test
+        trailing_comments: comments at the end of the expectation line.
 
     Returns:
         An expectation object with the given test and statuses.
     """
     expectation_dict = OrderedDict()
-    expectation_dict["expectations"] = ("# results: [ %s ]\n%s [ %s ]" % (
-        test_statuses, test_path, test_statuses))
+    expectation_dict["expectations"] = (
+        "# results: [ %s ]\n%s [ %s ]%s" % (test_statuses, test_path, test_statuses, trailing_comments))
 
     # When test_path is a dir, we expect test_names to be provided.
     is_dir = test_path.endswith('/')
@@ -284,3 +293,34 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         self.assertEqual(
             "[multiglob.https.any.window.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
             contents)
+
+    def test_precondition_failed(self):
+        """A WPT that fails a precondition."""
+        test_name = "external/wpt/test.html"
+        expectations = TestExpectations(self.port)
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, TEST_PRECONDITION_FAILED)
+        self.assertEqual("test.html.ini", filename)
+        # The PASS and FAIL expectations fan out to also include OK and ERROR
+        # to support reftest/testharness test differences.
+        self.assertEqual("[test.html]\n  expected: [PRECONDITION_FAILED]\n", contents)
+
+    def test_parse_subtest_failure_annotation(self):
+        """Check that we parse the wpt_subtest_failure annotation correctly."""
+        test_name = "external/wpt/test.html"
+        expectations = _make_expectation(self.port, test_name, "PASS", trailing_comments=" # wpt_subtest_failure")
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(TEST_PASS | SUBTEST_FAIL, test_and_status_dict[test_name])
+
+    def test_parse_precondition_failure_annotation(self):
+        """Check that we parse the wpt_precondition_failed annotation correctly."""
+        test_name = "external/wpt/test.html"
+        expectations = _make_expectation(self.port, test_name, "PASS", trailing_comments=" # wpt_precondition_failed")
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(TEST_PASS | TEST_PRECONDITION_FAILED, test_and_status_dict[test_name])

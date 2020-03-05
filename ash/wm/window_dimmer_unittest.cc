@@ -16,7 +16,7 @@ using WindowDimmerTest = ash::AshTestBase;
 
 // Verify that a window underneath the window dimmer is not occluded.
 TEST_F(WindowDimmerTest, Occlusion) {
-  aura::Window* root_window = CurrentContext();
+  aura::Window* root_window = GetContext();
   aura::Window* bottom_window = aura::test::CreateTestWindow(
       SK_ColorWHITE, 1, root_window->bounds(), root_window);
   bottom_window->TrackOcclusionState();

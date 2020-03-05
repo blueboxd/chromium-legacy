@@ -93,6 +93,7 @@
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
+#import "ios/chrome/browser/omaha/omaha_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
@@ -727,6 +728,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.sceneController.browserViewWrangler = nil;
 
   // End of per-window code.
+
+  OmahaService::Stop();
 
   [_spotlightManager shutdown];
   _spotlightManager = nil;

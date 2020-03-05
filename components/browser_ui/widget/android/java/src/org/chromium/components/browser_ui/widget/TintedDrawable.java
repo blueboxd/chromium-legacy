@@ -14,8 +14,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
+
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.annotations.RemovableInRelease;
 

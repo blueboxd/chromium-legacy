@@ -73,7 +73,7 @@ class CleanupAnimationObserverTest : public AshTestBase,
     params.bounds = bounds;
     params.type = views::Widget::InitParams::TYPE_WINDOW;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     widget->Show();
     widget->AddObserver(this);

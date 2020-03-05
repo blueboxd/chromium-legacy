@@ -357,7 +357,7 @@ class DragDropControllerTest : public AshTestBase {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     widget->Show();
     return widget;

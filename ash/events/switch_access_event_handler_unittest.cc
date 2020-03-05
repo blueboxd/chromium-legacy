@@ -75,7 +75,7 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
     delegate_ = std::make_unique<TestDelegate>();
 
     generator_ = AshTestBase::GetEventGenerator();
-    CurrentContext()->AddPreTargetHandler(&event_capturer_);
+    GetContext()->AddPreTargetHandler(&event_capturer_);
 
     controller_ = Shell::Get()->accessibility_controller();
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -86,7 +86,7 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    CurrentContext()->RemovePreTargetHandler(&event_capturer_);
+    GetContext()->RemovePreTargetHandler(&event_capturer_);
     generator_ = nullptr;
     controller_ = nullptr;
     AshTestBase::TearDown();

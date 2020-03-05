@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
 namespace blink {
@@ -198,15 +197,6 @@ CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
     return CompositingReason::kVideo;
 
   return CompositingReason::kNone;
-}
-
-void LayoutVideo::UpdateAfterLayout() {
-  LayoutBox::UpdateAfterLayout();
-  // Report violation of unsized-media policy.
-  if (auto* video_element = DynamicTo<HTMLVideoElement>(GetNode())) {
-    media_element_parser_helpers::ReportUnsizedMediaViolation(
-        this, video_element->IsDefaultIntrinsicSize());
-  }
 }
 
 }  // namespace blink

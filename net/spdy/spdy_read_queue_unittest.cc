@@ -119,7 +119,7 @@ TEST_F(SpdyReadQueueTest, Clear) {
   bool discarded = false;
   size_t discarded_bytes = 0;
   buffer->AddConsumeCallback(
-      base::Bind(&OnBufferDiscarded, &discarded, &discarded_bytes));
+      base::BindRepeating(&OnBufferDiscarded, &discarded, &discarded_bytes));
 
   SpdyReadQueue read_queue;
   read_queue.Enqueue(std::move(buffer));

@@ -164,6 +164,7 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
  protected:
   // Controls color values returned from FocusRingColor().
   bool UsesTestModeFocusRingColor() const;
+  bool IsAccentColorCustomized(WebColorScheme color_scheme) const;
 };
 
 // Inflate an IntRect to account for specific padding around margins.
@@ -322,6 +323,24 @@ Color LayoutThemeMacRefresh::PlatformGrammarMarkerUnderlineColor() const {
   return Color(107, 107, 107);
 }
 
+bool LayoutThemeMacRefresh::IsAccentColorCustomized(
+    WebColorScheme color_scheme) const {
+  if (@available(macOS 10.14, *)) {
+    static const Color kControlBlueAccentColor =
+        GetSystemColor(MacSystemColorID::kControlAccentBlueColor, color_scheme);
+    if (kControlBlueAccentColor ==
+        GetSystemColor(MacSystemColorID::kControlAccentColor, color_scheme)) {
+      return false;
+    }
+  } else {
+    if (NSBlueControlTint == [[NSUserDefaults standardUserDefaults]
+                                 integerForKey:@"AppleAquaColorVariant"]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 Color LayoutThemeMacRefresh::FocusRingColor() const {
   static const RGBA32 kDefaultFocusRingColor = 0xFF101010;
   if (UsesTestModeFocusRingColor()) {
@@ -338,26 +357,13 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
   // different alpha value to avoid having a color too light.
   Color focus_ring =
       Color(keyboard_focus_indicator.Red(), keyboard_focus_indicator.Green(),
-            keyboard_focus_indicator.Blue(), /*alpha=*/128);
+            keyboard_focus_indicator.Blue(), /*alpha=*/166);
   if (!HasCustomFocusRingColor())
     return focus_ring;
-
   // Use the custom focus ring color when the system accent color wasn't
   // changed.
-  if (@available(macOS 10.14, *)) {
-    static const Color kControlBlueAccentColor =
-        GetSystemColor(MacSystemColorID::kControlAccentBlueColor, color_scheme);
-    if (kControlBlueAccentColor ==
-        GetSystemColor(MacSystemColorID::kControlAccentColor, color_scheme)) {
-      return GetCustomFocusRingColor();
-    }
-  } else {
-    if (NSBlueControlTint == [[NSUserDefaults standardUserDefaults]
-                                 integerForKey:@"AppleAquaColorVariant"]) {
-      return GetCustomFocusRingColor();
-    }
-  }
-
+  if (!IsAccentColorCustomized(color_scheme))
+    return GetCustomFocusRingColor();
   return focus_ring;
 }
 

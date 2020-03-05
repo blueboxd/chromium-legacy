@@ -196,6 +196,8 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     sources += [
+      "browser/android/exception_filter.cc",
+      "browser/android/exception_filter.h",
       "browser/android/metrics/uma_utils.cc",
       "browser/android/metrics/uma_utils.h",
       "browser/android/metrics/weblayer_metrics_service_client.cc",

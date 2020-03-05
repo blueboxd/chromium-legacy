@@ -833,10 +833,16 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
 // static
 std::string AutofillProfileComparator::MergeProfile(
     const AutofillProfile& new_profile,
-    std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
+    const std::vector<std::unique_ptr<AutofillProfile>>& existing_profiles,
     const std::string& app_locale,
     std::vector<AutofillProfile>* merged_profiles) {
   merged_profiles->clear();
+
+  // Create copies of |existing_profiles| that can be modified
+  std::vector<AutofillProfile> existing_profile_copies;
+  existing_profile_copies.reserve(existing_profiles.size());
+  for (const auto& profile : existing_profiles)
+    existing_profile_copies.push_back(*profile.get());
 
   // Sort the existing profiles in decreasing order of frecency, so the "best"
   // profiles are checked first. Put the verified profiles last so the non
@@ -844,15 +850,16 @@ std::string AutofillProfileComparator::MergeProfile(
   // profiles.
   // TODO(crbug.com/620521): Remove the check for verified from the sort.
   base::Time comparison_time = AutofillClock::Now();
-  std::sort(existing_profiles->begin(), existing_profiles->end(),
-            [comparison_time](const std::unique_ptr<AutofillProfile>& a,
-                              const std::unique_ptr<AutofillProfile>& b) {
-              if (a->IsVerified() != b->IsVerified())
-                return !a->IsVerified();
-              return a->HasGreaterFrecencyThan(b.get(), comparison_time);
-            });
+  std::sort(
+      existing_profile_copies.begin(), existing_profile_copies.end(),
+      [comparison_time](const AutofillProfile& a, const AutofillProfile& b) {
+        if (a.IsVerified() != b.IsVerified())
+          return !a.IsVerified();
+        return a.HasGreaterFrecencyThan(&b, comparison_time);
+      });
 
-  // Set to true if |existing_profiles| already contains an equivalent profile.
+  // Set to true if |existing_profile_copies| already contains an equivalent
+  // profile.
   bool matching_profile_found = false;
   std::string guid = new_profile.guid();
 
@@ -860,25 +867,25 @@ std::string AutofillProfileComparator::MergeProfile(
   // Only merge with the first match. Merging the new profile into the existing
   // one preserves the validity of credit card's billing address reference.
   AutofillProfileComparator comparator(app_locale);
-  for (const auto& existing_profile : *existing_profiles) {
+  for (auto& existing_profile : existing_profile_copies) {
     if (!matching_profile_found &&
-        comparator.AreMergeable(new_profile, *existing_profile) &&
-        existing_profile->SaveAdditionalInfo(new_profile, app_locale)) {
+        comparator.AreMergeable(new_profile, existing_profile) &&
+        existing_profile.SaveAdditionalInfo(new_profile, app_locale)) {
       // Unverified profiles should always be updated with the newer data,
       // whereas verified profiles should only ever be overwritten by verified
       // data.  If an automatically aggregated profile would overwrite a
       // verified profile, just drop it.
       matching_profile_found = true;
-      guid = existing_profile->guid();
+      guid = existing_profile.guid();
 
       // We set the modification date so that immediate requests for profiles
       // will properly reflect the fact that this profile has been modified
       // recently. After writing to the database and refreshing the local copies
       // the profile will have a very slightly newer time reflecting what's
       // actually stored in the database.
-      existing_profile->set_modification_date(AutofillClock::Now());
+      existing_profile.set_modification_date(AutofillClock::Now());
     }
-    merged_profiles->push_back(*existing_profile);
+    merged_profiles->push_back(existing_profile);
   }
 
   // If the new profile was not merged with an existing one, add it to the list.

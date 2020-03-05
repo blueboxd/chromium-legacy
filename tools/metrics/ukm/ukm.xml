@@ -6834,6 +6834,11 @@ be describing additional metrics about the same event.
       is in the foreground. Measured in milliseconds.
     </summary>
   </metric>
+  <metric name="DidCommit">
+    <summary>
+      Set to 1 if the navigation successfully commited.
+    </summary>
+  </metric>
   <metric name="DocumentTiming.NavigationToDOMContentLoadedEventFired">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation

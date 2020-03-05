@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -147,7 +148,7 @@ class DeepScanningMessageView : public DeepScanningBaseView,
   using DeepScanningBaseView::DeepScanningBaseView;
 
   void Update() {
-    if (dialog()->is_failure())
+    if (dialog()->is_failure() || dialog()->is_warning())
       SetEnabledColor(dialog()->GetSideImageBackgroundColor());
   }
 
@@ -193,9 +194,15 @@ base::string16 DeepScanningDialogViews::GetWindowTitle() const {
   return base::string16();
 }
 
-bool DeepScanningDialogViews::Cancel() {
-  delegate_->Cancel();
-  return true;
+void DeepScanningDialogViews::AcceptButtonCallback() {
+  DCHECK(delegate_);
+  DCHECK(is_warning());
+  delegate_->BypassWarnings();
+}
+
+void DeepScanningDialogViews::CancelButtonCallback() {
+  DCHECK(delegate_);
+  delegate_->Cancel(is_warning());
 }
 
 bool DeepScanningDialogViews::ShouldShowCloseButton() const {
@@ -223,18 +230,28 @@ ui::ModalType DeepScanningDialogViews::GetModalType() const {
 }
 
 void DeepScanningDialogViews::ShowResult(
-    bool success,
-    DeepScanningDialogDelegate::DeepScanUploadStatus upload_status) {
+    DeepScanningDialogDelegate::DeepScanningFinalResult result) {
   DCHECK(is_pending());
-  dialog_status_ = success ? DeepScanningDialogStatus::SUCCESS
-                           : DeepScanningDialogStatus::FAILURE;
-  upload_status_ = upload_status;
+  final_result_ = result;
+  switch (final_result_) {
+    case DeepScanningDialogDelegate::DeepScanningFinalResult::ENCRYPTED_FILES:
+    case DeepScanningDialogDelegate::DeepScanningFinalResult::LARGE_FILES:
+    case DeepScanningDialogDelegate::DeepScanningFinalResult::FAILURE:
+      dialog_status_ = DeepScanningDialogStatus::FAILURE;
+      break;
+    case DeepScanningDialogDelegate::DeepScanningFinalResult::SUCCESS:
+      dialog_status_ = DeepScanningDialogStatus::SUCCESS;
+      break;
+    case DeepScanningDialogDelegate::DeepScanningFinalResult::WARNING:
+      dialog_status_ = DeepScanningDialogStatus::WARNING;
+      break;
+  }
 
   // Do nothing if the pending dialog wasn't shown, the delayed |Show| callback
   // will show the negative result later if that's the verdict.
   if (!shown_) {
     // Cleanup if the pending dialog wasn't shown and the verdict is safe.
-    if (success)
+    if (is_success())
       delete this;
     return;
   }
@@ -296,7 +313,7 @@ void DeepScanningDialogViews::UpdateDialog() {
   }
 
   if (observer_for_testing)
-    observer_for_testing->DialogUpdated(this, is_success());
+    observer_for_testing->DialogUpdated(this, final_result_);
 
   // Cancel the dialog as it is updated in tests in the failure dialog case.
   // This is necessary to terminate tests that end when the dialog is closed.
@@ -347,16 +364,37 @@ void DeepScanningDialogViews::Resize(int height_to_add) {
 
 void DeepScanningDialogViews::SetupButtons() {
   // TODO(domfc): Add "Learn more" button on scan failure.
-  if (is_pending() || is_failure()) {
-    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
+  if (is_warning()) {
+    // Include the Ok and Cancel buttons if there is a bypassable warning.
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL |
+                                ui::DIALOG_BUTTON_OK);
+    DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+
     DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                      GetCancelButtonText());
+    DialogDelegate::set_cancel_callback(
+        base::BindOnce(&DeepScanningDialogViews::CancelButtonCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                     GetBypassWarningButtonText());
+    DialogDelegate::set_accept_callback(
+        base::BindOnce(&DeepScanningDialogViews::AcceptButtonCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else if (is_failure() || is_pending()) {
+    // Include the Cancel button when the scan is pending or failing.
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
     DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+
+    DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                     GetCancelButtonText());
+    DialogDelegate::set_cancel_callback(
+        base::BindOnce(&DeepScanningDialogViews::CancelButtonCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
+    // Include no buttons otherwise.
     DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   }
-
-  // TODO(domfc): Add "Learn more" button setup for scan failures.
 }
 
 base::string16 DeepScanningDialogViews::GetDialogMessage() const {
@@ -371,22 +409,44 @@ base::string16 DeepScanningDialogViews::GetDialogMessage() const {
     case DeepScanningDialogStatus::SUCCESS:
       text_id = IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE;
       break;
+    case DeepScanningDialogStatus::WARNING:
+      text_id = GetWarningMessageId();
+      break;
   }
   return l10n_util::GetStringUTF16(text_id);
 }
 
 base::string16 DeepScanningDialogViews::GetCancelButtonText() const {
-  if (is_pending()) {
-    return l10n_util::GetStringUTF16(
-        IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON);
+  int text_id;
+  switch (dialog_status_) {
+    case DeepScanningDialogStatus::SUCCESS:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DeepScanningDialogStatus::PENDING:
+      text_id = IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON;
+      break;
+    case DeepScanningDialogStatus::FAILURE:
+      text_id = IDS_CLOSE;
+      break;
+    case DeepScanningDialogStatus::WARNING:
+      text_id = IDS_DEEP_SCANNING_DIALOG_CANCEL_WARNING_BUTTON;
+      break;
   }
-  DCHECK(!is_success());
-  return l10n_util::GetStringUTF16(IDS_CLOSE);
+  return l10n_util::GetStringUTF16(text_id);
+}
+
+base::string16 DeepScanningDialogViews::GetBypassWarningButtonText() const {
+  DCHECK(is_warning());
+  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_DIALOG_PROCEED_BUTTON);
 }
 
 void DeepScanningDialogViews::Show() {
   DCHECK(!shown_);
-  DCHECK(is_pending() || is_failure());
+
+  // The only state that cannot be shown immediately is SUCCESS, the dialog
+  // doesn't appear in that case.
+  DCHECK(!is_success());
+
   shown_ = true;
   first_shown_timestamp_ = base::TimeTicks::Now();
 
@@ -457,7 +517,7 @@ std::unique_ptr<views::View> DeepScanningDialogViews::CreateSideIcon() {
   // The side icon is created either:
   // - When the pending dialog is shown
   // - When the response was fast enough that the failure dialog is shown first
-  DCHECK(is_pending() || !is_success());
+  DCHECK(!is_success());
 
   // The icon left of the text has the appearance of a blue "Enterprise" logo
   // with a spinner when the scan is pending.
@@ -527,13 +587,13 @@ int DeepScanningDialogViews::GetPendingMessageId() const {
 int DeepScanningDialogViews::GetFailureMessageId() const {
   DCHECK(is_failure());
 
-  if (upload_status_ ==
-      DeepScanningDialogDelegate::DeepScanUploadStatus::LARGE_FILES) {
+  if (final_result_ ==
+      DeepScanningDialogDelegate::DeepScanningFinalResult::LARGE_FILES) {
     return IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE;
   }
 
-  if (upload_status_ ==
-      DeepScanningDialogDelegate::DeepScanUploadStatus::ENCRYPTED_FILES) {
+  if (final_result_ ==
+      DeepScanningDialogDelegate::DeepScanningFinalResult::ENCRYPTED_FILES) {
     return IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE;
   }
 
@@ -550,6 +610,24 @@ int DeepScanningDialogViews::GetFailureMessageId() const {
     case DeepScanAccessPoint::DRAG_AND_DROP:
       return is_file_scan_ ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE
                            : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE;
+  }
+}
+
+int DeepScanningDialogViews::GetWarningMessageId() const {
+  DCHECK(is_warning());
+  switch (access_point_) {
+    case DeepScanAccessPoint::DOWNLOAD:
+      // This dialog should not appear on the download path. If it somehow does,
+      // treat it as an upload.
+      NOTREACHED();
+      FALLTHROUGH;
+    case DeepScanAccessPoint::UPLOAD:
+      return IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE;
+    case DeepScanAccessPoint::PASTE:
+      return IDS_DEEP_SCANNING_DIALOG_PASTE_WARNING_MESSAGE;
+    case DeepScanAccessPoint::DRAG_AND_DROP:
+      return is_file_scan_ ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_WARNING_MESSAGE
+                           : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_WARNING_MESSAGE;
   }
 }
 
@@ -575,6 +653,7 @@ SkColor DeepScanningDialogViews::GetSideImageLogoColor() const {
           ui::NativeTheme::kColorId_ThrobberSpinningColor);
     case DeepScanningDialogStatus::SUCCESS:
     case DeepScanningDialogStatus::FAILURE:
+    case DeepScanningDialogStatus::WARNING:
       // In a result state the background will have the result's color, so the
       // logo should have the same color as the background.
       return GetBackgroundColor(widget);

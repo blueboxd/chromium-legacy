@@ -148,15 +148,36 @@ MemoryInfo* Performance::memory() const {
   return nullptr;
 }
 
+namespace {
+
+bool IsMeasureMemoryAvailable(ScriptState* script_state) {
+  // TODO(ulan): We should check for window.crossOriginIsolated when it ships.
+  // Until then we enable the API only for processes locked to a site
+  // similar to the precise mode of the legacy performance.memory API.
+  if (!Platform::Current()->IsLockedToSite()) {
+    return false;
+  }
+  // The window.crossOriginIsolated will be true only for the top-level frame.
+  // Until the flag is available we check for the top-level condition manually.
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  if (!execution_context->IsDocument()) {
+    return false;
+  }
+  LocalFrame* local_frame = Document::From(execution_context)->GetFrame();
+  if (!local_frame || !local_frame->IsMainFrame()) {
+    return false;
+  }
+  return true;
+}
+
+}  // anonymous namespace
+
 ScriptPromise Performance::measureMemory(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
-  if (!Platform::Current()->IsLockedToSite()) {
-    // TODO(ulan): We should check for COOP and COEP here when they ship.
-    // Until then we enable the API only for processes locked to a site
-    // similar to the precise mode of the legacy performance.memory API.
+  if (!IsMeasureMemoryAvailable(script_state)) {
     exception_state.ThrowSecurityError(
-        "Cannot measure memory for cross-origin frames");
+        "performance.measureMemory is not available in this context");
     return ScriptPromise();
   }
   v8::Isolate* isolate = script_state->GetIsolate();

@@ -211,6 +211,9 @@ external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/sharedworker-module/
 external/wpt/websockets/cookies/third-party-cookie-accepted.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/webxr/events_session_squeeze.https.html [ Pass Failure ] # wpt_subtest_failure
 
+# A precondition failure
+external/wpt/infrastructure/expected-fail/precondition-in-promise.html [ Failure ] # wpt_precondition_failed
+
 # This is a mass dump of all the current WPT failures seen on Waterfall. They are untriaged.
 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Pass Failure ]
 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Pass Failure ]

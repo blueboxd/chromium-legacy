@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.download.home.view;
 
 import android.content.Context;
-import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.chromium.chrome.R;
 

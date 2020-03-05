@@ -44,6 +44,9 @@ class OmahaService {
                         pending_url_loader_factory,
                     const UpgradeRecommendedCallback& callback);
 
+  // Stops the service in preparation for browser shutdown.
+  static void Stop();
+
   // Returns debug information about the omaha service.
   static void GetDebugInformation(
       const base::Callback<void(base::DictionaryValue*)> callback);
@@ -77,13 +80,20 @@ class OmahaService {
     USAGE_PING,
   };
 
-  // Initialize the timer. Used on startup.
-  void Initialize();
+  // Starts the service. Called on startup.
+  void StartInternal();
 
+  // Stops the service in preparation for browser shutdown.
+  void StopInternal();
+
+  // URL loader completion callback.
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
-  // Raw GetInstance method. Necessary for using singletons. Returns nullptr if
-  // Omaha should not be enabled for this build variant.
+  // Returns whether Omaha is enabled for this build variant.
+  static bool IsEnabled();
+
+  // Raw GetInstance method. Necessary for using singletons. This method must
+  // only be called if |IsEnabled()| returns true.
   static OmahaService* GetInstance();
 
   // Private constructor, only used by the singleton.
@@ -167,7 +177,7 @@ class OmahaService {
   // Whether to schedule pings. This is only false for tests.
   const bool schedule_;
 
-  // The install date of the application.  This is fetched in |Initialize| on
+  // The install date of the application.  This is fetched in |StartInternal| on
   // the main thread and cached for use on the IO thread.
   int64_t application_install_date_;
 

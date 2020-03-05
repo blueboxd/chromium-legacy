@@ -33,6 +33,8 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
+#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
+#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
@@ -123,6 +125,13 @@ auto RunProxyResolver(
 auto RunProfileImporter(
     mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver) {
   return std::make_unique<ProfileImportImpl>(std::move(receiver));
+}
+
+auto RunQRCodeGeneratorService(
+    mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
+        receiver) {
+  return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
+      std::move(receiver));
 }
 
 auto RunMirroringService(
@@ -239,6 +248,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,
+    RunQRCodeGeneratorService,
     RunMirroringService,
     RunSharing,
 #endif

@@ -165,7 +165,8 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   mixer_service::OutputStreamParams params;
-  params.set_content_type(ConvertContentType(GetContentType(device_id_)));
+  params.set_content_type(mixer_service::CONTENT_TYPE_MEDIA);
+  params.set_focus_type(ConvertContentType(GetContentType(device_id_)));
   params.set_device_id(device_id_);
   params.set_stream_type(
       mixer_service::OutputStreamParams::STREAM_TYPE_DEFAULT);

@@ -51,7 +51,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 bool WaitForOpenInButton() WARN_UNUSED_RESULT;
 bool WaitForOpenInButton() {
   // These downloads usually take longer and need a longer timeout.
-  const NSTimeInterval kLongDownloadTimeout = 35;
+  const NSTimeInterval kLongDownloadTimeout = 60;
   return base::test::ios::WaitUntilConditionOrTimeout(kLongDownloadTimeout, ^{
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:chrome_test_util::OpenInButton()]

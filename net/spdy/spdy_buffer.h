@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   // source followed by at most one call with DISCARD as the
   // source. The sum of the number of bytes consumed equals the total
   // size of the buffer.
-  typedef base::Callback<void(size_t, ConsumeSource)> ConsumeCallback;
+  typedef base::RepeatingCallback<void(size_t, ConsumeSource)> ConsumeCallback;
 
   // Construct with the data in the given frame. Assumes that data is
   // owned by |frame| or outlives it.

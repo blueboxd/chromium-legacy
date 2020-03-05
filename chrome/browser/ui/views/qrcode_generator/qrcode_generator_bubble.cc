@@ -50,7 +50,7 @@ constexpr gfx::Size GetQRImageSize() {
 gfx::ImageSkia GetPlaceholderImageSkia(unsigned r, unsigned g, unsigned b) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
-  bitmap.eraseARGB(r, g, b, 0);
+  bitmap.eraseARGB(0xFF, r, g, b);
   return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
 
@@ -95,12 +95,30 @@ void QRCodeGeneratorBubble::Hide() {
 }
 
 void QRCodeGeneratorBubble::UpdateQRContent() {
-  // TODO(skare): Generate QR code OOP.
-  // This is being done in a mojo service in a follow-on change.
-  // At that time, handle error code for url-too-long, and !url_.valid().
-  // As a placeholder, we cycle colors randomly as input changes.
-  UpdateQRImage(
-      GetPlaceholderImageSkia(rand() % 0x100, rand() % 0x100, rand() % 0x100));
+  mojom::GenerateQRCodeRequestPtr request = mojom::GenerateQRCodeRequest::New();
+  request->data = base::UTF16ToASCII(textfield_url_->GetText());
+  request->should_render = true;
+  request->render_dino = true;
+  request->render_module_style = mojom::ModuleStyle::CIRCLES;
+  request->render_locator_style = mojom::LocatorStyle::ROUNDED;
+
+  mojom::QRCodeGeneratorService* generator = qr_code_service_remote_.get();
+  // Rationale for Unretained(): Closing dialog closes the communication
+  // channel; callback will not run.
+  auto callback = base::BindOnce(
+      &QRCodeGeneratorBubble::OnCodeGeneratorResponse, base::Unretained(this));
+  generator->GenerateQRCode(std::move(request), std::move(callback));
+}
+
+void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
+    const mojom::GenerateQRCodeResponsePtr response) {
+  if (response->error_code != mojom::QRCodeGeneratorError::NONE) {
+    UpdateQRImage(GetPlaceholderImageSkia(0xFF, 0xFF, 0xFF));
+    return;
+  }
+
+  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap);
+  UpdateQRImage(image);
 }
 
 void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
@@ -159,7 +177,8 @@ void QRCodeGeneratorBubble::Init() {
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
   qr_code_image->SetImageSize(GetQRImageSize());
   qr_code_image->SetPreferredSize(GetQRImageSize());
-  qr_code_image->SetImage(GetPlaceholderImageSkia(0x33, 0x33, 0xCC));
+  // google-gray-300
+  qr_code_image->SetImage(GetPlaceholderImageSkia(0xDA, 0xDC, 0xE0));
   layout->StartRow(views::GridLayout::kFixedSize, kSingleColumnSetId);
   qr_code_image_ = layout->AddView(std::move(qr_code_image));
 
@@ -209,6 +228,9 @@ void QRCodeGeneratorBubble::Init() {
   download_button->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   download_button_ = layout->AddView(std::move(download_button));
   // End controls row
+
+  // Initialize Service
+  qr_code_service_remote_ = qrcode_generator::LaunchQRCodeGeneratorService();
 }
 
 void QRCodeGeneratorBubble::ContentsChanged(

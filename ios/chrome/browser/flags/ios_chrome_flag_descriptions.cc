@@ -316,6 +316,12 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "before the user has typed any input. This provides overrides for the "
     "default suggestion locations.";
 
+const char kOpenDownloadsInFilesAppName[] = "Open Downloads in Files.app";
+const char kOpenDownloadsInFilesAppDescription[] =
+    "Allows user to open Files.app after pressing the 'Downloads' button from "
+    "the tools menu or after pressing the 'Open in downloads' button invoked "
+    "by pressing 'Open In...' after download completes.";
+
 const char kPageInfoRefactoringName[] = "New design of the page info";
 const char kPageInfoRefactoringDescription[] =
     "Uses the new design for the page security info.";

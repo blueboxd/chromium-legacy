@@ -8,7 +8,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -72,50 +76,90 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
 namespace {
 // Helper functions for constructing a memory measurement result.
 
-String GetOrigin(v8::Local<v8::Context> context) {
+const Frame* GetFrame(v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ExecutionContext::From(context);
   if (!execution_context) {
-    // TODO(ulan): Store URL in v8::Context, so that it is available
-    // event for detached contexts.
-    return String("detached");
+    // The context was detached. Ignore it.
+    return nullptr;
   }
-  const SecurityOrigin* security_origin =
-      execution_context->GetSecurityContext().GetSecurityOrigin();
-  return security_origin->ToString();
+  DCHECK(execution_context->IsDocument());
+  return Document::From(execution_context)->GetFrame();
 }
 
-MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(size_t bytes,
-                                                     size_t globals,
-                                                     const String& type,
-                                                     const String& origin) {
-  MeasureMemoryBreakdown* result = MeasureMemoryBreakdown::Create();
-  result->setBytes(bytes);
-  result->setGlobals(globals);
-  result->setType(type);
-  result->setOrigins(Vector<String>{origin});
+String GetUrl(const Frame* frame) {
+  // TODO(ulan): Find a way to return the URL at frames open time.
+  const LocalFrame* local_frame = To<LocalFrame>(frame);
+  ExecutionContext* execution_context =
+      local_frame->GetDocument()->ToExecutionContext();
+  return execution_context->Url().GetString();
+}
+
+// To avoid information leaks cross-origin iframes are considered opaque for
+// the purposes of attribution. This means the memory of all iframes nested
+// in a cross-origin iframe is attributed to the cross-origin iframe.
+// See https://github.com/WICG/performance-measure-memory for more details.
+//
+// Given the main frame and the current context, this function walks up the
+// tree and finds the topmost cross-origin ancestor frame in the path.
+// If that doesn't exist, then all frames in the path are same-origin,
+// so the frame corresponding to the current context is returned.
+//
+// The function returns nullptr if the context was detached.
+const Frame* GetAttributionFrame(const Frame* main_frame,
+                                 v8::Local<v8::Context> context) {
+  const Frame* frame = GetFrame(context);
+  if (!frame) {
+    // The context was detached. Ignore it.
+    return nullptr;
+  }
+  if (&frame->Tree().Top() != main_frame) {
+    // This can happen if the frame was detached.
+    // See the comment in FrameTree::Top().
+    return nullptr;
+  }
+  // Walk up the tree and find the topmost cross-origin ancestor frame.
+  const Frame* result = frame;
+  frame = frame->Tree().Parent();
+  while (frame) {
+    if (frame->IsCrossOriginToMainFrame())
+      result = frame;
+    frame = frame->Tree().Parent();
+  }
   return result;
 }
 
-struct BytesAndGlobals {
-  size_t bytes;
-  size_t globals;
-};
-
-HashMap<String, BytesAndGlobals> GroupByOrigin(
+// Return per-frame sizes based on the given per-context size.
+// TODO(ulan): Revisit this after Origin Trial and see if the results
+// are precise enough or if we need to additionally group by JS agent.
+HeapHashMap<Member<const Frame>, size_t> GroupByFrame(
+    const Frame* main_frame,
     const std::vector<std::pair<v8::Local<v8::Context>, size_t>>&
         context_sizes) {
-  HashMap<String, BytesAndGlobals> per_origin;
+  HeapHashMap<Member<const Frame>, size_t> per_frame;
   for (const auto& context_size : context_sizes) {
-    const String origin = GetOrigin(context_size.first);
-    auto it = per_origin.find(origin);
-    if (it == per_origin.end()) {
-      per_origin.insert(origin, BytesAndGlobals{context_size.second, 1});
+    const Frame* frame = GetAttributionFrame(main_frame, context_size.first);
+    if (!frame) {
+      // The context was detached. Ignore it.
+      continue;
+    }
+    auto it = per_frame.find(frame);
+    if (it == per_frame.end()) {
+      per_frame.insert(frame, context_size.second);
     } else {
-      it->value.bytes += context_size.second;
-      ++it->value.globals;
+      it->value += context_size.second;
     }
   }
-  return per_origin;
+  return per_frame;
+}
+
+MeasureMemoryBreakdown* CreateMeasureMemoryBreakdown(size_t bytes,
+                                                     const String& type,
+                                                     const String& url) {
+  MeasureMemoryBreakdown* result = MeasureMemoryBreakdown::Create();
+  result->setBytes(bytes);
+  result->setType(type);
+  result->setAttribution(url.length() ? Vector<String>{url} : Vector<String>());
+  return result;
 }
 
 }  // anonymous namespace
@@ -130,11 +174,12 @@ void MeasureMemoryDelegate::MeasurementComplete(
     return;
   }
   v8::Local<v8::Context> context = context_.NewLocal(isolate_);
-  ExecutionContext* execution_context = ExecutionContext::From(context);
-  if (!execution_context) {
+  const Frame* frame = GetFrame(context);
+  if (!frame) {
     // The context was detached in the meantime.
     return;
   }
+  DCHECK(frame->IsMainFrame());
   v8::Context::Scope context_scope(context);
   size_t total_size = 0;
   for (const auto& context_size : context_sizes) {
@@ -143,13 +188,19 @@ void MeasureMemoryDelegate::MeasurementComplete(
   MeasureMemory* result = MeasureMemory::Create();
   result->setBytes(total_size + unattributed_size);
   HeapVector<Member<MeasureMemoryBreakdown>> breakdown;
-  HashMap<String, BytesAndGlobals> per_origin(GroupByOrigin(context_sizes));
-  for (const auto& it : per_origin) {
-    breakdown.push_back(CreateMeasureMemoryBreakdown(
-        it.value.bytes, it.value.globals, "js", it.key));
+  HeapHashMap<Member<const Frame>, size_t> per_frame(
+      GroupByFrame(frame, context_sizes));
+  size_t attributed_size = 0;
+  for (const auto& it : per_frame) {
+    attributed_size += it.value;
+    breakdown.push_back(
+        CreateMeasureMemoryBreakdown(it.value, "window/js", GetUrl(it.key)));
   }
-  breakdown.push_back(CreateMeasureMemoryBreakdown(
-      unattributed_size, context_sizes.size(), "js", "shared"));
+  size_t detached_size = total_size - attributed_size;
+  breakdown.push_back(
+      CreateMeasureMemoryBreakdown(detached_size, "window/js/detached", ""));
+  breakdown.push_back(
+      CreateMeasureMemoryBreakdown(unattributed_size, "window/js/shared", ""));
   result->setBreakdown(breakdown);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);

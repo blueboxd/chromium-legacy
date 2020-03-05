@@ -370,13 +370,13 @@ SimpleIndexFile::SimpleIndexFile(
 SimpleIndexFile::~SimpleIndexFile() = default;
 
 void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
-                                       const base::Closure& callback,
+                                       base::OnceClosure callback,
                                        SimpleIndexLoadResult* out_result) {
-  base::Closure task = base::Bind(&SimpleIndexFile::SyncLoadIndexEntries,
-                                  cache_type_,
-                                  cache_last_modified, cache_directory_,
-                                  index_file_, out_result);
-  worker_pool_->PostTaskAndReply(FROM_HERE, task, callback);
+  base::OnceClosure task = base::BindOnce(
+      &SimpleIndexFile::SyncLoadIndexEntries, cache_type_, cache_last_modified,
+      cache_directory_, index_file_, out_result);
+  worker_pool_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                 std::move(callback));
 }
 
 void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,
@@ -385,19 +385,20 @@ void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,
                                   uint64_t cache_size,
                                   const base::TimeTicks& start,
                                   bool app_on_background,
-                                  const base::Closure& callback) {
+                                  base::OnceClosure callback) {
   UmaRecordIndexWriteReason(reason, cache_type_);
   IndexMetadata index_metadata(reason, entry_set.size(), cache_size);
   std::unique_ptr<base::Pickle> pickle =
       Serialize(cache_type, index_metadata, entry_set);
-  base::Closure task =
-      base::Bind(&SimpleIndexFile::SyncWriteToDisk,
-                 cache_type_, cache_directory_, index_file_, temp_index_file_,
-                 base::Passed(&pickle), start, app_on_background);
+  base::OnceClosure task =
+      base::BindOnce(&SimpleIndexFile::SyncWriteToDisk, cache_type_,
+                     cache_directory_, index_file_, temp_index_file_,
+                     base::Passed(&pickle), start, app_on_background);
   if (callback.is_null())
-    cache_runner_->PostTask(FROM_HERE, task);
+    cache_runner_->PostTask(FROM_HERE, std::move(task));
   else
-    cache_runner_->PostTaskAndReply(FROM_HERE, task, callback);
+    cache_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                    std::move(callback));
 }
 
 // static

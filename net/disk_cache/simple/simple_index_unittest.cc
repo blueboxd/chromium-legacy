@@ -67,9 +67,9 @@ class MockSimpleIndexFile : public SimpleIndexFile,
       : SimpleIndexFile(nullptr, nullptr, cache_type, base::FilePath()) {}
 
   void LoadIndexEntries(base::Time cache_last_modified,
-                        const base::Closure& callback,
+                        base::OnceClosure callback,
                         SimpleIndexLoadResult* out_load_result) override {
-    load_callback_ = callback;
+    load_callback_ = std::move(callback);
     load_result_ = out_load_result;
     ++load_index_entries_calls_;
   }
@@ -80,7 +80,7 @@ class MockSimpleIndexFile : public SimpleIndexFile,
                    uint64_t cache_size,
                    const base::TimeTicks& start,
                    bool app_on_background,
-                   const base::Closure& callback) override {
+                   base::OnceClosure callback) override {
     disk_writes_++;
     disk_write_entry_set_ = entry_set;
   }
@@ -89,13 +89,13 @@ class MockSimpleIndexFile : public SimpleIndexFile,
     entry_set->swap(disk_write_entry_set_);
   }
 
-  const base::Closure& load_callback() const { return load_callback_; }
+  base::OnceClosure TakeLoadCallback() { return std::move(load_callback_); }
   SimpleIndexLoadResult* load_result() const { return load_result_; }
   int load_index_entries_calls() const { return load_index_entries_calls_; }
   int disk_writes() const { return disk_writes_; }
 
  private:
-  base::Closure load_callback_;
+  base::OnceClosure load_callback_;
   SimpleIndexLoadResult* load_result_ = nullptr;
   int load_index_entries_calls_ = 0;
   int disk_writes_ = 0;
@@ -159,7 +159,7 @@ class SimpleIndexTest : public net::TestWithTaskEnvironment,
 
   void ReturnIndexFile() {
     index_file_->load_result()->did_load = true;
-    index_file_->load_callback().Run();
+    index_file_->TakeLoadCallback().Run();
   }
 
   // Non-const for timer manipulation.

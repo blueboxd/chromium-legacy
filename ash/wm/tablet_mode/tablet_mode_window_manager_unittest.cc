@@ -122,8 +122,8 @@ class TabletModeWindowManagerTest
 
   // Creates a window which also has a widget.
   aura::Window* CreateWindowWithWidget(const gfx::Rect& bounds) {
-    views::Widget* widget = views::Widget::CreateWindowWithContext(
-        nullptr, CurrentContext(), bounds);
+    views::Widget* widget =
+        views::Widget::CreateWindowWithContext(nullptr, GetContext(), bounds);
     widget->Show();
     // Note: The widget will get deleted with the window.
     return widget->GetNativeWindow();

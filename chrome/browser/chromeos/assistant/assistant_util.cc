@@ -26,6 +26,16 @@
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 
+namespace {
+
+bool IsActiveDirectoryUser(const Profile* profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  return user->IsActiveDirectoryUser();
+}
+
+}  // namespace
+
 namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
@@ -44,6 +54,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
+
+  if (IsActiveDirectoryUser(profile))
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
 
   if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;

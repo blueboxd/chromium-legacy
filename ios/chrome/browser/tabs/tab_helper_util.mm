@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
+#import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
@@ -144,6 +145,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 
   ARQuickLookTabHelper::CreateForWebState(web_state);
+
+  PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
 
   // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
   // tab helpers for historical reasons. For the moment, AttachTabHelpers

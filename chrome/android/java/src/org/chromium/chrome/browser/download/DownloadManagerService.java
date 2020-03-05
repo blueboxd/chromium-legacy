@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -278,6 +279,7 @@ public class DownloadManagerService implements DownloadController.Observer,
         mHandler = handler;
         mDownloadSnackbarController = new DownloadSnackbarController();
         mOMADownloadHandler = new OMADownloadHandler(applicationContext);
+        DownloadCollectionBridge.setDownloadDelegate(new DownloadDelegateImpl());
         // Note that this technically leaks the native object, however, DownloadManagerService
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();

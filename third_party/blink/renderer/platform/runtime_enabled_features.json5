@@ -1184,6 +1184,10 @@
       name: "OrientationEvent",
       status: {"Android": "stable"},
     },
+    {
+      name: "OriginPolicy",
+      status: "experimental",
+    },
 
     // Define a sample API for testing integration with the Origin Trials
     // Framework. The sample API is used in both unit and web tests for the

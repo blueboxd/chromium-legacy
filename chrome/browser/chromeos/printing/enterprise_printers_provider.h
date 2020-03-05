@@ -33,12 +33,11 @@ class EnterprisePrintersProvider {
    public:
     // |complete| is true if all policies have been parsed and applied (even
     // when parsing errors occurred), false means that a new list of available
-    // printers is being calculated. |printers| contains the current list of
-    // available printers: the map is indexed by printers ids. This
+    // printers is being calculated. |printers| contains the current unordered
+    // list of available printers: the map is indexed by printers ids. This
     // notification is called when value of any of these two parameters changes.
-    virtual void OnPrintersChanged(
-        bool complete,
-        const std::unordered_map<std::string, Printer>& printers) = 0;
+    virtual void OnPrintersChanged(bool complete,
+                                   const std::vector<Printer>& printers) = 0;
   };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -49,7 +48,7 @@ class EnterprisePrintersProvider {
       Profile* profile);
   virtual ~EnterprisePrintersProvider() = default;
 
-  // This method also calls directly OnPrintersChanged(...) from |observer|.
+  // This method also directly calls OnPrintersChanged(...) from |observer|.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

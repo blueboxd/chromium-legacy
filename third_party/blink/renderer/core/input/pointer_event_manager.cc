@@ -877,6 +877,9 @@ bool PointerEventManager::GetPointerCaptureState(
     PointerId pointer_id,
     Element** pointer_capture_target,
     Element** pending_pointer_capture_target) {
+  DCHECK(pointer_capture_target);
+  DCHECK(pending_pointer_capture_target);
+
   PointerCapturingMap::const_iterator it;
 
   it = pointer_capture_target_.find(pointer_id);
@@ -886,10 +889,8 @@ bool PointerEventManager::GetPointerCaptureState(
   Element* pending_pointercapture_target_temp =
       (it != pending_pointer_capture_target_.end()) ? it->value : nullptr;
 
-  if (pointer_capture_target)
-    *pointer_capture_target = pointer_capture_target_temp;
-  if (pending_pointer_capture_target)
-    *pending_pointer_capture_target = pending_pointercapture_target_temp;
+  *pointer_capture_target = pointer_capture_target_temp;
+  *pending_pointer_capture_target = pending_pointercapture_target_temp;
 
   return pointer_capture_target_temp != pending_pointercapture_target_temp;
 }
@@ -917,8 +918,9 @@ Element* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
 
 void PointerEventManager::ProcessPendingPointerCapture(
     PointerEvent* pointer_event) {
-  Element* pointer_capture_target;
-  Element* pending_pointer_capture_target;
+  Element* pointer_capture_target = nullptr;
+  Element* pending_pointer_capture_target = nullptr;
+
   const PointerId pointer_id = pointer_event->pointerId();
   const bool is_capture_changed = GetPointerCaptureState(
       pointer_id, &pointer_capture_target, &pending_pointer_capture_target);

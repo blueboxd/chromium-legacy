@@ -18,7 +18,7 @@ namespace net {
 class NotifyWatcherMac {
  public:
   // Called on received notification with true on success and false on error.
-  typedef base::Callback<void(bool succeeded)> CallbackType;
+  typedef base::RepeatingCallback<void(bool succeeded)> CallbackType;
 
   NotifyWatcherMac();
 

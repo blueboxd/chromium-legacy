@@ -58,6 +58,21 @@ const char kSyncStateNextRefreshTime[] = "nextRefreshTime";
 const char kSyncStateRecoveringFromFailure[] = "recoveringFromFailure";
 const char kSyncStateOperationInProgress[] = "operationInProgress";
 
+// 9999 days in milliseconds.
+const double kFakeInfinityMillis = 863913600000;
+
+double ConvertNextAttemptTimeToDouble(base::TimeDelta delta) {
+  // If no future attempt is scheduled, the next-attempt time is
+  // base::TimeDelta::Max(), which corresponds to an infinite double value. In
+  // order to store the next-attempt time as a double base::Value,
+  // std::isfinite() must be true. So, here we use 9999 days to represent the
+  // max next-attempt time to allow use with base::Value.
+  if (delta.is_max())
+    return kFakeInfinityMillis;
+
+  return delta.InMillisecondsF();
+}
+
 // Converts |log_message| to a raw dictionary value used as a JSON argument to
 // JavaScript functions.
 std::unique_ptr<base::DictionaryValue> LogMessageToDictionary(
@@ -544,20 +559,21 @@ void ProximityAuthWebUIHandler::OnGetDebugInfo(
         true /* success */,
         CreateSyncStateDictionary(
             debug_info_ptr->last_enrollment_time.ToJsTime(),
-            debug_info_ptr->time_to_next_enrollment_attempt.InMillisecondsF(),
+            ConvertNextAttemptTimeToDouble(
+                debug_info_ptr->time_to_next_enrollment_attempt),
             debug_info_ptr->is_recovering_from_enrollment_failure,
             debug_info_ptr->is_enrollment_in_progress));
   }
 
   if (sync_update_waiting_for_debug_info_) {
     sync_update_waiting_for_debug_info_ = false;
-    NotifyOnSyncFinished(
-        true /* was_sync_successful */, true /* changed */,
-        CreateSyncStateDictionary(
-            debug_info_ptr->last_sync_time.ToJsTime(),
-            debug_info_ptr->time_to_next_sync_attempt.InMillisecondsF(),
-            debug_info_ptr->is_recovering_from_sync_failure,
-            debug_info_ptr->is_sync_in_progress));
+    NotifyOnSyncFinished(true /* was_sync_successful */, true /* changed */,
+                         CreateSyncStateDictionary(
+                             debug_info_ptr->last_sync_time.ToJsTime(),
+                             ConvertNextAttemptTimeToDouble(
+                                 debug_info_ptr->time_to_next_sync_attempt),
+                             debug_info_ptr->is_recovering_from_sync_failure,
+                             debug_info_ptr->is_sync_in_progress));
   }
 
   if (get_local_state_update_waiting_for_debug_info_) {
@@ -566,12 +582,14 @@ void ProximityAuthWebUIHandler::OnGetDebugInfo(
         GetTruncatedLocalDeviceId(),
         CreateSyncStateDictionary(
             debug_info_ptr->last_enrollment_time.ToJsTime(),
-            debug_info_ptr->time_to_next_enrollment_attempt.InMillisecondsF(),
+            ConvertNextAttemptTimeToDouble(
+                debug_info_ptr->time_to_next_enrollment_attempt),
             debug_info_ptr->is_recovering_from_enrollment_failure,
             debug_info_ptr->is_enrollment_in_progress),
         CreateSyncStateDictionary(
             debug_info_ptr->last_sync_time.ToJsTime(),
-            debug_info_ptr->time_to_next_sync_attempt.InMillisecondsF(),
+            ConvertNextAttemptTimeToDouble(
+                debug_info_ptr->time_to_next_sync_attempt),
             debug_info_ptr->is_recovering_from_sync_failure,
             debug_info_ptr->is_sync_in_progress),
         GetRemoteDevicesList());

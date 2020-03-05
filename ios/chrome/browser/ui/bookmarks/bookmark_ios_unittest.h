@@ -16,11 +16,10 @@ class BookmarkModel;
 class BookmarkNode;
 class ManagedBookmarkService;
 }  // namespace bookmarks
-
+class Browser;
 namespace base {
 class ScopedTempDir;
 }  // namespace base
-
 class TestChromeBrowserState;
 
 // Provides common bookmark testing infrastructure.
@@ -45,9 +44,10 @@ class BookmarkIOSUnitTest : public PlatformTest {
   std::unique_ptr<base::ScopedTempDir> state_dir_;
 
   web::WebTaskEnvironment task_environment_;
+  std::unique_ptr<Browser> browser_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  bookmarks::BookmarkModel* _bookmarkModel;
-  bookmarks::ManagedBookmarkService* _managedBookmarkService;
+  bookmarks::BookmarkModel* bookmark_model_;
+  bookmarks::ManagedBookmarkService* managed_bookmark_service_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_IOS_UNITTEST_H_

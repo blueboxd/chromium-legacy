@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments.handler;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,70 +12,43 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.thinwebview.ThinWebView;
-import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
-import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
-import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
  * The view of the PaymentHandler UI. This view can be divided into the toolbar area and the
  * content area. The content area does not include the toolbar area; it includes the BottomSheet
  * area below the toolbar, which includes the part that extends beneath the screen. The ThinWebView
- * is designed to fit into the visible part of the content area, called content visible area.
+ * has a fixed height, which is the height of visible content area when the sheet is in full state.
  */
 /* package */ class PaymentHandlerView implements BottomSheetContent {
     private final View mToolbarView;
     private final FrameLayout mContentView;
-    private final ThinWebView mThinWebView;
+    private final View mThinWebView;
     private final WebContents mWebContents;
-    private final int mTabHeight;
     private final int mToolbarHeightPx;
-    private final ChromeActivity mActivity;
 
     /**
      * Construct the PaymentHandlerView.
      *
-     * @param activity The activity where the bottome-sheet should be shown.
+     * @param context The {@link Context} of the Application.
      * @param webContents The web-content of the payment-handler web-app.
-     * @param webContentView The {@link ContentView} that has been constructed with the web-content.
      * @param toolbarView The view of the Payment Handler toolbar.
+     * @param thinWebView The view that shows the WebContents of the payment app.
      */
-    /* package */ PaymentHandlerView(ChromeActivity activity, WebContents webContents,
-            ContentView webContentView, View toolbarView) {
-        mActivity = activity;
+    /* package */ PaymentHandlerView(
+            Context context, WebContents webContents, View toolbarView, View thinWebView) {
         mWebContents = webContents;
-        mTabHeight = mActivity.getActivityTab().getView().getHeight();
         mToolbarView = toolbarView;
+        mThinWebView = thinWebView;
         mToolbarHeightPx =
-                activity.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
-        mContentView = (FrameLayout) LayoutInflater.from(activity).inflate(
+                context.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
+        mContentView = (FrameLayout) LayoutInflater.from(context).inflate(
                 R.layout.payment_handler_content, null);
-
-        mThinWebView = ThinWebViewFactory.create(
-                activity, new ActivityWindowAndroid(activity), new ThinWebViewConstraints());
-        initContentView(activity, mThinWebView, webContents, webContentView);
-    }
-
-    /**
-     * Initialize the content view.
-     *
-     * @param activity The activity where the bottome-sheet should be shown.
-     * @param thinWebView The {@link ThinWebView} that was created with the activity.
-     * @param webContents The web-content of the payment-handler web-app.
-     * @param webContentView The {@link ContentView} that has been constructed with the web-content.
-     */
-    private void initContentView(ChromeActivity activity, ThinWebView thinWebView,
-            WebContents webContents, ContentView webContentView) {
-        assert webContentView.getParent() == null;
-        thinWebView.attachWebContents(webContents, webContentView);
         mContentView.setPadding(
                 /*left=*/0, /*top=*/mToolbarHeightPx, /*right=*/0, /*bottom=*/0);
-        mContentView.addView(thinWebView.getView(), /*index=*/0);
+        mContentView.addView(thinWebView, /*index=*/0);
     }
 
     /**
@@ -83,12 +57,9 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      *         in pixels.
      */
     /* package */ void onContentVisibleHeightChanged(int heightPx) {
-        // Scale mThinWebView to make the web-content fit into the visible content area of the
-        // PaymentHandler UI.
-        if (mThinWebView.getView() == null || mWebContents.isDestroyed()) return;
-        LayoutParams params = (LayoutParams) mThinWebView.getView().getLayoutParams();
+        LayoutParams params = (LayoutParams) mThinWebView.getLayoutParams();
         params.height = Math.max(0, heightPx);
-        mThinWebView.getView().setLayoutParams(params);
+        mThinWebView.setLayoutParams(params);
     }
 
     /* package */ int getToolbarHeightPx() {
@@ -125,9 +96,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     }
 
     @Override
-    public void destroy() {
-        mThinWebView.destroy();
-    }
+    public void destroy() {}
 
     @Override
     @ContentPriority

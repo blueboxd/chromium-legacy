@@ -17,10 +17,21 @@
       <!-- OATH GAIA DIALOG -->
       <div id="step-signin" hidden$="[[!eq_(currentStep_, 'signin')]]">
         <oobe-dialog class="gaia-dialog" role="dialog"
-            id="enrollment-gaia-dialog" has-buttons no-header
+            id="enrollment-gaia-dialog" no-header
+            has-buttons="[[!isSamlSsoVisible_]]"
             no-footer-padding footer-shrinkable>
-          <div slot="footer" class="flex layout vertical">
-            <webview id="oauth-enroll-auth-view"
+          <div slot="footer" id="signin-frame-container"
+              class="flex layout vertical">
+            <div id="oauth-saml-notice-container" class="layout horizontal"
+                hidden="[[!isSamlSsoVisible_]]">
+              <div class="flex layout horizontal center-justified">
+                <span id="oauth-saml-notice-message"></span>
+              </div>
+              <cr-icon-button id="saml-close-button" iron-icon="cr:close"
+                  on-click="cancel">
+              </cr-icon-button>
+            </div>
+            <webview id="oauth-enroll-auth-view" class="flex"
                 name="oauth-enroll-auth-view">
             </webview>
           </div>
@@ -196,14 +207,12 @@
         </oobe-dialog>
       </div>
     </div>
-    <div id="oauth-saml-notice-container">
-      <span id="oauth-saml-notice-message"></span>
-    </div>
     <navigation-bar id="oauth-enroll-navigation"
         disabled="[[authenticatorDialogDisplayed_]]"
         on-close="cancel" on-refresh="cancel"></navigation-bar>
     <div class="popup-overlay"
-        hidden="[[!authenticatorDialogDisplayed_]]">
+        hidden="[[!showPopupOverlay_(authenticatorDialogDisplayed_,
+                                     isSamlSsoVisible_)]]">
     </div>
   </template>
 </dom-module>

@@ -139,11 +139,14 @@ void PersonalDataManagerMock::Reset() {
 
 std::string PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
-  std::vector<AutofillProfile> profiles;
+  std::vector<AutofillProfile> new_profiles;
   std::string merged_guid = AutofillProfileComparator::MergeProfile(
-      profile, &profiles_, "en-US", &profiles);
-  if (merged_guid == profile.guid())
-    profiles_.push_back(std::make_unique<AutofillProfile>(profile));
+      profile, profiles_, "en-US", &new_profiles);
+
+  profiles_.clear();
+  for (const AutofillProfile& it : new_profiles) {
+    profiles_.push_back(std::make_unique<AutofillProfile>(it));
+  }
   return merged_guid;
 }
 

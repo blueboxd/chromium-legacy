@@ -179,38 +179,23 @@ void ElementFinder::OnGetDocumentElement(
 
 void ElementFinder::RecursiveFindElement(const std::string& object_id,
                                          size_t index) {
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(runtime::CallArgument::Builder()
-                            .SetValue(base::Value::ToUniquePtrValue(
-                                base::Value(selector_.selectors[index])))
-                            .Build());
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  AddRuntimeCallArgument(selector_.selectors[index], &arguments);
   // For finding intermediate elements, strict mode would be more appropriate,
   // as long as the logic does not support more than one intermediate match.
   //
   // TODO(b/129387787): first, add logging to figure out whether it matters and
   // decide between strict mode and full support for multiple matching
   // intermeditate elements.
-  argument.emplace_back(
-      runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(strict_)))
-          .Build());
+  AddRuntimeCallArgument(strict_, &arguments);
   std::string function;
   if (index == (selector_.selectors.size() - 1)) {
     if (selector_.must_be_visible || !selector_.inner_text_pattern.empty() ||
         !selector_.value_pattern.empty()) {
       function.assign(kQuerySelectorWithConditions);
-      argument.emplace_back(runtime::CallArgument::Builder()
-                                .SetValue(base::Value::ToUniquePtrValue(
-                                    base::Value(selector_.must_be_visible)))
-                                .Build());
-      argument.emplace_back(runtime::CallArgument::Builder()
-                                .SetValue(base::Value::ToUniquePtrValue(
-                                    base::Value(selector_.inner_text_pattern)))
-                                .Build());
-      argument.emplace_back(runtime::CallArgument::Builder()
-                                .SetValue(base::Value::ToUniquePtrValue(
-                                    base::Value(selector_.value_pattern)))
-                                .Build());
+      AddRuntimeCallArgument(selector_.must_be_visible, &arguments);
+      AddRuntimeCallArgument(selector_.inner_text_pattern, &arguments);
+      AddRuntimeCallArgument(selector_.value_pattern, &arguments);
     }
   }
   if (function.empty()) {
@@ -219,7 +204,7 @@ void ElementFinder::RecursiveFindElement(const std::string& object_id,
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
-          .SetArguments(std::move(argument))
+          .SetArguments(std::move(arguments))
           .SetFunctionDeclaration(function)
           .Build(),
       element_result_->node_frame_id,

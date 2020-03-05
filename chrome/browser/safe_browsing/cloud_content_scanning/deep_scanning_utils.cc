@@ -129,6 +129,23 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
   }
 }
 
+void ReportSensitiveDataWarningBypass(Profile* profile,
+                                      const GURL& url,
+                                      const std::string& file_name,
+                                      const std::string& download_digest_sha256,
+                                      const std::string& mime_type,
+                                      const std::string& trigger,
+                                      const int64_t content_size) {
+  DCHECK(std::all_of(download_digest_sha256.begin(),
+                     download_digest_sha256.end(), [](const char& c) {
+                       return (c >= '0' && c <= '9') ||
+                              (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+                     }));
+  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+      ->OnSensitiveDataWarningBypassed(url, file_name, download_digest_sha256,
+                                       mime_type, trigger, content_size);
+}
+
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {
   switch (access_point) {
     case DeepScanAccessPoint::DOWNLOAD:

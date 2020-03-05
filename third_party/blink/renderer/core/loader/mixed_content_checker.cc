@@ -844,11 +844,16 @@ void MixedContentChecker::UpgradeInsecureRequest(
        mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) ==
       mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {
     mojom::RequestContextType context = resource_request.GetRequestContext();
-    if (context != mojom::RequestContextType::UNSPECIFIED &&
-        resource_request.Url().ProtocolIs("http") &&
-        MixedContentChecker::ShouldAutoupgrade(
+    if (context == mojom::RequestContextType::UNSPECIFIED ||
+        !MixedContentChecker::ShouldAutoupgrade(
             fetch_client_settings_object->GetHttpsState(), context,
             settings_client, fetch_client_settings_object->GlobalObjectUrl())) {
+      return;
+    }
+    // We set the upgrade if insecure flag regardless of whether we autoupgrade
+    // due to scheme not being http, so any redirects get upgraded.
+    resource_request.SetUpgradeIfInsecure(true);
+    if (resource_request.Url().ProtocolIs("http")) {
       if (execution_context_for_logging->IsDocument()) {
         Document* document = Document::From(execution_context_for_logging);
         document->AddConsoleMessage(

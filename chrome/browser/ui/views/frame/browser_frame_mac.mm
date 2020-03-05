@@ -41,7 +41,7 @@ AppShimHost* GetHostForBrowser(Browser* browser) {
   auto* shim_handler = apps::ExtensionAppShimHandler::Get();
   if (!shim_handler)
     return nullptr;
-  return shim_handler->GetHostForBrowser(browser);
+  return shim_handler->GetHostForRemoteCocoaBrowser(browser);
 }
 
 bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {

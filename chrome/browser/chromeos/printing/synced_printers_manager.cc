@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -33,23 +32,17 @@ namespace chromeos {
 namespace {
 
 class SyncedPrintersManagerImpl : public SyncedPrintersManager,
-                                  public PrintersSyncBridge::Observer,
-                                  public EnterprisePrintersProvider::Observer {
+                                  public PrintersSyncBridge::Observer {
  public:
-  SyncedPrintersManagerImpl(Profile* profile,
-                            std::unique_ptr<PrintersSyncBridge> sync_bridge)
-      : profile_(profile),
-        sync_bridge_(std::move(sync_bridge)),
+  explicit SyncedPrintersManagerImpl(
+      std::unique_ptr<PrintersSyncBridge> sync_bridge)
+      : sync_bridge_(std::move(sync_bridge)),
         observers_(new base::ObserverListThreadSafe<
                    SyncedPrintersManager::Observer>()) {
-    printers_provider_ =
-        EnterprisePrintersProvider::Create(CrosSettings::Get(), profile_);
-    printers_provider_->AddObserver(this);
     sync_bridge_->AddObserver(this);
   }
 
   ~SyncedPrintersManagerImpl() override {
-    printers_provider_->RemoveObserver(this);
     sync_bridge_->RemoveObserver(this);
   }
 
@@ -65,13 +58,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     return printers;
   }
 
-  bool GetEnterprisePrinters(std::vector<Printer>* printers) const override {
-    base::AutoLock l(lock_);
-    if (printers != nullptr)
-      *printers = GetEnterprisePrintersLocked();
-    return enterprise_printers_are_ready_;
-  }
-
   std::unique_ptr<Printer> GetPrinter(
       const std::string& printer_id) const override {
     base::AutoLock l(lock_);
@@ -80,9 +66,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 
   void UpdateSavedPrinter(const Printer& printer) override {
     base::AutoLock l(lock_);
-    if (IsEnterprisePrinter(printer.id())) {
-      return;
-    }
     UpdateSavedPrinterLocked(printer);
   }
 
@@ -106,37 +89,13 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
         FROM_HERE, &SyncedPrintersManager::Observer::OnSavedPrintersChanged);
   }
 
-  // EnterprisePrintersProvider::Observer override
-  void OnPrintersChanged(
-      bool complete,
-      const std::unordered_map<std::string, Printer>& printers) override {
-    // Enterprise printers policy changed.  Update the lists.
-    base::AutoLock l(lock_);
-    enterprise_printers_ = printers;
-    enterprise_printers_are_ready_ = complete;
-    observers_->Notify(
-        FROM_HERE,
-        &SyncedPrintersManager::Observer::OnEnterprisePrintersChanged);
-  }
-
  private:
   std::unique_ptr<Printer> GetPrinterLocked(
       const std::string& printer_id) const {
     lock_.AssertAcquired();
-    // check for a policy printer first
-    auto found = enterprise_printers_.find(printer_id);
-    if (found != enterprise_printers_.end()) {
-      // Copy a printer.
-      return std::make_unique<Printer>(found->second);
-    }
-
     base::Optional<sync_pb::PrinterSpecifics> printer =
         sync_bridge_->GetPrinter(printer_id);
     return printer.has_value() ? SpecificsToPrinter(*printer) : nullptr;
-  }
-
-  bool IsEnterprisePrinter(const std::string& printer_id) const {
-    return enterprise_printers_.find(printer_id) != enterprise_printers_.end();
   }
 
   void UpdateSavedPrinterLocked(const Printer& printer_arg) {
@@ -152,30 +111,10 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     sync_bridge_->UpdatePrinter(PrinterToSpecifics(printer));
   }
 
-  std::vector<Printer> GetEnterprisePrintersLocked() const {
-    lock_.AssertAcquired();
-    std::vector<Printer> ret;
-    ret.reserve(enterprise_printers_.size());
-    for (auto kv : enterprise_printers_) {
-      ret.push_back(kv.second);
-    }
-    return ret;
-  }
-
   mutable base::Lock lock_;
-
-  Profile* profile_;
 
   // The backend for profile printers.
   std::unique_ptr<PrintersSyncBridge> sync_bridge_;
-
-  // The Object that provides updates about enterprise printers.
-  std::unique_ptr<EnterprisePrintersProvider> printers_provider_;
-
-  // Enterprise printers as of the last time we got a policy update.
-  std::unordered_map<std::string, Printer> enterprise_printers_;
-  // This flag is set to true if all enterprise policies were loaded.
-  bool enterprise_printers_are_ready_ = false;
 
   scoped_refptr<base::ObserverListThreadSafe<SyncedPrintersManager::Observer>>
       observers_;
@@ -185,17 +124,9 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 }  // namespace
 
 // static
-void SyncedPrintersManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  EnterprisePrintersProvider::RegisterProfilePrefs(registry);
-}
-
-// static
 std::unique_ptr<SyncedPrintersManager> SyncedPrintersManager::Create(
-    Profile* profile,
     std::unique_ptr<PrintersSyncBridge> sync_bridge) {
-  return std::make_unique<SyncedPrintersManagerImpl>(profile,
-                                                     std::move(sync_bridge));
+  return std::make_unique<SyncedPrintersManagerImpl>(std::move(sync_bridge));
 }
 
 }  // namespace chromeos

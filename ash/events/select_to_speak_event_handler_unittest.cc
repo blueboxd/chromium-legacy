@@ -104,7 +104,7 @@ class SelectToSpeakEventHandlerTest : public AshTestBase {
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     delegate_ = std::make_unique<TestDelegate>();
     generator_ = AshTestBase::GetEventGenerator();
-    CurrentContext()->AddPreTargetHandler(&event_capturer_);
+    GetContext()->AddPreTargetHandler(&event_capturer_);
 
     controller_ = Shell::Get()->accessibility_controller();
     controller_->SetSelectToSpeakEnabled(true);
@@ -112,7 +112,7 @@ class SelectToSpeakEventHandlerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    CurrentContext()->RemovePreTargetHandler(&event_capturer_);
+    GetContext()->RemovePreTargetHandler(&event_capturer_);
     generator_ = nullptr;
     controller_ = nullptr;
     AshTestBase::TearDown();

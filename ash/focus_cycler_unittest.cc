@@ -283,7 +283,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   widget_params.delegate = test_widget_delegate.get();
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget_params.context = CurrentContext();
+  widget_params.context = GetContext();
   browser_widget->Init(std::move(widget_params));
   browser_widget->Show();
 

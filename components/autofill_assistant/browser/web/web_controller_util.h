@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_UTIL_H_
 
 #include <string>
+#include "base/values.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
@@ -67,6 +68,22 @@ bool SafeGetIntValue(const runtime::RemoteObject* result, int* out);
 
 // Safely gets a boolean value from a RemoteObject
 bool SafeGetBool(const runtime::RemoteObject* result, bool* out);
+
+// Add a new runtime::CallArgument to the list.
+template <typename T>
+void AddRuntimeCallArgument(
+    const T& value,
+    std::vector<std::unique_ptr<runtime::CallArgument>>* arguments) {
+  arguments->emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
+          .Build());
+}
+
+// Add a new runtime::CallArgument from the object_id.
+void AddRuntimeCallArgumentObjectId(
+    const std::string& object_id,
+    std::vector<std::unique_ptr<runtime::CallArgument>>* arguments);
 
 }  //  namespace autofill_assistant
 

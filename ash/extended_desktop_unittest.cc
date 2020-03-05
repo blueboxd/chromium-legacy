@@ -156,7 +156,7 @@ class ExtendedDesktopTest : public AshTestBase {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = bounds;
     views::Widget* widget = new views::Widget;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     widget->Show();
     return widget;
@@ -235,8 +235,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
 
   // Open system modal. Make sure it's on 2nd root window and active.
   views::Widget* modal_widget = views::Widget::CreateWindowWithContext(
-      new ModalWidgetDelegate(), CurrentContext(),
-      gfx::Rect(1200, 100, 100, 100));
+      new ModalWidgetDelegate(), GetContext(), gfx::Rect(1200, 100, 100, 100));
   modal_widget->Show();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());

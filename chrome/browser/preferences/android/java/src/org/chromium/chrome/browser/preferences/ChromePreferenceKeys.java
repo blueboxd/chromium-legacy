@@ -466,6 +466,7 @@ public final class ChromePreferenceKeys {
     public static final String PREFETCH_NOTIFICATION_ENABLED = "prefetch_notification_enabled";
     public static final String PREFETCH_NOTIFICATION_TIME = "prefetch_notification_shown_time";
     public static final String PREFETCH_OFFLINE_COUNTER = "prefetch_notification_offline_counter";
+    public static final String PREFETCH_NOTIFICATION_THROTTLED = "prefetch_notification_throttled";
 
     public static final String PRIVACY_METRICS_REPORTING = "metrics_reporting";
     public static final String PRIVACY_METRICS_IN_SAMPLE = "in_metrics_sample";

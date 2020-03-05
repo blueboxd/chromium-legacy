@@ -70,7 +70,7 @@ class TestDelegate : public views::WidgetDelegateView {
 class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
                              public aura::client::FocusChangeObserver {
  public:
-  DeleteOnBlurDelegate() : window_(NULL) {}
+  DeleteOnBlurDelegate() : window_(nullptr) {}
   ~DeleteOnBlurDelegate() override = default;
 
   void SetWindow(aura::Window* window) {
@@ -105,7 +105,7 @@ class RootWindowControllerTest : public AshTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
     views::Widget* widget =
-        views::Widget::CreateWindowWithContext(nullptr, CurrentContext());
+        views::Widget::CreateWindowWithContext(nullptr, GetContext());
     // Any initial bounds are constrained to the screen work area or the parent.
     // See Widget::InitialBounds() & Widget::SetBoundsConstrained(). Explicitly
     // setting the bounds here will allow the view to be positioned such that it
@@ -117,7 +117,7 @@ class RootWindowControllerTest : public AshTestBase {
 
   views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
-        new TestDelegate(true), CurrentContext());
+        new TestDelegate(true), GetContext());
     // See the above comment.
     widget->SetBounds(bounds);
     widget->Show();
@@ -182,7 +182,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   Widget::InitParams params;
   params.bounds = gfx::Rect(650, 10, 100, 100);
   params.type = Widget::InitParams::TYPE_CONTROL;
-  params.context = CurrentContext();
+  params.context = GetContext();
   unparented_control->Init(std::move(params));
   EXPECT_EQ(root_windows[1],
             unparented_control->GetNativeView()->GetRootWindow());
@@ -396,7 +396,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   EXPECT_TRUE(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
-            controller->GetSystemModalLayoutManager(NULL));
+            controller->GetSystemModalLayoutManager(nullptr));
 
   views::Widget* session_modal_widget =
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));
@@ -438,7 +438,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   EXPECT_EQ(
       GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
-      controller->GetSystemModalLayoutManager(NULL));
+      controller->GetSystemModalLayoutManager(nullptr));
 
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
@@ -455,7 +455,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   EXPECT_EQ(1, session_controller->NumberOfLoggedInUsers());
   EXPECT_TRUE(session_controller->IsActiveUserSessionStarted());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
-            controller->GetSystemModalLayoutManager(NULL));
+            controller->GetSystemModalLayoutManager(nullptr));
 
   views::Widget* session_modal_widget =
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));
@@ -477,14 +477,14 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
               controller->GetSystemModalLayoutManager(
                   session_modal_widget->GetNativeWindow()));
     EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
-              controller->GetSystemModalLayoutManager(NULL));
+              controller->GetSystemModalLayoutManager(nullptr));
     session_modal_widget->Close();
 
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
 
     EXPECT_EQ(
         GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
-        controller->GetSystemModalLayoutManager(NULL));
+        controller->GetSystemModalLayoutManager(nullptr));
 
     views::Widget* lock_modal_widget = CreateModalWidgetWithParent(
         gfx::Rect(300, 10, 100, 100), lock_container);
@@ -521,18 +521,18 @@ TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
   w3->Activate();
   EXPECT_EQ(w2->GetNativeWindow(), controller->GetWindowForFullscreenMode());
 
-  // If the topmost window is not fullscreen, it returns NULL.
+  // If the topmost window is not fullscreen, it returns nullptr.
   w1->Activate();
-  EXPECT_EQ(NULL, controller->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controller->GetWindowForFullscreenMode());
   w1->Close();
   w3->Close();
 
   // Only w2 remains, if minimized GetWindowForFullscreenMode should return
-  // NULL.
+  // nullptr.
   w2->Activate();
   EXPECT_EQ(w2->GetNativeWindow(), controller->GetWindowForFullscreenMode());
   w2->Minimize();
-  EXPECT_EQ(NULL, controller->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controller->GetWindowForFullscreenMode());
 }
 
 TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
@@ -554,20 +554,20 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
             controllers[1]->GetRootWindow());
 
   w1->Activate();
-  EXPECT_EQ(NULL, controllers[0]->GetWindowForFullscreenMode());
-  EXPECT_EQ(NULL, controllers[1]->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controllers[0]->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controllers[1]->GetWindowForFullscreenMode());
 
   w2->Activate();
   EXPECT_EQ(w2->GetNativeWindow(),
             controllers[0]->GetWindowForFullscreenMode());
-  EXPECT_EQ(NULL, controllers[1]->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controllers[1]->GetWindowForFullscreenMode());
 
   // Verify that the first root window controller remains in fullscreen mode
   // when a window on the other display is activated.
   w3->Activate();
   EXPECT_EQ(w2->GetNativeWindow(),
             controllers[0]->GetWindowForFullscreenMode());
-  EXPECT_EQ(NULL, controllers[1]->GetWindowForFullscreenMode());
+  EXPECT_EQ(nullptr, controllers[1]->GetWindowForFullscreenMode());
 }
 
 // Test that ForWindow() works with multiple displays and child widgets.
@@ -628,7 +628,7 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
 // Tracks whether OnWindowDestroying() has been invoked.
 class DestroyedWindowObserver : public aura::WindowObserver {
  public:
-  DestroyedWindowObserver() : destroyed_(false), window_(NULL) {}
+  DestroyedWindowObserver() : destroyed_(false), window_(nullptr) {}
   ~DestroyedWindowObserver() override { Shutdown(); }
 
   void SetWindow(Window* window) {
@@ -649,7 +649,7 @@ class DestroyedWindowObserver : public aura::WindowObserver {
     if (!window_)
       return;
     window_->RemoveObserver(this);
-    window_ = NULL;
+    window_ = nullptr;
   }
 
   bool destroyed_;

@@ -58,6 +58,7 @@
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
@@ -603,6 +604,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          fullscreen::features::kFullscreenControllerBrowserScoped)},
+    {"open-downloads-in-files.app",
+     flag_descriptions::kOpenDownloadsInFilesAppName,
+     flag_descriptions::kOpenDownloadsInFilesAppDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kOpenDownloadsInFilesApp)},
 };
 
 // Add all switches from experimental flags to |command_line|.

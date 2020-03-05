@@ -36,9 +36,7 @@ GLOutputSurface::GLOutputSurface(
           context_provider->ContextCapabilities()
               .use_gpu_fences_for_overlay_planes) {
   const auto& context_capabilities = context_provider->ContextCapabilities();
-  capabilities_.output_surface_origin = context_capabilities.flips_vertically
-                                            ? gfx::SurfaceOrigin::kTopLeft
-                                            : gfx::SurfaceOrigin::kBottomLeft;
+  capabilities_.output_surface_origin = context_capabilities.surface_origin;
   capabilities_.supports_stencil = context_capabilities.num_stencil_bits > 0;
   // Since one of the buffers is used by the surface for presentation, there can
   // be at most |num_surface_buffers - 1| pending buffers that the compositor

@@ -11,6 +11,9 @@ specific_include_rules = {
     "+ash/shell.h",
     "+ash/wm/window_state.h",
   ],
+  "qrcode_generator\.*": [
+    "+chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
+  ],
   # mash-ok
   "screen_capture_notification_ui_views\.cc": [
     "+ash/shell.h",

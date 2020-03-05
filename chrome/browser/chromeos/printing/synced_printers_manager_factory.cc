@@ -68,8 +68,7 @@ SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
           base::BindRepeating(&syncer::ReportUnrecoverableError,
                               chrome::GetChannel()));
 
-  return SyncedPrintersManager::Create(profile, std::move(sync_bridge))
-      .release();
+  return SyncedPrintersManager::Create(std::move(sync_bridge)).release();
 }
 
 }  // namespace chromeos

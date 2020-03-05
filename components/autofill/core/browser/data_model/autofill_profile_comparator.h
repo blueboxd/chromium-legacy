@@ -144,7 +144,7 @@ class AutofillProfileComparator {
   // profile.
   static std::string MergeProfile(
       const AutofillProfile& new_profile,
-      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
+      const std::vector<std::unique_ptr<AutofillProfile>>& existing_profiles,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 

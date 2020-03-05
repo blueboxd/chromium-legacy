@@ -2402,11 +2402,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)initializeBookmarkInteractionController {
   if (_bookmarkInteractionController)
     return;
-  _bookmarkInteractionController = [[BookmarkInteractionController alloc]
-      initWithBrowserState:self.browserState
-          parentController:self
-                dispatcher:self.dispatcher
-              webStateList:self.browser->GetWebStateList()];
+  _bookmarkInteractionController =
+      [[BookmarkInteractionController alloc] initWithBrowser:self.browser
+                                            parentController:self];
 }
 
 - (void)updateOverlayContainerOrder {

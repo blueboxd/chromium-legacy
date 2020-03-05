@@ -2618,6 +2618,12 @@ const char kUpdateNotificationSchedulingIntegrationDescription[] =
     "if enable update notification will hook up to notification scheduling "
     "system in native side";
 
+const char kPrefetchNotificationSchedulingIntegrationName[] =
+    "Enable prefetch notification using notification scheduling system";
+const char kPrefetchNotificationSchedulingIntegrationDescription[] =
+    "if enable prefetch notification service and background task will hook up "
+    "to notification scheduling system in native side";
+
 const char kUpdateNotificationServiceImmediateShowOptionName[] =
     "Update notification service debug options";
 const char kUpdateNotificationServiceImmediateShowOptionDescription[] =

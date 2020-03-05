@@ -12,10 +12,14 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentsExperimentalFeatures;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator;
+import org.chromium.chrome.browser.thinwebview.ThinWebView;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -93,8 +97,12 @@ public class PaymentHandlerCoordinator {
         // Observer is designed to set here rather than in the constructor because
         // PaymentHandlerMediator and PaymentHandlerToolbarCoordinator have mutual dependencies.
         mToolbarCoordinator.setObserver(mediator);
+        ThinWebView thinWebView = ThinWebViewFactory.create(
+                activity, new ActivityWindowAndroid(activity), new ThinWebViewConstraints());
+        assert webContentView.getParent() == null;
+        thinWebView.attachWebContents(mWebContents, webContentView);
         PaymentHandlerView view = new PaymentHandlerView(
-                activity, mWebContents, webContentView, mToolbarCoordinator.getView());
+                activity, mWebContents, mToolbarCoordinator.getView(), thinWebView.getView());
         assert mToolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
@@ -107,6 +115,7 @@ public class PaymentHandlerCoordinator {
             assert activity.getWindow() != null;
             assert activity.getWindow().getDecorView() != null;
             activity.getWindow().getDecorView().removeOnLayoutChangeListener(mediator);
+            thinWebView.destroy();
             mediator.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);

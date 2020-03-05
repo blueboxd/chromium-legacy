@@ -213,7 +213,7 @@ TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
   EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
 
-  views::test::TestInitialFocusWidgetDelegate delegate(CurrentContext());
+  views::test::TestInitialFocusWidgetDelegate delegate(GetContext());
   EXPECT_FALSE(delegate.view()->HasFocus());
   delegate.GetWidget()->Show();
   EXPECT_FALSE(delegate.GetWidget()->IsActive());

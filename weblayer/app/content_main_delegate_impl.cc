@@ -31,12 +31,14 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/bundle_utils.h"
+#include "base/android/java_exception_reporter.h"
 #include "base/android/locale_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_switches.h"
+#include "weblayer/browser/android/exception_filter.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/common/crash_reporter/crash_keys.h"
 #include "weblayer/common/crash_reporter/crash_reporter_client.h"
@@ -171,7 +173,7 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  bool is_browser_process =
+  const bool is_browser_process =
       command_line.GetSwitchValueASCII(switches::kProcessType).empty();
   if (is_browser_process &&
       command_line.HasSwitch(switches::kWebLayerUserDataDir)) {
@@ -194,6 +196,10 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
 
 #if defined(OS_ANDROID)
   EnableCrashReporter(command_line.GetSwitchValueASCII(switches::kProcessType));
+  if (is_browser_process) {
+    base::android::SetJavaExceptionFilter(
+        base::BindRepeating(&WebLayerJavaExceptionFilter));
+  }
   SetWebLayerCrashKeys();
 #endif
 }

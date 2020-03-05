@@ -137,6 +137,10 @@ class ScopedLogIn {
   DISALLOW_COPY_AND_ASSIGN(ScopedLogIn);
 };
 
+AccountId GetActiveDirectoryUserAccountId(const std::string& email) {
+  return AccountId::AdFromUserEmailObjGuid(email, "<obj_guid>");
+}
+
 }  // namespace
 
 class ChromeAssistantUtilTest : public testing::Test {
@@ -273,6 +277,17 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_GoogleMail) {
       AccountId::FromUserEmailGaiaId("user2@googlemail.com", "0123456789"));
 
   EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeAssistantUtilTest,
+       IsAssistantAllowedForProfile_ActiveDirectoryUser) {
+  ScopedLogIn login(
+      GetFakeUserManager(), identity_test_env(),
+      GetActiveDirectoryUserAccountId(profile()->GetProfileUserName()),
+      user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE,
             IsAssistantAllowedForProfile(profile()));
 }
 

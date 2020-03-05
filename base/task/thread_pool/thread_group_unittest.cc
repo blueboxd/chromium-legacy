@@ -803,6 +803,52 @@ TEST_P(ThreadGroupTest, JoinJobTaskSource) {
   thread_group_ = nullptr;
 }
 
+// Verify that finishing work outside of a job unblocks workers with a stale
+// max concurrency.
+TEST_P(ThreadGroupTest, JoinJobTaskSourceStaleConcurrency) {
+  StartThreadGroup();
+
+  WaitableEvent thread_running;
+  std::atomic_size_t max_concurrency(1);
+  auto task_source = MakeRefCounted<JobTaskSource>(
+      FROM_HERE, TaskTraits{},
+      BindLambdaForTesting([&](JobDelegate*) { thread_running.Signal(); }),
+      BindLambdaForTesting([&]() -> size_t { return max_concurrency; }),
+      &mock_pooled_task_runner_delegate_);
+
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  JobHandle job_handle = internal::JobTaskSource::CreateJobHandle(task_source);
+  thread_running.Wait();
+
+  // Racily update max concurrency to unblock the task that was waiting on
+  // NotifyMaxConcurrency().
+  max_concurrency = 0;
+  job_handle.Join();
+
+  // This should not block since the job was joined.
+  task_tracker_.FlushForTesting();
+}
+
+// Verify that cancelling a job unblocks workers with a stale max concurrency.
+TEST_P(ThreadGroupTest, CancelJobTaskSourceWithStaleConcurrency) {
+  StartThreadGroup();
+
+  WaitableEvent thread_running;
+  auto task_source = MakeRefCounted<JobTaskSource>(
+      FROM_HERE, TaskTraits{},
+      BindLambdaForTesting([&](JobDelegate*) { thread_running.Signal(); }),
+      BindRepeating([]() -> size_t { return 1; }),
+      &mock_pooled_task_runner_delegate_);
+
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  JobHandle job_handle = internal::JobTaskSource::CreateJobHandle(task_source);
+  thread_running.Wait();
+  job_handle.Cancel();
+
+  // This should not block since the job got cancelled.
+  task_tracker_.FlushForTesting();
+}
+
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
 // in a thread group does not affect JobTaskSource with a priority that was
 // increased from BEST_EFFORT to USER_BLOCKING.

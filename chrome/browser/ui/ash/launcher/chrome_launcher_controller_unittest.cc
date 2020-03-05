@@ -851,7 +851,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   views::Widget* CreateArcWindow(const std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(5, 5, 20, 20);
-    params.context = ash_test_helper()->CurrentContext();
+    params.context = ash_test_helper()->GetContext();
     views::Widget* widget = new views::Widget();
     widget->Init(std::move(params));
     // Set ARC id before showing the window to be recognized in

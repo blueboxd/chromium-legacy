@@ -113,7 +113,7 @@ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   std::string header = info.GetHeaderValue("host");
   if (header.empty())
     return true;
-  GURL url = GURL("http://" + header);
+  GURL url = GURL("https://" + header);
   return url.HostIsIPAddress() || net::IsLocalHostname(url.host(), nullptr);
 }
 
@@ -508,7 +508,7 @@ std::string DevToolsHttpHandler::GetFrontendURLInternal(
     bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
                      type == DevToolsAgentHost::kTypeSharedWorker;
     frontend_url = base::StringPrintf(
-        "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/%s.html",
+        "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/%s.html",
         GetWebKitRevision().c_str(), is_worker ? "worker_app" : "inspector");
   }
   return base::StringPrintf("%s?ws=%s%s%s", frontend_url.c_str(), host.c_str(),

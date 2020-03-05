@@ -1196,7 +1196,7 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
   widget->SetFullscreen(true);
   EXPECT_TRUE(widget->IsActive());
   views::Widget* popup_widget = views::Widget::CreateWindowWithContext(
-      nullptr, CurrentContext(), gfx::Rect(200, 200, 200, 200));
+      nullptr, GetContext(), gfx::Rect(200, 200, 200, 200));
   popup_widget->Show();
 
   cursor_manager->HideCursor();

@@ -366,16 +366,21 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     personal_data_->is_autofill_profile_cleanup_pending_ = true;
   }
 
-  void SetUpReferenceProfile() {
+  void SetUpReferenceProfile(const AutofillProfile& profile) {
     ASSERT_EQ(0U, personal_data_->GetProfiles().size());
 
+    AddProfileToPersonalDataManager(profile);
+
+    ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+  }
+
+  AutofillProfile GetDefaultProfile() {
     AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
     test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                          "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
                          "Hollywood", "CA", "91601", "US", "12345678910");
-    AddProfileToPersonalDataManager(profile);
 
-    ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+    return profile;
   }
 
   // Adds three local cards to the |personal_data_|. The three cards are
@@ -4078,23 +4083,21 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
   // Set the time to a specific value.
   test_clock.SetNow(kArbitraryTime);
 
-  SetUpReferenceProfile();
-  const std::vector<AutofillProfile*>& initial_profiles =
-      personal_data_->GetProfiles();
+  AutofillProfile original_profile = GetDefaultProfile();
 
   // Apply changes to the original profile (if applicable).
   for (ProfileField change : test_case.changes_to_original) {
-    initial_profiles.front()->SetRawInfo(change.field_type,
-                                         base::UTF8ToUTF16(change.field_value));
+    original_profile.SetRawInfo(change.field_type,
+                                base::UTF8ToUTF16(change.field_value));
   }
+
+  // Initialize PersonalDataManager with the original profile.
+  SetUpReferenceProfile(original_profile);
 
   // Set the time to a bigger value.
   test_clock.SetNow(kSomeLaterTime);
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile2, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
+  AutofillProfile profile2(GetDefaultProfile());
 
   // Apply changes to the second profile (if applicable).
   for (ProfileField change : test_case.changes_to_new) {
@@ -4106,6 +4109,20 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
 
   const std::vector<AutofillProfile*>& saved_profiles =
       personal_data_->GetProfiles();
+
+  // Get the set of profiles persisted in the db.
+  std::vector<std::unique_ptr<AutofillProfile>> db_profiles;
+  profile_autofill_table_->GetAutofillProfiles(&db_profiles);
+
+  // Expect the profiles held in-memory by PersonalDataManager and the db
+  // profiles to be the same.
+  EXPECT_EQ(db_profiles.size(), saved_profiles.size());
+  for (const auto& it : db_profiles) {
+    AutofillProfile* inmemory_profile =
+        personal_data_->GetProfileByGUID(it->guid());
+    ASSERT_TRUE(inmemory_profile != nullptr);
+    EXPECT_TRUE(it->EqualsIncludingUsageStatsForTesting(*inmemory_profile));
+  }
 
   // If there are no merge changes to verify, make sure that two profiles were
   // saved.
@@ -4433,7 +4450,7 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
   std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, &existing_profiles, "US-EN", &profiles);
+      imported_profile, existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the "fox" profile.
   EXPECT_EQ(profile2->guid(), guid);
@@ -4482,18 +4499,19 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
   std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, &existing_profiles, "US-EN", &profiles);
+      imported_profile, existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the existing profile.
   EXPECT_EQ(profile->guid(), guid);
+  EXPECT_EQ(1U, profiles.size());
   // The use count should have be max(4, 1) => 4.
-  EXPECT_EQ(4U, profile->use_count());
+  EXPECT_EQ(4U, profiles[0].use_count());
   // The use date should be the one of the most recent profile, which is
   // kSecondArbitraryTime.
-  EXPECT_EQ(kSomeLaterTime, profile->use_date());
+  EXPECT_EQ(kSomeLaterTime, profiles[0].use_date());
   // Since the merge is considered a modification, the modification_date should
   // be set to kMuchLaterTime.
-  EXPECT_EQ(kMuchLaterTime, profile->modification_date());
+  EXPECT_EQ(kMuchLaterTime, profiles[0].modification_date());
 }
 
 // Tests that DedupeProfiles sets the correct profile guids to

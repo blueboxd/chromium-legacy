@@ -52,6 +52,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
     // and that the user may not proceed with their upload, drag-and-drop or
     // paste.
     FAILURE,
+
+    // The dialog is shown with a message indicating that the scan was a
+    // failure, but that the user may proceed with their upload, drag-and-drop
+    // or paste if they want to.
+    WARNING,
   };
 
   // TestObserver should be implemented by tests that need to track when certain
@@ -75,8 +80,10 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
     // Called at the end of DeepScanningDialogViews::UpdateDialog. |result| is
     // the value that UpdatedDialog used to transition from the pending state to
-    // the success or failure state.
-    virtual void DialogUpdated(DeepScanningDialogViews* views, bool result) {}
+    // the success/failure/warning state.
+    virtual void DialogUpdated(
+        DeepScanningDialogViews* views,
+        DeepScanningDialogDelegate::DeepScanningFinalResult result) {}
 
     // Called at the end of DeepScanningDialogViews's destructor. |views| is a
     // pointer to the DeepScanningDialogViews being destructed. It can be used
@@ -102,7 +109,6 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
-  bool Cancel() override;
   bool ShouldShowCloseButton() const override;
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
@@ -112,9 +118,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   // Updates the dialog with the result, and simply delete it from memory if
   // nothing should be shown.
-  void ShowResult(
-      bool success,
-      DeepScanningDialogDelegate::DeepScanUploadStatus upload_status);
+  void ShowResult(DeepScanningDialogDelegate::DeepScanningFinalResult result);
 
   // Accessors to simplify |dialog_status_| checking.
   inline bool is_success() const {
@@ -125,7 +129,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
     return dialog_status_ == DeepScanningDialogStatus::FAILURE;
   }
 
-  inline bool is_result() const { return is_success() || is_failure(); }
+  inline bool is_warning() const {
+    return dialog_status_ == DeepScanningDialogStatus::WARNING;
+  }
+
+  inline bool is_result() const { return !is_pending(); }
 
   inline bool is_pending() const {
     return dialog_status_ == DeepScanningDialogStatus::PENDING;
@@ -159,8 +167,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Returns the appropriate dialog message depending on |dialog_status_|.
   base::string16 GetDialogMessage() const;
 
-  // Returns the appropriate dialog message depending on |dialog_status_|.
+  // Returns the text for the Cancel button depending on |dialog_status_|.
   base::string16 GetCancelButtonText() const;
+
+  // Returns the text for the Ok button for the warning case.
+  base::string16 GetBypassWarningButtonText() const;
 
   // Returns the appropriate paste top image ID depending on |dialog_status_|.
   int GetPasteImageId(bool use_dark) const;
@@ -176,8 +187,15 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // |is_file_scan_|.
   int GetFailureMessageId() const;
 
+  // Returns the appropriate warning message ID depending on |access_point_| and
+  // |is_file_scan_|.
+  int GetWarningMessageId() const;
+
   // Show the dialog. Sets |shown_| to true.
   void Show();
+
+  void AcceptButtonCallback();
+  void CancelButtonCallback();
 
   std::unique_ptr<DeepScanningDialogDelegate> delegate_;
 
@@ -197,9 +215,9 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   // Used to show the appropriate dialog depending on the scan's status.
   DeepScanningDialogStatus dialog_status_ = DeepScanningDialogStatus::PENDING;
 
-  // Used to show the appropriate message if the scan did not occur.
-  DeepScanningDialogDelegate::DeepScanUploadStatus upload_status_ =
-      DeepScanningDialogDelegate::DeepScanUploadStatus::NORMAL;
+  // Used to show the appropriate message.
+  DeepScanningDialogDelegate::DeepScanningFinalResult final_result_ =
+      DeepScanningDialogDelegate::DeepScanningFinalResult::SUCCESS;
 
   // Used to animate dialog height changes.
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

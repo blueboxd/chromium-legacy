@@ -2861,6 +2861,8 @@ jumbo_static_library("browser") {
       "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.cc",
+      "offline_pages/prefetch/notifications/prefetch_notification_service_bridge.h",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.cc",
       "offline_pages/prefetch/notifications/prefetch_notification_service_factory.h",
       "page_load_metrics/observers/android_page_load_metrics_observer.cc",
@@ -3034,6 +3036,15 @@ jumbo_static_library("browser") {
         "dev_ui/android/dev_ui_loader_throttle.h",
       ]
       deps += [ "//chrome/android/modules/dev_ui/provider:native" ]
+    }
+
+    if (enable_password_change_in_leaked_dialog) {
+      sources += [
+        "password_manager/credential_leak_password_change_controller_android.cc",
+        "password_manager/credential_leak_password_change_controller_android.h",
+      ]
+
+      defines += [ "ENABLE_PASSWORD_CHANGE" ]
     }
   } else {  # !is_android
     sources += [

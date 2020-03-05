@@ -72,16 +72,16 @@ class SpokenFeedbackEventRewriterTest
     ash::AshTestBase::SetUp();
     generator_ = AshTestBase::GetEventGenerator();
     spoken_feedback_event_rewriter_->set_delegate(&delegate_);
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         spoken_feedback_event_rewriter_.get());
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &event_recorder_);
   }
 
   void TearDown() override {
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         &event_recorder_);
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         spoken_feedback_event_rewriter_.get());
     spoken_feedback_event_rewriter_->set_delegate(nullptr);
     generator_ = nullptr;

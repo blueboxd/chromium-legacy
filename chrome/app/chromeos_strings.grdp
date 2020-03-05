@@ -873,7 +873,7 @@
     You are all set!
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE" desc="The sub-title of the dialog that allows user to opt-in into several Google marketing options.">
-    You are ready to use your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Get <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> tips and updates on Google products and share feedback. Unsubscribe anytime.
+    Get <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> tips, offers and updates, and share feedback. Unsubscribe anytime.
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_GET_PLAY_UPDATES" desc="A label next to the checkbox that controls user subscription to marketing updates from Google about Google Play Store.">
     Get the latest updates and recommendations on Play Store apps

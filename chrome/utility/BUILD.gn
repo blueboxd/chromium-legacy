@@ -34,6 +34,7 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
+    "//chrome/services/qrcode_generator",
     "//components/mirroring/service:mirroring_service",
     "//components/paint_preview/buildflags",
     "//components/safe_browsing:buildflags",

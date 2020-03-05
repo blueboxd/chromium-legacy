@@ -186,8 +186,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestLeaveWelcomeScreen) {
 }
 
 // Check that language and input methods are set correctly.
-// TODO(crbug.com/1058582): Failing on linux-chromeos-dbg.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, DISABLED_TestSwitchLanguageIME) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSwitchLanguageIME) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 

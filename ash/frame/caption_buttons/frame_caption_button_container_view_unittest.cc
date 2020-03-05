@@ -71,7 +71,7 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
                                minimize_allowed == MINIMIZE_ALLOWED,
                                close_button_visible == CLOSE_BUTTON_VISIBLE);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     return widget;
   }

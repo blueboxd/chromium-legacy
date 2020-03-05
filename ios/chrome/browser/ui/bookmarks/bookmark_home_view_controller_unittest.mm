@@ -20,12 +20,10 @@ using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;
 TEST_F(BookmarkHomeViewControllerTest,
        TableViewPopulatedAfterBookmarkModelLoaded) {
   @autoreleasepool {
-    BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
-        initWithBrowserState:chrome_browser_state_.get()
-                  dispatcher:nil
-                webStateList:nullptr];
+    BookmarkHomeViewController* controller =
+        [[BookmarkHomeViewController alloc] initWithBrowser:browser_.get()];
 
-    [controller setRootNode:_bookmarkModel->mobile_node()];
+    [controller setRootNode:bookmark_model_->mobile_node()];
     // Two sections: Messages and Bookmarks.
     EXPECT_EQ(2, [controller numberOfSectionsInTableView:controller.tableView]);
   }

@@ -77,7 +77,7 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     return ServiceMain::RunComService(command_line);
 
   if (command_line->HasSwitch(kInstallSwitch))
-    return InstallApp({kChromeAppId});
+    return MakeAppInstall({kChromeAppId})->Run();
 #endif
 
   if (command_line->HasSwitch(kUninstallSwitch))

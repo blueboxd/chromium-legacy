@@ -252,8 +252,8 @@ class DnsConfigServicePosixTest : public testing::Test {
 
 // Regression test for https://crbug.com/704662.
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
-  service_->WatchConfig(base::Bind(&DnsConfigServicePosixTest::OnConfigChanged,
-                                   base::Unretained(this)));
+  service_->WatchConfig(base::BindRepeating(
+      &DnsConfigServicePosixTest::OnConfigChanged, base::Unretained(this)));
   task_environment_.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {

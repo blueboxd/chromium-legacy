@@ -183,7 +183,7 @@ class ShellTest : public AshTestBase {
   // TODO(jamescook): Convert to AshTestBase::CreateTestWidget().
   views::Widget* CreateTestWindow(views::Widget::InitParams params) {
     views::Widget* widget = new views::Widget;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     return widget;
   }
@@ -270,7 +270,7 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   // Don't specify bounds, parent or context.
   params.delegate = new WindowWithPreferredSize;
   views::Widget widget;
-  params.context = CurrentContext();
+  params.context = GetContext();
   widget.Init(std::move(params));
 
   // Widget is centered on secondary display.
@@ -400,7 +400,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Modal dialog without parent, caused crash see crbug.com/226141
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-      new TestModalDialogDelegate(), CurrentContext(), nullptr);
+      new TestModalDialogDelegate(), GetContext(), nullptr);
 
   modal_dialog->Show();
   EXPECT_FALSE(modal_dialog->GetNativeView()->HasFocus());

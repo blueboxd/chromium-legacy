@@ -45,6 +45,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -58,6 +59,7 @@ import org.chromium.net.ConnectionType;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link OfflineNotificationBackgroundTask}. */
@@ -116,6 +118,10 @@ public class OfflineNotificationBackgroundTaskUnitTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
+        Map<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
+        ChromeFeatureList.setTestFeatures(features);
+
         MockitoAnnotations.initMocks(this);
         mOfflineNotificationBackgroundTask.setDelegate(new ChromeNativeBackgroundTaskDelegate());
         // Set up the context.

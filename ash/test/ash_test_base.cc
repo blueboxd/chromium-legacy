@@ -230,8 +230,8 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
       .UpdateNaturalOrientation();
 }
 
-aura::Window* AshTestBase::CurrentContext() {
-  return ash_test_helper_.CurrentContext();
+aura::Window* AshTestBase::GetContext() {
+  return ash_test_helper_.GetContext();
 }
 
 // static

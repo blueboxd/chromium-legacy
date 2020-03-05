@@ -1080,7 +1080,6 @@ interface Performance : EventTarget
     method getEntriesByType
     method mark
     method measure
-    method measureMemory
     method now
     method profile
     method setResourceTimingBufferSize

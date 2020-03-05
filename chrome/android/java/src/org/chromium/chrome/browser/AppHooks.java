@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceRenderer;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
-import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.policy.AppRestrictionsProvider;
@@ -313,13 +312,6 @@ public abstract class AppHooks {
      */
     public FeatureHighlightProvider createFeatureHighlightProvider() {
         return new FeatureHighlightProvider();
-    }
-
-    /**
-     * @return A new {@link DownloadCollectionBridge} instance.
-     */
-    public DownloadCollectionBridge getDownloadCollectionBridge() {
-        return DownloadCollectionBridge.getDownloadCollectionBridge();
     }
 
     /**

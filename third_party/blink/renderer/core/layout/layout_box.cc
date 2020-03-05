@@ -2789,7 +2789,7 @@ const NGPhysicalBoxFragment* LayoutBox::GetPhysicalFragment(
 const FragmentData* LayoutBox::FragmentDataFromPhysicalFragment(
     const NGPhysicalBoxFragment& physical_fragment) const {
   const FragmentData* fragment_data = &FirstFragment();
-  for (auto result : layout_results_) {
+  for (const auto& result : layout_results_) {
     if (&result->PhysicalFragment() == &physical_fragment)
       return fragment_data;
     DCHECK(fragment_data->NextFragment());

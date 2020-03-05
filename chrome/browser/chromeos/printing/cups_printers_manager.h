@@ -22,6 +22,7 @@ class PrefRegistrySyncable;
 
 namespace chromeos {
 
+class EnterprisePrintersProvider;
 class PpdProvider;
 class PrinterConfigurer;
 class PrinterDetector;
@@ -65,6 +66,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
       std::unique_ptr<UsbPrinterNotificationController>
           usb_notification_controller,
       std::unique_ptr<ServerPrintersProvider> server_printers_provider,
+      std::unique_ptr<EnterprisePrintersProvider> enterprise_printers_provider,
       PrinterEventTracker* event_tracker,
       PrefService* pref_service);
 
@@ -78,7 +80,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
       PrinterClass printer_class) const = 0;
 
   // Saves |printer|. If |printer| already exists in the saved class, it will
-  // be overwritten.
+  // be overwritten. This is a NOP if |printer| is an enterprise or USB printer.
   virtual void SavePrinter(const Printer& printer) = 0;
 
   // Remove the saved printer with the given id.  This is a NOP if

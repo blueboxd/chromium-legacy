@@ -25,20 +25,20 @@ _log = logging.getLogger(__name__)
 # The test has a harness error in its baseline file.
 HARNESS_ERROR = 1
 # The test has at least one failing subtest in its baseline file.
-SUBTEST_FAIL = 1 << 1
+SUBTEST_FAIL = 1 << 1  # 2
 # The test should be skipped
-SKIP_TEST = 1 << 2
+SKIP_TEST = 1 << 2  # 4
 # The test passes - this typically appears alongside another status indicating
 # a flaky test.
-TEST_PASS = 1 << 3
+TEST_PASS = 1 << 3  # 8
 # The test fails
-TEST_FAIL = 1 << 4
+TEST_FAIL = 1 << 4  # 16
 # The test times out
-TEST_TIMEOUT = 1 << 5
+TEST_TIMEOUT = 1 << 5  # 32
 # The test crashes
-TEST_CRASH = 1 << 6
-
-# Next status: 1 << 7
+TEST_CRASH = 1 << 6  # 64
+# The test failed a precondition assertion
+TEST_PRECONDITION_FAILED = 1 << 7  # 128
 
 
 class WPTMetadataBuilder(object):
@@ -92,6 +92,8 @@ class WPTMetadataBuilder(object):
             statuses.append("TIMEOUT")
         if test_status_bitmap & TEST_CRASH:
             statuses.append("CRASH")
+        if test_status_bitmap & TEST_PRECONDITION_FAILED:
+            statuses.append("PRECONDITION_FAILED")
 
         if statuses:
             result += "  expected: [%s]\n" % ", ".join(statuses)
@@ -183,6 +185,8 @@ class WPTMetadataBuilder(object):
         if annotations:
             if "wpt_subtest_failure" in annotations:
                 status_bitmap |= SUBTEST_FAIL
+            if "wpt_precondition_failed" in annotations:
+                status_bitmap |= TEST_PRECONDITION_FAILED
         # Update status bitmap for this test
         status_dict[test_name] |= status_bitmap
 

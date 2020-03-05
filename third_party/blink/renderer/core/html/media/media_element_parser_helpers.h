@@ -15,8 +15,8 @@ namespace media_element_parser_helpers {
 // FeaturePolicyFeature::kUnsizedMedia) this invocation counts a potential
 // violation. If |send_report| is set, then an actual violation report is
 // generated.
-void ReportUnsizedMediaViolation(const LayoutObject* layout_object,
-                                 bool send_report);
+void CheckUnsizedMediaViolation(const LayoutObject* layout_object,
+                                bool send_report);
 
 }  // namespace media_element_parser_helpers
 

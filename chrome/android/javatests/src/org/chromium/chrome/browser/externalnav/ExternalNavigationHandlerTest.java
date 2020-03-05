@@ -306,29 +306,23 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SmallTest
     public void testIgnore() {
-        // Ensure about: URLs are not broadcast for external navigation.
-        checkUrl("about:test").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-        checkUrl("about:test")
-                .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-
-        // Ensure content: URLs are not broadcast for external navigation.
-        checkUrl("content:test").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-        checkUrl("content:test")
-                .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-
-        // Ensure chrome: URLs are not broadcast for external navigation.
-        checkUrl("chrome://history").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-        checkUrl("chrome://history")
-                .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-
-        // Ensure chrome-native: URLs are not broadcast for external navigation.
-        checkUrl("chrome-native://newtab").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
-        checkUrl("chrome-native://newtab")
-                .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        // Ensure the following URLs are not broadcast for external navigation.
+        String urlsToIgnore[] = new String[] {
+                "about:test",
+                "content:test", // Content URLs should not be exposed outside of Chrome.
+                "chrome://history",
+                "chrome-native://newtab",
+                "devtools://foo",
+                "chrome-devtools://foo",
+                "intent:chrome-urls#Intent;package=com.android.chrome;scheme=about;end;",
+                "intent:chrome-urls#Intent;package=com.android.chrome;scheme=chrome;end;",
+                "intent://com.android.chrome.FileProvider/foo.html#Intent;scheme=content;end;",
+        };
+        for (String url : urlsToIgnore) {
+            checkUrl(url).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+            checkUrl(url).withIsIncognito(true).expecting(
+                    OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        }
     }
 
     @Test

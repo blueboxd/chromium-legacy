@@ -163,7 +163,7 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
 
   // Create a touch event and drag it twice and verify the histograms are
   // recorded as expected.
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto* generator = GetEventGenerator();
   generator->set_current_screen_location(gfx::Point(200, 1));
   generator->PressTouch();

@@ -9,7 +9,6 @@ import android.os.Bundle;
 // TODO(bjoyce): Need to convert tablayout to androidx after viewpager
 // and fragmentpageradatper are converted.
 import android.support.design.widget.TabLayout;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -22,6 +21,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;

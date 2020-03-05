@@ -73,14 +73,14 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   //   a) NotifyConcurrencyIncrease() was already called and the recorded
   //      concurrency version is out of date, i.e. less than the actual version.
   //   b) NotifyConcurrencyIncrease() has not yet been called, in which case the
-  //      function waits for an imminent increase of the concurrency version.
+  //      function waits for an imminent increase of the concurrency version,
+  //      or for max concurrency to decrease below or equal the expected value.
   // This prevent ill-formed GetMaxConcurrency() implementations that:
   // - Don't decrease with the number of remaining work items.
   // - Don't return an up-to-date value.
 #if DCHECK_IS_ON()
   // Case 1:
-  const size_t max_concurrency = task_source_->GetMaxConcurrency();
-  if (max_concurrency <= expected_max_concurrency)
+  if (task_source_->GetMaxConcurrency() <= expected_max_concurrency)
     return;
 
   // Case 2a:
@@ -92,7 +92,8 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   // Case 2b:
   const bool updated = task_source_->WaitForConcurrencyIncreaseUpdate(
       recorded_increase_version_);
-  DCHECK(updated)
+  DCHECK(updated ||
+         task_source_->GetMaxConcurrency() <= expected_max_concurrency)
       << "Value returned by |max_concurrency_callback| is expected to "
          "decrease, unless NotifyConcurrencyIncrease() is called.";
 

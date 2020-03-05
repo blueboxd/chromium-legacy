@@ -415,6 +415,8 @@ jumbo_static_library("ui") {
     "//chrome/common",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
+    "//chrome/services/qrcode_generator/public/cpp",
+    "//chrome/services/qrcode_generator/public/mojom",
     "//components/about_ui",
     "//components/account_id",
     "//components/autofill/content/browser:risk_proto",
@@ -801,6 +803,13 @@ jumbo_static_library("ui") {
         "webui/feed_internals/feed_internals_ui.h",
       ]
       deps += [ "//components/feed/core/common:feed_core_common" ]
+    }
+
+    if (enable_password_change_in_leaked_dialog) {
+      sources += [
+        "android/passwords/credential_leak_dialog_password_change_view_android.cc",
+        "android/passwords/credential_leak_dialog_password_change_view_android.h",
+      ]
     }
     deps += [
       "//chrome/android:jni_headers",

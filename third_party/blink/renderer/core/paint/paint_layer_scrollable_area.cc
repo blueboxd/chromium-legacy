@@ -245,7 +245,8 @@ void PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
        pending_view_state_->scroll_anchor_data_.simhash_});
   if (!did_restore) {
     SetScrollOffset(pending_view_state_->scroll_offset_,
-                    mojom::blink::ScrollType::kProgrammatic);
+                    mojom::blink::ScrollType::kProgrammatic,
+                    mojom::blink::ScrollBehavior::kAuto);
   }
 
   pending_view_state_.reset();

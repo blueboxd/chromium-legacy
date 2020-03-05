@@ -129,29 +129,8 @@ void GAIAInfoUpdateService::Shutdown() {
   identity_manager_->RemoveObserver(this);
 }
 
-void GAIAInfoUpdateService::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  Update();
-}
-
-void GAIAInfoUpdateService::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  // Do not clear the profile if there is an unconsented primary account.
-  if (!ShouldUpdate()) {
-    ClearProfileEntry();
-    return;
-  }
-  DCHECK_EQ(identity_manager_
-                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-                .gaia,
-            previous_primary_account_info.gaia);
-}
-
 void GAIAInfoUpdateService::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  if (identity_manager_->HasPrimaryAccount())
-    return;
-
   if (unconsented_primary_account_info.gaia.empty()) {
     ClearProfileEntry();
   } else {

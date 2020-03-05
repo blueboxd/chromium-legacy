@@ -23,7 +23,9 @@ TestOmahaServiceProvider::TestOmahaServiceProvider() {}
 
 TestOmahaServiceProvider::~TestOmahaServiceProvider() {}
 
-void TestOmahaServiceProvider::Initialize() {}
+void TestOmahaServiceProvider::Start() {}
+
+void TestOmahaServiceProvider::Stop() {}
 
 GURL TestOmahaServiceProvider::GetUpdateServerURL() const {
   return GURL(kTestUpdateServerURL);

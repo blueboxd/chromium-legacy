@@ -71,15 +71,23 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
     // Close all app windows (for non-PWA apps).
     virtual void CloseAppWindows(Profile* profile, const std::string& app_id);
 
-    // Look up an extension from its id.
-    virtual const extensions::Extension* MaybeGetAppExtension(
-        content::BrowserContext* context,
-        const std::string& extension_id);
+    // Return true iff |app_id| corresponds to an app that is installed for
+    // |profile|.
+    virtual bool AppIsInstalled(Profile* profile, const std::string& app_id);
 
-    // Return true if the specified app should use an app shim (false, e.g, for
-    // bookmark apps that open in tabs).
-    virtual bool AllowShimToConnect(Profile* profile,
+    // Return true iff the specified app can create an AppShimHost, which will
+    // keep the app shim process connected (as opposed to, e.g, a bookmark app
+    // that opens in a tab, which will immediately close).
+    virtual bool AppCanCreateHost(Profile* profile, const std::string& app_id);
+
+    // Return true if Cocoa windows for this app should be hosted in the app
+    // shim process.
+    virtual bool AppUsesRemoteCocoa(Profile* profile,
                                     const std::string& app_id);
+
+    // Return true if a single app shim is used for all profiles (as opposed to
+    // one shim per profile).
+    virtual bool AppIsMultiProfile(Profile* profile, const std::string& app_id);
 
     // Create an AppShimHost for the specified parameters (intercept-able for
     // tests).
@@ -134,11 +142,12 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // none.
   AppShimHost* FindHost(Profile* profile, const std::string& app_id);
 
-  // Get the AppShimHost corresponding to a browser instance, returning nullptr
-  // if none should exist. If no AppShimHost exists, but one should exist
-  // (e.g, because the app process is still launching), create one, which will
-  // bind to the app process when it finishes launching.
-  AppShimHost* GetHostForBrowser(Browser* browser);
+  // If the specified |browser| should be using RemoteCocoa (because it is a
+  // bookmark app), then get or create an AppShimHost for it, and return
+  // it. If an AppShimHost had to be created (e.g, because the app process is
+  // still launching), create one, which will bind to the app process when it
+  // finishes launching.
+  AppShimHost* GetHostForRemoteCocoaBrowser(Browser* browser);
 
   static const extensions::Extension* MaybeGetAppExtension(
       content::BrowserContext* context,
@@ -267,10 +276,10 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
   std::unique_ptr<Delegate> delegate_;
 
-  // Retrieve the ProfileState for a given (Profile, Extension) pair. If one
+  // Retrieve the ProfileState for a given (Profile, AppId) pair. If one
   // does not exist, create one.
   ProfileState* GetOrCreateProfileState(Profile* profile,
-                                        const extensions::Extension* extension);
+                                        const std::string& app_id);
 
   // Map from extension id to the state for that app.
   std::map<std::string, std::unique_ptr<AppState>> apps_;

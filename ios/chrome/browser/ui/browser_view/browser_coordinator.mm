@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
@@ -512,11 +513,22 @@
 }
 
 - (void)showDownloadsFolder {
-  // TODO(crbug.com/1046329): Directly open Chrome's folder.
+  if (base::FeatureList::IsEnabled(kOpenDownloadsInFilesApp)) {
+    NSURL* URL = GetFilesAppDownloadsDirectoryUrl();
+    if (!URL)
+      return;
+
+    [[UIApplication sharedApplication] openURL:URL
+                                       options:@{}
+                             completionHandler:nil];
+    return;
+  }
+
   base::FilePath download_dir;
   if (!GetDownloadsDirectory(&download_dir)) {
     return;
   }
+
   UIDocumentPickerViewController* documentPicker =
       [[UIDocumentPickerViewController alloc]
           initWithDocumentTypes:@[ @"public.data" ]

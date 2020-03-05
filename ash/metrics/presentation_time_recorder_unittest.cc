@@ -25,7 +25,7 @@ constexpr char kMaxLatencyName[] = "MaxLatency.Histogram";
 TEST_F(PresentationTimeRecorderTest, Histogram) {
   base::HistogramTester histogram_tester;
 
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
   // Flush pending draw callbask by waiting for presentation until it times out.
@@ -72,7 +72,7 @@ TEST_F(PresentationTimeRecorderTest, Histogram) {
 
 TEST_F(PresentationTimeRecorderTest, NoSuccessNoHistogram) {
   base::HistogramTester histogram_tester;
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
   PresentationTimeRecorder::TestApi test_api(test_recorder.get());
@@ -91,7 +91,7 @@ TEST_F(PresentationTimeRecorderTest, NoSuccessNoHistogram) {
 
 TEST_F(PresentationTimeRecorderTest, DelayedHistogram) {
   base::HistogramTester histogram_tester;
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
   test_recorder->RequestNext();
@@ -109,7 +109,7 @@ TEST_F(PresentationTimeRecorderTest, DelayedHistogram) {
 }
 
 TEST_F(PresentationTimeRecorderTest, Failure) {
-  auto* compositor = CurrentContext()->layer()->GetCompositor();
+  auto* compositor = GetContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
   PresentationTimeRecorder::TestApi test_api(test_recorder.get());

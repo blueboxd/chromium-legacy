@@ -21,8 +21,7 @@ class AshTestHelperTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     ash_test_helper_ = std::make_unique<AshTestHelper>();
-    AshTestHelper::InitParams init_params;
-    ash_test_helper_->SetUp(std::move(init_params));
+    ash_test_helper_->SetUp();
   }
 
   void TearDown() override {
@@ -45,14 +44,14 @@ class AshTestHelperTest : public testing::Test {
 TEST_F(AshTestHelperTest, AshTestHelper) {
   // Check initial state.
   EXPECT_TRUE(ash_test_helper()->test_shell_delegate());
-  EXPECT_TRUE(ash_test_helper()->CurrentContext());
+  EXPECT_TRUE(ash_test_helper()->GetContext());
 
   // Enough state is initialized to create a window.
   using views::Widget;
   std::unique_ptr<Widget> w1(new Widget);
   Widget::InitParams params;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = ash_test_helper()->CurrentContext();
+  params.context = ash_test_helper()->GetContext();
   w1->Init(std::move(params));
   w1->Show();
   EXPECT_TRUE(w1->IsActive());

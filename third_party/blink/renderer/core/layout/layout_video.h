@@ -51,8 +51,6 @@ class LayoutVideo final : public LayoutMedia {
 
   void IntrinsicSizeChanged() override;
 
-  void UpdateAfterLayout() override;
-
   bool ComputeShouldClipOverflow() const final { return true; }
 
  private:

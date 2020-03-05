@@ -490,7 +490,7 @@
       'dimensions': {
         'device_os': None,
         'device_type': None,
-        'pool': 'chromium.tests.avd',
+        'pool': 'chromium.tests.avd.template',
         'ssd': '1',
       },
       'named_caches': [
@@ -544,7 +544,7 @@
       'dimensions': {
         'device_os': None,
         'device_type': None,
-        'pool': 'chromium.tests.avd',
+        'pool': 'chromium.tests.avd.template',
         'ssd': '1',
       },
       'named_caches': [

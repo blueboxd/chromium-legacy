@@ -76,6 +76,7 @@ class AshTestHelper {
 
   struct InitParams {
     // True if the user should log in.
+    InitParams() {}  // Work around https://bugs.llvm.org/show_bug.cgi?id=15886.
     bool start_session = true;
     PrefService* local_state = nullptr;
     ConfigType config_type = kUnitTest;
@@ -84,7 +85,7 @@ class AshTestHelper {
   // Creates the ash::Shell and performs associated initialization according
   // to |init_params|. |shell_init_params| is used to initialize ash::Shell,
   // or it uses test settings if omitted.
-  void SetUp(const InitParams& init_params,
+  void SetUp(const InitParams& init_params = InitParams(),
              base::Optional<ShellInitParams> shell_init_params = base::nullopt);
 
   // Destroys the ash::Shell and performs associated cleanup.
@@ -93,7 +94,7 @@ class AshTestHelper {
   // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
   // primary root Window.
-  aura::Window* CurrentContext();
+  aura::Window* GetContext();
 
   PrefService* GetLocalStatePrefService();
 

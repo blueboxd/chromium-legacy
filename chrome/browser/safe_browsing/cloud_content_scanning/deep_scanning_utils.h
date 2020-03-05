@@ -27,6 +27,18 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                                     BinaryUploadService::Result result,
                                     DeepScanningClientResponse response);
 
+// Helper function to report the user bypassed a warning to the enterprise
+// admin. This is split from MaybeReportDeepScanningVerdict since it happens
+// after getting a response. |download_digest_sha256| must be encoded using
+// base::HexEncode.
+void ReportSensitiveDataWarningBypass(Profile* profile,
+                                      const GURL& url,
+                                      const std::string& file_name,
+                                      const std::string& download_digest_sha256,
+                                      const std::string& mime_type,
+                                      const std::string& trigger,
+                                      const int64_t content_size);
+
 // Access points used to record UMA metrics and specify which code location is
 // initiating a deep scan. Any new caller of
 // DeepScanningDialogDelegate::ShowForWebContents should add an access point

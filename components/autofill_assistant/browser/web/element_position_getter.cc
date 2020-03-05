@@ -119,8 +119,7 @@ void ElementPositionGetter::OnGetBoxModelForStableCheck(
   // from the second round.
   if (!is_first_round) {
     std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-    argument.emplace_back(
-        runtime::CallArgument::Builder().SetObjectId(object_id_).Build());
+    AddRuntimeCallArgumentObjectId(object_id_, &argument);
     devtools_client_->GetRuntime()->CallFunctionOn(
         runtime::CallFunctionOnParams::Builder()
             .SetObjectId(object_id_)

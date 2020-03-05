@@ -60,7 +60,7 @@ const base::FilePath::CharType kFilePathHosts[] =
 // There is no public API to watch the DNS configuration on iOS.
 class DnsConfigWatcher {
  public:
-  using CallbackType = base::Callback<void(bool succeeded)>;
+  using CallbackType = base::RepeatingCallback<void(bool succeeded)>;
 
   bool Watch(const CallbackType& callback) {
     return false;
@@ -78,7 +78,7 @@ class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
     NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   }
 
-  using CallbackType = base::Callback<void(bool succeeded)>;
+  using CallbackType = base::RepeatingCallback<void(bool succeeded)>;
 
   bool Watch(const CallbackType& callback) {
     callback_ = callback;
@@ -110,13 +110,13 @@ const base::FilePath::CharType kFilePathConfig[] =
 
 class DnsConfigWatcher {
  public:
-  using CallbackType = base::Callback<void(bool succeeded)>;
+  using CallbackType = base::RepeatingCallback<void(bool succeeded)>;
 
   bool Watch(const CallbackType& callback) {
     callback_ = callback;
     return watcher_.Watch(base::FilePath(kFilePathConfig), false,
-                          base::Bind(&DnsConfigWatcher::OnCallback,
-                                     base::Unretained(this)));
+                          base::BindRepeating(&DnsConfigWatcher::OnCallback,
+                                              base::Unretained(this)));
   }
 
  private:
@@ -246,8 +246,8 @@ class DnsConfigServicePosix::Watcher {
 
   bool Watch() {
     bool success = true;
-    if (!config_watcher_.Watch(base::Bind(&Watcher::OnConfigChanged,
-                                          base::Unretained(this)))) {
+    if (!config_watcher_.Watch(base::BindRepeating(&Watcher::OnConfigChanged,
+                                                   base::Unretained(this)))) {
       LOG(ERROR) << "DNS config watch failed to start.";
       success = false;
       UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
@@ -257,9 +257,9 @@ class DnsConfigServicePosix::Watcher {
 // Hosts file should never change on Android or iOS (and watching it on Android
 // is problematic; see http://crbug.com/600442), so don't watch it there.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-    if (!hosts_watcher_.Watch(
-            base::FilePath(service_->file_path_hosts_), false,
-            base::Bind(&Watcher::OnHostsChanged, base::Unretained(this)))) {
+    if (!hosts_watcher_.Watch(base::FilePath(service_->file_path_hosts_), false,
+                              base::BindRepeating(&Watcher::OnHostsChanged,
+                                                  base::Unretained(this)))) {
       LOG(ERROR) << "DNS hosts watch failed to start.";
       success = false;
       UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",

@@ -155,7 +155,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
   aura::Window* ShowToplevelTestWindow(bool modal) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
-        new TestWindow(modal), CurrentContext());
+        new TestWindow(modal), GetContext());
     widget->Show();
     return widget->GetNativeView();
   }
@@ -318,7 +318,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);
   std::unique_ptr<aura::Window> main(
-      main_delegate->ShowTestWindowWithContext(CurrentContext()));
+      main_delegate->ShowTestWindowWithContext(GetContext()));
   EXPECT_TRUE(wm::IsActiveWindow(main.get()));
   ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
   e1.ClickLeftButton();
@@ -412,7 +412,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);
   std::unique_ptr<aura::Window> main(
-      main_delegate->ShowTestWindowWithContext(CurrentContext()));
+      main_delegate->ShowTestWindowWithContext(GetContext()));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), main.get());
 
   // A window for status area to test if it could receive an event
@@ -452,7 +452,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransientChildEvents) {
   // Create a normal window and attempt to receive a click event.
   EventTestWindow* main_delegate = new EventTestWindow(false);
   std::unique_ptr<aura::Window> main(
-      main_delegate->ShowTestWindowWithContext(CurrentContext()));
+      main_delegate->ShowTestWindowWithContext(GetContext()));
   EXPECT_TRUE(wm::IsActiveWindow(main.get()));
   ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
   e1.ClickLeftButton();
@@ -826,8 +826,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
 TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
   std::unique_ptr<aura::Window> window(ShowToplevelTestWindow(false));
   std::unique_ptr<aura::Window> modal_window(
-      views::Widget::CreateWindowWithContext(new TestWindow(true),
-                                             CurrentContext())
+      views::Widget::CreateWindowWithContext(new TestWindow(true), GetContext())
           ->GetNativeWindow());
   SystemModalContainerLayoutManager* layout_manager =
       Shell::GetPrimaryRootWindowController()->GetSystemModalLayoutManager(

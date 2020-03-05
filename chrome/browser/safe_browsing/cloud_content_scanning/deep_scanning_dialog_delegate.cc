@@ -29,6 +29,7 @@
 #include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
@@ -166,11 +167,26 @@ bool DlpTriggeredRulesOK(
 
   for (int i = 0; i < verdict.triggered_rules_size(); ++i) {
     if (verdict.triggered_rules(i).action() ==
-        DlpDeepScanningVerdict::TriggeredRule::BLOCK) {
+            DlpDeepScanningVerdict::TriggeredRule::BLOCK ||
+        verdict.triggered_rules(i).action() ==
+            DlpDeepScanningVerdict::TriggeredRule::WARN) {
       return false;
     }
   }
   return true;
+}
+
+bool ShouldShowWarning(const DlpDeepScanningVerdict& verdict) {
+  // Show a warning if one of the triggered rules is WARN and no other rule is
+  // BLOCK.
+  auto rules = verdict.triggered_rules();
+  bool no_block = std::all_of(rules.begin(), rules.end(), [](const auto& rule) {
+    return rule.action() != DlpDeepScanningVerdict::TriggeredRule::BLOCK;
+  });
+  bool warning = std::any_of(rules.begin(), rules.end(), [](const auto& rule) {
+    return rule.action() == DlpDeepScanningVerdict::TriggeredRule::WARN;
+  });
+  return no_block && warning;
 }
 
 std::string GetFileMimeType(base::FilePath path) {
@@ -285,13 +301,54 @@ DeepScanningDialogDelegate::FileContents::operator=(
     DeepScanningDialogDelegate::FileContents&& other) = default;
 DeepScanningDialogDelegate::~DeepScanningDialogDelegate() = default;
 
-void DeepScanningDialogDelegate::Cancel() {
+void DeepScanningDialogDelegate::BypassWarnings() {
   if (callback_.is_null())
     return;
 
-  RecordDeepScanMetrics(access_point_,
-                        base::TimeTicks::Now() - upload_start_time_, 0,
-                        "CancelledByUser", false);
+  // Mark the full text as complying and report a warning bypass.
+  if (text_warning_) {
+    std::fill(result_.text_results.begin(), result_.text_results.end(), true);
+
+    int64_t content_size = 0;
+    for (const base::string16& entry : data_.text)
+      content_size += (entry.size() * sizeof(base::char16));
+
+    ReportSensitiveDataWarningBypass(
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+        web_contents_->GetLastCommittedURL(), "Text data", std::string(),
+        "text/plain",
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
+        content_size);
+  }
+
+  // Mark every "warning" file as complying and report a warning bypass.
+  for (size_t index : file_warnings_) {
+    result_.paths_results[index] = true;
+
+    ReportSensitiveDataWarningBypass(
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+        web_contents_->GetLastCommittedURL(), data_.paths[index].AsUTF8Unsafe(),
+        base::HexEncode(file_info_[index].sha256.data(),
+                        file_info_[index].sha256.size()),
+        file_info_[index].mime_type,
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+        file_info_[index].size);
+  }
+
+  RunCallback();
+}
+
+void DeepScanningDialogDelegate::Cancel(bool warning) {
+  if (callback_.is_null())
+    return;
+
+  // Don't report this upload as cancelled if the user didn't bypass the
+  // warning.
+  if (!warning) {
+    RecordDeepScanMetrics(access_point_,
+                          base::TimeTicks::Now() - upload_start_time_, 0,
+                          "CancelledByUser", false);
+  }
 
   // Make sure to reject everything.
   FillAllResultsWith(false);
@@ -499,6 +556,16 @@ void DeepScanningDialogDelegate::StringRequestCallback(
                        DlpTriggeredRulesOK(response.dlp_scan_verdict());
   std::fill(result_.text_results.begin(), result_.text_results.end(),
             text_complies);
+
+  if (!text_complies) {
+    if (ShouldShowWarning(response.dlp_scan_verdict())) {
+      text_warning_ = true;
+      UpdateFinalResult(DeepScanningFinalResult::WARNING);
+    } else {
+      UpdateFinalResult(DeepScanningFinalResult::FAILURE);
+    }
+  }
+
   MaybeCompleteScanRequest();
 }
 
@@ -508,6 +575,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
     BinaryUploadService::Result result,
     DeepScanningClientResponse response,
     std::string mime_type) {
+  file_info_[index].mime_type = mime_type;
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
@@ -528,10 +596,18 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
 
   ++file_result_count_;
 
-  if (!file_complies && result == BinaryUploadService::Result::FILE_TOO_LARGE)
-    upload_status_ = DeepScanUploadStatus::LARGE_FILES;
-  if (!file_complies && result == BinaryUploadService::Result::FILE_ENCRYPTED)
-    upload_status_ = DeepScanUploadStatus::ENCRYPTED_FILES;
+  if (!file_complies) {
+    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+      UpdateFinalResult(DeepScanningFinalResult::LARGE_FILES);
+    } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+      UpdateFinalResult(DeepScanningFinalResult::ENCRYPTED_FILES);
+    } else if (ShouldShowWarning(response.dlp_scan_verdict())) {
+      file_warnings_.insert(index);
+      UpdateFinalResult(DeepScanningFinalResult::WARNING);
+    } else {
+      UpdateFinalResult(DeepScanningFinalResult::FAILURE);
+    }
+  }
 
   MaybeCompleteScanRequest();
 }
@@ -694,17 +770,11 @@ void DeepScanningDialogDelegate::UploadFileForDeepScanning(
     upload_service->MaybeUploadForDeepScanning(std::move(request));
 }
 
-bool DeepScanningDialogDelegate::CloseTabModalDialog() {
+bool DeepScanningDialogDelegate::UpdateDialog() {
   if (!dialog_)
     return false;
 
-  auto is_true = [](bool x) { return x; };
-  bool success = std::all_of(result_.text_results.begin(),
-                             result_.text_results.end(), is_true) &&
-                 std::all_of(result_.paths_results.begin(),
-                             result_.paths_results.end(), is_true);
-
-  dialog_->ShowResult(success, upload_status_);
+  dialog_->ShowResult(final_result_);
   return true;
 }
 
@@ -712,9 +782,12 @@ void DeepScanningDialogDelegate::MaybeCompleteScanRequest() {
   if (!text_request_complete_ || file_result_count_ < data_.paths.size())
     return;
 
-  RunCallback();
+  // If showing the warning message, wait before running the callback. The
+  // callback will be called either in BypassWarnings or Cancel.
+  if (final_result_ != DeepScanningFinalResult::WARNING)
+    RunCallback();
 
-  if (!CloseTabModalDialog()) {
+  if (!UpdateDialog()) {
     // No UI was shown.  Delete |this| to cleanup.
     delete this;
   }
@@ -733,6 +806,12 @@ void DeepScanningDialogDelegate::SetFileInfo(const base::FilePath& path,
   size_t index = std::distance(data_.paths.begin(), it);
   file_info_[index].sha256 = std::move(sha256);
   file_info_[index].size = size;
+}
+
+void DeepScanningDialogDelegate::UpdateFinalResult(
+    DeepScanningFinalResult result) {
+  if (result < final_result_)
+    final_result_ = result;
 }
 
 }  // namespace safe_browsing

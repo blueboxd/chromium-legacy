@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/ulan/performance-measure-memory
+// https://github.com/WICG/performance-measure-memory
 
 // The result of performance.measureMemory().
 dictionary MeasureMemory {

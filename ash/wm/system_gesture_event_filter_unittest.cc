@@ -290,7 +290,7 @@ TEST_F(SystemGestureEventFilterTest,
        TwoFingerAttemptResizeLeftAndRightEdgesSimultaneously) {
   gfx::Rect initial_bounds(0, 0, 400, 400);
   views::Widget* toplevel = views::Widget::CreateWindowWithContext(
-      new ResizableWidgetDelegate, CurrentContext(), initial_bounds);
+      new ResizableWidgetDelegate, GetContext(), initial_bounds);
   toplevel->Show();
 
   const int kSteps = 15;

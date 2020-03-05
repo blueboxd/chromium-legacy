@@ -113,7 +113,7 @@ class AshTestBase : public testing::Test {
   // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
   // primary root Window.
-  aura::Window* CurrentContext();
+  aura::Window* GetContext();
 
   // Creates and shows a widget. See ash/public/cpp/shell_window_ids.h for
   // values for |container_id|.

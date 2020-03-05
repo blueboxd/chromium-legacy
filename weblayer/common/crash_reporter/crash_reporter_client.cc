@@ -47,9 +47,13 @@ class CrashReporterClientImpl : public crash_reporter::CrashReporterClient {
   void GetSanitizationInformation(const char* const** annotations_whitelist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    // TODO(tobiasjs) implement appropriate crash filtering.
     *annotations_whitelist = nullptr;
+#if defined(COMPONENT_BUILD)
     *target_module = nullptr;
+#else
+    // The supplied address is used to identify the .so containing WebLayer.
+    *target_module = reinterpret_cast<void*>(&EnableCrashReporter);
+#endif
     *sanitize_stacks = false;
   }
 

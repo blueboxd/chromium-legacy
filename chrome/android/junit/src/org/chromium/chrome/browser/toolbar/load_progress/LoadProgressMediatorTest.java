@@ -185,4 +185,23 @@ public class LoadProgressMediatorTest {
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DO_ANIMATE);
     }
+
+    @Test
+    public void testSameDocumentLoad_afterFinishedLoading() {
+        assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
+                CompletionState.FINISHED_DONT_ANIMATE);
+
+        NavigationHandle navigation = new NavigationHandle(0, URL_1, true, false, false);
+        mTabObserver.onDidStartNavigation(mTab, navigation);
+        mTabObserver.onLoadProgressChanged(mTab, 1.0f);
+        assertEquals(mModel.get(LoadProgressProperties.PROGRESS), 1.0f, MathUtils.EPSILON);
+        assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
+                CompletionState.FINISHED_DO_ANIMATE);
+        NavigationHandle sameDocNav = new NavigationHandle(0, URL_1, true, true, false);
+        mTabObserver.onDidStartNavigation(mTab, sameDocNav);
+
+        assertEquals(mModel.get(LoadProgressProperties.PROGRESS), 1.0f, MathUtils.EPSILON);
+        assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
+                CompletionState.FINISHED_DO_ANIMATE);
+    }
 }

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
+#include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -286,6 +287,17 @@ void SecurityContextInit::InitializeDocumentPolicy(
       document_policy_.insert(entry);
     }
   }
+
+  base::Optional<DocumentPolicy::FeatureState>
+      report_only_document_policy_header = DocumentPolicyParser::Parse(
+          initializer.ReportOnlyDocumentPolicyHeader());
+  if (report_only_document_policy_header) {
+    for (const auto& entry : *report_only_document_policy_header) {
+      if (!DisabledByOriginTrial(entry.first, this)) {
+        report_only_document_policy_.insert(entry);
+      }
+    }
+  }
 }
 
 void SecurityContextInit::InitializeFeaturePolicy(
@@ -402,6 +414,14 @@ std::unique_ptr<FeaturePolicy> SecurityContextInit::CreateFeaturePolicy()
 std::unique_ptr<DocumentPolicy> SecurityContextInit::CreateDocumentPolicy()
     const {
   return DocumentPolicy::CreateWithHeaderPolicy(document_policy_);
+}
+
+std::unique_ptr<DocumentPolicy>
+SecurityContextInit::CreateReportOnlyDocumentPolicy() const {
+  return report_only_document_policy_.empty()
+             ? nullptr
+             : DocumentPolicy::CreateWithHeaderPolicy(
+                   report_only_document_policy_);
 }
 
 void SecurityContextInit::InitializeSecureContextMode(

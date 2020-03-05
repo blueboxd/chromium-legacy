@@ -280,8 +280,9 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     }
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&FrameReceiver::EmitOneFrame, AsWeakPtr(),
-                   frame_request_queue_.front(), base::Passed(&encoded_frame)));
+        base::BindOnce(&FrameReceiver::EmitOneFrame, AsWeakPtr(),
+                       frame_request_queue_.front(),
+                       base::Passed(&encoded_frame)));
     frame_request_queue_.pop_front();
   }
 }

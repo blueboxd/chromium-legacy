@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"

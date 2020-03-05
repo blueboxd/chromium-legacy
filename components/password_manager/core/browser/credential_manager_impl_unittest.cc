@@ -86,9 +86,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 #if !defined(OS_IOS)
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
                                             true);
+    prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
+                                            false);
 #endif
   }
-  ~MockPasswordManagerClient() override {}
+  ~MockPasswordManagerClient() override = default;
 
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManagerForUI> manager,

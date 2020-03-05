@@ -47,7 +47,8 @@ class COMPONENT_EXPORT(EVDEV) KeyboardEvdev
                    bool down,
                    bool suppress_auto_repeat,
                    base::TimeTicks timestamp,
-                   int device_id);
+                   int device_id,
+                   int flags);
 
   // Handle Caps Lock modifier.
   void SetCapsLockEnabled(bool enabled);
@@ -74,7 +75,8 @@ class COMPONENT_EXPORT(EVDEV) KeyboardEvdev
                    bool down,
                    bool repeat,
                    base::TimeTicks timestamp,
-                   int device_id) override;
+                   int device_id,
+                   int flags) override;
 
   // Aggregated key state. There is only one bit of state per key; we do not
   // attempt to count presses of the same key on multiple keyboards.

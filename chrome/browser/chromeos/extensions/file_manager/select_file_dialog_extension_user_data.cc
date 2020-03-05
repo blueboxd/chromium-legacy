@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 
 const char kSelectFileDialogExtensionUserDataKey[] =

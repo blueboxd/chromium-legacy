@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/callback_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"

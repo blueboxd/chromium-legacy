@@ -81,7 +81,7 @@ void InputInjectorEvdev::InjectKeyEvent(DomCode physical_key,
   int evdev_code = NativeCodeToEvdevCode(native_keycode);
 
   dispatcher_->DispatchKeyEvent(
-      KeyEventParams(kDeviceIdForInjection, evdev_code, down,
+      KeyEventParams(kDeviceIdForInjection, ui::EF_NONE, evdev_code, down,
                      suppress_auto_repeat, EventTimeForNow()));
 }
 

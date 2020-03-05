@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/login/login_state/login_state.h"

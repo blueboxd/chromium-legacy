@@ -25,6 +25,9 @@ import find_depot_tools
 SDK_SIGNATURE_FILE = '.hash'
 
 EXTRA_SDK_HASH_PREFIX = ''
+SDK_TARBALL_PATH_TEMPLATE = (
+    'gs://fuchsia/development/{sdk_hash}/sdk/{platform}-amd64/gn.tar.gz')
+
 
 def GetSdkGeneration(hash):
   if not hash:
@@ -75,7 +78,7 @@ def GetSdkHashForPlatform():
 
 
 def GetSdkTarballForPlatformAndHash(sdk_hash):
-  return 'gs://fuchsia/development/{sdk_hash}/sdk/{platform}-amd64/gn.tar.gz'.format(
+  return SDK_TARBALL_PATH_TEMPLATE.format(
       sdk_hash=sdk_hash, platform=GetHostOsFromPlatform())
 
 

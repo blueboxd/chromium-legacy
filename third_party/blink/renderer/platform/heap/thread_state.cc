@@ -746,11 +746,6 @@ void ThreadState::AtomicPauseMarkPrologue(
     stack_state = BlinkGC::kHeapPointersOnStack;
   }
 
-  // Compaction needs to be canceled when incremental marking ends with a
-  // conservative GC.
-  if (stack_state == BlinkGC::kHeapPointersOnStack)
-    Heap().Compaction()->Cancel();
-
   if (IsMarkingInProgress()) {
     // Incremental marking is already in progress. Only update the state
     // that is necessary to update.
@@ -772,11 +767,16 @@ void ThreadState::AtomicPauseMarkPrologue(
       DCHECK(write_barrier_worklist->IsLocalEmpty(concurrent_task));
     }
 #endif  // DCHECK_IS_ON()
+    // Compaction needs to be canceled when incremental marking ends with a
+    // conservative GC.
+    if (stack_state == BlinkGC::kHeapPointersOnStack)
+      Heap().Compaction()->Cancel();
     DisableIncrementalMarkingBarrier();
     current_gc_data_.reason = reason;
     current_gc_data_.stack_state = stack_state;
     Heap().stats_collector()->UpdateReason(reason);
   } else {
+    DCHECK(!Heap().Compaction()->IsCompacting());
     MarkPhasePrologue(collection_type, stack_state, marking_type, reason);
   }
 

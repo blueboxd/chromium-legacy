@@ -148,6 +148,9 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
   // Determine whether there's a gamepad on this device.
   bool HasGamepad() const;
 
+  // Determine if this is a dedicated device for a stylus button.
+  bool IsStylusButtonDevice() const;
+
   // The device type (internal or external.)
   InputDeviceType device_type() const { return device_type_; }
 

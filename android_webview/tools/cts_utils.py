@@ -305,7 +305,7 @@ class ChromiumRepoHelper(object):
     deps_file = os.path.join(self._root_dir, DEPS_FILE)
     with open(deps_file) as f:
       contents = f.read()
-    dd = gclient_eval.Parse(contents, False, deps_file)
+    dd = gclient_eval.Parse(contents, deps_file)
     return gclient_eval.GetCIPD(dd, CTS_DEP_NAME, CTS_DEP_PACKAGE)
 
   def update_cts_cipd_rev(self, new_version):

@@ -446,7 +446,7 @@ cr.define('settings', function() {
 
     /** @private */
     onDoNotTrackDialogClosed_() {
-      cr.ui.focusWithoutInk(this.$.doNotTrack);
+      cr.ui.focusWithoutInk(assert(this.$$('#doNotTrack')));
     },
 
     /**
@@ -454,7 +454,7 @@ cr.define('settings', function() {
      * @private
      */
     onDoNotTrackDialogConfirm_() {
-      /** @type {!SettingsToggleButtonElement} */ (this.$.doNotTrack)
+      /** @type {!SettingsToggleButtonElement} */ (this.$$('#doNotTrack'))
           .sendPrefChange();
       this.closeDoNotTrackDialog_();
     },
@@ -465,7 +465,7 @@ cr.define('settings', function() {
      * @private
      */
     onDoNotTrackDialogCancel_() {
-      /** @type {!SettingsToggleButtonElement} */ (this.$.doNotTrack)
+      /** @type {!SettingsToggleButtonElement} */ (this.$$('#doNotTrack'))
           .resetToPrefValue();
       this.closeDoNotTrackDialog_();
     },
@@ -543,7 +543,7 @@ cr.define('settings', function() {
     onDialogClosed_() {
       settings.Router.getInstance().navigateTo(
           settings.routes.CLEAR_BROWSER_DATA.parent);
-      cr.ui.focusWithoutInk(assert(this.$.clearBrowsingData));
+      cr.ui.focusWithoutInk(assert(this.$$('#clearBrowsingData')));
     },
 
     /** @private */

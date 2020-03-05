@@ -444,7 +444,7 @@
       // https://wicg.github.io/display-locking/contain-intrinsic-size.html
       name: "CSSIntrinsicSize",
       implied_by: ["CSSSubtreeVisibility"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSLayoutAPI",

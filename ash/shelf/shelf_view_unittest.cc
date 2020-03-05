@@ -29,7 +29,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
-#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_focus_cycler.h"
@@ -575,15 +574,6 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
 
-  void AddAppShortcutsUntilOverflow() {
-    int items_added = 0;
-    while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-      AddAppShortcut();
-      ++items_added;
-      ASSERT_LT(items_added, 10000);
-    }
-  }
-
   // Returns the item's ShelfID at |index|.
   ShelfID GetItemId(int index) {
     DCHECK_GE(index, 0);
@@ -650,28 +640,6 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTextDirectionTest);
 };
 
-// Check the ideal bounds of several items in LTR and RTL UI.
-TEST_P(ShelfViewTextDirectionTest, GetIdealBoundsOfItemIcon) {
-  ShelfID id_1 = AddAppShortcut();
-  const gfx::Rect bounds_1 = shelf_view_->GetIdealBoundsOfItemIcon(id_1);
-  EXPECT_TRUE(GetButtonByID(id_1)->GetMirroredBounds().Contains(bounds_1));
-
-  if (chromeos::switches::ShouldShowScrollableShelf())
-    return;
-
-  AddAppShortcutsUntilOverflow();
-  ShelfID id_2 = AddAppShortcut();
-  ShelfID id_3 = AddAppShortcut();
-
-  const gfx::Rect bounds_2 = shelf_view_->GetIdealBoundsOfItemIcon(id_2);
-  const gfx::Rect bounds_3 = shelf_view_->GetIdealBoundsOfItemIcon(id_3);
-
-  // Just items in the overflow area return the overflow button's ideal bounds.
-  EXPECT_NE(bounds_1, shelf_view_->GetOverflowButton()->GetMirroredBounds());
-  EXPECT_EQ(bounds_2, shelf_view_->GetOverflowButton()->GetMirroredBounds());
-  EXPECT_EQ(bounds_3, shelf_view_->GetOverflowButton()->GetMirroredBounds());
-}
-
 // Checks that shelf view contents are considered in the correct drag group.
 TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));
@@ -683,189 +651,6 @@ TEST_F(ShelfViewTest, EnforceDragType) {
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-}
-
-// Adds platform app button until overflow and verifies that the last added
-// platform app button is hidden.
-TEST_F(ShelfViewNotScrollableTest, AddBrowserUntilOverflow) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  // Add platform app button until overflow.
-  int items_added = 0;
-  ShelfID last_added = AddApp();
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
-
-    last_added = AddApp();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // The last added button should be invisible.
-  EXPECT_FALSE(GetButtonByID(last_added)->GetVisible());
-}
-
-// Adds one platform app button then adds app shortcut until overflow. Verifies
-// that the browser button gets hidden on overflow and last added app shortcut
-// is still visible.
-TEST_F(ShelfViewNotScrollableTest,
-       AddAppShortcutWithBrowserButtonUntilOverflow) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  ShelfID browser_button_id = AddApp();
-
-  // Add app shortcut until overflow.
-  int items_added = 0;
-  ShelfID last_added = AddAppShortcut();
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
-
-    last_added = AddAppShortcut();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // And the platform app button is invisible.
-  EXPECT_FALSE(GetButtonByID(browser_button_id)->GetVisible());
-}
-
-// Making sure that no buttons on the shelf will ever overlap after adding many
-// of them.
-TEST_F(ShelfViewNotScrollableTest, AssertNoButtonsOverlap) {
-  std::vector<ShelfID> button_ids;
-  // Add app icons until the overflow button is visible.
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    ShelfID id = AddApp();
-    button_ids.push_back(id);
-  }
-  ASSERT_LT(button_ids.size(), 10000U);
-  ASSERT_GT(button_ids.size(), 2U);
-
-  // Remove 2 icons to make more room, the overflow button should go away.
-  for (int i = 0; i < 2; ++i) {
-    ShelfID id = button_ids.back();
-    RemoveByID(id);
-    button_ids.pop_back();
-  }
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
-  EXPECT_TRUE(GetButtonByID(button_ids.back())->GetVisible());
-
-  // Add 20 app icons, and expect to have overflow.
-  for (int i = 0; i < 20; ++i) {
-    ShelfID id = AddAppShortcut();
-    button_ids.push_back(id);
-  }
-  ASSERT_LT(button_ids.size(), 10000U);
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
-
-  // Test that any two successive visible icons never overlap in all shelf
-  // alignment types.
-  const ShelfAlignment kAlignments[] = {
-      ShelfAlignment::kLeft,
-      ShelfAlignment::kRight,
-      ShelfAlignment::kBottom,
-      ShelfAlignment::kBottomLocked,
-  };
-
-  for (ShelfAlignment alignment : kAlignments) {
-    shelf_view_->shelf()->SetAlignment(alignment);
-    // For every 2 successive visible icons, expect that their bounds don't
-    // intersect.
-    for (int i = 2; i < test_api_->GetButtonCount() - 1; ++i) {
-      if (!(test_api_->GetButton(i)->GetVisible() &&
-            test_api_->GetButton(i + 1)->GetVisible())) {
-        continue;
-      }
-
-      const gfx::Rect& bounds1 = test_api_->GetBoundsByIndex(i);
-      const gfx::Rect& bounds2 = test_api_->GetBoundsByIndex(i + 1);
-      EXPECT_FALSE(bounds1.Intersects(bounds2));
-    }
-  }
-}
-
-// Adds button until overflow then removes first added one. Verifies that
-// the last added one changes from invisible to visible and overflow
-// chevron is gone.
-TEST_F(ShelfViewNotScrollableTest, RemoveButtonRevealsOverflowed) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  // Add platform app buttons until overflow.
-  int items_added = 0;
-  ShelfID first_added = AddApp();
-  ShelfID last_added = first_added;
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    last_added = AddApp();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // Expect add more than 1 button. First added is visible and last is not.
-  EXPECT_NE(first_added, last_added);
-  EXPECT_TRUE(GetButtonByID(first_added)->GetVisible());
-  EXPECT_FALSE(GetButtonByID(last_added)->GetVisible());
-
-  // Remove first added.
-  RemoveByID(first_added);
-
-  // Last added button becomes visible and overflow chevron is gone.
-  EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
-  EXPECT_EQ(1.0f, GetButtonByID(last_added)->layer()->opacity());
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
-}
-
-// Verifies that remove last overflowed button should hide overflow chevron.
-TEST_F(ShelfViewNotScrollableTest, RemoveLastOverflowed) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  // Add platform app button until overflow.
-  int items_added = 0;
-  ShelfID last_added = AddApp();
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    last_added = AddApp();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  RemoveByID(last_added);
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
-}
-
-// Adds platform app button without waiting for animation to finish and verifies
-// that all added buttons are visible.
-TEST_F(ShelfViewNotScrollableTest, AddButtonQuickly) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  // Add a few platform buttons quickly without wait for animation.
-  int added_count = 0;
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    AddAppNoWait();
-    ++added_count;
-    ASSERT_LT(added_count, 10000);
-  }
-
-  // ShelfView should be big enough to hold at least 3 new buttons.
-  ASSERT_GE(added_count, 3);
-
-  // Wait for the last animation to finish.
-  test_api_->RunMessageLoopUntilAnimationsDone();
-
-  // Verifies non-overflow buttons are visible. The back button at index 0 is
-  // not visible.
-  for (int i = 1; i <= shelf_view_->last_visible_index(); ++i) {
-    ShelfAppButton* button = test_api_->GetButton(i);
-    if (button) {
-      EXPECT_TRUE(button->GetVisible()) << "button index=" << i;
-      EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
-    }
-  }
 }
 
 // Check that model changes are handled correctly while a shelf icon is being
@@ -1051,8 +836,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
   const int kRipOffDistance = 48;
 
-  // Add two apps (which is on the main shelf) and then add buttons until
-  // overflow. Add one more app (which is on the overflow shelf).
+  // Add two apps on the main shelf.
   ShelfID first_app_id = AddAppShortcut();
   ShelfID second_app_id = AddAppShortcut();
 
@@ -1179,8 +963,6 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 }
 
 TEST_F(ShelfViewNotScrollableTest, ButtonTitlesTest) {
-  AddAppShortcutsUntilOverflow();
-
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
 
@@ -1453,110 +1235,6 @@ TEST_P(HotseatShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   // Wait until the delayed close kicked in.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tooltip_manager->IsVisible());
-}
-
-// Resizing shelf view while an add animation without fade-in is running,
-// which happens when overflow happens. Home button should end up in its
-// new ideal bounds.
-TEST_F(ShelfViewNotScrollableTest, ResizeDuringOverflowAddAnimation) {
-  // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
-
-  // Add buttons until overflow. Let the non-overflow add animations finish but
-  // leave the last running.
-  int items_added = 0;
-  AddAppNoWait();
-  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
-    test_api_->RunMessageLoopUntilAnimationsDone();
-    AddAppNoWait();
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-  }
-
-  // Resize shelf view with that animation running and stay overflown.
-  gfx::Rect bounds = shelf_view_->bounds();
-  bounds.set_width(bounds.width() - ShelfConfig::Get()->shelf_size());
-  shelf_view_->SetBoundsRect(bounds);
-  ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
-
-  // Finish the animation.
-  test_api_->RunMessageLoopUntilAnimationsDone();
-
-  // Home button should ends up in its new ideal bounds.
-  const int home_button_index = test_api_->GetButtonCount() - 1;
-  const gfx::Rect& app_list_ideal_bounds =
-      test_api_->GetIdealBoundsByIndex(home_button_index);
-  const gfx::Rect& app_list_bounds =
-      test_api_->GetBoundsByIndex(home_button_index);
-  EXPECT_EQ(app_list_ideal_bounds, app_list_bounds);
-}
-
-// Check the drag insertion bounds of shelf view in multi monitor environment.
-TEST_F(ShelfViewNotScrollableTest, CheckDragInsertBoundsWithMultiMonitor) {
-  UpdateDisplay("800x600,800x600");
-  Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
-  ShelfView* shelf_view_for_secondary =
-      secondary_shelf->GetShelfViewForTesting();
-
-  // The bounds should be big enough for 4 buttons + overflow chevron.
-  shelf_view_for_secondary->SetBounds(0, 0, 500,
-                                      ShelfConfig::Get()->shelf_size());
-
-  ShelfViewTestAPI test_api_for_secondary(shelf_view_for_secondary);
-  // Speeds up animation for test.
-  test_api_for_secondary.SetAnimationDuration(
-      base::TimeDelta::FromMilliseconds(1));
-
-  AddAppShortcutsUntilOverflow();
-
-  // Test #1: Test drag insertion bounds of primary shelf.
-  // Show overflow bubble.
-  test_api_->ShowOverflowBubble();
-  ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
-
-  ShelfViewTestAPI test_api_for_overflow_view(
-      test_api_->overflow_bubble()->bubble_view()->shelf_view());
-  const ShelfView* overflow_shelf_view = shelf_view_->overflow_shelf();
-
-  ShelfAppButton* button = test_api_for_overflow_view.GetButton(
-      overflow_shelf_view->last_visible_index());
-
-  // Checks that a point in shelf is contained in drag insert bounds.
-  gfx::Point point_in_shelf_view = button->GetBoundsInScreen().CenterPoint();
-  gfx::Rect drag_reinsert_bounds =
-      test_api_for_overflow_view.GetBoundsForDragInsertInScreen();
-  EXPECT_TRUE(drag_reinsert_bounds.Contains(point_in_shelf_view));
-  // Checks that a point out of shelf is not contained in drag insert bounds.
-  EXPECT_FALSE(
-      drag_reinsert_bounds.Contains(gfx::Point(point_in_shelf_view.x(), 0)));
-
-  // Test #2: Test drag insertion bounds of secondary shelf.
-  // Show overflow bubble.
-  test_api_for_secondary.ShowOverflowBubble();
-  ASSERT_TRUE(shelf_view_for_secondary->IsShowingOverflowBubble());
-
-  ShelfViewTestAPI test_api_for_overflow_view_of_secondary(
-      test_api_for_secondary.overflow_bubble()->bubble_view()->shelf_view());
-  const ShelfView* overflow_shelf_view_of_secondary =
-      shelf_view_for_secondary->overflow_shelf();
-
-  ShelfAppButton* button_in_secondary =
-      test_api_for_overflow_view_of_secondary.GetButton(
-          overflow_shelf_view_of_secondary->last_visible_index());
-
-  // Checks that a point in shelf is contained in drag insert bounds.
-  gfx::Point point_in_secondary_shelf_view =
-      button_in_secondary->GetBoundsInScreen().CenterPoint();
-  gfx::Rect drag_reinsert_bounds_in_secondary =
-      test_api_for_overflow_view_of_secondary.GetBoundsForDragInsertInScreen();
-  EXPECT_TRUE(drag_reinsert_bounds_in_secondary.Contains(
-      point_in_secondary_shelf_view));
-  // Checks that a point out of shelf is not contained in drag insert bounds.
-  EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(
-      gfx::Point(point_in_secondary_shelf_view.x(), 0)));
-  // Checks that a point of overflow bubble in primary shelf should not be
-  // contained by insert bounds of secondary shelf.
-  EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(point_in_shelf_view));
 }
 
 // Checks the rip an item off from left aligned shelf in secondary monitor.
@@ -2224,7 +1902,6 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
     AddAppShortcut();
   }
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   CheckAllItemsAreInBounds();
 }
 
@@ -2796,8 +2473,6 @@ class ShelfViewFocusTest : public ShelfViewTest {
 // Tests that the number of buttons is as expected and the shelf's widget
 // intially has focus.
 TEST_F(ShelfViewFocusTest, Basic) {
-  EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
-
   // There are five buttons, including 3 app buttons. The back button and
   // launcher are always there, the browser shortcut is added in
   // ShelfViewTest and the two test apps added in ShelfViewFocusTest.

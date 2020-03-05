@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"

@@ -69,6 +69,10 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 // Controls whether Chrome prompts Advanced Protection users for deep scanning.
 extern const base::Feature kPromptAppForDeepScanning;
 
+// Controls whether Safe Browsing uses separate NetworkContexts for each
+// profile.
+extern const base::Feature kSafeBrowsingSeparateNetworkContexts;
+
 // Controls whether Chrome sends on focus ping.
 extern const base::Feature kSendOnFocusPing;
 

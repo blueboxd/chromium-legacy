@@ -20,7 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/earl_grey/app_launch_manager.h"
+#import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -85,11 +85,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [super tearDown];
 }
 
-- (void)launchAppForTestMethod {
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{features::kCredentialManager}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(features::kCredentialManager);
+  return config;
 }
 
 #pragma mark - Utils

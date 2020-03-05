@@ -8,6 +8,7 @@ namespace blink {
 
 constexpr const char ReportType::kDeprecation[];
 constexpr const char ReportType::kFeaturePolicyViolation[];
+constexpr const char ReportType::kDocumentPolicyViolation[];
 constexpr const char ReportType::kIntervention[];
 constexpr const char ReportType::kCSPViolation[];
 

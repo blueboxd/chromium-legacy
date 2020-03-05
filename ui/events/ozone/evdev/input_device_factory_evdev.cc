@@ -22,6 +22,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/gamepad_event_converter_evdev.h"
+#include "ui/events/ozone/evdev/stylus_button_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
@@ -122,6 +123,12 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   if (devinfo.HasGamepad()) {
     return base::WrapUnique<EventConverterEvdev>(new GamepadEventConverterEvdev(
         std::move(fd), params.path, params.id, devinfo, params.dispatcher));
+  }
+
+  if (devinfo.IsStylusButtonDevice()) {
+    return base::WrapUnique<EventConverterEvdev>(
+        new StylusButtonEventConverterEvdev(
+            std::move(fd), params.path, params.id, devinfo, params.dispatcher));
   }
 
   // Everything else: use EventConverterEvdevImpl.

@@ -112,6 +112,9 @@ MetricsLog::MetricsLog(const std::string& client_id,
     uma_proto_.set_product(product);
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+  // Record the unhashed the client_id to system profile. This is used to
+  // simulate field trial assignments for the client.
+  system_profile->set_client_uuid(client_id);
   RecordCoreSystemProfile(client_, system_profile);
 }
 

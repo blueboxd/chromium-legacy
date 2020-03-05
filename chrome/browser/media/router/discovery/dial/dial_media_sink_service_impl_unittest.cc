@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"

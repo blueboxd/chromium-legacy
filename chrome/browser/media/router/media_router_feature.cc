@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/mirroring/service/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
 #include "crypto/random.h"
@@ -112,13 +111,6 @@ bool DialMediaRouteProviderEnabled() {
 
 bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
-}
-
-bool ShouldUseMirroringService() {
-  // The native Cast MRP requires the mirroring service to do mirroring, so try
-  // to enable the service if the native Cast MRP is being used.
-  return base::FeatureList::IsEnabled(mirroring::features::kMirroringService) ||
-         base::FeatureList::IsEnabled(kCastMediaRouteProvider);
 }
 
 #endif  // !defined(OS_ANDROID)

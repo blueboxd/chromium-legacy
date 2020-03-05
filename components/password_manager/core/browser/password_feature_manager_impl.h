@@ -26,8 +26,6 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
 
   bool IsGenerationEnabled() const override;
 
-  bool ShouldCheckReuseOnLeakDetection() const override;
-
   bool IsOptedInForAccountStorage() const override;
   bool ShouldShowAccountStorageOptIn() const override;
   void SetAccountStorageOptIn(bool opt_in) override;

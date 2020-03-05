@@ -51,6 +51,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include <Shlobj.h>
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/app/chrome_crash_reporter_client_win.h"
@@ -160,8 +161,10 @@ void ChromeTestLauncherDelegate::PreSharding() {
       << "Failed to cleanup PreferenceMACs: " << result;
 
   // Add firewall rules for the test binary so that Windows doesn't show a
-  // firewall dialog during the test run.
-  firewall_rules_ = std::make_unique<ScopedFirewallRules>();
+  // firewall dialog during the test run. Silently do nothing if not running as
+  // an admin, to avoid error messages.
+  if (IsUserAnAdmin())
+    firewall_rules_ = std::make_unique<ScopedFirewallRules>();
 #endif
 }
 

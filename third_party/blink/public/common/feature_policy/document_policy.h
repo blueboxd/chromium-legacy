@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_DOCUMENT_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_DOCUMENT_POLICY_H_
 
-#include <limits>
 #include <memory>
 
 #include "base/containers/flat_map.h"
@@ -66,8 +65,14 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   using FeatureState =
       base::flat_map<mojom::DocumentPolicyFeature, PolicyValue>;
 
+  // Mapping of feature to endpoint group.
+  // https://w3c.github.io/reporting/#endpoint-group
+  using FeatureEndpointMap =
+      base::flat_map<mojom::DocumentPolicyFeature, std::string>;
+
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
-      const FeatureState& header_policy);
+      const FeatureState& header_policy,
+      const FeatureEndpointMap& endpoint_map = {});
 
   // Returns true if the feature is unrestricted (has its default value for the
   // platform)
@@ -85,6 +90,10 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
 
   // Returns the value of the given feature on the given origin.
   PolicyValue GetFeatureValue(mojom::DocumentPolicyFeature feature) const;
+
+  // Returns the endpoint the given feature should report to.
+  const std::string GetFeatureEndpoint(
+      mojom::DocumentPolicyFeature feature) const;
 
   // Returns true if the incoming policy is compatible with the given required
   // policy, i.e. incoming policy is at least as strict as required policy.
@@ -104,9 +113,12 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
  private:
   friend class DocumentPolicyTest;
 
-  DocumentPolicy(const FeatureState& feature_list);
+  DocumentPolicy(const FeatureState& header_policy,
+                 const FeatureEndpointMap& endpoint_map,
+                 const FeatureState& defaults);
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
       const FeatureState& header_policy,
+      const FeatureEndpointMap& endpoint_map,
       const FeatureState& defaults);
 
   void UpdateFeatureState(const FeatureState& feature_state);
@@ -115,6 +127,8 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // in using container classes.
   PolicyValue internal_feature_state_
       [static_cast<size_t>(mojom::DocumentPolicyFeature::kMaxValue) + 1];
+
+  FeatureEndpointMap endpoint_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPolicy);
 };

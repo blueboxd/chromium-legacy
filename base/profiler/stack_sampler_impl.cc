@@ -46,8 +46,9 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   RegisterContext thread_context;
   uintptr_t stack_top;
   TimeTicks timestamp;
-  bool success = stack_copier_->CopyStack(
-      stack_buffer, &stack_top, profile_builder, &timestamp, &thread_context);
+  bool success =
+      stack_copier_->CopyStack(stack_buffer, &stack_top, profile_builder,
+                               &timestamp, &thread_context, this);
   if (!success)
     return;
 
@@ -59,8 +60,18 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
                 native_unwinder_.get(), aux_unwinder_.get()),
       timestamp);
 }
-// static
 
+// IMPORTANT NOTE: to avoid deadlock this function must not invoke any
+// non-reentrant code that is also invoked by the target thread. In particular,
+// it may not perform any heap allocation or deallocation, including indirectly
+// via use of DCHECK/CHECK or other logging statements.
+void StackSamplerImpl::OnStackCopy() {
+  native_unwinder_->OnStackCapture();
+  if (aux_unwinder_)
+    aux_unwinder_->OnStackCapture();
+}
+
+// static
 std::vector<Frame> StackSamplerImpl::WalkStackForTesting(
     ModuleCache* module_cache,
     RegisterContext* thread_context,

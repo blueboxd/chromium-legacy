@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"

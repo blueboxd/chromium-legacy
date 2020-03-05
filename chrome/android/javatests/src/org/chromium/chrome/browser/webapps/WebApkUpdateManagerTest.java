@@ -30,6 +30,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
@@ -77,6 +78,7 @@ public class WebApkUpdateManagerTest {
 
     private ChromeActivity mActivity;
     private Tab mTab;
+    private EmbeddedTestServer mTestServer;
 
     /**
      * Subclass of {@link WebApkUpdateManager} which notifies the {@link CallbackHelper} passed to
@@ -128,15 +130,15 @@ public class WebApkUpdateManagerTest {
 
     public CreationData defaultCreationData() {
         CreationData creationData = new CreationData();
-        creationData.manifestUrl = mTestServerRule.getServer().getURL(WEBAPK_MANIFEST_URL);
-        creationData.startUrl = mTestServerRule.getServer().getURL(WEBAPK_START_URL);
-        creationData.scope = mTestServerRule.getServer().getURL(WEBAPK_SCOPE_URL);
+        creationData.manifestUrl = mTestServer.getURL(WEBAPK_MANIFEST_URL);
+        creationData.startUrl = mTestServer.getURL(WEBAPK_START_URL);
+        creationData.scope = mTestServer.getURL(WEBAPK_SCOPE_URL);
         creationData.name = WEBAPK_NAME;
         creationData.shortName = WEBAPK_SHORT_NAME;
 
         creationData.iconUrlToMurmur2HashMap = new HashMap<String, String>();
         creationData.iconUrlToMurmur2HashMap.put(
-                mTestServerRule.getServer().getURL(WEBAPK_ICON_URL), WEBAPK_ICON_MURMUR2_HASH);
+                mTestServer.getURL(WEBAPK_ICON_URL), WEBAPK_ICON_MURMUR2_HASH);
 
         creationData.displayMode = WEBAPK_DISPLAY_MODE;
         creationData.orientation = WEBAPK_ORIENTATION;
@@ -153,6 +155,7 @@ public class WebApkUpdateManagerTest {
         RecordHistogram.setDisabledForTests(true);
         mActivity = mActivityTestRule.getActivity();
         mTab = mActivity.getActivityTab();
+        mTestServer = mTestServerRule.getServer();
 
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register(WEBAPK_ID, callback);
@@ -202,11 +205,11 @@ public class WebApkUpdateManagerTest {
     public void testCanonicalUrlsIdenticalShouldNotUpgrade() throws Exception {
         // URL canonicalization should replace "%74" with 't'.
         CreationData creationData = defaultCreationData();
-        creationData.startUrl = mTestServerRule.getServer().getURL(
-                "/chrome/test/data/banners/manifest_%74est_page.html");
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_%74est_page.html");
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
-                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
         Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 
@@ -219,11 +222,11 @@ public class WebApkUpdateManagerTest {
     public void testCanonicalUrlsDifferentShouldUpgrade() throws Exception {
         // URL canonicalization should replace "%62" with 'b'.
         CreationData creationData = defaultCreationData();
-        creationData.startUrl = mTestServerRule.getServer().getURL(
-                "/chrome/test/data/banners/manifest_%62est_page.html");
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_%62est_page.html");
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
-                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
         Assert.assertTrue(checkUpdateNeeded(creationData));
     }
 
@@ -232,11 +235,11 @@ public class WebApkUpdateManagerTest {
     @Feature({"WebApk"})
     public void testNoUpdateForPagesWithoutWST() throws Exception {
         CreationData creationData = defaultCreationData();
-        creationData.startUrl = mTestServerRule.getServer().getURL(
-                "/chrome/test/data/banners/manifest_test_page.html");
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
-                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
         Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 
@@ -257,13 +260,32 @@ public class WebApkUpdateManagerTest {
     }
 
     private void testNewMaskableIconShouldUpdate() throws Exception {
-        CreationData creationData = defaultCreationData();
-        creationData.startUrl = mTestServerRule.getServer().getURL(
-                "/chrome/test/data/banners/manifest_test_page.html");
-        creationData.isPrimaryIconMaskable = true;
+        final String maskableManifestUrl = "/chrome/test/data/banners/manifest_maskable.json";
+
+        CreationData creationData = new CreationData();
+        creationData.manifestUrl = mTestServer.getURL(maskableManifestUrl);
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
+        creationData.scope = mTestServer.getURL("/chrome/test/data/banners/");
+        creationData.name = "Manifest test app";
+        creationData.shortName = creationData.name;
+
+        creationData.iconUrlToMurmur2HashMap = new HashMap<String, String>();
+        creationData.iconUrlToMurmur2HashMap.put(
+                mTestServer.getURL("/chrome/test/data/banners/launcher-icon-4x.png"),
+                "8692598279279335241");
+        creationData.iconUrlToMurmur2HashMap.put(
+                mTestServer.getURL("/chrome/test/data/banners/launcher-icon-3x.png"),
+                "16812314236514539104");
+        creationData.displayMode = WebDisplayMode.STANDALONE;
+        creationData.orientation = ScreenOrientationValues.LANDSCAPE;
+        creationData.themeColor = 2147483648L;
+        creationData.backgroundColor = 2147483648L;
+        creationData.isPrimaryIconMaskable = false;
+        creationData.shortcuts = new ArrayList<>();
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
-                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+                mTestServer, mTab, maskableManifestUrl);
 
         Assert.assertEquals(
                 ShortcutHelper.doesAndroidSupportMaskableIcons(), checkUpdateNeeded(creationData));
@@ -274,20 +296,18 @@ public class WebApkUpdateManagerTest {
     @Feature({"WebApk"})
     public void testManifestWithExtraShortcutsDoesNotCauseUpdate() throws Exception {
         CreationData creationData = defaultCreationData();
-        creationData.startUrl = mTestServerRule.getServer().getURL(
-                "/chrome/test/data/banners/manifest_test_page.html");
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
 
-        creationData.manifestUrl =
-                mTestServerRule.getServer().getURL(WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
+        creationData.manifestUrl = mTestServer.getURL(WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
         for (int i = 0; i < 4; i++) {
             creationData.shortcuts.add(new WebApkExtras.ShortcutItem("name" + String.valueOf(i),
-                    "short_name",
-                    mTestServerRule.getServer().getURL(WEBAPK_SCOPE_URL + "launch_url"), "", ""));
+                    "short_name", mTestServer.getURL(WEBAPK_SCOPE_URL + "launch_url"), "", ""));
         }
 
         // The fifth shortcut should be ignored.
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
-                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
+                mTestServer, mTab, WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
         Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 }

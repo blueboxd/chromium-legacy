@@ -103,10 +103,10 @@
 
 #pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
 
-- (void)manageSyncSettingsTableViewControllerWasPopped:
+- (void)manageSyncSettingsTableViewControllerWasRemoved:
     (ManageSyncSettingsTableViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
-  [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
+  [self.delegate manageSyncSettingsCoordinatorWasRemoved:self];
 }
 
 #pragma mark - ChromeIdentityBrowserOpener

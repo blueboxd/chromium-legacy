@@ -30,8 +30,8 @@ CastEnvironment::~CastEnvironment() = default;
 
 bool CastEnvironment::PostTask(ThreadId identifier,
                                const base::Location& from_here,
-                               const base::Closure& task) {
-  return GetTaskRunner(identifier)->PostTask(from_here, task);
+                               base::OnceClosure task) {
+  return GetTaskRunner(identifier)->PostTask(from_here, std::move(task));
 }
 
 bool CastEnvironment::PostDelayedTask(ThreadId identifier,

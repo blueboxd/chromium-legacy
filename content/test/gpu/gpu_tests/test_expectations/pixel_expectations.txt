@@ -34,9 +34,6 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
 [ android android-webview-instrumentation ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
 
-# Failing on Android Pixel 2 with SkiaRenderer Vulkan
-crbug.com/1049864 [ android android-not-webview qualcomm-adreno-(tm)-540 skia-renderer use-vulkan ] Pixel_WebGLReadPixelsTabSwitch [ Failure ]
-
 # Tests running with SwiftShader are skipped on platforms where SwiftShader
 # isn't supported.
 [ mac ] Pixel_Canvas2DRedBox_SwiftShader [ Skip ]

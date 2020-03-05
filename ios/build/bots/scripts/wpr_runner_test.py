@@ -21,8 +21,12 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
   def setUp(self):
     super(WprProxySimulatorTestRunnerTest, self).setUp()
 
+    def install_xcode(build, mac_toolchain_cmd, xcode_app_path):
+      return True
+
     self.mock(test_runner, 'get_current_xcode_info', lambda: {
         'version': 'test version', 'build': 'test build', 'path': 'test/path'})
+    self.mock(test_runner, 'install_xcode', install_xcode)
     self.mock(test_runner.subprocess, 'check_output',
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
@@ -52,6 +56,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'wpr-tools-path',
+          'xcode-version',
+          'xcode-build',
           'out-dir',
       )
 
@@ -69,6 +75,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'wpr-tools-path',
+          'xcode-version',
+          'xcode-build',
           'out-dir',
       )
 
@@ -86,6 +94,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
           'platform',
           'os',
           'bad-tools-path',
+          'xcode-version',
+          'xcode-build',
           'out-dir',
       )
 
@@ -99,6 +109,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
         'platform',
         'os',
         'wpr-tools-path',
+        'xcode-version',
+        'xcode-build',
         'out-dir',
     )
 
@@ -153,6 +165,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
         'platform',
         'os',
         'wpr-tools-path',
+        'xcode-version',
+        'xcode-build',
         'out-dir',
     )
     self.mock(wpr_runner.WprProxySimulatorTestRunner, 'wprgo_start',

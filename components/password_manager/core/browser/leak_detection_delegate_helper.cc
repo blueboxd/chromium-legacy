@@ -4,38 +4,53 @@
 
 #include "components/password_manager/core/browser/leak_detection_delegate_helper.h"
 
+#include "base/feature_list.h"
+#include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 namespace password_manager {
 
-LeakDetectionDelegateHelper::LeakDetectionDelegateHelper(LeakTypeReply callback)
-    : callback_(std::move(callback)) {}
+LeakDetectionDelegateHelper::LeakDetectionDelegateHelper(
+    scoped_refptr<PasswordStore> store,
+    LeakTypeReply callback)
+    : store_(std::move(store)), callback_(std::move(callback)) {
+  DCHECK(store_);
+}
 
 LeakDetectionDelegateHelper::~LeakDetectionDelegateHelper() = default;
 
-void LeakDetectionDelegateHelper::GetCredentialLeakType(
-    PasswordStore* store,
+void LeakDetectionDelegateHelper::ProcessLeakedPassword(
     GURL url,
     base::string16 username,
     base::string16 password) {
-  DCHECK(store);
   url_ = std::move(url);
   username_ = std::move(username);
   password_ = std::move(password);
-  store->GetLoginsByPassword(password_, this);
+  store_->GetLoginsByPassword(password_, this);
 }
 
 void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  if (base::FeatureList::IsEnabled(features::kPasswordCheck)) {
+    base::string16 canonicalized_username = CanonicalizeUsername(username_);
+    for (const auto& form : results) {
+      if (CanonicalizeUsername(form->username_value) ==
+          canonicalized_username) {
+        store_->AddCompromisedCredentials(
+            {form->signon_realm, form->username_value, base::Time::Now(),
+             CompromiseType::kLeaked});
+      }
+    }
+  }
+
   IsSaved is_saved(
       std::any_of(results.begin(), results.end(), [this](const auto& form) {
         return form->origin == url_ && form->username_value == username_;
       }));
 
   IsReused is_reused(results.size() > (is_saved ? 1 : 0));
-  CredentialLeakType leak_type =
-      CreateLeakType(is_saved, is_reused, IsSyncing(true));
-  std::move(callback_).Run(std::move(leak_type), std::move(url_),
+  std::move(callback_).Run(is_saved, is_reused, std::move(url_),
                            std::move(username_));
 }
 

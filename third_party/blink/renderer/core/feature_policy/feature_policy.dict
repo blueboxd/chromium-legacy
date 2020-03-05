@@ -9,7 +9,6 @@
 "document-domain"
 "document-write"
 "encrypted-media"
-"font-display-late-swap"
 "forms"
 "fullscreen"
 "geolocation"

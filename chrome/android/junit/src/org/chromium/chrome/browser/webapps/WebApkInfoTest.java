@@ -23,6 +23,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.util.ReflectionHelpers;
 import org.w3c.dom.Document;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -64,6 +65,8 @@ public class WebApkInfoTest {
     private static final String MANIFEST_URL = "https://www.google.com/alphabet.json";
     private static final String ICON_URL = "https://www.google.com/scope/worm.png";
     private static final String ICON_MURMUR2_HASH = "5";
+    private static final int PRIMARY_ICON_ID = 12;
+    private static final int PRIMARY_MASKABLE_ICON_ID = 14;
     private static final int SOURCE = ShortcutSource.NOTIFICATION;
 
     /** Fakes the Resources object, allowing lookup of String value. */
@@ -175,6 +178,10 @@ public class WebApkInfoTest {
 
     @Test
     public void testSanity() {
+        // Test guidelines:
+        // - Stubbing out native calls in this test likely means that there is a bug.
+        // - For every WebApkInfo boolean there should be a test which tests both values.
+
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.SCOPE, SCOPE);
         bundle.putString(WebApkMetaDataKeys.NAME, NAME);
@@ -188,6 +195,8 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 ICON_URL + " " + ICON_MURMUR2_HASH);
+        bundle.putInt(WebApkMetaDataKeys.ICON_ID, PRIMARY_ICON_ID);
+        bundle.putInt(WebApkMetaDataKeys.MASKABLE_ICON_ID, PRIMARY_MASKABLE_ICON_ID);
 
         Bundle shareActivityBundle = new Bundle();
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "action0");
@@ -238,7 +247,8 @@ public class WebApkInfoTest {
         Assert.assertEquals(
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M), info.isSplashProvidedByWebApk());
 
-        Assert.assertEquals(null, info.icon().bitmap());
+        Assert.assertEquals(PRIMARY_MASKABLE_ICON_ID, info.icon().resourceIdForTesting());
+        Assert.assertEquals(true, info.isIconAdaptive());
         Assert.assertEquals(null, info.badgeIcon().bitmap());
         Assert.assertEquals(null, info.splashIcon().bitmap());
 
@@ -252,6 +262,45 @@ public class WebApkInfoTest {
         Assert.assertEquals(new String[] {"name1", "name2"}, shareTarget.getFileNames());
         Assert.assertEquals(new String[][] {{"text/plain"}, {"image/png", "image/jpeg"}},
                 shareTarget.getFileAccepts());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#create()} ignores the maskable icon on pre-Android-O
+     * Android OSes.
+     */
+    @Test
+    public void testOsVersionDoesNotSupportAdaptive() {
+        ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", Build.VERSION_CODES.N);
+
+        Bundle bundle = new Bundle();
+        bundle.putInt(WebApkMetaDataKeys.ICON_ID, PRIMARY_ICON_ID);
+        bundle.putInt(WebApkMetaDataKeys.MASKABLE_ICON_ID, PRIMARY_MASKABLE_ICON_ID);
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+
+        Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(PRIMARY_ICON_ID, info.icon().resourceIdForTesting());
+        Assert.assertEquals(false, info.isIconAdaptive());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#create()} selects {@link WebApkMetaDataKeys.ICON_ID} if no
+     * maskable icon is provided and that the icon is tagged as non-maskable.
+     */
+    @Test
+    public void testNoMaskableIcon() {
+        Bundle bundle = new Bundle();
+        bundle.putInt(WebApkMetaDataKeys.ICON_ID, PRIMARY_ICON_ID);
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+
+        Intent intent = createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(PRIMARY_ICON_ID, info.icon().resourceIdForTesting());
+        Assert.assertEquals(false, info.isIconAdaptive());
     }
 
     /**

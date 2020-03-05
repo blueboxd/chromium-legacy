@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"

@@ -2347,7 +2347,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
         z_offset, check_resizer_only,
-        fragment.fragment_data->PaginationOffset());
+        fragment.fragment_data->LegacyPaginationOffset());
     if (hit_layer)
       return hit_layer;
   }

@@ -66,7 +66,8 @@ class TestStackCopier : public StackCopier {
                  uintptr_t* stack_top,
                  ProfileBuilder* profile_builder,
                  TimeTicks* timestamp,
-                 RegisterContext* thread_context) override {
+                 RegisterContext* thread_context,
+                 Delegate* delegate) override {
     std::memcpy(stack_buffer->buffer(), &fake_stack_[0], fake_stack_.size());
     *stack_top =
         reinterpret_cast<uintptr_t>(&fake_stack_[0] + fake_stack_.size());

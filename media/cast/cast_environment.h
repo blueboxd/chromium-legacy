@@ -44,7 +44,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   // the target thread may already have a Quit message in its queue.
   bool PostTask(ThreadId identifier,
                 const base::Location& from_here,
-                const base::Closure& task);
+                base::OnceClosure task);
 
   bool PostDelayedTask(ThreadId identifier,
                        const base::Location& from_here,

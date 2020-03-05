@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd2f18734aa842d7349fdb7d99707a92b4206f84b',
+  'skia_revision': '456f9b5fe9d222e254d738c0d78499444091b89f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '852653954526386c86f120f6120b70fb74904b94',
+  'angle_revision': '55228e53750d7af59750d9cd0a348423ffde9bd3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'daac106699e16d3dbcea640b412af097f051a8e1',
+  'devtools_frontend_revision': 'f5b833c6d2acc226b0a7da06fe98940e4531a5f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -650,6 +650,17 @@ deps = {
   'src/third_party/android_protobuf/src': {
       'url': Var('android_git') + '/platform/external/protobuf.git' + '@' + '7fca48d8ce97f7ba3ab8eea5c472f1ad3711762f',
       'condition': 'checkout_android',
+  },
+
+  'src/third_party/android_protoc': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_protoc',
+              'version': 'k9khK3dY-WuKXtL8tfQRcsvo2H1qS6C4-G5ckDZ4yyMC',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
   },
 
   'src/third_party/android_ndk': {
@@ -1222,7 +1233,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '6f26bce0b1c4e8ce0e13332f7c0083788def5fdf',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'af823daff93a9c8b76ac658c8941878631874e9e',
+    Var('chromium_git') + '/openscreen' + '@' + '1bdc5980b3a43ad053849a82d2962cb7f66ed7e3',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1239,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f365c53a18b17816f4dc58ddca308f05b83788e0',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0c6dfdbceb9e7b9c8d6df43ae3e470adb2a78843',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1443,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b05ca4b6168ccad0db5f6350d438272e59a3b9ca',
+    Var('webrtc_git') + '/src.git' + '@' + '987ef482582660003d21ecfb7096943cba623373',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1518,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ca451d58ac8dc15a3c9065bd921b3611f0f11abd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@59ccb910d00387566eb7671cd2e15a1130eb2476',
     'condition': 'checkout_src_internal',
   },
 

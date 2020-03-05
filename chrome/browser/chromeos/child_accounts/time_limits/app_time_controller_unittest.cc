@@ -369,8 +369,10 @@ TEST_F(AppTimeControllerTest, TimeLimitUpdatedNotification) {
   DismissNotifications();
 
   // Only update one time limit.
+  const base::TimeDelta delta = base::TimeDelta::FromMinutes(1);
   const AppLimit limit3(AppRestriction::kTimeLimit,
-                        base::TimeDelta::FromMinutes(10), base::Time::Now());
+                        base::TimeDelta::FromMinutes(10),
+                        base::Time::Now() + delta);
   registry->UpdateAppLimits({{kApp1, limit1}, {kApp2, limit3}});
   task_environment().RunUntilIdle();
   EXPECT_EQ(1u, GetNotificationsCount());

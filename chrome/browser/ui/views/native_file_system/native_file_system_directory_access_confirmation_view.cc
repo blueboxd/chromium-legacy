@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_directory_access_confirmation_view.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"

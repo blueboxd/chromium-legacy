@@ -125,7 +125,7 @@ void WaylandKeyboard::Key(void* data,
 
   // TODO(tonikitoo,msisov): Handler 'repeat' parameter below.
   keyboard->DispatchKey(key, down, false /*repeat*/, EventTimeForNow(),
-                        device_id);
+                        device_id, EF_NONE);
 }
 
 void WaylandKeyboard::Modifiers(void* data,
@@ -174,7 +174,8 @@ void WaylandKeyboard::DispatchKey(uint32_t key,
                                   bool down,
                                   bool repeat,
                                   base::TimeTicks timestamp,
-                                  int device_id) {
+                                  int device_id,
+                                  int flags) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
   if (dom_code == ui::DomCode::NONE)

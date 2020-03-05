@@ -344,6 +344,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     feature_engagement::TrackerFactory::GetForBrowserState(currentBrowserState)
         ->NotifyEvent(feature_engagement::events::kChromeOpened);
   }
+
+  base::RecordAction(base::UserMetricsAction("MobileWillEnterForeground"));
 }
 
 - (void)resumeSessionWithTabOpener:(id<TabOpening>)tabOpener

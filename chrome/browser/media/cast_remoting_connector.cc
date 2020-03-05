@@ -194,15 +194,6 @@ CastRemotingConnector::CastRemotingConnector(
       active_bridge_(nullptr),
       pref_service_(pref_service) {
   DCHECK(permission_request_callback_);
-#if !defined(OS_ANDROID)
-  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid()) {
-    // Register this remoting source only when Mirroring Service is not used.
-    // Note: If mirroring service is not used, remoting is not supported for
-    // OffscreenTab mirroring as there is no valid tab_id associated with an
-    // OffscreenTab.
-    media_router_->RegisterRemotingSource(tab_id_, this);
-  }
-#endif  // !defined(OS_ANDROID)
   StartObservingPref();
 }
 
@@ -216,10 +207,6 @@ CastRemotingConnector::~CastRemotingConnector() {
     notifyee->OnSinkGone();
     notifyee->OnCastRemotingConnectorDestroyed();
   }
-#if !defined(OS_ANDROID)
-  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid())
-    media_router_->UnregisterRemotingSource(tab_id_);
-#endif  // !defined(OS_ANDROID)
 }
 
 void CastRemotingConnector::ConnectToService(

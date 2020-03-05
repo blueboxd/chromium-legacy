@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/test/scoped_feature_list.h"

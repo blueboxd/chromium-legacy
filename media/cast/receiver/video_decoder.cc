@@ -59,8 +59,9 @@ class VideoDecoder::ImplBase
         static_cast<int>(encoded_frame->data.size()));
     if (!decoded_frame) {
       VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-                                  base::Bind(callback, decoded_frame, false));
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
+          base::BindOnce(callback, decoded_frame, false));
       return;
     }
     decoded_frame->set_timestamp(
@@ -75,9 +76,8 @@ class VideoDecoder::ImplBase
     cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
     cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(callback, decoded_frame, is_continuous));
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(callback, decoded_frame, is_continuous));
   }
 
  protected:
@@ -260,12 +260,10 @@ void VideoDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
     callback.Run(base::WrapRefCounted<VideoFrame>(nullptr), false);
     return;
   }
-  cast_environment_->PostTask(CastEnvironment::VIDEO,
-                              FROM_HERE,
-                              base::Bind(&VideoDecoder::ImplBase::DecodeFrame,
-                                         impl_,
-                                         base::Passed(&encoded_frame),
-                                         callback));
+  cast_environment_->PostTask(
+      CastEnvironment::VIDEO, FROM_HERE,
+      base::BindOnce(&VideoDecoder::ImplBase::DecodeFrame, impl_,
+                     base::Passed(&encoded_frame), callback));
 }
 
 }  // namespace cast

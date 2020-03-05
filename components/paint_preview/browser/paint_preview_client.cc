@@ -135,13 +135,8 @@ void PaintPreviewClient::CapturePaintPreview(
   document_data.root_url = render_frame_host->GetLastCommittedURL();
   document_data.source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents());
-  document_data.called_on_thread = base::SequencedTaskRunnerHandle::Get();
   all_document_data_.insert({params.document_guid, std::move(document_data)});
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&PaintPreviewClient::CapturePaintPreviewInternal,
-                     weak_ptr_factory_.GetWeakPtr(), params,
-                     render_frame_host));
+  CapturePaintPreviewInternal(params, render_frame_host);
 }
 
 void PaintPreviewClient::CaptureSubframePaintPreview(
@@ -152,11 +147,7 @@ void PaintPreviewClient::CaptureSubframePaintPreview(
   params.document_guid = guid;
   params.clip_rect = rect;
   params.is_main_frame = false;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&PaintPreviewClient::CapturePaintPreviewInternal,
-                     weak_ptr_factory_.GetWeakPtr(), params,
-                     render_subframe_host));
+  CapturePaintPreviewInternal(params, render_subframe_host);
 }
 
 void PaintPreviewClient::RenderFrameDeleted(
@@ -224,7 +215,6 @@ mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
 void PaintPreviewClient::CapturePaintPreviewInternal(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Use a frame's embedding token as its GUID. Note that we create a GUID for
   // the main frame so that we can treat it the same as other frames.
   auto token = render_frame_host->GetEmbeddingToken();
@@ -270,7 +260,9 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* document_data = &all_document_data_[params.document_guid];
   if (result.error != base::File::FILE_OK) {
-    document_data->called_on_thread->PostTask(
+    // Don't block up the UI thread and answer the callback on a different
+    // thread.
+    base::PostTask(
         FROM_HERE,
         base::BindOnce(std::move(document_data->callback), params.document_guid,
                        mojom::PaintPreviewStatus::kFileCreationError, nullptr));
@@ -393,7 +385,7 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
     // At a minimum one frame was captured successfully, it is up to the
     // caller to decide if a partial success is acceptable based on what is
     // contained in the proto.
-    document_data->called_on_thread->PostTask(
+    base::PostTask(
         FROM_HERE,
         base::BindOnce(std::move(document_data->callback), guid,
                        document_data->had_error
@@ -402,8 +394,8 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
                        std::move(document_data->proto)));
   } else {
     // A proto could not be created indicating all frames failed to capture.
-    document_data->called_on_thread->PostTask(
-        FROM_HERE, base::BindOnce(std::move(document_data->callback), guid,
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(document_data->callback), guid,
                                   mojom::PaintPreviewStatus::kFailed, nullptr));
   }
   all_document_data_.erase(guid);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"

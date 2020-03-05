@@ -136,7 +136,6 @@ class ClientSessionTest : public testing::Test {
   static const int kDisplay2Width = 1024;
   static const int kDisplay2Height = 768;
   static const int kDisplay2YOffset = 35;
-  static const int kInvalidDisplayIndex = -2;
 
   // Creates the client session from a FakeSession instance.
   void CreateClientSession(std::unique_ptr<protocol::FakeSession> session);
@@ -368,7 +367,7 @@ void ClientSessionTest::NotifySelectDesktopDisplay(std::string id) {
 
 void ClientSessionTest::ResetDisplayInfo() {
   displays_.Reset();
-  curr_display_ = kInvalidDisplayIndex;
+  curr_display_ = webrtc::kInvalidScreenId;
 }
 
 // Set up a single display (default size).
@@ -377,8 +376,8 @@ void ClientSessionTest::SetupSingleDisplay() {
   auto displays = std::make_unique<protocol::VideoLayout>();
   AddDisplayToLayout(displays.get(), 0, 0, kDisplay1Width, kDisplay1Height,
                      kDefaultDpi, kDefaultDpi);
-  NotifyDesktopDisplaySize(std::move(displays));
   NotifyVideoSizeAll();
+  NotifyDesktopDisplaySize(std::move(displays));
 }
 
 // Set up multiple displays:
@@ -395,8 +394,8 @@ void ClientSessionTest::SetupMultiDisplay() {
                      kDefaultDpi, kDefaultDpi);
   AddDisplayToLayout(displays.get(), kDisplay1Width, kDisplay2YOffset,
                      kDisplay2Width, kDisplay2Height, kDefaultDpi, kDefaultDpi);
-  NotifyDesktopDisplaySize(std::move(displays));
   NotifyVideoSizeAll();
+  NotifyDesktopDisplaySize(std::move(displays));
 }
 
 // Set up multiple displays that are the same size:
@@ -412,8 +411,8 @@ void ClientSessionTest::SetupMultiDisplay_SameSize() {
                      kDefaultDpi, kDefaultDpi);
   AddDisplayToLayout(displays.get(), kDisplay1Width, kDisplay2YOffset,
                      kDisplay1Width, kDisplay1Height, kDefaultDpi, kDefaultDpi);
-  NotifyDesktopDisplaySize(std::move(displays));
   NotifyVideoSizeAll();
+  NotifyDesktopDisplaySize(std::move(displays));
 }
 
 void ClientSessionTest::MultiMon_SelectFirstDisplay() {

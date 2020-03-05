@@ -29,20 +29,6 @@ bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
   }
 }
 
-bool PasswordFeatureManagerImpl::ShouldCheckReuseOnLeakDetection() const {
-  switch (password_manager_util::GetPasswordSyncState(sync_service_)) {
-    // We currently check the reuse of the leaked password only for users who
-    // can access passwords.google.com. Therefore, if the credentials are not
-    // synced, no need to check for password use.
-    case NOT_SYNCING:
-    case SYNCING_WITH_CUSTOM_PASSPHRASE:
-      return false;
-    case SYNCING_NORMAL_ENCRYPTION:
-    case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
-      return true;
-  }
-}
-
 bool PasswordFeatureManagerImpl::IsOptedInForAccountStorage() const {
   return password_manager_util::IsOptedInForAccountStorage(pref_service_,
                                                            sync_service_);

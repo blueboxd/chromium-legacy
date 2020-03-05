@@ -8,8 +8,6 @@ component("mirroring_service") {
   sources = [
     "captured_audio_input.cc",
     "captured_audio_input.h",
-    "features.cc",
-    "features.h",
     "media_remoter.cc",
     "media_remoter.h",
     "message_dispatcher.cc",

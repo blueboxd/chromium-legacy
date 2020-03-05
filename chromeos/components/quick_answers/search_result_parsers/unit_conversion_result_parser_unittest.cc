@@ -43,11 +43,13 @@ TEST_F(UnitConversionResultParserTest, Success) {
   EXPECT_EQ(ResultType::kUnitConversionResult, quick_answer.result_type);
   EXPECT_EQ("9.84252 inch", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
-  EXPECT_EQ("9.84252 inch", static_cast<QuickAnswerText*>(
-                                quick_answer.first_answer_row[0].get())
-                                ->text_);
-  EXPECT_TRUE(quick_answer.first_answer_row.size() == 1);
-  EXPECT_TRUE(quick_answer.title.size() == 0);
+
+  EXPECT_EQ(1u, quick_answer.first_answer_row.size());
+  EXPECT_EQ(0u, quick_answer.title.size());
+  auto* answer =
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
+  EXPECT_EQ("9.84252 inch", answer->text_);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
 }
 
 TEST_F(UnitConversionResultParserTest, EmptyValue) {

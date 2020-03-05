@@ -180,6 +180,11 @@ class CORE_EXPORT DocumentInit final {
     return document_policy_;
   }
 
+  DocumentInit& WithReportOnlyDocumentPolicyHeader(const String& header);
+  const String& ReportOnlyDocumentPolicyHeader() const {
+    return report_only_document_policy_header_;
+  }
+
   WindowAgentFactory* GetWindowAgentFactory() const;
   Settings* GetSettingsForWindowAgentFactory() const;
 
@@ -259,7 +264,9 @@ class CORE_EXPORT DocumentInit final {
   // The frame policy snapshot from the beginning of navigation.
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;
 
+  // The document policy set via response header.
   DocumentPolicy::FeatureState document_policy_;
+  String report_only_document_policy_header_;
 
   bool is_for_external_handler_ = false;
   Color plugin_background_color_;

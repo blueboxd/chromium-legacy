@@ -1795,9 +1795,6 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_widget_->IsShowingMenu())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_->hotseat_widget()->IsShowingOverflowBubble())
-    return SHELF_AUTO_HIDE_SHOWN;
-
   if (shelf_widget_->IsActive() || shelf_->navigation_widget()->IsActive() ||
       shelf_->hotseat_widget()->IsActive() ||
       (shelf_widget_->status_area_widget() &&
@@ -2181,11 +2178,6 @@ bool ShelfLayoutManager::StartAppListDrag(
   if (!IsVisible())
     return false;
 
-  // Do not show the fullscreen app list until the overflow bubble has been
-  // closed.
-  if (shelf_->hotseat_widget()->IsShowingOverflowBubble())
-    return false;
-
   // If the app list is already open, swiping up on the shelf should keep it
   // open.
   if (Shell::Get()->app_list_controller()->IsVisible())
@@ -2217,10 +2209,6 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
   // Disable the shelf dragging if the fullscreen app list is opened.
   if (Shell::Get()->app_list_controller()->IsVisible() &&
       !Shell::Get()->IsInTabletMode())
-    return false;
-
-  // Also disable shelf drags until the overflow shelf is closed.
-  if (shelf_->hotseat_widget()->IsShowingOverflowBubble())
     return false;
 
   drag_status_ = kDragInProgress;

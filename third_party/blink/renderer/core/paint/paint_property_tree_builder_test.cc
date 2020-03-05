@@ -4108,11 +4108,12 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   EXPECT_EQ(4u, NumFragments(flowthread));
 
   EXPECT_EQ(PhysicalOffset(), FragmentAt(relpos, 0).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(), FragmentAt(relpos, 0).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(), FragmentAt(relpos, 0).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(relpos, 0).LogicalTopInFlowThread());
   EXPECT_EQ(nullptr, FragmentAt(relpos, 0).PaintProperties());
   EXPECT_EQ(PhysicalOffset(), FragmentAt(flowthread, 0).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(), FragmentAt(flowthread, 0).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(),
+            FragmentAt(flowthread, 0).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(flowthread, 0).LogicalTopInFlowThread());
   const auto* fragment_clip =
       FragmentAt(flowthread, 0).PaintProperties()->FragmentClip();
@@ -4123,12 +4124,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
             &FragmentAt(relpos, 0).LocalBorderBoxProperties().Clip());
 
   EXPECT_EQ(PhysicalOffset(100, -30), FragmentAt(relpos, 1).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(100, -30), FragmentAt(relpos, 1).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(100, -30),
+            FragmentAt(relpos, 1).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(30), FragmentAt(relpos, 1).LogicalTopInFlowThread());
   EXPECT_EQ(nullptr, FragmentAt(relpos, 1).PaintProperties());
   EXPECT_EQ(PhysicalOffset(100, -30), FragmentAt(flowthread, 1).PaintOffset());
   EXPECT_EQ(PhysicalOffset(100, -30),
-            FragmentAt(flowthread, 1).PaginationOffset());
+            FragmentAt(flowthread, 1).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(30), FragmentAt(flowthread, 1).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 1).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
@@ -4138,12 +4140,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
             &FragmentAt(relpos, 1).LocalBorderBoxProperties().Clip());
 
   EXPECT_EQ(PhysicalOffset(0, 20), FragmentAt(relpos, 2).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(0, 20), FragmentAt(relpos, 2).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(0, 20),
+            FragmentAt(relpos, 2).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(60), FragmentAt(relpos, 2).LogicalTopInFlowThread());
   EXPECT_EQ(nullptr, FragmentAt(relpos, 2).PaintProperties());
   EXPECT_EQ(PhysicalOffset(0, 20), FragmentAt(flowthread, 2).PaintOffset());
   EXPECT_EQ(PhysicalOffset(0, 20),
-            FragmentAt(flowthread, 2).PaginationOffset());
+            FragmentAt(flowthread, 2).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(60), FragmentAt(flowthread, 2).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 2).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
@@ -4153,12 +4156,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
             &FragmentAt(relpos, 2).LocalBorderBoxProperties().Clip());
 
   EXPECT_EQ(PhysicalOffset(100, -10), FragmentAt(relpos, 3).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(100, -10), FragmentAt(relpos, 3).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(100, -10),
+            FragmentAt(relpos, 3).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(90), FragmentAt(relpos, 3).LogicalTopInFlowThread());
   EXPECT_EQ(nullptr, FragmentAt(relpos, 3).PaintProperties());
   EXPECT_EQ(PhysicalOffset(100, -10), FragmentAt(flowthread, 3).PaintOffset());
   EXPECT_EQ(PhysicalOffset(100, -10),
-            FragmentAt(flowthread, 3).PaginationOffset());
+            FragmentAt(flowthread, 3).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(90), FragmentAt(flowthread, 3).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 3).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
@@ -4237,20 +4241,21 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_TRUE(thread->IsLayoutFlowThread());
   EXPECT_EQ(2u, NumFragments(thread));
   EXPECT_EQ(PhysicalOffset(100, 0), FragmentAt(thread, 0).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(), FragmentAt(thread, 0).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(thread, 0).LogicalTopInFlowThread());
   EXPECT_EQ(PhysicalOffset(300, 100), FragmentAt(thread, 1).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(200, 100), FragmentAt(thread, 1).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(200, 100),
+            FragmentAt(thread, 1).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(200), FragmentAt(thread, 1).LogicalTopInFlowThread());
 
   LayoutObject* content = GetLayoutObjectByElementId("content");
   EXPECT_EQ(2u, NumFragments(content));
   EXPECT_EQ(PhysicalOffset(-200, 0), FragmentAt(content, 0).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(), FragmentAt(content, 0).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
   EXPECT_EQ(PhysicalOffset(0, 100), FragmentAt(content, 1).PaintOffset());
   EXPECT_EQ(PhysicalOffset(200, 100),
-            FragmentAt(content, 1).PaginationOffset());
+            FragmentAt(content, 1).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 1).LogicalTopInFlowThread());
 }
 
@@ -4290,15 +4295,15 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
   EXPECT_TRUE(thread->IsLayoutFlowThread());
   EXPECT_EQ(3u, NumFragments(thread));
   EXPECT_EQ(PhysicalOffset(), FragmentAt(thread, 0).PaintOffset());
-  EXPECT_EQ(PhysicalOffset(), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(), FragmentAt(thread, 0).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), FragmentAt(thread, 0).LogicalTopInFlowThread());
   EXPECT_EQ(PhysicalOffset(100, -200), FragmentAt(thread, 1).PaintOffset());
   EXPECT_EQ(PhysicalOffset(100, -200),
-            FragmentAt(thread, 1).PaginationOffset());
+            FragmentAt(thread, 1).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(200), FragmentAt(thread, 1).LogicalTopInFlowThread());
   EXPECT_EQ(PhysicalOffset(200, -400), FragmentAt(thread, 2).PaintOffset());
   EXPECT_EQ(PhysicalOffset(200, -400),
-            FragmentAt(thread, 2).PaginationOffset());
+            FragmentAt(thread, 2).LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(400), FragmentAt(thread, 2).LogicalTopInFlowThread());
 
   LayoutObject* composited = GetLayoutObjectByElementId("composited");
@@ -4312,33 +4317,33 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
     EXPECT_EQ(PhysicalOffset(100, 100),
               FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(100, -200),
-              FragmentAt(composited, 0).PaginationOffset());
+              FragmentAt(composited, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(200),
               FragmentAt(composited, 0).LogicalTopInFlowThread());
     EXPECT_EQ(PhysicalOffset(200, -100),
               FragmentAt(composited, 1).PaintOffset());
     EXPECT_EQ(PhysicalOffset(200, -400),
-              FragmentAt(composited, 1).PaginationOffset());
+              FragmentAt(composited, 1).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(400),
               FragmentAt(composited, 1).LogicalTopInFlowThread());
     EXPECT_EQ(2u, NumFragments(non_composited_child));
     EXPECT_EQ(PhysicalOffset(100, 100),
               FragmentAt(non_composited_child, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(100, -200),
-              FragmentAt(non_composited_child, 0).PaginationOffset());
+              FragmentAt(non_composited_child, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(200),
               FragmentAt(non_composited_child, 0).LogicalTopInFlowThread());
     EXPECT_EQ(PhysicalOffset(200, -100),
               FragmentAt(non_composited_child, 1).PaintOffset());
     EXPECT_EQ(PhysicalOffset(200, -400),
-              FragmentAt(non_composited_child, 1).PaginationOffset());
+              FragmentAt(non_composited_child, 1).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(400),
               FragmentAt(non_composited_child, 1).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(composited_child));
     EXPECT_EQ(PhysicalOffset(200, 50),
               FragmentAt(composited_child, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(200, -400),
-              FragmentAt(composited_child, 0).PaginationOffset());
+              FragmentAt(composited_child, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(400),
               FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   } else {
@@ -4347,21 +4352,21 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
     EXPECT_EQ(PhysicalOffset(100, 100),
               FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(100, -200),
-              FragmentAt(composited, 0).PaginationOffset());
+              FragmentAt(composited, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(200),
               FragmentAt(composited, 0).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(non_composited_child));
     EXPECT_EQ(PhysicalOffset(100, 100),
               FragmentAt(non_composited_child, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(100, -200),
-              FragmentAt(non_composited_child, 0).PaginationOffset());
+              FragmentAt(non_composited_child, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(200),
               FragmentAt(non_composited_child, 0).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(composited_child));
     EXPECT_EQ(PhysicalOffset(100, 250),
               FragmentAt(composited_child, 0).PaintOffset());
     EXPECT_EQ(PhysicalOffset(100, -200),
-              FragmentAt(composited_child, 0).PaginationOffset());
+              FragmentAt(composited_child, 0).LegacyPaginationOffset());
     EXPECT_EQ(LayoutUnit(200),
               FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   }
@@ -4443,8 +4448,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
   // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
 }
 
-TEST_P(PaintPropertyTreeBuilderTest,
-       BecomingUnfragmentedClearsPaginationOffsetAndLogicalTopInFlowThread) {
+TEST_P(
+    PaintPropertyTreeBuilderTest,
+    BecomingUnfragmentedClearsLegacyPaginationOffsetAndLogicalTopInFlowThread) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #target {
@@ -4460,13 +4466,13 @@ TEST_P(PaintPropertyTreeBuilderTest,
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   EXPECT_EQ(PhysicalOffset(LayoutUnit(392.5f), LayoutUnit(-20)),
-            target->FirstFragment().PaginationOffset());
+            target->FirstFragment().LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(20), target->FirstFragment().LogicalTopInFlowThread());
   Element* target_element = GetDocument().getElementById("target");
 
   target_element->setAttribute(html_names::kStyleAttr, "position: absolute");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalOffset(), target->FirstFragment().PaginationOffset());
+  EXPECT_EQ(PhysicalOffset(), target->FirstFragment().LegacyPaginationOffset());
   EXPECT_EQ(LayoutUnit(), target->FirstFragment().LogicalTopInFlowThread());
 }
 

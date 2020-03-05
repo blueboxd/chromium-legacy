@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.feed.library.sharedstream.ui;
 
 import android.content.Context;
 import android.content.res.Resources.Theme;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import org.chromium.chrome.feed.R;
 

@@ -229,10 +229,6 @@ int ShelfConfig::control_border_radius() const {
              : control_size() / 2;
 }
 
-int ShelfConfig::overflow_button_margin() const {
-  return (button_size() - control_size()) / 2;
-}
-
 int ShelfConfig::control_button_edge_spacing(bool is_primary_axis_edge) const {
   if (is_primary_axis_edge)
     return Shell::Get()->IsInTabletMode() ? 8 : 6;

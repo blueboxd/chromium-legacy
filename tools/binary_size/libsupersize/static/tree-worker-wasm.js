@@ -6,6 +6,7 @@
 
 importScripts('./shared.js');
 importScripts('./caspian_web.js');
+importScripts('./auth-consts.js');
 
 const LoadWasm = new Promise(function(resolve, reject) {
   Module['onRuntimeInitialized'] = function() {
@@ -49,13 +50,42 @@ class DataFetcher {
   }
 
   /**
+   * Sets the access token to be used for authenticated requests. If accessToken
+   * is non-null and the URL is a google storage URL, an authenticated request
+   * is performed instead.
+   * @param {?string} accessToken
+   */
+  setAccessToken(accessToken) {
+    this._accessToken = accessToken;
+  }
+
+  /**
    * Starts a new request and aborts the previous one.
    * @param {string | Request} url
    */
-  async fetch(url) {
+  async fetchUrl(url) {
+    if (this._accessToken && looksLikeGoogleCloudStorage(url)) {
+      return this._fetchFromGoogleCloudStorage(url);
+    } else {
+      return this._doFetch(url);
+    }
+  }
+
+  async _fetchFromGoogleCloudStorage(url) {
+    const {bucket, file} = parseGoogleCloudStorageUrl(url);
+    const params = `alt=media&key=${AUTH_API_KEY}`;
+    const api_url = `${STORAGE_API_ENDPOINT}/b/${bucket}/o/${file}?${params}`;
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${this._accessToken}`);
+    return this._doFetch(api_url, headers);
+  }
+
+  async _doFetch(url, headers) {
     if (this._controller) this._controller.abort();
     this._controller = new AbortController();
-    const headers = new Headers();
+    if (!headers) {
+      headers = new Headers();
+    }
     headers.append('cache-control', 'no-cache');
     return fetch(url, {
       headers,
@@ -69,11 +99,23 @@ class DataFetcher {
    */
   async loadSizeBuffer() {
     if (!this._cache) {
-      const response = await this.fetch(this._input);
+      const response = await this.fetchUrl(this._input);
       this._cache = new Uint8Array(await response.arrayBuffer());
     }
     return this._cache;
   }
+}
+
+function looksLikeGoogleCloudStorage(url) {
+  return url.startsWith('https://storage.googleapis.com/');
+}
+
+function parseGoogleCloudStorageUrl(url) {
+  const re = /^https:\/\/storage\.googleapis\.com\/(?<bucket>[^\/]+)\/(?<file>.+)/;
+  const match = re.exec(url);
+  const bucket = encodeURIComponent(match.groups['bucket']);
+  const file = encodeURIComponent(match.groups['file']);
+  return {bucket, file};
 }
 
 function mallocBuffer(buf) {
@@ -195,8 +237,8 @@ function parseOptions(options) {
 }
 
 const actions = {
-  /** @param {{input:string|null,options:string}} param0 */
-  load({input, options}) {
+  /** @param {{input:string|null,accessToken:string|null,options:string}} param0 */
+  load({input, accessToken, options}) {
     const {
       groupBy,
       includeRegex,
@@ -208,6 +250,9 @@ const actions = {
       url,
       beforeUrl,
     } = parseOptions(options);
+    if (accessToken) {
+      fetcher.setAccessToken(accessToken);
+    }
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);

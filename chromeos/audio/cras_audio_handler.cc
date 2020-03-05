@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -243,17 +244,56 @@ void CrasAudioHandler::MediaSessionInfoChanged(
 
   switch (session_info->state) {
     case media_session::mojom::MediaSessionInfo::SessionState::kActive:
+    case media_session::mojom::MediaSessionInfo::SessionState::kDucking:
       state = "playing";
       break;
     case media_session::mojom::MediaSessionInfo::SessionState::kSuspended:
       state = "paused";
       break;
-    default:
+    case media_session::mojom::MediaSessionInfo::SessionState::kInactive:
       state = "stopped";
       break;
   }
 
   CrasAudioClient::Get()->SetPlayerPlaybackStatus(state);
+}
+
+void CrasAudioHandler::MediaSessionMetadataChanged(
+    const base::Optional<media_session::MediaMetadata>& metadata) {
+  if (!metadata || metadata->IsEmpty())
+    return;
+
+  const std::map<std::string, std::string> metadata_map = {
+      {"title", base::UTF16ToASCII(metadata->title)},
+      {"artist", base::UTF16ToASCII(metadata->artist)},
+      {"album", base::UTF16ToASCII(metadata->album)}};
+  const std::string source_title = base::UTF16ToASCII(metadata->source_title);
+
+  // Assume media duration/length should always change with new metadata.
+  fetch_media_session_duration_ = true;
+  CrasAudioClient::Get()->SetPlayerMetadata(metadata_map);
+  CrasAudioClient::Get()->SetPlayerIdentity(source_title);
+}
+
+void CrasAudioHandler::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  if (!position)
+    return;
+
+  int64_t duration = 0;
+  if (fetch_media_session_duration_) {
+    duration = position->duration().InMicroseconds();
+    if (duration > 0) {
+      CrasAudioClient::Get()->SetPlayerDuration(duration);
+      fetch_media_session_duration_ = false;
+    }
+  }
+
+  int64_t current_position = position->GetPosition().InMicroseconds();
+  if (current_position < 0 || current_position > duration)
+    return;
+
+  CrasAudioClient::Get()->SetPlayerPosition(current_position);
 }
 
 void CrasAudioHandler::AddAudioObserver(AudioObserver* observer) {

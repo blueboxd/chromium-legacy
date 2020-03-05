@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/media_engagement_session.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/media/media_engagement_service.h"

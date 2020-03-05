@@ -17,9 +17,11 @@ class BinaryDepsManagerTests(unittest.TestCase):
   def setUp(self):
     self.temp_dir = tempfile.mkdtemp()
     self.config_path = os.path.join(self.temp_dir, 'config.json')
+    self.original_config_path = binary_deps_manager.CONFIG_PATH
     binary_deps_manager.CONFIG_PATH = self.config_path
 
   def tearDown(self):
+    binary_deps_manager.CONFIG_PATH = self.original_config_path
     shutil.rmtree(self.temp_dir)
 
   def writeConfig(self, config):

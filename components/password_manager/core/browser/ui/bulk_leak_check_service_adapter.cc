@@ -7,6 +7,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
@@ -19,9 +20,10 @@ namespace {
 
 using autofill::PasswordForm;
 
-// Simple struct that stores a canonicalized credential.
+// Simple struct that stores a canonicalized credential. Allows implicit
+// constructon from PasswordForm for convenience.
 struct CanonicalizedCredential {
-  explicit CanonicalizedCredential(const PasswordForm& form)
+  CanonicalizedCredential(const PasswordForm& form)
       : canonicalized_username(CanonicalizeUsername(form.username_value)),
         password(form.password_value) {}
 
@@ -36,16 +38,6 @@ bool operator<(const CanonicalizedCredential& lhs,
 }
 
 }  // namespace
-
-const char kBulkLeakCheckDataKey[] = "bulk-leak-check-data";
-
-BulkLeakCheckData::BulkLeakCheckData(const PasswordForm& leaked_form)
-    : leaked_forms({leaked_form}) {}
-
-BulkLeakCheckData::BulkLeakCheckData(std::vector<PasswordForm> leaked_forms)
-    : leaked_forms(std::move(leaked_forms)) {}
-
-BulkLeakCheckData::~BulkLeakCheckData() = default;
 
 BulkLeakCheckServiceAdapter::BulkLeakCheckServiceAdapter(
     SavedPasswordsPresenter* presenter,
@@ -66,26 +58,19 @@ bool BulkLeakCheckServiceAdapter::StartBulkLeakCheck() {
 
   // Even though the BulkLeakCheckService performs canonicalization eventually
   // we do it here to de-dupe credentials that have the same canonicalized form.
-  // Each canonicalized credential is mapped to a list of saved passwords that
-  // correspond to this credential.
-  std::map<CanonicalizedCredential, std::vector<PasswordForm>> canonicalized;
-  for (const PasswordForm& form : presenter_->GetSavedPasswords())
-    canonicalized[CanonicalizedCredential(form)].push_back(form);
+  SavedPasswordsPresenter::SavedPasswordsView saved_passwords =
+      presenter_->GetSavedPasswords();
+  base::flat_set<CanonicalizedCredential> canonicalized(saved_passwords.begin(),
+                                                        saved_passwords.end());
 
-  // Build the list of LeakCheckCredentials and attach the corresponding saved
-  // passwords as UserData. Lastly,forward them to the service to start the
-  // check.
+  // Build the list of LeakCheckCredentials and forward them to the service to
+  // start the check.
   std::vector<LeakCheckCredential> credentials;
   credentials.reserve(canonicalized.size());
 
-  for (auto& pair : canonicalized) {
-    const CanonicalizedCredential& credential = pair.first;
-    std::vector<PasswordForm>& forms = pair.second;
+  for (const auto& credential : canonicalized) {
     credentials.emplace_back(credential.canonicalized_username,
                              credential.password);
-    credentials.back().SetUserData(
-        kBulkLeakCheckDataKey,
-        std::make_unique<BulkLeakCheckData>(std::move(forms)));
   }
 
   service_->CheckUsernamePasswordPairs(std::move(credentials));
@@ -110,8 +95,6 @@ void BulkLeakCheckServiceAdapter::OnEdited(const PasswordForm& form) {
   // could de-dupe before we pass it on to the service.
   std::vector<LeakCheckCredential> credentials;
   credentials.emplace_back(form.username_value, form.password_value);
-  credentials.back().SetUserData(kBulkLeakCheckDataKey,
-                                 std::make_unique<BulkLeakCheckData>(form));
   service_->CheckUsernamePasswordPairs(std::move(credentials));
 }
 

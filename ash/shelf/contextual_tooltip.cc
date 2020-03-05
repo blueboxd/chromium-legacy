@@ -137,7 +137,8 @@ void ClearPrefs() {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService(),
       prefs::kContextualTooltips);
   base::DictionaryValue* nudges_dict = update.Get();
-  nudges_dict->Clear();
+  if (nudges_dict && !nudges_dict->empty())
+    nudges_dict->Clear();
 }
 
 void OverrideClockForTesting(base::Clock* test_clock) {

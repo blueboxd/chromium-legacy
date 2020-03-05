@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
+#include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/intervention_report_body.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -123,7 +124,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
   const String& type = report->type();
   if (!(type == ReportType::kCSPViolation || type == ReportType::kDeprecation ||
         type == ReportType::kFeaturePolicyViolation ||
-        type == ReportType::kIntervention)) {
+        type == ReportType::kIntervention ||
+        type == ReportType::kDocumentPolicyViolation)) {
     return;
   }
 
@@ -170,6 +172,14 @@ void ReportingContext::SendToReportingAPI(Report* report,
         static_cast<InterventionReportBody*>(report->body());
     GetReportingService()->QueueInterventionReport(
         url, body->id(), body->message(), body->sourceFile(), line_number,
+        column_number);
+  } else if (type == ReportType::kDocumentPolicyViolation) {
+    const DocumentPolicyViolationReportBody* body =
+        static_cast<DocumentPolicyViolationReportBody*>(report->body());
+    // Send the document policy violation report.
+    GetReportingService()->QueueDocumentPolicyViolationReport(
+        url, endpoint, body->featureId(), body->disposition(),
+        "Document policy violation", body->sourceFile(), line_number,
         column_number);
   }
 }

@@ -1,5 +1,12 @@
+# crbug.com/1054829
+-All/TouchActionBrowserTest.PanXAtYAreaWithTimeout/0
+-All/TouchActionBrowserTest.TouchActionNone/1
+
 # crbug.com/1056878
 -BackForwardCacheBrowserTest.VideoSuspendAndResume
+
+# crbug.com/1058447
+-SitePerProcessBrowserTest.FrameViewportOffsetTestSimple
 
 # crbug.com/1056325
 -WebRtcAudioBrowserTest.EstablishAudioVideoCallAndVerifyLocalMutingWorks

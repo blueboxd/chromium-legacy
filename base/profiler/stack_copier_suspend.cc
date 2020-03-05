@@ -27,7 +27,8 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
                                    uintptr_t* stack_top,
                                    ProfileBuilder* profile_builder,
                                    TimeTicks* timestamp,
-                                   RegisterContext* thread_context) {
+                                   RegisterContext* thread_context,
+                                   Delegate* delegate) {
   const uintptr_t top = thread_delegate_->GetStackBaseAddress();
   uintptr_t bottom = 0;
   const uint8_t* stack_copy_bottom = nullptr;
@@ -66,6 +67,8 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
       return false;
 
     profile_builder->RecordMetadata(get_metadata_items.get());
+
+    delegate->OnStackCopy();
 
     stack_copy_bottom = CopyStackContentsAndRewritePointers(
         reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),

@@ -4,6 +4,7 @@
 
 #include <chrome/browser/chromeos/login/web_kiosk_controller.h>
 
+#include "base/bind_helpers.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"

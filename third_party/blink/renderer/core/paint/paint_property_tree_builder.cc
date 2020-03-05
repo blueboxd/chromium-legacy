@@ -2219,7 +2219,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
     PhysicalOffset paint_offset =
         PaintOffsetInPaginationContainer(object_, *enclosing_pagination_layer);
 
-    paint_offset += fragment_data_.PaginationOffset();
+    paint_offset += fragment_data_.LegacyPaginationOffset();
     paint_offset += context_.repeating_paint_offset_adjustment;
     paint_offset +=
         VisualOffsetFromPaintOffsetRoot(context_, enclosing_pagination_layer);
@@ -2529,7 +2529,7 @@ void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
         PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
     fragment.ClearPaintProperties();
   }
-  fragment.SetPaginationOffset(pagination_offset);
+  fragment.SetLegacyPaginationOffset(pagination_offset);
   fragment.SetLogicalTopInFlowThread(logical_top_in_flow_thread);
 }
 
@@ -2625,7 +2625,7 @@ void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
         BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer)
             .ToLayoutRect());
     if (!iterator.AtEnd()) {
-      first_fragment.SetPaginationOffset(
+      first_fragment.SetLegacyPaginationOffset(
           PhysicalOffsetToBeNoop(iterator.PaginationOffset()));
       first_fragment.SetLogicalTopInFlowThread(
           iterator.FragmentainerLogicalTopInFlowThread());
@@ -2634,7 +2634,7 @@ void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
     // All objects under the composited layer use the same pagination offset.
     const auto& fragment =
         parent_composited_layer->GetLayoutObject().FirstFragment();
-    first_fragment.SetPaginationOffset(fragment.PaginationOffset());
+    first_fragment.SetLegacyPaginationOffset(fragment.LegacyPaginationOffset());
     first_fragment.SetLogicalTopInFlowThread(fragment.LogicalTopInFlowThread());
   }
 }

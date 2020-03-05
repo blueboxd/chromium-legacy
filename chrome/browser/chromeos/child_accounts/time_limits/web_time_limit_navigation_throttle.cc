@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"

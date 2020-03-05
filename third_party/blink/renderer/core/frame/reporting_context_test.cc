@@ -101,6 +101,18 @@ class MockReportingServiceProxy : public mojom::blink::ReportingServiceProxy {
       std::move(reached_callback_).Run();
   }
 
+  void QueueDocumentPolicyViolationReport(const KURL& url,
+                                          const String& endpoint,
+                                          const String& policy_id,
+                                          const String& disposition,
+                                          const String& message,
+                                          const String& source_file,
+                                          int32_t line_number,
+                                          int32_t column_number) override {
+    if (reached_callback_)
+      std::move(reached_callback_).Run();
+  }
+
   ThreadSafeBrowserInterfaceBrokerProxy& broker_;
   mojo::ReceiverSet<ReportingServiceProxy> receivers_;
   base::OnceClosure reached_callback_;

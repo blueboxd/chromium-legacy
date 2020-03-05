@@ -6,6 +6,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/NotificationSuspender_jni.h"
 #include "chrome/browser/profiles/profile.h"

@@ -291,8 +291,10 @@ public class WebApkIntentDataProviderFactory {
             }
         }
 
+        // Check the OS version because the same WebAPK is vended by the WebAPK server for all OS
+        // versions.
         boolean isPrimaryIconMaskable =
-                primaryMaskableIconId != 0 && ShortcutHelper.doesAndroidSupportMaskableIcons();
+                primaryMaskableIconId != 0 && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O);
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);

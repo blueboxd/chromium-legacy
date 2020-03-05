@@ -153,16 +153,6 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StartBulkLeakCheck) {
   expected.push_back(MakeLeakCheckCredential(kUsername2, kPassword2));
 
   EXPECT_THAT(credentials, CredentialsAre(std::cref(expected)));
-
-  EXPECT_THAT(static_cast<BulkLeakCheckData*>(
-                  credentials[0].GetUserData(kBulkLeakCheckDataKey))
-                  ->leaked_forms,
-              SavedPasswordsAre(base::make_span(&passwords[0], 1)));
-
-  EXPECT_THAT(static_cast<BulkLeakCheckData*>(
-                  credentials[1].GetUserData(kBulkLeakCheckDataKey))
-                  ->leaked_forms,
-              SavedPasswordsAre(base::make_span(&passwords[1], 1)));
 }
 
 // Tests that multiple credentials with effectively the same username are
@@ -188,11 +178,6 @@ TEST_F(BulkLeakCheckServiceAdapterTest, StartBulkLeakCheckDedupes) {
   std::vector<LeakCheckCredential> expected;
   expected.push_back(MakeLeakCheckCredential("alice", kPassword1));
   EXPECT_THAT(credentials, CredentialsAre(std::cref(expected)));
-
-  EXPECT_THAT(static_cast<BulkLeakCheckData*>(
-                  credentials[0].GetUserData(kBulkLeakCheckDataKey))
-                  ->leaked_forms,
-              SavedPasswordsAre(passwords));
 }
 
 // Checks that trying to start a leak check when another check is already

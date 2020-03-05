@@ -26,6 +26,19 @@ class StatusIndicatorProperties {
     static final PropertyModel.WritableBooleanPropertyKey COMPOSITED_VIEW_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
-            STATUS_TEXT, STATUS_ICON, ANDROID_VIEW_VISIBILITY, COMPOSITED_VIEW_VISIBLE};
+    static final PropertyModel.WritableIntPropertyKey BACKGROUND_COLOR =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyModel.WritableFloatPropertyKey TEXT_ALPHA =
+            new PropertyModel.WritableFloatPropertyKey();
+
+    static final PropertyModel.WritableIntPropertyKey TEXT_COLOR =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyModel.WritableIntPropertyKey ICON_TINT =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {STATUS_TEXT, STATUS_ICON, ANDROID_VIEW_VISIBILITY,
+                    COMPOSITED_VIEW_VISIBLE, BACKGROUND_COLOR, TEXT_ALPHA, TEXT_COLOR, ICON_TINT};
 }

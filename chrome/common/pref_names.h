@@ -313,6 +313,7 @@ extern const char kParentAccessCodeConfig[];
 extern const char kPerAppTimeLimitsAppActivities[];
 extern const char kPerAppTimeLimitsLastResetTime[];
 extern const char kPerAppTimeLimitsLastSuccessfulReportTime[];
+extern const char kPerAppTimeLimitsLatestLimitUpdateTime[];
 extern const char kPerAppTimeLimitsPolicy[];
 extern const char kPerAppTimeLimitsWhitelistPolicy[];
 extern const char kDeviceWallpaperImageFilePath[];

@@ -624,6 +624,7 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
         home_button_metrics_reporter_.get());
     bounds_animator_->AnimateViewTo(home_button, home_button_bounds);
   } else {
+    bounds_animator_->StopAnimatingView(home_button);
     home_button->SetBoundsRect(home_button_bounds);
   }
 

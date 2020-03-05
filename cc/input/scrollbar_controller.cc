@@ -329,22 +329,26 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   if (drag_processed_for_current_frame_)
     return scroll_result;
 
-  const ScrollNode* currently_scrolling_node =
-      layer_tree_host_impl_->CurrentlyScrollingNode();
+  // When initiating a thumb drag, a pointerdown and a pointermove can both
+  // arrive a the ScrollbarController in succession before a GSB would have
+  // been dispatched. So, querying LayerTreeHostImpl::CurrentlyScrollingNode()
+  // can potentially be null. Hence, a better way to look the target_node to be
+  // scrolled is by using ScrollbarLayerImplBase::scroll_element_id().
+  const ScrollNode* target_node =
+      layer_tree_host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
 
-  // Thumb drag needs a scroll_node. Clear the thumb drag state and exit if it
-  // is unset.
-  if (currently_scrolling_node == nullptr) {
-    drag_state_ = base::nullopt;
-    return scroll_result;
-  }
+  // If a scrollbar exists, it should always have an ElementId pointing to a
+  // valid ScrollNode.
+  DCHECK(target_node);
 
   // If scroll_offset can't be consumed, there's no point in continuing on.
   const gfx::ScrollOffset scroll_offset(
       GetScrollOffsetForDragPosition(scrollbar, position_in_widget));
   const gfx::Vector2dF clamped_scroll_offset(
       layer_tree_host_impl_->ComputeScrollDelta(
-          *currently_scrolling_node, ScrollOffsetToVector2dF(scroll_offset)));
+          *target_node, ScrollOffsetToVector2dF(scroll_offset)));
 
   if (clamped_scroll_offset.IsZero())
     return scroll_result;

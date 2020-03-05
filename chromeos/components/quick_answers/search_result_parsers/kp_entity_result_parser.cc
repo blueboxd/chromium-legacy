@@ -38,9 +38,12 @@ bool KpEntityResultParser::Parse(const Value* result,
   const auto* aggregated_count = entity->FindStringPath(kRatingCountPath);
 
   if (average_score.has_value() && aggregated_count) {
-    quick_answer->primary_answer =
+    const auto& answer =
         base::StringPrintf(kRatingReviewTemplate, average_score.value(),
                            aggregated_count->c_str());
+    quick_answer->primary_answer = answer;
+    quick_answer->first_answer_row.push_back(
+        std::make_unique<QuickAnswerResultText>(answer));
   } else {
     const std::string* localized_known_for_reason =
         entity->FindStringPath(kKnownForReasonPath);
@@ -50,6 +53,8 @@ bool KpEntityResultParser::Parse(const Value* result,
     }
 
     quick_answer->primary_answer = *localized_known_for_reason;
+    quick_answer->first_answer_row.push_back(
+        std::make_unique<QuickAnswerResultText>(*localized_known_for_reason));
   }
 
   quick_answer->result_type = ResultType::kKnowledgePanelEntityResult;

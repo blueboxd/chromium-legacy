@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.feed.library.sharedstream.ui;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.view.View;
+
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import org.junit.Before;
 import org.junit.Test;

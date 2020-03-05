@@ -95,6 +95,9 @@ struct HandlerParams {
 
   // The timestamp when the stack was copied.
   TimeTicks* timestamp;
+
+  // The delegate provided to the StackCopier.
+  StackCopier::Delegate* stack_copier_delegate;
 };
 
 // Pointer to the parameters to be "passed" to the CopyStackSignalHandler() from
@@ -127,13 +130,16 @@ void CopyStackSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
     return;
   }
 
+  // TODO(https://crbug.com/988579): Record metadata while the thread is
+  // suspended.
+
+  params->stack_copier_delegate->OnStackCopy();
+
   *params->stack_copy_bottom =
       StackCopierSignal::CopyStackContentsAndRewritePointers(
           reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
           StackBuffer::kPlatformStackAlignment, params->stack_buffer->buffer());
 
-  // TODO(https://crbug.com/988579): Record metadata while the thread is
-  // suspended.
   *params->success = true;
 }
 
@@ -188,14 +194,15 @@ bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
                                   uintptr_t* stack_top,
                                   ProfileBuilder* profile_builder,
                                   TimeTicks* timestamp,
-                                  RegisterContext* thread_context) {
+                                  RegisterContext* thread_context,
+                                  Delegate* delegate) {
   AsyncSafeWaitableEvent wait_event;
   bool copied = false;
   const uint8_t* stack_copy_bottom = nullptr;
   const uintptr_t stack_base_address = thread_delegate_->GetStackBaseAddress();
   HandlerParams params = {stack_base_address, &wait_event,  &copied,
                           thread_context,     stack_buffer, &stack_copy_bottom,
-                          timestamp};
+                          timestamp,          delegate};
   {
     ScopedSetSignalHandlerParams scoped_handler_params(&params);
 

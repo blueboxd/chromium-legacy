@@ -1502,6 +1502,15 @@ void DocumentLoader::InstallNewDocument(
           .WithReportOnlyFeaturePolicyHeader(
               response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly))
           .WithDocumentPolicy(document_policy_)
+          // |document_policy_| is parsed in document loader because it is
+          // compared with |frame_policy.required_document_policy| to decide
+          // whether to block the document load or not.
+          // |report_only_document_policy| does not block the page load. Its
+          // initialization is delayed to
+          // SecurityContextInit::InitializeDocumentPolicy(), similar to
+          // |report_only_feature_policy|.
+          .WithReportOnlyDocumentPolicyHeader(
+              response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly))
           .WithOriginTrialsHeader(
               response_.HttpHeaderField(http_names::kOriginTrial))
           .WithContentSecurityPolicy(content_security_policy_.Get());

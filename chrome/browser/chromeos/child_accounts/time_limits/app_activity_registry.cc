@@ -146,6 +146,7 @@ void AppActivityRegistry::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kPerAppTimeLimitsAppActivities);
   registry->RegisterInt64Pref(prefs::kPerAppTimeLimitsLastSuccessfulReportTime,
                               0);
+  registry->RegisterInt64Pref(prefs::kPerAppTimeLimitsLatestLimitUpdateTime, 0);
 }
 
 AppActivityRegistry::AppActivityRegistry(
@@ -190,8 +191,13 @@ void AppActivityRegistry::OnAppUninstalled(const AppId& app_id) {
 }
 
 void AppActivityRegistry::OnAppAvailable(const AppId& app_id) {
-  if (base::Contains(activity_registry_, app_id))
-    SetAppState(app_id, AppState::kAvailable);
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+
+  if (GetAppState(app_id) == AppState::kLimitReached)
+    return;
+
+  SetAppState(app_id, AppState::kAvailable);
 }
 
 void AppActivityRegistry::OnAppBlocked(const AppId& app_id) {
@@ -204,6 +210,18 @@ void AppActivityRegistry::OnAppActive(const AppId& app_id,
                                       base::Time timestamp) {
   if (!base::Contains(activity_registry_, app_id))
     return;
+
+  // We are notified that a paused app is active. Notify observers to pause it.
+  if (GetAppState(app_id) == AppState::kLimitReached) {
+    for (auto& observer : app_state_observers_) {
+      const base::Optional<AppLimit>& limit =
+          activity_registry_.at(app_id).limit;
+      DCHECK(limit->daily_limit());
+      observer.OnAppLimitReached(app_id, limit->daily_limit().value(),
+                                 /* was_active */ true);
+    }
+    return;
+  }
 
   if (app_id == GetChromeAppId())
     return;
@@ -386,6 +404,7 @@ void AppActivityRegistry::OnSuccessfullyReported(base::Time timestamp) {
 
 void AppActivityRegistry::UpdateAppLimits(
     const std::map<AppId, AppLimit>& app_limits) {
+  base::Time latest_update = latest_app_limit_update_;
   for (auto& entry : activity_registry_) {
     const AppId& app_id = entry.first;
     base::Optional<AppLimit> new_limit;
@@ -404,7 +423,17 @@ void AppActivityRegistry::UpdateAppLimits(
     }
 
     SetAppLimit(app_id, new_limit);
+
+    if (new_limit && new_limit->last_updated() > latest_update)
+      latest_update = new_limit->last_updated();
   }
+
+  latest_app_limit_update_ = latest_update;
+
+  // Update the latest app limit update.
+  profile_->GetPrefs()->SetInt64(
+      prefs::kPerAppTimeLimitsLatestLimitUpdateTime,
+      latest_app_limit_update_.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 void AppActivityRegistry::SetAppLimit(
@@ -472,6 +501,11 @@ void AppActivityRegistry::OnChromeAppActivityChanged(
   bool was_active = details.activity.is_active();
 
   bool is_active = (state == ChromeAppActivityState::kActive);
+
+  // No need to notify observers that limit has reached. They will be notified
+  // in AppActivityRegistry::OnAppActive.
+  if (GetAppState(chrome_app_id) == AppState::kLimitReached && is_active)
+    return;
 
   // No change in state.
   if (was_active == is_active)
@@ -622,7 +656,7 @@ void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
     if (app_activity.is_active()) {
       was_active = true;
       app_details.active_windows.clear();
-      app_activity.SetAppInactive(base::Time::Now());
+      SetAppInactive(app_id, base::Time::Now());
     }
 
     for (auto& observer : app_state_observers_) {
@@ -819,6 +853,12 @@ void AppActivityRegistry::ShowLimitUpdatedNotificationIfNeeded(
   if (app_id.app_type() == apps::mojom::AppType::kWeb)
     return;
 
+  // Don't show notification if the time limit's update was older than the
+  // latest update.
+  if (new_limit && new_limit->last_updated() <= latest_app_limit_update_) {
+    return;
+  }
+
   const bool had_time_limit =
       old_limit && old_limit->restriction() == AppRestriction::kTimeLimit;
   const bool has_time_limit =
@@ -871,6 +911,19 @@ void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
 }
 
 void AppActivityRegistry::InitializeRegistryFromPref() {
+  PrefService* pref_service = profile_->GetPrefs();
+  DCHECK(pref_service);
+
+  int64_t last_limits_updates =
+      pref_service->GetInt64(prefs::kPerAppTimeLimitsLatestLimitUpdateTime);
+
+  latest_app_limit_update_ = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(last_limits_updates));
+
+  InitializeAppActivities();
+}
+
+void AppActivityRegistry::InitializeAppActivities() {
   PrefService* pref_service = profile_->GetPrefs();
   const base::Value* value =
       pref_service->GetList(prefs::kPerAppTimeLimitsAppActivities);

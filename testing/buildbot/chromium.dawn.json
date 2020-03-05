@@ -20,7 +20,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -45,7 +45,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -69,7 +69,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -94,7 +94,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -119,7 +119,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -143,7 +143,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -167,7 +167,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -188,7 +188,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -210,7 +210,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -239,7 +239,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -269,7 +269,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -294,7 +294,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -319,7 +319,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -343,7 +343,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -368,7 +368,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -393,7 +393,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -417,7 +417,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -441,7 +441,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -462,7 +462,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -484,7 +484,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -513,7 +513,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -543,7 +543,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -568,7 +568,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -593,7 +593,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -617,7 +617,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -642,7 +642,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -667,7 +667,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -691,7 +691,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -715,7 +715,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -744,7 +744,7 @@
             {
               "gpu": "intel-hd-630-ubuntu-stable",
               "os": "linux-intel-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -769,7 +769,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -794,7 +794,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -818,7 +818,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -843,7 +843,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -868,7 +868,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -892,7 +892,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -916,7 +916,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -945,7 +945,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -973,7 +973,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -999,7 +999,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1024,7 +1024,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1050,7 +1050,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1076,7 +1076,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1101,7 +1101,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1126,7 +1126,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1148,7 +1148,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1170,7 +1170,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1200,7 +1200,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1230,7 +1230,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1517,7 +1517,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1543,7 +1543,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1568,7 +1568,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1594,7 +1594,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1620,7 +1620,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1645,7 +1645,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1670,7 +1670,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1700,7 +1700,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "mac-amd-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1920,7 +1920,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1945,7 +1945,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1969,7 +1969,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -1994,7 +1994,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2019,7 +2019,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2043,7 +2043,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2067,7 +2067,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2088,7 +2088,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2109,7 +2109,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2138,7 +2138,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2168,7 +2168,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2193,7 +2193,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2218,7 +2218,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2242,7 +2242,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2267,7 +2267,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2292,7 +2292,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2316,7 +2316,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2340,7 +2340,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2361,7 +2361,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2382,7 +2382,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2411,7 +2411,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2441,7 +2441,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2466,7 +2466,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2491,7 +2491,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2515,7 +2515,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2540,7 +2540,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2565,7 +2565,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2589,7 +2589,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2613,7 +2613,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2642,7 +2642,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2667,7 +2667,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2692,7 +2692,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2716,7 +2716,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2741,7 +2741,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2766,7 +2766,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2790,7 +2790,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2814,7 +2814,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2843,7 +2843,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2870,7 +2870,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2895,7 +2895,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2919,7 +2919,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2944,7 +2944,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2969,7 +2969,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -2993,7 +2993,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3017,7 +3017,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3038,7 +3038,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3059,7 +3059,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3088,7 +3088,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3117,7 +3117,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3142,7 +3142,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3167,7 +3167,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3191,7 +3191,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3216,7 +3216,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3241,7 +3241,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3265,7 +3265,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3289,7 +3289,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3310,7 +3310,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3331,7 +3331,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3360,7 +3360,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3389,7 +3389,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3414,7 +3414,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3439,7 +3439,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3463,7 +3463,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3488,7 +3488,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3513,7 +3513,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3537,7 +3537,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3561,7 +3561,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3590,7 +3590,7 @@
             {
               "gpu": "intel-hd-630-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3615,7 +3615,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3640,7 +3640,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3664,7 +3664,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3689,7 +3689,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3714,7 +3714,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3738,7 +3738,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3762,7 +3762,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },
@@ -3791,7 +3791,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ]
         },

@@ -300,7 +300,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   base::TimeTicks last_write_to_disk_;
 
   base::OneShotTimer write_to_disk_timer_;
-  base::Closure write_to_disk_cb_;
+  base::RepeatingClosure write_to_disk_cb_;
 
   typedef std::list<net::CompletionOnceCallback> CallbackList;
   CallbackList to_run_when_initialized_;

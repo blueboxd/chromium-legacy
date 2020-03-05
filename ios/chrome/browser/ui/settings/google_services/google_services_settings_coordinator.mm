@@ -269,7 +269,7 @@
 
 #pragma mark - ManageSyncSettingsCoordinatorDelegate
 
-- (void)manageSyncSettingsCoordinatorWasPopped:
+- (void)manageSyncSettingsCoordinatorWasRemoved:
     (ManageSyncSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.manageSyncSettingsCoordinator, coordinator);
   [self.manageSyncSettingsCoordinator stop];

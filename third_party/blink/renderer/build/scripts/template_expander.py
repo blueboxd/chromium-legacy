@@ -73,7 +73,7 @@ def use_jinja(template_path, filters=None, tests=None, template_cache=None):
                 tests=tests,
                 template_cache=template_cache)
 
-        generator_internal.func_name = generator.func_name
+        generator_internal.__name__ = generator.__name__
         return generator_internal
 
     return real_decorator

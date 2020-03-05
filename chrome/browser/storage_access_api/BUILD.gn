@@ -8,5 +8,14 @@ source_set("permissions") {
     "storage_access_grant_permission_context.h",
   ]
 
-  deps = [ "//chrome/common" ]
+  public_deps = [
+    "//components/permissions",
+  ]
+
+  deps = [
+    "//chrome/common",
+    "//components/content_settings/core/browser",
+    "//content/public/browser",
+    "//services/network/public/mojom",
+  ]
 }

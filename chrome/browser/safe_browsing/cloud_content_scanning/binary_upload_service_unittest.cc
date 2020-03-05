@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"

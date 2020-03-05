@@ -63,10 +63,10 @@ class AudioDecoder::ImplBase
                static_cast<int>(encoded_frame->data.size()));
     if (!decoded_audio) {
       VLOG(2) << "Decoding of frame " << encoded_frame->frame_id << " failed.";
-      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(std::move(callback),
-                                    base::Passed(&decoded_audio), false));
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
+          base::BindOnce(std::move(callback), base::Passed(&decoded_audio),
+                         false));
       return;
     }
 
@@ -78,10 +78,10 @@ class AudioDecoder::ImplBase
     event->frame_id = encoded_frame->frame_id;
     cast_environment_->logger()->DispatchFrameEvent(std::move(event));
 
-    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(callback),
-                                  base::Passed(&decoded_audio), is_continuous));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(std::move(callback), base::Passed(&decoded_audio),
+                       is_continuous));
   }
 
  protected:
@@ -249,10 +249,10 @@ void AudioDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
     std::move(callback).Run(base::WrapUnique<AudioBus>(nullptr), false);
     return;
   }
-  cast_environment_->GetTaskRunner(CastEnvironment::AUDIO)
-      ->PostTask(FROM_HERE, base::BindOnce(&AudioDecoder::ImplBase::DecodeFrame,
-                                           impl_, base::Passed(&encoded_frame),
-                                           std::move(callback)));
+  cast_environment_->PostTask(
+      CastEnvironment::AUDIO, FROM_HERE,
+      base::BindOnce(&AudioDecoder::ImplBase::DecodeFrame, impl_,
+                     base::Passed(&encoded_frame), std::move(callback)));
 }
 
 }  // namespace cast

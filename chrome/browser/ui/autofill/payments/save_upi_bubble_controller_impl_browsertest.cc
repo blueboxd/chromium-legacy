@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"

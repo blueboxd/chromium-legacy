@@ -33,9 +33,8 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
      * ChromePreferenceKeys}.
      */
     private ChromePreferenceKeyChecker() {
-        this(ChromePreferenceKeys.createKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredPrefixesInUse());
+        this(ChromePreferenceKeys.getKeysInUse(), GrandfatheredChromePreferenceKeys.getKeysInUse(),
+                GrandfatheredChromePreferenceKeys.getPrefixesInUse());
     }
 
     /**
@@ -97,7 +96,7 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
         if (isPrefixed) {
             // Key with prefix in format "Chrome.[Feature].[KeyPrefix].[Suffix]".
 
-            // Check if its prefix is whitelisted in |mKeysInUse|.
+            // Check if its prefix is registered in |mKeysInUse|.
             String prefixFormat =
                     TextUtils.join(".", Arrays.asList(parts[0], parts[1], parts[2], "*"));
             if (!mKeysInUse.contains(prefixFormat)) return false;

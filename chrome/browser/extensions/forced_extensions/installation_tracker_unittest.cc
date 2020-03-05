@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"

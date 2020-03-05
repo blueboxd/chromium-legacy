@@ -157,6 +157,11 @@ class CORE_EXPORT SecurityContext {
   const DocumentPolicy* GetDocumentPolicy() const {
     return document_policy_.get();
   }
+
+  const DocumentPolicy* GetReportOnlyDocumentPolicy() const {
+    return report_only_document_policy_.get();
+  }
+
   void SetDocumentPolicyForTesting(
       std::unique_ptr<DocumentPolicy> document_policy);
 
@@ -170,8 +175,12 @@ class CORE_EXPORT SecurityContext {
                         bool* should_report = nullptr) const;
 
   bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature) const;
-  bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
-                        PolicyValue threshold_value) const;
+  struct FeatureStatus {
+    bool enabled;       /* Whether the feature is enabled. */
+    bool should_report; /* Whether a report should be sent. */
+  };
+  FeatureStatus IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
+                                 PolicyValue threshold_value) const;
 
   Agent* GetAgent() const { return agent_; }
 
@@ -194,6 +203,7 @@ class CORE_EXPORT SecurityContext {
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;
   std::unique_ptr<DocumentPolicy> document_policy_;
+  std::unique_ptr<DocumentPolicy> report_only_document_policy_;
 
  private:
   Member<ContentSecurityPolicy> content_security_policy_;

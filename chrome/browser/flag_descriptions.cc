@@ -2731,11 +2731,6 @@ const char kKernelnextVMsName[] = "Enable VMs on experimental kernels.";
 const char kKernelnextVMsDescription[] =
     "Enables VM support on devices running experimental kernel versions.";
 
-const char kMirroringServiceName[] = "Mirroring Service";
-const char kMirroringServiceDescription[] =
-    "Enables the native Mirroring Service for mirroring tabs or desktop to "
-    "Chromecast.  Requires AudioServiceAudioStreams to also be enabled.";
-
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescriptions[] =

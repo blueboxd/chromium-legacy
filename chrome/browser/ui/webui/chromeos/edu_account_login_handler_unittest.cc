@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "components/signin/public/identity_manager/identity_manager.h"

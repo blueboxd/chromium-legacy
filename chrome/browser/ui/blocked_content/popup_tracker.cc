@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"

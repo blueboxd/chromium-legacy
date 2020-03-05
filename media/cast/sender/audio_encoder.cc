@@ -165,11 +165,9 @@ class AudioEncoder::ImplBase
         audio_frame->encode_completion_time =
             cast_environment_->Clock()->NowTicks();
         cast_environment_->PostTask(
-            CastEnvironment::MAIN,
-            FROM_HERE,
-            base::Bind(callback_,
-                       base::Passed(&audio_frame),
-                       samples_dropped_from_buffer_));
+            CastEnvironment::MAIN, FROM_HERE,
+            base::BindOnce(callback_, base::Passed(&audio_frame),
+                           samples_dropped_from_buffer_));
         samples_dropped_from_buffer_ = 0;
       }
 
@@ -824,12 +822,10 @@ void AudioEncoder::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
     NOTREACHED();
     return;
   }
-  cast_environment_->PostTask(CastEnvironment::AUDIO,
-                              FROM_HERE,
-                              base::Bind(&AudioEncoder::ImplBase::EncodeAudio,
-                                         impl_,
-                                         base::Passed(&audio_bus),
-                                         recorded_time));
+  cast_environment_->PostTask(
+      CastEnvironment::AUDIO, FROM_HERE,
+      base::BindOnce(&AudioEncoder::ImplBase::EncodeAudio, impl_,
+                     base::Passed(&audio_bus), recorded_time));
 }
 
 }  // namespace cast

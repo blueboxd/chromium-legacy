@@ -5,6 +5,7 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/metrics_service.h"

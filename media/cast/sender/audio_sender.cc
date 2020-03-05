@@ -36,11 +36,10 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   // Post a task now with its initialization result status to allow the client
   // to start sending frames.
   cast_environment_->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(status_change_cb,
-                 audio_encoder_ ? audio_encoder_->InitializationResult() :
-                     STATUS_INVALID_CONFIGURATION));
+      CastEnvironment::MAIN, FROM_HERE,
+      base::BindOnce(status_change_cb,
+                     audio_encoder_ ? audio_encoder_->InitializationResult()
+                                    : STATUS_INVALID_CONFIGURATION));
 
   // The number of samples per encoded audio frame depends on the codec and its
   // initialization parameters. Now that we have an encoder, we can calculate

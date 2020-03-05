@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_history_observer_service.h"
 
+#include "base/callback_helpers.h"
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"

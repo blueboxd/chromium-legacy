@@ -275,8 +275,24 @@ class ClientSession : public protocol::HostStub,
   int default_y_dpi_;
 
   // The id of the desktop display to show to the user.
-  // Default is webrtc::kFullDesktopScreenId which shows all displays.
-  webrtc::ScreenId show_display_id_ = webrtc::kFullDesktopScreenId;
+  // Default is webrtc::kInvalidScreenScreenId because we need to perform
+  // an initial capture to determine if the current setup support capturing
+  // the entire desktop or if it is restricted to a single display.
+  webrtc::ScreenId show_display_id_ = webrtc::kInvalidScreenId;
+
+  // The initial video size captured by WebRTC.
+  // This will be the full desktop unless webrtc cannot capture the entire
+  // desktop (e.g., because the DPIs don't match). In that case, it will
+  // be equal to the dimensions of the default display.
+  DisplaySize default_webrtc_desktop_size_;
+
+  // The current size of the area being captured by webrtc. This will be
+  // equal to the size of the entire desktop, or to a single display.
+  DisplaySize webrtc_capture_size_;
+
+  // Set to true if the current display configuration supports capturing the
+  // entire desktop.
+  bool can_capture_full_desktop_ = true;
 
   // The pairing registry for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;

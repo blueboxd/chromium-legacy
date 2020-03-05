@@ -6257,7 +6257,6 @@ crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
 # Failing document policy tests
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
-crbug.com/993790 external/wpt/document-policy/font-display/font-display-document-policy-01.tentative.html [ Failure ]
 crbug.com/993790 http/tests/images/document-policy-unoptimized-lossless-images.php [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes

@@ -127,9 +127,9 @@ TEST_F(MetricsLogTest, LogType) {
 TEST_F(MetricsLogTest, BasicRecord) {
   TestMetricsServiceClient client;
   client.set_version_string("bogus version");
+  const std::string kClientId = "totally bogus client ID";
   TestingPrefServiceSimple prefs;
-  MetricsLog log("totally bogus client ID", 137, MetricsLog::ONGOING_LOG,
-                 &client);
+  MetricsLog log(kClientId, 137, MetricsLog::ONGOING_LOG, &client);
   log.CloseLog();
 
   std::string encoded;
@@ -146,6 +146,9 @@ TEST_F(MetricsLogTest, BasicRecord) {
 
   SystemProfileProto* system_profile = expected.mutable_system_profile();
   system_profile->set_app_version("bogus version");
+  // Make sure |client_uuid| in the system profile is the unhashed client id
+  // and is the same as the client id in |local_prefs|.
+  system_profile->set_client_uuid(kClientId);
   system_profile->set_channel(client.GetChannel());
   system_profile->set_application_locale(client.GetApplicationLocale());
 

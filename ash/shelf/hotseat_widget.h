@@ -51,15 +51,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
-  // Whether the overflow menu/bubble is currently being shown.
-  bool IsShowingOverflowBubble() const;
-
   // Whether the widget is in the extended position.
   bool IsExtended() const;
-
-  // Focuses the first or the last app shortcut inside the overflow shelf.
-  // Does nothing if the overflow shelf is not currently shown.
-  void FocusOverflowShelf(bool last_element);
 
   // Finds the first or last focusable app shortcut and focuses it.
   void FocusFirstOrLastFocusableChild(bool last);

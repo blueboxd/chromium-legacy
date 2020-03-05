@@ -286,4 +286,19 @@ TEST(EventDeviceInfoTest, XboxElite) {
   EXPECT_EQ(ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH, devinfo.device_type());
 }
 
+TEST(EventDeviceInfoTest, DellActivePen_Button) {
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kDellActivePenButton, &devinfo));
+
+  EXPECT_FALSE(devinfo.HasKeyboard());
+  EXPECT_FALSE(devinfo.HasMouse());
+  EXPECT_FALSE(devinfo.HasTouchpad());
+  EXPECT_FALSE(devinfo.HasTouchscreen());
+  EXPECT_FALSE(devinfo.HasTablet());
+  EXPECT_FALSE(devinfo.HasGamepad());
+  EXPECT_TRUE(devinfo.IsStylusButtonDevice());
+
+  EXPECT_EQ(ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH, devinfo.device_type());
+}
+
 }  // namespace ui

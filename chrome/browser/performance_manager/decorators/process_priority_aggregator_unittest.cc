@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/decorators/process_priority_aggregator.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"

@@ -63,6 +63,7 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       feature_policy_(init.CreateFeaturePolicy()),
       report_only_feature_policy_(init.CreateReportOnlyFeaturePolicy()),
       document_policy_(init.CreateDocumentPolicy()),
+      report_only_document_policy_(init.CreateReportOnlyDocumentPolicy()),
       content_security_policy_(init.GetCSP()),
       address_space_(network::mojom::IPAddressSpace::kUnknown),
       insecure_request_policy_(
@@ -170,17 +171,21 @@ bool SecurityContext::IsFeatureEnabled(
 
 bool SecurityContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature) const {
-  return IsFeatureEnabled(
-      feature,
-      PolicyValue::CreateMaxPolicyValue(
-          GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type()));
+  DCHECK(GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type() ==
+         mojom::blink::PolicyValueType::kBool);
+  return IsFeatureEnabled(feature, PolicyValue(true)).enabled;
 }
 
-bool SecurityContext::IsFeatureEnabled(
+SecurityContext::FeatureStatus SecurityContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature,
     PolicyValue threshold_value) const {
   DCHECK(document_policy_);
-  return document_policy_->IsFeatureEnabled(feature, threshold_value);
+  bool policy_result =
+      document_policy_->IsFeatureEnabled(feature, threshold_value);
+  bool report_only_policy_result =
+      !report_only_document_policy_ ||
+      report_only_document_policy_->IsFeatureEnabled(feature, threshold_value);
+  return {policy_result, !policy_result || !report_only_policy_result};
 }
 
 }  // namespace blink

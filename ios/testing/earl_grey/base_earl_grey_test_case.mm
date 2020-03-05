@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
@@ -43,7 +44,8 @@ bool g_needs_set_up_for_test_case = true;
   [super setUp];
 
 #if defined(CHROME_EARL_GREY_2)
-  [self launchAppForTestMethod];
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithConfiguration:[self appConfigurationForTestCase]];
   [self handleSystemAlertIfVisible];
 
   NSString* logFormat = @"*********************************\nStarting test: %@";
@@ -112,10 +114,8 @@ bool g_needs_set_up_for_test_case = true;
 #endif  // CHROME_EARL_GREY_2
 }
 
-- (void)launchAppForTestMethod {
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
-      disabled:{}
-      relaunchPolicy:NoForceRelaunchAndResetState];
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  return AppLaunchConfiguration();
 }
 
 #pragma mark - Private

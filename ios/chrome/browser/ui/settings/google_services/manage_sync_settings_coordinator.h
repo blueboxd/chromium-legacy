@@ -12,8 +12,8 @@
 // Delegate for ManageSyncSettingsCoordinator.
 @protocol ManageSyncSettingsCoordinatorDelegate <NSObject>
 
-// Called when the view controller is popped out from navigation controller.
-- (void)manageSyncSettingsCoordinatorWasPopped:
+// Called when the view controller is removed from its parent.
+- (void)manageSyncSettingsCoordinatorWasRemoved:
     (ManageSyncSettingsCoordinator*)coordinator;
 
 @end

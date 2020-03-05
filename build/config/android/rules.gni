@@ -4004,9 +4004,7 @@ if (enable_java_templates) {
       _proto_runtime = "//third_party/android_protobuf:protobuf_nano_javalib"
     } else {
       # Use the regular proto library to generate lite protos.
-      _protoc_dep = "//third_party/protobuf:protoc($host_toolchain)"
-      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
-      _protoc_bin = "$_protoc_out_dir/protoc"
+      _protoc_bin = "//third_party/android_protoc/protoc"
       _proto_runtime =
           "//third_party/android_deps:com_google_protobuf_protobuf_lite_java"
       _protoc_javalite_plugin_dir = "//third_party/protoc_javalite/"
@@ -4018,7 +4016,10 @@ if (enable_java_templates) {
       _srcjar_path = "$target_gen_dir/$target_name.srcjar"
       script = "//build/protoc_java.py"
 
-      deps = [ _protoc_dep ]
+      deps = []
+      if (defined(_protoc_dep)) {
+        deps += [ _protoc_dep ]
+      }
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }

@@ -142,11 +142,6 @@
       depends_on: ["BlockingFocusWithoutUserActivation"],
     },
     {
-      name: "FontDisplay",
-      feature_policy_name: "font-display-late-swap",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
       name: "FormSubmission",
       feature_policy_name: "forms",
       depends_on: ["FeaturePolicyForSandbox"],

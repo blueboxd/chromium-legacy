@@ -64,8 +64,8 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
   // Let's re-use the audio decoder thread.
   cast_environment_->PostTask(
       media::cast::CastEnvironment::AUDIO, FROM_HERE,
-      base::Bind(&CastReceiverAudioValve::DeliverDecodedAudio, audio_valve_,
-                 base::Owned(audio_bus.release()), playout_time));
+      base::BindOnce(&CastReceiverAudioValve::DeliverDecodedAudio, audio_valve_,
+                     base::Owned(audio_bus.release()), playout_time));
   cast_receiver_->RequestDecodedAudioFrame(on_audio_decoded_cb_);
 }
 

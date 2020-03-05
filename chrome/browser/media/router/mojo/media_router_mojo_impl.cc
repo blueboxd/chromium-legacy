@@ -981,12 +981,10 @@ void MediaRouterMojoImpl::GetMediaSinkServiceStatus(
 void MediaRouterMojoImpl::GetMirroringServiceHostForTab(
     int32_t target_tab_id,
     mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
-  if (ShouldUseMirroringService()) {
-    mirroring::CastMirroringServiceHost::GetForTab(
-        GetWebContentsFromId(target_tab_id, context_,
-                             true /* include_incognito */),
-        std::move(receiver));
-  }
+  mirroring::CastMirroringServiceHost::GetForTab(
+      GetWebContentsFromId(target_tab_id, context_,
+                           true /* include_incognito */),
+      std::move(receiver));
 }
 
 // TODO(crbug.com/809249): This method is currently part of a Mojo interface,
@@ -1015,7 +1013,7 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
     }
     mirroring::CastMirroringServiceHost::GetForDesktop(media_id,
                                                        std::move(receiver));
-  } else if (ShouldUseMirroringService()) {
+  } else {
     // This code path is taken when the mirroring service is enabled
     // but the native Cast MRP is not.
     //
@@ -1032,7 +1030,7 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
     const GURL& presentation_url,
     const std::string& presentation_id,
     mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
-  if (ShouldUseMirroringService() && IsValidPresentationUrl(presentation_url)) {
+  if (IsValidPresentationUrl(presentation_url)) {
     mirroring::CastMirroringServiceHost::GetForOffscreenTab(
         context_, presentation_url, presentation_id, std::move(receiver));
   }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_subresource_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"

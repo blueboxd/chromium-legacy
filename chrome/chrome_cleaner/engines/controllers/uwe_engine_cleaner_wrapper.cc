@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"

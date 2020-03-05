@@ -41,6 +41,7 @@
 #include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/file_type_policies.h"
 #include "components/safe_browsing/core/ping_manager.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
@@ -168,6 +169,26 @@ SafeBrowsingService::GetURLLoaderFactory() {
   if (!network_context_)
     return nullptr;
   return network_context_->GetURLLoaderFactory();
+}
+
+network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext(
+    Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
+    return GetNetworkContext();
+
+  return services_delegate_->GetSafeBrowsingNetworkContext(profile)
+      ->GetNetworkContext();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+SafeBrowsingService::GetURLLoaderFactory(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
+    return GetURLLoaderFactory();
+
+  return services_delegate_->GetSafeBrowsingNetworkContext(profile)
+      ->GetURLLoaderFactory();
 }
 
 void SafeBrowsingService::FlushNetworkInterfaceForTesting() {
@@ -362,12 +383,14 @@ void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveBinaryUploadService(profile);
+  services_delegate_->RemoveSafeBrowsingNetworkContext(profile);
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
   services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
   services_delegate_->CreateBinaryUploadService(profile);
+  services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   observed_profiles_.Add(profile);
 }
 

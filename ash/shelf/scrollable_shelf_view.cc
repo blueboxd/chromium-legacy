@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_functions.h"
@@ -1328,9 +1329,9 @@ gfx::Insets ScrollableShelfView::CalculateExtraEdgePadding(
     return display_centering_edge_padding;
   }
 
-  const int icons_size = shelf_view_->GetSizeOfAppIcons(
-                             shelf_view_->number_of_visible_apps(), false) +
-                         2 * ShelfConfig::Get()->GetAppIconEndPadding();
+  const int icons_size =
+      shelf_view_->GetSizeOfAppIcons(shelf_view_->number_of_visible_apps()) +
+      2 * ShelfConfig::Get()->GetAppIconEndPadding();
 
   const gfx::Rect available_local_bounds =
       GetAvailableLocalBounds(use_target_bounds);
@@ -1386,9 +1387,9 @@ gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
 
 gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
     bool use_target_bounds) const {
-  const int icons_size = shelf_view_->GetSizeOfAppIcons(
-                             shelf_view_->number_of_visible_apps(), false) +
-                         2 * ShelfConfig::Get()->GetAppIconEndPadding();
+  const int icons_size =
+      shelf_view_->GetSizeOfAppIcons(shelf_view_->number_of_visible_apps()) +
+      2 * ShelfConfig::Get()->GetAppIconEndPadding();
   const gfx::Rect display_bounds =
       screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow());
   const int display_size_primary = GetShelf()->PrimaryAxisValue(

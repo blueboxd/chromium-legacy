@@ -33,6 +33,14 @@
   [self reloadData];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent) {
+    [self.presentationDelegate
+        manageSyncSettingsTableViewControllerWasRemoved:self];
+  }
+}
+
 #pragma mark - Private
 
 - (void)switchAction:(UISwitch*)sender {
@@ -61,13 +69,6 @@
     switchCell.switchView.tag = item.type;
   }
   return cell;
-}
-
-#pragma mark - SettingsControllerProtocol
-
-- (void)viewControllerWasPopped {
-  [self.presentationDelegate
-      manageSyncSettingsTableViewControllerWasPopped:self];
 }
 
 #pragma mark - ChromeTableViewController

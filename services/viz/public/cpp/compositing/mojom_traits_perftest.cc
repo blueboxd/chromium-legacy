@@ -140,7 +140,7 @@ class VizSerializationPerfTest : public testing::Test {
   }
 
   static void RunComplexCompositorFrameTest(const std::string& story) {
-    CompositorFrame frame;
+    CompositorFrame frame = MakeEmptyCompositorFrame();
     frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
 
     std::vector<TransferableResource>& resource_list = frame.resource_list;

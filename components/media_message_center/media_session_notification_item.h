@@ -99,6 +99,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
 
   void Unfreeze();
 
+  bool HasActions() const;
+
   bool HasArtwork() const;
 
   void OnFreezeTimerFired();
@@ -138,6 +140,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
   // When the item is frozen the |view_| will not receive any updates to the
   // data and no actions will be executed.
   bool frozen_ = false;
+
+  // True if we're currently frozen and the frozen view contains at least 1
+  // action.
+  bool frozen_with_actions_ = false;
+
+  // True if we have the necessary metadata to unfreeze, but we're waiting for
+  // new actions.
+  bool waiting_for_actions_ = false;
 
   // True if we're currently frozen and the frozen view contains non-null
   // artwork.

@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_navigation_widget.h"
@@ -63,16 +62,6 @@ views::View* ShelfViewTestAPI::GetViewAt(int index) {
   return shelf_view_->view_model_->view_at(index);
 }
 
-void ShelfViewTestAPI::ShowOverflowBubble() {
-  DCHECK(!shelf_view_->IsShowingOverflowBubble());
-  shelf_view_->ToggleOverflowBubble();
-}
-
-void ShelfViewTestAPI::HideOverflowBubble() {
-  DCHECK(shelf_view_->IsShowingOverflowBubble());
-  shelf_view_->ToggleOverflowBubble();
-}
-
 const gfx::Rect& ShelfViewTestAPI::GetBoundsByIndex(int index) {
   return shelf_view_->view_model_->view_at(index)->bounds();
 }
@@ -125,10 +114,6 @@ bool ShelfViewTestAPI::CloseMenu() {
   return true;
 }
 
-OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
-  return shelf_view_->overflow_bubble_.get();
-}
-
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
   return shelf_view_->shelf()->tooltip();
 }
@@ -148,10 +133,6 @@ gfx::Rect ShelfViewTestAPI::GetBoundsForDragInsertInScreen() {
 
 bool ShelfViewTestAPI::IsRippedOffFromShelf() {
   return shelf_view_->dragged_off_shelf_;
-}
-
-bool ShelfViewTestAPI::DraggedItemToAnotherShelf() {
-  return shelf_view_->dragged_to_another_shelf_;
 }
 
 ShelfButtonPressedMetricTracker*

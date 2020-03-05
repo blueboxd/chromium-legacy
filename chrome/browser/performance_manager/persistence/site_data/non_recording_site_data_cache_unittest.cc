@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/persistence/site_data/non_recording_site_data_cache.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/performance_manager/persistence/site_data/leveldb_site_data_store.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"

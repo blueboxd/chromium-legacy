@@ -102,10 +102,12 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // discovery / sink query. We are migrating discovery from the external Media
   // Route Provider to the Media Router (https://crbug.com/687383), so we need
   // to disable it in the provider.
+  //
+  // FIXME: Remove config flags once all features are launched
   config->enable_cast_discovery = false;
   config->enable_dial_sink_query = false;
   config->enable_cast_sink_query = !CastMediaRouteProviderEnabled();
-  config->use_mirroring_service = ShouldUseMirroringService();
+  config->use_mirroring_service = true;
   std::move(callback).Run(instance_id(), std::move(config));
 
   SyncStateToMediaRouteProvider(provider_id);

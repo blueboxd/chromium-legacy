@@ -119,9 +119,8 @@ VideoSender::VideoSender(
       create_video_encode_mem_cb);
   if (!video_encoder_) {
     cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(status_change_cb, STATUS_UNSUPPORTED_CODEC));
   }
 }
 

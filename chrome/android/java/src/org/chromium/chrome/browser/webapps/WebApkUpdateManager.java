@@ -378,8 +378,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
             return WebApkUpdateReason.DISPLAY_MODE_DIFFERS;
         } else if (!oldInfo.shareTarget().equals(fetchedInfo.shareTarget())) {
             return WebApkUpdateReason.WEB_SHARE_TARGET_DIFFERS;
-        } else if (ShortcutHelper.doesAndroidSupportMaskableIcons()
-                && oldInfo.isIconAdaptive() != fetchedInfo.isIconAdaptive()) {
+        } else if (oldInfo.isIconAdaptive() != fetchedInfo.isIconAdaptive()
+                && (!fetchedInfo.isIconAdaptive()
+                        || ShortcutHelper.doesAndroidSupportMaskableIcons())) {
             return WebApkUpdateReason.PRIMARY_ICON_MASKABLE_DIFFERS;
         } else if (shortcutsDiffer(oldInfo.shortcutItems(), fetchedInfo.shortcutItems())) {
             return WebApkUpdateReason.SHORTCUTS_DIFFER;

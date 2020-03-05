@@ -2464,47 +2464,29 @@ bool AXLayoutObject::IsDataTable() const {
   if (Traversal<HTMLTableColElement>::FirstChild(*table_element))
     return true;
 
-  // Everything from here forward uses cell style info, but only if a CSS table.
-  // If this code is reached for a <table> with another display type, consider
-  // this to be a layout table.
-  // TODO(accessibility) consider rewriting the following cell inspection code
-  // using purely DOM methods, such as table->rows()->Item(index)->cells().
-  if (!layout_object_->IsTable())
+  // If there are at least 20 rows, we'll call it a data table.
+  HTMLTableRowsCollection* rows = table_element->rows();
+  int num_rows = rows->length();
+  if (num_rows >= 20)
+    return true;
+  if (num_rows <= 0)
     return false;
 
-  // If there's no node, it's definitely a layout table. This happens
-  // when table CSS styles are used without a complete table DOM structure.
-  LayoutNGTableInterface* table =
-      ToInterface<LayoutNGTableInterface>(layout_object_);
-  table->RecalcSectionsIfNeeded();
-  Node* table_node = layout_object_->GetNode();
-  if (!table_node)
-    return false;
-
-  // go through the cell's and check for tell-tale signs of "data" table status
-  // cells have borders, or use attributes like headers, abbr, scope or axis
-  table->RecalcSectionsIfNeeded();
-  LayoutNGTableSectionInterface* first_body = table->FirstBodyInterface();
-  if (!first_body)
-    return false;
-
-  int num_cols_in_first_body = first_body->NumEffectiveColumns();
-  int num_rows = first_body->NumRows();
+  int num_cols_in_first_body = rows->Item(0)->cells()->length();
   // If there's only one cell, it's not a good AXTable candidate.
   if (num_rows == 1 && num_cols_in_first_body == 1)
     return false;
 
-  // If there are at least 20 rows, we'll call it a data table.
-  if (num_rows >= 20)
-    return true;
-
   // Store the background color of the table to check against cell's background
   // colors.
-  const ComputedStyle* table_style = table->ToLayoutObject()->Style();
+  const ComputedStyle* table_style = layout_object_->Style();
   if (!table_style)
     return false;
+
   Color table_bg_color =
       table_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+  bool has_cell_spacing = table_style->HorizontalBorderSpacing() &&
+                          table_style->VerticalBorderSpacing();
 
   // check enough of the cells to find if the table matches our criteria
   // Criteria:
@@ -2523,37 +2505,36 @@ bool AXLayoutObject::IsDataTable() const {
   Color alternating_row_colors[5];
   int alternating_row_color_count = 0;
   for (int row = 0; row < num_rows; ++row) {
-    int n_cols = first_body->NumCols(row);
+    HTMLTableRowElement* row_element = rows->Item(row);
+    int n_cols = row_element->cells()->length();
     for (int col = 0; col < n_cols; ++col) {
-      const LayoutNGTableCellInterface* cell =
-          first_body->PrimaryCellInterfaceAt(row, col);
+      const Element* cell = row_element->cells()->item(col);
       if (!cell)
         continue;
-      const LayoutBlock* cell_layout_block =
-          To<LayoutBlock>(cell->ToLayoutObject());
-      Node* cell_node = cell_layout_block->GetNode();
-      if (!cell_node)
+      // Any <th> tag -> treat as data table.
+      if (cell->HasTagName(html_names::kThTag))
+        return true;
+
+      // Check for an explicitly assigned a "data" table attribute.
+      auto* cell_elem = DynamicTo<HTMLTableCellElement>(*cell);
+      if (cell_elem) {
+        if (!cell_elem->Headers().IsEmpty() || !cell_elem->Abbr().IsEmpty() ||
+            !cell_elem->Axis().IsEmpty() ||
+            !cell_elem->FastGetAttribute(html_names::kScopeAttr).IsEmpty())
+          return true;
+      }
+
+      LayoutObject* cell_layout_object = cell->GetLayoutObject();
+      if (!cell_layout_object)
         continue;
 
+      const LayoutBlock* cell_layout_block =
+          To<LayoutBlock>(cell_layout_object);
       if (cell_layout_block->Size().Width() < 1 ||
           cell_layout_block->Size().Height() < 1)
         continue;
 
       valid_cell_count++;
-
-      // Any <th> tag -> treat as data table.
-      if (cell_node->HasTagName(html_names::kThTag))
-        return true;
-
-      // In this case, the developer explicitly assigned a "data" table
-      // attribute.
-      if (auto* cell_element = DynamicTo<HTMLTableCellElement>(*cell_node)) {
-        if (!cell_element->Headers().IsEmpty() ||
-            !cell_element->Abbr().IsEmpty() ||
-            !cell_element->Axis().IsEmpty() ||
-            !cell_element->FastGetAttribute(html_names::kScopeAttr).IsEmpty())
-          return true;
-      }
 
       const ComputedStyle* computed_style = cell_layout_block->Style();
       if (!computed_style)
@@ -2586,8 +2567,8 @@ bool AXLayoutObject::IsDataTable() const {
       // the place of borders).
       Color cell_color = computed_style->VisitedDependentColor(
           GetCSSPropertyBackgroundColor());
-      if (table->HBorderSpacing() > 0 && table->VBorderSpacing() > 0 &&
-          table_bg_color != cell_color && cell_color.Alpha() != 1)
+      if (has_cell_spacing && table_bg_color != cell_color &&
+          cell_color.Alpha() != 1)
         background_difference_cell_count++;
 
       // If we've found 10 "good" cells, we don't need to keep searching.

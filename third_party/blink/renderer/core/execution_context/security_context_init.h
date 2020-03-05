@@ -54,6 +54,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   std::unique_ptr<FeaturePolicy> CreateReportOnlyFeaturePolicy() const;
 
   std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;
+  std::unique_ptr<DocumentPolicy> CreateReportOnlyDocumentPolicy() const;
 
   const ParsedFeaturePolicy& FeaturePolicyHeader() const {
     return feature_policy_header_;
@@ -93,6 +94,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   mojom::blink::WebSandboxFlags sandbox_flags_ =
       mojom::blink::WebSandboxFlags::kNone;
   DocumentPolicy::FeatureState document_policy_;
+  DocumentPolicy::FeatureState report_only_document_policy_;
   bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;
   Vector<String> report_only_feature_policy_parse_messages_;

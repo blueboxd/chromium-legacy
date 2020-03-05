@@ -932,6 +932,12 @@ TEST_P(HotseatWidgetTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
+  // TODO(manucornet): This is flaky when the shelf is always auto-hidden.
+  // Investigate and fix (sometimes fails when the assistant is enabled,
+  // sometimes not).
+  if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kNever)
+    return;
+
   // Press the home button, the hotseat should transition directly to
   // kShownHomeLauncher.
   {

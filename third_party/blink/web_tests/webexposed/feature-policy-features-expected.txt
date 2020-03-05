@@ -25,7 +25,6 @@ encrypted-media
 execution-while-not-rendered
 execution-while-out-of-viewport
 focus-without-user-activation
-font-display-late-swap
 forms
 fullscreen
 geolocation

@@ -352,7 +352,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -380,7 +380,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -408,7 +408,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -436,7 +436,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -477,7 +477,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -519,7 +519,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -549,7 +549,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -577,7 +577,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -607,7 +607,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -637,7 +637,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -670,7 +670,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -698,7 +698,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -726,7 +726,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -754,7 +754,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -795,7 +795,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -837,7 +837,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -867,7 +867,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -895,7 +895,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -925,7 +925,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -955,7 +955,7 @@
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
               "os": "linux-nvidia-stable",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -1633,7 +1633,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1661,7 +1661,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1689,7 +1689,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1717,7 +1717,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1758,7 +1758,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -1800,7 +1800,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -1830,7 +1830,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1858,7 +1858,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false
@@ -1888,7 +1888,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,
@@ -1918,7 +1918,7 @@
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "idempotent": false,

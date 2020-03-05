@@ -1,6 +1,7 @@
 # crbug/1036571
 -org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithHint
 -org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithoutHint
+-org.chromium.shape_detection.FaceDetectionImplTest.testDetectFacesInProfileWithGmsCore
 -org.chromium.shape_detection.FaceDetectionImplTest.testDetectRotatedFaceWithGmsCore
 -org.chromium.shape_detection.FaceDetectionImplTest.testDetectValidImageWithGmsCore
 -org.chromium.shape_detection.TextDetectionImplTest.testDetectSucceedsOnValidBitmap
@@ -28,3 +29,9 @@
 
 # crbug/1040088
 -org.chromium.chrome.browser.payments.PaymentRequestRetryTest.testRetryWithShippingAddressErrorsAndPayerErrors
+
+# crbug/1036553
+-org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTabMenuDismissedOnOrientationChange
+-org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarAppears
+-org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarOverflowMenus
+-org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTranslateCompactInfoBarReopenOnTarget

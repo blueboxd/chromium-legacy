@@ -185,9 +185,9 @@ SimpleIndex::SimpleIndex(
       task_runner_(task_runner),
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
-      write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk,
-                                   AsWeakPtr(),
-                                   INDEX_WRITE_REASON_IDLE)) {}
+      write_to_disk_cb_(base::BindRepeating(&SimpleIndex::WriteToDisk,
+                                            AsWeakPtr(),
+                                            INDEX_WRITE_REASON_IDLE)) {}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -415,6 +415,13 @@ DocumentInit& DocumentInit::WithDocumentPolicy(
   return *this;
 }
 
+DocumentInit& DocumentInit::WithReportOnlyDocumentPolicyHeader(
+    const String& header) {
+  DCHECK(report_only_document_policy_header_.IsEmpty());
+  report_only_document_policy_header_ = header;
+  return *this;
+}
+
 bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
   return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
          WebTestSupport::IsRunningWebTest();

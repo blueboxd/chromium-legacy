@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/hash/sha1.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"

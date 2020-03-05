@@ -227,6 +227,7 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Installed applications, their AppStates and their running active times will
   // be restored.
   void InitializeRegistryFromPref();
+  void InitializeAppActivities();
 
   // Updates |AppActivity::active_times_| to include the current activity up to
   // |timestamp| then creates the most up to date instance of PersistedAppInfo.
@@ -256,6 +257,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   // Repeating timer to trigger saving app activity to pref service.
   base::RepeatingTimer save_data_to_pref_service_;
+
+  // This records the timestamp of the latest set app limit.
+  base::Time latest_app_limit_update_;
 };
 
 }  // namespace app_time

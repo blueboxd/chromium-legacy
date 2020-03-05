@@ -18,11 +18,6 @@ class PasswordFeatureManager {
 
   virtual bool IsGenerationEnabled() const = 0;
 
-  // Whether we should, upon the detection of a leaked password, check if the
-  // same password is reused on other website. That's used only for the UI
-  // string.
-  virtual bool ShouldCheckReuseOnLeakDetection() const = 0;
-
   // Whether the current signed-in user (aka unconsented primary account) has
   // opted in to use the Google account storage for passwords (as opposed to
   // local/profile storage).

@@ -10180,7 +10180,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "hard_timeout": 5400,
@@ -10203,7 +10203,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false
@@ -10240,7 +10240,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -23427,7 +23427,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.13.6",
-              "pool": "chromium.tests.gpu"
+              "pool": "chromium.tests.gpu.template"
             }
           ],
           "shards": 20

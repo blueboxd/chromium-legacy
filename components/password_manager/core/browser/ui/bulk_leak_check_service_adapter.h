@@ -15,21 +15,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-// Key used to store an instance of BulkLeakCheckData in the user data map of a
-// LeakCheckCredential.
-extern const char kBulkLeakCheckDataKey[];
-
-// This struct bundles forms that correspond to the same LeakCheckCredential.
-// That is, all of the forms in |leaked_forms| correspond to the same pair of
-// canonicalized username and password.
-struct BulkLeakCheckData : LeakCheckCredential::Data {
-  explicit BulkLeakCheckData(const autofill::PasswordForm& leaked_form);
-  explicit BulkLeakCheckData(std::vector<autofill::PasswordForm> leaked_forms);
-  ~BulkLeakCheckData() override;
-
-  std::vector<autofill::PasswordForm> leaked_forms;
-};
-
 // This class serves as an apdater for the BulkLeakCheckService and exposes an
 // API that is intended to be consumed from the settings page.
 class BulkLeakCheckServiceAdapter : public SavedPasswordsPresenter::Observer {

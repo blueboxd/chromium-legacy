@@ -9,7 +9,10 @@ component("cpp") {
 
   sources = [ "constants.cc" ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+    "//components/services/storage/public/cpp/filesystem",
+  ]
 
   defines = [ "IS_STORAGE_SERVICE_PUBLIC_IMPL" ]
 }

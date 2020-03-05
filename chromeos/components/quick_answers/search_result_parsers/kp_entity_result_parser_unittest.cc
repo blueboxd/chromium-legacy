@@ -47,6 +47,12 @@ TEST_F(KpEntityResultParserTest, SuccessWithRating) {
   EXPECT_EQ(ResultType::kKnowledgePanelEntityResult, quick_answer.result_type);
   EXPECT_EQ("4.5 ★ (100 reviews)", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
+
+  EXPECT_EQ(0u, quick_answer.title.size());
+  EXPECT_EQ(1u, quick_answer.first_answer_row.size());
+  EXPECT_EQ("4.5 ★ (100 reviews)", static_cast<QuickAnswerText*>(
+                                       quick_answer.first_answer_row[0].get())
+                                       ->text_);
 }
 
 TEST_F(KpEntityResultParserTest, SuccessWithRatingScoreRound) {
@@ -67,13 +73,28 @@ TEST_F(KpEntityResultParserTest, SuccessWithRatingScoreRound) {
   EXPECT_EQ("4.5 ★ (100 reviews)", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
 
+  EXPECT_EQ(0u, quick_answer.title.size());
+  EXPECT_EQ(1u, quick_answer.first_answer_row.size());
+  auto* answer =
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
+  EXPECT_EQ("4.5 ★ (100 reviews)", answer->text_);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
+
   result.SetDoublePath(
       "knowledgePanelEntityResult.entity.ratingsAndReviews.google."
       "aggregateRating.averageScore",
       4.56);
 
-  EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
-  EXPECT_EQ("4.6 ★ (100 reviews)", quick_answer.primary_answer);
+  QuickAnswer quick_answer2;
+  EXPECT_TRUE(parser_->Parse(&result, &quick_answer2));
+  EXPECT_EQ("4.6 ★ (100 reviews)", quick_answer2.primary_answer);
+
+  EXPECT_EQ(0u, quick_answer2.title.size());
+  EXPECT_EQ(1u, quick_answer2.first_answer_row.size());
+  answer =
+      static_cast<QuickAnswerText*>(quick_answer2.first_answer_row[0].get());
+  EXPECT_EQ("4.6 ★ (100 reviews)", answer->text_);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
 }
 
 TEST_F(KpEntityResultParserTest, SuccessWithKnownForReason) {
@@ -88,6 +109,13 @@ TEST_F(KpEntityResultParserTest, SuccessWithKnownForReason) {
   EXPECT_EQ(ResultType::kKnowledgePanelEntityResult, quick_answer.result_type);
   EXPECT_EQ("44th U.S. President", quick_answer.primary_answer);
   EXPECT_TRUE(quick_answer.secondary_answer.empty());
+
+  EXPECT_EQ(0u, quick_answer.title.size());
+  EXPECT_EQ(1u, quick_answer.first_answer_row.size());
+  auto* answer =
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get());
+  EXPECT_EQ("44th U.S. President", answer->text_);
+  EXPECT_EQ(gfx::kGoogleGrey700, answer->color_);
 }
 
 TEST_F(KpEntityResultParserTest, EmptyValue) {

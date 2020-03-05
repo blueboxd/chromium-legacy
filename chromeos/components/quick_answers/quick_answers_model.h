@@ -68,7 +68,7 @@ class QuickAnswerUiElement {
 // class to describe an answer text.
 class QuickAnswerText : public QuickAnswerUiElement {
  public:
-  QuickAnswerText(const std::string& text, SkColor color = SK_ColorBLACK)
+  QuickAnswerText(const std::string& text, SkColor color = gfx::kGoogleGrey900)
       : QuickAnswerUiElement(QuickAnswerUiElementType::kText),
         text_(text),
         color_(color) {}
@@ -77,6 +77,13 @@ class QuickAnswerText : public QuickAnswerUiElement {
 
   // Attributes for text style.
   SkColor color_ = SK_ColorBLACK;
+};
+
+class QuickAnswerResultText : public QuickAnswerText {
+ public:
+  QuickAnswerResultText(const std::string& text,
+                        SkColor color = gfx::kGoogleGrey700)
+      : QuickAnswerText(text, color) {}
 };
 
 class QuickAnswerImage : public QuickAnswerUiElement {

@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """Unittests for test_apps.py."""
 
-import unittest
-
 import test_apps
 import test_runner_test
 
@@ -56,7 +54,3 @@ class GetGTestFilterTest(test_runner_test.TestCase):
     expected = '-test.1:test.2'
 
     self.assertEqual(test_apps.get_gtest_filter(tests, invert=True), expected)
-
-
-if __name__ == '__main__':
-  unittest.main()

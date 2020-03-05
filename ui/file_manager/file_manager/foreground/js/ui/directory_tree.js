@@ -2368,18 +2368,7 @@ class DirectoryTree extends cr.ui.Tree {
    * the splitter or from the DOM window.
    */
   relayout() {
-    this.setTreeClippedAttribute_();
     cr.dispatchSimpleEvent(this, 'relayout', true);
-  }
-
-  /**
-   * Sets the tree 'clipped' attribute. TODO(crbug.com/992819): the breakpoint
-   * in the design is unspecified. Punt: use 135px for now.
-   * @private
-   */
-  setTreeClippedAttribute_() {
-    const width = parseFloat(window.getComputedStyle(this).width);
-    this.toggleAttribute('clipped', width < 135);
   }
 
   // DirectoryTree is always expanded.

@@ -26,8 +26,6 @@
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/login_shelf_gesture_controller.h"
 #include "ash/shelf/login_shelf_view.h"
-#include "ash/shelf/overflow_bubble.h"
-#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"

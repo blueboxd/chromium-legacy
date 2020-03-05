@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.base.annotations.DisabledCalledByNativeJavaTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -864,7 +865,7 @@ public class InstalledAppProviderTest {
     }
 
     /** Tests the pseudo-random artificial delay to counter a timing attack. */
-    @CalledByNativeJavaTest
+    @DisabledCalledByNativeJavaTest  // crbug.com/1058857
     public void testArtificialDelay() throws Exception {
         byte[] salt = {0x64, 0x09, -0x68, -0x25, 0x70, 0x11, 0x25, 0x24, 0x68, -0x1a, 0x08, 0x79,
                 -0x12, -0x50, 0x3b, -0x57, -0x17, -0x4d, 0x46, 0x02};

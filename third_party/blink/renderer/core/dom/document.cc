@@ -50,6 +50,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -1055,6 +1056,23 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                 const String& source_file) const {
   return ExecutionContext::IsFeatureEnabled(
       feature, threshold_value, report_on_failure, message, source_file);
+}
+
+bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
+                                ReportOptions report_option,
+                                const String& message,
+                                const String& source_file) {
+  return ExecutionContext::IsFeatureEnabled(feature, report_option, message,
+                                            source_file);
+}
+
+bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
+                                PolicyValue threshold_value,
+                                ReportOptions report_option,
+                                const String& message,
+                                const String& source_file) {
+  return ExecutionContext::IsFeatureEnabled(
+      feature, threshold_value, report_option, message, source_file);
 }
 
 String Document::addressSpaceForBindings() const {

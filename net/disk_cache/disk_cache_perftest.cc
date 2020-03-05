@@ -551,7 +551,7 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   base::RunLoop().RunUntilIdle();
 }
 
-void VerifyRvAndCallClosure(base::Closure* c, int expect_rv, int rv) {
+void VerifyRvAndCallClosure(base::RepeatingClosure* c, int expect_rv, int rv) {
   EXPECT_EQ(expect_rv, rv);
   c->Run();
 }
@@ -603,7 +603,7 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
 
   for (int i = 0; i < kIterations; ++i) {
     base::RunLoop event_loop;
-    base::Closure barrier =
+    base::RepeatingClosure barrier =
         base::BarrierClosure(kBatchSize, event_loop.QuitWhenIdleClosure());
     net::CompletionRepeatingCallback cb_batch(base::BindRepeating(
         VerifyRvAndCallClosure, base::Unretained(&barrier), kHeadersSize));

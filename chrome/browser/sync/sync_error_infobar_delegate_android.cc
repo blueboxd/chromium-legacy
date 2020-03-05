@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_error_infobar_delegate_android.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/android/chrome_jni_headers/SyncErrorInfoBar_jni.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/sync_error_infobar.h"

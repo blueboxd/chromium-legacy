@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/performance_manager/graph/frame_node_impl.h"

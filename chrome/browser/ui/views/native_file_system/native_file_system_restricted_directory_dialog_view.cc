@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"

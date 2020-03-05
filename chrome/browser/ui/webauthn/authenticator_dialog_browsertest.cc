@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

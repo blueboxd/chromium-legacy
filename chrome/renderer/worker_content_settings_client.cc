@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/worker_content_settings_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_agent_impl.h"
 #include "content/public/renderer/render_frame.h"

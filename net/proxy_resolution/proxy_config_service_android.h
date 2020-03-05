@@ -29,7 +29,7 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   // key. If it was not found, an empty string is returned. Note that this
   // interface does not let you distinguish an empty property from a
   // non-existing property. This callback is invoked on the JNI thread.
-  typedef base::Callback<std::string (const std::string& property)>
+  typedef base::RepeatingCallback<std::string(const std::string& property)>
       GetPropertyCallback;
 
   // Separate class whose instance is owned by the Delegate class implemented in

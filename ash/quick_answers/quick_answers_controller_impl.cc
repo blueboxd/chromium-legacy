@@ -73,7 +73,8 @@ void QuickAnswersControllerImpl::OnQuickAnswerReceived(
     quick_answer_with_no_result.title.push_back(
         std::make_unique<chromeos::quick_answers::QuickAnswerText>(query_));
     quick_answer_with_no_result.first_answer_row.push_back(
-        std::make_unique<chromeos::quick_answers::QuickAnswerText>(kNoResult));
+        std::make_unique<chromeos::quick_answers::QuickAnswerResultText>(
+            kNoResult));
     quick_answers_ui_controller_->RenderQuickAnswersViewWithResult(
         anchor_bounds_, quick_answer_with_no_result);
   }

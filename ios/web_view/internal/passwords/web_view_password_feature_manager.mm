@@ -16,10 +16,6 @@ bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
   return false;
 }
 
-bool WebViewPasswordFeatureManager::ShouldCheckReuseOnLeakDetection() const {
-  return false;
-}
-
 bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {
   return false;
 }

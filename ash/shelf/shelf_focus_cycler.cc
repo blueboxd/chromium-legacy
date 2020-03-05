@@ -32,18 +32,8 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         FocusShelf(reverse);
       break;
     case SourceView::kShelfView:
-      if (reverse) {
-        FocusNavigation(reverse);
-      } else {
-        if (shelf_->hotseat_widget()->IsShowingOverflowBubble())
-          FocusOverflowShelf(reverse);
-        else
-          FocusStatusArea(reverse);
-      }
-      break;
-    case SourceView::kShelfOverflowView:
       if (reverse)
-        FocusShelf(reverse);
+        FocusNavigation(reverse);
       else
         FocusStatusArea(reverse);
       break;
@@ -59,10 +49,7 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         // Login/lock screen or OOBE.
         Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
       } else if (reverse) {
-        if (shelf_->hotseat_widget()->IsShowingOverflowBubble())
-          FocusOverflowShelf(reverse);
-        else
-          FocusShelf(reverse);
+        FocusShelf(reverse);
       } else {
         FocusNavigation(reverse);
       }
@@ -98,10 +85,6 @@ void ShelfFocusCycler::FocusShelf(bool last_element) {
     }
     Shell::Get()->focus_cycler()->FocusWidget(hotseat_widget);
   }
-}
-
-void ShelfFocusCycler::FocusOverflowShelf(bool last_element) {
-  shelf_->hotseat_widget()->FocusOverflowShelf(last_element);
 }
 
 void ShelfFocusCycler::FocusStatusArea(bool last_element) {

@@ -133,7 +133,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
 
     # run the test
     args = subprocess.list2cmdline(args)
-    cmd = r'c:\Python27\python.exe %s %s' % (file_name, args)
+    cmd = r'%s %s %s' % (self._pythonExecutablePath[instance_name], file_name,
+                         args)
     return self.RunCommand(instance_name, cmd)
 
   def RunUITest(self, instance_name, test_file, timeout=300, args=[]):
@@ -159,9 +160,10 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
     # get any output from stdout because the output is buffered. When this
     # happens it makes debugging really hard.
     args = subprocess.list2cmdline(args)
-    ui_test_cmd = r'c:\Python27\python.exe -u %s %s' % (file_name, args)
-    cmd = (r'python c:\cel\supporting_files\run_ui_test.py --timeout %s -- %s'
-          ) % (timeout, ui_test_cmd)
+    ui_test_cmd = r'%s -u %s %s' % (self._pythonExecutablePath[instance_name],
+                                    file_name, args)
+    cmd = (r'%s c:\cel\supporting_files\run_ui_test.py --timeout %s -- %s') % (
+        self._pythonExecutablePath[instance_name], timeout, ui_test_cmd)
     return self.RunCommand(instance_name, cmd, timeout=timeout)
 
   def _generatePassword(self):
@@ -181,6 +183,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
   def EnableUITest(self, instance_name):
     """Configures the instance so that UI tests can be run on it."""
     self.InstallWebDriver(instance_name)
+    self.InstallChocolateyPackage(instance_name, 'chocolatey_core_extension',
+                                  '1.3.3')
     self.InstallChocolateyPackageLatest(instance_name, 'sysinternals')
     self.InstallPipPackagesLatest(instance_name, ['pywinauto', 'requests'])
 

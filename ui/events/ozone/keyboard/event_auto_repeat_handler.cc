@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/event_constants.h"
 
 namespace ui {
 
@@ -95,7 +96,7 @@ void EventAutoRepeatHandler::OnRepeatCommit(unsigned int sequence) {
     return;
 
   delegate_->DispatchKey(repeat_key_, true /* down */, true /* repeat */,
-                         EventTimeForNow(), repeat_device_id_);
+                         EventTimeForNow(), repeat_device_id_, ui::EF_NONE);
 
   ScheduleKeyRepeat(repeat_interval_);
 }

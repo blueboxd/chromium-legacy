@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

@@ -103,15 +103,13 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
 
     // Post a task to decode the encoded frame.
     cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(&VideoDecoder::DecodeFrame,
-                   base::Unretained(video_decoder_.get()),
-                   base::Passed(&encoded_frame),
-                   base::Bind(&VideoDecoderTest::OnDecodedFrame,
-                              base::Unretained(this),
-                              video_frame,
-                              num_dropped_frames == 0)));
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(&VideoDecoder::DecodeFrame,
+                       base::Unretained(video_decoder_.get()),
+                       base::Passed(&encoded_frame),
+                       base::Bind(&VideoDecoderTest::OnDecodedFrame,
+                                  base::Unretained(this), video_frame,
+                                  num_dropped_frames == 0)));
   }
 
   // Blocks the caller until all video that has been feed in has been decoded.

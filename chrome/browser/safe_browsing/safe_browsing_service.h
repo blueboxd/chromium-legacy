@@ -125,8 +125,16 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   // Called on UI thread.
+  // TODO(crbug/1049833): Transition all callers of these functions to the
+  // per-profile methods below.
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // Get the NetworkContext or URLLoaderFactory attached to |profile|. Called on
+  // UI thread.
+  network::mojom::NetworkContext* GetNetworkContext(Profile* profile);
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      Profile* profile);
 
   // Flushes above two interfaces to avoid races in tests.
   void FlushNetworkInterfaceForTesting();

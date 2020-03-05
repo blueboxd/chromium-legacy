@@ -62,10 +62,6 @@ bool DialMediaRouteProviderEnabled();
 // Returns true if browser side Cast Media Route Provider and sink query are
 // enabled.
 bool CastMediaRouteProviderEnabled();
-
-// Returns true if Mirroring Service should be used for mirroring.
-bool ShouldUseMirroringService();
-
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

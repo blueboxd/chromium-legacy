@@ -4,6 +4,7 @@
 
 #include "chrome/browser/infobars/mock_infobar_service.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 

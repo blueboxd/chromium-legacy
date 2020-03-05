@@ -23,17 +23,33 @@ class ProfileBuilder;
 // is performed by the OS through signals (Android).
 class BASE_EXPORT StackCopier {
  public:
+  // Interface that may be implemented by the caller of CopyStack() to receive a
+  // callback when the stack is copied, while the target thread is suspended.
+  class BASE_EXPORT Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // IMPORTANT NOTE: to avoid deadlock implementations of this interface must
+    // not invoke any non-reentrant code that is also invoked by the target
+    // thread. In particular, it may not perform any heap allocation or
+    // deallocation, including indirectly via use of DCHECK/CHECK or other
+    // logging statements.
+    virtual void OnStackCopy() = 0;
+  };
+
   virtual ~StackCopier();
 
   // Copies the thread's register context into |thread_context|, the stack into
   // |stack_buffer|, and the top of stack address into |stack_top|. Records
   // metadata while the thread is suspended via |profile_builder|. Records
-  // |timestamp| at the time the stack was copied. Returns true if successful.
+  // |timestamp| at the time the stack was copied. delegate->OnStackCopy() will
+  // be invoked while the thread is suspended. Returns true if successful.
   virtual bool CopyStack(StackBuffer* stack_buffer,
                          uintptr_t* stack_top,
                          ProfileBuilder* profile_builder,
                          TimeTicks* timestamp,
-                         RegisterContext* thread_context) = 0;
+                         RegisterContext* thread_context,
+                         Delegate* delegate) = 0;
 
  protected:
   // If the value at |pointer| points to the original stack, rewrite it to point

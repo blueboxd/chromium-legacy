@@ -40,11 +40,11 @@ public class ChromePreferenceKeysTest {
     @Test
     @SmallTest
     public void testKeysAreNotReused() {
-        doTestKeysAreNotReused(ChromePreferenceKeys.createKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredKeysInUse(),
-                ChromePreferenceKeys.createDeprecatedKeysForTesting(),
-                ChromePreferenceKeys.createGrandfatheredPrefixesInUse(),
-                ChromePreferenceKeys.createDeprecatedPrefixesForTesting());
+        doTestKeysAreNotReused(ChromePreferenceKeys.getKeysInUse(),
+                GrandfatheredChromePreferenceKeys.getKeysInUse(),
+                DeprecatedChromePreferenceKeys.getKeysForTesting(),
+                GrandfatheredChromePreferenceKeys.getPrefixesInUse(),
+                DeprecatedChromePreferenceKeys.getPrefixesForTesting());
     }
 
     private void doTestKeysAreNotReused(List<String> usedList, List<String> grandfatheredUsedList,
@@ -185,17 +185,17 @@ public class ChromePreferenceKeysTest {
     @Test
     @SmallTest
     public void testKeysConformToFormat() {
-        doTestKeysConformToFormat(ChromePreferenceKeys.createKeysInUse());
+        doTestKeysConformToFormat(ChromePreferenceKeys.getKeysInUse());
     }
 
     /**
      * Old constants grandfathered in are checked to see if they shouldn't be in
-     * {@link ChromePreferenceKeys#createKeysInUse()}.
+     * {@link ChromePreferenceKeys#getKeysInUse()}.
      */
     @Test
     @SmallTest
     public void testGrandfatheredKeysDoNotConformToFormat() {
-        doTestKeysDoNotConformToFormat(ChromePreferenceKeys.createGrandfatheredKeysInUse());
+        doTestKeysDoNotConformToFormat(GrandfatheredChromePreferenceKeys.getKeysInUse());
     }
 
     private void doTestKeysConformToFormat(List<String> usedList) {

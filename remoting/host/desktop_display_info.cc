@@ -67,7 +67,7 @@ int DesktopDisplayInfo::NumDisplays() {
 }
 
 const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
-  if (id >= displays_.size())
+  if (id < 0 || id >= displays_.size())
     return nullptr;
   return &displays_[id];
 }

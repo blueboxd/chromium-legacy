@@ -40,6 +40,9 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
+#include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -443,29 +446,81 @@ bool ExecutionContext::IsFeatureEnabled(
                 : mojom::blink::FeaturePolicyDisposition::kEnforce;
     ReportFeaturePolicyViolation(feature, disposition, message, source_file);
   }
-
   return enabled;
 }
 
 bool ExecutionContext::IsFeatureEnabled(
-    mojom::blink::DocumentPolicyFeature feature) const {
-  // The default value for any feature should be true unless restricted by
-  // document policy
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
-    return true;
-  PolicyValue threshold_value = PolicyValue::CreateMaxPolicyValue(
-      GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type());
-  return IsFeatureEnabled(feature, threshold_value);
+    mojom::blink::DocumentPolicyFeature feature,
+    ReportOptions report_option,
+    const String& message,
+    const String& source_file) {
+  DCHECK(GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type() ==
+         mojom::blink::PolicyValueType::kBool);
+  return IsFeatureEnabled(feature, PolicyValue(true), report_option, message,
+                          source_file);
 }
 
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature,
-    PolicyValue threshold_value) const {
+    PolicyValue threshold_value,
+    ReportOptions report_option,
+    const String& message,
+    const String& source_file) {
   // The default value for any feature should be true unless restricted by
   // document policy
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
     return true;
-  return GetSecurityContext().IsFeatureEnabled(feature, threshold_value);
+
+  SecurityContext::FeatureStatus status =
+      GetSecurityContext().IsFeatureEnabled(feature, threshold_value);
+  if (status.should_report &&
+      report_option == ReportOptions::kReportOnFailure) {
+    // If both |enabled| and |should_report| are true, the usage must have
+    // violated the report-only policy, i.e. |is_report_only| == |enabled|.
+    ReportDocumentPolicyViolation(feature, status.enabled /* is_report_only */,
+                                  message, source_file);
+  }
+  return status.enabled;
+}
+
+void ExecutionContext::ReportDocumentPolicyViolation(
+    mojom::blink::DocumentPolicyFeature feature,
+    bool is_report_only,
+    const String& message,
+    const String& source_file) {
+  // Construct the document policy violation report.
+  const String& feature_name =
+      GetDocumentPolicyFeatureInfoMap().at(feature).feature_name.c_str();
+  const String& disp_str = is_report_only ? "report" : "enforce";
+  const DocumentPolicy* relevant_document_policy =
+      is_report_only ? GetSecurityContext().GetReportOnlyDocumentPolicy()
+                     : GetSecurityContext().GetDocumentPolicy();
+
+  DocumentPolicyViolationReportBody* body =
+      source_file.IsEmpty()
+          ? MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+                feature_name, "Document policy violation", disp_str)
+          : MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+                feature_name, "Document policy violation", disp_str,
+                source_file);
+
+  Report* report = MakeGarbageCollected<Report>(
+      ReportType::kDocumentPolicyViolation, Url().GetString(), body);
+
+  // Send the feature policy violation report to any ReportingObservers.
+  auto* reporting_context = ReportingContext::From(this);
+  reporting_context->QueueReport(
+      report, {relevant_document_policy->GetFeatureEndpoint(feature).c_str()});
+
+  // TODO(iclelland): Report something different in report-only mode
+  if (!is_report_only) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kViolation,
+        mojom::blink::ConsoleMessageLevel::kError,
+        (message.IsEmpty() ? ("Document policy violation: " + feature_name +
+                              " is not allowed in this document.")
+                           : message)));
+  }
 }
 
 bool ExecutionContext::RequireTrustedTypes() const {

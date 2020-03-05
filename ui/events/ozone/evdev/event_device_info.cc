@@ -32,6 +32,13 @@ constexpr struct {
   {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
 };
 
+constexpr struct {
+  uint16_t vendor;
+  uint16_t product_id;
+} kStylusButtonDevices[] = {
+    {0x413c, 0x81d5},  // Dell Active Pen PN579X
+};
+
 bool GetEventBits(int fd,
                   const base::FilePath& path,
                   unsigned int type,
@@ -442,6 +449,16 @@ bool EventDeviceInfo::HasStylus() const {
          HasKeyEvent(BTN_STYLUS2);
 }
 
+bool EventDeviceInfo::IsStylusButtonDevice() const {
+  for (const auto& device_id : kStylusButtonDevices) {
+    if (input_id_.vendor == device_id.vendor &&
+        input_id_.product == device_id.product_id)
+      return true;
+  }
+
+  return false;
+}
+
 bool IsInKeyboardBlockList(input_id input_id_) {
   for (const auto& blocklist_id : kKeyboardBlocklist) {
     if (input_id_.vendor == blocklist_id.vendor &&
@@ -456,6 +473,8 @@ bool EventDeviceInfo::HasKeyboard() const {
   if (!HasEventType(EV_KEY))
     return false;
   if (IsInKeyboardBlockList(input_id_))
+    return false;
+  if (IsStylusButtonDevice())
     return false;
 
   // Check first 31 keys: If we have all of them, consider it a full

@@ -111,6 +111,7 @@ columnSpan
 columnWidth
 columns
 contain
+containIntrinsicSize
 content
 counterIncrement
 counterReset

@@ -24,7 +24,8 @@ class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
                              bool down,
                              bool repeat,
                              base::TimeTicks timestamp,
-                             int device_id) = 0;
+                             int device_id,
+                             int flags) = 0;
   };
 
   explicit EventAutoRepeatHandler(Delegate* delegate);

@@ -190,9 +190,9 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
   // State transition: !(down) -> (down)
   key_state_.set(key, down);
 
-  dispatcher_->DispatchKeyEvent(KeyEventParams(input_device_.id, key, down,
-                                               false /* suppress_auto_repeat */,
-                                               timestamp));
+  dispatcher_->DispatchKeyEvent(
+      KeyEventParams(input_device_.id, ui::EF_NONE, key, down,
+                     false /* suppress_auto_repeat */, timestamp));
 }
 
 void EventConverterEvdevImpl::ReleaseKeys() {

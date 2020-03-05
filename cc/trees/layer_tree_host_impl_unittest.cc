@@ -12458,6 +12458,81 @@ TEST_F(LayerTreeHostImplTest, FadedOutPaintedOverlayScrollbarHitTest) {
   host_impl_ = nullptr;
 }
 
+// Tests that a pointerdown followed by pointermove(s) produces
+// InputHandlerPointerResult with scroll_offset > 0 even though the GSB might
+// have been dispatched *after* the first pointermove was handled by the
+// ScrollbarController.
+TEST_F(LayerTreeHostImplTest, PointerMoveOutOfSequence) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(layer_tree_impl,
+                                                        VERTICAL, false, true);
+  SetupScrollbarLayerCommon(scroll_layer, scrollbar);
+  scrollbar->SetHitTestable(true);
+
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // PointerDown sets up the state needed to initiate a drag. Although, the
+  // resulting GSB won't be dispatched until the next VSync. Hence, the
+  // CurrentlyScrollingNode is expected to be null.
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  EXPECT_TRUE(!host_impl_->CurrentlyScrollingNode());
+
+  // PointerMove arrives before the next VSync. This still needs to be handled
+  // by the ScrollbarController even though the GSB has not yet been dispatched.
+  // Note that this doesn't result in a scroll yet. It only prepares a GSU based
+  // on the result that is returned by ScrollbarController::HandlePointerMove.
+  InputHandlerPointerResult result =
+      host_impl_->MouseMoveAt(gfx::Point(350, 19));
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+
+  // GSB gets dispatched at VSync.
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  begin_frame_args.frame_time = base::TimeTicks::Now();
+  begin_frame_args.frame_id.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->ScrollBegin(
+      BeginState(gfx::Point(350, 18), gfx::Vector2dF(), InputHandler::SCROLLBAR)
+          .get(),
+      InputHandler::SCROLLBAR);
+  EXPECT_TRUE(host_impl_->CurrentlyScrollingNode());
+
+  // The PointerMove(s) that follow should be handled and are expected to have a
+  // scroll_offset > 0.
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 20));
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+
+  // End the scroll.
+  host_impl_->MouseUp(gfx::PointF(350, 20));
+  host_impl_->ScrollEnd();
+  EXPECT_TRUE(!host_impl_->CurrentlyScrollingNode());
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 // This tests that faded-out Mac scrollbars can't be interacted with.
 TEST_F(LayerTreeHostImplTest, FadedOutPaintedScrollbarHitTest) {
   LayerTreeSettings settings = DefaultSettings();

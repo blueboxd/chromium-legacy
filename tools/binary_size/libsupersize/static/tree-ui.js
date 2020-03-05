@@ -102,7 +102,7 @@ const newTreeElement = (() => {
         /** @type {HTMLSpanElement} */
         const symbolName = link.querySelector('.symbol-name');
         const idPath = symbolName.title;
-        data = await worker.openNode(idPath);
+        data = await window.supersize.worker.openNode(idPath);
         _uiNodeData.set(link, data);
       }
 
@@ -451,8 +451,8 @@ const newTreeElement = (() => {
     );
   }
 
-  treeReady.then(displayTree);
-  worker.setOnProgressHandler(displayTree);
+  window.supersize.treeReady.then(displayTree);
+  window.supersize.worker.setOnProgressHandler(displayTree);
 
   _fileUpload.addEventListener('change', event => {
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
@@ -463,7 +463,7 @@ const newTreeElement = (() => {
     _dataUrlInput.value = '';
     _dataUrlInput.dispatchEvent(new Event('change'));
 
-    worker.loadTree(fileUrl).then(displayTree);
+    window.supersize.worker.loadTree(fileUrl).then(displayTree);
     // Clean up afterwards so new files trigger event
     input.value = '';
   });
@@ -474,12 +474,12 @@ const newTreeElement = (() => {
     // options (marked by `data-dynamic`) are changed.
     if (!event.target.dataset.hasOwnProperty('dynamic')) {
       _progress.setValue(0);
-      worker.loadTree().then(displayTree);
+      window.supersize.worker.loadTree().then(displayTree);
     }
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
     _progress.setValue(0);
-    worker.loadTree().then(displayTree);
+    window.supersize.worker.loadTree().then(displayTree);
   });
 }

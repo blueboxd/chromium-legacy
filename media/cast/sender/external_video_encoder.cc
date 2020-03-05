@@ -130,11 +130,11 @@ class ExternalVideoEncoder::VEAClientImpl
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           encoder_active_);
 
-    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(status_change_cb_,
-                                  encoder_active_ ? STATUS_INITIALIZED
-                                                  : STATUS_CODEC_INIT_FAILED));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(status_change_cb_, encoder_active_
+                                              ? STATUS_INITIALIZED
+                                              : STATUS_CODEC_INIT_FAILED));
   }
 
   void SetBitRate(int bit_rate) {
@@ -237,9 +237,9 @@ class ExternalVideoEncoder::VEAClientImpl
 
     encoder_active_ = false;
 
-    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-        ->PostTask(FROM_HERE, base::BindOnce(status_change_cb_,
-                                             STATUS_CODEC_RUNTIME_ERROR));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
 
     // TODO(miu): Force-flush all |in_progress_frame_encodes_| immediately so
     // pending frames do not become stuck, freezing VideoSender.
@@ -399,10 +399,10 @@ class ExternalVideoEncoder::VEAClientImpl
 
       encoded_frame->encode_completion_time =
           cast_environment_->Clock()->NowTicks();
-      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(std::move(request.frame_encoded_callback),
-                                    base::Passed(&encoded_frame)));
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
+          base::BindOnce(std::move(request.frame_encoded_callback),
+                         base::Passed(&encoded_frame)));
 
       in_progress_frame_encodes_.pop_front();
     } else {
@@ -491,11 +491,11 @@ class ExternalVideoEncoder::VEAClientImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     std::unique_ptr<SenderEncodedFrame> no_result(nullptr);
-    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(in_progress_frame_encodes_.back()
-                                                .frame_encoded_callback),
-                                  base::Passed(&no_result)));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(
+            std::move(in_progress_frame_encodes_.back().frame_encoded_callback),
+            base::Passed(&no_result)));
     in_progress_frame_encodes_.pop_back();
   }
 
@@ -731,9 +731,9 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
   // system does not support or lacks the resources to provide GPU-accelerated
   // video encoding.
   if (!encoder_task_runner || !vea) {
-    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(status_change_cb, STATUS_CODEC_INIT_FAILED));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(status_change_cb, STATUS_CODEC_INIT_FAILED));
     return;
   }
 
@@ -749,9 +749,9 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
       NOTREACHED() << "Fake software video encoder cannot be external";
       FALLTHROUGH;
     default:
-      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
-          ->PostTask(FROM_HERE, base::BindOnce(status_change_cb,
-                                               STATUS_UNSUPPORTED_CODEC));
+      cast_environment_->PostTask(
+          CastEnvironment::MAIN, FROM_HERE,
+          base::BindOnce(status_change_cb, STATUS_UNSUPPORTED_CODEC));
       return;
   }
 

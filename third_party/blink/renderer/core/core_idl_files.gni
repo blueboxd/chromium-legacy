@@ -186,6 +186,7 @@ core_idl_files =
                     "frame/bar_prop.idl",
                     "frame/csp/csp_violation_report_body.idl",
                     "frame/deprecation_report_body.idl",
+                    "frame/document_policy_violation_report_body.idl",
                     "frame/external.idl",
                     "frame/feature_policy_violation_report_body.idl",
                     "frame/fragment_directive.idl",

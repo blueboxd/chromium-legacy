@@ -54,7 +54,7 @@ bool TranslationResultParser::Parse(const Value* result,
   quick_answer->title.push_back(
       std::make_unique<QuickAnswerText>(secondary_answer));
   quick_answer->first_answer_row.push_back(
-      std::make_unique<QuickAnswerText>(*translated_text));
+      std::make_unique<QuickAnswerResultText>(*translated_text));
   return true;
 }
 

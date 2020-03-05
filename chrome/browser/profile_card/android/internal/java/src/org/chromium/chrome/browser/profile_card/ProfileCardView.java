@@ -14,13 +14,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.profile_card.internal.R;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
+import org.chromium.ui.widget.RectProvider;
 
 import java.util.ArrayList;
 
 /**
  * UI component that handles showing a profile card view.
  */
-public class ProfileCardView extends LinearLayout {
+public class ProfileCardView extends TextBubble {
     private View mMainContentView;
     private TextView mTitleTextView;
     private TextView mDescriptionTextView;
@@ -28,20 +30,31 @@ public class ProfileCardView extends LinearLayout {
     private TextView mPostFrequencyTextView;
     private LinearLayout mPostsContainer;
 
-    public ProfileCardView(Context context) {
-        super(context);
+    /**
+     * Constructs a {@link ProfileCardView} instance.
+     * @param context  Context to draw resources from.
+     * @param rootView The {@link View} to use for size calculations and for display.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param anchorRectProvider The {@link RectProvider} used to anchor the text bubble.
+     */
+    public ProfileCardView(Context context, View rootView, String stringId,
+            String accessibilityStringId, RectProvider anchorRectProvider) {
+        super(context, rootView, stringId, accessibilityStringId, /*showArrow=*/true,
+                anchorRectProvider, /*isAccessibilityEnabled=*/true);
+        setDismissOnTouchInteraction(true);
     }
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
+    protected View createContentView() {
         mMainContentView =
-                LayoutInflater.from(getContext()).inflate(R.layout.profile_card, /*root=*/null);
+                LayoutInflater.from(mContext).inflate(R.layout.profile_card, /*root=*/null);
         mTitleTextView = mMainContentView.findViewById(R.id.title);
         mDescriptionTextView = mMainContentView.findViewById(R.id.description);
         mDescriptionTextView.setMovementMethod(new ScrollingMovementMethod());
         mPostFrequencyTextView = mMainContentView.findViewById(R.id.post_freq);
         mPostsContainer = mMainContentView.findViewById(R.id.posts_container);
+        return mMainContentView;
     }
 
     void setAvatarBitmap(Bitmap avatarBitmap) {
@@ -72,9 +85,9 @@ public class ProfileCardView extends LinearLayout {
 
     void setVisibility(boolean visible) {
         if (visible) {
-            mMainContentView.setVisibility(View.VISIBLE);
+            show();
         } else {
-            mMainContentView.setVisibility(View.GONE);
+            dismiss();
         }
     }
 
@@ -82,7 +95,7 @@ public class ProfileCardView extends LinearLayout {
         if (postsDataList == null) return;
 
         for (ContentPreviewPostData postData : postsDataList) {
-            ContentPreviewPostView postView = new ContentPreviewPostView(getContext());
+            ContentPreviewPostView postView = new ContentPreviewPostView(mContext);
             if (postData.getImageBitmap() != null) {
                 postView.setImageBitmap(postData.getImageBitmap());
             }

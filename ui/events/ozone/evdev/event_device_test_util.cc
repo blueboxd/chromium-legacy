@@ -994,6 +994,26 @@ const DeviceCapabilities kXboxElite = {
     kXboxEliteAxes,
     base::size(kXboxEliteAxes),
 };
+const DeviceCapabilities kDellActivePenButton = {
+    /* path */
+    "/sys/devices/virtual/misc/uhid/0005:413C:81D5.0004/input/input13/event11",
+    /* name */ "Dell Active Pen PN579X",
+    /* phys */ "f8:94:c2:b9:dd:b2",
+    /* uniq */ "90:7f:61:28:8d:09",
+    /* bustype */ "0005",
+    /* vendor */ "413c",
+    /* product */ "81d5",
+    /* version */ "0f08",
+    /* prop */ "0",
+    /* ev */ "100013",
+    /* key */ "7f80000000000000 e0b0ffdf01cfffff fffffffffffffffe",
+    /* rel */ "0",
+    /* abs */ "0",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+};
 
 const DeviceAbsoluteAxis kDrallionStylusAxes[] = {
     {ABS_X, {0, 0, 30931, 0, 0, 100}},

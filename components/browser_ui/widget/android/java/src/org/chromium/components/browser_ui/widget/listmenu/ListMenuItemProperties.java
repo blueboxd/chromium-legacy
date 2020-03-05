@@ -9,8 +9,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 
 /**
- * The properties controlling the state of the list menu items. Any given list item can have either
- * one start icon or one end icon but not both.
+ * The properties controlling the state of the list menu items.
  */
 public class ListMenuItemProperties {
     public static final WritableIntPropertyKey TITLE_ID = new WritableIntPropertyKey();

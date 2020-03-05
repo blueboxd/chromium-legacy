@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"

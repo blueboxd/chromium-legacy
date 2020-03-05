@@ -849,10 +849,10 @@ void StyleResolver::InitStyleAndApplyInheritance(Element& element,
     // contenteditable attribute (implemented by -webkit-user-modify) should
     // be propagated from shadow host to distributed node.
     if (state.DistributedToV0InsertionPoint() || element.AssignedSlot()) {
-      Element* parent = element.parentElement();
-      DCHECK(parent);
-      if (const ComputedStyle* shadow_host_style = parent->GetComputedStyle())
-        state.Style()->SetUserModify(shadow_host_style->UserModify());
+      if (Element* parent = element.parentElement()) {
+        if (const ComputedStyle* shadow_host_style = parent->GetComputedStyle())
+          state.Style()->SetUserModify(shadow_host_style->UserModify());
+      }
     }
   } else {
     state.SetStyle(InitialStyleForElement(GetDocument()));

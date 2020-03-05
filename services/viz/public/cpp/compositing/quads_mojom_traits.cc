@@ -227,6 +227,12 @@ bool StructTraits<viz::mojom::DrawQuadDataView, viz::DrawQuad>::Read(
   if (!data.ReadRect(&out->rect) || !data.ReadVisibleRect(&out->visible_rect)) {
     return false;
   }
+  // Reject quads with areas larger than int32.
+  if (!out->rect.size().GetCheckedArea().IsValid())
+    return false;
+  if (!out->rect.Contains(out->visible_rect))
+    return false;
+
   out->needs_blending = data.needs_blending();
   return data.ReadDrawQuadState(out);
 }

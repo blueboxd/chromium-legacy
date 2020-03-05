@@ -213,8 +213,7 @@ TEST(ChromeUnwinderAndroidTest, CanUnwindFrom) {
   auto non_chrome_module =
       std::make_unique<TestModule>(0x2000, 0x500, "OtherModule");
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get());
-  unwinder.SetExpectedChromeModuleIdForTesting("ChromeModule");
+  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module.get());
 
   Frame chrome_frame{0x1100, chrome_module.get()};
   EXPECT_TRUE(unwinder.CanUnwindFrom(&chrome_frame));
@@ -231,8 +230,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwind) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get());
-  unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());
+  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
 
   std::vector<uintptr_t> stack_buffer = {
       0xFFFF,
@@ -269,8 +267,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindAbort) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get());
-  unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());
+  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
 
   std::vector<uintptr_t> stack_buffer = {
       0xFFFF,
@@ -301,8 +298,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindNoData) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get());
-  unwinder.SetExpectedChromeModuleIdForTesting(chrome_module->GetId());
+  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
 
   std::vector<uintptr_t> stack_buffer = {0xFFFF};
 
@@ -322,18 +318,6 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindNoData) {
   EXPECT_EQ(UnwindResult::ABORTED,
             unwinder.TryUnwind(&context, stack_top, &module_cache, &stack));
   EXPECT_EQ(std::vector<Frame>({{0x1200, chrome_module}}), stack);
-}
-
-TEST(ChromeUnwinderAndroidTest, AddInitialModules) {
-  auto cfi_table = ArmCFITable::Parse(
-      {reinterpret_cast<const uint8_t*>(cfi_data), sizeof(cfi_data)});
-  ChromeUnwinderAndroid unwinder(cfi_table.get());
-  ModuleCache module_cache;
-  unwinder.AddInitialModules(&module_cache);
-
-  EXPECT_NE(module_cache.GetModuleForAddress(reinterpret_cast<uintptr_t>(
-                &ChromeUnwinderAndroid::StepForTesting)),
-            nullptr);
 }
 
 }  // namespace base

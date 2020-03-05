@@ -180,6 +180,10 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // JavaScript promise is not resolved, because we close the tab anyways.
   void HandleLaunchAlternativeBrowserAndCloseTab(const base::ListValue* args);
 
+  void OnLaunchFinished(base::TimeTicks start,
+                        std::string callback_id,
+                        bool success);
+
   // Navigates to the New Tab Page.
   void HandleGotoNewTabPage(const base::ListValue* args);
 
@@ -236,6 +240,8 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   std::unique_ptr<
       browser_switcher::BrowserSwitcherService::CallbackSubscription>
       service_subscription_;
+
+  base::WeakPtrFactory<BrowserSwitchHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
@@ -324,24 +330,31 @@ void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
     return;
   }
 
-  bool success;
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
-    success = service->driver()->TryLaunch(url);
-    UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
-  }
+  service->driver()->TryLaunch(
+      url, base::BindOnce(&BrowserSwitchHandler::OnLaunchFinished,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          base::TimeTicks::Now(), std::move(callback_id)));
+}
+
+void BrowserSwitchHandler::OnLaunchFinished(base::TimeTicks start,
+                                            std::string callback_id,
+                                            bool success) {
+  const base::TimeDelta runtime = base::TimeTicks::Now() - start;
+  UMA_HISTOGRAM_TIMES("BrowserSwitcher.LaunchTime", runtime);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
 
   if (!success) {
-    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
 
+  auto* service = GetBrowserSwitcherService(web_ui());
   auto* profile = Profile::FromWebUI(web_ui());
-
+  // We don't need to resolve the promise, because the tab will close (or
+  // navigate to about:newtab) anyways.
   if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
     GotoNewTabPage(web_ui()->GetWebContents());
   } else {
-    // We don't need to resolve the promise, because the tab will close anyways.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&content::WebContents::ClosePage,

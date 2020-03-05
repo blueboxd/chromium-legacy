@@ -5,6 +5,7 @@
 #include "chrome/browser/download/android/intercept_oma_download_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/android/download_controller_base.h"
 #include "content/public/browser/browser_thread.h"

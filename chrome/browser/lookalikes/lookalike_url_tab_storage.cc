@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 
 // This bit of chaos ensures that kAllowlistKey is an arbitrary but

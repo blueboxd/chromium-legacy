@@ -82,6 +82,15 @@ class TargetThread : public SimpleThread {
   SamplingProfilerThreadToken thread_token_;
 };
 
+class TestStackCopierDelegate : public StackCopier::Delegate {
+ public:
+  void OnStackCopy() override { was_invoked_ = true; }
+  bool was_invoked() const { return was_invoked_; }
+
+ private:
+  bool was_invoked_ = false;
+};
+
 }  // namespace
 
 // ASAN moves local variables outside of the stack extents, which breaks the
@@ -104,6 +113,7 @@ TEST(StackCopierSignalTest, MAYBE_CopyStack) {
   TestProfileBuilder profiler_builder;
   TimeTicks timestamp;
   RegisterContext context;
+  TestStackCopierDelegate stack_copier_delegate;
 
   StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
       GetSamplingProfilerCurrentThreadToken()));
@@ -115,7 +125,7 @@ TEST(StackCopierSignalTest, MAYBE_CopyStack) {
     sentinels[i] = kStackSentinels[i];
 
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &profiler_builder,
-                                 &timestamp, &context);
+                                 &timestamp, &context, &stack_copier_delegate);
   ASSERT_TRUE(result);
 
   uint32_t* const end = reinterpret_cast<uint32_t*>(stack_top);
@@ -141,18 +151,44 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackTimestamp) {
   TestProfileBuilder profiler_builder;
   TimeTicks timestamp;
   RegisterContext context;
+  TestStackCopierDelegate stack_copier_delegate;
 
   StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
       GetSamplingProfilerCurrentThreadToken()));
 
   TimeTicks before = TimeTicks::Now();
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &profiler_builder,
-                                 &timestamp, &context);
+                                 &timestamp, &context, &stack_copier_delegate);
   TimeTicks after = TimeTicks::Now();
   ASSERT_TRUE(result);
 
   EXPECT_GE(timestamp, before);
   EXPECT_LE(timestamp, after);
+}
+
+// TSAN hangs on the AsyncSafeWaitableEvent FUTEX_WAIT call.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CopyStackDelegateInvoked DISABLED_CopyStackDelegateInvoked
+#else
+#define MAYBE_CopyStackDelegateInvoked CopyStackDelegateInvoked
+#endif
+TEST(StackCopierSignalTest, MAYBE_CopyStackDelegateInvoked) {
+  StackBuffer stack_buffer(/* buffer_size = */ 1 << 20);
+  memset(stack_buffer.buffer(), 0, stack_buffer.size());
+  uintptr_t stack_top = 0;
+  TestProfileBuilder profiler_builder;
+  TimeTicks timestamp;
+  RegisterContext context;
+  TestStackCopierDelegate stack_copier_delegate;
+
+  StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(
+      GetSamplingProfilerCurrentThreadToken()));
+
+  bool result = copier.CopyStack(&stack_buffer, &stack_top, &profiler_builder,
+                                 &timestamp, &context, &stack_copier_delegate);
+  ASSERT_TRUE(result);
+
+  EXPECT_TRUE(stack_copier_delegate.was_invoked());
 }
 
 // Limit to 32-bit Android, which is the platform we care about for this
@@ -170,6 +206,7 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackFromOtherThread) {
   TestProfileBuilder profiler_builder;
   TimeTicks timestamp;
   RegisterContext context{};
+  TestStackCopierDelegate stack_copier_delegate;
 
   TargetThread target_thread;
   target_thread.Start();
@@ -179,7 +216,7 @@ TEST(StackCopierSignalTest, MAYBE_CopyStackFromOtherThread) {
   StackCopierSignal copier(std::make_unique<ThreadDelegatePosix>(thread_token));
 
   bool result = copier.CopyStack(&stack_buffer, &stack_top, &profiler_builder,
-                                 &timestamp, &context);
+                                 &timestamp, &context, &stack_copier_delegate);
   ASSERT_TRUE(result);
 
   target_thread.NotifyCopyFinished();

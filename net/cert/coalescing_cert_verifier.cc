@@ -277,8 +277,8 @@ int CoalescingCertVerifier::Job::Start(CertVerifier* underlying_verifier) {
       params_, &verify_result_,
       // Safe, because |verify_request_| is self-owned and guarantees the
       // callback won't be called if |this| is deleted.
-      base::Bind(&CoalescingCertVerifier::Job::OnVerifyComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&CoalescingCertVerifier::Job::OnVerifyComplete,
+                     base::Unretained(this)),
       &pending_request_, net_log_);
   if (result != ERR_IO_PENDING) {
     LogMetrics();

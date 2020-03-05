@@ -61,7 +61,8 @@ const size_t kUniqueKeyLength = 16;
              completionHandler:^(id result, NSError* error) {
                if (error) {
                  DCHECK(error.code == WKErrorWebViewInvalidated ||
-                        error.code == WKErrorWebContentProcessTerminated);
+                        error.code == WKErrorWebContentProcessTerminated)
+                     << error.description;
                  return;
                }
 

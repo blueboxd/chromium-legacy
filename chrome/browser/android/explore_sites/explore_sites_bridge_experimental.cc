@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/android/chrome_jni_headers/ExploreSitesBridgeExperimental_jni.h"
 #include "chrome/android/chrome_jni_headers/ExploreSitesCategoryTile_jni.h"

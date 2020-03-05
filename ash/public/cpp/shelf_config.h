@@ -91,9 +91,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The radius of shelf control buttons.
   int control_border_radius() const;
 
-  // The margin around the overflow button on the shelf.
-  int overflow_button_margin() const;
-
   // The spacing between the edge of the shelf and the control buttons. When
   // shelf is horizontal, the left/right edges of the shelf are considered a
   // primary axis edge. When shelf is vertical, the top/bottom edges are
@@ -251,8 +248,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   const int shelf_status_area_hit_region_padding_;
   const int shelf_status_area_hit_region_padding_dense_;
 
-  // The margin on either side of the group of app icons (including the overflow
-  // button).
+  // The margin on either side of the group of app icons.
   const int app_icon_group_margin_;
 
   const SkColor shelf_control_permanent_highlight_background_;

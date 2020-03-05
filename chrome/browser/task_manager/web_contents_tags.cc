@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"

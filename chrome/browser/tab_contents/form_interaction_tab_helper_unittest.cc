@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

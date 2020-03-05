@@ -11,9 +11,14 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 #include "third_party/re2/src/re2/re2.h"
@@ -21,6 +26,8 @@
 namespace browser_switcher {
 
 namespace {
+
+using LaunchCallback = AlternativeBrowserDriver::LaunchCallback;
 
 const char kUrlVarName[] = "${url}";
 
@@ -147,63 +154,13 @@ void ExpandPresetBrowsers(std::string* str) {
     *str = mapping->executable_name;
 }
 
-}  // namespace
-
-AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
-
-AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl(
-    const BrowserSwitcherPrefs* prefs)
-    : prefs_(prefs) {}
-
-AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
-
-bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
-#if !defined(OS_MACOSX)
-  if (prefs_->GetAlternativeBrowserPath().empty()) {
-    LOG(ERROR) << "Alternative browser not configured. "
-               << "Aborting browser switch.";
-    return false;
-  }
-#endif
-
-  VLOG(2) << "Launching alternative browser...";
-  VLOG(2) << "  path = " << prefs_->GetAlternativeBrowserPath();
-  VLOG(2) << "  url = " << url.spec();
-
-  CHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile());
-
-  auto cmd_line = CreateCommandLine(url);
-  base::LaunchOptions options;
-  // Don't close the alternative browser when Chrome exits.
-  options.new_process_group = true;
-  if (!base::LaunchProcess(cmd_line, options).IsValid()) {
-    LOG(ERROR) << "Could not start the alternative browser!";
-    return false;
-  }
-  return true;
-}
-
-std::string AlternativeBrowserDriverImpl::GetBrowserName() const {
-  std::string path = prefs_->GetAlternativeBrowserPath();
-  const auto* mapping = FindBrowserMapping(path);
-  return mapping ? mapping->browser_name : std::string();
-}
-
-BrowserType AlternativeBrowserDriverImpl::GetBrowserType() const {
-  std::string path = prefs_->GetAlternativeBrowserPath();
-  const auto* mapping = FindBrowserMapping(path);
-  return mapping ? mapping->browser_type : BrowserType::kUnknown;
-}
-
-base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
-    const GURL& url) {
-  std::string path = prefs_->GetAlternativeBrowserPath();
+base::CommandLine CreateCommandLine(const GURL& url,
+                                    const std::string& original_path,
+                                    const std::vector<std::string>& params) {
+  std::string path = original_path;
   ExpandPresetBrowsers(&path);
   ExpandTilde(&path);
   ExpandEnvironmentVariables(&path);
-
-  const std::vector<std::string>& params =
-      prefs_->GetAlternativeBrowserParameters();
 
 #if defined(OS_MACOSX)
   // On MacOS, if the path doesn't start with a '/', it's probably not an
@@ -238,6 +195,77 @@ base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
   AppendCommandLineArguments(&cmd_line, params, url,
                              /* always_append_url */ true);
   return cmd_line;
+}
+
+void TryLaunchBlocking(GURL url,
+                       std::string path,
+                       std::vector<std::string> params,
+                       LaunchCallback cb) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  CHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile());
+
+  auto cmd_line = CreateCommandLine(url, path, params);
+  base::LaunchOptions options;
+  // Don't close the alternative browser when Chrome exits.
+  options.new_process_group = true;
+  const bool success = base::LaunchProcess(cmd_line, options).IsValid();
+  if (!success)
+    LOG(ERROR) << "Could not start the alternative browser!";
+}
+
+}  // namespace
+
+AlternativeBrowserDriver::~AlternativeBrowserDriver() = default;
+
+AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl(
+    const BrowserSwitcherPrefs* prefs)
+    : prefs_(prefs) {}
+
+AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() = default;
+
+void AlternativeBrowserDriverImpl::TryLaunch(const GURL& url,
+                                             LaunchCallback cb) {
+#if !defined(OS_MACOSX)
+  if (prefs_->GetAlternativeBrowserPath().empty()) {
+    LOG(ERROR) << "Alternative browser not configured. "
+               << "Aborting browser switch.";
+    std::move(cb).Run(false);
+    return;
+  }
+#endif
+
+  VLOG(2) << "Launching alternative browser...";
+  VLOG(2) << "  path = " << prefs_->GetAlternativeBrowserPath();
+  VLOG(2) << "  url = " << url.spec();
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&TryLaunchBlocking, url,
+                     prefs_->GetAlternativeBrowserPath(),
+                     prefs_->GetAlternativeBrowserParameters(), std::move(cb)));
+}
+
+std::string AlternativeBrowserDriverImpl::GetBrowserName() const {
+  std::string path = prefs_->GetAlternativeBrowserPath();
+  const auto* mapping = FindBrowserMapping(path);
+  return mapping ? mapping->browser_name : std::string();
+}
+
+BrowserType AlternativeBrowserDriverImpl::GetBrowserType() const {
+  std::string path = prefs_->GetAlternativeBrowserPath();
+  const auto* mapping = FindBrowserMapping(path);
+  return mapping ? mapping->browser_type : BrowserType::kUnknown;
+}
+
+base::CommandLine AlternativeBrowserDriverImpl::CreateCommandLine(
+    const GURL& url) {
+  return browser_switcher::CreateCommandLine(
+      url, prefs_->GetAlternativeBrowserPath(),
+      prefs_->GetAlternativeBrowserParameters());
 }
 
 }  // namespace browser_switcher

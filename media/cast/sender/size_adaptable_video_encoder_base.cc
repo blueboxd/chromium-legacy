@@ -23,9 +23,8 @@ SizeAdaptableVideoEncoderBase::SizeAdaptableVideoEncoderBase(
       frames_in_encoder_(0),
       next_frame_id_(FrameId::first()) {
   cast_environment_->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(status_change_cb_, STATUS_INITIALIZED));
+      CastEnvironment::MAIN, FROM_HERE,
+      base::BindOnce(status_change_cb_, STATUS_INITIALIZED));
 }
 
 SizeAdaptableVideoEncoderBase::~SizeAdaptableVideoEncoderBase() {

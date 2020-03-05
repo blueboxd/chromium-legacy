@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"

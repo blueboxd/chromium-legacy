@@ -38,7 +38,6 @@
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
-#include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -136,7 +135,6 @@ auto RunQRCodeGeneratorService(
 
 auto RunMirroringService(
     mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
-  DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
 }

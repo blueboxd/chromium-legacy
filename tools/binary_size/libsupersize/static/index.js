@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 const DO_NOT_DIFF = 'Don\'t diff';
+// Domain hosting the viewer.html
+const FIREBASE_HOST = 'https://chrome-supersize.firebaseapp.com'
+// Storage bucket hosting the size diffs.
+const SIZE_FILEHOST = 'https://storage.googleapis.com/chrome-supersize'
 
 function buildOptions(options) {
   const fragment = document.createDocumentFragment();
@@ -25,19 +29,20 @@ function setSubmitListener(form, fetchDataUrl) {
   form.addEventListener('submit', event => {
     event.preventDefault();
     const dataUrl = fetchDataUrl();
-    window.open(`viewer.html?load_url=${dataUrl}`);
+    window.open(`${FIREBASE_HOST}/viewer.html?load_url=${dataUrl}`);
   });
 }
 
 // Milestones.
 (async () => {
   // Milestones.
-  const milestoneResponse = await fetch('milestones/milestones.json');
+  const milestoneResponse = await fetch(
+      `${SIZE_FILEHOST}/milestones/milestones.json`);
   const milestonesPushed = (await milestoneResponse.json())['pushed'];
 
   // Official Builds
   const officialBuildsResponse =
-      await fetch('official_builds/canary_reports.json');
+      await fetch(`${SIZE_FILEHOST}/official_builds/canary_reports.json`);
   const officialBuildsPushed = (await officialBuildsResponse.json())['pushed'];
 
   if (document.readyState === 'loading') {
@@ -169,10 +174,10 @@ function setSubmitListener(form, fetchDataUrl) {
     function sizeUrlFor(value) {
       if (value.indexOf('canary') != -1) {
         const strippedVersion = value.replace(/[^\d.]/g, '');
-        return `official_builds/reports/${strippedVersion}/${
+        return `${SIZE_FILEHOST}/official_builds/reports/${strippedVersion}/${
             selApk.value}.size`;
       }
-      return `milestones/${value}/${selApk.value}.size`;
+      return `${SIZE_FILEHOST}/milestones/${value}/${selApk.value}.size`;
     }
     let ret = sizeUrlFor(selVersion1.value);
     if (selVersion2.value !== DO_NOT_DIFF) {

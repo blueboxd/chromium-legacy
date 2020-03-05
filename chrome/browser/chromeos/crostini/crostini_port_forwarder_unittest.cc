@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"

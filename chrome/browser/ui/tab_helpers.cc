@@ -134,6 +134,10 @@
 #include "components/zoom/zoom_controller.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
@@ -171,10 +175,6 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_navigation_observer.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -197,7 +197,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                             std::make_unique<base::SupportsUserData::Data>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Set the view type.
+  // Set the view type. This is done first because some tab helpers (TODO(avi):
+  // which ones? https://crbug.com/1058951) rely on it being set.
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_TAB_CONTENTS);
 #endif
 
@@ -213,7 +214,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   zoom::ZoomController::CreateForWebContents(web_contents);
 #endif
 
-  // --- Common tab helpers ---
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  // --- Section 1: Common tab helpers ---
+
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents,
@@ -236,9 +241,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ExternalProtocolObserver::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
   FindBarState::ConfigureWebContents(web_contents);
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   download::DownloadNavigationObserver::CreateForWebContents(
       web_contents,
       download::NavigationMonitorFactory::GetForKey(profile->GetProfileKey()));
@@ -248,6 +250,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   InfoBarService::CreateForWebContents(web_contents);
   InstallableManager::CreateForWebContents(web_contents);
   IsolatedPrerenderTabHelper::CreateForWebContents(web_contents);
+  if (MediaEngagementService::IsEnabled())
+    MediaEngagementService::CreateWebContentsObserver(web_contents);
+  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
+    MediaHistoryContentsObserver::CreateForWebContents(web_contents);
   metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
       web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
@@ -260,17 +266,27 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
+  }
   permissions::PermissionRequestManager::CreateForWebContents(web_contents);
   // The PopupBlockerTabHelper has an implicit dependency on
   // ChromeSubresourceFilterClient being available in its constructor.
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PopupOpenerTabHelper::CreateForWebContents(
       web_contents, base::DefaultTickClock::GetInstance());
+  if (predictors::LoadingPredictorFactory::GetForProfile(profile))
+    predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   PreviewsLitePageRedirectPredictor::CreateForWebContents(web_contents);
   PreviewsUITabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
+  // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.
+  //     See https://crbug.com/910288.
+  resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
+      web_contents);
   ResourceLoadingHintsWebContentsObserver::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
       web_contents);
@@ -288,17 +304,18 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
           profile));
-
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   TabUIHelper::CreateForWebContents(web_contents);
   tasks::TaskTabHelper::CreateForWebContents(web_contents);
+  if (tracing::NavigationTracingObserver::IsEnabled())
+    tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents);
   vr::VrTabHelper::CreateForWebContents(web_contents);
 
   // NO! Do not just add your tab helper here. This is a large alphabetized
   // block; please insert your tab helper above in alphabetical order.
 
-  // --- Platform-specific tab helpers ---
+  // --- Section 2: Platform-specific tab helpers ---
 
 #if defined(OS_ANDROID)
   {
@@ -353,6 +370,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
 #endif
 
+#if defined(OS_CHROMEOS)
+  chromeos::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
+      web_contents);
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationObserver::CreateForWebContents(web_contents);
@@ -367,7 +389,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
 #endif
 
-  // --- Feature tab helpers behind flags ---
+  // --- Section 3: Feature tab helpers behind BUILDFLAGs ---
+  // NOT for "if enabled"; put those in section 1.
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalTabHelper::CreateForWebContents(
@@ -394,6 +417,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HungPluginTabHelper::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
 #endif
+
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::InitializePrinting(web_contents);
 #endif
@@ -402,30 +426,19 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SupervisedUserNavigationObserver::MaybeCreateForWebContents(web_contents);
 #endif
 
-#if defined(OS_CHROMEOS)
-  chromeos::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
-      web_contents);
-#endif
+  // --- Section 4: The warning ---
 
-  if (predictors::LoadingPredictorFactory::GetForProfile(profile))
-    predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);
+  // NONO    NO   NONONO   !
+  // NO NO   NO  NO    NO  !
+  // NO  NO  NO  NO    NO  !
+  // NO   NO NO  NO    NO
+  // NO    NONO   NONONO   !
 
-  if (tracing::NavigationTracingObserver::IsEnabled())
-    tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
+  // Do NOT just drop your tab helpers here! There are three sections above (1.
+  // All platforms, 2. Some platforms, 3. Behind BUILDFLAGs). Each is in rough
+  // alphabetical order. PLEASE PLEASE PLEASE add your flag to the correct
+  // section in the correct order.
 
-  if (MediaEngagementService::IsEnabled())
-    MediaEngagementService::CreateWebContentsObserver(web_contents);
-
-  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
-    MediaHistoryContentsObserver::CreateForWebContents(web_contents);
-
-  if (auto* performance_manager_registry =
-          performance_manager::PerformanceManagerRegistry::GetInstance()) {
-    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
-  }
-
-  // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.
-  //     See https://crbug.com/910288.
-  resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
-      web_contents);
+  // This is common code for all of us. PLEASE DO YOUR PART to keep it tidy and
+  // organized.
 }

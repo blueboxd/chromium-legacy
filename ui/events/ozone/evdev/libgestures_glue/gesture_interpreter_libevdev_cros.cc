@@ -527,9 +527,9 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(
         continue;
 
       // Dispatch key press or release to keyboard.
-      dispatcher_->DispatchKeyEvent(
-          KeyEventParams(id_, key, value, false /* suppress_auto_repeat */,
-                         StimeToTimeTicks(timestamp)));
+      dispatcher_->DispatchKeyEvent(KeyEventParams(
+          id_, ui::EF_NONE, key, value, false /* suppress_auto_repeat */,
+          StimeToTimeTicks(timestamp)));
     }
   }
 

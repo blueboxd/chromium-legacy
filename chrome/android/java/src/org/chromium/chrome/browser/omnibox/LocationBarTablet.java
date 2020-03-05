@@ -13,7 +13,6 @@ import android.util.AttributeSet;
 import android.util.Property;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -31,7 +30,6 @@ import java.util.List;
  * Location bar for tablet form factors.
  */
 public class LocationBarTablet extends LocationBarLayout {
-    private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
     private static final long MAX_NTP_KEYBOARD_FOCUS_DURATION_MS = 200;
 
     private static final int ICON_FADE_ANIMATION_DURATION_MS = 150;
@@ -64,14 +62,6 @@ public class LocationBarTablet extends LocationBarLayout {
                     setWidthChangeAnimationPercent(value);
                 }
             };
-
-    private final Runnable mKeyboardResizeModeTask = new Runnable() {
-        @Override
-        public void run() {
-            getWindowDelegate().setWindowSoftInputMode(
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
-    };
 
     private View mLocationBarIcon;
     private View mBookmarkButton;
@@ -160,8 +150,6 @@ public class LocationBarTablet extends LocationBarLayout {
     public void handleUrlFocusAnimation(final boolean hasFocus) {
         super.handleUrlFocusAnimation(hasFocus);
 
-        removeCallbacks(mKeyboardResizeModeTask);
-
         if (mUrlFocusChangeAnimator != null && mUrlFocusChangeAnimator.isRunning()) {
             mUrlFocusChangeAnimator.cancel();
             mUrlFocusChangeAnimator = null;
@@ -193,29 +181,6 @@ public class LocationBarTablet extends LocationBarLayout {
         });
         setUrlFocusChangeInProgress(true);
         mUrlFocusChangeAnimator.start();
-    }
-
-    private void finishUrlFocusChange(boolean hasFocus) {
-        // Report focus change early to trigger animations.
-        mStatusViewCoordinator.onUrlFocusChange(hasFocus);
-        if (hasFocus) {
-            if (getWindowDelegate().getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN) {
-                getWindowDelegate().setWindowSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-            }
-            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
-        } else {
-            getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
-            // Convert the keyboard back to resize mode (delay the change for an arbitrary
-            // amount of time in hopes the keyboard will be completely hidden before making
-            // this change).
-            if (getWindowDelegate().getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE) {
-                postDelayed(mKeyboardResizeModeTask, KEYBOARD_MODE_CHANGE_DELAY_MS);
-            }
-        }
-        setUrlFocusChangeInProgress(false);
     }
 
     /**

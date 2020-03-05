@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
+#include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

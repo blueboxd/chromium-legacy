@@ -675,7 +675,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ]
         },
@@ -696,7 +696,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false
@@ -718,7 +718,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ]
         },
@@ -738,7 +738,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false
@@ -769,7 +769,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false,
@@ -798,7 +798,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut"
+              "pool": "chrome-cros-dut.template"
             }
           ],
           "idempotent": false,

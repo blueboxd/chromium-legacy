@@ -110,6 +110,9 @@ message VideoTrackLayout {
 message VideoLayout {
   // Layout for each video track.
   repeated VideoTrackLayout video_track = 1;
+
+  // True if this display configuration supports capturing the entire desktop.
+  optional bool supports_full_desktop_capture = 2;
 }
 
 message SelectDesktopDisplayRequest {

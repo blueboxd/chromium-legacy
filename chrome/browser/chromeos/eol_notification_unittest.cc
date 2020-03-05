@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/eol_notification.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_handler.h"

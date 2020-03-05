@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/notifications/notification_trigger_scheduler.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"

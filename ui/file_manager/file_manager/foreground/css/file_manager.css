@@ -184,16 +184,6 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
   border-radius: 20px 0 0 20px;
 }
 
-html[class*='col-resize'] #directory-tree[files-ng]
-    .tree-item .tree-item .tree-row > .file-row {
-  transition: all 500ms;
-}
-
-#directory-tree[files-ng][clipped]
-    .tree-item .tree-item .tree-row > .file-row {
-  padding-inline-start: 0 !important;
-}
-
 #directory-tree .tree-row > .expand-icon {
   flex: none;
   height: 36px;

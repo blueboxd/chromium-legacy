@@ -77,7 +77,8 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
                    bool down,
                    bool repeat,
                    base::TimeTicks timestamp,
-                   int device_id) override;
+                   int device_id,
+                   int flags) override;
 
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;

@@ -30,8 +30,8 @@ class LocalVideoFrameInput : public VideoFrameInput {
                            base::TimeTicks capture_time) final {
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
-        base::BindRepeating(&VideoSender::InsertRawVideoFrame, video_sender_,
-                            std::move(video_frame), capture_time));
+        base::BindOnce(&VideoSender::InsertRawVideoFrame, video_sender_,
+                       std::move(video_frame), capture_time));
   }
 
   scoped_refptr<VideoFrame> MaybeCreateOptimizedFrame(
@@ -68,12 +68,10 @@ class LocalAudioFrameInput : public AudioFrameInput {
 
   void InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) final {
-    cast_environment_->PostTask(CastEnvironment::MAIN,
-                                FROM_HERE,
-                                base::Bind(&AudioSender::InsertAudio,
-                                           audio_sender_,
-                                           base::Passed(&audio_bus),
-                                           recorded_time));
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(&AudioSender::InsertAudio, audio_sender_,
+                       base::Passed(&audio_bus), recorded_time));
   }
 
  protected:

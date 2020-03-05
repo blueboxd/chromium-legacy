@@ -35,7 +35,8 @@ void KeyboardEvdev::OnKeyChange(unsigned int key,
                                 bool down,
                                 bool suppress_auto_repeat,
                                 base::TimeTicks timestamp,
-                                int device_id) {
+                                int device_id,
+                                int flags) {
   if (key > KEY_MAX)
     return;
 
@@ -47,7 +48,7 @@ void KeyboardEvdev::OnKeyChange(unsigned int key,
   key_state_.set(key, down);
   auto_repeat_handler_.UpdateKeyRepeat(key, down, suppress_auto_repeat,
                                        device_id);
-  DispatchKey(key, down, is_repeat, timestamp, device_id);
+  DispatchKey(key, down, is_repeat, timestamp, device_id, flags);
 }
 
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
@@ -136,15 +137,17 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
                                 bool down,
                                 bool repeat,
                                 base::TimeTicks timestamp,
-                                int device_id) {
+                                int device_id,
+                                int flags) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
   if (dom_code == DomCode::NONE)
     return;
-  int flags = modifiers_->GetModifierFlags();
+  int modifier_flags = modifiers_->GetModifierFlags();
   DomKey dom_key;
   KeyboardCode key_code;
-  if (!keyboard_layout_engine_->Lookup(dom_code, flags, &dom_key, &key_code))
+  if (!keyboard_layout_engine_->Lookup(dom_code, modifier_flags, &dom_key,
+                                       &key_code))
     return;
   if (!repeat) {
     int flag = ModifierDomKeyToEventFlag(dom_key);
@@ -152,7 +155,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
   }
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-                 modifiers_->GetModifierFlags(), dom_key, timestamp);
+                 flags | modifiers_->GetModifierFlags(), dom_key, timestamp);
   event.set_source_device_id(device_id);
   callback_.Run(&event);
 }

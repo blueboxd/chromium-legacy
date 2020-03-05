@@ -66,10 +66,11 @@ class ProxyConfigServiceAndroidTestBase : public TestWithTaskEnvironment {
   // suite (see net/test/net_test_suite.cc).
   ProxyConfigServiceAndroidTestBase(const StringMap& initial_configuration)
       : configuration_(initial_configuration),
-        service_(base::ThreadTaskRunnerHandle::Get(),
-                 base::ThreadTaskRunnerHandle::Get(),
-                 base::Bind(&ProxyConfigServiceAndroidTestBase::GetProperty,
-                            base::Unretained(this))) {}
+        service_(
+            base::ThreadTaskRunnerHandle::Get(),
+            base::ThreadTaskRunnerHandle::Get(),
+            base::BindRepeating(&ProxyConfigServiceAndroidTestBase::GetProperty,
+                                base::Unretained(this))) {}
 
   ~ProxyConfigServiceAndroidTestBase() override {}
 

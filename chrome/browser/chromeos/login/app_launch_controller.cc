@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"

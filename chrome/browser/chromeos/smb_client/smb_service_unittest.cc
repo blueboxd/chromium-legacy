@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"

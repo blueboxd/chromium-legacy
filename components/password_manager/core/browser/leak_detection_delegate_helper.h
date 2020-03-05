@@ -24,26 +24,29 @@ class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
  public:
   // Type alias for |callback_|.
   using LeakTypeReply =
-      base::OnceCallback<void(CredentialLeakType, GURL, base::string16)>;
+      base::OnceCallback<void(IsSaved, IsReused, GURL, base::string16)>;
 
-  explicit LeakDetectionDelegateHelper(LeakTypeReply callback);
+  LeakDetectionDelegateHelper(scoped_refptr<PasswordStore> store,
+                              LeakTypeReply callback);
   ~LeakDetectionDelegateHelper() override;
 
-  // Request all credentials with |password| from |store|.
-  // Results are password to |OnGetPasswordStoreResults|.
-  void GetCredentialLeakType(PasswordStore* store,
-                             GURL url,
+  // Request all credentials with |password| from the store.
+  // Results are passed to |OnGetPasswordStoreResults|.
+  void ProcessLeakedPassword(GURL url,
                              base::string16 username,
                              base::string16 password);
 
  private:
   // PasswordStoreConsumer:
   // Is called by the |PasswordStore| once all credentials with the specific
-  // password are retrieved. Determine the |CredentialLeakType and invokes
+  // password are retrieved. Determine the credential type and invokes
   // |callback_| when done.
+  // All the saved credentials with the same username and password are stored to
+  // the database.
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
+  scoped_refptr<password_manager::PasswordStore> store_;
   LeakTypeReply callback_;
   GURL url_;
   base::string16 username_;

@@ -964,6 +964,10 @@ const char kPerAppTimeLimitsLastResetTime[] =
 const char kPerAppTimeLimitsLastSuccessfulReportTime[] =
     "child_user.per_app_time_limits.last_successful_report_time";
 
+// Int64 to specify the latest AppLimit update timestamp from.
+const char kPerAppTimeLimitsLatestLimitUpdateTime[] =
+    "child_user.per_app_time_limits.latest_limit_update_time";
+
 // Dictionary pref containing the per-app time limits configuration for
 // child user. Controlled by PerAppTimeLimits policy.
 const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";

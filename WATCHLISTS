@@ -1254,8 +1254,7 @@
                   '|chrome/browser/ui/webui/media_router/' \
                   '|chrome/common/media_router/' \
                   '|chrome/test/data/webui/media_router/' \
-                  '|chrome/test/media_router/' \
-                  '|chrome/utility/media_router/'
+                  '|chrome/test/media_router/'
     },
     'message_loop': {
       'filepath': 'base/message_'

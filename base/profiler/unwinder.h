@@ -31,8 +31,7 @@ enum class UnwindResult {
 // use with the StackSamplingProfiler. The profiler is expected to call
 // CanUnwind() to determine if the Unwinder thinks it can unwind from the frame
 // represented by the context values, then TryUnwind() to attempt the
-// unwind. Note that the stack samples for multiple collection scenarios are
-// interleaved on a single Unwinder instance.
+// unwind.
 class Unwinder {
  public:
   virtual ~Unwinder() = default;
@@ -40,6 +39,13 @@ class Unwinder {
   // Invoked to allow the unwinder to add any modules it recognizes to the
   // ModuleCache.
   virtual void AddInitialModules(ModuleCache* module_cache) {}
+
+  // Invoked at the time the stack is captured. IMPORTANT NOTE: this function is
+  // invoked while the target thread is suspended. To avoid deadlock it must not
+  // invoke any non-reentrant code that is also invoked by the target thread. In
+  // particular, it may not perform any heap allocation or deallocation,
+  // including indirectly via use of DCHECK/CHECK or other logging statements.
+  virtual void OnStackCapture() {}
 
   // Returns true if the unwinder recognizes the code referenced by
   // |current_frame| as code from which it should be able to unwind. When

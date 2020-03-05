@@ -346,14 +346,6 @@ java_group("com_android_support_support_vector_drawable_java") {
   input_jars_paths = [ "${target_out_dir}/com_android_support_support_vector_drawable_java_orig/classes.jar" ]
 }
 
-java_group("com_android_support_swiperefreshlayout_java") {
-  deps = [
-    ":${target_name}_orig__unpack_aar",
-    ":androidx_swiperefreshlayout_swiperefreshlayout_java",
-  ]
-  input_jars_paths = [ "${target_out_dir}/com_android_support_swiperefreshlayout_java_orig/classes.jar" ]
-}
-
 java_group("com_android_support_transition_java") {
   deps = [
     ":${target_name}_orig__unpack_aar",

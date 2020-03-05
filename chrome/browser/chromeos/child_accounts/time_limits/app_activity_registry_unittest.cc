@@ -52,6 +52,19 @@ class AppTimeNotificationDelegateMock : public AppTimeNotificationDelegate {
                     chromeos::app_time::AppNotification));
 };
 
+class AppStateObserverMock : public AppActivityRegistry::AppStateObserver {
+ public:
+  AppStateObserverMock() = default;
+  AppStateObserverMock(const AppStateObserverMock&) = delete;
+  AppStateObserverMock& operator=(const AppStateObserverMock&) = delete;
+
+  ~AppStateObserverMock() = default;
+
+  MOCK_METHOD3(OnAppLimitReached, void(const AppId&, base::TimeDelta, bool));
+  MOCK_METHOD1(OnAppLimitRemoved, void(const AppId&));
+  MOCK_METHOD1(OnAppInstalled, void(const AppId&));
+};
+
 }  // namespace
 
 class AppActivityRegistryTest : public ChromeViewsTestBase {
@@ -66,7 +79,10 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   // ChromeViewsTestBase:
   void SetUp() override;
 
+  void InstallApps();
+
   aura::Window* CreateWindowForApp(const AppId& app_id);
+  aura::Window* GetWindowForApp(const AppId& app_id);
 
   void SetAppLimit(const AppId& app_id,
                    const base::Optional<AppLimit>& app_limit);
@@ -104,7 +120,10 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
 void AppActivityRegistryTest::SetUp() {
   ChromeViewsTestBase::SetUp();
   ReInitializeRegistry();
+  InstallApps();
+}
 
+void AppActivityRegistryTest::InstallApps() {
   registry().OnAppInstalled(GetChromeAppId());
   registry().OnAppInstalled(kApp1);
   registry().OnAppInstalled(kApp2);
@@ -117,10 +136,16 @@ aura::Window* AppActivityRegistryTest::CreateWindowForApp(const AppId& app_id) {
   std::unique_ptr<aura::Window> window =
       std::make_unique<aura::Window>(nullptr);
   window->Init(ui::LayerType::LAYER_NOT_DRAWN);
-
-  aura::Window* to_return = window.get();
+  auto* to_return = window.get();
   windows_[app_id].push_back(std::move(window));
   return to_return;
+}
+
+aura::Window* AppActivityRegistryTest::GetWindowForApp(const AppId& app_id) {
+  const std::vector<std::unique_ptr<aura::Window>>& app_windows =
+      windows_.at(app_id);
+  EXPECT_GE(app_windows.size(), 0u);
+  return app_windows[app_windows.size() - 1].get();
 }
 
 void AppActivityRegistryTest::SetAppLimit(
@@ -762,6 +787,122 @@ TEST_F(AppActivityRegistryTest, ActiveWebAppBlocked) {
   EXPECT_EQ(registry().GetAppState(kApp2), AppState::kLimitReached);
 
   EXPECT_EQ(registry().GetAppState(GetChromeAppId()), AppState::kLimitReached);
+}
+
+TEST_F(AppActivityRegistryTest, OverrideLimitReachedState) {
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+  const base::TimeDelta limit = base::TimeDelta::FromMinutes(30);
+
+  std::map<AppId, AppLimit> app_limits = {
+      {kApp1, AppLimit(AppRestriction::kTimeLimit, limit, base::Time::Now())},
+      {GetChromeAppId(),
+       AppLimit(AppRestriction::kTimeLimit, limit, base::Time::Now())}};
+
+  registry().UpdateAppLimits(app_limits);
+
+  // Save app activity and reinitialize.
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ true))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ true))
+      .Times(1);
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(GetChromeAppId(), base::TimeDelta::FromMinutes(30),
+                        /* was_active */ false))
+      .Times(1);
+
+  // App limits will be reached.
+  CreateAppActivityForApp(kApp1, 2 * limit);
+  CreateAppActivityForApp(kApp2, 2 * limit);
+
+  // Save app activity and reinitialize.
+  registry().SaveAppActivity();
+  ReInitializeRegistry();
+  registry().AddAppStateObserver(&state_observer_mock);
+  registry().UpdateAppLimits(app_limits);
+  InstallApps();
+
+  EXPECT_EQ(registry().GetAppState(kApp1), AppState::kLimitReached);
+  EXPECT_EQ(registry().GetAppState(kApp2), AppState::kLimitReached);
+  EXPECT_EQ(registry().GetAppState(GetChromeAppId()), AppState::kLimitReached);
+
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp1, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ true))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, base::TimeDelta::FromMinutes(30),
+                                /* was_active */ true))
+      .Times(1);
+
+  registry().OnAppActive(kApp1, GetWindowForApp(kApp1), base::Time::Now());
+  registry().OnAppActive(kApp2, GetWindowForApp(kApp2), base::Time::Now());
+}
+
+TEST_F(AppActivityRegistryTest, AvoidReduntantNotifications) {
+  const base::TimeDelta delta = base::TimeDelta::FromMinutes(5);
+  AppLimit chrome_limit(AppRestriction::kTimeLimit,
+                        base::TimeDelta::FromMinutes(30), base::Time::Now());
+  AppLimit app1_limit(AppRestriction::kTimeLimit,
+                      base::TimeDelta::FromMinutes(5),
+                      base::Time::Now() + delta);
+  std::map<AppId, AppLimit> app_limits = {{GetChromeAppId(), chrome_limit},
+                                          {kApp1, app1_limit}};
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  GetChromeAppId(), chrome_limit.daily_limit(),
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(1);
+
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, app1_limit.daily_limit(),
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(1);
+
+  registry().UpdateAppLimits(app_limits);
+  registry().SaveAppActivity();
+
+  // Reinitialized the registry. We don't expect redundant time limit updatese
+  // will result in notifications.
+  ReInitializeRegistry();
+
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  GetChromeAppId(), testing::_,
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(0);
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, testing::_,
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(0);
+
+  registry().UpdateAppLimits(app_limits);
+
+  // Update the limit for Chrome.
+  AppLimit new_chrome_limit(AppRestriction::kTimeLimit,
+                            base::TimeDelta::FromMinutes(15),
+                            base::Time::Now() + 2 * delta);
+  app_limits.at(GetChromeAppId()) = new_chrome_limit;
+
+  // Expect that there will be a notification for Chrome but not for kApp1.
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  GetChromeAppId(), new_chrome_limit.daily_limit(),
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(1);
+  EXPECT_CALL(notification_delegate_mock(),
+              ShowAppTimeLimitNotification(
+                  kApp1, testing::_,
+                  chromeos::app_time::AppNotification::kTimeLimitChanged))
+      .Times(0);
+  registry().UpdateAppLimits(app_limits);
 }
 
 }  // namespace app_time

@@ -25,6 +25,7 @@ enum class StylusState;
 
 struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   KeyEventParams(int device_id,
+                 int flags,
                  unsigned int code,
                  bool down,
                  bool suppress_auto_repeat,
@@ -34,6 +35,7 @@ struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   ~KeyEventParams();
 
   int device_id;
+  int flags;
   unsigned int code;
   bool down;
   bool suppress_auto_repeat;

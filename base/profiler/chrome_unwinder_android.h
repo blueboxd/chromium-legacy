@@ -18,15 +18,13 @@ namespace base {
 // Chrome unwinder implementation for Android, using ArmCfiTable.
 class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
  public:
-  ChromeUnwinderAndroid(const ArmCFITable* cfi_table);
+  ChromeUnwinderAndroid(const ArmCFITable* cfi_table,
+                        const ModuleCache::Module* chrome_module);
   ~ChromeUnwinderAndroid() override;
   ChromeUnwinderAndroid(const ChromeUnwinderAndroid&) = delete;
   ChromeUnwinderAndroid& operator=(const ChromeUnwinderAndroid&) = delete;
 
-  void SetExpectedChromeModuleIdForTesting(const std::string& chrome_module_id);
-
   // Unwinder:
-  void AddInitialModules(ModuleCache* module_cache) override;
   bool CanUnwindFrom(const Frame* current_frame) const override;
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
@@ -45,7 +43,7 @@ class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
                    const ArmCFITable::FrameEntry& entry);
 
   const ArmCFITable* cfi_table_;
-  std::string chrome_module_id_;
+  const ModuleCache::Module* const chrome_module_;
 };
 
 }  // namespace base

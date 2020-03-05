@@ -12,8 +12,10 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 class Profile;
+class ProxyConfigMonitor;
 
 namespace content {
 class DownloadManager;
@@ -41,6 +43,7 @@ struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
 struct V4ProtocolConfig;
+class SafeBrowsingNetworkContext;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
 // This helper class should be owned by a SafeBrowsingService, and it handles
@@ -134,14 +137,24 @@ class ServicesDelegate {
   virtual BinaryUploadService* GetBinaryUploadService(
       Profile* profile) const = 0;
 
+  virtual void CreateSafeBrowsingNetworkContext(Profile* profile);
+  virtual void RemoveSafeBrowsingNetworkContext(Profile* profile);
+  virtual SafeBrowsingNetworkContext* GetSafeBrowsingNetworkContext(
+      Profile* profile) const;
+
   virtual std::string GetSafetyNetId() const = 0;
 
  protected:
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
+      Profile* profile);
+
   // Unowned pointer
   SafeBrowsingService* const safe_browsing_service_;
 
   // Unowned pointer
   ServicesCreator* const services_creator_;
+
+  std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 
   // Tracks existing Profiles, and their corresponding
   // ChromePasswordProtectionService instances.
@@ -149,6 +162,12 @@ class ServicesDelegate {
   base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
+  // Tracks existing Profiles, and their corresponding
+  // SafeBrowsingNetworkContexts. Accessed on UI thread.
+  base::flat_map<Profile*, std::unique_ptr<SafeBrowsingNetworkContext>>
+      network_context_map_;
+  base::flat_map<Profile*, std::unique_ptr<ProxyConfigMonitor>>
+      proxy_config_monitor_map_;
 };
 
 }  // namespace safe_browsing

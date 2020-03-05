@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"

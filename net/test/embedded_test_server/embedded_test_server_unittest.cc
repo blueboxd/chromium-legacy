@@ -420,8 +420,8 @@ class InfiniteResponse : public BasicHttpResponse {
   void SendResponse(const SendBytesCallback& send,
                     SendCompleteCallback done) override {
     send.Run(ToResponseString(),
-             base::Bind(&InfiniteResponse::SendInfinite,
-                        weak_ptr_factory_.GetWeakPtr(), send));
+             base::BindOnce(&InfiniteResponse::SendInfinite,
+                            weak_ptr_factory_.GetWeakPtr(), send));
   }
 
  private:
@@ -429,8 +429,8 @@ class InfiniteResponse : public BasicHttpResponse {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(send, "echo",
-                       base::Bind(&InfiniteResponse::SendInfinite,
-                                  weak_ptr_factory_.GetWeakPtr(), send)));
+                       base::BindOnce(&InfiniteResponse::SendInfinite,
+                                      weak_ptr_factory_.GetWeakPtr(), send)));
   }
 
   base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_{this};

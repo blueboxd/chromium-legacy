@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -82,6 +83,8 @@ import java.util.List;
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
                    VoiceRecognitionHandler.Delegate, AssistantVoiceSearchService.Observer {
+    private static final int KEYBOARD_HIDE_DELAY_MS = 150;
+    private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
 
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
@@ -121,6 +124,7 @@ public class LocationBarLayout extends FrameLayout
     protected CompositeTouchDelegate mCompositeTouchDelegate;
 
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
+    private Runnable mKeyboardResizeModeTask;
 
     /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
@@ -174,28 +178,27 @@ public class LocationBarLayout extends FrameLayout
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
         mUrlCoordinator.setDelegate(this);
 
-        OmniboxSuggestionListEmbedder embedder =
-                new OmniboxSuggestionListEmbedder() {
-                    @Override
-                    public boolean isTablet() {
-                        return mIsTablet;
-                    }
+        OmniboxSuggestionListEmbedder embedder = new OmniboxSuggestionListEmbedder() {
+            @Override
+            public boolean isTablet() {
+                return mIsTablet;
+            }
 
-                    @Override
-                    public WindowDelegate getWindowDelegate() {
-                        return mWindowDelegate;
-                    }
+            @Override
+            public WindowDelegate getWindowDelegate() {
+                return mWindowDelegate;
+            }
 
-                    @Override
-                    public View getAnchorView() {
-                        return getRootView().findViewById(R.id.toolbar);
-                    }
+            @Override
+            public View getAnchorView() {
+                return getRootView().findViewById(R.id.toolbar);
+            }
 
-                    @Override
-                    public View getAlignmentView() {
-                        return mIsTablet ? LocationBarLayout.this : null;
-                    }
-                };
+            @Override
+            public View getAlignmentView() {
+                return mIsTablet ? LocationBarLayout.this : null;
+            }
+        };
         mAutocompleteCoordinator = AutocompleteCoordinatorFactory.createAutocompleteCoordinator(
                 this, this, embedder, mUrlCoordinator);
         addUrlFocusChangeListener(mAutocompleteCoordinator);
@@ -291,14 +294,6 @@ public class LocationBarLayout extends FrameLayout
     public void setUrlBarFocusable(boolean focusable) {
         if (mUrlCoordinator == null) return;
         mUrlCoordinator.setAllowFocus(focusable);
-    }
-
-    /**
-     * @return The WindowDelegate for the LocationBar. This should be used for all Window related
-     * state queries.
-     */
-    protected WindowDelegate getWindowDelegate() {
-        return mWindowDelegate;
     }
 
     @Override
@@ -522,6 +517,7 @@ public class LocationBarLayout extends FrameLayout
      * @param hasFocus Whether focus was gained.
      */
     protected void handleUrlFocusAnimation(boolean hasFocus) {
+        removeCallbacks(mKeyboardResizeModeTask);
         if (hasFocus) mUrlFocusedWithoutAnimations = false;
         for (UrlFocusChangeListener listener : mUrlFocusChangeListeners) {
             listener.onUrlFocusChange(hasFocus);
@@ -1181,5 +1177,54 @@ public class LocationBarLayout extends FrameLayout
         ColorStateList colorStateList =
                 mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, getContext());
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
+    }
+
+    /**
+     * Handles any actions to be performed after all other actions triggered by the URL focus
+     * change.  This will be called after any animations are performed to transition from one
+     * focus state to the other.
+     * @param hasFocus Whether the URL field has gained focus.
+     */
+    protected void finishUrlFocusChange(boolean hasFocus) {
+        if (!hasFocus) {
+            // The animation rendering may not yet be 100% complete and hiding the keyboard makes
+            // the animation quite choppy.
+            postDelayed(() -> getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar),
+                    KEYBOARD_HIDE_DELAY_MS);
+            // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
+            // of time in hopes the keyboard will be completely hidden before making this change).
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
+        } else {
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
+            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
+        }
+        mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
+        setUrlFocusChangeInProgress(false);
+        updateShouldAnimateIconChanges();
+    }
+
+    /**
+     * @param softInputMode The software input resize mode.
+     * @param delay Delay the change in input mode.
+     */
+    private void setSoftInputMode(final int softInputMode, boolean delay) {
+        if (mKeyboardResizeModeTask != null) {
+            removeCallbacks(mKeyboardResizeModeTask);
+            mKeyboardResizeModeTask = null;
+        }
+
+        if (mWindowDelegate == null || mWindowDelegate.getWindowSoftInputMode() == softInputMode) {
+            return;
+        }
+
+        if (delay) {
+            mKeyboardResizeModeTask = () -> {
+                mWindowDelegate.setWindowSoftInputMode(softInputMode);
+                mKeyboardResizeModeTask = null;
+            };
+            postDelayed(mKeyboardResizeModeTask, KEYBOARD_MODE_CHANGE_DELAY_MS);
+        } else {
+            mWindowDelegate.setWindowSoftInputMode(softInputMode);
+        }
     }
 }

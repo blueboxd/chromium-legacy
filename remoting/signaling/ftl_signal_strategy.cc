@@ -152,6 +152,10 @@ void FtlSignalStrategy::Core::Connect() {
 void FtlSignalStrategy::Core::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (registration_manager_->IsSignedIn()) {
+    registration_manager_->SignOut();
+  }
+
   if (receive_message_subscription_) {
     local_address_ = SignalingAddress();
     receive_message_subscription_.reset();
@@ -395,7 +399,6 @@ void FtlSignalStrategy::Core::HandleGrpcStatusError(
              << ", message: " << status.error_message()
              << ", location: " << location.ToString();
   if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
-    registration_manager_->SignOut();
     oauth_token_getter_->InvalidateCache();
   }
   Disconnect();

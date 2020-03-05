@@ -374,10 +374,6 @@ void HotseatWidget::OnShelfConfigUpdated() {
   set_manually_extended(false);
 }
 
-bool HotseatWidget::IsShowingOverflowBubble() const {
-  return GetShelfView()->IsShowingOverflowBubble();
-}
-
 bool HotseatWidget::IsExtended() const {
   DCHECK(GetShelfView()->shelf()->IsHorizontalAlignment());
   const int extended_y =
@@ -389,17 +385,6 @@ bool HotseatWidget::IsExtended() const {
        ShelfConfig::Get()->hotseat_bottom_padding() +
        ShelfConfig::Get()->hotseat_size());
   return GetWindowBoundsInScreen().y() == extended_y;
-}
-
-void HotseatWidget::FocusOverflowShelf(bool last_element) {
-  if (!IsShowingOverflowBubble())
-    return;
-  Shell::Get()->focus_cycler()->FocusWidget(
-      GetShelfView()->overflow_bubble()->bubble_view()->GetWidget());
-  views::View* to_focus =
-      GetShelfView()->overflow_shelf()->FindFirstOrLastFocusableChild(
-          last_element);
-  to_focus->RequestFocus();
 }
 
 void HotseatWidget::FocusFirstOrLastFocusableChild(bool last) {

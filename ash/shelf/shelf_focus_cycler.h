@@ -15,7 +15,6 @@ class Shelf;
 enum class SourceView {
   kShelfNavigationView = 0,
   kShelfView,
-  kShelfOverflowView,
   kStatusAreaView,
 };
 
@@ -36,9 +35,6 @@ class ShelfFocusCycler {
 
   // Focuses the shelf widget (app shortcuts).
   void FocusShelf(bool last_element);
-
-  // Focuses the overflow shelf (app shortcuts in the overflow menu).
-  void FocusOverflowShelf(bool last_element);
 
   // Focuses the status area widget.
   void FocusStatusArea(bool last_element);

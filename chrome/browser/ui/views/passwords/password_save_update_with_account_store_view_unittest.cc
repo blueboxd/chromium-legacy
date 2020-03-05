@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/password_save_update_with_account_store_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"

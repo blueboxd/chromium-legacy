@@ -923,7 +923,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       sqs, rect3, rect3, SurfaceRange(fallback_surface_id, primary_surface_id),
       SK_ColorBLUE, false);
 
-  const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
+  const gfx::Rect rect4(1234, 5678, 91012, 13141);
   const bool needs_blending = true;
   const ResourceId resource_id4(1337);
   const RenderPassId render_pass_id = 1234u;
@@ -943,7 +943,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                            force_anti_aliasing_off, backdrop_filter_quality,
                            can_use_backdrop_filter_cache);
 
-  const gfx::Rect rect5(123, 567, 91011, 131415);
+  const gfx::Rect rect5(123, 567, 91011, 13141);
   const ResourceId resource_id5(1337);
   const float vertex_opacity[4] = {1.f, 2.f, 3.f, 4.f};
   const bool premultiplied_alpha = true;

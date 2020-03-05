@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -65,6 +66,25 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   ASSERT_TRUE(animations.BaseComputedStyle());
   EXPECT_EQ(20, animations.BaseComputedStyle()->FontSize());
   EXPECT_EQ(20, resolver->StyleForElement(div)->FontSize());
+}
+
+TEST_F(StyleResolverTest, ShadowDOMV0Crash) {
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      span { display: contents; }
+    </style>
+    <summary><span id="outer"><span id="inner"></b></b></summary>
+  )HTML");
+
+  Element* outer = GetDocument().getElementById("outer");
+  Element* inner = GetDocument().getElementById("inner");
+  ShadowRoot& outer_root = outer->CreateV0ShadowRootForTesting();
+  ShadowRoot& inner_root = inner->CreateV0ShadowRootForTesting();
+  outer_root.SetInnerHTMLFromString("<content>");
+  inner_root.SetInnerHTMLFromString("<span>");
+
+  // Test passes if it doesn't crash.
+  UpdateAllLifecyclePhasesForTest();
 }
 
 }  // namespace blink

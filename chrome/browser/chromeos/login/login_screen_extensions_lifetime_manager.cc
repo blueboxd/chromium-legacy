@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

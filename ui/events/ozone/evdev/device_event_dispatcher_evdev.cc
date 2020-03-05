@@ -7,16 +7,17 @@
 namespace ui {
 
 KeyEventParams::KeyEventParams(int device_id,
+                               int flags,
                                unsigned int code,
                                bool down,
                                bool suppress_auto_repeat,
                                base::TimeTicks timestamp)
     : device_id(device_id),
+      flags(flags),
       code(code),
       down(down),
       suppress_auto_repeat(suppress_auto_repeat),
-      timestamp(timestamp) {
-}
+      timestamp(timestamp) {}
 
 KeyEventParams::KeyEventParams(const KeyEventParams& other) = default;
 

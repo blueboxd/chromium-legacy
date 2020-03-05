@@ -87,6 +87,9 @@ const base::Feature kRealTimeUrlLookupEnabledWithToken{
     "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSafeBrowsingSeparateNetworkContexts{
+    "SafeBrowsingSeparateNetworkContexts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSendOnFocusPing {
   "SafeBrowsingSendOnFocusPing",
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -135,6 +138,7 @@ constexpr struct {
     {&kPromptAppForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupEnabledWithToken, true},
+    {&kSafeBrowsingSeparateNetworkContexts, true},
     {&kSendOnFocusPing, true},
     {&kSendPasswordReusePing, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},

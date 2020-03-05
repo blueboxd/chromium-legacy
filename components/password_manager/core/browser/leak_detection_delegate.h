@@ -52,10 +52,10 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
                            base::string16 username,
                            base::string16 password) override;
 
-  // Initiates the showing of the leak detection notification. If the account is
-  // synced, it is called by |helper_| after the |leak_type| was asynchronously
-  // determined.
-  void OnShowLeakDetectionNotification(CredentialLeakType leak_type,
+  // Initiates the showing of the leak detection notification. It is called by
+  // |helper_| after |is_saved|/|is_reused| was asynchronously determined.
+  void OnShowLeakDetectionNotification(IsSaved is_saved,
+                                       IsReused is_reused,
                                        GURL url,
                                        base::string16 username);
 

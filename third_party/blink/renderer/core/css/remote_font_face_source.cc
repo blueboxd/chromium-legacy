@@ -205,12 +205,12 @@ void RemoteFontFaceSource::UpdatePeriod() {
 FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
     FontDisplay display,
     const FontSelector* font_selector,
-    ReportOptions report) const {
+    ReportOptions report_option) const {
   ExecutionContext* context = font_selector->GetExecutionContext();
   if (display != kFontDisplayFallback && display != kFontDisplayOptional &&
       context && context->IsDocument() &&
-      !Document::From(context)->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kFontDisplay, report)) {
+      !context->IsFeatureEnabled(
+          mojom::blink::DocumentPolicyFeature::kFontDisplay, report_option)) {
     return kFontDisplayOptional;
   }
   return display;

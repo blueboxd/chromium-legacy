@@ -25,8 +25,8 @@
 
     <!-- ListMenuButton -->
     <style name="ListMenuItemStyle">
-        <item name="android:paddingStart">@dimen/default_list_row_padding</item>
-        <item name="android:paddingEnd">@dimen/default_list_row_padding</item>
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
     </style>
 
     <style name="OverflowMenuAnim">

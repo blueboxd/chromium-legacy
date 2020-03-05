@@ -139,14 +139,14 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override {}
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);
@@ -611,6 +611,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
 
   int num_active_output_streams_ = 0;
+
+  bool fetch_media_session_duration_ = false;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

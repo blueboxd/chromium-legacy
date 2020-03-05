@@ -24,7 +24,8 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     @Override
     public void init(View anchorView, CreatorMetadata creatorMetadata) {
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
-        mView = new ProfileCardView(anchorView.getContext());
+        mView = new ProfileCardView(anchorView.getContext(), anchorView, /*stringId=*/"",
+                /*accessibilityStringId=*/"", rectProvider);
         mCreatorMetadata = creatorMetadata;
         mModel = new PropertyModel(ProfileCardProperties.ALL_KEYS);
         mModelChangeProcessor =

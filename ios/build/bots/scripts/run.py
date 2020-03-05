@@ -436,8 +436,8 @@ class Runner():
                      'both -p/--platform and -v/--version')
 
     args, test_args = parser.parse_known_args(args)
-    load_from_json(args)
     validate(args)
+    load_from_json(args)
     self.args = args
     self.test_args = test_args
 

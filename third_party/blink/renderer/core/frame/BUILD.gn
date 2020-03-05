@@ -45,6 +45,8 @@ blink_core_sources("frame") {
     "device_single_window_event_controller.h",
     "display_cutout_client_impl.cc",
     "display_cutout_client_impl.h",
+    "document_policy_violation_report_body.cc",
+    "document_policy_violation_report_body.h",
     "dom_timer.cc",
     "dom_timer.h",
     "dom_timer_coordinator.cc",

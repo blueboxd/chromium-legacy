@@ -69,7 +69,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
@@ -3388,10 +3387,6 @@ void RTCPeerConnection::CloseInternal() {
   for (auto& dtls_transport_iter : dtls_transports_by_native_transport_) {
     dtls_transport_iter.value->Close();
   }
-
-  Document* document = Document::From(GetExecutionContext());
-  HostsUsingFeatures::CountAnyWorld(
-      *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
 
   feature_handle_for_scheduler_.reset();
 }

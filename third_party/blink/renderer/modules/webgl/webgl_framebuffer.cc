@@ -183,9 +183,12 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() = default;
 
-WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(
-    WebGLRenderingContextBase* ctx) {
-  return MakeGarbageCollected<WebGLFramebuffer>(ctx, true);
+WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(WebGLRenderingContextBase* ctx,
+                                                 bool has_stencil) {
+  WebGLFramebuffer* const fb =
+      MakeGarbageCollected<WebGLFramebuffer>(ctx, true);
+  fb->SetOpaqueHasStencil(has_stencil);
+  return fb;
 }
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx, bool opaque)
@@ -366,10 +369,14 @@ GLenum WebGLFramebuffer::CheckDepthStencilStatus(const char** reason) const {
 }
 
 bool WebGLFramebuffer::HasStencilBuffer() const {
-  WebGLAttachment* attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
-  if (!attachment)
-    attachment = GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
-  return attachment && attachment->Valid();
+  if (opaque_) {
+    return opaque_has_stencil_;
+  } else {
+    WebGLAttachment* attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
+    if (!attachment)
+      attachment = GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
+    return attachment && attachment->Valid();
+  }
 }
 
 void WebGLFramebuffer::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

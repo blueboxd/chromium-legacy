@@ -426,6 +426,18 @@ void PasswordsPrivateDelegateImpl::GetPlaintextCompromisedPassword(
           std::move(credential)));
 }
 
+bool PasswordsPrivateDelegateImpl::ChangeCompromisedCredential(
+    const api::passwords_private::CompromisedCredential& credential,
+    base::StringPiece new_password) {
+  return password_check_delegate_.ChangeCompromisedCredential(credential,
+                                                              new_password);
+}
+
+bool PasswordsPrivateDelegateImpl::RemoveCompromisedCredential(
+    const api::passwords_private::CompromisedCredential& credential) {
+  return password_check_delegate_.RemoveCompromisedCredential(credential);
+}
+
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,
     const std::string& folder_name) {

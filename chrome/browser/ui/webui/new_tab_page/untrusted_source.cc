@@ -19,6 +19,19 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 
+namespace {
+
+std::string FormatTemplate(int resource_id,
+                           const ui::TemplateReplacements& replacements) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  base::RefCountedMemory* bytes = bundle.LoadDataResourceBytes(resource_id);
+  base::StringPiece string_piece(reinterpret_cast<const char*>(bytes->front()),
+                                 bytes->size());
+  return ui::ReplaceTemplateExpressions(string_piece, replacements);
+}
+
+}  // namespace
+
 UntrustedSource::UntrustedSource(Profile* profile)
     : promo_service_(PromoServiceFactory::GetForProfile(profile)) {
   // |promo_service_| is null in incognito, or when the feature is
@@ -42,13 +55,8 @@ void UntrustedSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
-  const std::string path = content::URLDataSource::URLToRequestPath(url);
-  if (path == "promo") {
-    if (!promo_service_) {
-      std::string empty;
-      std::move(callback).Run(base::RefCountedString::TakeString(&empty));
-      return;
-    }
+  const std::string path = url.has_path() ? url.path().substr(1) : "";
+  if (path == "promo" && promo_service_) {
     promo_callbacks_.push_back(std::move(callback));
     if (promo_callbacks_.size() == 1) {
       promo_service_->Refresh();
@@ -61,6 +69,15 @@ void UntrustedSource::StartDataRequest(
         bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS));
     return;
   }
+  if (path == "image" && url.has_query()) {
+    ui::TemplateReplacements replacements;
+    replacements["url"] = url.query();
+    std::string html =
+        FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML, replacements);
+    std::move(callback).Run(base::RefCountedString::TakeString(&html));
+    return;
+  }
+  std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
 std::string UntrustedSource::GetMimeType(const std::string& path) {
@@ -87,26 +104,20 @@ bool UntrustedSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
     int render_process_id) {
-  if (!url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+  if (!url.SchemeIs(content::kChromeUIUntrustedScheme) || !url.has_path()) {
     return false;
   }
-
-  const std::string path = content::URLDataSource::URLToRequestPath(url);
-  return path == "promo" || path == "promo.js";
+  const std::string path = url.path().substr(1);
+  return path == "promo" || path == "promo.js" || path == "image";
 }
 
 void UntrustedSource::OnPromoDataUpdated() {
   const auto& data = promo_service_->promo_data();
   std::string html;
   if (data.has_value() && !data->promo_html.empty()) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    base::RefCountedMemory* bytes =
-        bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML);
-    base::StringPiece string_piece(
-        reinterpret_cast<const char*>(bytes->front()), bytes->size());
     ui::TemplateReplacements replacements;
     replacements["data"] = data->promo_html;
-    html = ui::ReplaceTemplateExpressions(string_piece, replacements);
+    html = FormatTemplate(IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML, replacements);
   }
   for (auto& callback : promo_callbacks_) {
     std::move(callback).Run(base::RefCountedString::TakeString(&html));

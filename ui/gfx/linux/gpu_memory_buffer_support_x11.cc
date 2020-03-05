@@ -90,7 +90,7 @@ std::vector<gfx::BufferUsageAndFormat> CreateSupportedConfigList(
              gfx::BufferFormat::RGBX_8888,
              gfx::BufferFormat::BGRA_8888,
              gfx::BufferFormat::BGRX_8888,
-             gfx::BufferFormat::BGRX_1010102,
+             gfx::BufferFormat::BGRA_1010102,
 
              // On some Intel setups calling gbm_bo_create() with this format
              // results in a crash caused by an integer-divide-by-zero.

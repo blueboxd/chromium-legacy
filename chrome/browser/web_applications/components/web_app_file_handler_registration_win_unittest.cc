@@ -173,8 +173,8 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
       Profile* profile,
       const AppId app_id,
       const std::string& sanitized_app_name) {
-    base::FilePath web_app_dir(
-        GetWebAppDataDirectory(profile->GetPath(), app_id, GURL()));
+    base::FilePath web_app_dir(GetOsIntegrationResourcesDirectoryForApp(
+        profile->GetPath(), app_id, GURL()));
     // Make sure web app dir exists. Normally installing an extension would
     // handle this.
     EXPECT_TRUE(base::CreateDirectory(web_app_dir));

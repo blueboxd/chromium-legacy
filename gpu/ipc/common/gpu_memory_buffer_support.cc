@@ -81,7 +81,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::BGRX_8888 ||
              format == gfx::BufferFormat::R_8 ||
              format == gfx::BufferFormat::RGBA_F16 ||
-             format == gfx::BufferFormat::BGRX_1010102 ||
+             format == gfx::BufferFormat::BGRA_1010102 ||
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <sstream>
 
@@ -14,7 +15,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -206,8 +209,37 @@ class TestDelegate : public PasswordsPrivateDelegate {
     std::move(callback).Run(std::move(credential));
   }
 
+  // Fake implementation of ChangeCompromisedCredential. This succeeds if the
+  // delegate knows of a compromised credential with the same id.
+  bool ChangeCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential,
+      base::StringPiece new_password) override {
+    return std::any_of(compromised_credentials_.begin(),
+                       compromised_credentials_.end(),
+                       [&credential](const auto& compromised_credential) {
+                         return compromised_credential.id == credential.id;
+                       });
+  }
+
+  // Fake implementation of RemoveCompromisedCredential. This succeeds if the
+  // delegate knows of a compromised credential with the same id.
+  bool RemoveCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential)
+      override {
+    return base::EraseIf(compromised_credentials_,
+                         [&credential](const auto& compromised_credential) {
+                           return compromised_credential.id == credential.id;
+                         }) != 0;
+  }
+
   void SetOptedInForAccountStorage(bool opted_in) {
     is_opted_in_for_account_storage_ = opted_in;
+  }
+
+  void AddCompromisedCredential(int id) {
+    api::passwords_private::CompromisedCredential cred;
+    cred.id = id;
+    compromised_credentials_.push_back(std::move(cred));
   }
 
   base::Optional<base::string16>& plaintext_password() {
@@ -246,6 +278,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
       last_deleted_exception_;
   base::Optional<base::string16> plaintext_password_ =
       base::ASCIIToUTF16(kPlaintextPassword);
+
+  // List of compromised credentials.
+  std::vector<api::passwords_private::CompromisedCredential>
+      compromised_credentials_;
   Profile* profile_;
 
   bool is_opted_in_for_account_storage_ = false;
@@ -307,6 +343,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 
   base::Optional<base::string16>& plaintext_password() {
     return s_test_delegate_->plaintext_password();
+  }
+
+  void AddCompromisedCredential(int id) {
+    s_test_delegate_->AddCompromisedCredential(id);
   }
 
  private:
@@ -398,6 +438,32 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        GetPlaintextCompromisedPasswordFails) {
   plaintext_password().reset();
   EXPECT_TRUE(RunPasswordsSubtest("getPlaintextCompromisedPasswordFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       ChangeCompromisedCredentialFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("changeCompromisedCredentialFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       ChangeCompromisedCredentialSucceeds) {
+  AddCompromisedCredential(0);
+  EXPECT_TRUE(RunPasswordsSubtest("changeCompromisedCredentialSucceeds"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RemoveCompromisedCredentialFails) {
+  EXPECT_TRUE(RunPasswordsSubtest("removeCompromisedCredentialFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RemoveCompromisedCredentialSucceeds) {
+  AddCompromisedCredential(0);
+  EXPECT_TRUE(RunPasswordsSubtest("removeCompromisedCredentialSucceeds"))
       << message_;
 }
 

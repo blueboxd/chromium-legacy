@@ -53,7 +53,7 @@ void CursorLoaderOzone::UnloadAll() {
 }
 
 void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  mojom::CursorType native_type = cursor->native_type();
+  mojom::CursorType native_type = cursor->type();
   PlatformCursor platform;
 
   if (image_cursors_.count(native_type)) {

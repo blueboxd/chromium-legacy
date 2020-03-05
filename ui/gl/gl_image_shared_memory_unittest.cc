@@ -60,7 +60,7 @@ using GLImageTestTypes = testing::Types<
 // https://crbug.com/830653
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER)
-    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRX_1010102>,
+    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_1010102>,
 #endif
 #endif
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;

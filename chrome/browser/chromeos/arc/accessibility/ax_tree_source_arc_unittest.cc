@@ -925,6 +925,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   AXNodeInfoData* button = event->node_data.back().get();
   button->id = 1;
   SetProperty(button, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(button, AXBooleanProperty::IMPORTANCE, true);
 
   // Ensure that button has a focus.
   event->event_type = AXEventType::VIEW_FOCUSED;
@@ -1255,10 +1256,24 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
   node2->bounds_in_screen = gfx::Rect(50, 50, 100, 100);
 
-  CallNotifyAccessibilityEvent(event.get());
+  // Add a child node to |node1|, but it's not an important node.
+  SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node3 = event->node_data.back().get();
+  node3->id = 3;
 
   // Initially |node1| has a focus.
+  CallNotifyAccessibilityEvent(event.get());
   ui::AXTreeData data;
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(node1->id, data.focus_id);
+
+  // Focus event to a non-important node. The descendant important node |node1|
+  // gets focus instead.
+  event->source_id = node3->id;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  CallNotifyAccessibilityEvent(event.get());
+
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(node1->id, data.focus_id);
 

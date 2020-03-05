@@ -144,7 +144,6 @@ jumbo_static_library("renderer") {
     "//components/page_load_metrics/renderer",
     "//components/paint_preview/buildflags",
     "//components/plugins/renderer",
-    "//components/rappor/public/mojom",
     "//components/resources:components_resources",
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/renderer:throttles",

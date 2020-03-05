@@ -47,8 +47,8 @@ base::FilePath GetWebAppsRootDirectory(Profile* profile);
 // OS-independent manner. Use GetManifestResourcesDirectoryForApp function to
 // get per-app manifest resources directory.
 //
-// To store OS-specific integration data, use GetWebAppDataDirectory declared in
-// web_app_shortcut.h.
+// To store OS-specific integration data, use
+// GetOsIntegrationResourcesDirectoryForApp declared in web_app_shortcut.h.
 base::FilePath GetManifestResourcesDirectory(
     const base::FilePath& web_apps_root_directory);
 base::FilePath GetManifestResourcesDirectory(Profile* profile);

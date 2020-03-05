@@ -104,20 +104,20 @@ aura::LayoutManager* GetLayoutManager(RootWindowController* controller,
 class RootWindowControllerTest : public AshTestBase {
  public:
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
-    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-        NULL, CurrentContext(), bounds);
-    // The initial bounds will be constrained to the screen work area or the
-    // parent. See Widget::InitialBounds() & Widget::SetBoundsConstrained().
-    // Explicitly setting the bounds here will allow the view to be positioned
-    // such that it can extend outside the screen work area.
+    views::Widget* widget =
+        views::Widget::CreateWindowWithContext(nullptr, CurrentContext());
+    // Any initial bounds are constrained to the screen work area or the parent.
+    // See Widget::InitialBounds() & Widget::SetBoundsConstrained(). Explicitly
+    // setting the bounds here will allow the view to be positioned such that it
+    // can extend outside the screen work area.
     widget->SetBounds(bounds);
     widget->Show();
     return widget;
   }
 
   views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
-    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-        new TestDelegate(true), CurrentContext(), bounds);
+    views::Widget* widget = views::Widget::CreateWindowWithContext(
+        new TestDelegate(true), CurrentContext());
     // See the above comment.
     widget->SetBounds(bounds);
     widget->Show();
@@ -126,8 +126,8 @@ class RootWindowControllerTest : public AshTestBase {
 
   views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
                                              aura::Window* parent) {
-    views::Widget* widget = views::Widget::CreateWindowWithParentAndBounds(
-        new TestDelegate(true), parent, bounds);
+    views::Widget* widget =
+        views::Widget::CreateWindowWithParent(new TestDelegate(true), parent);
     // See the above comment.
     widget->SetBounds(bounds);
     widget->Show();
@@ -513,8 +513,8 @@ TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
   Widget* w2 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   w2->SetFullscreen(true);
   // |w3| is a transient child of |w2|.
-  Widget* w3 = Widget::CreateWindowWithParentAndBounds(
-      NULL, w2->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
+  Widget* w3 = Widget::CreateWindowWithParent(nullptr, w2->GetNativeWindow(),
+                                              gfx::Rect(0, 0, 100, 100));
 
   // Test that GetWindowForFullscreenMode() finds the fullscreen window when one
   // of its transient children is active.
@@ -587,8 +587,8 @@ TEST_F(RootWindowControllerTest, ForWindow) {
             RootWindowController::ForWindow(w1->GetNativeWindow()));
 
   // Test a child widget.
-  Widget* w2 = Widget::CreateWindowWithParentAndBounds(
-      nullptr, w1->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
+  Widget* w2 = Widget::CreateWindowWithParent(nullptr, w1->GetNativeWindow(),
+                                              gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(controllers[0],
             RootWindowController::ForWindow(w2->GetNativeWindow()));
 
@@ -606,8 +606,8 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
   aura::Window* lock_container =
       controller->GetContainer(kShellWindowId_LockScreenContainer);
   aura::Window* lock_window =
-      Widget::CreateWindowWithParentAndBounds(NULL, lock_container,
-                                              gfx::Rect(0, 0, 100, 100))
+      Widget::CreateWindowWithParent(nullptr, lock_container,
+                                     gfx::Rect(0, 0, 100, 100))
           ->GetNativeView();
   lock_window->Show();
   aura::Window* session_window =

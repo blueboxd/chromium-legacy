@@ -101,6 +101,12 @@ cr.define('settings_personalization_options', function() {
         testElement.showRestartToast_ = false;
         assertFalse(testElement.$.toast.open);
 
+        // When the user is part way through sync setup, the toggle should be
+        // disabled in an on state.
+        testElement.syncStatus = {firstSetupInProgress: true};
+        assertTrue(toggle.disabled);
+        assertTrue(toggle.checked);
+
         testElement.syncStatus = {signedIn: true};
         // When the user is signed in, clicking the toggle should open the
         // sign-out dialog.

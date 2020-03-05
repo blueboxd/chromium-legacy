@@ -32,14 +32,14 @@ namespace {
 struct InProgressH264VTFrameEncode {
   const RtpTimeTicks rtp_timestamp;
   const base::TimeTicks reference_time;
-  const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
+  VideoEncoder::FrameEncodedCallback frame_encoded_callback;
 
   InProgressH264VTFrameEncode(RtpTimeTicks rtp,
                               base::TimeTicks r_time,
                               VideoEncoder::FrameEncodedCallback callback)
       : rtp_timestamp(rtp),
         reference_time(r_time),
-        frame_encoded_callback(callback) {}
+        frame_encoded_callback(std::move(callback)) {}
 };
 
 }  // namespace
@@ -347,8 +347,8 @@ void H264VideoToolboxEncoder::DestroyCompressionSession() {
 
 bool H264VideoToolboxEncoder::EncodeVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame,
-    const base::TimeTicks& reference_time,
-    const FrameEncodedCallback& frame_encoded_callback) {
+    base::TimeTicks reference_time,
+    FrameEncodedCallback frame_encoded_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_encoded_callback.is_null());
 
@@ -393,7 +393,7 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
       new InProgressH264VTFrameEncode(
           RtpTimeTicks::FromTimeDelta(video_frame->timestamp(),
                                       kVideoFrequency),
-          reference_time, frame_encoded_callback));
+          reference_time, std::move(frame_encoded_callback)));
 
   // Build a suitable frame properties dictionary for keyframes.
   base::ScopedCFTypeRef<CFDictionaryRef> frame_props;
@@ -498,7 +498,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
                                                   VTEncodeInfoFlags info,
                                                   CMSampleBufferRef sbuf) {
   auto* encoder = reinterpret_cast<H264VideoToolboxEncoder*>(encoder_opaque);
-  const std::unique_ptr<InProgressH264VTFrameEncode> request(
+  std::unique_ptr<InProgressH264VTFrameEncode> request(
       reinterpret_cast<InProgressH264VTFrameEncode*>(request_opaque));
   bool keyframe = false;
   bool has_frame_data = false;
@@ -558,10 +558,10 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
 
   encoded_frame->encode_completion_time =
       encoder->cast_environment_->Clock()->NowTicks();
-  encoder->cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(request->frame_encoded_callback,
-                 base::Passed(&encoded_frame)));
+  encoder->cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(std::move(request->frame_encoded_callback),
+                                base::Passed(&encoded_frame)));
 }
 
 }  // namespace cast

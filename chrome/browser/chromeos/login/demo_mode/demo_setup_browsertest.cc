@@ -1081,7 +1081,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(NetworkScreenView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
+// TODO(crbug.com/1057814): Disabling flaky test.
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, DISABLED_ClickNetworkOnNetworkScreen) {
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_FALSE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,
                                             DemoSetupDialog::kNetwork,
@@ -1094,7 +1095,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickNetworkOnNetworkScreen) {
   EXPECT_TRUE(IsScreenShown(EulaView::kScreenId));
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ClickConnectedNetworkOnNetworkScreen) {
+// TODO(crbug.com/1057777): Disabling flaky test.
+IN_PROC_BROWSER_TEST_F(DemoSetupTest,
+                       DISABLED_ClickConnectedNetworkOnNetworkScreen) {
   SimulateNetworkConnected();
   SkipToScreen(NetworkScreenView::kScreenId);
   EXPECT_TRUE(IsScreenDialogElementEnabled(NetworkScreenView::kScreenId,

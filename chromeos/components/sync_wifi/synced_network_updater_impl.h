@@ -80,12 +80,13 @@ class SyncedNetworkUpdaterImpl
                const NetworkIdentifier& id,
                const std::string& error_name);
   void OnSetPropertiesResult(const std::string& change_guid,
+                             const std::string& network_guid,
                              const NetworkIdentifier& id,
                              bool success,
                              const std::string& error_message);
   void OnConfigureNetworkResult(const std::string& change_guid,
                                 const NetworkIdentifier& id,
-                                const base::Optional<std::string>& guid,
+                                const base::Optional<std::string>& network_guid,
                                 const std::string& error_message);
   void OnForgetNetworkResult(const std::string& change_guid,
                              const NetworkIdentifier& id,

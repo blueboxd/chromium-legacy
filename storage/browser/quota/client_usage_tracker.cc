@@ -454,34 +454,34 @@ bool ClientUsageTracker::IsUsageCacheEnabledForOrigin(
                                host, origin);
 }
 
-void ClientUsageTracker::OnGranted(const GURL& origin_url, int change_flags) {
+void ClientUsageTracker::OnGranted(const url::Origin& origin,
+                                   int change_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
-    url::Origin origin = url::Origin::Create(origin_url);
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ += usage;
       global_limited_usage_ -= usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin_url);
+    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
     if (EraseOriginFromOriginSet(&non_cached_limited_origins_by_host_,
                                  host, origin))
       non_cached_unlimited_origins_by_host_[host].insert(origin);
   }
 }
 
-void ClientUsageTracker::OnRevoked(const GURL& origin_url, int change_flags) {
+void ClientUsageTracker::OnRevoked(const url::Origin& origin,
+                                   int change_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
-    url::Origin origin = url::Origin::Create(origin_url);
     int64_t usage = 0;
     if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ -= usage;
       global_limited_usage_ += usage;
     }
 
-    std::string host = net::GetHostOrSpecFromURL(origin_url);
+    std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
     if (EraseOriginFromOriginSet(&non_cached_unlimited_origins_by_host_,
                                  host, origin))
       non_cached_limited_origins_by_host_[host].insert(origin);

@@ -292,15 +292,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if dev channel APIs are available for plugins.
   virtual bool IsPluginAllowedToUseDevChannelAPIs();
 
-  // Records a sample string to a Rappor privacy-preserving metric.
-  // See: https://www.chromium.org/developers/design-documents/rappor
-  virtual void RecordRappor(const std::string& metric,
-                            const std::string& sample) {}
-
-  // Records a domain and registry of a url to a Rappor privacy-preserving
-  // metric. See: https://www.chromium.org/developers/design-documents/rappor
-  virtual void RecordRapporURL(const std::string& metric, const GURL& url) {}
-
   // Notifies that a document element has been inserted in the frame's document.
   // This may be called multiple times for the same document. This method may
   // invalidate the frame.

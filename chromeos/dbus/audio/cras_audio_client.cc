@@ -355,6 +355,49 @@ class CrasAudioClientImpl : public CrasAudioClient {
                             base::DoNothing());
   }
 
+  void SetPlayerDuration(const int64_t& duration) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerMetadata);
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter array_writer(nullptr);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+
+    writer.OpenArray("{sv}", &array_writer);
+    array_writer.OpenDictEntry(&dict_entry_writer);
+    dict_entry_writer.AppendString("length");
+    dict_entry_writer.AppendVariantOfInt64(duration);
+    array_writer.CloseContainer(&dict_entry_writer);
+    writer.CloseContainer(&array_writer);
+
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetPlayerMetadata(
+      const std::map<std::string, std::string>& metadata) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetPlayerMetadata);
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter array_writer(nullptr);
+    dbus::MessageWriter dict_entry_writer(nullptr);
+
+    writer.OpenArray("{sv}", &array_writer);
+
+    for (auto& it : metadata) {
+      array_writer.OpenDictEntry(&dict_entry_writer);
+      dict_entry_writer.AppendString(it.first);
+      dict_entry_writer.AppendVariantOfString(it.second);
+      array_writer.CloseContainer(&dict_entry_writer);
+    }
+
+    writer.CloseContainer(&array_writer);
+
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override {
     cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));

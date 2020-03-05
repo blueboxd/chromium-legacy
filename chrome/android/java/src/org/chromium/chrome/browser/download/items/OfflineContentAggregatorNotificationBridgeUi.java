@@ -9,11 +9,11 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -65,9 +65,9 @@ public class OfflineContentAggregatorNotificationBridgeUi
         destroyServiceDelegate();
     }
 
-    /** @see OfflineContentProvider#openItem(ContentId) */
-    public void openItem(ContentId id) {
-        mProvider.openItem(LaunchLocation.NOTIFICATION, id);
+    /** @see OfflineContentProvider#openItem(OpenParams, ContentId) */
+    public void openItem(OpenParams openParams, ContentId id) {
+        mProvider.openItem(openParams, id);
     }
 
     // OfflineContentProvider.Observer implementation.

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +23,14 @@
 
 namespace ash {
 
+namespace {
+
+void RecordDisplayChangeDialogHistogram(bool accepted) {
+  UMA_HISTOGRAM_BOOLEAN("Ash.DisplayChangeDialog.Saved", accepted);
+}
+
+}  // namespace
+
 DisplayChangeDialog::DisplayChangeDialog(
     base::string16 window_title,
     base::string16 timeout_message_with_placeholder,
@@ -30,11 +39,13 @@ DisplayChangeDialog::DisplayChangeDialog(
     : window_title_(std::move(window_title)),
       timeout_message_with_placeholder_(
           std::move(timeout_message_with_placeholder)),
+      on_accept_callback_(std::move(on_accept_callback)),
       on_cancel_callback_(std::move(on_cancel_callback)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONFIRM_BUTTON));
 
-  DialogDelegate::set_accept_callback(std::move(on_accept_callback));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &DisplayChangeDialog::OnConfirmButtonClicked, base::Unretained(this)));
   DialogDelegate::set_cancel_callback(base::BindOnce(
       &DisplayChangeDialog::OnCancelButtonClicked, base::Unretained(this)));
 
@@ -58,9 +69,16 @@ DisplayChangeDialog::DisplayChangeDialog(
 
 DisplayChangeDialog::~DisplayChangeDialog() = default;
 
+void DisplayChangeDialog::OnConfirmButtonClicked() {
+  timer_.Stop();
+  std::move(on_accept_callback_).Run();
+  RecordDisplayChangeDialogHistogram(/*accepted=*/true);
+}
+
 void DisplayChangeDialog::OnCancelButtonClicked() {
   timer_.Stop();
   std::move(on_cancel_callback_).Run(/*display_was_removed=*/false);
+  RecordDisplayChangeDialogHistogram(/*accepted=*/false);
 }
 
 ui::ModalType DisplayChangeDialog::GetModalType() const {

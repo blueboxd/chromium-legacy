@@ -68,7 +68,7 @@ void MouseCursorMonitorAura::Capture() {
 }
 
 void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
-  if (cursor.native_type() == ui::mojom::CursorType::kNone) {
+  if (cursor.type() == ui::mojom::CursorType::kNone) {
     callback_->OnMouseCursor(CreateEmptyMouseCursor());
     return;
   }
@@ -79,7 +79,7 @@ void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
 
   if (cursor_bitmap->isNull()) {
     LOG(ERROR) << "Failed to load bitmap for cursor type:"
-               << static_cast<int>(cursor.native_type());
+               << static_cast<int>(cursor.type());
     callback_->OnMouseCursor(CreateEmptyMouseCursor());
     return;
   }
@@ -95,7 +95,7 @@ void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
   if (cursor_hotspot.x() >= cursor_bitmap->width() ||
       cursor_hotspot.y() >= cursor_bitmap->height()) {
     LOG(WARNING) << "Cursor hotspot is out of bounds for type: "
-                 << static_cast<int>(cursor.native_type())
+                 << static_cast<int>(cursor.type())
                  << ".  Setting to (0,0) instead";
     cursor_hotspot.SetPoint(0, 0);
   }

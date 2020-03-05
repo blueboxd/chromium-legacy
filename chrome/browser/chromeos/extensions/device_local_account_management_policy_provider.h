@@ -12,6 +12,9 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "extensions/browser/management_policy.h"
 
+// TODO(crbug.com/1033508): Refactor this class, because the behavior of
+// IsWhitelisted, and UserMayLoad are no longer used.
+
 namespace chromeos {
 
 // A managed policy for device-local accounts that ensures only extensions whose

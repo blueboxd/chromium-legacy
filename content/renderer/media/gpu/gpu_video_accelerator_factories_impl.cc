@@ -368,7 +368,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
     // TODO(mcasas): remove the |bit_depth| check when libyuv supports more than
     // just x010ToAR30 conversions, https://crbug.com/libyuv/751.
     if (bit_depth == 10) {
-      if (capabilities.image_xr30)
+      if (capabilities.image_ar30)
         return media::GpuVideoAcceleratorFactories::OutputFormat::XR30;
       else if (capabilities.image_ab30)
         return media::GpuVideoAcceleratorFactories::OutputFormat::XB30;

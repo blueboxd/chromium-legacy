@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.profile_card;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.AVATAR_BITMAP;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_VISIBLE;
-import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_DATA_LIST;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_FREQUENCY;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
@@ -21,16 +20,15 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class ProfileCardMediator {
     private final PropertyModel mModel;
-    private final ProfileCardData mProfileCardData;
+    private final CreatorMetadata mCreatorMetadata;
 
-    ProfileCardMediator(PropertyModel model, ProfileCardData profileCardData) {
+    ProfileCardMediator(PropertyModel model, CreatorMetadata creatorMetadata) {
         mModel = model;
-        mProfileCardData = profileCardData;
-        mModel.set(AVATAR_BITMAP, mProfileCardData.getAvatarBitmap());
-        mModel.set(TITLE, mProfileCardData.getTitle());
-        mModel.set(DESCRIPTION, mProfileCardData.getDescription());
-        mModel.set(POST_FREQUENCY, mProfileCardData.getPostFrequency());
-        mModel.set(POST_DATA_LIST, mProfileCardData.getPostDataList());
+        mCreatorMetadata = creatorMetadata;
+        mModel.set(AVATAR_BITMAP, mCreatorMetadata.getAvatarBitmap());
+        mModel.set(TITLE, mCreatorMetadata.getTitle());
+        mModel.set(DESCRIPTION, mCreatorMetadata.getDescription());
+        mModel.set(POST_FREQUENCY, mCreatorMetadata.getPostFrequency());
     }
 
     public void show() {

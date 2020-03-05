@@ -31,6 +31,7 @@ class UninstallPingSender;
 class InstallGate;
 class ValueStoreFactory;
 class ValueStoreFactoryImpl;
+class ExtensionsPermissionsTracker;
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
 // Implementation details: non-shared services are owned by
@@ -151,6 +152,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     std::unique_ptr<chromeos::SigninScreenPolicyProvider>
         signin_screen_policy_provider_;
     std::unique_ptr<InstallGate> kiosk_app_update_install_gate_;
+    std::unique_ptr<ExtensionsPermissionsTracker>
+        extensions_permissions_tracker_;
 #endif
 
     base::OneShotEvent ready_;

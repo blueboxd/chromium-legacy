@@ -1692,7 +1692,7 @@ TEST_F(WindowTreeHostManagerTest,
           display::test::DisplayManagerTestApi(display_manager())
               .GetSecondaryDisplay()
               .id());
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
       nullptr, root2, gfx::Rect(350, 0, 100, 100));
   views::View* view = new views::View();
   widget->GetContentsView()->AddChildView(view);

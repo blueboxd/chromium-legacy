@@ -14,6 +14,7 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -30,7 +31,7 @@ import java.util.List;
 public class OfflineContentProviderGlue implements OfflineContentProvider.Observer {
     private final ObserverList<OfflineContentProvider.Observer> mObservers = new ObserverList<>();
     private final OfflineContentProvider mProvider;
-    private final boolean mIncludeOffTheRecord;
+    private final boolean mIsOffTheRecord;
 
     private final boolean mUseNewDownloadPathThumbnails;
 
@@ -42,7 +43,7 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
     public OfflineContentProviderGlue(OfflineContentProvider provider,
             LegacyDownloadProvider legacyProvider, DownloadManagerUiConfig config) {
         mProvider = provider;
-        mIncludeOffTheRecord = config.isOffTheRecord;
+        mIsOffTheRecord = config.isOffTheRecord;
         mLegacyProvider = legacyProvider;
         mUseNewDownloadPathThumbnails = config.useNewDownloadPathThumbnails;
 
@@ -70,7 +71,9 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         if (mLegacyProvider != null && LegacyHelpers.isLegacyDownload(item.id)) {
             mLegacyProvider.openItem(item);
         } else {
-            mProvider.openItem(LaunchLocation.DOWNLOAD_HOME, item.id);
+            OpenParams openParams = new OpenParams(LaunchLocation.DOWNLOAD_HOME);
+            openParams.openInIncognito = mIsOffTheRecord;
+            mProvider.openItem(openParams, item.id);
         }
     }
 
@@ -208,13 +211,13 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
 
         /** Creates a {@link Query} instance. */
         public Query() {
-            mDownloadProviderOffTheRecordResponded = !mIncludeOffTheRecord;
+            mDownloadProviderOffTheRecordResponded = !mIsOffTheRecord;
 
             if (mLegacyProvider == null) {
                 mDownloadProviderResponded = true;
                 mDownloadProviderOffTheRecordResponded = true;
             } else {
-                if (mIncludeOffTheRecord) {
+                if (mIsOffTheRecord) {
                     mLegacyProvider.getAllItems(
                             items -> addOffTheRecordDownloads(items), true /* offTheRecord */);
                 }

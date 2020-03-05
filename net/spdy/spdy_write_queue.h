@@ -110,8 +110,6 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
 
   // Number of currently queued capped frames including all priorities.
   int num_queued_capped_frames_ = 0;
-  // Highest seen value of num_queued_capped_frames_.
-  int highest_num_queued_capped_frames_ = 1;
 
   // The actual write queue, binned by priority.
   base::circular_deque<PendingWrite> queue_[NUM_PRIORITIES];

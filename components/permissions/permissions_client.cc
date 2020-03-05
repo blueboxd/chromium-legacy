@@ -8,7 +8,10 @@
 #include "build/build_config.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "components/permissions/android/jni/PermissionsClient_jni.h"
+#else
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -74,5 +77,27 @@ bool PermissionsClient::CanBypassEmbeddingOriginCheck(
     const GURL& embedding_origin) {
   return false;
 }
+
+#if defined(OS_ANDROID)
+infobars::InfoBarManager* PermissionsClient::GetInfoBarManager(
+    content::WebContents* web_contents) {
+  return nullptr;
+}
+
+infobars::InfoBar* PermissionsClient::MaybeCreateInfoBar(
+    content::WebContents* web_contents,
+    ContentSettingsType type,
+    base::WeakPtr<PermissionPromptAndroid> prompt) {
+  return nullptr;
+}
+
+base::android::ScopedJavaLocalRef<jobject> PermissionsClient::GetJavaObject() {
+  return Java_PermissionsClient_get(base::android::AttachCurrentThread());
+}
+
+int PermissionsClient::MapToJavaDrawableId(int resource_id) {
+  return 0;
+}
+#endif
 
 }  // namespace permissions

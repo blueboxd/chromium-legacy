@@ -384,29 +384,34 @@ void OverviewController::ToggleOverview(
     for (auto& observer : observers_)
       observer.OnOverviewModeWillStart();
 
-    // |should_focus_overview_| shall be true except when split view mode starts
-    // on transition between clamshell mode and tablet mode, on transition
-    // between user sessions, or on transition between virtual desks. Those are
-    // the cases where code arranges split view by first snapping a window on
-    // one side and then starting overview to be seen on the other side, meaning
-    // that the split view state here will be
-    // |SplitViewController::State::kLeftSnapped| or
-    // |SplitViewController::State::kRightSnapped|. We have to check the split
-    // view state before |SplitViewController::OnOverviewModeStarting|, because
-    // in case of |SplitViewController::State::kBothSnapped|, that function will
-    // insert one of the two snapped windows to overview.
     should_focus_overview_ = true;
-    for (aura::Window* root_window : Shell::GetAllRootWindows()) {
-      const SplitViewController::State split_view_state =
-          SplitViewController::Get(root_window)->state();
-      if (split_view_state == SplitViewController::State::kLeftSnapped ||
-          split_view_state == SplitViewController::State::kRightSnapped) {
-        should_focus_overview_ = false;
-        break;
-      }
-    }
-    // Avoid stealing activation from a dragged active window.
-    if (should_focus_overview_) {
+    const SplitViewController::State split_view_state =
+        SplitViewController::Get(Shell::GetPrimaryRootWindow())->state();
+    // Prevent overview from stealing focus if |split_view_state| is
+    // |SplitViewController::State::kLeftSnapped| or
+    // |SplitViewController::State::kRightSnapped|. Here are all the cases where
+    // |split_view_state| will now have one of those two values:
+    // 1. The active window is maximized in tablet mode. The user presses Alt+[.
+    // 2. The active window is maximized in tablet mode. The user presses Alt+].
+    // 3. The active window is snapped on the right in tablet split view.
+    //    Another window is snapped on the left in tablet split view. The user
+    //    presses Alt+[.
+    // 4. The active window is snapped on the left in tablet split view. Another
+    //    window is snapped on the right in tablet split view. The user presses
+    //    Alt+].
+    // 5. Overview starts because of a snapped window carrying over from
+    //    clamshell mode to tablet mode.
+    // 6. Overview starts on transition between user sessions.
+    //
+    // Note: We have to check the split view state before
+    // |SplitViewController::OnOverviewModeStarting|, because in case of
+    // |SplitViewController::State::kBothSnapped|, that function will insert one
+    // of the two snapped windows to overview.
+    if (split_view_state == SplitViewController::State::kLeftSnapped ||
+        split_view_state == SplitViewController::State::kRightSnapped) {
+      should_focus_overview_ = false;
+    } else {
+      // Avoid stealing activation from a dragged active window.
       aura::Window* active_window = window_util::GetActiveWindow();
       if (active_window && WindowState::Get(active_window)->is_dragged()) {
         DCHECK(window_util::ShouldExcludeForOverview(active_window));

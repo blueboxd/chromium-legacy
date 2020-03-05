@@ -23,7 +23,6 @@
   }
 
   #promo {
-    border: none;
     bottom: 16px;
     height: 35px;
     left: 0;
@@ -93,7 +92,8 @@
       </ntp-voice-search-overlay>
     </template>
   </dom-if>
-  <iframe id="promo" src$="[[promoUrl_]]" hidden$="[[!promoLoaded_]]"></iframe>
+  <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
+  </ntp-untrusted-iframe>
   <cr-button id="customizeButton" on-click="onCustomizeClick_">
     <div id="customizeIcon"></div>
     $i18n{customizeButton}

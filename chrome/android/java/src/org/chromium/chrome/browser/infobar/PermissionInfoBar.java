@@ -8,10 +8,11 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.permissions.AndroidPermissionRequester;
+import org.chromium.chrome.browser.permissions.ChromePermissionsClient;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.website.SingleCategorySettings;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
+import org.chromium.components.permissions.AndroidPermissionRequester;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -85,8 +86,8 @@ public class PermissionInfoBar
         if (isPrimaryButton) {
             // requestAndroidPermissions will call back into this class to finalize the action if it
             // returns true.
-            if (AndroidPermissionRequester.requestAndroidPermissions(
-                        mWindow, mContentSettingsTypes.clone(), this)) {
+            if (AndroidPermissionRequester.requestAndroidPermissions(mWindow,
+                        mContentSettingsTypes.clone(), this, ChromePermissionsClient.get())) {
                 return;
             }
         } else {

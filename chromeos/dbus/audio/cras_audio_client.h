@@ -175,6 +175,13 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // Sets the current track position for the player in microseconds
   virtual void SetPlayerPosition(const int64_t& position) = 0;
 
+  // Sets the current track duration for the player in microseconds
+  virtual void SetPlayerDuration(const int64_t& duration) = 0;
+
+  // Sets the current media metadata including Title, Album, and Artist.
+  virtual void SetPlayerMetadata(
+      const std::map<std::string, std::string>& metadata) = 0;
+
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) = 0;

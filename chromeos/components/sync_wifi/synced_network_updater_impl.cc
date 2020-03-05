@@ -10,6 +10,8 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/components/sync_wifi/timer_factory.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "components/device_event_log/device_event_log.h"
@@ -69,7 +71,8 @@ void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
     cros_network_config_->SetProperties(
         existing_network->guid, std::move(config),
         base::BindOnce(&SyncedNetworkUpdaterImpl::OnSetPropertiesResult,
-                       weak_ptr_factory_.GetWeakPtr(), change_guid, id));
+                       weak_ptr_factory_.GetWeakPtr(), change_guid,
+                       existing_network->guid, id));
     return;
   }
 
@@ -136,26 +139,31 @@ void SyncedNetworkUpdaterImpl::OnError(const std::string& change_guid,
 void SyncedNetworkUpdaterImpl::OnConfigureNetworkResult(
     const std::string& change_guid,
     const NetworkIdentifier& id,
-    const base::Optional<std::string>& guid,
+    const base::Optional<std::string>& network_guid,
     const std::string& error_message) {
-  if (guid) {
+  if (network_guid) {
     VLOG(1) << "Successfully configured network with id "
             << id.SerializeToString();
+    NetworkHandler::Get()->network_metadata_store()->SetIsConfiguredBySync(
+        *network_guid);
   } else {
     NET_LOG(ERROR) << "Failed to configure network with id "
                    << id.SerializeToString() << ". " << error_message;
   }
-  HandleShillResult(change_guid, id, guid.has_value());
+  HandleShillResult(change_guid, id, network_guid.has_value());
 }
 
 void SyncedNetworkUpdaterImpl::OnSetPropertiesResult(
     const std::string& change_guid,
+    const std::string& network_guid,
     const NetworkIdentifier& id,
     bool is_success,
     const std::string& error_message) {
   if (is_success) {
     VLOG(1) << "Successfully updated network with id "
             << id.SerializeToString();
+    NetworkHandler::Get()->network_metadata_store()->SetIsConfiguredBySync(
+        network_guid);
   } else {
     NET_LOG(ERROR) << "Failed to update network with id "
                    << id.SerializeToString();

@@ -375,9 +375,9 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
 
   // Set window's icon to the one we're about to create/update in the web app
   // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path =
-      GetWebAppDataDirectory(shortcut_info->profile_path,
-                             shortcut_info->extension_id, shortcut_info->url);
+  base::FilePath web_app_path = GetOsIntegrationResourcesDirectoryForApp(
+      shortcut_info->profile_path, shortcut_info->extension_id,
+      shortcut_info->url);
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
 

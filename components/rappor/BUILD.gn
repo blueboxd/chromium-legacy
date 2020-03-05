@@ -47,23 +47,6 @@ jumbo_static_library("rappor") {
   ]
 }
 
-jumbo_static_library("rappor_recorder") {
-  sources = [
-    "rappor_recorder_impl.cc",
-    "rappor_recorder_impl.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//components/rappor/public/mojom",
-  ]
-
-  deps = [
-    ":rappor",
-    "//mojo/public/cpp/bindings",
-  ]
-}
-
 jumbo_static_library("test_support") {
   testonly = true
   sources = [

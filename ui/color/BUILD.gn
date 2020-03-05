@@ -7,12 +7,6 @@ import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 
-buildflag_header("color_buildflags") {
-  header = "color_buildflags.h"
-
-  flags = [ "USE_COLOR_PIPELINE=$use_color_pipeline" ]
-}
-
 source_set("color_headers") {
   sources = [
     "color_id.h",
@@ -23,7 +17,6 @@ source_set("color_headers") {
   ]
 
   public_deps = [
-    ":color_buildflags",
     "//base:base",
     "//skia:skia",
   ]

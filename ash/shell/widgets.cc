@@ -128,9 +128,9 @@ namespace ash {
 namespace shell {
 
 void CreateWidgetsWindow() {
-  gfx::Rect bounds(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new WidgetsWindow, Shell::GetPrimaryRootWindow(), bounds);
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
+      new WidgetsWindow, Shell::GetPrimaryRootWindow(),
+      gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight));
   widget->GetNativeView()->SetName("WidgetsWindow");
   widget->Show();
 }

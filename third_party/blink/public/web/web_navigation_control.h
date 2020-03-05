@@ -36,12 +36,13 @@ class WebNavigationControl : public WebLocalFrame {
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
 
   // Commits a cross-document navigation in the frame. See WebNavigationParams
-  // for details.
+  // for details. Calls WebLocalFrameClient::DidCommitNavigation synchronously
+  // after new document commit, but before loading any content, unless commit
+  // fails.
   // TODO(dgozman): return mojom::CommitResult.
   virtual void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-      base::OnceClosure call_before_attaching_new_document) = 0;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   // Commits a same-document navigation in the frame. For history navigations, a
   // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the

@@ -86,10 +86,24 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
                                int file_type,
                                const FilePath::StringType& pattern,
                                FolderSearchPolicy folder_search_policy)
+    : FileEnumerator(root_path,
+                     recursive,
+                     file_type,
+                     pattern,
+                     folder_search_policy,
+                     ErrorPolicy::IGNORE_ERRORS) {}
+
+FileEnumerator::FileEnumerator(const FilePath& root_path,
+                               bool recursive,
+                               int file_type,
+                               const FilePath::StringType& pattern,
+                               FolderSearchPolicy folder_search_policy,
+                               ErrorPolicy error_policy)
     : recursive_(recursive),
       file_type_(file_type),
       pattern_(!pattern.empty() ? pattern : FILE_PATH_LITERAL("*")),
-      folder_search_policy_(folder_search_policy) {
+      folder_search_policy_(folder_search_policy),
+      error_policy_(error_policy) {
   // INCLUDE_DOT_DOT must not be specified if recursive.
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
   memset(&find_data_, 0, sizeof(find_data_));
@@ -136,6 +150,7 @@ FilePath FileEnumerator::Next() {
       }
     }
 
+    DWORD last_error = GetLastError();
     if (INVALID_HANDLE_VALUE == find_handle_) {
       has_find_data_ = false;
 
@@ -150,7 +165,13 @@ FilePath FileEnumerator::Next() {
         pattern_ = FILE_PATH_LITERAL("*");
       }
 
-      continue;
+      if (last_error == ERROR_NO_MORE_FILES ||
+          error_policy_ == ErrorPolicy::IGNORE_ERRORS) {
+        continue;
+      }
+
+      error_ = File::OSErrorToFileError(last_error);
+      return FilePath();
     }
 
     const FilePath filename(find_data_.cFileName);

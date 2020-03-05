@@ -6,6 +6,7 @@ import './strings.m.js';
 import './most_visited.js';
 import './customize_dialog.js';
 import './voice_search_overlay.js';
+import './untrusted_iframe.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
@@ -33,9 +34,6 @@ class AppElement extends PolymerElement {
         value: false,
       },
 
-      /** @private */
-      promoUrl_: String,
-
       /** @private {!newTabPage.mojom.Theme} */
       theme_: Object,
 
@@ -55,7 +53,6 @@ class AppElement extends PolymerElement {
     this.setThemeListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
-    this.promoUrl_ = BrowserProxy.getInstance().promoUrl;
   }
 
   /** @override */

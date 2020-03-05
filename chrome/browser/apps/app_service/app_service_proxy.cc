@@ -23,6 +23,10 @@
 #include "content/public/browser/url_data_source.h"
 #include "url/url_constants.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
+#endif
+
 namespace apps {
 
 AppServiceProxy::InnerIconLoader::InnerIconLoader(AppServiceProxy* host)
@@ -97,6 +101,7 @@ void AppServiceProxy::ReInitializeForTesting(Profile* profile) {
   // has all of profile state it needs.
   app_service_.reset();
   profile_ = profile;
+  is_using_testing_profile_ = true;
   Initialize();
 }
 
@@ -270,7 +275,8 @@ void AppServiceProxy::PauseApps(
     constexpr bool kPaused = true;
     UpdatePausedStatus(app_type, data.first, kPaused);
 
-    if (!data.second.should_show_pause_dialog) {
+    // The app pause dialog can't be loaded for unit tests.
+    if (!data.second.should_show_pause_dialog || is_using_testing_profile_) {
       app_service_->PauseApp(app_type, data.first);
       continue;
     }
@@ -487,10 +493,23 @@ void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
   constexpr bool kAllowPlaceholderIcon = false;
   constexpr int32_t kPauseIconSize = 48;
-  LoadIconFromIconKey(
-      update.AppType(), update.AppId(), std::move(icon_key),
+
+  // For browser tests, still load the app icon, because there is no family link
+  // logo for browser tests.
+  if (!dialog_created_callback_.is_null()) {
+    LoadIconFromIconKey(
+        update.AppType(), update.AppId(), std::move(icon_key),
+        apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
+        kAllowPlaceholderIcon,
+        base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
+                       weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                       update.AppId(), update.Name(), pause_data));
+    return;
+  }
+
+  LoadIconFromResource(
       apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
-      kAllowPlaceholderIcon,
+      IDR_FAMILY_LINK_LOGO, kAllowPlaceholderIcon, IconEffects::kNone,
       base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
                      weak_ptr_factory_.GetWeakPtr(), update.AppType(),
                      update.AppId(), update.Name(), pause_data));

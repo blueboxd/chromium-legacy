@@ -19,7 +19,6 @@
 #include "extensions/common/extension.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
-#include "ui/color/color_buildflags.h"
 #include "ui/gfx/color_utils.h"
 
 namespace base {

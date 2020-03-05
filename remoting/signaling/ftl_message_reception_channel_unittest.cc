@@ -22,6 +22,7 @@
 #include "remoting/base/grpc_test_support/grpc_test_util.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/mock_signaling_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -113,10 +114,12 @@ class FtlMessageReceptionChannelTest : public testing::Test {
       mock_stream_opener_;
   base::MockCallback<base::RepeatingCallback<void(const ftl::InboxMessage&)>>
       mock_on_incoming_msg_;
+  MockSignalingTracker mock_signaling_tracker_;
 };
 
 void FtlMessageReceptionChannelTest::SetUp() {
-  channel_ = std::make_unique<FtlMessageReceptionChannel>();
+  channel_ =
+      std::make_unique<FtlMessageReceptionChannel>(&mock_signaling_tracker_);
   channel_->Initialize(mock_stream_opener_.Get(), mock_on_incoming_msg_.Get());
 }
 
@@ -308,6 +311,32 @@ TEST_F(FtlMessageReceptionChannelTest, StreamsTwoMessages) {
       base::DoNothing(),
       test::CheckStatusThenQuitRunLoopCallback(
           FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessageReceptionChannelTest, ReceivedOnePong_OnChannelActiveTwice) {
+  base::RunLoop run_loop;
+
+  base::MockCallback<base::OnceClosure> stream_ready_callback;
+
+  EXPECT_CALL(mock_signaling_tracker_, OnChannelActive())
+      .WillOnce(Return())
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
+      .WillOnce(StartStream(
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
+              StatusCallback on_channel_closed) {
+            std::move(on_channel_ready).Run();
+            ftl::ReceiveMessagesResponse response;
+            response.mutable_pong();
+            on_incoming_msg.Run(response);
+          }));
+
+  channel_->StartReceivingMessages(base::DoNothing(),
+                                   NotReachedStatusCallback(FROM_HERE));
 
   run_loop.Run();
 }

@@ -220,6 +220,11 @@ void FakeCrasAudioClient::SetPlayerIdentity(
 
 void FakeCrasAudioClient::SetPlayerPosition(const int64_t& position) {}
 
+void FakeCrasAudioClient::SetPlayerDuration(const int64_t& duration) {}
+
+void FakeCrasAudioClient::SetPlayerMetadata(
+    const std::map<std::string, std::string>& metadata) {}
+
 void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)

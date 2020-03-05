@@ -303,7 +303,7 @@ void CursorWindowController::UpdateCursorImage() {
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
 
   gfx::ImageSkia image;
-  if (cursor_.native_type() == ui::mojom::CursorType::kCustom) {
+  if (cursor_.type() == ui::mojom::CursorType::kCustom) {
     SkBitmap bitmap = GetCursorBitmap(cursor_);
     if (bitmap.isNull())
       return;
@@ -311,7 +311,7 @@ void CursorWindowController::UpdateCursorImage() {
     hot_point_ = GetCursorHotstop(cursor_);
   } else {
     int resource_id;
-    if (!ui::GetCursorDataFor(cursor_size_, cursor_.native_type(), cursor_scale,
+    if (!ui::GetCursorDataFor(cursor_size_, cursor_.type(), cursor_scale,
                               &resource_id, &hot_point_)) {
       return;
     }
@@ -354,8 +354,7 @@ void CursorWindowController::UpdateCursorImage() {
 }
 
 void CursorWindowController::UpdateCursorVisibility() {
-  bool visible =
-      (visible_ && cursor_.native_type() != ui::mojom::CursorType::kNone);
+  bool visible = (visible_ && cursor_.type() != ui::mojom::CursorType::kNone);
   if (visible) {
     if (cursor_view_)
       cursor_view_->GetWidget()->Show();

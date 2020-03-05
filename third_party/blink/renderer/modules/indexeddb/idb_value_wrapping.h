@@ -156,6 +156,11 @@ class MODULES_EXPORT IDBValueWrapper {
 
   Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>
   TakeNativeFileSystemTransferTokens() {
+#if DCHECK_IS_ON()
+    DCHECK(done_cloning_) << __func__ << " called before DoneCloning()";
+    DCHECK(owns_file_system_handles_) << __func__ << " called twice";
+    owns_file_system_handles_ = false;
+#endif  // DCHECK_IS_ON()
     return std::move(serialized_value_->NativeFileSystemTokens());
   }
 
@@ -201,6 +206,7 @@ class MODULES_EXPORT IDBValueWrapper {
   bool owns_blob_handles_ = true;
   bool owns_blob_info_ = true;
   bool owns_wire_bytes_ = true;
+  bool owns_file_system_handles_ = true;
 #endif  // DCHECK_IS_ON()
 };
 

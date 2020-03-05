@@ -150,6 +150,10 @@ enum class ExternalInstallSource {
   kArc = 4,
 };
 
+// Icon size in pixels.
+// Small icons are used in confirmation dialogs and app windows.
+constexpr int kWebAppIconSmall = 32;
+
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in

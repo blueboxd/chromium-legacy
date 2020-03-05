@@ -3385,6 +3385,10 @@ const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "
     "#enable-media-session-notifications to be enabled.";
 
+const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
+const char kImeAssistPersonalInfoDescription[] =
+    "Enable auto-complete suggestions on personal infomation for native IME.";
+
 const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
 const char kImeInputLogicFstDescription[] =
     "Enable FST Input Logic to replace the IME legacy input logic on NaCl";

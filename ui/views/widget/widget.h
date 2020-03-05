@@ -355,25 +355,22 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   };
 
   Widget();
+  explicit Widget(InitParams params);
   ~Widget() override;
 
   // Creates a decorated window Widget with the specified properties. The
   // returned Widget is owned by its NativeWidget; see Widget class comment for
   // details.
   static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
-                                        gfx::NativeView parent);
-  static Widget* CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
-                                                 gfx::NativeView parent,
-                                                 const gfx::Rect& bounds);
+                                        gfx::NativeView parent,
+                                        const gfx::Rect& bounds = gfx::Rect());
 
   // Creates a decorated window Widget in the same desktop context as |context|.
   // The returned Widget is owned by its NativeWidget; see Widget class comment
   // for details.
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
-                                         gfx::NativeWindow context);
-  static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
-                                                  gfx::NativeWindow context,
-                                                  const gfx::Rect& bounds);
+                                         gfx::NativeWindow context,
+                                         const gfx::Rect& bounds = gfx::Rect());
 
   // Closes all Widgets that aren't identified as "secondary widgets". Called
   // during application shutdown when the last non-secondary widget is closed.

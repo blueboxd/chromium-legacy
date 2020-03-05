@@ -14,30 +14,17 @@
 #include "chromeos/components/sync_wifi/fake_pending_network_configuration_tracker.h"
 #include "chromeos/components/sync_wifi/fake_timer_factory.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
+#include "chromeos/components/sync_wifi/network_test_helper.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
 #include "chromeos/components/sync_wifi/synced_network_updater_impl.h"
 #include "chromeos/components/sync_wifi/test_data_generator.h"
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_cert_loader.h"
-#include "chromeos/network/network_certificate_handler.h"
-#include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_connection_handler.h"
-#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "components/user_manager/fake_user_manager.h"
-#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -80,56 +67,16 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
   SyncedNetworkUpdaterImplTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::DEFAULT,
                           base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    LoginState::Initialize();
-    network_state_helper_ = std::make_unique<NetworkStateTestHelper>(
-        /*use_default_devices_and_services=*/false);
-    network_device_handler_ =
-        chromeos::NetworkDeviceHandler::InitializeForTesting(
-            network_state_helper_->network_state_handler());
-    network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
-    network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
-        network_state_helper_->network_state_handler());
-    network_configuration_handler_ =
-        base::WrapUnique<NetworkConfigurationHandler>(
-            NetworkConfigurationHandler::InitializeForTest(
-                network_state_helper_->network_state_handler(),
-                network_device_handler_.get()));
-    managed_network_configuration_handler_ =
-        ManagedNetworkConfigurationHandler::InitializeForTesting(
-            network_state_helper_->network_state_handler(),
-            network_profile_handler_.get(), network_device_handler_.get(),
-            network_configuration_handler_.get(),
-            nullptr /* ui_proxy_config_service */);
-    managed_network_configuration_handler_->SetPolicy(
-        ::onc::ONC_SOURCE_DEVICE_POLICY,
-        /*userhash=*/std::string(),
-        /*network_configs_onc=*/base::ListValue(),
-        /*global_network_config=*/base::DictionaryValue());
-    cros_network_config_impl_ =
-        std::make_unique<chromeos::network_config::CrosNetworkConfig>(
-            network_state_helper_->network_state_handler(),
-            network_device_handler_.get(),
-            managed_network_configuration_handler_.get(),
-            network_connection_handler_.get(),
-            /*network_certificate_handler=*/nullptr);
-    OverrideInProcessInstanceForTesting(cros_network_config_impl_.get());
-
+    local_test_helper_ = std::make_unique<NetworkTestHelper>();
     ash::GetNetworkConfigService(
         remote_cros_network_config_.BindNewPipeAndPassReceiver());
-
-    auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
-    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::move(fake_user_manager));
   }
 
-  ~SyncedNetworkUpdaterImplTest() override {
-    LoginState::Shutdown();
-    network_config::OverrideInProcessInstanceForTesting(nullptr);
-  }
+  ~SyncedNetworkUpdaterImplTest() override { local_test_helper_.reset(); }
 
   void SetUp() override {
     testing::Test::SetUp();
-    NetworkHandler::Initialize();
+    local_test_helper_->SetUp();
     network_state_helper()->ResetDevicesAndServices();
     base::RunLoop().RunUntilIdle();
 
@@ -152,27 +99,19 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
   FakeTimerFactory* timer_factory() { return timer_factory_; }
   SyncedNetworkUpdaterImpl* updater() { return updater_.get(); }
   chromeos::NetworkStateTestHelper* network_state_helper() {
-    return network_state_helper_.get();
+    return local_test_helper_->network_state_test_helper();
   }
   NetworkIdentifier fred_network_id() { return fred_network_id_; }
   NetworkIdentifier mango_network_id() { return mango_network_id_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
+  std::unique_ptr<NetworkTestHelper> local_test_helper_;
   FakeTimerFactory* timer_factory_;
   FakePendingNetworkConfigurationTracker* tracker_;
-  std::unique_ptr<NetworkStateTestHelper> network_state_helper_;
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;
-  std::unique_ptr<network_config::CrosNetworkConfig> cros_network_config_impl_;
-  std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
-  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
-  std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  std::unique_ptr<ManagedNetworkConfigurationHandler>
-      managed_network_configuration_handler_;
-  std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
-  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
   NetworkIdentifier fred_network_id_ = GeneratePskNetworkId(kFredSsid);
   NetworkIdentifier mango_network_id_ = GeneratePskNetworkId(kMangoSsid);
@@ -187,8 +126,12 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_OneNetwork) {
   updater()->AddOrUpdateNetwork(specifics);
   EXPECT_TRUE(tracker()->GetPendingUpdateById(id));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(FindLocalNetworkById(id));
+  const chromeos::NetworkState* network = FindLocalNetworkById(id);
+  EXPECT_TRUE(network);
   EXPECT_FALSE(tracker()->GetPendingUpdateById(id));
+  EXPECT_TRUE(
+      NetworkHandler::Get()->network_metadata_store()->GetIsConfiguredBySync(
+          network->guid()));
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_ThenRemove) {
@@ -213,8 +156,20 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_TwoNetworks) {
   EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_TRUE(tracker()->GetPendingUpdateById(mango_network_id()));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(FindLocalNetworkById(fred_network_id()));
-  EXPECT_TRUE(FindLocalNetworkById(mango_network_id()));
+
+  const chromeos::NetworkState* fred_network =
+      FindLocalNetworkById(fred_network_id());
+  const chromeos::NetworkState* mango_network =
+      FindLocalNetworkById(mango_network_id());
+  EXPECT_TRUE(fred_network);
+  EXPECT_TRUE(mango_network);
+  EXPECT_TRUE(
+      NetworkHandler::Get()->network_metadata_store()->GetIsConfiguredBySync(
+          fred_network->guid()));
+  EXPECT_TRUE(
+      NetworkHandler::Get()->network_metadata_store()->GetIsConfiguredBySync(
+          mango_network->guid()));
+
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_FALSE(tracker()->GetPendingUpdateById(mango_network_id()));
 }

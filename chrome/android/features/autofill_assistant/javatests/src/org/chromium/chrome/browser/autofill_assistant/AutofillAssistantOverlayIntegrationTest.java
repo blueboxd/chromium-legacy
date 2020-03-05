@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -162,6 +163,7 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "flaky on Android L; crbug.com/1058599")
     public void testShowCastOnIFrameElement() throws Exception {
         ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
                                                 .addSelectors("#iframe")
@@ -211,6 +213,7 @@ public class AutofillAssistantOverlayIntegrationTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "flaky on Android L; crbug.com/1058599")
     public void testShowCastOnIFrameElementInScrollIFrame() throws Exception {
         ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
                                                 .addSelectors("#iframe")

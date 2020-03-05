@@ -63,6 +63,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.PAINT_PREVIEW_TEST, false);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
             put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
+            put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);
             put(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID, false);
             put(ChromeFeatureList.SHARE_BUTTON_IN_TOP_TOOLBAR, false);
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);

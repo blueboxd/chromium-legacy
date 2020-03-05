@@ -19,7 +19,7 @@ int TextureFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       return GLX_TEXTURE_FORMAT_RGB_EXT;
     case gfx::BufferFormat::BGRA_8888:
       return GLX_TEXTURE_FORMAT_RGBA_EXT;

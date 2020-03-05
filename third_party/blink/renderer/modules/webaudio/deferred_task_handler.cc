@@ -340,7 +340,7 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   PostCrossThreadTask(
       *task_runner_, FROM_HERE,
       CrossThreadBindOnce(&DeferredTaskHandler::DeleteHandlersOnMainThread,
-                          scoped_refptr<DeferredTaskHandler>(this)));
+                          AsWeakPtr()));
 }
 
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {

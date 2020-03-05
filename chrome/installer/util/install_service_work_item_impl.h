@@ -73,6 +73,16 @@ class InstallServiceWorkItemImpl {
   // named value service_name_. In other cases, it returns service_name_.
   base::string16 GetCurrentServiceName() const;
 
+  // Returns a display name of the following format:
+  // "Chrome Elevation Service (ChromeElevationService)"
+  // or:
+  // "Chrome Elevation Service (ChromeElevationService1d59511c58deaa8)"
+  //
+  // The "Chrome Elevation Service" fragment is the display_name_, and the
+  // "ChromeElevationService1d59511c58deaa8" fragment is the versioned service
+  // name returned from GetCurrentServiceName().
+  base::string16 GetCurrentServiceDisplayName() const;
+
   // Copies and returns a vector containing a sequence of C-style strings
   // terminated with '\0\0'. Return an empty vector if the input is nullptr.
   static std::vector<base::char16> MultiSzToVector(

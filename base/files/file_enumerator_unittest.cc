@@ -36,7 +36,8 @@ circular_deque<FilePath> RunEnumerator(
     FileEnumerator::FolderSearchPolicy folder_search_policy) {
   circular_deque<FilePath> rv;
   FileEnumerator enumerator(root_path, recursive, file_type, pattern,
-                            folder_search_policy);
+                            folder_search_policy,
+                            FileEnumerator::ErrorPolicy::IGNORE_ERRORS);
   for (auto file = enumerator.Next(); !file.empty(); file = enumerator.Next())
     rv.emplace_back(std::move(file));
   return rv;
@@ -308,6 +309,29 @@ TEST(FileEnumerator, FilesInSubfoldersWithFiltering) {
                         FILE_PATH_LITERAL("foo*"),
                         FileEnumerator::FolderSearchPolicy::ALL);
   EXPECT_THAT(files, UnorderedElementsAre(subdir_foo, foo_foo, bar_foo));
+}
+
+TEST(FileEnumerator, InvalidDirectory) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const FilePath test_file = temp_dir.GetPath().AppendASCII("test_file");
+  ASSERT_TRUE(CreateDummyFile(test_file));
+
+  // Attempt to enumerate entries at a regular file path.
+  FileEnumerator enumerator(test_file, /*recursive=*/true,
+                            FileEnumerator::FILES, kEmptyPattern,
+                            FileEnumerator::FolderSearchPolicy::ALL,
+                            FileEnumerator::ErrorPolicy::STOP_ENUMERATION);
+  FilePath path = enumerator.Next();
+  EXPECT_TRUE(path.empty());
+
+  // Slightly different outcomes between Windows and POSIX.
+#if defined(OS_WIN)
+  EXPECT_EQ(File::Error::FILE_ERROR_FAILED, enumerator.GetError());
+#else
+  EXPECT_EQ(File::Error::FILE_ERROR_NOT_A_DIRECTORY, enumerator.GetError());
+#endif
 }
 
 #if defined(OS_POSIX)

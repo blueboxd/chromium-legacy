@@ -131,6 +131,7 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
   }
   void AddHandleToShare(HANDLE handle) override {}
   void SetLockdownDefaultDacl() override {}
+  void AddRestrictingRandomSid() override {}
   void SetEnableOPMRedirection() override {}
   bool GetEnableOPMRedirection() override { return false; }
 

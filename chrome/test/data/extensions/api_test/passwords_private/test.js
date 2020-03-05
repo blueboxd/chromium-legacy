@@ -269,6 +269,76 @@ var availableTests = [
           chrome.test.succeed();
         });
   },
+
+  function changeCompromisedCredentialFails() {
+    chrome.passwordsPrivate.changeCompromisedCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+        },
+        'new_pass', () => {
+          chrome.test.assertLastError(
+              'Could not change the compromised credential. Either the user ' +
+              'is not authenticated or no matching password could be found.');
+          chrome.test.succeed();
+        });
+  },
+
+  function changeCompromisedCredentialSucceeds() {
+    chrome.passwordsPrivate.changeCompromisedCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+        },
+        'new_pass', () => {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+
+  function removeCompromisedCredentialFails() {
+    chrome.passwordsPrivate.removeCompromisedCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+        },
+        () => {
+          chrome.test.assertLastError(
+              'Could not remove the compromised credential. Probably no ' +
+              'matching password could be found.');
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
+
+  function removeCompromisedCredentialSucceeds() {
+    chrome.passwordsPrivate.removeCompromisedCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+        },
+        () => {
+          chrome.test.assertNoLastError();
+          // Ensure that the callback is invoked.
+          chrome.test.succeed();
+        });
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

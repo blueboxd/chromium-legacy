@@ -7,12 +7,12 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/android/permission_prompt_android.h"
 #include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
@@ -31,7 +31,8 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {
 
 // static
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
-    const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+    const base::WeakPtr<permissions::PermissionPromptAndroid>&
+        permission_prompt,
     InfoBarService* infobar_service) {
   // WrapUnique needs to be used because the constructor is private.
   return infobar_service->AddInfoBar(std::make_unique<GroupedPermissionInfoBar>(
@@ -119,7 +120,8 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
-    const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+    const base::WeakPtr<permissions::PermissionPromptAndroid>&
+        permission_prompt,
     InfoBarService* infobar_service)
     : permission_prompt_(permission_prompt),
       infobar_service_(infobar_service),

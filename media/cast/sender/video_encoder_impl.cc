@@ -30,9 +30,9 @@ void EncodeVideoFrameOnEncoderThread(
     scoped_refptr<CastEnvironment> environment,
     SoftwareVideoEncoder* encoder,
     scoped_refptr<media::VideoFrame> video_frame,
-    const base::TimeTicks& reference_time,
+    base::TimeTicks reference_time,
     const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
-    const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
+    VideoEncoderImpl::FrameEncodedCallback frame_encoded_callback) {
   DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
   if (dynamic_config.key_frame_requested) {
     encoder->GenerateKeyFrame();
@@ -42,18 +42,18 @@ void EncodeVideoFrameOnEncoderThread(
   std::unique_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoder->Encode(std::move(video_frame), reference_time, encoded_frame.get());
   encoded_frame->encode_completion_time = environment->Clock()->NowTicks();
-  environment->PostTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(frame_encoded_callback, base::Passed(&encoded_frame)));
+  environment->GetTaskRunner(CastEnvironment::MAIN)
+      ->PostTask(FROM_HERE, base::BindOnce(std::move(frame_encoded_callback),
+                                           base::Passed(&encoded_frame)));
 }
 }  // namespace
 
 // static
 bool VideoEncoderImpl::IsSupported(const FrameSenderConfig& video_config) {
 #ifndef OFFICIAL_BUILD
-  if (video_config.codec == CODEC_VIDEO_FAKE)
+  if (video_config.codec == CODEC_VIDEO_FAKE) {
     return true;
+  }
 #endif
   return video_config.codec == CODEC_VIDEO_VP8;
 }
@@ -67,15 +67,13 @@ VideoEncoderImpl::VideoEncoderImpl(
   DCHECK(status_change_cb);
 
   if (video_config.codec == CODEC_VIDEO_VP8) {
-    encoder_.reset(new Vp8Encoder(video_config));
-    cast_environment_->PostTask(CastEnvironment::VIDEO,
-                                FROM_HERE,
+    encoder_ = std::make_unique<Vp8Encoder>(video_config);
+    cast_environment_->PostTask(CastEnvironment::VIDEO, FROM_HERE,
                                 base::Bind(&InitializeEncoderOnEncoderThread,
-                                           cast_environment,
-                                           encoder_.get()));
+                                           cast_environment, encoder_.get()));
 #ifndef OFFICIAL_BUILD
   } else if (video_config.codec == CODEC_VIDEO_FAKE) {
-    encoder_.reset(new FakeSoftwareVideoEncoder(video_config));
+    encoder_ = std::make_unique<FakeSoftwareVideoEncoder>(video_config);
 #endif
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.
@@ -105,8 +103,8 @@ VideoEncoderImpl::~VideoEncoderImpl() {
 
 bool VideoEncoderImpl::EncodeVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame,
-    const base::TimeTicks& reference_time,
-    const FrameEncodedCallback& frame_encoded_callback) {
+    base::TimeTicks reference_time,
+    FrameEncodedCallback frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!video_frame->visible_rect().IsEmpty());
   DCHECK(!frame_encoded_callback.is_null());
@@ -116,7 +114,7 @@ bool VideoEncoderImpl::EncodeVideoFrame(
       base::BindRepeating(&EncodeVideoFrameOnEncoderThread, cast_environment_,
                           encoder_.get(), std::move(video_frame),
                           reference_time, dynamic_config_,
-                          frame_encoded_callback));
+                          base::Passed(std::move(frame_encoded_callback))));
 
   dynamic_config_.key_frame_requested = false;
   return true;

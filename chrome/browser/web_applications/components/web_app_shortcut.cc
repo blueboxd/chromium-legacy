@@ -91,9 +91,10 @@ std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
   return GenerateApplicationNameFromAppId(shortcut_info.extension_id);
 }
 
-base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const std::string& app_id,
-                                      const GURL& url) {
+base::FilePath GetOsIntegrationResourcesDirectoryForApp(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    const GURL& url) {
   DCHECK(!profile_path.empty());
   base::FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
 
@@ -202,8 +203,9 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 }
 
 base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
-  return GetWebAppDataDirectory(shortcut_info.profile_path,
-                                shortcut_info.extension_id, shortcut_info.url);
+  return GetOsIntegrationResourcesDirectoryForApp(shortcut_info.profile_path,
+                                                  shortcut_info.extension_id,
+                                                  shortcut_info.url);
 }
 
 #if !defined(OS_MACOSX)

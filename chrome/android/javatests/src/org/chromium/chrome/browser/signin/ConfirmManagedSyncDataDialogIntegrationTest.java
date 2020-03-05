@@ -10,18 +10,18 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivity;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
 /**
  * Test for {@link ConfirmManagedSyncDataDialog}
@@ -41,6 +41,7 @@ public class ConfirmManagedSyncDataDialogIntegrationTest extends DummyUiActivity
 
     @Test
     @LargeTest
+    @DisabledTest(message = "Flaky crbug.com/1054855")
     public void testDialogIsDismissedWhenRecreated() {
         ConfirmManagedSyncDataDialog dialog =
                 ConfirmManagedSyncDataDialog.create(mListenerMock, TEST_DOMAIN);

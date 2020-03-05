@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list_types.h"
+#include "remoting/signaling/signaling_tracker_impl.h"
 
 namespace jingle_xmpp {
 class XmlElement;
@@ -120,6 +121,13 @@ class SignalStrategy {
   // to sign in. You can get back the actual error by calling GetError().
   // The default implementation always returns false.
   virtual bool IsSignInError() const;
+
+  // Returns a signaling tracker to extract extra information about the
+  // signaling channel.
+  virtual const SignalingTracker& signaling_tracker() const;
+
+ protected:
+  SignalingTrackerImpl signaling_tracker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignalStrategy);

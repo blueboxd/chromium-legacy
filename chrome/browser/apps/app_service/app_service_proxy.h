@@ -343,6 +343,7 @@ class AppServiceProxy : public KeyedService,
                                     base::UniquePtrComparator>;
   UninstallDialogs uninstall_dialogs_;
 
+  bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};

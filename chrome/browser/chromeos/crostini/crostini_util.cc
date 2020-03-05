@@ -98,8 +98,9 @@ void OnCrostiniRestarted(Profile* profile,
                          Browser* browser,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
-  if (crostini::CrostiniManager::GetForProfile(profile)
-          ->ShouldPromptContainerUpgrade(container_id)) {
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
+
+  if (crostini_manager->ShouldPromptContainerUpgrade(container_id)) {
     chromeos::CrostiniUpgraderDialog::Show(std::move(callback));
     return;
   }
@@ -399,7 +400,14 @@ void LaunchCrostiniApp(Profile* profile,
     return std::move(callback).Run(
         false, "LaunchCrostiniApp called with an unknown app_id: " + app_id);
   }
-
+  if (crostini_manager->IsUncleanStartup()) {
+    // Prompt for user-restart.
+    if (!ShowCrostiniRecoveryView(profile,
+                                  crostini::CrostiniUISurface::kAppList, app_id,
+                                  display_id, std::move(callback))) {
+      return;
+    }
+  }
   // Store these as we move |registration| into LaunchContainerApplication().
   const std::string vm_name = registration->VmName();
   const std::string container_name = registration->ContainerName();

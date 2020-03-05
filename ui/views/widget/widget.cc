@@ -175,6 +175,10 @@ ui::ZOrderLevel Widget::InitParams::EffectiveZOrderLevel() const {
 
 Widget::Widget() = default;
 
+Widget::Widget(InitParams params) {
+  Init(std::move(params));
+}
+
 Widget::~Widget() {
   DestroyRootView();
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
@@ -189,40 +193,24 @@ Widget::~Widget() {
 
 // static
 Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
-                                       gfx::NativeView parent) {
-  return CreateWindowWithParentAndBounds(delegate, parent, gfx::Rect());
-}
-
-// static
-Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
-                                                gfx::NativeView parent,
-                                                const gfx::Rect& bounds) {
-  Widget* widget = new Widget;
+                                       gfx::NativeView parent,
+                                       const gfx::Rect& bounds) {
   Widget::InitParams params;
   params.delegate = delegate;
   params.parent = parent;
   params.bounds = bounds;
-  widget->Init(std::move(params));
-  return widget;
+  return new Widget(std::move(params));
 }
 
 // static
 Widget* Widget::CreateWindowWithContext(WidgetDelegate* delegate,
-                                        gfx::NativeWindow context) {
-  return CreateWindowWithContextAndBounds(delegate, context, gfx::Rect());
-}
-
-// static
-Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
-                                                 gfx::NativeWindow context,
-                                                 const gfx::Rect& bounds) {
-  Widget* widget = new Widget;
+                                        gfx::NativeWindow context,
+                                        const gfx::Rect& bounds) {
   Widget::InitParams params;
   params.delegate = delegate;
   params.context = context;
   params.bounds = bounds;
-  widget->Init(std::move(params));
-  return widget;
+  return new Widget(std::move(params));
 }
 
 // static

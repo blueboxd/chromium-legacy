@@ -156,6 +156,14 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // windows is not snapped.
   void SwapWindows();
 
+  // |window| should be |left_window_| or |right_window_|, and this function
+  // returns |LEFT| or |RIGHT| accordingly.
+  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
+
+  // |position| should be |LEFT| or |RIGHT|, and this function returns
+  // |left_window_| or |right_window_| accordingly.
+  aura::Window* GetSnappedWindow(SnapPosition position);
+
   // Returns the default snapped window. It's the window that remains open until
   // the split mode ends. It's decided by |default_snap_position_|. E.g., If
   // |default_snap_position_| equals LEFT, then the default snapped window is
@@ -271,14 +279,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
-
-  // |window| should be |left_window_| or |right_window_|, and this function
-  // returns |LEFT| or |RIGHT| accordingly.
-  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
-
-  // |position| should be |LEFT| or |RIGHT|, and this function returns
-  // |left_window_| or |right_window_| accordingly.
-  aura::Window* GetSnappedWindow(SnapPosition position);
 
   // These functions return |left_window_| and |right_window_|, swapped in
   // nonprimary screen orientations. Note that they may return null.

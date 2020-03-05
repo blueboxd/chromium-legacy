@@ -86,8 +86,6 @@ blink_core_sources("frame") {
     "fullscreen_controller.h",
     "history.cc",
     "history.h",
-    "hosts_using_features.cc",
-    "hosts_using_features.h",
     "intervention.cc",
     "intervention.h",
     "intervention_report_body.cc",

@@ -21,7 +21,6 @@
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
-#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -160,9 +159,6 @@ class ChromeContentRendererClient
       const content::WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url) override;
-  void RecordRappor(const std::string& metric,
-                    const std::string& sample) override;
-  void RecordRapporURL(const std::string& metric, const GURL& url) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
@@ -263,8 +259,6 @@ class ChromeContentRendererClient
 
   // Used to profile main thread.
   std::unique_ptr<ThreadProfiler> main_thread_profiler_;
-
-  mojo::Remote<rappor::mojom::RapporRecorder> rappor_recorder_;
 
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;

@@ -17,6 +17,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler_impl.h"
 #include "chromeos/network/network_device_handler_impl.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_profile_observer.h"
 #include "chromeos/network/network_sms_handler.h"
@@ -123,10 +124,14 @@ void NetworkHandler::InitializePrefServices(
       network_profile_handler_.get()));
   managed_network_configuration_handler_->set_ui_proxy_config_service(
       ui_proxy_config_service_.get());
+  network_metadata_store_.reset(new NetworkMetadataStore(
+      network_configuration_handler_.get(), network_connection_handler_.get(),
+      network_state_handler_.get(), logged_in_profile_prefs, device_prefs));
 }
 
 void NetworkHandler::ShutdownPrefServices() {
   ui_proxy_config_service_.reset();
+  network_metadata_store_.reset();
 }
 
 NetworkStateHandler* NetworkHandler::network_state_handler() {
@@ -164,6 +169,10 @@ NetworkCertificateHandler* NetworkHandler::network_certificate_handler() {
 
 NetworkConnectionHandler* NetworkHandler::network_connection_handler() {
   return network_connection_handler_.get();
+}
+
+NetworkMetadataStore* NetworkHandler::network_metadata_store() {
+  return network_metadata_store_.get();
 }
 
 NetworkSmsHandler* NetworkHandler::network_sms_handler() {

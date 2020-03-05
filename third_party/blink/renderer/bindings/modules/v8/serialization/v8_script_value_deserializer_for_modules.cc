@@ -318,11 +318,18 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
   if (token_index >= tokens_array.size()) {
     return nullptr;
   }
-  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> token(
+
+  // IndexedDB code assumes that deserializing a SSV is non-destructive. So
+  // rather than consuming the token here instead we clone it.
+  mojo::Remote<mojom::blink::NativeFileSystemTransferToken> token(
       std::move(tokens_array[token_index]));
   if (!token) {
     return nullptr;
   }
+
+  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> token_clone;
+  token->Clone(token_clone.InitWithNewPipeAndPassReceiver());
+  tokens_array[token_index] = std::move(token_clone);
 
   // Use the NativeFileSystemManager to redeem the token to clone the
   // FileSystemHandle.
@@ -339,7 +346,7 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
       mojo::PendingRemote<mojom::blink::NativeFileSystemFileHandle> file_handle;
 
       native_file_system_manager->GetFileHandleFromToken(
-          std::move(token), file_handle.InitWithNewPipeAndPassReceiver());
+          token.Unbind(), file_handle.InitWithNewPipeAndPassReceiver());
 
       return MakeGarbageCollected<NativeFileSystemFileHandle>(
           execution_context, name, std::move(file_handle));
@@ -349,7 +356,7 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
           directory_handle;
 
       native_file_system_manager->GetDirectoryHandleFromToken(
-          std::move(token), directory_handle.InitWithNewPipeAndPassReceiver());
+          token.Unbind(), directory_handle.InitWithNewPipeAndPassReceiver());
 
       return MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
           execution_context, name, std::move(directory_handle));

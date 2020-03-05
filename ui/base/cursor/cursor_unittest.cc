@@ -18,12 +18,12 @@ namespace {
 
 TEST(CursorTest, Null) {
   Cursor cursor;
-  EXPECT_EQ(mojom::CursorType::kNull, cursor.native_type());
+  EXPECT_EQ(mojom::CursorType::kNull, cursor.type());
 }
 
 TEST(CursorTest, BasicType) {
   Cursor cursor(mojom::CursorType::kPointer);
-  EXPECT_EQ(mojom::CursorType::kPointer, cursor.native_type());
+  EXPECT_EQ(mojom::CursorType::kPointer, cursor.type());
 
   Cursor copy(cursor);
   EXPECT_EQ(cursor, copy);
@@ -31,7 +31,7 @@ TEST(CursorTest, BasicType) {
 
 TEST(CursorTest, CustomType) {
   Cursor cursor(mojom::CursorType::kCustom);
-  EXPECT_EQ(mojom::CursorType::kCustom, cursor.native_type());
+  EXPECT_EQ(mojom::CursorType::kCustom, cursor.type());
 
   const float kScale = 2.0f;
   cursor.set_image_scale_factor(kScale);

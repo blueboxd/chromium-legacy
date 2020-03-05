@@ -34,7 +34,7 @@ class ThrottledOfflineContentProvider
   // Taking actions on the OfflineContentProvider will flush any queued updates
   // immediately after performing the action. This is to make sure item updates
   // in response to the update are immediately reflected back to the caller.
-  void OpenItem(LaunchLocation location, const ContentId& id) override;
+  void OpenItem(const OpenParams& open_params, const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;

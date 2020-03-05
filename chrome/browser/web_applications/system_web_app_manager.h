@@ -183,6 +183,8 @@ class SystemWebAppManager {
       const std::map<GURL, InstallResultCode>& install_results,
       const base::TimeDelta& install_duration) const;
 
+  Profile* profile_;
+
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 
   bool shutting_down_ = false;

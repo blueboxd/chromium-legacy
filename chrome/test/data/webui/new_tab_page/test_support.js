@@ -83,6 +83,6 @@ export function createTestProxy() {
   testProxy.callbackRouterRemote =
       testProxy.callbackRouter.$.bindNewPipeAndPassRemote();
   testProxy.handler = mock(newTabPage.mojom.PageHandlerRemote);
-  testProxy.promoUrl = '';
+  testProxy.setResultFor('createUntrustedIframeSrc', '');
   return testProxy;
 }

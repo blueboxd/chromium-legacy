@@ -12,12 +12,12 @@ import android.os.Looper;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.components.offline_items_collection.ContentId;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
@@ -74,7 +74,7 @@ public class StubbedProvider {
         }
 
         @Override
-        public void openItem(@LaunchLocation int location, ContentId id) {}
+        public void openItem(OpenParams openParams, ContentId id) {}
         @Override
         public void pauseDownload(ContentId id) {}
         @Override

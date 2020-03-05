@@ -43,7 +43,7 @@ class CursorWindowControllerTest : public AshTestBase {
   }
 
   ui::mojom::CursorType GetCursorType() const {
-    return cursor_window_controller_->cursor_.native_type();
+    return cursor_window_controller_->cursor_.type();
   }
 
   const gfx::Point& GetCursorHotPoint() const {

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/passwords_private/password_check_delegate.h"
+
+#include <algorithm>
 #include <memory>
 
 #include "base/containers/flat_set.h"
@@ -10,10 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
@@ -175,19 +179,64 @@ base::Optional<api::passwords_private::CompromisedCredential>
 PasswordCheckDelegate::GetPlaintextCompromisedPassword(
     api::passwords_private::CompromisedCredential credential) const {
   const CredentialWithPassword* compromised_credential =
-      compromised_credential_id_generator_.TryGetKey(credential.id);
+      FindMatchingCompromisedCredential(credential);
   if (!compromised_credential)
     return base::nullopt;
-
-  if (credential.signon_realm != compromised_credential->signon_realm ||
-      credential.username !=
-          base::UTF16ToUTF8(compromised_credential->username)) {
-    return base::nullopt;
-  }
 
   credential.password = std::make_unique<std::string>(
       base::UTF16ToUTF8(compromised_credential->password));
   return credential;
+}
+
+bool PasswordCheckDelegate::ChangeCompromisedCredential(
+    const api::passwords_private::CompromisedCredential& credential,
+    base::StringPiece new_password) {
+  // Try to obtain the original CredentialWithPassword and try to find it in
+  // |credentials_to_forms_|. Return false if either one fails.
+  const CredentialWithPassword* compromised_credential =
+      FindMatchingCompromisedCredential(credential);
+  if (!compromised_credential)
+    return false;
+
+  auto it = credentials_to_forms_.find(*compromised_credential);
+  if (it == credentials_to_forms_.end())
+    return false;
+
+  // Make sure there are matching password forms. Also erase duplicates if there
+  // are any.
+  const auto& forms = it->second;
+  if (forms.empty())
+    return false;
+
+  for (size_t i = 1; i < forms.size(); ++i)
+    password_store_->RemoveLogin(forms[i]);
+
+  // Note: We Invoke EditPassword on the presenter rather than UpdateLogin() on
+  // the store, so that observers of the presenter get notified of this event.
+  return saved_passwords_presenter_.EditPassword(
+      forms[0], base::UTF8ToUTF16(new_password));
+}
+
+bool PasswordCheckDelegate::RemoveCompromisedCredential(
+    const api::passwords_private::CompromisedCredential& credential) {
+  // Try to obtain the original CredentialWithPassword and try to find it in
+  // |credentials_to_forms_|. Return false if either one fails.
+  const CredentialWithPassword* compromised_credential =
+      FindMatchingCompromisedCredential(credential);
+  if (!compromised_credential)
+    return false;
+
+  auto it = credentials_to_forms_.find(*compromised_credential);
+  if (it == credentials_to_forms_.end())
+    return false;
+
+  // Erase all matching credentials from the store. Return whether any
+  // credentials were deleted.
+  SavedPasswordsView saved_passwords = it->second;
+  for (const autofill::PasswordForm& saved_password : saved_passwords)
+    password_store_->RemoveLogin(saved_password);
+
+  return !saved_passwords.empty();
 }
 
 void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
@@ -199,6 +248,26 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
     event_router->OnCompromisedCredentialsInfoChanged(
         GetCompromisedCredentialsInfo());
   }
+}
+
+const CredentialWithPassword*
+PasswordCheckDelegate::FindMatchingCompromisedCredential(
+    const api::passwords_private::CompromisedCredential& credential) const {
+  const CredentialWithPassword* compromised_credential =
+      compromised_credential_id_generator_.TryGetKey(credential.id);
+  if (!compromised_credential)
+    return nullptr;
+
+  if (credential.signon_realm != compromised_credential->signon_realm ||
+      credential.username !=
+          base::UTF16ToUTF8(compromised_credential->username) ||
+      (credential.password &&
+       *credential.password !=
+           base::UTF16ToUTF8(compromised_credential->password))) {
+    return nullptr;
+  }
+
+  return compromised_credential;
 }
 
 }  // namespace extensions

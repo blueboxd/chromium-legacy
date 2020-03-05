@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/color/color_buildflags.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 

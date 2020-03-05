@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                        LaunchAppOnline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
   crostini::CrostiniManager::GetForProfile(browser()->profile())
-      ->MaybeUpgradeCrostini();
+      ->MaybeUpdateCrostini();
 
   ExpectNoView();
 
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
   base::HistogramTester histogram_tester;
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   crostini::CrostiniManager::GetForProfile(browser()->profile())
-      ->MaybeUpgradeCrostini();
+      ->MaybeUpdateCrostini();
 
   ExpectNoView();
 

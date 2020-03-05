@@ -181,6 +181,51 @@ void ExpectInt64Argument(int64_t expected_int64, dbus::MessageReader* reader) {
   EXPECT_FALSE(reader->HasMoreData());
 }
 
+// Expect the reader to have an array of dictionary of string and variant
+// string.
+void ExpectArrayOfDictOfStringAndVariantStringArguments(
+    const std::map<std::string, std::string>& expected_dict,
+    dbus::MessageReader* reader) {
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(reader->PopArray(&array_reader));
+
+  dbus::MessageReader dict_entry_reader(nullptr);
+  for (auto& entry : expected_dict) {
+    EXPECT_TRUE(array_reader.HasMoreData());
+    ASSERT_TRUE(array_reader.PopDictEntry(&dict_entry_reader));
+
+    std::string key, value;
+    ASSERT_TRUE(dict_entry_reader.PopString(&key));
+    EXPECT_EQ(entry.first, key);
+    ASSERT_TRUE(dict_entry_reader.PopVariantOfString(&value));
+    EXPECT_EQ(entry.second, value);
+  }
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// Expect the reader to have an array of dictionary of string and variant
+// int64.
+void ExpectArrayOfDictOfStringAndVariantInt64Arguments(
+    const std::map<std::string, int64_t>& expected_dict,
+    dbus::MessageReader* reader) {
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(reader->PopArray(&array_reader));
+
+  dbus::MessageReader dict_entry_reader(nullptr);
+  for (auto& entry : expected_dict) {
+    EXPECT_TRUE(array_reader.HasMoreData());
+    ASSERT_TRUE(array_reader.PopDictEntry(&dict_entry_reader));
+
+    std::string key;
+    int64_t value;
+    ASSERT_TRUE(dict_entry_reader.PopString(&key));
+    EXPECT_EQ(entry.first, key);
+    ASSERT_TRUE(dict_entry_reader.PopVariantOfInt64(&value));
+    EXPECT_EQ(entry.second, value);
+  }
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
 void WriteNodesToResponse(const AudioNodeList& node_list,
                           dbus::MessageWriter* writer) {
   dbus::MessageWriter sub_writer(nullptr);
@@ -1171,6 +1216,47 @@ TEST_F(CrasAudioClientTest, SetPlayerPosition) {
 
   // Call method.
   client()->SetPlayerPosition(kPosition);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetPlayerDuration) {
+  const int64_t kDuration = 20200302;
+  const std::map<std::string, int64_t> kMetadata = {{"length", kDuration}};
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(
+      cras::kSetPlayerMetadata,
+      base::BindRepeating(&ExpectArrayOfDictOfStringAndVariantInt64Arguments,
+                          kMetadata),
+      response.get());
+
+  // Call method.
+  client()->SetPlayerDuration(kDuration);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetPlayerMetadata) {
+  const std::string kTitle = "Chrome Metadata Title";
+  const std::string kAlbum = "Chrome Metadata Album";
+  const std::string kArtist = "Chrome Metadata Artist";
+  const std::map<std::string, std::string> kMetadata = {
+      {"title", kTitle}, {"album", kAlbum}, {"artist", kArtist}};
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(
+      cras::kSetPlayerMetadata,
+      base::BindRepeating(&ExpectArrayOfDictOfStringAndVariantStringArguments,
+                          kMetadata),
+      response.get());
+
+  // Call method.
+  client()->SetPlayerMetadata(kMetadata);
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

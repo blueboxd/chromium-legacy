@@ -12,7 +12,7 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // A description of a cursor.
 struct Cursor {
   // The type of cursor. If kCustom, the rest of the fields are relevant.
-  CursorType native_type;
+  CursorType type;
 
   // The hotspot in pixels in the source cursor frames.
   gfx.mojom.Point hotspot;

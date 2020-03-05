@@ -206,11 +206,6 @@
       }
     ]
   },
-  "Chromium Mac Goma RBE Prod": {
-    "additional_compile_targets": [
-      "chrome"
-    ]
-  },
   "Chromium Mac Goma RBE Staging": {
     "additional_compile_targets": [
       "chrome"

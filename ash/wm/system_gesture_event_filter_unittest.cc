@@ -144,7 +144,7 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
 TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect bounds(0, 0, 600, 600);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -199,7 +199,7 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
 TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
   gfx::Rect bounds(250, 150, 100, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new MaxSizeWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -256,7 +256,7 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
 TEST_F(SystemGestureEventFilterTest, DISABLED_TwoFingerDragEdge) {
   gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -289,7 +289,7 @@ TEST_F(SystemGestureEventFilterTest, DISABLED_TwoFingerDragEdge) {
 TEST_F(SystemGestureEventFilterTest,
        TwoFingerAttemptResizeLeftAndRightEdgesSimultaneously) {
   gfx::Rect initial_bounds(0, 0, 400, 400);
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, CurrentContext(), initial_bounds);
   toplevel->Show();
 
@@ -316,7 +316,7 @@ TEST_F(SystemGestureEventFilterTest,
 TEST_F(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
   gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -352,7 +352,7 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
 TEST_F(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
   gfx::Rect bounds(0, 0, 200, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -390,7 +390,7 @@ TEST_F(SystemGestureEventFilterTest, ThreeFingerGestureStopsDrag) {
 TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   gfx::Rect bounds(200, 150, 400, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 
@@ -419,7 +419,7 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
 TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   gfx::Rect bounds(200, 150, 400, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* toplevel = views::Widget::CreateWindowWithContext(
       new ResizableWidgetDelegate, root_window, bounds);
   toplevel->Show();
 

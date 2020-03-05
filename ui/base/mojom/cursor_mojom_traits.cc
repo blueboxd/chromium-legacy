@@ -28,7 +28,7 @@ bool StructTraits<ui::mojom::CursorDataView, ui::Cursor>::Read(
     ui::mojom::CursorDataView data,
     ui::Cursor* out) {
   ui::mojom::CursorType type;
-  if (!data.ReadNativeType(&type))
+  if (!data.ReadType(&type))
     return false;
 
   if (type != ui::mojom::CursorType::kCustom) {

@@ -47,10 +47,18 @@ source_set("permissions") {
   ]
   if (is_android) {
     sources += [
+      "android/permission_dialog_delegate.cc",
+      "android/permission_dialog_delegate.h",
+      "android/permission_prompt_android.cc",
+      "android/permission_prompt_android.h",
       "android/resource_id.h",
       "android/theme_resources.h",
     ]
-    deps += [ "//components/permissions/android:jni" ]
+    deps += [
+      "//components/infobars/core",
+      "//components/permissions/android:jni",
+      "//ui/android",
+    ]
   }
 }
 

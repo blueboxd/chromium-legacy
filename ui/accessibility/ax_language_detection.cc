@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/i18n/unicodestring.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -35,15 +37,31 @@ const auto kShortTextIdentifierMaxByteLength = 1000;
 AXLanguageInfo::AXLanguageInfo() = default;
 AXLanguageInfo::~AXLanguageInfo() = default;
 
-AXLanguageInfoStats::AXLanguageInfoStats() : top_results_valid_(false) {}
+AXLanguageInfoStats::AXLanguageInfoStats()
+    : top_results_valid_(false),
+      disable_metric_clearing_(false),
+      count_detection_attempted_(0),
+      count_detection_results_(0),
+      count_labelled_(0),
+      count_labelled_with_top_result_(0),
+      count_overridden_(0) {}
+
 AXLanguageInfoStats::~AXLanguageInfoStats() = default;
 
 void AXLanguageInfoStats::Add(const std::vector<std::string>& languages) {
+  // Count this as a successful detection with results.
+  ++count_detection_results_;
+
   // Assign languages with higher probability a higher score.
   // TODO(chrishall): consider more complex scoring
   size_t score = kMaxDetectedLanguagesPerSpan;
   for (const auto& lang : languages) {
     lang_counts_[lang] += score;
+
+    // Record the highest scoring detected languages for each node.
+    if (score == kMaxDetectedLanguagesPerSpan)
+      unique_top_lang_detected_.insert(lang);
+
     --score;
   }
 
@@ -87,13 +105,97 @@ void AXLanguageInfoStats::GenerateTopResults() {
   // Since we store the pair as (score, language) the default operator> on pairs
   // does our sort appropriately.
   // Sort in descending order.
-  std::sort(top_results_.begin(), top_results_.end(),
-            std::greater<std::pair<unsigned int, std::string>>());
+  std::sort(top_results_.begin(), top_results_.end(), std::greater<>());
 
   // Resize down to remove all values greater than the N we are considering.
+  // TODO(chrishall): In the event of a tie, we want to include more than N.
   top_results_.resize(kMaxDetectedLanguagesPerPage);
 
   top_results_valid_ = true;
+}
+
+void AXLanguageInfoStats::RecordLabelStatistics(
+    std::string labelled_lang,
+    std::string author_lang,
+    bool labelled_with_first_result) {
+  // Count the number of nodes we labelled, and the number we labelled with
+  // our highest confidence result.
+  ++count_labelled_;
+
+  if (labelled_with_first_result)
+    ++count_labelled_with_top_result_;
+
+  // Record if we assigned a language that disagrees with the author
+  // provided language for that node.
+  if (author_lang != labelled_lang)
+    ++count_overridden_;
+}
+
+void AXLanguageInfoStats::RecordDetectionAttempt() {
+  ++count_detection_attempted_;
+}
+
+void AXLanguageInfoStats::ReportMetrics() {
+  // Only report statistics for pages which had detected results.
+  if (!count_detection_attempted_)
+    return;
+
+  // 50 buckets exponentially covering the range from 1 to 1000.
+  base::UmaHistogramCustomCounts(
+      "Accessibility.LanguageDetection.CountDetectionAttempted",
+      count_detection_attempted_, 1, 1000, 50);
+
+  int percentage_detected =
+      count_detection_results_ * 100 / count_detection_attempted_;
+  base::UmaHistogramPercentage(
+      "Accessibility.LanguageDetection.PercentageLanguageDetected",
+      percentage_detected);
+
+  // 50 buckets exponentially covering the range from 1 to 1000.
+  base::UmaHistogramCustomCounts(
+      "Accessibility.LanguageDetection.CountLabelled", count_labelled_, 1, 1000,
+      50);
+
+  // If no nodes were labelled, then the percentage labelled with the top result
+  // doesn't make sense to report.
+  if (count_labelled_) {
+    int percentage_top =
+        count_labelled_with_top_result_ * 100 / count_labelled_;
+    base::UmaHistogramPercentage(
+        "Accessibility.LanguageDetection.PercentageLabelledWithTop",
+        percentage_top);
+
+    int percentage_overridden = count_overridden_ * 100 / count_labelled_;
+    base::UmaHistogramPercentage(
+        "Accessibility.LanguageDetection.PercentageOverridden",
+        percentage_overridden);
+  }
+
+  // Exact count from 0 to 15, overflow is then truncated to 15.
+  base::UmaHistogramExactLinear("Accessibility.LanguageDetection.LangsPerPage",
+                                unique_top_lang_detected_.size(), 15);
+
+  // TODO(chrishall): Consider adding timing metrics for performance, consider:
+  //  - detect step.
+  //  - label step.
+  //  - total initial static detection & label timing.
+  //  - total incremental dynamic detection & label timing.
+
+  // Reset statistics for metrics.
+  ClearMetrics();
+}
+
+void AXLanguageInfoStats::ClearMetrics() {
+  // Do not clear metrics if we are specifically testing metrics.
+  if (disable_metric_clearing_)
+    return;
+
+  unique_top_lang_detected_.clear();
+  count_detection_attempted_ = 0;
+  count_detection_results_ = 0;
+  count_labelled_ = 0;
+  count_labelled_with_top_result_ = 0;
+  count_overridden_ = 0;
 }
 
 AXLanguageDetectionManager::AXLanguageDetectionManager(AXTree* tree)
@@ -150,6 +252,9 @@ void AXLanguageDetectionManager::DetectLanguagesForSubtree(
 // Will not descend into children.
 // Will not check feature flag.
 void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
+  // Count this detection attempt.
+  lang_info_stats_.RecordDetectionAttempt();
+
   // TODO(chrishall): implement strategy for nodes which are too small to get
   // reliable language detection results. Consider combination of
   // concatenation and bubbling up results.
@@ -204,6 +309,14 @@ void AXLanguageDetectionManager::LabelLanguages() {
   }
 
   LabelLanguagesForSubtree(tree_->root());
+
+  // TODO(chrishall): consider refactoring to have a more clearly named entry
+  // point for static language detection.
+  //
+  // LabelLanguages is only called for the initial run of language detection for
+  // static content, this call to ReportMetrics therefore covers only the work
+  // we performed in response to a page load complete event.
+  lang_info_stats_.ReportMetrics();
 }
 
 // Label languages for each node in the subtree rooted at the given
@@ -236,15 +349,32 @@ void AXLanguageDetectionManager::LabelLanguagesForNode(AXNode* node) {
   //
   // This helps guard against false positives for nodes which have noisy
   // language detection results in isolation.
+  //
+  // Note that we assign a language even if it is the same as the author's
+  // annotation. This may not be needed in practice. In theory this would help
+  // if the author later on changed the language annotation to be incorrect, but
+  // this seems unlikely to occur in practice.
+  //
+  // TODO(chrishall): consider optimisation: only assign language if it
+  // disagrees with author's language annotation.
+  bool labelled_with_first_result = true;
   for (const auto& lang : lang_info->detected_languages) {
     if (lang_info_stats_.CheckLanguageWithinTop(lang)) {
       lang_info->language = lang;
 
+      std::string author_lang = node->GetInheritedStringAttribute(
+          ax::mojom::StringAttribute::kLanguage);
+      lang_info_stats_.RecordLabelStatistics(lang, author_lang,
+                                             labelled_with_first_result);
+
       // After assigning a label we no longer need detected languages.
+      // NB: clearing this invalidates the reference `lang`, so we must do this
+      // last and then immediately return.
       lang_info->detected_languages.clear();
 
       return;
     }
+    labelled_with_first_result = false;
   }
 
   // If we didn't label a language, then we can discard all language detection
@@ -362,6 +492,11 @@ void AXLanguageDetectionObserver::OnAtomicUpdateFinished(
       tree->language_detection_manager->LabelLanguagesForNode(change.node);
     }
   }
+
+  // OnAtomicUpdateFinished is used for dynamic language detection, this call to
+  // ReportMetrics covers only the work we have performed in response to one
+  // update to the AXTree.
+  tree->language_detection_manager->lang_info_stats_.ReportMetrics();
 }
 
 }  // namespace ui

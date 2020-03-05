@@ -12,24 +12,19 @@
     outline-width: 0;
   }
 
+  ntp-untrusted-iframe {
+    pointer-events: none;
+  }
+
   :host-context(.focus-outline-visible) .tile:focus {
     box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
   }
 
   .image {
-    border: none;
     border-radius: 4px;
     display: block;
     height: 176px;
     width: 176px;
-  }
-
-  /* TODO(crbug.com/1032328): This rule makes the URL somewhat readable. Remove
-   * once we show the actual image. */
-  .image {
-    background-color: var(--ntp-active-background-color);
-    color: var(--ntp-primary-text-color);
-    word-break: break-all;
   }
 
   .label {
@@ -44,8 +39,9 @@
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button"
         on-click="onCollectionClick_">
-        <!-- TODO(crbug.com/1032328): Show image in an iframe. -->
-        <div class="image">[[item.previewImageUrl.url]]</div>
+        <ntp-untrusted-iframe class="image"
+            path="image?[[item.previewImageUrl.url]]">
+        </ntp-untrusted-iframe>
         <div class="label">[[item.label]]</div>
       </div>
     </template>
@@ -55,8 +51,9 @@
   <dom-repeat items="[[images_]]">
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button">
-        <!-- TODO(crbug.com/1032328): Show image in an iframe. -->
-        <div class="image">[[item.previewImageUrl.url]]</div>
+        <ntp-untrusted-iframe class="image"
+            path="image?[[item.previewImageUrl.url]]">
+        </ntp-untrusted-iframe>
       </div>
     </template>
   </dom-repeat>

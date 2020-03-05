@@ -33,6 +33,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -475,6 +476,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
     ::onc::RegisterProfilePrefs(user_prefs_.registry());
     ::onc::RegisterPrefs(local_state_.registry());
+    chromeos::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
+    chromeos::NetworkMetadataStore::RegisterPrefs(local_state_.registry());
 
     chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
                                                             &local_state_);

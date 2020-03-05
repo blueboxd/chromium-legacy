@@ -287,7 +287,8 @@ void ExtensionSpecialStoragePolicy::NotifyGranted(
                                   this, origin, change_flags));
     return;
   }
-  SpecialStoragePolicy::NotifyGranted(origin, change_flags);
+  SpecialStoragePolicy::NotifyGranted(url::Origin::Create(origin),
+                                      change_flags);
 }
 
 void ExtensionSpecialStoragePolicy::NotifyRevoked(
@@ -299,7 +300,8 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
                                   this, origin, change_flags));
     return;
   }
-  SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
+  SpecialStoragePolicy::NotifyRevoked(url::Origin::Create(origin),
+                                      change_flags);
 }
 
 void ExtensionSpecialStoragePolicy::NotifyCleared() {

@@ -78,8 +78,8 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
 
   const url::Origin origin_;
   const Usage usage_;
-  FilePathListModel writable_paths_model_;
   FilePathListModel readable_paths_model_;
+  FilePathListModel writable_paths_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemUsageBubbleView);
 };

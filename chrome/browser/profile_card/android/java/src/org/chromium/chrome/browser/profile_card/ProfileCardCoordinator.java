@@ -11,9 +11,9 @@ public interface ProfileCardCoordinator {
     /**
      * Initiates the profile card coordinator.
      * @param view {@link View} triggers the profile card.
-     * @param profileCardData {@link ProfileCardData} stores all data needed by profile card.
+     * @param CreatorMetadata {@link CreatorMetadata} stores all data needed by profile card.
      */
-    void init(View view, ProfileCardData profileCardData);
+    void init(View view, CreatorMetadata creatorMetadata);
 
     /**
      * Shows the profile card.

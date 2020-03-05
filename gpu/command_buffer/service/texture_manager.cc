@@ -367,7 +367,7 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
   }
 
   if (internal_format == GL_RGB10_A2_EXT &&
-      (feature_info->feature_flags().chromium_image_xr30 ||
+      (feature_info->feature_flags().chromium_image_ar30 ||
        feature_info->feature_flags().chromium_image_ab30)) {
     return true;
   }

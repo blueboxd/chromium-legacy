@@ -55,6 +55,10 @@ bool VectorContentsEq(const std::vector<T>& list1,
   return true;
 }
 
+MATCHER_P(OpenParamsEqual, params, "") {
+  return arg.launch_location == params.launch_location;
+}
+
 // Helper class that automatically unregisters itself from the aggregator in the
 // case that someone calls OpenItem on it.
 class OpenItemRemovalOfflineContentProvider
@@ -65,8 +69,8 @@ class OpenItemRemovalOfflineContentProvider
       : ScopedMockOfflineContentProvider(name_space, aggregator) {}
   ~OpenItemRemovalOfflineContentProvider() override {}
 
-  void OpenItem(LaunchLocation location, const ContentId& id) override {
-    ScopedMockOfflineContentProvider::OpenItem(location, id);
+  void OpenItem(const OpenParams& open_params, const ContentId& id) override {
+    ScopedMockOfflineContentProvider::OpenItem(open_params, id);
     Unregister();
   }
 };
@@ -177,8 +181,14 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   testing::InSequence sequence;
   ContentId id1("1", "A");
   ContentId id2("2", "B");
-  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
-  EXPECT_CALL(provider2, OpenItem(LaunchLocation::NOTIFICATION, id2)).Times(1);
+  EXPECT_CALL(
+      provider1,
+      OpenItem(OpenParamsEqual(OpenParams(LaunchLocation::DOWNLOAD_HOME)), id1))
+      .Times(1);
+  EXPECT_CALL(
+      provider2,
+      OpenItem(OpenParamsEqual(OpenParams(LaunchLocation::NOTIFICATION)), id2))
+      .Times(1);
   EXPECT_CALL(provider1, RemoveItem(id1)).Times(1);
   EXPECT_CALL(provider2, RemoveItem(id2)).Times(1);
   EXPECT_CALL(provider1, CancelDownload(id1)).Times(1);
@@ -191,8 +201,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   EXPECT_CALL(provider2, GetVisualsForItem_(id2, _, _)).Times(1);
   EXPECT_CALL(provider1, GetShareInfoForItem(id1, _)).Times(1);
   EXPECT_CALL(provider2, GetShareInfoForItem(id2, _)).Times(1);
-  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
-  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::DOWNLOAD_HOME), id1);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::NOTIFICATION), id2);
   aggregator_.RemoveItem(id1);
   aggregator_.RemoveItem(id2);
   aggregator_.CancelDownload(id1);
@@ -220,14 +230,20 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesImmediately) {
   testing::InSequence sequence;
   EXPECT_CALL(provider1, PauseDownload(id1)).Times(1);
   EXPECT_CALL(provider1, ResumeDownload(id1, true)).Times(1);
-  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
-  EXPECT_CALL(provider2, OpenItem(LaunchLocation::NOTIFICATION, id2)).Times(1);
+  EXPECT_CALL(
+      provider1,
+      OpenItem(OpenParamsEqual(OpenParams(LaunchLocation::DOWNLOAD_HOME)), id1))
+      .Times(1);
+  EXPECT_CALL(
+      provider2,
+      OpenItem(OpenParamsEqual(OpenParams(LaunchLocation::NOTIFICATION)), id2))
+      .Times(1);
   EXPECT_CALL(provider2, RemoveItem(id3)).Times(1);
 
   aggregator_.PauseDownload(id1);
   aggregator_.ResumeDownload(id1, true);
-  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
-  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::DOWNLOAD_HOME), id1);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::NOTIFICATION), id2);
   aggregator_.RemoveItem(id3);
 }
 
@@ -302,11 +318,14 @@ TEST_F(OfflineContentAggregatorTest, ProviderRemovedDuringCallbackFlush) {
   ContentId id1("1", "A");
   ContentId id2("1", "B");
 
-  EXPECT_CALL(provider1, OpenItem(LaunchLocation::DOWNLOAD_HOME, id1)).Times(1);
+  EXPECT_CALL(
+      provider1,
+      OpenItem(OpenParamsEqual(OpenParams(LaunchLocation::DOWNLOAD_HOME)), id1))
+      .Times(1);
   EXPECT_CALL(provider1, RemoveItem(id2)).Times(0);
 
-  aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
-  aggregator_.OpenItem(LaunchLocation::NOTIFICATION, id2);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::DOWNLOAD_HOME), id1);
+  aggregator_.OpenItem(OpenParams(LaunchLocation::NOTIFICATION), id2);
   aggregator_.RemoveItem(id2);
 }
 

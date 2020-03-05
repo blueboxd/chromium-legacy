@@ -29,7 +29,7 @@ public interface OfflineContentProvider {
     }
 
     /** See OfflineContentProvider::OpenItem(...). */
-    void openItem(@LaunchLocation int location, ContentId id);
+    void openItem(OpenParams openParams, ContentId id);
 
     /** See OfflineContentProvider::RemoveItem(...). */
     void removeItem(ContentId id);

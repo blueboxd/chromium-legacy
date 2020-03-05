@@ -131,9 +131,12 @@ void OfflineContentAggregatorBridge::OpenItem(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
     jint launch_location,
+    jboolean j_open_in_incognito,
     const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jstring>& j_id) {
-  provider_->OpenItem(static_cast<LaunchLocation>(launch_location),
+  OpenParams open_params(static_cast<LaunchLocation>(launch_location));
+  open_params.open_in_incognito = j_open_in_incognito;
+  provider_->OpenItem(open_params,
                       JNI_OfflineContentAggregatorBridge_CreateContentId(
                           env, j_namespace, j_id));
 }

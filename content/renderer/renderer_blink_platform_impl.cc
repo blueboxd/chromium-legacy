@@ -848,18 +848,6 @@ blink::WebString RendererBlinkPlatformImpl::ConvertIDNToUnicode(
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::RecordRappor(const char* metric,
-                                             const blink::WebString& sample) {
-  GetContentClient()->renderer()->RecordRappor(metric, sample.Utf8());
-}
-
-void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
-                                                const blink::WebURL& url) {
-  GetContentClient()->renderer()->RecordRapporURL(metric, url);
-}
-
-//------------------------------------------------------------------------------
-
 std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
 RendererBlinkPlatformImpl::CreateDedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,

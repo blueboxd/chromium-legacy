@@ -27,9 +27,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_recorder_impl.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -136,9 +133,6 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
-  registry->AddInterface(base::Bind(&rappor::RapporRecorderImpl::Create,
-                                    g_browser_process->rappor_service()),
-                         ui_task_runner);
   registry->AddInterface(
       base::BindRepeating(&metrics::CallStackProfileCollector::Create));
 

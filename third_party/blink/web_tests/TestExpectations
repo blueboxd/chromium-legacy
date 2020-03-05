@@ -6729,8 +6729,6 @@ crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.h
 crbug.com/v8/10200 external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-job-queue/promise-job-entry-different-function-realm.html [ Skip ]
 
 # Sheriff 2020-02-28
-crbug.com/1057036 [ Mac ] virtual/controls-refresh/calendar-picker/date-picker-ax.html [ Pass Timeout ]
-crbug.com/1057036 [ Mac ] virtual/controls-refresh/week-picker/week-picker-ax.html [ Pass Timeout ]
 crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtools/oopif/oopif-storage.js [ Pass Timeout ]
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]

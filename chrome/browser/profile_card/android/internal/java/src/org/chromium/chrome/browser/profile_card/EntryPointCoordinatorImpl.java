@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.profile_card;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.View;
+
+import org.chromium.content_public.browser.NavigationHandle;
 
 /**
  * Implements EntryPointCoordinator.
@@ -14,15 +15,13 @@ import android.view.View;
  * Initiates and shows the profile card.
  */
 public class EntryPointCoordinatorImpl implements EntryPointCoordinator {
-    private Bitmap mImageBitmap;
     private EntryPointView mView;
     private ProfileCardCoordinatorImpl mProfileCardCoordinator;
+    private CreatorMetadata mCreatorMetadata;
 
     @Override
-    public void init(Context context, Bitmap bitmap) {
+    public void init(Context context) {
         mView = new EntryPointView(context);
-        mImageBitmap = bitmap;
-        mView.setIconBitmap(mImageBitmap);
         mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -32,8 +31,14 @@ public class EntryPointCoordinatorImpl implements EntryPointCoordinator {
     }
 
     @Override
-    public void show() {
-        mView.setVisibility(true);
+    public void maybeShow(NavigationHandle navigationHandle) {
+        if (!ProfileCardUtil.shouldShowEntryPoint()) return;
+        ProfileCardUtil.getCreatorMetaData(data -> {
+            if (data != null) {
+                mCreatorMetadata = data;
+                mView.setVisibility(true);
+            }
+        }, navigationHandle);
     }
 
     @Override
@@ -42,7 +47,7 @@ public class EntryPointCoordinatorImpl implements EntryPointCoordinator {
     }
 
     void showProfileCard() {
-        mProfileCardCoordinator.init(mView, ProfileCardUtil.getProfileCardData());
+        mProfileCardCoordinator.init(mView, mCreatorMetadata);
         mProfileCardCoordinator.show();
     }
 }

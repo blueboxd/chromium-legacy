@@ -9,6 +9,7 @@
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -26,6 +27,8 @@ NetworkTestHelper::NetworkTestHelper()
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
   ::onc::RegisterProfilePrefs(user_prefs_.registry());
   ::onc::RegisterPrefs(local_state_.registry());
+  NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
+  NetworkMetadataStore::RegisterPrefs(local_state_.registry());
 
   network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
   network_configuration_handler_ =
@@ -65,6 +68,7 @@ NetworkTestHelper::~NetworkTestHelper() {
 
 void NetworkTestHelper::SetUp() {
   NetworkHandler::Initialize();
+  NetworkHandler::Get()->InitializePrefServices(&user_prefs_, &local_state_);
   network_state_helper_->ResetDevicesAndServices();
 
   base::RunLoop().RunUntilIdle();
@@ -87,6 +91,10 @@ void NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
       ssid.c_str(), ssid.c_str(), security_entry.c_str(),
       profile_entry.c_str()));
   base::RunLoop().RunUntilIdle();
+}
+
+NetworkStateTestHelper* NetworkTestHelper::network_state_test_helper() {
+  return network_state_helper_.get();
 }
 
 }  // namespace sync_wifi

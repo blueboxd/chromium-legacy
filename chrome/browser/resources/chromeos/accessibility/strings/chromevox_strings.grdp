@@ -3699,5 +3699,8 @@
   <message desc="Title displayed in the panel for the form controls node menu." name="IDS_CHROMEVOX_PANEL_MENU_FORM_CONTROLS">
     Form Controls
   </message>
+  <message desc="Announced to alert the user that ChromeVox has no current focus." name="IDS_CHROMEVOX_NO_FOCUS">
+    No current ChromeVox focus. Press Alt+Shift+L to go to the launcher.
+  </message>
 
 </grit-part>

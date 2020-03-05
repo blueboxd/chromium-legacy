@@ -386,26 +386,6 @@ def goma_builder(*, name, builderless=False, os=os.LINUX_DEFAULT, **kwargs):
   )
 
 goma_builder(
-    name = 'Chromium Android ARM 32-bit Goma RBE Prod',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Android ARM 32-bit Goma RBE Prod (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Android ARM 32-bit Goma RBE Prod (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Android ARM 32-bit Goma RBE Prod (dbg) (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE Staging',
     goma_backend = goma.backend.RBE_STAGING,
 )
@@ -420,26 +400,6 @@ goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT (ATS)',
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
-)
-
-goma_builder(
-    name = 'Chromium Linux Goma RBE Prod',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Linux Goma RBE Prod (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Linux Goma RBE Prod (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'Chromium Linux Goma RBE Prod (dbg) (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 goma_builder(
@@ -489,11 +449,6 @@ def goma_mac_builder(*, name, **kwargs):
   )
 
 goma_mac_builder(
-    name = 'Chromium Mac Goma RBE Prod',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_mac_builder(
     name = 'Chromium Mac Goma RBE Staging',
     goma_backend = goma.backend.RBE_STAGING,
 )
@@ -526,26 +481,6 @@ def goma_windows_builder(*, name, goma_enable_ats=True, cores=32, **kwargs):
       os = os.WINDOWS_DEFAULT,
       **kwargs
   )
-
-goma_windows_builder(
-    name = 'Chromium Win Goma RBE Prod',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_windows_builder(
-    name = 'Chromium Win Goma RBE Prod (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_windows_builder(
-    name = 'Chromium Win Goma RBE Prod (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_windows_builder(
-    name = 'Chromium Win Goma RBE Prod (dbg) (clobber)',
-    goma_backend = goma.backend.RBE_PROD,
-)
 
 goma_windows_builder(
     name = 'Chromium Win Goma RBE Staging',

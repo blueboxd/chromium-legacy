@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
@@ -1469,10 +1468,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void PlatformColorsChanged();
 
-  HostsUsingFeatures::Value& HostsUsingFeaturesValue() {
-    return hosts_using_features_value_;
-  }
-
   NthIndexCache* GetNthIndexCache() const { return nth_index_cache_; }
 
   CanvasFontCache* GetCanvasFontCache();
@@ -2204,8 +2199,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool has_viewport_units_;
 
   ParserSynchronizationPolicy parser_sync_policy_;
-
-  HostsUsingFeatures::Value hosts_using_features_value_;
 
   Member<CanvasFontCache> canvas_font_cache_;
 

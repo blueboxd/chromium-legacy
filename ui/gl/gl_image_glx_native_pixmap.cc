@@ -24,7 +24,7 @@ int Depth(gfx::BufferFormat format) {
       return 16;
     case gfx::BufferFormat::BGRX_8888:
       return 24;
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       // It's unclear why this is 32 instead of 30.
       return 32;
     case gfx::BufferFormat::BGRA_8888:
@@ -40,7 +40,7 @@ int Bpp(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGR_565:
       return 16;
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
     case gfx::BufferFormat::BGRA_8888:
       return 32;
     default:

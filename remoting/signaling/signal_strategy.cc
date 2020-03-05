@@ -17,4 +17,8 @@ bool SignalStrategy::IsSignInError() const {
   return false;
 }
 
+const SignalingTracker& SignalStrategy::signaling_tracker() const {
+  return signaling_tracker_;
+}
+
 }  // namespace remoting

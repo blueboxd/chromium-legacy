@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -124,6 +125,17 @@ class PasswordsPrivateDelegate : public KeyedService {
       api::passwords_private::PlaintextReason reason,
       content::WebContents* web_contents,
       PlaintextCompromisedPasswordCallback callback) = 0;
+
+  // Attempts to change the stored password of |credential| to |new_password|.
+  // Returns whether the change succeeded.
+  virtual bool ChangeCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential,
+      base::StringPiece new_password) = 0;
+
+  // Attempts to remove |credential| from the password store. Returns whether
+  // the remove succeeded.
+  virtual bool RemoveCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential) = 0;
 };
 
 }  // namespace extensions

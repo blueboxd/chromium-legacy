@@ -69,7 +69,8 @@ public class TabUiFeatureUtilities {
         }
         return Arrays.asList(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                 ChromeFeatureList.TAB_GROUPS_ANDROID,
-                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID);
+                ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID,
+                ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
     }
 
     private static boolean isEligibleForTabUiExperiments() {
@@ -86,7 +87,7 @@ public class TabUiFeatureUtilities {
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
         // Having Tab Groups or Start implies Grid Tab Switcher.
-        return !(ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+        return !(CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
                        && SysUtils.isLowEndDevice())
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
                 && isTabManagementModuleSupported()
@@ -115,7 +116,7 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isTabGroupsAndroidContinuationEnabled() {
         return isTabGroupsAndroidEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
     }
 
     /**

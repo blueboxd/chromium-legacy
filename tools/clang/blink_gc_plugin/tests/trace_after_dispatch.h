@@ -10,15 +10,16 @@
 namespace blink {
 
 class A : public GarbageCollected<A> {
-public:
-    void Trace(Visitor*);
-    void TraceAfterDispatch(Visitor*) const;
+ public:
+  void Trace(Visitor*) const;
+  void TraceAfterDispatch(Visitor*) const;
 
-   protected:
-    enum Type { TB, TC, TD };
-    A(Type type) : m_type(type) { }
-private:
-    Type m_type;
+ protected:
+  enum Type { TB, TC, TD };
+  A(Type type) : m_type(type) {}
+
+ private:
+  Type m_type;
 };
 
 class B : public A {

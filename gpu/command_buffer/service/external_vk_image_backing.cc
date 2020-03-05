@@ -74,7 +74,7 @@ static const struct {
     {GL_RGBA, GL_UNSIGNED_BYTE, 4},                // RGBX_8888
     {GL_BGRA, GL_UNSIGNED_BYTE, 4},                // BGRX_8888
     {GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // RGBA_1010102
-    {GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // BGRX_1010102
+    {GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // BGRA_1010102
     {GL_ZERO, GL_ZERO, 0},                         // YVU_420
     {GL_ZERO, GL_ZERO, 0},                         // YUV_420_BIPLANAR
     {GL_ZERO, GL_ZERO, 0},                         // P010

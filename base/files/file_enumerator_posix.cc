@@ -100,12 +100,26 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
                                int file_type,
                                const FilePath::StringType& pattern,
                                FolderSearchPolicy folder_search_policy)
+    : FileEnumerator(root_path,
+                     recursive,
+                     file_type,
+                     pattern,
+                     folder_search_policy,
+                     ErrorPolicy::IGNORE_ERRORS) {}
+
+FileEnumerator::FileEnumerator(const FilePath& root_path,
+                               bool recursive,
+                               int file_type,
+                               const FilePath::StringType& pattern,
+                               FolderSearchPolicy folder_search_policy,
+                               ErrorPolicy error_policy)
     : current_directory_entry_(0),
       root_path_(root_path),
       recursive_(recursive),
       file_type_(file_type),
       pattern_(pattern),
-      folder_search_policy_(folder_search_policy) {
+      folder_search_policy_(folder_search_policy),
+      error_policy_(error_policy) {
   // INCLUDE_DOT_DOT must not be specified if recursive.
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
 
@@ -135,8 +149,12 @@ FilePath FileEnumerator::Next() {
     pending_paths_.pop();
 
     DIR* dir = opendir(root_path_.value().c_str());
-    if (!dir)
-      continue;
+    if (!dir) {
+      if (errno == 0 || error_policy_ == ErrorPolicy::IGNORE_ERRORS)
+        continue;
+      error_ = File::OSErrorToFileError(errno);
+      return FilePath();
+    }
 
     directory_entries_.clear();
 
@@ -157,7 +175,11 @@ FilePath FileEnumerator::Next() {
 
     current_directory_entry_ = 0;
     struct dirent* dent;
-    while ((dent = readdir(dir))) {
+    // NOTE: Per the readdir() documentation, when the end of the directory is
+    // reached with no errors, null is returned and errno is not changed.
+    // Therefore we must reset errno to zero before calling readdir() if we
+    // wish to know whether a null result indicates an error condition.
+    while (errno = 0, dent = readdir(dir)) {
       FileInfo info;
       info.filename_ = FilePath(dent->d_name);
 
@@ -195,7 +217,12 @@ FilePath FileEnumerator::Next() {
       if (is_pattern_matched && IsTypeMatched(is_dir))
         directory_entries_.push_back(std::move(info));
     }
+    int readdir_errno = errno;
     closedir(dir);
+    if (readdir_errno != 0 && error_policy_ != ErrorPolicy::IGNORE_ERRORS) {
+      error_ = File::OSErrorToFileError(readdir_errno);
+      return FilePath();
+    }
 
     // MATCH_ONLY policy enumerates files in matched subfolders by "*" pattern.
     // ALL policy enumerates files in all subfolders by origin pattern.

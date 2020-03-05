@@ -270,6 +270,12 @@ CommandHandler.onCommand = function(command) {
 
   // Require a current range.
   if (!ChromeVoxState.instance.currentRange_) {
+    if (!ChromeVoxState.instance.talkBackEnabled) {
+      new Output()
+          .withString(Msgs.getMsg('no_focus'))
+          .withQueueMode(QueueMode.FLUSH)
+          .go();
+    }
     return true;
   }
 

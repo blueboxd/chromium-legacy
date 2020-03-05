@@ -2149,11 +2149,6 @@
       },
       # Due to disk shortage on Mac, we build 'chrome' instead of 'all'.
       # See crbug.com/899425
-      'Chromium Mac Goma RBE Prod': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-      },
       'Chromium Mac Goma RBE Staging': {
         'additional_compile_targets': [
           'chrome',

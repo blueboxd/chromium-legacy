@@ -328,7 +328,6 @@ void Page::DocumentDetached(Document* document) {
   context_menu_controller_->DocumentDetached(document);
   if (validation_message_client_)
     validation_message_client_->DocumentDetached(*document);
-  hosts_using_features_.DocumentDetached(*document);
 
   if (agent_metrics_collector_)
     agent_metrics_collector_->DidDetachDocument(*document);
@@ -848,7 +847,6 @@ void Page::DidCommitLoad(LocalFrame* frame) {
                                         mojom::blink::ScrollType::kProgrammatic,
                                         mojom::blink::ScrollBehavior::kInstant,
                                         ScrollableArea::ScrollCallback());
-    hosts_using_features_.UpdateMeasurementsAndClear();
     // Update |has_related_pages_| as features are reset after navigation.
     UpdateHasRelatedPages();
   }

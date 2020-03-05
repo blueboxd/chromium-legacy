@@ -152,7 +152,7 @@ void RegisterFileHandlersWithOsTask(
     const std::set<base::string16>& file_extensions,
     const base::string16& app_name_extension) {
   base::FilePath web_app_path =
-      GetWebAppDataDirectory(profile_path, app_id, GURL());
+      GetOsIntegrationResourcesDirectoryForApp(profile_path, app_id, GURL());
   base::string16 utf16_app_name = base::UTF8ToUTF16(app_name);
   base::FilePath icon_path =
       internals::GetIconFilePath(web_app_path, utf16_app_name);

@@ -68,6 +68,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_install_gate.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
+#include "chrome/browser/chromeos/extensions/extensions_permissions_tracker.h"
 #include "chrome/browser/chromeos/extensions/signin_screen_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -237,6 +238,19 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 #if defined(OS_CHROMEOS)
     if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile_))
       info_map()->SetIsLockScreenContext(true);
+
+    // This class is used to check the permissions of the force-installed
+    // extensions inside the managed-guest session. It updates the local state
+    // perf with the result, a boolean value deciding whether the full warning
+    // or the normal one should be displayed. The next time on the login screen
+    // of the managed-guest sessions the warning will be decided according to
+    // the value saved from the last session.
+    if (chromeos::LoginState::IsInitialized() &&
+        chromeos::LoginState::Get()->IsPublicSessionUser() &&
+        !chromeos::LoginState::Get()->ArePublicSessionRestrictionsEnabled()) {
+      extensions_permissions_tracker_.reset(new ExtensionsPermissionsTracker(
+          ExtensionRegistry::Get(profile_), profile_));
+    }
 #endif
     management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();

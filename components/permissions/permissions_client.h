@@ -6,11 +6,17 @@
 #define COMPONENTS_PERMISSIONS_PERMISSIONS_CLIENT_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 class GURL;
 class HostContentSettingsMap;
@@ -20,14 +26,23 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace infobars {
+class InfoBar;
+class InfoBarManager;
+}  // namespace infobars
+
 namespace permissions {
 class NotificationPermissionUiSelector;
 class PermissionDecisionAutoBlocker;
+class PermissionPromptAndroid;
 
 // Interface to be implemented by permissions embedder to access embedder
 // specific logic.
 class PermissionsClient {
  public:
+  PermissionsClient(const PermissionsClient&) = delete;
+  PermissionsClient& operator=(const PermissionsClient&) = delete;
+
   PermissionsClient();
   virtual ~PermissionsClient();
 
@@ -89,9 +104,28 @@ class PermissionsClient {
   virtual bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                              const GURL& embedding_origin);
 
- private:
-  PermissionsClient(const PermissionsClient&) = delete;
-  PermissionsClient& operator=(const PermissionsClient&) = delete;
+#if defined(OS_ANDROID)
+  // Retrieves the InfoBarManager for the web contents. The returned
+  // pointer has the same lifetime as |web_contents|.
+  virtual infobars::InfoBarManager* GetInfoBarManager(
+      content::WebContents* web_contents);
+
+  // Allows the embedder to create an info bar to use as the permission prompt.
+  // Might return null based on internal logic (e.g. |type| does not support
+  // infobar permission prompts). The returned infobar is owned by the info bar
+  // manager.
+  virtual infobars::InfoBar* MaybeCreateInfoBar(
+      content::WebContents* web_contents,
+      ContentSettingsType type,
+      base::WeakPtr<PermissionPromptAndroid> prompt);
+
+  // Returns a handle to the Java counterpart of this class.
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Converts the given chromium |resource_id| (e.g. IDR_INFOBAR_TRANSLATE) to
+  // an Android drawable resource ID. Returns 0 if a mapping wasn't found.
+  virtual int MapToJavaDrawableId(int resource_id);
+#endif
 };
 
 }  // namespace permissions

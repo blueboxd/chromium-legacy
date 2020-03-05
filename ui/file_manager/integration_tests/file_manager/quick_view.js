@@ -1391,15 +1391,10 @@
   };
 
   /**
-   * Tests close/open metadata info via Enter key.
+   * Tests that the metadatabox can be toggled opened/closed by pressing the
+   * Enter key on the Quick View toolbar info button.
    */
-  testcase.pressEnterOnInfoBoxToOpenClose = async () => {
-    const infoButton = ['#quick-view', '#metadata-button'];
-    const key = [infoButton, 'Enter', false, false, false];
-    const infoShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
-    const infoHidden =
-        ['#quick-view', '#contentPanel:not([metadata-box-active])'];
-
+  testcase.openQuickViewToggleInfoButtonKeyboard = async () => {
     // Open Files app on Downloads containing ENTRIES.hello.
     const appId =
         await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
@@ -1407,20 +1402,65 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
 
-    // Press Enter on info button to close metadata box.
+    // Check: the metadatabox should be open.
+    const metaShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
+    await remoteCall.waitForElement(appId, metaShown);
+
+    // The toolbar info button query differs in files-ng.
+    const quickView = await remoteCall.waitForElement(appId, ['#quick-view']);
+    let infoButton = ['#quick-view', '#metadata-button'];
+    if (quickView.attributes['files-ng'] !== undefined) {
+      infoButton = ['#quick-view', '#info-button'];
+    }
+
+    // Press Enter key on the info button.
+    const key = [infoButton, 'Enter', false, false, false];
     await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
 
-    // Info should be hidden.
-    await remoteCall.waitForElement(appId, infoHidden);
+    // Check: the metadatabox should close.
+    await remoteCall.waitForElementLost(appId, metaShown);
 
-    // Press Enter on info button to open metadata box.
+    // Press Enter key on the info button.
     await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
 
-    // Info should be shown.
-    await remoteCall.waitForElement(appId, infoShown);
+    // Check: the metadatabox should open.
+    await remoteCall.waitForElement(appId, metaShown);
+  };
 
-    // Close Quick View.
-    await closeQuickView(appId);
+  /**
+   * Tests that the metadatabox can be toggled opened/closed by clicking the
+   * the Quick View toolbar info button.
+   */
+  testcase.openQuickViewToggleInfoButtonClick = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Check: the metadatabox should be open.
+    const metaShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
+    await remoteCall.waitForElement(appId, metaShown);
+
+    // The toolbar info button query differs in files-ng.
+    const quickView = await remoteCall.waitForElement(appId, ['#quick-view']);
+    let infoButton = ['#quick-view', '#metadata-button'];
+    if (quickView.attributes['files-ng'] !== undefined) {
+      infoButton = ['#quick-view', '#info-button'];
+    }
+
+    // Click the info button.
+    await remoteCall.waitAndClickElement(appId, infoButton);
+
+    // Check: the metadatabox should close.
+    await remoteCall.waitForElementLost(appId, metaShown);
+
+    // Click the info button.
+    await remoteCall.waitAndClickElement(appId, infoButton);
+
+    // Check: the metadatabox should open.
+    await remoteCall.waitForElement(appId, metaShown);
   };
 
   /**

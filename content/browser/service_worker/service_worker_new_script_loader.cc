@@ -136,7 +136,20 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   network_loader_state_ = LoaderState::kLoadingHeader;
 }
 
-ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;
+ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() {
+  // This class is used as a SelfOwnedReceiver and its lifetime is tied to the
+  // corresponding mojo connection. There could be cases where the mojo
+  // connection is disconnected while writing the response to the storage.
+  // Complete this loader with ERR_FAILED in such cases to update the script
+  // cache map.
+  bool writers_completed = header_writer_state_ == WriterState::kCompleted &&
+                           body_writer_state_ == WriterState::kCompleted;
+  if (network_loader_state_ == LoaderState::kCompleted && !writers_completed) {
+    DCHECK(client_);
+    CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
+                    ServiceWorkerConsts::kServiceWorkerInvalidVersionError);
+  }
+}
 
 void ServiceWorkerNewScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,

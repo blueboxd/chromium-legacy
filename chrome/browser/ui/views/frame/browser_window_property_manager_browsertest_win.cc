@@ -130,8 +130,9 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
   prop_var.Reset();
 
   // The app icon should be set to the extension app icon.
-  base::FilePath web_app_dir = web_app::GetWebAppDataDirectory(
-      browser->profile()->GetPath(), extension->id(), GURL());
+  base::FilePath web_app_dir =
+      web_app::GetOsIntegrationResourcesDirectoryForApp(
+          browser->profile()->GetPath(), extension->id(), GURL());
   EXPECT_EQ(S_OK,
             pps->GetValue(PKEY_AppUserModel_RelaunchIconResource,
                           prop_var.Receive()));

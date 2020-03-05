@@ -484,7 +484,7 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
 // top container's widget is inactive.
 TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
   // Set up initial state.
-  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContext(
       nullptr, CurrentContext(), gfx::Rect(0, 0, 200, 200));
   popup_widget->Show();
   ASSERT_FALSE(top_container()->GetWidget()->IsActive());
@@ -608,7 +608,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
 
   // Test that it is possible to reveal the top-of-window views by overshooting
   // the top edge slightly when the top container's widget is not active.
-  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContext(
       nullptr, CurrentContext(), gfx::Rect(0, 200, 100, 100));
   popup_widget->Show();
   ASSERT_FALSE(top_container()->GetWidget()->IsActive());

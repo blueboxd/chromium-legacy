@@ -659,7 +659,7 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 }
 
 void BackgroundFetchDelegateImpl::OpenItem(
-    offline_items_collection::LaunchLocation location,
+    const offline_items_collection::OpenParams& open_params,
     const offline_items_collection::ContentId& id) {
   auto job_details_iter = job_details_map_.find(id.id);
   if (job_details_iter == job_details_map_.end())

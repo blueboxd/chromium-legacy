@@ -211,16 +211,9 @@ void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     SelectCacheWithoutManifest();
     return;
   }
-  if (document->IsSecureContext()) {
-    Deprecation::CountDeprecation(
-        document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::
-                       kApplicationCacheManifestSelectInsecureHost);
-  }
+  CHECK(document->IsSecureContext());
+  Deprecation::CountDeprecation(
+      document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
 
   if (!backend_host_.is_bound())
     return;

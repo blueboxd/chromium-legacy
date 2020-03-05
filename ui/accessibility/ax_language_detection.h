@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -98,6 +99,9 @@ struct AX_EXPORT AXLanguageSpan {
 // provide extra signals to increase our confidence in assigning a detected
 // language.
 //
+// These tree level statistics are also used to send reports on the language
+// detection feature to enable tuning.
+//
 // The Label step will only assign a detected language to a node if that
 // language is one of the most frequent languages on the page.
 //
@@ -120,7 +124,26 @@ class AX_EXPORT AXLanguageInfoStats {
   // Check if a given language is within the top results.
   bool CheckLanguageWithinTop(const std::string& lang);
 
+  // Record statistics based on how we labelled a node.
+  // We consider the language we labelled the node with, the language the author
+  // assigned, and whether or not we assigned our highest confidence detection
+  // result.
+  void RecordLabelStatistics(std::string labelled_lang,
+                             std::string author_lang,
+                             bool labelled_with_first_result);
+
+  // Update metrics to reflect we attempted to detect language for a node.
+  void RecordDetectionAttempt();
+
+  // Report metrics to UMA.
+  // Reports statistics since last run, run once detect & label iteration.
+  // If successful, will reset statistics.
+  void ReportMetrics();
+
  private:
+  // Allow access from a fixture only used in testing.
+  friend class AXLanguageDetectionTestFixture;
+
   // Store a count of the occurrences of a given language.
   std::unordered_map<std::string, unsigned int> lang_counts_;
 
@@ -138,6 +161,42 @@ class AX_EXPORT AXLanguageInfoStats {
 
   // Compute the top results and store them in cache.
   void GenerateTopResults();
+
+  // TODO(chrishall): Do we want this for testing? or is it better to only test
+  //  the generated metrics by inspecting the histogram?
+  // Boolean used for testing metrics only, disables clearing of metrics.
+  bool disable_metric_clearing_;
+  void ClearMetrics();
+
+  // *** Statistics recorded for metric reporting. ***
+  // All statistics represent a single iteration of language detection and are
+  // reset after each successful call of ReportMetrics.
+
+  // The number of nodes we attempted detection on.
+  int count_detection_attempted_;
+
+  // The number of nodes we got detection results for.
+  int count_detection_results_;
+
+  // The number of nodes we assigned a label to.
+  int count_labelled_;
+
+  // The number of nodes we assigned a label to which was the highest confident
+  // detected language.
+  int count_labelled_with_top_result_;
+
+  // The number of times we labelled a language which disagreed with the node's
+  // author provided language annotation.
+  //
+  // If we have
+  //  <div lang='en'><span>...</span><span>...</span></div>
+  // and we detect and label both spans as having language 'fr', then we count
+  // this as `2` overrides.
+  int count_overridden_;
+
+  // Set of top language detected for every node, used to generate the unique
+  // number of detected languages metric (LangsPerPage).
+  std::unordered_set<std::string> unique_top_lang_detected_;
 
   DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
 };

@@ -246,7 +246,8 @@ base::FilePath GetAppShimPath(Profile* profile,
   std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(app, profile);
   web_app::WebAppShortcutCreator shortcut_creator(
-      web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
+      web_app::GetOsIntegrationResourcesDirectoryForApp(profile->GetPath(),
+                                                        app->id(), GURL()),
       shortcut_info.get());
   return shortcut_creator.GetApplicationsShortcutPath(false);
 }
@@ -596,7 +597,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(app, profile());
   web_app::WebAppShortcutCreator shortcut_creator(
-      web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),
+      web_app::GetOsIntegrationResourcesDirectoryForApp(profile()->GetPath(),
+                                                        app->id(), GURL()),
       shortcut_info.get());
   std::vector<base::FilePath> updated_paths;
   shortcut_creator.UpdateShortcuts(false, &updated_paths);

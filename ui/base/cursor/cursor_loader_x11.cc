@@ -239,7 +239,7 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
     return;
 
   cursor->set_image_scale_factor(scale());
-  cursor->SetPlatformCursor(CursorFromId(cursor->native_type()));
+  cursor->SetPlatformCursor(CursorFromId(cursor->type()));
 }
 
 const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(
@@ -259,7 +259,7 @@ void CursorLoaderX11::OnCursorThemeSizeChanged(int cursor_theme_size) {
 }
 
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
-  mojom::CursorType type = native_cursor.native_type();
+  mojom::CursorType type = native_cursor.type();
   return image_cursors_.count(type) || animated_cursors_.count(type);
 }
 

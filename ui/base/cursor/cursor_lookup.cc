@@ -16,7 +16,7 @@
 namespace ui {
 
 SkBitmap GetCursorBitmap(const Cursor& cursor) {
-  if (cursor.native_type() == mojom::CursorType::kCustom)
+  if (cursor.type() == mojom::CursorType::kCustom)
     return cursor.custom_bitmap();
 #if defined(USE_AURA)
   return GetDefaultBitmap(cursor);
@@ -26,7 +26,7 @@ SkBitmap GetCursorBitmap(const Cursor& cursor) {
 }
 
 gfx::Point GetCursorHotstop(const Cursor& cursor) {
-  if (cursor.native_type() == mojom::CursorType::kCustom)
+  if (cursor.type() == mojom::CursorType::kCustom)
     return cursor.custom_hotspot();
 #if defined(USE_AURA)
   return GetDefaultHotspot(cursor);

@@ -86,8 +86,8 @@ public class OfflinePageDownloadBridge {
      * item with specified GUID is not found or can't be opened, nothing happens.
      */
     @CalledByNative
-    private static void openItem(
-            final String url, final long offlineId, final int location, final boolean openInCct) {
+    private static void openItem(final String url, final long offlineId, final int location,
+            final boolean isIncognito, final boolean openInCct) {
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                 url, offlineId, location, (params) -> {
                     if (params == null) return;
@@ -97,9 +97,9 @@ public class OfflinePageDownloadBridge {
                     if (location == LaunchLocation.NET_ERROR_SUGGESTION) {
                         openItemInCurrentTab(offlineId, params);
                     } else if (openInCct && openingFromDownloadsHome) {
-                        openItemInCct(offlineId, params);
+                        openItemInCct(offlineId, params, isIncognito);
                     } else {
-                        openItemInNewTab(offlineId, params);
+                        openItemInNewTab(offlineId, params, isIncognito);
                     }
                 });
     }
@@ -124,19 +124,20 @@ public class OfflinePageDownloadBridge {
     /**
      * Opens the offline page identified by the given offlineId and the LoadUrlParams in a new tab.
      */
-    private static void openItemInNewTab(long offlineId, LoadUrlParams params) {
+    private static void openItemInNewTab(
+            long offlineId, LoadUrlParams params, boolean isIncognito) {
         ComponentName componentName = getComponentName();
         AsyncTabCreationParams asyncParams = componentName == null
                 ? new AsyncTabCreationParams(params)
                 : new AsyncTabCreationParams(params, componentName);
-        final TabDelegate tabDelegate = new TabDelegate(false);
+        final TabDelegate tabDelegate = new TabDelegate(isIncognito);
         tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
     }
 
     /**
      * Opens the offline page identified by the given offlineId and the LoadUrlParams in a CCT.
      */
-    private static void openItemInCct(long offlineId, LoadUrlParams params) {
+    private static void openItemInCct(long offlineId, LoadUrlParams params, boolean isIncognito) {
         final Context context;
         if (ApplicationStatus.hasVisibleActivities()) {
             context = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -156,6 +157,7 @@ public class OfflinePageDownloadBridge {
         intent.setPackage(context.getPackageName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.OFFLINE_PAGE);
+        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, isIncognito);
 
         IntentHandler.addTrustedIntentExtras(intent);
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

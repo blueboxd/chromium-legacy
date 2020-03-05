@@ -202,10 +202,10 @@ class CrostiniManager : public KeyedService,
   static bool IsDevKvmPresent();
 
   // Upgrades cros-termina component if the current version is not compatible.
-  void MaybeUpgradeCrostini();
+  void MaybeUpdateCrostini();
 
   // Installs the current version of cros-termina component. Attempts to apply
-  // pending upgrades if a MaybeUpgradeCrostini failed.
+  // pending upgrades if a MaybeUpdateCrostini failed.
   void InstallTerminaComponent(CrostiniResultCallback callback);
 
   // Unloads and removes the cros-termina component. Returns success/failure.
@@ -569,7 +569,7 @@ class CrostiniManager : public KeyedService,
                              std::string container_name,
                              const vm_tools::cicerone::OsRelease& os_release);
   const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
-      const ContainerId& container_id);
+      const ContainerId& container_id) const;
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);
@@ -601,10 +601,11 @@ class CrostiniManager : public KeyedService,
 
   void OnDBusShuttingDownForTesting();
 
-  bool IsContainerUpgradeable(const ContainerId& container_id);
-  bool ShouldPromptContainerUpgrade(const ContainerId& container_id);
+  bool IsContainerUpgradeable(const ContainerId& container_id) const;
+  bool ShouldPromptContainerUpgrade(const ContainerId& container_id) const;
   void UpgradePromptShown(const ContainerId& container_id);
   void EnsureVmRunning(const ContainerId& key, CrostiniResultCallback callback);
+  bool IsUncleanStartup() const;
 
  private:
   class CrostiniRestarter;
@@ -791,13 +792,13 @@ class CrostiniManager : public KeyedService,
   // Callback for AnsibleManagementService::ConfigureDefaultContainer
   void OnDefaultContainerConfigured(bool success);
 
-  // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();
 
-  // Helper for CrostiniManager::MaybeUpgradeCrostini. Separated because the
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Separated because the
   // checking component registration code may block.
-  void MaybeUpgradeCrostiniAfterChecks();
+  void MaybeUpdateCrostiniAfterChecks();
 
   void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
 
@@ -823,6 +824,10 @@ class CrostiniManager : public KeyedService,
   static bool is_cros_termina_registered_;
   bool termina_update_check_needed_ = false;
   static bool is_dev_kvm_present_;
+
+  // |is_unclean_startup_| is true when we detect Concierge still running at
+  // session startup time, and the last session ended in a crash.
+  bool is_unclean_startup_ = false;
 
   // Callbacks that are waiting on a signal
   std::multimap<ContainerId, CrostiniResultCallback> start_container_callbacks_;

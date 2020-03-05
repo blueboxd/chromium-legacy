@@ -22,6 +22,7 @@ js_type_check("closure_compile_module") {
     ":action_model_ui",
     ":actions_submenu",
     ":banners",
+    ":breadcrumb",
     ":closure_compile_externs",
     ":combobutton",
     ":commandbutton",
@@ -119,6 +120,9 @@ js_library("banners") {
     "//ui/webui/resources/js/cr:event_target",
   ]
   externs_list = [ "//ui/file_manager/externs/chrome_echo_private.js" ]
+}
+
+js_library("breadcrumb") {
 }
 
 js_library("combobutton") {
@@ -247,6 +251,7 @@ js_library("file_manager_ui") {
     ":action_model_ui",
     ":actions_submenu",
     ":banners",
+    ":breadcrumb",
     ":combobutton",
     ":default_task_dialog",
     ":dialog_footer",

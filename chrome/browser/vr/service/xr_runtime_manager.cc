@@ -431,12 +431,17 @@ void XRRuntimeManager::AddRuntime(
 }
 
 void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
+  DVLOG(1) << __func__ << " id: " << id;
   TRACE_EVENT_INSTANT1("xr", "RemoveRuntime", TRACE_EVENT_SCOPE_THREAD, "id",
                        id);
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = runtimes_.find(id);
   DCHECK(it != runtimes_.end());
+
+  // Give the runtime a chance to clean itself up before notifying services
+  // that it was removed.
+  it->second->BeforeRuntimeRemoved();
 
   // Remove the runtime from runtimes_ before notifying services that it was
   // removed, since they will query for runtimes in RuntimesChanged.

@@ -78,18 +78,23 @@ WGPUTexture SharedImageRepresentationDawnD3D::BeginAccess(
     return nullptr;
   }
 
-  WGPUTextureDescriptor desc;
-  desc.nextInChain = nullptr;
-  desc.format = wgpu_format;
-  desc.usage = usage;
-  desc.dimension = WGPUTextureDimension_2D;
-  desc.size = {size().width(), size().height(), 1};
-  desc.arrayLayerCount = 1;
-  desc.mipLevelCount = 1;
-  desc.sampleCount = 1;
+  WGPUTextureDescriptor texture_descriptor;
+  texture_descriptor.nextInChain = nullptr;
+  texture_descriptor.format = wgpu_format;
+  texture_descriptor.usage = usage;
+  texture_descriptor.dimension = WGPUTextureDimension_2D;
+  texture_descriptor.size = {size().width(), size().height(), 1};
+  texture_descriptor.arrayLayerCount = 1;
+  texture_descriptor.mipLevelCount = 1;
+  texture_descriptor.sampleCount = 1;
 
-  texture_ = dawn_native::d3d12::WrapSharedHandle(device_, &desc, shared_handle,
-                                                  shared_mutex_acquire_key);
+  dawn_native::d3d12::ExternalImageDescriptorDXGISharedHandle descriptor;
+  descriptor.cTextureDescriptor = &texture_descriptor;
+  descriptor.isCleared = IsCleared();
+  descriptor.sharedHandle = shared_handle;
+  descriptor.acquireMutexKey = shared_mutex_acquire_key;
+
+  texture_ = dawn_native::d3d12::WrapSharedHandle(device_, &descriptor);
   if (texture_) {
     // Keep a reference to the texture so that it stays valid (its content
     // might be destroyed).

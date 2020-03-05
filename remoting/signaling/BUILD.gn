@@ -38,6 +38,10 @@ static_library("signaling") {
     "signaling_address.h",
     "signaling_id_util.cc",
     "signaling_id_util.h",
+    "signaling_tracker.cc",
+    "signaling_tracker.h",
+    "signaling_tracker_impl.cc",
+    "signaling_tracker_impl.h",
     "xmpp_log_to_server.cc",
     "xmpp_log_to_server.h",
   ]
@@ -109,6 +113,8 @@ static_library("test_support") {
     "fake_signal_strategy.h",
     "mock_signal_strategy.cc",
     "mock_signal_strategy.h",
+    "mock_signaling_tracker.cc",
+    "mock_signaling_tracker.h",
   ]
 
   public_deps = [

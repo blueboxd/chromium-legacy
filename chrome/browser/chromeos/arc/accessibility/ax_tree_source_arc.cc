@@ -179,6 +179,24 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
 
+  AXNodeInfoData* focused_node =
+      android_focused_id_.has_value()
+          ? GetFromId(*android_focused_id_)->GetNode()
+          : nullptr;
+
+  // Ensure that the focused node correctly gets focus.
+  while (android_focused_id_.has_value() && android_focused_id_ != root_id_ &&
+         !IsImportantInAndroid(focused_node)) {
+    AccessibilityInfoDataWrapper* parent =
+        GetFromId(parent_map_[*android_focused_id_]);
+    if (parent && parent->IsNode()) {
+      android_focused_id_ = parent->GetId();
+      focused_node = parent->GetNode();
+    } else {
+      break;
+    }
+  }
+
   ApplyCachedProperties();
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
@@ -186,13 +204,6 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
-
-  // When the focused node exists, give it as a hint to decide a Chrome
-  // automation event type.
-  AXNodeInfoData* focused_node = nullptr;
-  if (android_focused_id_.has_value() &&
-      tree_map_.find(*android_focused_id_) != tree_map_.end())
-    focused_node = tree_map_[*android_focused_id_]->GetNode();
   event.event_type = ToAXEvent(event_data->event_type, focused_node);
   event.id = event_data->source_id;
 

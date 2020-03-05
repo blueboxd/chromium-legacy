@@ -178,7 +178,7 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
     PostCrossThreadTask(
         *main_thread_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
-            &AudioWorkletHandler::NotifyProcessorError, WrapRefCounted(this),
+            &AudioWorkletHandler::NotifyProcessorError, AsWeakPtr(),
             AudioWorkletProcessorErrorState::kConstructionError));
   }
 }
@@ -193,7 +193,7 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
     PostCrossThreadTask(
         *main_thread_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&AudioWorkletHandler::NotifyProcessorError,
-                            WrapRefCounted(this), error_state));
+                            AsWeakPtr(), error_state));
   }
 
   // TODO(hongchan): After this point, The handler has no more pending activity

@@ -13,11 +13,6 @@ declare_args() {
 
   # Whether the message center should be included for displaying notifications.
   enable_message_center = is_win || is_mac || is_linux
-
-  # Whether to compute UI colors with the color pipeline framework,
-  # instead of NativeTheme/ThemeService.
-  # TODO(http://crbug.com/1057239): Remove this flag.
-  use_color_pipeline = true
 }
 
 enable_hidpi = is_mac || is_win || is_linux || is_ios

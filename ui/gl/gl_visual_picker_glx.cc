@@ -220,7 +220,7 @@ void GLVisualPickerGLX::FillConfigMap() {
     else if (r == 8 && g == 8 && b == 8 && a == 0)
       config_map_[gfx::BufferFormat::BGRX_8888] = config;
     else if (r == 10 && g == 10 && b == 10 && a == 0)
-      config_map_[gfx::BufferFormat::BGRX_1010102] = config;
+      config_map_[gfx::BufferFormat::BGRA_1010102] = config;
     else if (r == 8 && g == 8 && b == 8 && a == 8)
       config_map_[gfx::BufferFormat::BGRA_8888] = config;
   }

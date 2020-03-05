@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "components/permissions/permission_prompt.h"
 
 namespace permissions {
 
+#if !defined(OS_ANDROID)
 // TODO(crbug.com/1025609): Move the permission prompt implementations into
 // //components/permissions. Right now this is used in unit tests to make sure
 // the symbol is defined.
@@ -14,5 +16,6 @@ std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     Delegate* delegate) {
   return nullptr;
 }
+#endif
 
 }  // namespace permissions

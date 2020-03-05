@@ -58,8 +58,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
   CursorManagerTestApi test_api(cursor_manager);
 
   cursor_manager->SetCursor(ui::mojom::CursorType::kCopy);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy,
-            test_api.GetCurrentCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, test_api.GetCurrentCursor().type());
   UpdateDisplay("800x800*2/r");
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_EQ(ui::CursorSize::kNormal, test_api.GetCurrentCursorSize());
@@ -80,8 +79,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
 
   // Cursor type does not change while cursor is locked.
   cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy,
-            test_api.GetCurrentCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, test_api.GetCurrentCursor().type());
 
   // Device scale factor and rotation do change even while cursor is locked.
   UpdateDisplay("800x800/u");
@@ -93,7 +91,7 @@ TEST_F(NativeCursorManagerAshTest, LockCursor) {
 
   // Cursor type changes to the one specified while cursor is locked.
   EXPECT_EQ(ui::mojom::CursorType::kPointer,
-            test_api.GetCurrentCursor().native_type());
+            test_api.GetCurrentCursor().type());
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().image_scale_factor());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
@@ -102,12 +100,11 @@ TEST_F(NativeCursorManagerAshTest, SetCursor) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
   cursor_manager->SetCursor(ui::mojom::CursorType::kCopy);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy,
-            test_api.GetCurrentCursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, test_api.GetCurrentCursor().type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
   cursor_manager->SetCursor(ui::mojom::CursorType::kPointer);
   EXPECT_EQ(ui::mojom::CursorType::kPointer,
-            test_api.GetCurrentCursor().native_type());
+            test_api.GetCurrentCursor().type());
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 

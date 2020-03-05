@@ -4345,7 +4345,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
       gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_8888);
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
-      gfx::ColorSpace::CreateHDR10(), gfx::BufferFormat::BGRX_1010102);
+      gfx::ColorSpace::CreateHDR10(), gfx::BufferFormat::BGRA_1010102);
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
       gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_F16);
@@ -4419,7 +4419,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
       gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
       gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
                       gfx::ColorSpace::TransferID::IEC61966_2_1),
-      gfx::BufferFormat::BGRX_1010102);
+      gfx::BufferFormat::BGRA_1010102);
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
       gfx::ColorSpace::CreateSCRGBLinear(), gfx::BufferFormat::RGBA_F16);

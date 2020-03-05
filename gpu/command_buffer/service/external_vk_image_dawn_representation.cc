@@ -67,7 +67,7 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
 
   dawn_native::vulkan::ExternalImageDescriptorOpaqueFD descriptor = {};
   descriptor.cTextureDescriptor = &texture_descriptor;
-  descriptor.isCleared = true;
+  descriptor.isCleared = IsCleared();
   descriptor.allocationSize = allocation_size_;
   descriptor.memoryTypeIndex = memory_type_index_;
   descriptor.memoryFD = memory_fd_;

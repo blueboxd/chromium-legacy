@@ -189,7 +189,7 @@ aura::Window* AshContentTest::CreateBrowserWindow(const GURL& url) {
 }
 
 aura::Window* AshContentTest::CreateTestWindow() {
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
       new ash::shell::WindowTypeLauncher(base::NullCallback(),
                                          base::NullCallback()),
       ash::Shell::GetPrimaryRootWindow(), gfx::Rect(test_window_size_));

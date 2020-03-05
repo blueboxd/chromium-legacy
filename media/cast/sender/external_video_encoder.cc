@@ -58,7 +58,7 @@ struct InProgressExternalVideoFrameEncode {
   const base::TimeTicks reference_time;
 
   // The callback to run when the result is ready.
-  const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
+  VideoEncoder::FrameEncodedCallback frame_encoded_callback;
 
   // The target encode bit rate.
   const int target_bit_rate;
@@ -75,7 +75,7 @@ struct InProgressExternalVideoFrameEncode {
       int bit_rate)
       : video_frame(std::move(v_frame)),
         reference_time(r_time),
-        frame_encoded_callback(callback),
+        frame_encoded_callback(std::move(callback)),
         target_bit_rate(bit_rate),
         start_time(base::TimeTicks::Now()) {}
 };
@@ -130,12 +130,11 @@ class ExternalVideoEncoder::VEAClientImpl
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           encoder_active_);
 
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(status_change_cb_,
-                   encoder_active_ ? STATUS_INITIALIZED :
-                       STATUS_CODEC_INIT_FAILED));
+    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(status_change_cb_,
+                                  encoder_active_ ? STATUS_INITIALIZED
+                                                  : STATUS_CODEC_INIT_FAILED));
   }
 
   void SetBitRate(int bit_rate) {
@@ -159,13 +158,13 @@ class ExternalVideoEncoder::VEAClientImpl
 
   void EncodeVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame,
-      const base::TimeTicks& reference_time,
+      base::TimeTicks reference_time,
       bool key_frame_requested,
-      const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
+      VideoEncoder::FrameEncodedCallback frame_encoded_callback) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     in_progress_frame_encodes_.push_back(InProgressExternalVideoFrameEncode(
-        video_frame, reference_time, frame_encoded_callback,
+        video_frame, reference_time, std::move(frame_encoded_callback),
         requested_bit_rate_));
 
     if (!encoder_active_) {
@@ -238,10 +237,9 @@ class ExternalVideoEncoder::VEAClientImpl
 
     encoder_active_ = false;
 
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
+    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+        ->PostTask(FROM_HERE, base::BindOnce(status_change_cb_,
+                                             STATUS_CODEC_RUNTIME_ERROR));
 
     // TODO(miu): Force-flush all |in_progress_frame_encodes_| immediately so
     // pending frames do not become stuck, freezing VideoSender.
@@ -289,8 +287,9 @@ class ExternalVideoEncoder::VEAClientImpl
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    if (metadata.key_frame)
+    if (metadata.key_frame) {
       key_frame_encountered_ = true;
+    }
     if (!key_frame_encountered_) {
       // Do not send video until we have encountered the first key frame.
       // Save the bitstream buffer in |stream_header_| to be sent later along
@@ -300,7 +299,7 @@ class ExternalVideoEncoder::VEAClientImpl
       // performance reasons?
       stream_header_.append(output_buffer_memory, metadata.payload_size_bytes);
     } else if (!in_progress_frame_encodes_.empty()) {
-      const InProgressExternalVideoFrameEncode& request =
+      InProgressExternalVideoFrameEncode& request =
           in_progress_frame_encodes_.front();
 
       std::unique_ptr<SenderEncodedFrame> encoded_frame(
@@ -308,10 +307,11 @@ class ExternalVideoEncoder::VEAClientImpl
       encoded_frame->dependency =
           metadata.key_frame ? EncodedFrame::KEY : EncodedFrame::DEPENDENT;
       encoded_frame->frame_id = next_frame_id_++;
-      if (metadata.key_frame)
+      if (metadata.key_frame) {
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;
-      else
+      } else {
         encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
+      }
       encoded_frame->rtp_timestamp = RtpTimeTicks::FromTimeDelta(
           request.video_frame->timestamp(), kVideoFrequency);
       encoded_frame->reference_time = request.reference_time;
@@ -399,11 +399,10 @@ class ExternalVideoEncoder::VEAClientImpl
 
       encoded_frame->encode_completion_time =
           cast_environment_->Clock()->NowTicks();
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(request.frame_encoded_callback,
-                     base::Passed(&encoded_frame)));
+      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(std::move(request.frame_encoded_callback),
+                                    base::Passed(&encoded_frame)));
 
       in_progress_frame_encodes_.pop_front();
     } else {
@@ -432,8 +431,9 @@ class ExternalVideoEncoder::VEAClientImpl
 
     // According to the media::VideoEncodeAccelerator interface, Destroy()
     // should be called instead of invoking its private destructor.
-    if (video_encode_accelerator_)
+    if (video_encode_accelerator_) {
       video_encode_accelerator_.release()->Destroy();
+    }
   }
 
   // Note: This method can be called on any thread.
@@ -491,10 +491,11 @@ class ExternalVideoEncoder::VEAClientImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     std::unique_ptr<SenderEncodedFrame> no_result(nullptr);
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(in_progress_frame_encodes_.back().frame_encoded_callback,
-                   base::Passed(&no_result)));
+    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(std::move(in_progress_frame_encodes_.back()
+                                                .frame_encoded_callback),
+                                  base::Passed(&no_result)));
     in_progress_frame_encodes_.pop_back();
   }
 
@@ -504,8 +505,9 @@ class ExternalVideoEncoder::VEAClientImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(encoded_data);
 
-    if (!size)
+    if (!size) {
       return -1;
+    }
     h264_parser_.SetStream(encoded_data, size);
     double total_quantizer = 0;
     int num_slices = 0;
@@ -513,10 +515,12 @@ class ExternalVideoEncoder::VEAClientImpl
     while (true) {
       H264NALU nalu;
       H264Parser::Result res = h264_parser_.AdvanceToNextNALU(&nalu);
-      if (res == H264Parser::kEOStream)
+      if (res == H264Parser::kEOStream) {
         break;
-      if (res != H264Parser::kOk)
+      }
+      if (res != H264Parser::kOk) {
         return -1;
+      }
       switch (nalu.nal_unit_type) {
         case H264NALU::kIDRSlice:
         case H264NALU::kNonIDRSlice: {
@@ -526,8 +530,9 @@ class ExternalVideoEncoder::VEAClientImpl
             return -1;
           const H264PPS* pps =
               h264_parser_.GetPPS(slice_header.pic_parameter_set_id);
-          if (!pps)
+          if (!pps) {
             return -1;
+          }
           ++num_slices;
           int slice_quantizer =
               26 +
@@ -541,14 +546,16 @@ class ExternalVideoEncoder::VEAClientImpl
         }
         case H264NALU::kSPS: {
           int id;
-          if (h264_parser_.ParseSPS(&id) != H264Parser::kOk)
+          if (h264_parser_.ParseSPS(&id) != H264Parser::kOk) {
             return -1;
+          }
           break;
         }
         case H264NALU::kPPS: {
           int id;
-          if (h264_parser_.ParsePPS(&id) != H264Parser::kOk)
+          if (h264_parser_.ParsePPS(&id) != H264Parser::kOk) {
             return -1;
+          }
           break;
         }
         default:
@@ -675,18 +682,21 @@ void ExternalVideoEncoder::DestroyClientSoon() {
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame,
-    const base::TimeTicks& reference_time,
-    const FrameEncodedCallback& frame_encoded_callback) {
+    base::TimeTicks reference_time,
+    FrameEncodedCallback frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!frame_encoded_callback.is_null());
 
-  if (!client_ || video_frame->visible_rect().size() != frame_size_)
+  if (!client_ || video_frame->visible_rect().size() != frame_size_) {
     return false;
+  }
 
   client_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VEAClientImpl::EncodeVideoFrame, client_,
-                                std::move(video_frame), reference_time,
-                                key_frame_requested_, frame_encoded_callback));
+      FROM_HERE,
+      base::BindOnce(&VEAClientImpl::EncodeVideoFrame, client_,
+                     std::move(video_frame), reference_time,
+                     key_frame_requested_,
+                     base::Passed(std::move(frame_encoded_callback))));
   key_frame_requested_ = false;
   return true;
 }
@@ -696,8 +706,9 @@ void ExternalVideoEncoder::SetBitRate(int new_bit_rate) {
   DCHECK_GT(new_bit_rate, 0);
 
   bit_rate_ = new_bit_rate;
-  if (!client_)
+  if (!client_) {
     return;
+  }
   client_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&VEAClientImpl::SetBitRate, client_, bit_rate_));
@@ -720,10 +731,9 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
   // system does not support or lacks the resources to provide GPU-accelerated
   // video encoding.
   if (!encoder_task_runner || !vea) {
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(status_change_cb, STATUS_CODEC_INIT_FAILED));
+    cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(status_change_cb, STATUS_CODEC_INIT_FAILED));
     return;
   }
 
@@ -739,10 +749,9 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
       NOTREACHED() << "Fake software video encoder cannot be external";
       FALLTHROUGH;
     default:
-      cast_environment_->PostTask(
-        CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(status_change_cb, STATUS_UNSUPPORTED_CODEC));
+      cast_environment_->GetTaskRunner(CastEnvironment::MAIN)
+          ->PostTask(FROM_HERE, base::BindOnce(status_change_cb,
+                                               STATUS_UNSUPPORTED_CODEC));
       return;
   }
 
@@ -817,8 +826,9 @@ void QuantizerEstimator::Reset() {
 }
 
 double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
-  if (!CanExamineFrame(frame))
+  if (!CanExamineFrame(frame)) {
     return NO_RESULT;
+  }
 
   // If the size of the frame is different from the last frame, allocate a new
   // buffer.  The buffer only needs to be a fraction of the size of the entire
@@ -866,14 +876,16 @@ double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
 }
 
 double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
-  if (!CanExamineFrame(frame))
+  if (!CanExamineFrame(frame)) {
     return NO_RESULT;
+  }
 
   // If the size of the |frame| has changed, no difference can be examined.
   // In this case, process this frame as if it were a key frame.
   const gfx::Size size = frame.visible_rect().size();
-  if (last_frame_size_ != size || !last_frame_pixel_buffer_)
+  if (last_frame_size_ != size || !last_frame_pixel_buffer_) {
     return EstimateForKeyFrame(frame);
+  }
   const int rows_in_subset =
       std::max(1, size.height() * FRAME_SAMPLING_PERCENT / 100);
 
@@ -934,8 +946,9 @@ double QuantizerEstimator::ComputeEntropyFromHistogram(const int* histogram,
   double entropy = 0.0;
   for (size_t i = 0; i < num_buckets; ++i) {
     const double probability = static_cast<double>(histogram[i]) / num_samples;
-    if (probability > 0.0)
+    if (probability > 0.0) {
       entropy = entropy - probability * log2(probability);
+    }
   }
   return entropy;
 }

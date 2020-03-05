@@ -456,19 +456,26 @@ test.util.sync.unload = contentWindow => {
 };
 
 /**
- * Obtains the path which is shown in the breadcrumb.
+ * Returns the path shown in the location line breadcrumb.
  *
  * @param {Window} contentWindow Window to be tested.
- * @return {string} Path which is shown in the breadcrumb.
+ * @return {string} The breadcrumb path.
  */
 test.util.sync.getBreadcrumbPath = contentWindow => {
   const breadcrumb =
       contentWindow.document.querySelector('#location-breadcrumbs');
-  const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
-
   let path = '';
-  for (let i = 0; i < paths.length; i++) {
-    path += '/' + paths[i].textContent;
+
+  if (util.isFilesNg()) {
+    const crumbs = breadcrumb.querySelector('bread-crumb');
+    if (crumbs) {
+      path = '/' + crumbs.path;
+    }
+  } else {
+    const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
+    for (let i = 0; i < paths.length; i++) {
+      path += '/' + paths[i].textContent;
+    }
   }
   return path;
 };

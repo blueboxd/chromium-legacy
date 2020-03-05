@@ -22,6 +22,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -290,6 +291,7 @@ public class AndroidViewIntegrationTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "Flaky; crbug.com/1058304")
     public void testAbsolutePositionContributesToContentSize() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView = createDetachedTestContainerViewOnMainSync(

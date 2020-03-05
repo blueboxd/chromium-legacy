@@ -217,7 +217,7 @@ void FrameLoader::Init() {
       std::move(navigation_params), nullptr /* extra_data */);
 
   CommitDocumentLoader(new_document_loader, base::nullopt, nullptr,
-                       CommitReason::kInitialization, base::DoNothing::Once());
+                       CommitReason::kInitialization);
 
   frame_->GetDocument()->CancelParsing();
 
@@ -889,7 +889,6 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    base::OnceClosure call_before_attaching_new_document,
     bool is_javascript_url) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
@@ -991,10 +990,10 @@ void FrameLoader::CommitNavigation(
       frame_, navigation_type, content_security_policy,
       std::move(navigation_params), std::move(extra_data));
 
-  CommitDocumentLoader(
-      new_document_loader, unload_timing, previous_history_item,
-      is_javascript_url ? CommitReason::kJavascriptUrl : CommitReason::kRegular,
-      std::move(call_before_attaching_new_document));
+  CommitDocumentLoader(new_document_loader, unload_timing,
+                       previous_history_item,
+                       is_javascript_url ? CommitReason::kJavascriptUrl
+                                         : CommitReason::kRegular);
 
   RestoreScrollPositionAndViewState();
 
@@ -1113,8 +1112,7 @@ void FrameLoader::CommitDocumentLoader(
     DocumentLoader* document_loader,
     const base::Optional<Document::UnloadEventTiming>& unload_timing,
     HistoryItem* previous_history_item,
-    CommitReason commit_reason,
-    base::OnceClosure call_before_attaching_new_document) {
+    CommitReason commit_reason) {
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
@@ -1160,12 +1158,6 @@ void FrameLoader::CommitDocumentLoader(
     } else if (commit_reason == CommitReason::kJavascriptUrl) {
       Client()->DidCommitJavascriptUrlNavigation(document_loader_);
     } else {
-      // TODO(https://crbug.com/855189): replace
-      // DispatchDidStartProvisionalLoad, call_before_attaching_new_document and
-      // DispatchDidCommitLoad with a single call.
-      Client()->DispatchDidStartProvisionalLoad(document_loader_);
-      std::move(call_before_attaching_new_document).Run();
-      Client()->DidCreateNewDocument();
       Client()->DispatchDidCommitLoad(
           document_loader_->GetHistoryItem(),
           DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),

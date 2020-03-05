@@ -531,10 +531,8 @@ using ViewSourceWithSplitCacheEnabledTest = ViewSourceWithSplitCacheTest;
 // In the end, the test checks whether the back navigation request resource
 // exists in the cache. |exists_in_cache == true| implies the top_frame_origin
 // of the network isolation key is a.com (reused).
-//
-// Flaky. http://crbug.com/1024033
 IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
-                       DISABLED_NetworkIsolationKeyReusedForBackNavigation) {
+                       NetworkIsolationKeyReusedForBackNavigation) {
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -545,10 +543,10 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
+  std::string subframe_url =
+      GURL(embedded_test_server()->GetURL("b.com", "/title1.html")).spec();
   {
     // 2. Create a cross-site subframe b.com/title1.html
-    std::string subframe_url =
-        GURL(embedded_test_server()->GetURL("b.com", "/title1.html")).spec();
     std::string create_frame_script = base::StringPrintf(
         "let frame = document.createElement('iframe');"
         "frame.src = '%s';"
@@ -578,7 +576,7 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
   ui_test_utils::NavigateToURL(
       browser(), GURL(embedded_test_server()->GetURL("c.com", "/title1.html")));
 
-  bool exists_in_cache = false;
+  base::RunLoop cache_status_waiter;
   content::URLLoaderInterceptor interceptor(
       base::BindLambdaForTesting(
           [&](content::URLLoaderInterceptor::RequestParams* params) {
@@ -587,7 +585,10 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
       base::BindLambdaForTesting(
           [&](const GURL& request_url,
               const network::URLLoaderCompletionStatus& status) {
-            exists_in_cache = status.exists_in_cache;
+            if (request_url == subframe_url) {
+              EXPECT_TRUE(status.exists_in_cache);
+              cache_status_waiter.Quit();
+            }
           }),
       {});
 
@@ -600,7 +601,7 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
     navigation_observer.Wait();
   }
 
-  EXPECT_TRUE(exists_in_cache);
+  cache_status_waiter.Run();
 }
 
 INSTANTIATE_TEST_SUITE_P(

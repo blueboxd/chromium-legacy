@@ -41,7 +41,7 @@ class MockOfflineContentProvider : public OfflineContentProvider {
                            const base::Optional<UpdateDelta>& update_delta);
 
   // OfflineContentProvider implementation.
-  MOCK_METHOD2(OpenItem, void(LaunchLocation, const ContentId&));
+  MOCK_METHOD2(OpenItem, void(const OpenParams&, const ContentId&));
   MOCK_METHOD1(RemoveItem, void(const ContentId&));
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
   MOCK_METHOD1(PauseDownload, void(const ContentId&));

@@ -45,6 +45,12 @@
     <message name="IDS_STORAGE_ACCESS_INFOBAR_TEXT" desc="Permission request shown if the user is visiting a site needs access to its data while it is embedded into another site.">
       <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> wants to use cookies and site data on <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>
     </message>
+    <message name="IDS_INFOBAR_UPDATE_PERMISSIONS_BUTTON_TEXT" desc="Button text shown when Chrome does not have the necessary permission required to complete the requested tasks (e.g. a website has request location information, but Chrome is missing that Android permission)." formatter_data="android_java">
+      Continue
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone and camera.">
+      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone
+    </message>
   </if>
   <if expr="is_android or chromeos">
     <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
@@ -96,5 +102,11 @@
 Do you want to allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to use cookies and site data on <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>?
 
 This will otherwise be blocked by your privacy settings. This will allow the content you interacted with to work correctly, but may allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to track your activity.
+  </message>
+  <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
+    Allow
+  </message>
+  <message name="IDS_PERMISSION_DENY" desc="Label on button to deny a permissions request.">
+    Block
   </message>
 </grit-part>

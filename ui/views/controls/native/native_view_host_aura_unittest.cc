@@ -168,8 +168,7 @@ TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                             gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
-  EXPECT_EQ(ui::mojom::CursorType::kWait,
-            host()->GetCursor(move_event).native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kWait, host()->GetCursor(move_event).type());
 
   DestroyHost();
 }

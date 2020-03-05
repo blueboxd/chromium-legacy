@@ -138,7 +138,7 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {

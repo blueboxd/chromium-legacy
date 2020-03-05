@@ -4265,9 +4265,9 @@ class ClearScrollStateOnCommitWebFrameClient
   ~ClearScrollStateOnCommitWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType,
-                                bool) override {
+  void DidCommitNavigation(const WebHistoryItem&,
+                           WebHistoryCommitType,
+                           bool) override {
     Frame()->View()->ResetScrollAndScaleState();
   }
 };
@@ -6391,9 +6391,9 @@ class TestWillInsertBodyWebFrameClient
   ~TestWillInsertBodyWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType,
-                                bool) override {
+  void DidCommitNavigation(const WebHistoryItem&,
+                           WebHistoryCommitType,
+                           bool) override {
     did_load_ = true;
   }
 
@@ -7506,8 +7506,8 @@ TEST_F(WebFrameTest, IPAddressSpace) {
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     params->is_browser_initiated = true;
     params->ip_address_space = value;
-    web_view_helper.LocalMainFrame()->CommitNavigation(
-        std::move(params), nullptr, base::DoNothing::Once());
+    web_view_helper.LocalMainFrame()->CommitNavigation(std::move(params),
+                                                       nullptr);
     frame_test_helpers::PumpPendingRequestsForFrameToLoad(
         web_view_helper.LocalMainFrame());
 
@@ -7558,56 +7558,14 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 
-class TestHistoryChildWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  TestHistoryChildWebFrameClient() = default;
-  ~TestHistoryChildWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  void DidStartProvisionalLoad(WebDocumentLoader* document_loader) override {
-    replaces_current_history_item_ =
-        document_loader->ReplacesCurrentHistoryItem();
-  }
-
-  bool ReplacesCurrentHistoryItem() { return replaces_current_history_item_; }
-
- private:
-  bool replaces_current_history_item_ = false;
-};
-
-class TestHistoryWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  TestHistoryWebFrameClient() = default;
-  ~TestHistoryWebFrameClient() override = default;
-
-  // frame_test_helpers::TestWebFrameClient:
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType scope,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override {
-    return CreateLocalChild(*parent, scope, &child_client_);
-  }
-
-  TestHistoryChildWebFrameClient& ChildClient() { return child_client_; }
-
- private:
-  TestHistoryChildWebFrameClient child_client_;
-};
-
 // Tests that the first navigation in an initially blank subframe will result in
 // a history entry being replaced and not a new one being added.
 TEST_F(WebFrameTest, FirstBlankSubframeNavigation) {
   RegisterMockedHttpURLLoad("history.html");
   RegisterMockedHttpURLLoad("find.html");
 
-  TestHistoryWebFrameClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", &client);
+  web_view_helper.InitializeAndLoad("about:blank");
 
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
 
@@ -7615,17 +7573,16 @@ TEST_F(WebFrameTest, FirstBlankSubframeNavigation) {
       "document.body.appendChild(document.createElement('iframe'))")));
 
   auto* iframe = To<WebLocalFrameImpl>(frame->FirstChild());
-  ASSERT_EQ(&client.ChildClient(), iframe->Client());
 
   std::string url1 = base_url_ + "history.html";
   frame_test_helpers::LoadFrame(iframe, url1);
   EXPECT_EQ(url1, iframe->GetDocument().Url().GetString().Utf8());
-  EXPECT_TRUE(client.ChildClient().ReplacesCurrentHistoryItem());
+  EXPECT_TRUE(iframe->GetDocumentLoader()->ReplacesCurrentHistoryItem());
 
   std::string url2 = base_url_ + "find.html";
   frame_test_helpers::LoadFrame(iframe, url2);
   EXPECT_EQ(url2, iframe->GetDocument().Url().GetString().Utf8());
-  EXPECT_FALSE(client.ChildClient().ReplacesCurrentHistoryItem());
+  EXPECT_FALSE(iframe->GetDocumentLoader()->ReplacesCurrentHistoryItem());
 }
 
 // Tests that a navigation in a frame with a non-blank initial URL will create
@@ -7634,9 +7591,8 @@ TEST_F(WebFrameTest, FirstNonBlankSubframeNavigation) {
   RegisterMockedHttpURLLoad("history.html");
   RegisterMockedHttpURLLoad("find.html");
 
-  TestHistoryWebFrameClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank", &client);
+  web_view_helper.InitializeAndLoad("about:blank");
 
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
 
@@ -7653,7 +7609,7 @@ TEST_F(WebFrameTest, FirstNonBlankSubframeNavigation) {
   std::string url2 = base_url_ + "find.html";
   frame_test_helpers::LoadFrame(iframe, url2);
   EXPECT_EQ(url2, iframe->GetDocument().Url().GetString().Utf8());
-  EXPECT_FALSE(client.ChildClient().ReplacesCurrentHistoryItem());
+  EXPECT_FALSE(iframe->GetDocumentLoader()->ReplacesCurrentHistoryItem());
 }
 
 // Test verifies that layout will change a layer's scrollable attibutes
@@ -9500,9 +9456,9 @@ class RemoteToLocalSwapWebFrameClient
   ~RemoteToLocalSwapWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType history_commit_type,
-                                bool) override {
+  void DidCommitNavigation(const WebHistoryItem&,
+                           WebHistoryCommitType history_commit_type,
+                           bool) override {
     history_commit_type_ = history_commit_type;
     remote_frame_->Swap(Frame());
   }
@@ -9725,9 +9681,9 @@ class CommitTypeWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   ~CommitTypeWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                WebHistoryCommitType history_commit_type,
-                                bool) override {
+  void DidCommitNavigation(const WebHistoryItem&,
+                           WebHistoryCommitType history_commit_type,
+                           bool) override {
     history_commit_type_ = history_commit_type;
   }
 

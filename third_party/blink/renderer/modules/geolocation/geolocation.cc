@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -159,24 +158,18 @@ void Geolocation::RecordOriginTypeAccess() const {
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
-    // TODO(jww): This should be removed after WebView is fixed so that it
-    // disallows geolocation in insecure contexts.
-    //
-    // See https://crbug.com/603574.
+    // Android WebView allows geolocation in secure contexts for legacy apps.
+    // See https://crbug.com/603574 for details.
     Deprecation::CountDeprecation(
         document, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
     Deprecation::CountDeprecationCrossOriginIframe(
         *document,
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
   } else {
     Deprecation::CountDeprecation(document,
                                   WebFeature::kGeolocationInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
         *document, WebFeature::kGeolocationInsecureOriginIframe);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
   }
 }
 

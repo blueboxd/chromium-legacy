@@ -11,13 +11,13 @@ namespace ui {
 
 Cursor::Cursor() = default;
 
-Cursor::Cursor(mojom::CursorType type) : native_type_(type) {}
+Cursor::Cursor(mojom::CursorType type) : type_(type) {}
 
 Cursor::Cursor(const Cursor& cursor)
-    : native_type_(cursor.native_type_),
+    : type_(cursor.type_),
       platform_cursor_(cursor.platform_cursor_),
       image_scale_factor_(cursor.image_scale_factor_) {
-  if (native_type_ == mojom::CursorType::kCustom) {
+  if (type_ == mojom::CursorType::kCustom) {
     custom_hotspot_ = cursor.custom_hotspot_;
     custom_bitmap_ = cursor.custom_bitmap_;
     RefCustomCursor();
@@ -25,15 +25,15 @@ Cursor::Cursor(const Cursor& cursor)
 }
 
 Cursor::~Cursor() {
-  if (native_type_ == mojom::CursorType::kCustom)
+  if (type_ == mojom::CursorType::kCustom)
     UnrefCustomCursor();
 }
 
 void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
-  if (native_type_ == mojom::CursorType::kCustom)
+  if (type_ == mojom::CursorType::kCustom)
     UnrefCustomCursor();
   platform_cursor_ = platform;
-  if (native_type_ == mojom::CursorType::kCustom)
+  if (type_ == mojom::CursorType::kCustom)
     RefCustomCursor();
 }
 
@@ -47,10 +47,9 @@ void Cursor::UnrefCustomCursor() {
 #endif
 
 bool Cursor::operator==(const Cursor& cursor) const {
-  return native_type_ == cursor.native_type_ &&
-         platform_cursor_ == cursor.platform_cursor_ &&
+  return type_ == cursor.type_ && platform_cursor_ == cursor.platform_cursor_ &&
          image_scale_factor_ == cursor.image_scale_factor_ &&
-         (native_type_ != mojom::CursorType::kCustom ||
+         (type_ != mojom::CursorType::kCustom ||
           (custom_hotspot_ == cursor.custom_hotspot_ &&
            gfx::BitmapsAreEqual(custom_bitmap_, cursor.custom_bitmap_)));
 }
@@ -58,11 +57,11 @@ bool Cursor::operator==(const Cursor& cursor) const {
 void Cursor::operator=(const Cursor& cursor) {
   if (*this == cursor)
     return;
-  if (native_type_ == mojom::CursorType::kCustom)
+  if (type_ == mojom::CursorType::kCustom)
     UnrefCustomCursor();
-  native_type_ = cursor.native_type_;
+  type_ = cursor.type_;
   platform_cursor_ = cursor.platform_cursor_;
-  if (native_type_ == mojom::CursorType::kCustom) {
+  if (type_ == mojom::CursorType::kCustom) {
     RefCustomCursor();
     custom_hotspot_ = cursor.custom_hotspot_;
     custom_bitmap_ = cursor.custom_bitmap_;

@@ -139,6 +139,9 @@ Background = class extends ChromeVoxState {
     /** @private {cursors.Range} */
     this.pageSel_;
 
+    /** @type {boolean} */
+    this.talkBackEnabled = false;
+
     CommandHandler.init();
     FindHandler.init();
     DownloadHandler.init();
@@ -151,6 +154,10 @@ Background = class extends ChromeVoxState {
     chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
         (announceText) => {
           ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
+        });
+    chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.addListener(
+        (enabled) => {
+          this.talkBackEnabled = enabled;
         });
 
     // Set the darkScreen state to false, since the display will be on whenever

@@ -73,6 +73,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       api::passwords_private::PlaintextReason reason,
       content::WebContents* web_contents,
       PlaintextCompromisedPasswordCallback callback) override;
+  bool ChangeCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential,
+      base::StringPiece new_password) override;
+  bool RemoveCompromisedCredential(
+      const api::passwords_private::CompromisedCredential& credential) override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;

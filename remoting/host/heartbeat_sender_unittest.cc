@@ -21,6 +21,7 @@
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/signaling/log_to_server.h"
+#include "remoting/signaling/mock_signaling_tracker.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,6 +86,13 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
     signal_strategy_ =
         std::make_unique<FakeSignalStrategy>(SignalingAddress(kFtlId));
 
+    ON_CALL(mock_signaling_tracker_, IsChannelActive())
+        .WillByDefault(Return(true));
+    ON_CALL(mock_signaling_tracker_, GetLastReportedChannelActiveDuration())
+        .WillByDefault(Return(base::TimeDelta::FromSeconds(10)));
+
+    signal_strategy_->set_signaling_tracker(&mock_signaling_tracker_);
+
     // Start in disconnected state.
     signal_strategy_->Disconnect();
 
@@ -134,6 +142,8 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
   std::vector<ServerLogEntry> received_log_entries_;
 
+  MockSignalingTracker mock_signaling_tracker_;
+
  private:
   // LogToServer interface.
   void Log(const ServerLogEntry& entry) override {
@@ -157,6 +167,16 @@ TEST_F(HeartbeatSenderTest, SendHeartbeat) {
 
   signal_strategy_->Connect();
   task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
+}
+
+TEST_F(HeartbeatSenderTest, ChannelInactiveWhenSendingHeartbeat_Disconnect) {
+  EXPECT_CALL(mock_signaling_tracker_, IsChannelActive())
+      .WillOnce(Return(false));
+
+  signal_strategy_->Connect();
+  task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
+
+  ASSERT_EQ(SignalStrategy::State::DISCONNECTED, signal_strategy_->GetState());
 }
 
 TEST_F(HeartbeatSenderTest, SignalingReconnect_NewHeartbeats) {

@@ -208,7 +208,7 @@ class UsageTrackerTest : public testing::Test {
   void GrantUnlimitedStoragePolicy(const url::Origin& origin) {
     if (!storage_policy_->IsStorageUnlimited(origin.GetURL())) {
       storage_policy_->AddUnlimited(origin.GetURL());
-      storage_policy_->NotifyGranted(origin.GetURL(),
+      storage_policy_->NotifyGranted(origin,
                                      SpecialStoragePolicy::STORAGE_UNLIMITED);
     }
   }
@@ -216,7 +216,7 @@ class UsageTrackerTest : public testing::Test {
   void RevokeUnlimitedStoragePolicy(const url::Origin& origin) {
     if (storage_policy_->IsStorageUnlimited(origin.GetURL())) {
       storage_policy_->RemoveUnlimited(origin.GetURL());
-      storage_policy_->NotifyRevoked(origin.GetURL(),
+      storage_policy_->NotifyRevoked(origin,
                                      SpecialStoragePolicy::STORAGE_UNLIMITED);
     }
   }

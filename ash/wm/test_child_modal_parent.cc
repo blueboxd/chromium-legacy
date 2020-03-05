@@ -120,7 +120,7 @@ aura::Window* TestChildModalParent::GetModalParent() const {
 
 aura::Window* TestChildModalParent::ShowModalChild() {
   DCHECK(!modal_child_);
-  modal_child_ = Widget::CreateWindowWithParent(new ChildModalWindow,
+  modal_child_ = Widget::CreateWindowWithParent(new ChildModalWindow(),
                                                 GetWidget()->GetNativeView());
   wm::SetModalParent(modal_child_->GetNativeView(),
                      modal_parent_->GetNativeView());

@@ -40,6 +40,7 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   void OpenItem(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& jobj,
                 jint launch_location,
+                jboolean j_open_in_incognito,
                 const base::android::JavaParamRef<jstring>& j_namespace,
                 const base::android::JavaParamRef<jstring>& j_id);
   void RemoveItem(JNIEnv* env,

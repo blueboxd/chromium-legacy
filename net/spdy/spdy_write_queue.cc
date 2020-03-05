@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_buffer_producer.h"
@@ -53,9 +52,6 @@ SpdyWriteQueue::SpdyWriteQueue() : removing_writes_(false) {}
 
 SpdyWriteQueue::~SpdyWriteQueue() {
   DCHECK_GE(num_queued_capped_frames_, 0);
-  DCHECK_GT(highest_num_queued_capped_frames_, 0);
-  UMA_HISTOGRAM_COUNTS_100000("Net.SpdyHighestQueuedCappedFramesCount",
-                              highest_num_queued_capped_frames_);
   Clear();
 }
 
@@ -84,11 +80,6 @@ void SpdyWriteQueue::Enqueue(
   if (IsSpdyFrameTypeWriteCapped(frame_type)) {
     DCHECK_GE(num_queued_capped_frames_, 0);
     num_queued_capped_frames_++;
-    if (num_queued_capped_frames_ > highest_num_queued_capped_frames_) {
-      DCHECK_EQ(num_queued_capped_frames_,
-                highest_num_queued_capped_frames_ + 1);
-      highest_num_queued_capped_frames_ = num_queued_capped_frames_;
-    }
   }
 }
 

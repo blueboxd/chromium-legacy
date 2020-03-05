@@ -56,11 +56,18 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
                             IntegrityLevel integrity_level,
                             TokenType token_type,
                             bool lockdown_default_dacl,
+                            PSID unique_restricted_sid,
                             base::win::ScopedHandle* token) {
   RestrictedToken restricted_token;
   restricted_token.Init(effective_token);
   if (lockdown_default_dacl)
     restricted_token.SetLockdownDefaultDacl();
+  if (unique_restricted_sid) {
+    restricted_token.AddDefaultDaclSid(Sid(unique_restricted_sid), GRANT_ACCESS,
+                                       GENERIC_ALL);
+    restricted_token.AddDefaultDaclSid(Sid(WinCreatorOwnerRightsSid),
+                                       GRANT_ACCESS, READ_CONTROL);
+  }
 
   std::vector<std::wstring> privilege_exceptions;
   std::vector<Sid> sid_exceptions;
@@ -105,6 +112,8 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
       restricted_token.AddRestrictingSid(WinRestrictedCodeSid);
       restricted_token.AddRestrictingSidCurrentUser();
       restricted_token.AddRestrictingSidLogonSession();
+      if (unique_restricted_sid)
+        restricted_token.AddRestrictingSid(Sid(unique_restricted_sid));
       break;
     }
     case USER_INTERACTIVE: {
@@ -118,6 +127,8 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
       restricted_token.AddRestrictingSid(WinRestrictedCodeSid);
       restricted_token.AddRestrictingSidCurrentUser();
       restricted_token.AddRestrictingSidLogonSession();
+      if (unique_restricted_sid)
+        restricted_token.AddRestrictingSid(Sid(unique_restricted_sid));
       break;
     }
     case USER_LIMITED: {
@@ -128,6 +139,8 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
       restricted_token.AddRestrictingSid(WinBuiltinUsersSid);
       restricted_token.AddRestrictingSid(WinWorldSid);
       restricted_token.AddRestrictingSid(WinRestrictedCodeSid);
+      if (unique_restricted_sid)
+        restricted_token.AddRestrictingSid(Sid(unique_restricted_sid));
 
       // This token has to be able to create objects in BNO.
       // Unfortunately, on Vista+, it needs the current logon sid
@@ -141,11 +154,15 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
       privilege_exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
       restricted_token.AddUserSidForDenyOnly();
       restricted_token.AddRestrictingSid(WinRestrictedCodeSid);
+      if (unique_restricted_sid)
+        restricted_token.AddRestrictingSid(Sid(unique_restricted_sid));
       break;
     }
     case USER_LOCKDOWN: {
       restricted_token.AddUserSidForDenyOnly();
       restricted_token.AddRestrictingSid(WinNullSid);
+      if (unique_restricted_sid)
+        restricted_token.AddRestrictingSid(Sid(unique_restricted_sid));
       break;
     }
     default: { return ERROR_BAD_ARGUMENTS; }

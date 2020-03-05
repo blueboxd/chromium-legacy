@@ -238,7 +238,7 @@ WindowStateType WindowState::GetStateType() const {
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == WindowStateType::kMinimized;
+  return IsMinimizedWindowStateType(GetStateType());
 }
 
 bool WindowState::IsMaximized() const {
@@ -250,8 +250,7 @@ bool WindowState::IsFullscreen() const {
 }
 
 bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
-  return GetStateType() == WindowStateType::kMaximized ||
-         GetStateType() == WindowStateType::kFullscreen || IsPinned();
+  return IsMaximizedOrFullscreenOrPinnedWindowStateType(GetStateType());
 }
 
 bool WindowState::IsSnapped() const {
@@ -273,8 +272,7 @@ bool WindowState::IsPip() const {
 }
 
 bool WindowState::IsNormalStateType() const {
-  return GetStateType() == WindowStateType::kNormal ||
-         GetStateType() == WindowStateType::kDefault;
+  return IsNormalWindowStateType(GetStateType());
 }
 
 bool WindowState::IsNormalOrSnapped() const {

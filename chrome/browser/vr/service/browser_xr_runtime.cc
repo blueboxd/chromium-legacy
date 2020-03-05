@@ -589,4 +589,15 @@ void BrowserXRRuntime::OnImmersiveSessionError() {
   StopImmersiveSession(base::DoNothing());
 }
 
+void BrowserXRRuntime::BeforeRuntimeRemoved() {
+  DVLOG(1) << __func__ << ": id=" << id_;
+
+  // If the device process crashes or otherwise gets removed, it's a race as to
+  // whether or not our mojo interface to the device gets reset before we're
+  // deleted as the result of the device provider being destroyed.
+  // Since this no-ops if we don't have an active immersive session, try to end
+  // any immersive session we may be currently responsible for.
+  StopImmersiveSession(base::DoNothing());
+}
+
 }  // namespace vr

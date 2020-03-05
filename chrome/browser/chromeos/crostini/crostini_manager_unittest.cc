@@ -1014,6 +1014,27 @@ TEST_F(CrostiniManagerRestartTest, AbortThenStopVm) {
   ExpectRestarterUmaCount(1);
 }
 
+TEST_F(CrostiniManagerRestartTest, DoubleAbortIsSafe) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+
+  // When abort is called multiple times, the callback set for each abort should
+  // be called at the same time. We test this here by blocking the runloop until
+  // they have been called the expected number of times.
+  int kAbortCount = 2;
+  auto barrier_closure =
+      base::BarrierClosure(kAbortCount, run_loop()->QuitClosure());
+  for (int i = 0; i < kAbortCount; i++) {
+    crostini_manager()->AbortRestartCrostini(restart_id_, barrier_closure);
+  }
+
+  run_loop()->Run();
+  ExpectCrostiniRestartResult(CrostiniResult::RESTART_ABORTED);
+}
+
 TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {
   // Use names other than termina/penguin.  Will not mount sshfs.
   restart_id_ = crostini_manager()->RestartCrostini(

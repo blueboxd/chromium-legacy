@@ -109,6 +109,7 @@ PolicyBase::PolicyBase()
       policy_(nullptr),
       lowbox_sid_(nullptr),
       lockdown_default_dacl_(false),
+      add_restricting_random_sid_(false),
       enable_opm_redirection_(false),
       effective_token_(nullptr) {
   ::InitializeCriticalSection(&lock_);
@@ -389,6 +390,10 @@ void PolicyBase::SetLockdownDefaultDacl() {
   lockdown_default_dacl_ = true;
 }
 
+void PolicyBase::AddRestrictingRandomSid() {
+  add_restricting_random_sid_ = true;
+}
+
 const base::HandlesToInheritVector& PolicyBase::GetHandlesBeingShared() {
   return handles_to_share_;
 }
@@ -413,11 +418,16 @@ ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
 ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
                                   base::win::ScopedHandle* lockdown,
                                   base::win::ScopedHandle* lowbox) {
+  Sid random_sid = Sid::GenerateRandomSid();
+  PSID random_sid_ptr = nullptr;
+  if (add_restricting_random_sid_)
+    random_sid_ptr = random_sid.GetPSID();
+
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
-  DWORD result =
-      CreateRestrictedToken(effective_token_, lockdown_level_, integrity_level_,
-                            PRIMARY, lockdown_default_dacl_, lockdown);
+  DWORD result = CreateRestrictedToken(
+      effective_token_, lockdown_level_, integrity_level_, PRIMARY,
+      lockdown_default_dacl_, random_sid_ptr, lockdown);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
 
@@ -484,9 +494,9 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
-  result =
-      CreateRestrictedToken(effective_token_, initial_level_, integrity_level_,
-                            IMPERSONATION, lockdown_default_dacl_, initial);
+  result = CreateRestrictedToken(
+      effective_token_, initial_level_, integrity_level_, IMPERSONATION,
+      lockdown_default_dacl_, random_sid_ptr, initial);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN;
 

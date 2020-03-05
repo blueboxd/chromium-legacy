@@ -20,7 +20,7 @@ base::LazyInstance<base::string16>::DestructorAtExit
     g_cursor_resource_module_name;
 
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
-  switch (native_cursor.native_type()) {
+  switch (native_cursor.type()) {
     case mojom::CursorType::kNull:
       return IDC_ARROW;
     case mojom::CursorType::kPointer:
@@ -151,7 +151,7 @@ void CursorLoaderWin::UnloadAll() {
 }
 
 void CursorLoaderWin::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  if (cursor->native_type() != mojom::CursorType::kCustom) {
+  if (cursor->type() != mojom::CursorType::kCustom) {
     if (cursor->platform()) {
       cursor->SetPlatformCursor(cursor->platform());
     } else {

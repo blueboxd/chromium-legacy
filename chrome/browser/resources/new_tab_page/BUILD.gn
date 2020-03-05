@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
     ":customize_dialog",
     ":grid",
     ":theme_icon",
+    ":untrusted_iframe",
     ":utils",
     ":voice_search_overlay",
   ]
@@ -110,6 +111,11 @@ js_library("voice_search_overlay") {
 
 js_library("utils") {
 }
+js_library("untrusted_iframe") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
 
 polymer_modulizer("app") {
   js_file = "app.js"
@@ -171,6 +177,12 @@ polymer_modulizer("voice_search_overlay") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("untrusted_iframe") {
+  js_file = "untrusted_iframe.js"
+  html_file = "untrusted_iframe.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   deps = [
     ":app_module",
@@ -182,6 +194,7 @@ group("polymer3_elements") {
     ":mini_page_module",
     ":most_visited_module",
     ":theme_icon_module",
+    ":untrusted_iframe_module",
     ":voice_search_overlay_module",
   ]
 }

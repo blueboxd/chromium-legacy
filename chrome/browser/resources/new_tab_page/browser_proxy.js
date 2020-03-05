@@ -23,9 +23,6 @@ export class BrowserProxy {
     factory.createPageHandler(
         this.callbackRouter.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());
-
-    /** @type {string} */
-    this.promoUrl = 'chrome-untrusted://new-tab-page/promo';
   }
 
   /** @param {string} href */
@@ -50,6 +47,14 @@ export class BrowserProxy {
   /** @return {number} */
   random() {
     return Math.random();
+  }
+
+  /**
+   * @param {string} path
+   * @return {string}
+   */
+  createUntrustedIframeSrc(path) {
+    return `chrome-untrusted://new-tab-page/${path}`;
   }
 }
 

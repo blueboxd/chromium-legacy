@@ -112,7 +112,7 @@ constexpr gfx::Size MagnifierFocusTestHelper::kTestFocusViewSize;
 void MagnifierFocusTestHelper::CreateAndShowFocusTestView(
     const gfx::Point& location) {
   focus_test_view_ = new TestFocusView;
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
       focus_test_view_, Shell::GetPrimaryRootWindow(),
       gfx::Rect(location, MagnifierFocusTestHelper::kTestFocusViewSize));
   widget->Show();
@@ -152,8 +152,8 @@ void MagnifierTextInputTestHelper::CreateAndShowTextInputViewInRoot(
     const gfx::Rect& bounds,
     aura::Window* root) {
   text_input_view_ = new TestTextInputView;
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      text_input_view_, root, bounds);
+  views::Widget* widget =
+      views::Widget::CreateWindowWithContext(text_input_view_, root, bounds);
   widget->Show();
 }
 

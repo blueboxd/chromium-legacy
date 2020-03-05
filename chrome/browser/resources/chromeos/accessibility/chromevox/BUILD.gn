@@ -387,7 +387,6 @@ if (is_chromeos) {
     sources = [
       "background/annotation/node_identifier_test.js",
       "background/annotation/user_annotation_handler_test.js",
-      "background/automation_util_test.js",
       "background/background_test.js",
       "background/braille_command_data_test.js",
       "background/color_test.js",
@@ -400,7 +399,6 @@ if (is_chromeos) {
       "background/logging/log_store_test.js",
       "background/output_test.js",
       "background/recovery_strategy_test.js",
-      "background/tree_walker_test.js",
       "braille/braille_table_test.js",
       "braille/braille_translator_manager_test.js",
       "braille/liblouis_test.js",

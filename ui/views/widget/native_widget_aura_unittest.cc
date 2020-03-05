@@ -607,12 +607,12 @@ class MoveTestWidgetDelegate : public WidgetDelegateView {
 TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
   // |delegate| deletes itself when the widget is destroyed.
   MoveTestWidgetDelegate* delegate = new MoveTestWidgetDelegate;
-  Widget* widget = Widget::CreateWindowWithContextAndBounds(
-      delegate, root_window(), gfx::Rect(10, 10, 100, 200));
+  Widget* widget = Widget::CreateWindowWithContext(delegate, root_window(),
+                                                   gfx::Rect(10, 10, 100, 200));
   widget->Show();
   delegate->ClearGotMove();
   // Simulate a maximize with animation.
-  delete widget->GetNativeView()->RecreateLayer().release();
+  widget->GetNativeView()->RecreateLayer();
   widget->SetBounds(gfx::Rect(0, 0, 500, 500));
   EXPECT_TRUE(delegate->got_move());
   widget->CloseNow();

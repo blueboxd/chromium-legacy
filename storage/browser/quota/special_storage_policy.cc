@@ -20,14 +20,16 @@ void SpecialStoragePolicy::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SpecialStoragePolicy::NotifyGranted(const GURL& origin, int change_flags) {
+void SpecialStoragePolicy::NotifyGranted(const url::Origin& origin,
+                                         int change_flags) {
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnGranted(origin, change_flags);
   NotifyPolicyChanged();
 }
 
-void SpecialStoragePolicy::NotifyRevoked(const GURL& origin, int change_flags) {
+void SpecialStoragePolicy::NotifyRevoked(const url::Origin& origin,
+                                         int change_flags) {
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnRevoked(origin, change_flags);

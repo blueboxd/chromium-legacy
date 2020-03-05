@@ -184,7 +184,7 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   crostini::CrostiniManager* crostini_manager =
       crostini::CrostiniManager::GetForProfile(profile);
   if (crostini_manager)
-    crostini_manager->MaybeUpgradeCrostini();
+    crostini_manager->MaybeUpdateCrostini();
 
   g_browser_process->platform_part()->InitializePrimaryProfileServices(profile);
 }

@@ -941,8 +941,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   navigation_control_->CommitNavigation(
       blink::WebNavigationParams::CreateWithHTMLString(
           html, GURL(url::kAboutBlankURL)),
-      nullptr /* extra_data */,
-      base::DoNothing::Once() /* call_before_attaching_new_document */);
+      nullptr /* extra_data */);
 }
 
 blink::WebScreenInfo PrepareFrameAndViewForPrint::GetScreenInfo() {

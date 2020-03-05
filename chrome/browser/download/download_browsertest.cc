@@ -3448,9 +3448,18 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
   // kNever, kSameOrigin, and kStrictOriginWhenCrossOrigin.
   base::FilePath file(download_items[0]->GetTargetFilePath());
   GURL origin = url::Origin::Create(url).GetURL();
-  switch (referrer_policy()) {
+
+  // Since the default referrer policy can change based on configuration,
+  // resolve referrer_policy() into a concrete policy.
+  auto policy_for_comparison = referrer_policy();
+  if (policy_for_comparison == network::mojom::ReferrerPolicy::kDefault) {
+    policy_for_comparison =
+        content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+            content::Referrer::GetDefaultReferrerPolicy());
+  }
+
+  switch (policy_for_comparison) {
     case network::mojom::ReferrerPolicy::kAlways:
-    case network::mojom::ReferrerPolicy::kDefault:
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       EXPECT_TRUE(VerifyFile(file, url.spec(), url.spec().length()));
       break;
@@ -3464,6 +3473,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       EXPECT_TRUE(VerifyFile(file, origin.spec(), origin.spec().length()));
       break;
+    default:
+      NOTREACHED() << "Unexpected policy.";
   }
 }
 

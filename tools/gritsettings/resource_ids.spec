@@ -185,6 +185,9 @@
     "includes": [1860],
     "structures": [1880],
   },
+  "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
+    "includes": [1890],
+  },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
     "includes": [1900],
   },

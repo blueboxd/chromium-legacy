@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/offline_items_collection/core/launch_location.h"
+#include "components/offline_items_collection/core/open_params.h"
 #include "components/offline_items_collection/core/rename_result.h"
 #include "components/offline_items_collection/core/update_delta.h"
 #include "url/gurl.h"
@@ -99,9 +100,8 @@ class OfflineContentProvider {
     virtual ~Observer() = default;
   };
 
-  // Called to trigger opening an OfflineItem represented by |id|. |location|
-  // denotes where it is opened and is used for logging purpose.
-  virtual void OpenItem(LaunchLocation location, const ContentId& id) = 0;
+  // Called to trigger opening an OfflineItem represented by |id|.
+  virtual void OpenItem(const OpenParams& open_params, const ContentId& id) = 0;
 
   // Called to trigger removal of an OfflineItem represented by |id|.
   virtual void RemoveItem(const ContentId& id) = 0;

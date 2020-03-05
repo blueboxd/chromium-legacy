@@ -30,11 +30,11 @@ using ScreenUtilTest = AshTestBase;
 
 TEST_F(ScreenUtilTest, Bounds) {
   UpdateDisplay("600x600,500x500");
-  views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  views::Widget* primary = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
-  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+  views::Widget* secondary = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   // Maximized bounds.
@@ -72,8 +72,8 @@ TEST_F(ScreenUtilTest, Bounds) {
 // (crbug.com/226132).
 TEST_F(ScreenUtilTest, StabilityTest) {
   UpdateDisplay("600x600,500x500");
-  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+  views::Widget* secondary = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   EXPECT_EQ(Shell::GetAllRootWindows()[1],
             secondary->GetNativeView()->GetRootWindow());
   secondary->Show();
@@ -87,11 +87,11 @@ TEST_F(ScreenUtilTest, StabilityTest) {
 TEST_F(ScreenUtilTest, ConvertRect) {
   UpdateDisplay("600x600,500x500");
 
-  views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  views::Widget* primary = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   primary->Show();
-  views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
+  views::Widget* secondary = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(610, 10, 100, 100));
   secondary->Show();
 
   gfx::Rect r1(10, 10, 100, 100);
@@ -114,8 +114,8 @@ TEST_F(ScreenUtilTest, ConvertRect) {
 TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   aura::Window* window = widget->GetNativeWindow();
 
   UpdateDisplay("500x400");
@@ -143,8 +143,8 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
   UpdateDisplay("500x400,400x600,300x600,200x300,600x200,350x400");
   display_manager()->SetUnifiedDesktopEnabled(true);
 
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
+      nullptr, CurrentContext(), gfx::Rect(10, 10, 100, 100));
   aura::Window* window = widget->GetNativeWindow();
 
   display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
@@ -206,8 +206,8 @@ TEST_F(ScreenUtilTest, SnapBoundsToDisplayEdge) {
   UpdateDisplay("2400x1600*1.5");
 
   gfx::Rect bounds(1555, 0, 45, 1066);
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      NULL, CurrentContext(), bounds);
+  views::Widget* widget =
+      views::Widget::CreateWindowWithContext(nullptr, CurrentContext(), bounds);
   aura::Window* window = widget->GetNativeWindow();
 
   gfx::Rect snapped_bounds =

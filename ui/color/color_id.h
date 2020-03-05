@@ -7,7 +7,6 @@
 
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "ui/color/color_buildflags.h"
 
 // clang-format off
 #define CROSS_PLATFORM_COLOR_IDS \

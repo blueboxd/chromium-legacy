@@ -65,7 +65,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   // LocalFrameClient ----------------------------------------------
   WebContentCaptureClient* GetWebContentCaptureClient() const override;
-  void DidCreateNewDocument() override;
   void DidCreateInitialEmptyDocument() override;
   void DidCommitJavascriptUrlNavigation(DocumentLoader*) override;
   // Notifies the WebView delegate that the JS window object has been cleared,
@@ -102,7 +101,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidFinishSameDocumentNavigation(HistoryItem*,
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
-  void DispatchDidStartProvisionalLoad(DocumentLoader*) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,

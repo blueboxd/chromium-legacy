@@ -17,7 +17,12 @@
 #include "extensions/common/constants.h"
 #include "url/origin.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/android/chrome_jni_headers/ChromePermissionsClient_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#else
 #include "chrome/app/vector_icons/vector_icons.h"
 #endif
 
@@ -131,3 +136,34 @@ bool ChromePermissionsClient::CanBypassEmbeddingOriginCheck(
   return embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
          requesting_origin.SchemeIs(extensions::kExtensionScheme);
 }
+
+#if defined(OS_ANDROID)
+infobars::InfoBarManager* ChromePermissionsClient::GetInfoBarManager(
+    content::WebContents* web_contents) {
+  return InfoBarService::FromWebContents(web_contents);
+}
+
+infobars::InfoBar* ChromePermissionsClient::MaybeCreateInfoBar(
+    content::WebContents* web_contents,
+    ContentSettingsType type,
+    base::WeakPtr<permissions::PermissionPromptAndroid> prompt) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (infobar_service &&
+      GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(web_contents,
+                                                              type)) {
+    return GroupedPermissionInfoBarDelegate::Create(std::move(prompt),
+                                                    infobar_service);
+  }
+  return nullptr;
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+ChromePermissionsClient::GetJavaObject() {
+  return Java_ChromePermissionsClient_get(base::android::AttachCurrentThread());
+}
+
+int ChromePermissionsClient::MapToJavaDrawableId(int resource_id) {
+  return ResourceMapper::MapToJavaDrawableId(resource_id);
+}
+#endif

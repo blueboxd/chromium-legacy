@@ -103,6 +103,10 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   }
   device::mojom::XRDeviceId GetId() const { return id_; }
 
+  // Called to allow the runtime to conduct any cleanup it needs to do before it
+  // is removed.
+  void BeforeRuntimeRemoved();
+
  private:
   // device::XRRuntimeEventListener
   void OnDisplayInfoChanged(

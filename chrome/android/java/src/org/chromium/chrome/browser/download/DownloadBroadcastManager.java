@@ -41,7 +41,9 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -223,7 +225,11 @@ public class DownloadBroadcastManager extends Service {
 
             case ACTION_DOWNLOAD_OPEN:
                 if (id != null) {
-                    OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(id);
+                    OpenParams openParams = new OpenParams(LaunchLocation.NOTIFICATION);
+                    openParams.openInIncognito =
+                            IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
+                    OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(
+                            openParams, id);
                 }
                 return;
         }

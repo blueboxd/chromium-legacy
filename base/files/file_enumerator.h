@@ -12,8 +12,10 @@
 
 #include "base/base_export.h"
 #include "base/containers/stack.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -97,6 +99,20 @@ class BASE_EXPORT FileEnumerator {
     ALL,
   };
 
+  // Determines how a FileEnumerator handles errors encountered during
+  // enumeration. When no ErrorPolicy is explicitly set, FileEnumerator defaults
+  // to IGNORE_ERRORS.
+  enum class ErrorPolicy {
+    // Errors are ignored if possible and FileEnumerator returns as many files
+    // as it is able to enumerate.
+    IGNORE_ERRORS,
+
+    // Any error encountered during enumeration will terminate the enumeration
+    // immediately. An error code indicating the nature of a failure can be
+    // retrieved from |GetError()|.
+    STOP_ENUMERATION,
+  };
+
   // |root_path| is the starting directory to search for. It may or may not end
   // in a slash.
   //
@@ -114,9 +130,7 @@ class BASE_EXPORT FileEnumerator {
   // since the underlying code uses OS-specific matching routines.  In general,
   // Windows matching is less featureful than others, so test there first.
   // If unspecified, this will match all files.
-  FileEnumerator(const FilePath& root_path,
-                 bool recursive,
-                 int file_type);
+  FileEnumerator(const FilePath& root_path, bool recursive, int file_type);
   FileEnumerator(const FilePath& root_path,
                  bool recursive,
                  int file_type,
@@ -126,6 +140,12 @@ class BASE_EXPORT FileEnumerator {
                  int file_type,
                  const FilePath::StringType& pattern,
                  FolderSearchPolicy folder_search_policy);
+  FileEnumerator(const FilePath& root_path,
+                 bool recursive,
+                 int file_type,
+                 const FilePath::StringType& pattern,
+                 FolderSearchPolicy folder_search_policy,
+                 ErrorPolicy error_policy);
   ~FileEnumerator();
 
   // Returns the next file or an empty string if there are no more results.
@@ -137,6 +157,12 @@ class BASE_EXPORT FileEnumerator {
 
   // Write the file info into |info|.
   FileInfo GetInfo() const;
+
+  // Once |Next()| returns an empty path, enumeration has been terminated. If
+  // termination was normal (i.e. no more results to enumerate) or ErrorPolicy
+  // is set to IGNORE_ERRORS, this returns FILE_OK. Otherwise it returns an
+  // error code reflecting why enumeration was stopped early.
+  File::Error GetError() const { return error_; }
 
  private:
   // Returns true if the given path should be skipped in enumeration.
@@ -167,6 +193,8 @@ class BASE_EXPORT FileEnumerator {
   const int file_type_;
   FilePath::StringType pattern_;
   const FolderSearchPolicy folder_search_policy_;
+  const ErrorPolicy error_policy_;
+  File::Error error_ = File::FILE_OK;
 
   // A stack that keeps track of which subdirectories we still need to
   // enumerate in the breadth-first search.

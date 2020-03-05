@@ -247,11 +247,6 @@ WebContentCaptureClient* LocalFrameClientImpl::GetWebContentCaptureClient()
   return web_frame_->ContentCaptureClient();
 }
 
-void LocalFrameClientImpl::DidCreateNewDocument() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidCreateNewDocument();
-}
-
 void LocalFrameClientImpl::DidCreateInitialEmptyDocument() {
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateInitialEmptyDocument();
@@ -485,14 +480,6 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
   }
 }
 
-void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
-    DocumentLoader* loader) {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader));
-  }
-}
-
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidReceiveTitle(title);
@@ -509,7 +496,7 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
 
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidCommitProvisionalLoad(
+    web_frame_->Client()->DidCommitNavigation(
         WebHistoryItem(item), commit_type,
         global_object_reuse_policy == GlobalObjectReusePolicy::kCreateNew);
     if (web_frame_->GetFrame()->IsLocalRoot()) {

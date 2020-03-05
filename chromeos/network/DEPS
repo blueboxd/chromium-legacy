@@ -33,6 +33,9 @@ specific_include_rules = {
  "managed_network_configuration_handler_unittest.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],
+ "network_metadata_store_unittest.cc": [
+    "+components/sync_preferences/testing_pref_service_syncable.h"
+  ],
 
   # Dependencies specific for fuzz targets and other fuzzing-related code.
   ".*fuzz.*": [

@@ -7398,6 +7398,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Safe mode"/>
 </enum>
 
+<enum name="BooleanSaved">
+  <int value="0" label="Saved"/>
+  <int value="1" label="Reverted"/>
+</enum>
+
 <enum name="BooleanSecure">
   <int value="0" label="Insecure"/>
   <int value="1" label="Secure"/>
@@ -15109,6 +15114,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="100" label="Crostini Force Close"/>
   <int value="101" label="App Uninstall"/>
   <int value="102" label="Print Job Confirmation"/>
+  <int value="103" label="Crostini Recovery Dialog"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -22463,6 +22469,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1451" label="PASSWORDSPRIVATE_GETCOMPROMISEDCREDENTIALSINFO"/>
   <int value="1452" label="INPUTMETHODPRIVATE_HIDEINPUTVIEW"/>
   <int value="1453" label="PASSWORDSPRIVATE_GETPLAINTEXTCOMPROMISEDPASSWORD"/>
+  <int value="1454" label="PASSWORDSPRIVATE_CHANGECOMPROMISEDCREDENTIAL"/>
+  <int value="1455" label="PASSWORDSPRIVATE_REMOVECOMPROMISEDCREDENTIAL"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38564,6 +38572,7 @@ from previous Chrome versions.
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
   <int value="-433879402"
       label="EnableAmbientAuthenticationInIncognito:disabled"/>
+  <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
@@ -39742,6 +39751,7 @@ from previous Chrome versions.
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
+  <int value="1036565901" label="AssistPersonalInfo:enabled"/>
   <int value="1037961753" label="CCTIncognito:disabled"/>
   <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>

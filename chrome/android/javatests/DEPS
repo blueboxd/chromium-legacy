@@ -26,6 +26,7 @@ include_rules = [
   "+components/offline_items_collection/core/android/java",
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
+  "+components/permissions/android/java/src/org/chromium/components/permissions",
   "+components/safe_browsing/android/java/src/org/chromium/components/safe_browsing",
   "+components/search_engines",
   "+components/sync/android/java/src/org/chromium/components/sync",

@@ -72,6 +72,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -390,6 +391,8 @@ public class DownloadUtils {
      * Utility method to open an {@link OfflineItem}, which can be a chrome download, offline page.
      * Falls back to open download home.
      * @param contentId The {@link ContentId} of the associated offline item.
+     * @param isOffTheRecord Whether the download should be opened in incognito mode.
+     * @param source The location from which the download was opened.
      */
     public static void openItem(
             ContentId contentId, boolean isOffTheRecord, @DownloadOpenSource int source) {
@@ -398,7 +401,9 @@ public class DownloadUtils {
                     new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         } else if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
-            OfflineContentAggregatorFactory.get().openItem(LaunchLocation.PROGRESS_BAR, contentId);
+            OpenParams openParams = new OpenParams(LaunchLocation.PROGRESS_BAR);
+            openParams.openInIncognito = isOffTheRecord;
+            OfflineContentAggregatorFactory.get().openItem(openParams, contentId);
         } else {
             DownloadManagerService.getDownloadManagerService().openDownload(
                     contentId, isOffTheRecord, source);

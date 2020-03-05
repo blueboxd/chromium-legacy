@@ -28,6 +28,7 @@
 
 #include <atomic>
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -62,7 +63,8 @@ class AudioSummingJunction;
 // - GC happens and it collects the BaseAudioContext before the task execution.
 //
 class MODULES_EXPORT DeferredTaskHandler final
-    : public ThreadSafeRefCounted<DeferredTaskHandler> {
+    : public ThreadSafeRefCounted<DeferredTaskHandler>,
+      public base::SupportsWeakPtr<DeferredTaskHandler> {
  public:
   static scoped_refptr<DeferredTaskHandler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

@@ -57,8 +57,7 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
     assertEquals(tiles.length, 1);
     assertEquals(tiles[0].getAttribute('title'), 'col_0');
     assertEquals(
-        tiles[0].querySelector('.image').textContent.trim(),
-        'https://col_0.jpg');
+        tiles[0].querySelector('.image').path, 'image?https://col_0.jpg');
   });
 
   test('clicking collection selects collection', async function() {
@@ -112,8 +111,8 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
         customizeBackgrounds.shadowRoot.querySelectorAll('#images .tile');
     assertEquals(tiles.length, 1);
     assertEquals(
-        tiles[0].querySelector('.image').textContent.trim(),
-        'https://example.com/image.png');
+        tiles[0].querySelector('.image').path,
+        'image?https://example.com/image.png');
   });
 
   test('Going back shows collections', async function() {

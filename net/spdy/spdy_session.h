@@ -87,6 +87,13 @@ const spdy::SpdyStreamId kFirstStreamId = 1;
 const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
 // Maximum number of capped frames that can be queued at any time.
+// We measured how many queued capped frames were ever in the
+// SpdyWriteQueue at one given time between 2019-08 and 2020-02.
+// The numbers showed that in 99.94% of cases it would always
+// stay below 10, and that it would exceed 1000 only in
+// 10^-8 of cases. Therefore we picked 10000 as a number that will
+// virtually never be hit in practice, while still preventing an
+// attacker from growing this queue unboundedly.
 const int kSpdySessionMaxQueuedCappedFrames = 10000;
 
 class NetLog;

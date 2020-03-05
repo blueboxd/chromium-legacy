@@ -239,9 +239,12 @@ void AvailableOfflineContentProvider::LaunchItem(
     const std::string& name_space) {
   offline_items_collection::OfflineContentAggregator* aggregator =
       OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
+
+  offline_items_collection::OpenParams open_params(
+      offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION);
+  open_params.open_in_incognito = profile_->IsOffTheRecord();
   aggregator->OpenItem(
-      offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION,
-      offline_items_collection::ContentId(name_space, item_id));
+      open_params, offline_items_collection::ContentId(name_space, item_id));
 }
 
 void AvailableOfflineContentProvider::LaunchDownloadsPage(

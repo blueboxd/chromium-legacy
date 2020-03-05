@@ -32,7 +32,6 @@
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -198,7 +197,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   Settings& GetSettings() const { return *settings_; }
 
   Deprecation& GetDeprecation() { return deprecation_; }
-  HostsUsingFeatures& GetHostsUsingFeatures() { return hosts_using_features_; }
 
   void SetWindowFeatures(const WebWindowFeatures& features) {
     window_features_ = features;
@@ -411,7 +409,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   Member<AgentMetricsCollector> agent_metrics_collector_;
 
   Deprecation deprecation_;
-  HostsUsingFeatures hosts_using_features_;
   WebWindowFeatures window_features_;
 
   bool opened_by_dom_;

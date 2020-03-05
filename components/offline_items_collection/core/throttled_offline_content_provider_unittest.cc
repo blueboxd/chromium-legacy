@@ -94,14 +94,14 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   items.push_back(item);
 
   testing::InSequence sequence;
-  EXPECT_CALL(wrapped_provider_, OpenItem(LaunchLocation::DOWNLOAD_HOME, id));
+  EXPECT_CALL(wrapped_provider_, OpenItem(_, id));
   EXPECT_CALL(wrapped_provider_, RemoveItem(id));
   EXPECT_CALL(wrapped_provider_, CancelDownload(id));
   EXPECT_CALL(wrapped_provider_, PauseDownload(id));
   EXPECT_CALL(wrapped_provider_, ResumeDownload(id, true));
   EXPECT_CALL(wrapped_provider_, GetVisualsForItem_(id, _, _));
   wrapped_provider_.SetItems(items);
-  provider_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id);
+  provider_.OpenItem(OpenParams(LaunchLocation::DOWNLOAD_HOME), id);
   provider_.RemoveItem(id);
   provider_.CancelDownload(id);
   provider_.PauseDownload(id);
@@ -359,7 +359,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestPokingProviderFlushesQueue) {
     EXPECT_CALL(observer, OnItemUpdated(item2, Eq(base::nullopt))).Times(1);
     provider_.set_last_update_time(base::TimeTicks::Now());
     wrapped_provider_.NotifyOnItemUpdated(item1, base::nullopt);
-    provider_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);
+    provider_.OpenItem(OpenParams(LaunchLocation::DOWNLOAD_HOME), id1);
   }
 
   {

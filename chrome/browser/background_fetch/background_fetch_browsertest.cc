@@ -762,8 +762,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
             BackgroundFetchDelegateImpl::JobDetails::State::kJobComplete);
 
   // Simulate notification click.
-  delegate_->OpenItem(offline_items_collection::LaunchLocation::NOTIFICATION,
-                      job_details.offline_item.id);
+  delegate_->OpenItem(
+      offline_items_collection::OpenParams(
+          offline_items_collection::LaunchLocation::NOTIFICATION),
+      job_details.offline_item.id);
 
   // Job Details should be deleted at this point.
   EXPECT_TRUE(delegate_->job_details_map_.empty());

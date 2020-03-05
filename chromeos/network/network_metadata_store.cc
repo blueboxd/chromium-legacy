@@ -1,0 +1,199 @@
+// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/network/network_metadata_store.h"
+
+#include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+
+namespace chromeos {
+
+namespace {
+
+const char kNetworkMetadataPref[] = "network_metadata";
+const char kLastConnectedTimestampPref[] = "last_connected_timestamp";
+const char kIsFromSync[] = "is_from_sync";
+
+std::string GetPath(const std::string& guid, const std::string& subkey) {
+  return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
+}
+
+}  // namespace
+
+// static
+void NetworkMetadataStore::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kNetworkMetadataPref);
+}
+
+NetworkMetadataStore::NetworkMetadataStore(
+    NetworkConfigurationHandler* network_configuration_handler,
+    NetworkConnectionHandler* network_connection_handler,
+    NetworkStateHandler* network_state_handler,
+    PrefService* profile_pref_service,
+    PrefService* device_pref_service)
+    : network_configuration_handler_(network_configuration_handler),
+      network_connection_handler_(network_connection_handler),
+      network_state_handler_(network_state_handler),
+      profile_pref_service_(profile_pref_service),
+      device_pref_service_(device_pref_service) {
+  if (network_connection_handler_) {
+    network_connection_handler_->AddObserver(this);
+  }
+  if (network_configuration_handler_) {
+    network_configuration_handler_->AddObserver(this);
+  }
+}
+
+NetworkMetadataStore::~NetworkMetadataStore() {
+  if (network_connection_handler_) {
+    network_connection_handler_->RemoveObserver(this);
+  }
+  if (network_configuration_handler_) {
+    network_configuration_handler_->RemoveObserver(this);
+  }
+}
+
+void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
+  const NetworkState* network =
+      network_state_handler_->GetNetworkState(service_path);
+
+  if (!network || network->type() != shill::kTypeWifi) {
+    return;
+  }
+
+  UpdateLastConnectedTimestamp(network->guid());
+}
+
+void NetworkMetadataStore::OnConfigurationModified(
+    const std::string& service_path,
+    const std::string& guid,
+    base::DictionaryValue* set_properties) {
+  if (!set_properties) {
+    return;
+  }
+
+  SetPref(guid, kIsFromSync, base::Value(false));
+  SetPref(guid, kLastConnectedTimestampPref, base::Value(0));
+}
+
+void NetworkMetadataStore::OnConfigurationRemoved(
+    const std::string& service_path,
+    const std::string& network_guid) {
+  RemoveNetworkFromPref(network_guid, device_pref_service_);
+  RemoveNetworkFromPref(network_guid, profile_pref_service_);
+}
+
+void NetworkMetadataStore::RemoveNetworkFromPref(
+    const std::string& network_guid,
+    PrefService* pref_service) {
+  if (!pref_service) {
+    return;
+  }
+
+  const base::DictionaryValue* dict =
+      pref_service->GetDictionary(kNetworkMetadataPref);
+  if (!dict || !dict->HasKey(network_guid)) {
+    return;
+  }
+
+  base::Value writeable_dict = dict->Clone();
+  if (!writeable_dict.RemoveKey(network_guid)) {
+    return;
+  }
+
+  pref_service->Set(kNetworkMetadataPref, writeable_dict);
+}
+
+void NetworkMetadataStore::UpdateLastConnectedTimestamp(
+    const std::string& network_guid) {
+  double timestamp =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMillisecondsF();
+  SetPref(network_guid, kLastConnectedTimestampPref, base::Value(timestamp));
+}
+
+void NetworkMetadataStore::SetIsConfiguredBySync(
+    const std::string& network_guid) {
+  SetPref(network_guid, kIsFromSync, base::Value(true));
+}
+
+base::TimeDelta NetworkMetadataStore::GetLastConnectedTimestamp(
+    const std::string& network_guid) {
+  const base::Value* timestamp =
+      GetPref(network_guid, kLastConnectedTimestampPref);
+
+  if (!timestamp || !timestamp->is_double()) {
+    return base::TimeDelta();
+  }
+
+  return base::TimeDelta::FromMillisecondsD(timestamp->GetDouble());
+}
+
+bool NetworkMetadataStore::GetIsConfiguredBySync(
+    const std::string& network_guid) {
+  const base::Value* is_from_sync = GetPref(network_guid, kIsFromSync);
+  if (!is_from_sync) {
+    return false;
+  }
+
+  return is_from_sync->GetBool();
+}
+
+void NetworkMetadataStore::SetPref(const std::string& network_guid,
+                                   const std::string& key,
+                                   base::Value value) {
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+
+  if (!network)
+    return;
+
+  if (network->IsPrivate()) {
+    base::Value profile_dict =
+        profile_pref_service_->GetDictionary(kNetworkMetadataPref)->Clone();
+    profile_dict.SetPath(GetPath(network_guid, key), std::move(value));
+    profile_pref_service_->Set(kNetworkMetadataPref, profile_dict);
+    return;
+  }
+
+  base::Value device_dict =
+      device_pref_service_->GetDictionary(kNetworkMetadataPref)->Clone();
+  device_dict.SetPath(GetPath(network_guid, key), std::move(value));
+  device_pref_service_->Set(kNetworkMetadataPref, device_dict);
+}
+
+const base::Value* NetworkMetadataStore::GetPref(
+    const std::string& network_guid,
+    const std::string& key) {
+  if (!network_state_handler_) {
+    return nullptr;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+
+  if (!network) {
+    return nullptr;
+  }
+
+  if (network->IsPrivate()) {
+    const base::Value* profile_dict =
+        profile_pref_service_->GetDictionary(kNetworkMetadataPref);
+    return profile_dict->FindPath(GetPath(network_guid, key));
+  }
+
+  const base::Value* device_dict =
+      device_pref_service_->GetDictionary(kNetworkMetadataPref);
+  return device_dict->FindPath(GetPath(network_guid, key));
+}
+
+}  // namespace chromeos

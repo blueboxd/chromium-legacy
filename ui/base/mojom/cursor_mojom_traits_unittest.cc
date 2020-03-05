@@ -34,7 +34,7 @@ TEST_F(CursorStructTraitsTest, TestBuiltIn) {
 
     ui::Cursor output;
     ASSERT_TRUE(EchoCursor(input, &output));
-    EXPECT_EQ(type, output.native_type());
+    EXPECT_EQ(type, output.type());
   }
 }
 
@@ -57,7 +57,7 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   EXPECT_TRUE(EchoCursor(input, &output));
   EXPECT_EQ(input, output);
 
-  EXPECT_EQ(ui::mojom::CursorType::kCustom, output.native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCustom, output.type());
   EXPECT_EQ(kScale, output.image_scale_factor());
   EXPECT_EQ(kHotspot, GetCursorHotstop(output));
 

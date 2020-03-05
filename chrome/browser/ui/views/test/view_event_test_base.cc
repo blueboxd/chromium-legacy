@@ -80,8 +80,8 @@ void ViewEventTestBase::SetUp() {
 
   platform_part_.reset(ViewEventTestPlatformPart::Create(
       context_factories_->GetContextFactory()));
-  gfx::NativeWindow context = platform_part_->GetContext();
-  window_ = views::Widget::CreateWindowWithContext(this, context);
+  window_ = views::Widget::CreateWindowWithContext(
+      this, platform_part_->GetContext());
   window_->Show();
 }
 

@@ -14,7 +14,6 @@
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
-#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -43,7 +42,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_WIN)
                               mojom::ModuleEventSink,
 #endif
-                              rappor::mojom::RapporRecorder,
                               safe_browsing::mojom::SafeBrowsing>())
         .RequireCapability("ash", "system_ui")
         .RequireCapability("ash", "test")

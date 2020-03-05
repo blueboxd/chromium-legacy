@@ -12,10 +12,13 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 class InfoBarService;
-class PermissionPromptAndroid;
 
 namespace content {
 class WebContents;
+}
+
+namespace permissions {
+class PermissionPromptAndroid;
 }
 
 // An InfoBar that displays a permission request.
@@ -28,7 +31,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~GroupedPermissionInfoBarDelegate() override;
 
   static infobars::InfoBar* Create(
-      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+      const base::WeakPtr<permissions::PermissionPromptAndroid>&
+          permission_prompt,
       InfoBarService* infobar_service);
 
   size_t PermissionCount() const;
@@ -58,7 +62,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   GroupedPermissionInfoBarDelegate(
-      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+      const base::WeakPtr<permissions::PermissionPromptAndroid>&
+          permission_prompt,
       InfoBarService* infobar_service);
 
   // ConfirmInfoBarDelegate:
@@ -69,7 +74,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
-  base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
+  base::WeakPtr<permissions::PermissionPromptAndroid> permission_prompt_;
   InfoBarService* infobar_service_;
   bool details_expanded_;
 

@@ -7,6 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -42,7 +43,8 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::string& container_name,
                            const std::vector<std::string>& terminal_args) {
   std::string vsh_crosh =
-      std::string(chrome::kChromeUITerminalURL) + "html/terminal.html";
+      base::StrCat({std::string(chrome::kChromeUIUntrustedTerminalURL),
+                    "html/terminal.html"});
   if (!base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
     vsh_crosh =
         extensions::TerminalExtensionHelper::GetCroshURL(profile).spec();
@@ -135,7 +137,9 @@ void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin) {
 
   web_app::LaunchSystemWebApp(
       profile, web_app::SystemAppType::TERMINAL,
-      GURL(std::string(chrome::kChromeUITerminalURL) + path), *params);
+      GURL(base::StrCat(
+          {std::string(chrome::kChromeUIUntrustedTerminalURL), path})),
+      *params);
 }
 
 void RecordTerminalSettingsChangesUMAs(Profile* profile) {

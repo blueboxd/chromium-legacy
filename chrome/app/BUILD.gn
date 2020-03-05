@@ -209,7 +209,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//components/data_reduction_proxy/core/common:interfaces",
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
-    "//components/rappor/public/mojom",
     "//components/safe_browsing/content/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
     "//components/translate/content/common",

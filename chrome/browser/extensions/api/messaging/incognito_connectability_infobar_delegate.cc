@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

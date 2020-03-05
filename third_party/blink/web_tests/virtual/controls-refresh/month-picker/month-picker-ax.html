@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../resources/testharness.js"></script>
+    <script src="../../../resources/testharnessreport.js"></script>
+    <script src="../../../fast/forms/resources/common.js"></script>
+    <script src="../../../fast/forms/resources/picker-common.js"></script>
+    <script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+
+<body>
+<input type="month" id="month1" value="2000-01">
+
+<script>
+async_test((t) => {
+    var markDirtyCounter = 0;
+    var focusCounter = 0;
+    accessibilityController.setNotificationListener(function(axnode, type) {
+        if (type == 'Focus') {
+            console.log('Focused: ' + accessibilityController.focusedElement.name.replace(/,/g, ''));
+            focusCounter++;
+        } else if (type == 'MarkDirty') {
+            console.log('Received MarkDirty');
+            markDirtyCounter++;
+        }
+
+        if (focusCounter == 3 && markDirtyCounter == 1) {
+            assert_equals(month1.value, "2000-05", "Arrow key in month picker should have changed value");
+            t.done();
+        }
+    });
+
+    var month1 = document.getElementById('month1');
+    function test1() {
+        assert_equals(focusCounter, 2, "Expected 2 Focus events from opening popup.");
+        assert_equals(markDirtyCounter, 1, "Expected 1 MarkDirty events from opening popup.");
+        eventSender.keyDown('ArrowDown');
+    }
+
+    openPicker(month1, test1);
+}, 'Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.');
+
+</script>
+</body>
+</html>

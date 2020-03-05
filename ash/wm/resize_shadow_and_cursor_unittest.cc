@@ -55,8 +55,8 @@ class ResizeShadowAndCursorTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    views::Widget* widget(views::Widget::CreateWindowWithContextAndBounds(
-        new TestWidgetDelegate(), CurrentContext(), gfx::Rect(0, 0, 200, 100)));
+    views::Widget* widget = views::Widget::CreateWindowWithContext(
+        new TestWidgetDelegate(), CurrentContext(), gfx::Rect(0, 0, 200, 100));
     widget->Show();
     window_ = widget->GetNativeView();
 
@@ -100,7 +100,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
   // Returns the current cursor type.
   ui::mojom::CursorType GetCurrentCursorType() const {
     CursorManagerTestApi test_api(Shell::Get()->cursor_manager());
-    return test_api.GetCurrentCursor().native_type();
+    return test_api.GetCurrentCursor().type();
   }
 
   // Called for each step of a scroll sequence initiated at the bottom right

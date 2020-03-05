@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERMISSIONS_CHROME_PERMISSIONS_CLIENT_H_
 
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "components/permissions/permissions_client.h"
 
 class ChromePermissionsClient : public permissions::PermissionsClient {
@@ -34,6 +35,16 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   base::Optional<url::Origin> GetAutoApprovalOrigin() override;
   bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                      const GURL& embedding_origin) override;
+#if defined(OS_ANDROID)
+  infobars::InfoBarManager* GetInfoBarManager(
+      content::WebContents* web_contents) override;
+  infobars::InfoBar* MaybeCreateInfoBar(
+      content::WebContents* web_contents,
+      ContentSettingsType type,
+      base::WeakPtr<permissions::PermissionPromptAndroid> prompt) override;
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
+  int MapToJavaDrawableId(int resource_id) override;
+#endif
 
  private:
   friend base::NoDestructor<ChromePermissionsClient>;

@@ -891,6 +891,14 @@ const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
 // session" mode which has lifted restrictions (true).
 const char kManagedSessionEnabled[] = "managed_session.enabled";
 
+// Boolean pref indicating whether the message displayed on the login screen for
+// the managed guest session should be the full warning or not.
+// True means the full warning should be displayed.
+// False means the normal warning should be displayed.
+// It's true by default, unless it's ensured that all extensions are "safe".
+const char kManagedSessionUseFullLoginWarning[] =
+    "managed_session.use_full_warning";
+
 // Boolean pref indicating whether the user has previously dismissed the
 // one-time notification indicating the need for a cleanup powerwash after TPM
 // firmware update that didn't flush the TPM SRK.

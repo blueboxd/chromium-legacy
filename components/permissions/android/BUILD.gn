@@ -3,26 +3,53 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 
 generate_jni("jni") {
   sources = [
+    "java/src/org/chromium/components/permissions/PermissionDialogController.java",
+    "java/src/org/chromium/components/permissions/PermissionDialogDelegate.java",
     "java/src/org/chromium/components/permissions/PermissionUmaUtil.java",
     "java/src/org/chromium/components/permissions/PermissionUtil.java",
+    "java/src/org/chromium/components/permissions/PermissionsClient.java",
   ]
 }
 
 android_resources("java_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.components.permissions"
+  deps = [ ":permissions_strings_grd" ]
 }
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/permissions/AndroidPermissionRequester.java",
+    "java/src/org/chromium/components/permissions/PermissionDialogController.java",
+    "java/src/org/chromium/components/permissions/PermissionDialogDelegate.java",
+    "java/src/org/chromium/components/permissions/PermissionDialogModel.java",
     "java/src/org/chromium/components/permissions/PermissionUmaUtil.java",
     "java/src/org/chromium/components/permissions/PermissionUtil.java",
+    "java/src/org/chromium/components/permissions/PermissionsClient.java",
   ]
-  deps = [ "//base:base_java" ]
+  deps = [
+    ":java_resources",
+    "//base:base_java",
+    "//base:jni_java",
+    "//components/browser_ui/modaldialog/android:java",
+    "//third_party/android_deps:android_support_v4_java",
+    "//ui/android:ui_java",
+  ]
   srcjar_deps = [
     "//components/content_settings/core/common:content_settings_type_javagen",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+java_strings_grd("permissions_strings_grd") {
+  grd_file = "permissions_android_strings.grd"
+  outputs =
+      [ "values/permissions_android_strings.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "values-{{source_name_part}}/permissions_android_strings.xml" ])
 }

@@ -252,17 +252,19 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   ToolbarButtonProvider* button_provider =
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar_button_provider();
 
-  // Writable directories are generally also readable, but we don't want to
-  // display the same directory twice. So filter out any writable directories
-  // from the readable directories list.
+  // Writable files or directories are generally also readable, but we don't
+  // want to display the same path twice. So filter out any writable paths from
+  // the readable lists.
   std::set<base::FilePath> writable_directories(
       usage.writable_directories.begin(), usage.writable_directories.end());
-  std::vector<base::FilePath> readable_directories;
-  for (base::FilePath& path : usage.readable_directories) {
-    if (!base::Contains(writable_directories, path))
-      readable_directories.push_back(std::move(path));
-  }
-  usage.readable_directories = readable_directories;
+  base::EraseIf(usage.readable_directories, [&](const base::FilePath& path) {
+    return base::Contains(writable_directories, path);
+  });
+  std::set<base::FilePath> writable_files(usage.writable_files.begin(),
+                                          usage.writable_files.end());
+  base::EraseIf(usage.readable_files, [&](const base::FilePath& path) {
+    return base::Contains(writable_files, path);
+  });
 
   bubble_ = new NativeFileSystemUsageBubbleView(
       button_provider->GetAnchorView(
@@ -296,9 +298,10 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
-      writable_paths_model_(usage_.writable_files, usage_.writable_directories),
-      readable_paths_model_(usage_.readable_files,
-                            usage_.readable_directories) {
+      readable_paths_model_(std::move(usage_.readable_files),
+                            std::move(usage_.readable_directories)),
+      writable_paths_model_(std::move(usage_.writable_files),
+                            std::move(usage_.writable_directories)) {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::set_button_label(

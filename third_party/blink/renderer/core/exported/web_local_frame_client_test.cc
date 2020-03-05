@@ -31,23 +31,13 @@ class CallTrackingTestWebLocalFrameClient
     TestWebFrameClient::DidCreateDocumentLoader(loader);
   }
 
-  void DidStartProvisionalLoad(WebDocumentLoader* loader) override {
-    calls_.push_back("DidStartProvisionalLoad");
-    TestWebFrameClient::DidStartProvisionalLoad(loader);
-  }
-
-  void DidCommitProvisionalLoad(
+  void DidCommitNavigation(
       const WebHistoryItem& item,
       WebHistoryCommitType type,
       bool should_reset_browser_interface_broker) override {
-    calls_.push_back("DidCommitProvisionalLoad");
-    TestWebFrameClient::DidCommitProvisionalLoad(
+    calls_.push_back("DidCommitNavigation");
+    TestWebFrameClient::DidCommitNavigation(
         item, type, should_reset_browser_interface_broker);
-  }
-
-  void DidCreateNewDocument() override {
-    calls_.push_back("DidCreateNewDocument");
-    TestWebFrameClient::DidCreateNewDocument();
   }
 
   void DidCreateInitialEmptyDocument() override {
@@ -120,8 +110,7 @@ TEST(WebLocalFrameClientTest, Basic) {
           // initial document doesn't fire document_idle due to an early return
           // in FrameLoader::FinishedParsing()...
           "RunScriptsAtDocumentIdle", "DidCreateDocumentLoader",
-          "DidStartProvisionalLoad", "DidCreateNewDocument",
-          "DidCommitProvisionalLoad", "DidCreateDocumentElement",
+          "DidCommitNavigation", "DidCreateDocumentElement",
           "RunScriptsAtDocumentElementAvailable", "DidFinishDocumentLoad",
           "RunScriptsAtDocumentReady", "RunScriptsAtDocumentIdle",
           "DidHandleOnloadEvents", "DidFinishLoad"));

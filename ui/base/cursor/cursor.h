@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) Cursor {
   void RefCustomCursor();
   void UnrefCustomCursor();
 
-  mojom::CursorType native_type() const { return native_type_; }
+  mojom::CursorType type() const { return type_; }
   PlatformCursor platform() const { return platform_cursor_; }
   float image_scale_factor() const { return image_scale_factor_; }
   void set_image_scale_factor(float scale) { image_scale_factor_ = scale; }
@@ -62,14 +62,14 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) Cursor {
   bool operator==(const Cursor& cursor) const;
   bool operator!=(const Cursor& cursor) const { return !(*this == cursor); }
 
-  bool operator==(mojom::CursorType type) const { return native_type_ == type; }
-  bool operator!=(mojom::CursorType type) const { return native_type_ != type; }
+  bool operator==(mojom::CursorType type) const { return type_ == type; }
+  bool operator!=(mojom::CursorType type) const { return type_ != type; }
 
   void operator=(const Cursor& cursor);
 
  private:
   // The basic cursor type.
-  mojom::CursorType native_type_ = mojom::CursorType::kNull;
+  mojom::CursorType type_ = mojom::CursorType::kNull;
 
   // The native platform cursor.
   PlatformCursor platform_cursor_ = 0;

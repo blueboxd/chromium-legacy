@@ -261,7 +261,7 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
         } else {
           color_spaces.SetOutputColorSpaceAndBufferFormat(
               usage, /*needs_alpha=*/false, hdr10,
-              gfx::BufferFormat::BGRX_1010102);
+              gfx::BufferFormat::BGRA_1010102);
         }
         // Use RGBA F16 backbuffers for HDR if alpha channel is required.
         color_spaces.SetOutputColorSpaceAndBufferFormat(

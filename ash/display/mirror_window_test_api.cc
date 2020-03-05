@@ -29,7 +29,7 @@ ui::mojom::CursorType MirrorWindowTestApi::GetCurrentCursorType() const {
   return Shell::Get()
       ->window_tree_host_manager()
       ->cursor_window_controller()
-      ->cursor_.native_type();
+      ->cursor_.type();
 }
 
 const gfx::Point& MirrorWindowTestApi::GetCursorHotPoint() const {

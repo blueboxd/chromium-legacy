@@ -36,10 +36,9 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   ~SizeAdaptableVideoEncoderBase() override;
 
   // VideoEncoder implementation.
-  bool EncodeVideoFrame(
-      scoped_refptr<media::VideoFrame> video_frame,
-      const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) final;
+  bool EncodeVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                        base::TimeTicks reference_time,
+                        FrameEncodedCallback frame_encoded_callback) final;
   void SetBitRate(int new_bit_rate) final;
   void GenerateKeyFrame() final;
   std::unique_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
@@ -84,7 +83,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   void OnEncoderStatusChange(OperationalStatus status);
 
   // Called by the |encoder_| with the next EncodedFrame.
-  void OnEncodedVideoFrame(const FrameEncodedCallback& frame_encoded_callback,
+  void OnEncodedVideoFrame(FrameEncodedCallback frame_encoded_callback,
                            std::unique_ptr<SenderEncodedFrame> encoded_frame);
 
   const scoped_refptr<CastEnvironment> cast_environment_;

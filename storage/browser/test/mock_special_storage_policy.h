@@ -52,11 +52,11 @@ class MockSpecialStoragePolicy : public SpecialStoragePolicy {
     all_unlimited_ = false;
   }
 
-  void NotifyGranted(const GURL& origin, int change_flags) {
+  void NotifyGranted(const url::Origin& origin, int change_flags) {
     SpecialStoragePolicy::NotifyGranted(origin, change_flags);
   }
 
-  void NotifyRevoked(const GURL& origin, int change_flags) {
+  void NotifyRevoked(const url::Origin& origin, int change_flags) {
     SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
   }
 

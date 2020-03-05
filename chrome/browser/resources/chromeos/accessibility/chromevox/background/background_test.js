@@ -4,13 +4,10 @@
 
 // Include test fixture.
 GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js',
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js'
+  '../testing/chromevox_next_e2e_test_base.js', '../testing/assert_additions.js'
 ]);
 
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/mock_feedback.js'
-]);
+GEN_INCLUDE(['../testing/mock_feedback.js', '../testing/fake_objects.js']);
 
 /**
  * Test fixture for Background.
@@ -136,6 +133,15 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         <p>After</p>
       </div>
     `;
+  }
+
+  /**
+   * Fires an onCustomSpokenFeedbackToggled event with enabled state of
+   * |enabled|.
+   * @param {boolean} enabled TalkBack-enabled state.
+   */
+  dispatchOnCustomSpokenFeedbackToggledEvent(enabled) {
+    chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.dispatch(enabled);
   }
 };
 
@@ -1818,7 +1824,9 @@ TEST_F('ChromeVoxBackgroundTest', 'ListName', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
-    <div id="_md-chips-wrapper-76" tabindex="-1" class="md-chips md-readonly" aria-setsize="4" aria-label="Favorite Sports" role="list" aria-describedby="chipsNote">
+    <div id="_md-chips-wrapper-76" tabindex="-1" class="md-chips md-readonly"
+        aria-setsize="4" aria-label="Favorite Sports" role="list"
+        aria-describedby="chipsNote">
       <div role="listitem">Baseball</div>
       <div role="listitem">Hockey</div>
       <div role="listitem">Lacrosse</div>
@@ -2360,5 +2368,46 @@ TEST_F('ChromeVoxBackgroundTest', 'ToggleDarkScreen', function() {
         .call(doCmd('toggleDarkScreen'))
         .expectSpeech('Darken screen')
         .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NoFocusTalkBackDisabled', function() {
+  // Fire onCustomSpokenFeedbackEnabled event to communicate that Talkback is
+  // off for the current app.
+  this.dispatchOnCustomSpokenFeedbackToggledEvent(false);
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<p>Test document</p>', function() {
+    ChromeVoxState.instance.setCurrentRange(null);
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech(
+            'No current ChromeVox focus. Press Alt+Shift+L to go to the ' +
+            'launcher.')
+        .call(doCmd('previousObject'))
+        .expectSpeech(
+            'No current ChromeVox focus. Press Alt+Shift+L to go to the ' +
+            'launcher.');
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NoFocusTalkBackEnabled', function() {
+  // Fire onCustomSpokenFeedbackEnabled event to communicate that Talkback is
+  // on for the current app. We don't want to announce the no-focus hint message
+  // when TalkBack is on because we expect ChromeVox to have no focus in that
+  // case. If we announce the hint message, TalkBack and ChromeVox will
+  // try to speak at the same time.
+  this.dispatchOnCustomSpokenFeedbackToggledEvent(true);
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<p>Start here</p>', function() {
+    ChromeVoxState.instance.setCurrentRange(null);
+    mockFeedback.call(doCmd('nextObject'));
+    assertFalse(mockFeedback.utteranceInQueue(
+        'No current ChromeVox focus. ' +
+        'Press Alt+Shift+L to go to the launcher.'));
+    mockFeedback.call(doCmd('previousObject'));
+    assertFalse(mockFeedback.utteranceInQueue(
+        'No current ChromeVox focus. ' +
+        'Press Alt+Shift+L to go to the launcher.'));
+    mockFeedback.replay();
   });
 });

@@ -122,7 +122,8 @@ XRWebGLLayer* XRWebGLLayer::Create(
                        framebuffers_size.Height() * framebuffer_scale);
 
   // Create an opaque WebGL Framebuffer
-  WebGLFramebuffer* framebuffer = WebGLFramebuffer::CreateOpaque(webgl_context);
+  WebGLFramebuffer* framebuffer =
+      WebGLFramebuffer::CreateOpaque(webgl_context, want_stencil_buffer);
 
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer =
       XRWebGLDrawingBuffer::Create(webgl_context->GetDrawingBuffer(),

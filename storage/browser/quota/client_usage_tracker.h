@@ -99,8 +99,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   bool GetCachedOriginUsage(const url::Origin& origin, int64_t* usage) const;
 
   // SpecialStoragePolicy::Observer overrides
-  void OnGranted(const GURL& origin_url, int change_flags) override;
-  void OnRevoked(const GURL& origin_url, int change_flags) override;
+  void OnGranted(const url::Origin& origin_url, int change_flags) override;
+  void OnRevoked(const url::Origin& origin_url, int change_flags) override;
   void OnCleared() override;
 
   void UpdateGlobalUsageValue(int64_t* usage_value, int64_t delta);

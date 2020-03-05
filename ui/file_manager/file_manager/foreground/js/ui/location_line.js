@@ -45,7 +45,12 @@ class LocationLine extends cr.EventTarget {
       return;
     }
 
-    this.update_(this.getComponents_(entry));
+    const components = this.getComponents_(entry);
+    if (util.isFilesNg()) {
+      this.updateNg_(components);
+    } else {
+      this.update_(components);
+    }
   }
 
   /**
@@ -177,6 +182,31 @@ class LocationLine extends cr.EventTarget {
     }
 
     return components;
+  }
+
+  /**
+   * Updates the breadcrumb display for files-ng.
+   * @param {!Array<!LocationLine.PathComponent>} components Components to the
+   *     target path.
+   * @private
+   */
+  updateNg_(components) {
+    this.components_ = components;
+
+    let breadcrumbs = document.querySelector('bread-crumb');
+    if (!breadcrumbs) {
+      breadcrumbs = document.createElement('bread-crumb');
+      this.breadcrumbs_.appendChild(breadcrumbs);
+      breadcrumbs.setSignalCallback(this.breadCrumbSignal_.bind(this));
+    }
+
+    let crumbPath = components[0].name;
+    for (let i = 1; i < components.length; i++) {
+      crumbPath += '/' + components[i].name;
+    }
+    breadcrumbs.path = crumbPath;
+
+    this.breadcrumbs_.hidden = false;
   }
 
   /**
@@ -387,6 +417,38 @@ class LocationLine extends cr.EventTarget {
   }
 
   /**
+   * Navigate to a Path component.
+   * @param {number} index The index of clicked path component.
+   */
+  navigateToIndex_(index) {
+    // Last breadcrumb component is the currently selected folder, skip
+    // navigation and just move the focus to file list.
+    // TODO(files-ng): this if clause is not used or needed by files-ng.
+    if (index >= this.components_.length - 1) {
+      this.listContainer_.focus();
+      return;
+    }
+
+    const pathComponent = this.components_[index];
+    pathComponent.resolveEntry().then(entry => {
+      const pathClickEvent = new Event('pathclick');
+      pathClickEvent.entry = entry;
+      this.dispatchEvent(pathClickEvent);
+    });
+    metrics.recordUserAction('ClickBreadcrumbs');
+  }
+
+  /**
+   * Signal handler for the bread-crumb element.
+   * @param {string} signal Identifier of which bread crumb was activated.
+   */
+  breadCrumbSignal_(signal) {
+    if (typeof signal === 'number') {
+      this.navigateToIndex_(Number(signal));
+    }
+  }
+
+  /**
    * Execute an element.
    * @param {number} index The index of clicked path component.
    * @param {!Event} event The MouseEvent object.
@@ -402,21 +464,7 @@ class LocationLine extends cr.EventTarget {
     if (button) {
       button.blur();
     }
-
-    // Last breadcrumb component is the currently selected folder, skip
-    // navigation and just move the focus to file list.
-    if (index >= this.components_.length - 1) {
-      this.listContainer_.focus();
-      return;
-    }
-
-    const pathComponent = this.components_[index];
-    pathComponent.resolveEntry().then(entry => {
-      const pathClickEvent = new Event('pathclick');
-      pathClickEvent.entry = entry;
-      this.dispatchEvent(pathClickEvent);
-    });
-    metrics.recordUserAction('ClickBreadcrumbs');
+    this.navigateToIndex_(index);
   }
 }
 

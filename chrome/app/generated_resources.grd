@@ -363,22 +363,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a popup.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to
       </message>
-      <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
-        Allow
-      </message>
-      <message name="IDS_PERMISSION_DENY" desc="Label on button to deny a permissions request.">
-        Block
-      </message>
       <message name="IDS_PERMISSION_CUSTOMIZE" desc="Label on text button to allow the user to customize a permissions request.">
         Customize
       </message>
-
-      <!-- Runtime permission infobar strings -->
-      <if expr="is_android">
-        <message name="IDS_INFOBAR_UPDATE_PERMISSIONS_BUTTON_TEXT" desc="Button text shown when Chrome does not have the necessary permission required to complete the requested tasks (e.g. a website has request location information, but Chrome is missing that Android permission)." formatter_data="android_java">
-          Continue
-        </message>
-      </if>
 
       <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term they may have meant to navigate to.">
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
@@ -9010,9 +8997,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Media Capture messages -->
-      <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone and camera.">
-        <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone
-      </message>
       <message name="IDS_MEDIA_CAPTURE_SCREEN_INFOBAR_TEXT" desc="Text requesting permission for a site to access the device's screen.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to share your screen
       </message>

@@ -103,8 +103,6 @@ class CORE_EXPORT FrameLoader final {
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-      base::OnceClosure call_before_attaching_new_document =
-          base::DoNothing::Once(),
       bool is_javascript_url = false);
 
   // Called before the browser process is asked to navigate this frame, to mark
@@ -288,12 +286,10 @@ class CORE_EXPORT FrameLoader final {
     kRegular
   };
   // Commits the given |document_loader|.
-  void CommitDocumentLoader(
-      DocumentLoader* document_loader,
-      const base::Optional<Document::UnloadEventTiming>&,
-      HistoryItem* previous_history_item,
-      CommitReason,
-      base::OnceClosure call_before_attaching_new_document);
+  void CommitDocumentLoader(DocumentLoader* document_loader,
+                            const base::Optional<Document::UnloadEventTiming>&,
+                            HistoryItem* previous_history_item,
+                            CommitReason);
 
   // Creates CSP based on |response| and checks that they allow loading |url|.
   // Returns nullptr if the check fails.

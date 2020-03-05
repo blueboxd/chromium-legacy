@@ -234,7 +234,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
 
   // Open system modal. Make sure it's on 2nd root window and active.
-  views::Widget* modal_widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* modal_widget = views::Widget::CreateWindowWithContext(
       new ModalWidgetDelegate(), CurrentContext(),
       gfx::Rect(1200, 100, 100, 100));
   modal_widget->Show();
@@ -263,12 +263,11 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::WindowTreeHost* host0 = root_windows[0]->GetHost();
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();
-  EXPECT_EQ(ui::mojom::CursorType::kPointer,
-            host0->last_cursor().native_type());
-  EXPECT_EQ(ui::mojom::CursorType::kNull, host1->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, host0->last_cursor().type());
+  EXPECT_EQ(ui::mojom::CursorType::kNull, host1->last_cursor().type());
   Shell::Get()->cursor_manager()->SetCursor(ui::mojom::CursorType::kCopy);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, host1->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host0->last_cursor().type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host1->last_cursor().type());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {

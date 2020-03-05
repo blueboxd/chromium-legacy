@@ -28,6 +28,7 @@ class NetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkDeviceHandler;
 class NetworkDeviceHandlerImpl;
+class NetworkMetadataStore;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 class NetworkSmsHandler;
@@ -79,6 +80,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   NetworkActivationHandler* network_activation_handler();
   NetworkCertificateHandler* network_certificate_handler();
   NetworkConnectionHandler* network_connection_handler();
+  NetworkMetadataStore* network_metadata_store();
   NetworkSmsHandler* network_sms_handler();
   GeolocationHandler* geolocation_handler();
   ProhibitedTechnologiesHandler* prohibited_technologies_handler();
@@ -106,6 +108,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
   std::unique_ptr<NetworkActivationHandler> network_activation_handler_;
   std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
+  std::unique_ptr<NetworkMetadataStore> network_metadata_store_;
   std::unique_ptr<AutoConnectHandler> auto_connect_handler_;
   std::unique_ptr<NetworkSmsHandler> network_sms_handler_;
   std::unique_ptr<GeolocationHandler> geolocation_handler_;

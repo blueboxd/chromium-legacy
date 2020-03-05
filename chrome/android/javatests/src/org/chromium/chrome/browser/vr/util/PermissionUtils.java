@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.vr.util;
 import android.os.SystemClock;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.browser.vr.ArConsentDialog;
 import org.chromium.chrome.browser.vr.VrConsentDialog;
+import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;

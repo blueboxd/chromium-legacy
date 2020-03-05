@@ -245,8 +245,10 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
                              "/content_index/content_index.html",
                              base::CompareCase::SENSITIVE));
 
-  provider()->OpenItem(offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
-                       offline_items().at("my-id").id);
+  provider()->OpenItem(
+      offline_items_collection::OpenParams(
+          offline_items_collection::LaunchLocation::DOWNLOAD_HOME),
+      offline_items().at("my-id").id);
 
   // Wait for the page to open.
   base::RunLoop run_loop;
@@ -352,7 +354,8 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, MetricsCollected) {
     ukm::TestAutoSetUkmRecorder ukm_recorder;
 
     provider()->OpenItem(
-        offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
+        offline_items_collection::OpenParams(
+            offline_items_collection::LaunchLocation::DOWNLOAD_HOME),
         offline_items().at("my-id-2").id);
 
     // Wait for the page to open.

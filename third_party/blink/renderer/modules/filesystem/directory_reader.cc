@@ -51,6 +51,20 @@ DirectoryReader::DirectoryReader(DOMFileSystemBase* file_system,
 
 void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
                                   V8ErrorCallback* error_callback) {
+  if (entries_callback_) {
+    // Non-null entries_callback_ means multiple readEntries() calls are made
+    // concurrently. We don't allow doing it.
+    Filesystem()->ReportError(
+        WTF::Bind(
+            [](V8ErrorCallback* error_callback, base::File::Error error) {
+              error_callback->InvokeAndReportException(
+                  nullptr, file_error::CreateDOMException(error));
+            },
+            WrapPersistent(error_callback)),
+        base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
   auto success_callback_wrapper = WTF::BindRepeating(
       [](DirectoryReader* persistent_reader, EntryHeapVector* entries) {
         persistent_reader->AddEntries(*entries);
@@ -68,15 +82,6 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
     Filesystem()->ReportError(
         WTF::Bind(&DirectoryReader::OnError, WrapPersistentIfNeeded(this)),
         error_);
-    return;
-  }
-
-  if (entries_callback_) {
-    // Non-null entries_callback_ means multiple readEntries() calls are made
-    // concurrently. We don't allow doing it.
-    Filesystem()->ReportError(
-        WTF::Bind(&DirectoryReader::OnError, WrapPersistentIfNeeded(this)),
-        base::File::FILE_ERROR_FAILED);
     return;
   }
 

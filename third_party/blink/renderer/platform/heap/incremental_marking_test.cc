@@ -1414,8 +1414,15 @@ TEST_F(IncrementalMarkingTest, DropBackingStore) {
   driver.FinishGC();
 }
 
-
-TEST_F(IncrementalMarkingTest, NoBackingFreeDuringIncrementalMarking) {
+// TODO(crbug.com/1058622): Disabled for TSAN flakes.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_NoBackingFreeDuringIncrementalMarking \
+  DISABLED_NoBackingFreeDuringIncrementalMarking
+#else
+#define MAYBE_NoBackingFreeDuringIncrementalMarking \
+  NoBackingFreeDuringIncrementalMarking
+#endif
+TEST_F(IncrementalMarkingTest, MAYBE_NoBackingFreeDuringIncrementalMarking) {
   // Regression test: https://crbug.com/870306
   // Only reproduces in ASAN configurations.
   using WeakStore = HeapHashCountedSet<WeakMember<Object>>;

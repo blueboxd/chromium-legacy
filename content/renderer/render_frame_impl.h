@@ -697,13 +697,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader) override;
-  void DidCommitProvisionalLoad(
-      const blink::WebHistoryItem& item,
-      blink::WebHistoryCommitType commit_type,
-      bool should_reset_browser_interface_broker) override;
-  void DidCreateNewDocument() override;
+  void DidCommitNavigation(const blink::WebHistoryItem& item,
+                           blink::WebHistoryCommitType commit_type,
+                           bool should_reset_browser_interface_broker) override;
   void DidCreateInitialEmptyDocument() override;
   void DidCommitJavascriptUrlNavigation(
       blink::WebDocumentLoader* document_loader) override;
@@ -1084,8 +1080,6 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory);
-  void SetLoaderFactoryBundle(
-      scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1522,6 +1516,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // certain timing - right before the new document is committed during
   // FrameLoader::CommitNavigation.
   scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
+
+  // Loader factory bundle is stored here temporary between CommitNavigation
+  // and DidCommitNavigation calls. These happen synchronously one after
+  // another.
+  scoped_refptr<ChildURLLoaderFactoryBundle> pending_loader_factories_;
 
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
 

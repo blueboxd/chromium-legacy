@@ -43,16 +43,16 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
           expected_change_flags_(0) {
     }
 
-    void OnGranted(const GURL& origin, int change_flags) override {
+    void OnGranted(const url::Origin& origin, int change_flags) override {
       EXPECT_EQ(expected_type_, NOTIFICATION_TYPE_GRANT);
-      EXPECT_EQ(expected_origin_, origin);
+      EXPECT_EQ(expected_origin_, origin.GetURL());
       EXPECT_EQ(expected_change_flags_, change_flags);
       expected_type_ = NOTIFICATION_TYPE_NONE;
     }
 
-    void OnRevoked(const GURL& origin, int change_flags) override {
+    void OnRevoked(const url::Origin& origin, int change_flags) override {
       EXPECT_EQ(expected_type_, NOTIFICATION_TYPE_REVOKE);
-      EXPECT_EQ(expected_origin_, origin);
+      EXPECT_EQ(expected_origin_, origin.GetURL());
       EXPECT_EQ(expected_change_flags_, change_flags);
       expected_type_ = NOTIFICATION_TYPE_NONE;
     }

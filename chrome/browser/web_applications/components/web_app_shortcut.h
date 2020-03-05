@@ -105,11 +105,10 @@ std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info);
 //
 // The path for the directory is based on |app_id|. If |app_id| is empty then
 // |url| is used to construct a unique ID.
-// TODO(crbug.com/877898): Rename this function to
-// GetOsIntegrationDataDirectoryForApp().
-base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const std::string& app_id,
-                                      const GURL& url);
+base::FilePath GetOsIntegrationResourcesDirectoryForApp(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    const GURL& url);
 
 // Callback made when CreateShortcuts has finished trying to create the
 // platform shortcuts indicating whether or not they were successfully

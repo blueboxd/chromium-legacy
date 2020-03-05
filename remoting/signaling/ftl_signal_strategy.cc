@@ -440,7 +440,8 @@ FtlSignalStrategy::FtlSignalStrategy(
   auto registration_manager = std::make_unique<FtlRegistrationManager>(
       oauth_token_getter.get(), std::move(device_id_provider));
   auto messaging_client = std::make_unique<FtlMessagingClient>(
-      oauth_token_getter.get(), registration_manager.get());
+      oauth_token_getter.get(), registration_manager.get(),
+      &signaling_tracker_);
   CreateCore(std::move(oauth_token_getter), std::move(registration_manager),
              std::move(messaging_client));
 }

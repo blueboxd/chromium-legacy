@@ -12,6 +12,7 @@
 #include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/message_tracker.h"
 #include "remoting/signaling/messaging_client.h"
+#include "remoting/signaling/signaling_tracker.h"
 
 namespace remoting {
 
@@ -26,7 +27,8 @@ class FtlMessagingClient final : public MessagingClient {
  public:
   // |token_getter| and |registration_manager| must outlive |this|.
   FtlMessagingClient(OAuthTokenGetter* token_getter,
-                     RegistrationManager* registration_manager);
+                     RegistrationManager* registration_manager,
+                     SignalingTracker* signaling_tracker);
   ~FtlMessagingClient() override;
 
   // MessagingClient implementations.

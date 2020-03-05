@@ -334,12 +334,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   // datasource will become the provisional datasource for the frame.
   virtual void DidCreateDocumentLoader(WebDocumentLoader*) {}
 
-  // A new provisional load has been started.
-  virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader) {}
-
-  // The provisional datasource is now committed.  The first part of the
-  // response body has been received, and the encoding of the response
-  // body is known.
+  // The navigation has been committed, as a result of
+  // WebNavigationControl::CommitNavigation call. The newly created document
+  // is committed to the frame, the encoding of the response body is known,
+  // but no content has been loaded or parsed yet.
+  //
   // When a load commits and a new Document is created, WebLocalFrameClient
   // creates a new BrowserInterfaceBroker endpoint to ensure that interface
   // receivers in the newly committed Document are associated with the correct
@@ -347,23 +346,18 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The one exception is if the Window object is reused; in that case, blink
   // passes |should_reset_browser_interface_broker| = false, and the old
   // BrowserInterfaceBroker connection will be reused.
-  virtual void DidCommitProvisionalLoad(
-      const WebHistoryItem&,
-      WebHistoryCommitType,
-      bool should_reset_browser_interface_broker) {}
-
-  // The frame's document has just been initialized.
-  virtual void DidCreateNewDocument() {}
+  virtual void DidCommitNavigation(const WebHistoryItem&,
+                                   WebHistoryCommitType,
+                                   bool should_reset_browser_interface_broker) {
+  }
 
   // The frame's initial empty document has just been initialized.
-  // DidCreateNewDocument is not called in this case.
   virtual void DidCreateInitialEmptyDocument() {}
 
   // A new document has just been committed as a result of evaluating
   // javascript url. This document inherited everything from the previous
   // document (url, origin, global object, etc.).
-  // DidStartProvisionalLoad, DidCreateNewDocument and DidCommitProvisionalLoad
-  // are not called in this case.
+  // DidCommitNavigation is not called in this case.
   virtual void DidCommitJavascriptUrlNavigation(WebDocumentLoader*) {}
 
   // The window object for the frame has been cleared of any extra properties

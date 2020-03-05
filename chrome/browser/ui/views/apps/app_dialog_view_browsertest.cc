@@ -87,8 +87,11 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
         apps::AppServiceProxyFactory::GetForProfile(profile_);
     ASSERT_TRUE(app_service_proxy);
 
+    base::RunLoop run_loop;
     if (name == "block") {
       app.suspended = true;
+      apps::ArcAppsFactory::GetForProfile(profile_)
+          ->SetDialogCreatedCallbackForTesting(run_loop.QuitClosure());
       app_instance_->SendRefreshAppList(
           std::vector<arc::mojom::AppInfo>(1, app));
     } else {
@@ -98,15 +101,9 @@ class AppDialogViewBrowserTest : public DialogBrowserTest {
       pause_data[app_id].hours = 3;
       pause_data[app_id].minutes = 30;
       pause_data[app_id].should_show_pause_dialog = true;
-      app_service_proxy->PauseApps(pause_data);
-    }
-    base::RunLoop run_loop;
-    if (name == "block") {
-      apps::ArcAppsFactory::GetForProfile(profile_)
-          ->SetDialogCreatedCallbackForTesting(run_loop.QuitClosure());
-    } else {
       app_service_proxy->SetDialogCreatedCallbackForTesting(
           run_loop.QuitClosure());
+      app_service_proxy->PauseApps(pause_data);
     }
     run_loop.Run();
 

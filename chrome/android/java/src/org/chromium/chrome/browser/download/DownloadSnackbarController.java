@@ -15,7 +15,9 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OpenParams;
 
 /**
  * Class for displaying a snackbar when a download completes.
@@ -60,6 +62,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             }
         } else {
             OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(
+                    new OpenParams(LaunchLocation.PROGRESS_BAR),
                     download.downloadInfo.getContentId());
         }
 

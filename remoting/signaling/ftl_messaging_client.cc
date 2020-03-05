@@ -37,11 +37,12 @@ constexpr base::TimeDelta kInboxMessageTtl = base::TimeDelta::FromMinutes(1);
 
 FtlMessagingClient::FtlMessagingClient(
     OAuthTokenGetter* token_getter,
-    RegistrationManager* registration_manager)
+    RegistrationManager* registration_manager,
+    SignalingTracker* signaling_tracker)
     : FtlMessagingClient(
           std::make_unique<GrpcAuthenticatedExecutor>(token_getter),
           registration_manager,
-          std::make_unique<FtlMessageReceptionChannel>()) {}
+          std::make_unique<FtlMessageReceptionChannel>(signaling_tracker)) {}
 
 FtlMessagingClient::FtlMessagingClient(
     std::unique_ptr<GrpcExecutor> executor,

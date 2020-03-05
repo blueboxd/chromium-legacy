@@ -220,4 +220,16 @@ bool CupsPrinter::CancelJob(int job_id) {
   return status == IPP_STATUS_OK;
 }
 
+CupsPrinter::CupsMediaMargins CupsPrinter::GetMediaMarginsByName(
+    const std::string& media_id) {
+  cups_size_t cups_media;
+  if (!EnsureDestInfo() ||
+      !cupsGetDestMediaByName(cups_http_, destination_.get(), dest_info_.get(),
+                              media_id.c_str(), CUPS_MEDIA_FLAGS_DEFAULT,
+                              &cups_media)) {
+    return {0, 0, 0, 0};
+  }
+  return {cups_media.bottom, cups_media.left, cups_media.right, cups_media.top};
+}
+
 }  // namespace printing

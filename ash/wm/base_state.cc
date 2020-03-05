@@ -9,8 +9,10 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
@@ -118,25 +120,42 @@ void BaseState::CenterWindow(WindowState* window_state) {
 
 // static
 void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
+  // For tablet mode, use |TabletModeWindowState::CycleTabletSnap|.
+  DCHECK(!Shell::Get()->tablet_mode_controller()->InTabletMode());
+
   WindowStateType desired_snap_state = event == WM_EVENT_CYCLE_SNAP_LEFT
                                            ? WindowStateType::kLeftSnapped
                                            : WindowStateType::kRightSnapped;
-
+  aura::Window* window = window_state->window();
+  // If |window| can be snapped but is not currently in |desired_snap_state|,
+  // then snap |window| to the side that corresponds to |desired_snap_state|.
   if (window_state->CanSnap() &&
       window_state->GetStateType() != desired_snap_state) {
-    const WMEvent event(desired_snap_state == WindowStateType::kLeftSnapped
-                            ? WM_EVENT_SNAP_LEFT
-                            : WM_EVENT_SNAP_RIGHT);
-    window_state->OnWMEvent(&event);
+    if (Shell::Get()->overview_controller()->InOverviewSession()) {
+      // |window| must already be in split view, and so we do not need to check
+      // |SplitViewController::CanSnapWindow|, although in general it is more
+      // restrictive than |WindowState::CanSnap|.
+      DCHECK(SplitViewController::Get(window)->IsWindowInSplitView(window));
+      SplitViewController::Get(window)->SnapWindow(
+          window, desired_snap_state == WindowStateType::kLeftSnapped
+                      ? SplitViewController::LEFT
+                      : SplitViewController::RIGHT);
+    } else {
+      const WMEvent event(desired_snap_state == WindowStateType::kLeftSnapped
+                              ? WM_EVENT_SNAP_LEFT
+                              : WM_EVENT_SNAP_RIGHT);
+      window_state->OnWMEvent(&event);
+    }
     return;
   }
-
+  // If |window| is already in |desired_snap_state|, then unsnap |window|.
   if (window_state->IsSnapped()) {
     window_state->Restore();
     return;
   }
-  ::wm::AnimateWindow(window_state->window(),
-                      ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  // If |window| cannot be snapped, then do a window bounce animation.
+  DCHECK(!window_state->CanSnap());
+  ::wm::AnimateWindow(window, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
 void BaseState::UpdateMinimizedState(WindowState* window_state,

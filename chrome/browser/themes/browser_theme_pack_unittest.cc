@@ -20,7 +20,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/color/color_buildflags.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_test_ids.h"

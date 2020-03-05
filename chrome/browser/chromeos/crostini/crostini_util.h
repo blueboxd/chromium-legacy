@@ -126,6 +126,8 @@ enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
+bool IsCrostiniRecoveryViewShowing();
+
 // Shows the Crostini App installer dialog.
 void ShowCrostiniAppInstallerView(Profile* profile,
                                   const LinuxPackageInfo& package_info);
@@ -159,6 +161,14 @@ void CloseCrostiniUpdateFilesystemView();
 // applying an Ansible playbook in the container).
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
+// Show the Crostini Recovery dialog when Crostini is still running after a
+// Chrome crash. Returns false if recovery terminal can be launched.
+bool ShowCrostiniRecoveryView(Profile* profile,
+                              CrostiniUISurface ui_surface,
+                              const std::string& app_id,
+                              int64_t display_id,
+                              LaunchCrostiniAppCallback callback);
+
 // Returns App ID of the terminal app which is either the older crosh-based
 // terminal, or the new Terminal System App if the TerminalSystemApp feature
 // is enabled.
@@ -171,9 +181,10 @@ const std::string& GetDeletedTerminalId();
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
 constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
-// web_app::GenerateAppIdFromURL("chrome://terminal/html/terminal.html")
+// web_app::GenerateAppIdFromURL(
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
 constexpr char kCrostiniTerminalSystemAppId[] =
-    "oapmgeobaaddjmlgbbjbdhapidbomlgg";
+    "fhicihalidkgcimdmhpohldehjmcabcf";
 
 constexpr char kCrostiniDefaultVmName[] = "termina";
 constexpr char kCrostiniDefaultContainerName[] = "penguin";

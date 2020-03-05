@@ -17,8 +17,12 @@ namespace remoting {
 
 constexpr base::TimeDelta FtlMessageReceptionChannel::kPongTimeout;
 
-FtlMessageReceptionChannel::FtlMessageReceptionChannel()
-    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()) {}
+FtlMessageReceptionChannel::FtlMessageReceptionChannel(
+    SignalingTracker* signaling_tracker)
+    : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()),
+      signaling_tracker_(signaling_tracker) {
+  DCHECK(signaling_tracker_);
+}
 
 FtlMessageReceptionChannel::~FtlMessageReceptionChannel() = default;
 
@@ -70,6 +74,7 @@ FtlMessageReceptionChannel::GetReconnectRetryBackoffEntryForTesting() const {
 void FtlMessageReceptionChannel::OnReceiveMessagesStreamReady() {
   DCHECK_EQ(State::STARTING, state_);
   state_ = State::STARTED;
+  signaling_tracker_->OnChannelActive();
   RunStreamReadyCallbacks();
   BeginStreamTimers();
 }
@@ -114,6 +119,7 @@ void FtlMessageReceptionChannel::OnMessageReceived(
     case ftl::ReceiveMessagesResponse::BodyCase::kPong:
       VLOG(1) << "Received pong";
       stream_pong_timer_->Reset();
+      signaling_tracker_->OnChannelActive();
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kStartOfBatch:
       VLOG(1) << "Received start of batch";

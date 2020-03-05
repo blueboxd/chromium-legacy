@@ -29,12 +29,14 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chrome/browser/chromeos/web_applications/terminal_source.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -78,7 +80,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     infos.emplace(
         SystemAppType::TERMINAL,
-        SystemAppInfo("Terminal", GURL("chrome://terminal/html/pwa.html")));
+        SystemAppInfo("Terminal",
+                      GURL("chrome-untrusted://terminal/html/pwa.html")));
     infos.at(SystemAppType::TERMINAL).single_window = false;
   }
 
@@ -166,11 +169,12 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
 #endif  // OS_CHROMEOS
 }
 SystemWebAppManager::SystemWebAppManager(Profile* profile)
-    : on_apps_synchronized_(new base::OneShotEvent()),
+    : profile_(profile),
+      on_apps_synchronized_(new base::OneShotEvent()),
       install_result_per_profile_histogram_name_(
           std::string(kInstallResultHistogramName) + ".Profiles." +
           GetProfileCategoryForLogging(profile)),
-      pref_service_(profile->GetPrefs()) {
+      pref_service_(profile_->GetPrefs()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
     // Always update in tests, and return early to avoid populating with real
@@ -205,6 +209,14 @@ void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
 
 void SystemWebAppManager::Start() {
   const base::TimeTicks install_start_time = base::TimeTicks::Now();
+
+#if defined(OS_CHROMEOS)
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
+    // We need to set up the terminal data source before installing it.
+    content::URLDataSource::Add(profile_,
+                                std::make_unique<TerminalSource>(profile_));
+  }
+#endif  // defined(OS_CHROMEOS)
 
   std::vector<ExternalInstallOptions> install_options_list;
   if (IsEnabled()) {

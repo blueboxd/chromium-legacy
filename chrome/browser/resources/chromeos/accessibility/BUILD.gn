@@ -96,3 +96,14 @@ manifest("switch_access_guest_manifest") {
 accessibility_strings("accessibility_strings") {
   out_dir = accessibility_out_dir
 }
+
+group("browser_tests") {
+  testonly = true
+  deps = [
+    "autoclick:browser_tests",
+    "chromevox:browser_tests",
+    "common:browser_tests",
+    "select_to_speak:browser_tests",
+    "switch_access:browser_tests",
+  ]
+}

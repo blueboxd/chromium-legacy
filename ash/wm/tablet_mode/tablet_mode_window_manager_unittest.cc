@@ -122,17 +122,11 @@ class TabletModeWindowManagerTest
 
   // Creates a window which also has a widget.
   aura::Window* CreateWindowWithWidget(const gfx::Rect& bounds) {
-    // Note: The widget will get deleted with the window.
-    views::Widget* widget = new views::Widget();
-    views::Widget::InitParams params;
-    params.context = CurrentContext();
-    widget->Init(std::move(params));
+    views::Widget* widget = views::Widget::CreateWindowWithContext(
+        nullptr, CurrentContext(), bounds);
     widget->Show();
-    aura::Window* window = widget->GetNativeWindow();
-    window->SetBounds(bounds);
-    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-
-    return window;
+    // Note: The widget will get deleted with the window.
+    return widget->GetNativeWindow();
   }
 
   // Create the tablet mode window manager.
@@ -534,20 +528,17 @@ TEST_P(TabletModeWindowManagerTest, CreateNonMaximizableButResizableWindows) {
 // Create a string which consists of the bounds and the state for comparison.
 std::string GetPlacementString(const gfx::Rect& bounds,
                                ui::WindowShowState state) {
-  return bounds.ToString() + base::StringPrintf(" %d", state);
+  return bounds.ToString() + ' ' + base::NumberToString(state);
 }
 
 // Retrieves the window's restore state override - if any - and returns it as a
 // string.
 std::string GetPlacementOverride(aura::Window* window) {
   gfx::Rect* bounds = window->GetProperty(kRestoreBoundsOverrideKey);
-  if (bounds) {
-    gfx::Rect restore_bounds = *bounds;
-    ui::WindowShowState restore_state = ToWindowShowState(
-        window->GetProperty(kRestoreWindowStateTypeOverrideKey));
-    return GetPlacementString(restore_bounds, restore_state);
-  }
-  return std::string();
+  if (!bounds)
+    return std::string();
+  const auto type = window->GetProperty(kRestoreWindowStateTypeOverrideKey);
+  return GetPlacementString(*bounds, ToWindowShowState(type));
 }
 
 // Test that the restore state will be kept at its original value for
@@ -555,6 +546,7 @@ std::string GetPlacementOverride(aura::Window* window) {
 TEST_P(TabletModeWindowManagerTest, TestRestoreIntegrety) {
   gfx::Rect bounds(10, 10, 200, 50);
   std::unique_ptr<aura::Window> normal_window(CreateWindowWithWidget(bounds));
+
   std::unique_ptr<aura::Window> maximized_window(
       CreateWindowWithWidget(bounds));
   WindowState::Get(maximized_window.get())->Maximize();
@@ -567,7 +559,7 @@ TEST_P(TabletModeWindowManagerTest, TestRestoreIntegrety) {
 
   // With the maximization the override states should be returned in its
   // pre-maximized state.
-  EXPECT_EQ(GetPlacementString(bounds, ui::SHOW_STATE_NORMAL),
+  EXPECT_EQ(GetPlacementString(bounds, ui::SHOW_STATE_DEFAULT),
             GetPlacementOverride(normal_window.get()));
   EXPECT_EQ(GetPlacementString(bounds, ui::SHOW_STATE_MAXIMIZED),
             GetPlacementOverride(maximized_window.get()));

@@ -13,9 +13,7 @@ namespace mojo {
 
 template <>
 struct StructTraits<ui::mojom::CursorDataView, ui::Cursor> {
-  static ui::mojom::CursorType native_type(const ui::Cursor& c) {
-    return c.native_type();
-  }
+  static ui::mojom::CursorType type(const ui::Cursor& c) { return c.type(); }
   static gfx::Point hotspot(const ui::Cursor& c);
   static SkBitmap bitmap(const ui::Cursor& c);
   static float image_scale_factor(const ui::Cursor& c) {

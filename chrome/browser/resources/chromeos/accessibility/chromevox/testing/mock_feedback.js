@@ -140,6 +140,20 @@ MockFeedback = class {
   }
 
   /**
+   * Returns true if |utterance| is in |pendingUtterances_|.
+   * @param {string} utterance
+   * @return {boolean}
+   */
+  utteranceInQueue(utterance) {
+    for (const pendingUtterance of this.pendingUtterances_) {
+      if (pendingUtterance.text === utterance) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Adds an expectation for one or more spoken utterances.
    * @param {...(string|RegExp)} var_args One or more utterance to add as
    *     expectations.

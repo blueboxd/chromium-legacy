@@ -167,7 +167,7 @@ T* AddViewToLayout(views::GridLayout* layout, std::unique_ptr<T> view) {
 void InitWindowTypeLauncher(
     base::RepeatingClosure show_views_examples_callback,
     base::RepeatingClosure create_embedded_browser_callback) {
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+  views::Widget* widget = views::Widget::CreateWindowWithContext(
       new WindowTypeLauncher(show_views_examples_callback,
                              create_embedded_browser_callback),
       Shell::GetPrimaryRootWindow(), gfx::Rect(120, 120, 300, 410));

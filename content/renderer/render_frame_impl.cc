@@ -3308,9 +3308,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(prefetch_loader_factory));
   }
-  base::OnceClosure call_before_attaching_new_document =
-      base::BindOnce(&RenderFrameImpl::SetLoaderFactoryBundle,
-                     weak_factory_.GetWeakPtr(), new_loader_factories);
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
   // in a special mode.
@@ -3364,11 +3361,17 @@ void RenderFrameImpl::CommitNavigationWithParams(
                 new_loader_factories->CloneWithoutAppCacheFactory()));
   }
 
+  DCHECK(!pending_loader_factories_);
+  pending_loader_factories_ = std::move(new_loader_factories);
+
+  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
   frame_->CommitNavigation(std::move(navigation_params),
-                           std::move(document_state),
-                           std::move(call_before_attaching_new_document));
-  // The commit can result in this frame being removed. Do not use
-  // |this| without checking a WeakPtr.
+                           std::move(document_state));
+  // The commit can result in this frame being removed.
+  if (!weak_self)
+    return;
+
+  pending_loader_factories_ = nullptr;
 }
 
 void RenderFrameImpl::CommitFailedNavigation(
@@ -3400,9 +3403,6 @@ void RenderFrameImpl::CommitFailedNavigation(
           std::move(subresource_loader_factories),
           base::nullopt /* subresource_overrides */,
           mojo::NullRemote() /* prefetch_loader_factory */);
-  base::OnceClosure call_before_attaching_new_document =
-      base::BindOnce(&RenderFrameImpl::SetLoaderFactoryBundle,
-                     weak_factory_.GetWeakPtr(), new_loader_factories);
 
   // Send the provisional load failure.
   WebURLError error(
@@ -3522,16 +3522,19 @@ void RenderFrameImpl::CommitFailedNavigation(
       std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
+  DCHECK(!pending_loader_factories_);
+  pending_loader_factories_ = std::move(new_loader_factories);
+
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occurred. If so,
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
   frame_->CommitNavigation(std::move(navigation_params),
-                           std::move(document_state),
-                           std::move(call_before_attaching_new_document));
+                           std::move(document_state));
   if (!weak_this)
     return;
 
+  pending_loader_factories_ = nullptr;
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
 }
@@ -4191,22 +4194,22 @@ void RenderFrameImpl::DidCreateDocumentLoader(
   }
 }
 
-void RenderFrameImpl::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
-  // In fast/loader/stop-provisional-loads.html, we abort the load before this
-  // callback is invoked.
-  if (!document_loader)
-    return;
+void RenderFrameImpl::DidCommitNavigation(
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type,
+    bool should_reset_browser_interface_broker) {
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentLoader(document_loader);
+  NavigationState* navigation_state = internal_data->navigation_state();
+  DCHECK(!navigation_state->WasWithinSameDocument());
 
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
                "url", document_loader->GetUrl().GetString().Utf8());
 
-  NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(document_loader);
   // TODO(dgozman): call DidStartNavigation in various places where we call
-  // CommitNavigation() on the frame. This will happen naturally once we remove
-  // WebLocalFrameClient::DidStartProvisionalLoad.
+  // CommitNavigation() on the frame.
   if (!navigation_state->was_initiated_in_this_frame()) {
     // Navigation initiated in this frame has been already reported in
     // BeginNavigation.
@@ -4216,23 +4219,18 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(document_loader);
-}
 
-void RenderFrameImpl::DidCommitProvisionalLoad(
-    const blink::WebHistoryItem& item,
-    blink::WebHistoryCommitType commit_type,
-    bool should_reset_browser_interface_broker) {
+  if (pending_loader_factories_)
+    loader_factories_ = std::move(pending_loader_factories_);
+
+  for (auto& observer : observers_)
+    observer.DidCreateNewDocument();
+
   DLOG(INFO) << "Committed provisional load: "
              << TrimURL(GetLoadingUrl().possibly_invalid_spec());
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
-
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(
-          frame_->GetDocumentLoader());
-  NavigationState* navigation_state = internal_data->navigation_state();
-  DCHECK(!navigation_state->WasWithinSameDocument());
 
   base::Optional<base::UnguessableToken> embedding_token = base::nullopt;
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
@@ -4373,11 +4371,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
                                     transition);
 }
 
-void RenderFrameImpl::DidCreateNewDocument() {
-  for (auto& observer : observers_)
-    observer.DidCreateNewDocument();
-}
-
 void RenderFrameImpl::DidCreateInitialEmptyDocument() {
   for (auto& observer : observers_)
     observer.DidCreateNewDocument();
@@ -4502,8 +4495,7 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
 
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
-                           base::DoNothing::Once());
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
   // WARNING: The previous call may have have deleted |this|.
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
@@ -5742,8 +5734,7 @@ void RenderFrameImpl::CommitSyncNavigation(
   // though the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
-                           base::DoNothing::Once());
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
 }
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
@@ -6060,11 +6051,6 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
   }
 
   return loader_factories;
-}
-
-void RenderFrameImpl::SetLoaderFactoryBundle(
-    scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories) {
-  loader_factories_ = std::move(loader_factories);
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
@@ -6532,9 +6518,9 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
   navigation_params->frame_load_type =
       replace_current_item ? blink::WebFrameLoadType::kReplaceCurrentItem
                            : blink::WebFrameLoadType::kStandard;
-  frame_->CommitNavigation(
-      std::move(navigation_params), nullptr /* extra_data */,
-      base::DoNothing::Once() /* call_before_attaching_new_document */);
+  navigation_params->service_worker_network_provider =
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(

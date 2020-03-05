@@ -71,7 +71,7 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::RGBA_1010102:
       return DRM_FORMAT_ABGR2101010;
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       return DRM_FORMAT_XRGB2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;

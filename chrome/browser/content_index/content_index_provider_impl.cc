@@ -166,8 +166,9 @@ void ContentIndexProviderImpl::OnContentDeleted(
     observer.OnItemRemoved(id);
 }
 
-void ContentIndexProviderImpl::OpenItem(LaunchLocation location,
-                                        const ContentId& id) {
+void ContentIndexProviderImpl::OpenItem(
+    const offline_items_collection::OpenParams& open_params,
+    const ContentId& id) {
   auto components = GetEntryKeyComponents(id.id);
 
   auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(

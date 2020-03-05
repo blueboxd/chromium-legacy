@@ -19,17 +19,17 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     private ProfileCardView mView;
     private ProfileCardMediator mMediator;
     private PropertyModelChangeProcessor mModelChangeProcessor;
-    private ProfileCardData mProfileCardData;
+    private CreatorMetadata mCreatorMetadata;
 
     @Override
-    public void init(View anchorView, ProfileCardData profileCardData) {
+    public void init(View anchorView, CreatorMetadata creatorMetadata) {
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         mView = new ProfileCardView(anchorView.getContext());
-        mProfileCardData = profileCardData;
+        mCreatorMetadata = creatorMetadata;
         mModel = new PropertyModel(ProfileCardProperties.ALL_KEYS);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mModel, mView, ProfileCardViewBinder::bind);
-        mMediator = new ProfileCardMediator(mModel, profileCardData);
+        mMediator = new ProfileCardMediator(mModel, creatorMetadata);
     }
 
     @Override

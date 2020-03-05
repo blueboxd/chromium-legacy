@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -154,16 +153,9 @@ void ApplicationCache::RecordAPIUseType() const {
   if (!document)
     return;
 
-  if (document->IsSecureContext()) {
-    Deprecation::CountDeprecation(document,
-                                  WebFeature::kApplicationCacheAPISecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        document, WebFeature::kApplicationCacheAPIInsecureOrigin);
-    HostsUsingFeatures::CountAnyWorld(
-        *document,
-        HostsUsingFeatures::Feature::kApplicationCacheAPIInsecureHost);
-  }
+  CHECK(document->IsSecureContext());
+  Deprecation::CountDeprecation(document,
+                                WebFeature::kApplicationCacheAPISecureOrigin);
 }
 
 }  // namespace blink

@@ -45,7 +45,8 @@ constexpr char kExampleApp[] = "com.example.app";
 constexpr char kUsername1[] = "alice";
 constexpr char kUsername2[] = "bob";
 
-constexpr char kPassword[] = "s3cre3t";
+constexpr char kPassword1[] = "s3cre3t";
+constexpr char kPassword2[] = "f00b4r";
 
 using api::passwords_private::CompromisedCredential;
 using api::passwords_private::CompromisedCredentialsInfo;
@@ -107,11 +108,13 @@ password_manager::CompromisedCredentials MakeCompromised(
 
 PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
                                base::StringPiece username,
-                               base::StringPiece password = "") {
+                               base::StringPiece password = "",
+                               base::StringPiece username_element = "") {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
+  form.username_element = base::ASCIIToUTF16(username_element);
   return form;
 }
 
@@ -320,7 +323,7 @@ TEST_F(PasswordCheckDelegateTest,
 
 TEST_F(PasswordCheckDelegateTest,
        GetPlaintextCompromisedPasswordReturnsCorrectPassword) {
-  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
   store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
   RunUntilIdle();
 
@@ -337,7 +340,135 @@ TEST_F(PasswordCheckDelegateTest,
   EXPECT_EQ(0, opt_credential->id);
   EXPECT_EQ(kExampleCom, opt_credential->signon_realm);
   EXPECT_EQ(kUsername1, opt_credential->username);
-  EXPECT_EQ(kPassword, *opt_credential->password);
+  EXPECT_EQ(kPassword1, *opt_credential->password);
+}
+
+// Test that changing a compromised password fails if the ids don't match.
+TEST_F(PasswordCheckDelegateTest, ChangeCompromisedCredentialIdMismatch) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  CompromisedCredential& credential = info.compromised_credentials.at(0);
+  EXPECT_EQ(0, credential.id);
+  credential.id = 1;
+
+  EXPECT_FALSE(delegate().ChangeCompromisedCredential(credential, "new_pass"));
+}
+
+// Test that changing a compromised password fails if the underlying compromised
+// credential no longer exists.
+TEST_F(PasswordCheckDelegateTest, ChangeCompromisedCredentialStaleData) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  CompromisedCredential& credential = info.compromised_credentials.at(0);
+
+  store().RemoveLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  EXPECT_FALSE(delegate().ChangeCompromisedCredential(credential, "new_pass"));
+}
+
+// Test that changing a compromised password succeeds.
+TEST_F(PasswordCheckDelegateTest, ChangeCompromisedCredentialSuccess) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  CompromisedCredential credential =
+      std::move(info.compromised_credentials.at(0));
+  EXPECT_EQ(0, credential.id);
+  EXPECT_EQ(kExampleCom, credential.signon_realm);
+  EXPECT_EQ(kUsername1, credential.username);
+  EXPECT_EQ(base::UTF8ToUTF16(kPassword1),
+            store().stored_passwords().at(kExampleCom).at(0).password_value);
+
+  EXPECT_TRUE(delegate().ChangeCompromisedCredential(credential, kPassword2));
+  RunUntilIdle();
+
+  EXPECT_EQ(base::UTF8ToUTF16(kPassword2),
+            store().stored_passwords().at(kExampleCom).at(0).password_value);
+}
+
+// Test that changing a compromised password removes duplicates from store.
+TEST_F(PasswordCheckDelegateTest, ChangeCompromisedCredentialRemovesDupes) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1,
+                                     "different_element"));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  EXPECT_EQ(2u, store().stored_passwords().at(kExampleCom).size());
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+
+  CompromisedCredential credential =
+      std::move(info.compromised_credentials.at(0));
+  EXPECT_TRUE(delegate().ChangeCompromisedCredential(credential, kPassword2));
+  RunUntilIdle();
+
+  EXPECT_EQ(1u, store().stored_passwords().at(kExampleCom).size());
+  EXPECT_EQ(
+      kPassword2,
+      base::UTF16ToUTF8(
+          store().stored_passwords().at(kExampleCom).at(0).password_value));
+}
+
+// Test that removing a compromised password fails if the ids don't match.
+TEST_F(PasswordCheckDelegateTest, RemoveCompromisedCredentialIdMismatch) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  CompromisedCredential& credential = info.compromised_credentials.at(0);
+  EXPECT_EQ(0, credential.id);
+  credential.id = 1;
+
+  EXPECT_FALSE(delegate().RemoveCompromisedCredential(credential));
+}
+
+// Test that removing a compromised password fails if the underlying compromised
+// credential no longer exists.
+TEST_F(PasswordCheckDelegateTest, RemoveCompromisedCredentialStaleData) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  const CompromisedCredential& credential = info.compromised_credentials.at(0);
+
+  store().RemoveLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  EXPECT_FALSE(delegate().RemoveCompromisedCredential(credential));
+}
+
+// Test that removing a compromised password succeeds.
+TEST_F(PasswordCheckDelegateTest, RemoveCompromisedCredentialSuccess) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  api::passwords_private::CompromisedCredentialsInfo info =
+      delegate().GetCompromisedCredentialsInfo();
+  const CompromisedCredential& credential = info.compromised_credentials.at(0);
+  EXPECT_TRUE(delegate().RemoveCompromisedCredential(credential));
+  RunUntilIdle();
+  EXPECT_TRUE(store().IsEmpty());
+
+  // Expect another removal of the same credential to fail.
+  EXPECT_FALSE(delegate().RemoveCompromisedCredential(credential));
 }
 
 }  // namespace extensions

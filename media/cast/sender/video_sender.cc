@@ -254,8 +254,8 @@ void VideoSender::InsertRawVideoFrame(
           last_reported_lossy_utilization_, std::move(video_frame));
   if (video_encoder_->EncodeVideoFrame(
           frame_to_encode, reference_time,
-          base::Bind(&VideoSender::OnEncodedVideoFrame, AsWeakPtr(),
-                     frame_to_encode, bitrate))) {
+          base::BindOnce(&VideoSender::OnEncodedVideoFrame, AsWeakPtr(),
+                         frame_to_encode, bitrate))) {
     TRACE_EVENT_ASYNC_BEGIN1("cast.stream", "Video Encode",
                              frame_to_encode.get(), "rtp_timestamp",
                              rtp_timestamp.lower_32_bits());

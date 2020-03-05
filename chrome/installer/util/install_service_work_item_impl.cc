@@ -369,6 +369,12 @@ base::string16 InstallServiceWorkItemImpl::GetCurrentServiceName() const {
                                         : versioned_service_name;
 }
 
+base::string16 InstallServiceWorkItemImpl::GetCurrentServiceDisplayName()
+    const {
+  return base::StringPrintf(L"%ls (%ls)", display_name_.c_str(),
+                            GetCurrentServiceName().c_str());
+}
+
 std::vector<base::char16> InstallServiceWorkItemImpl::MultiSzToVector(
     const base::char16* multi_sz) {
   if (!multi_sz)
@@ -437,9 +443,10 @@ bool InstallServiceWorkItemImpl::RestoreOriginalServiceConfig() {
 
 bool InstallServiceWorkItemImpl::InstallService(const ServiceConfig& config) {
   ScopedScHandle service(::CreateService(
-      scm_.Get(), GetCurrentServiceName().c_str(), display_name_.c_str(),
-      kServiceAccess, config.type, config.start_type, config.error_control,
-      config.cmd_line.c_str(), nullptr, nullptr,
+      scm_.Get(), GetCurrentServiceName().c_str(),
+      GetCurrentServiceDisplayName().c_str(), kServiceAccess, config.type,
+      config.start_type, config.error_control, config.cmd_line.c_str(), nullptr,
+      nullptr,
       !config.dependencies.empty() ? config.dependencies.data() : nullptr,
       nullptr, nullptr));
   if (!service.IsValid()) {

@@ -47,6 +47,8 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
 
   static constexpr uint16_t kDefaultTimeoutInSeconds = 10;
 
+  void OnConfirmButtonClicked();
+
   void OnCancelButtonClicked();
 
   void OnTimerTick();
@@ -62,6 +64,7 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
   const base::string16 timeout_message_with_placeholder_;
 
   views::Label* label_ = nullptr;  // Not owned.
+  base::OnceClosure on_accept_callback_;
   CancelCallback on_cancel_callback_;
 
   // The timer to invoke OnTimerTick() every second. This cannot be

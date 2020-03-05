@@ -303,7 +303,7 @@ void ScriptController::ExecuteJavaScriptURL(
   WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",
                                           StringUTF8Adaptor(result));
   GetFrame()->Loader().CommitNavigation(std::move(params), nullptr,
-                                        base::DoNothing::Once(), true);
+                                        true /* is_javascript_url */);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(

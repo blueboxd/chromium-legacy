@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
@@ -493,8 +492,6 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
       }
     }
 
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kGetUserMediaSecureHost);
     return true;
   }
 
@@ -504,8 +501,6 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
                                 WebFeature::kGetUserMediaInsecureOrigin);
   Deprecation::CountDeprecationCrossOriginIframe(
       *document, WebFeature::kGetUserMediaInsecureOriginIframe);
-  HostsUsingFeatures::CountAnyWorld(
-      *document, HostsUsingFeatures::Feature::kGetUserMediaInsecureHost);
   return false;
 }
 

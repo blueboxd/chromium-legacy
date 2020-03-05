@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -43,6 +44,11 @@ class TabletModeWindowState : public WindowState::State {
 
   // Leaves the tablet mode by reverting to previous state object.
   void LeaveTabletMode(WindowState* window_state, bool was_in_overview);
+
+  // Handles Alt+[ if |snap_position| is |SplitViewController::LEFT|; handles
+  // Alt+] if |snap_position| is |SplitViewController::RIGHT|.
+  void CycleTabletSnap(WindowState* window_state,
+                       SplitViewController::SnapPosition snap_position);
 
   // WindowState::State overrides:
   void OnWMEvent(WindowState* window_state, const WMEvent* event) override;

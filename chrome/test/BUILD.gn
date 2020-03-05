@@ -1497,10 +1497,7 @@ if (!is_android) {
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",
-        "//chrome/browser/resources/chromeos/accessibility/autoclick:browser_tests",
-        "//chrome/browser/resources/chromeos/accessibility/chromevox:browser_tests",
-        "//chrome/browser/resources/chromeos/accessibility/select_to_speak:browser_tests",
-        "//chrome/browser/resources/chromeos/accessibility/switch_access:browser_tests",
+        "//chrome/browser/resources/chromeos/accessibility:browser_tests",
         "//chrome/browser/resources/gaia_auth_host:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
         "//chromeos:test_support",
@@ -1877,7 +1874,7 @@ if (!is_android) {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
         "../browser/ui/views/extensions/extension_dialog_browsertest.cc",
-        "../browser/ui/views/extensions/pwa_confirmation_bubble_view_browsertest.cc",
+        "../browser/ui/views/web_apps/pwa_confirmation_bubble_view_browsertest.cc",
         "../browser/ui/web_applications/test/web_app_navigation_browsertest.cc",
         "../browser/ui/web_applications/test/web_app_navigation_browsertest.h",
       ]
@@ -4894,6 +4891,7 @@ test("unit_tests") {
     }
     if (is_chromeos) {
       sources += [
+        "../browser/chromeos/extensions/extensions_permissions_tracker_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",

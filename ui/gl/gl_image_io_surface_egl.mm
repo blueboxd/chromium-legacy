@@ -52,7 +52,7 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
     case gfx::BufferFormat::RGBA_F16:
       return {GL_RGBA, GL_HALF_FLOAT};
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       NOTIMPLEMENTED();
       return {GL_NONE, GL_NONE};
     case gfx::BufferFormat::BGR_565:

@@ -102,7 +102,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_texture_norm16 = false;
     bool chromium_image_ycbcr_420v = false;
     bool chromium_image_ycbcr_422 = false;
-    bool chromium_image_xr30 = false;
+    bool chromium_image_ar30 = false;
     bool chromium_image_ab30 = false;
     bool chromium_image_ycbcr_p010 = false;
     bool emulate_primitive_restart_fixed_index = false;

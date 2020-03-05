@@ -69,14 +69,13 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 class SubresourceFilteringWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
-  void DidStartProvisionalLoad(WebDocumentLoader* data_source) override {
-    // Normally, the filter should be set when the load is committed. For
-    // the sake of this test, however, inject it earlier to verify that it
-    // is not consulted for the main resource load.
+  void DidCommitNavigation(const WebHistoryItem&,
+                           WebHistoryCommitType,
+                           bool) override {
     subresource_filter_ =
         new TestDocumentSubresourceFilter(load_policy_for_next_load_);
     subresource_filter_->AddToBlacklist("1x1.png");
-    data_source->SetSubresourceFilter(subresource_filter_);
+    Frame()->GetDocumentLoader()->SetSubresourceFilter(subresource_filter_);
   }
 
   void SetLoadPolicyFromNextLoad(

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="../../../resources/testharness.js"></script>
+  <script src="../../../resources/testharnessreport.js"></script>
+  <script src="../../../fast/forms/resources/common.js"></script>
+  <script src="../../../fast/forms/resources/picker-common.js"></script>
+  <script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+</head>
+<body>
+
+<input type="date" id="date1" value="2000-01-02">
+
+<script>
+promise_test(() => {
+  let date1 = document.getElementById('date1');
+
+  return openPickerWithPromise(date1).then(() => {
+    let markDirtyCounter = 0;
+    let focusCounter = 0;
+
+    let promise = new Promise((resolve, reject) => {
+      accessibilityController.setNotificationListener(function(axnode, type) {
+        if (type == 'Focus') {
+          console.log('Received Focus event: ' + accessibilityController.focusedElement.name.replace(/,/g, ''));
+          focusCounter++;
+        } else if (type == 'MarkDirty') {
+          console.log('Received MarkDirty event');
+          if (++markDirtyCounter == 1) {
+            assert_equals(date1.value, "2000-01-03", "Expected arrow key to change date");
+            console.log('Open the month switcher menu.');
+            setTimeout(() => { clickMonthPopupButton(); }, 0);
+          } else if (markDirtyCounter == 3) {
+            console.log('Highlighting 2000-02 in the month popup');
+            setTimeout(function() { eventSender.keyDown('ArrowRight'); }, 0);
+          } else if (markDirtyCounter == 5) {
+            console.log('Pressing enter to submit month switcher menu selection');
+            setTimeout(function() { eventSender.keyDown('Enter'); }, 0);
+          }
+        }
+
+        if (focusCounter == 5 && markDirtyCounter == 7) {
+          assert_equals(date1.value, "2000-02-03", "Submitting month switcher should have udpated control value");
+          resolve();
+        }
+      });
+
+      // In case of failure, reject the promise so we get some logs instead of timing out.
+      window.setTimeout(() => {
+        reject(`Didn't receive expected events.  Got ${focusCounter} Focus and ${markDirtyCounter} MarkDirty`);
+      }, 1500);
+    });
+
+    eventSender.keyDown('ArrowRight');
+
+    return promise;
+  });
+}, 'Tests that typing an arrow key and opening month switcher menu dispatches |Focus| and |MarkDirty| a11y events.');
+
+</script>
+</body>
+
+</html>

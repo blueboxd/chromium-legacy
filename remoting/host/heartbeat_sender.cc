@@ -222,6 +222,21 @@ void HeartbeatSender::SendHeartbeat() {
     return;
   }
 
+  base::TimeDelta last_reported_active_duration =
+      signal_strategy_->signaling_tracker()
+          .GetLastReportedChannelActiveDuration();
+  if (!signal_strategy_->signaling_tracker().IsChannelActive()) {
+    LOG(ERROR) << "Signaling channel appears to be inactive but it claims it's "
+                  "connected. Last reported active "
+               << last_reported_active_duration << " ago.";
+    signal_strategy_->Disconnect();
+    return;
+  } else {
+    VLOG(1)
+        << "About to send heartbeat. Signaling channel last reported active "
+        << last_reported_active_duration << " ago.";
+  }
+
   // Drop previous heartbeat and timer so that it doesn't interfere with the
   // current one.
   client_->CancelPendingRequests();

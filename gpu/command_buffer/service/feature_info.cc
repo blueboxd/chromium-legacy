@@ -1190,7 +1190,7 @@ void FeatureInfo::InitializeFeatures() {
 
 #if defined(OS_MACOSX)
   // Mac can create GLImages out of XR30 IOSurfaces only after High Sierra.
-  feature_flags_.chromium_image_xr30 = base::mac::IsAtLeastOS10_13();
+  feature_flags_.chromium_image_ar30 = base::mac::IsAtLeastOS10_13();
 #elif !defined(OS_WIN)
   // TODO(mcasas): connect in Windows, https://crbug.com/803451
   // XB30 support was introduced in GLES 3.0/ OpenGL 3.3, before that it was
@@ -1200,16 +1200,16 @@ void FeatureInfo::InitializeFeatures() {
       gl_version_info_->IsAtLeastGLES(3, 0) ||
       gfx::HasExtension(extensions, "GL_EXT_texture_type_2_10_10_10_REV");
 #endif
-  if (feature_flags_.chromium_image_xr30 ||
+  if (feature_flags_.chromium_image_ar30 ||
       feature_flags_.chromium_image_ab30) {
     validators_.texture_internal_format.AddValue(GL_RGB10_A2_EXT);
     validators_.render_buffer_format.AddValue(GL_RGB10_A2_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RGB10_A2_EXT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_INT_2_10_10_10_REV);
   }
-  if (feature_flags_.chromium_image_xr30) {
+  if (feature_flags_.chromium_image_ar30) {
     feature_flags_.gpu_memory_buffer_formats.Add(
-        gfx::BufferFormat::BGRX_1010102);
+        gfx::BufferFormat::BGRA_1010102);
   }
   if (feature_flags_.chromium_image_ab30) {
     feature_flags_.gpu_memory_buffer_formats.Add(

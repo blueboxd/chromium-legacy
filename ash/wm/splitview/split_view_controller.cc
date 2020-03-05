@@ -557,6 +557,18 @@ void SplitViewController::SwapWindows() {
       base::UserMetricsAction("SplitView_DoubleTapDividerSwapWindows"));
 }
 
+SplitViewController::SnapPosition
+SplitViewController::GetPositionOfSnappedWindow(
+    const aura::Window* window) const {
+  DCHECK(IsWindowInSplitView(window));
+  return window == left_window_ ? LEFT : RIGHT;
+}
+
+aura::Window* SplitViewController::GetSnappedWindow(SnapPosition position) {
+  DCHECK_NE(NONE, position);
+  return position == LEFT ? left_window_ : right_window_;
+}
+
 aura::Window* SplitViewController::GetDefaultSnappedWindow() {
   if (default_snap_position_ == LEFT)
     return left_window_;
@@ -1311,18 +1323,6 @@ void SplitViewController::OnAccessibilityStatusChanged() {
 
 void SplitViewController::OnAccessibilityControllerShutdown() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
-}
-
-SplitViewController::SnapPosition
-SplitViewController::GetPositionOfSnappedWindow(
-    const aura::Window* window) const {
-  DCHECK(IsWindowInSplitView(window));
-  return window == left_window_ ? LEFT : RIGHT;
-}
-
-aura::Window* SplitViewController::GetSnappedWindow(SnapPosition position) {
-  DCHECK_NE(NONE, position);
-  return position == LEFT ? left_window_ : right_window_;
 }
 
 aura::Window* SplitViewController::GetPhysicalLeftOrTopWindow() {

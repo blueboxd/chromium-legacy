@@ -33,6 +33,8 @@ class NetworkTestHelper : public network_config::CrosNetworkConfigTestHelper {
                             bool is_secured,
                             bool in_profile);
 
+  NetworkStateTestHelper* network_state_test_helper();
+
  private:
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;

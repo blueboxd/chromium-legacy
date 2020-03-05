@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './grid.js';
+import './untrusted_iframe.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BrowserProxy} from './browser_proxy.js';

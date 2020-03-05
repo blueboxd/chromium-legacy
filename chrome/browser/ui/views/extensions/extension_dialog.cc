@@ -50,9 +50,9 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
-    return NULL;
-  // Preferred size must be set before views::Widget::CreateWindowWithParent
-  // is called because CreateWindowWithParent refers the result of CanResize().
+    return nullptr;
+  // Preferred size must be set before views::Widget::CreateWindowWithParent()
+  // is called because CreateWindowWithParent() references CanResize().
   ExtensionViewViews* view = GetExtensionView(host.get());
   view->SetPreferredSize(gfx::Size(width, height));
   view->set_minimum_size(gfx::Size(min_width, min_height));

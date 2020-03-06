@@ -8,12 +8,14 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/schema.h"
 #include "components/policy/policy_export.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -27,6 +29,11 @@ extern const POLICY_EXPORT webui::LocalizedString
 // A convenience class to retrieve all policies values.
 class POLICY_EXPORT PolicyConversions {
  public:
+  // Maps known policy names to their schema. If a policy is not present, it is
+  // not known (either through policy_templates.json or through an extension's
+  // managed storage schema).
+  using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
+
   // |client| provides embedder-specific policy information and must not be
   // nullptr.
   explicit PolicyConversions(std::unique_ptr<PolicyConversionsClient> client);
@@ -55,6 +62,9 @@ class POLICY_EXPORT PolicyConversions {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Sets the updater policies.
   PolicyConversions& WithUpdaterPolicies(std::unique_ptr<PolicyMap> policies);
+
+  // Sets the updater policy schemas.
+  PolicyConversions& WithUpdaterPolicySchemas(PolicyToSchemaMap schemas);
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // Returns the policy data as a base::Value object.

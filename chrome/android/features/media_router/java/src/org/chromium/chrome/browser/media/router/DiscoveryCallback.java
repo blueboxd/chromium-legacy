@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.support.v7.media.MediaRouteSelector;
-import android.support.v7.media.MediaRouter;
+import androidx.mediarouter.media.MediaRouteSelector;
+import androidx.mediarouter.media.MediaRouter;
 
 import java.util.ArrayList;
 import java.util.HashSet;

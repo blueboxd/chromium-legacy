@@ -193,8 +193,6 @@ void PaintPreviewClient::RenderFrameDeleted(
 
 PaintPreviewClient::CreateResult PaintPreviewClient::CreateFileHandle(
     const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   return CreateResult(std::move(file), file.error_details());
@@ -215,6 +213,7 @@ mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
 void PaintPreviewClient::CapturePaintPreviewInternal(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Use a frame's embedding token as its GUID. Note that we create a GUID for
   // the main frame so that we can treat it the same as other frames.
   auto token = render_frame_host->GetEmbeddingToken();
@@ -260,12 +259,9 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* document_data = &all_document_data_[params.document_guid];
   if (result.error != base::File::FILE_OK) {
-    // Don't block up the UI thread and answer the callback on a different
-    // thread.
-    base::PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(document_data->callback), params.document_guid,
-                       mojom::PaintPreviewStatus::kFileCreationError, nullptr));
+    std::move(document_data->callback)
+        .Run(params.document_guid,
+             mojom::PaintPreviewStatus::kFileCreationError, nullptr);
     return;
   }
 
@@ -385,18 +381,16 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
     // At a minimum one frame was captured successfully, it is up to the
     // caller to decide if a partial success is acceptable based on what is
     // contained in the proto.
-    base::PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(document_data->callback), guid,
-                       document_data->had_error
-                           ? mojom::PaintPreviewStatus::kPartialSuccess
-                           : mojom::PaintPreviewStatus::kOk,
-                       std::move(document_data->proto)));
+    std::move(document_data->callback)
+        .Run(guid,
+             document_data->had_error
+                 ? mojom::PaintPreviewStatus::kPartialSuccess
+                 : mojom::PaintPreviewStatus::kOk,
+             std::move(document_data->proto));
   } else {
     // A proto could not be created indicating all frames failed to capture.
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(document_data->callback), guid,
-                                  mojom::PaintPreviewStatus::kFailed, nullptr));
+    std::move(document_data->callback)
+        .Run(guid, mojom::PaintPreviewStatus::kFailed, nullptr);
   }
   all_document_data_.erase(guid);
 }

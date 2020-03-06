@@ -8,15 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/base/test/scoped_fake_full_keyboard_access.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/test/views_test_helper.h"
 
 namespace ui {
 namespace test {
-class ScopedFakeFullKeyboardAccess;
 class ScopedFakeNSWindowFocus;
 class ScopedFakeNSWindowFullscreen;
 }  // namespace test
-class ScopedAnimationDurationScaleMode;
 }  // namespace ui
 
 namespace views {
@@ -26,13 +26,10 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   ViewsTestHelperMac();
   ~ViewsTestHelperMac() override;
 
-  // ViewsTestHelper:
-  void SetUp() override;
-  void TearDown() override;
-
  private:
   // Disable animations during tests.
-  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode_{
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION};
 
   // When using desktop widgets on Mac, window activation is asynchronous
   // because the window server is involved. A window may also be deactivated by
@@ -51,8 +48,7 @@ class ViewsTestHelperMac : public ViewsTestHelper {
   // system setting of the test machine. Also, this helps to make tests on Mac
   // more consistent with other platforms, where most views are focusable by
   // default.
-  std::unique_ptr<ui::test::ScopedFakeFullKeyboardAccess>
-      faked_full_keyboard_access_;
+  ui::test::ScopedFakeFullKeyboardAccess faked_full_keyboard_access_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperMac);
 };

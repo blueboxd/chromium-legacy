@@ -33,12 +33,20 @@ PopupTracker::~PopupTracker() = default;
 PopupTracker::PopupTracker(content::WebContents* contents,
                            content::WebContents* opener)
     : content::WebContentsObserver(contents),
+      scoped_observer_(this),
       visibility_tracker_(
           base::DefaultTickClock::GetInstance(),
           contents->GetVisibility() != content::Visibility::HIDDEN),
       opener_source_id_(ukm::GetSourceIdForWebContentsDocument(opener)) {
   if (auto* popup_opener = PopupOpenerTabHelper::FromWebContents(opener))
     popup_opener->OnOpenedPopup(this);
+
+  auto* observer_manager =
+      subresource_filter::SubresourceFilterObserverManager::FromWebContents(
+          contents);
+  if (observer_manager) {
+    scoped_observer_.Add(observer_manager);
+  }
 }
 
 void PopupTracker::WebContentsDestroyed() {
@@ -74,6 +82,7 @@ void PopupTracker::WebContentsDestroyed() {
         .SetUserInitiatedClose(web_contents()->GetClosedByUserGesture())
         .SetTrusted(is_trusted_)
         .SetNumInteractions(capped_interactions)
+        .SetSafeBrowsingStatus(static_cast<int>(safe_browsing_status_))
         .Record(ukm::UkmRecorder::Get());
   }
 }
@@ -108,6 +117,31 @@ void PopupTracker::DidGetUserInteraction(
   // TODO(csharrison): It would be nice if ctrl-W could be filtered out here,
   // but the initial ctrl key press is registered as a kRawKeyDown.
   num_interactions_++;
+}
+
+// This method will always be called before the DidFinishNavigation associated
+// with this handle.
+// The exception is a navigation restoring a page from back-forward cache --
+// in that case don't issue any requests, therefore we don't get any
+// safe browsing callbacks. See the comment above for the mitigation.
+void PopupTracker::OnSafeBrowsingChecksComplete(
+    content::NavigationHandle* navigation_handle,
+    const SafeBrowsingCheckResults& results) {
+  DCHECK(navigation_handle->IsInMainFrame());
+  safe_browsing_status_ = PopupSafeBrowsingStatus::kSafe;
+  for (const auto& result : results) {
+    if (result.threat_type ==
+            safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING ||
+        result.threat_type == safe_browsing::SBThreatType::
+                                  SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+        result.threat_type ==
+            safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER)
+      safe_browsing_status_ = PopupSafeBrowsingStatus::kUnsafe;
+  }
+}
+
+void PopupTracker::OnSubresourceFilterGoingAway() {
+  scoped_observer_.RemoveAll();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PopupTracker)

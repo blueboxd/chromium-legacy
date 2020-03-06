@@ -25,6 +25,39 @@ constexpr base::TimeDelta kMinimumPendingDelay =
 constexpr base::TimeDelta kSuccessTimeout =
     base::TimeDelta::FromMilliseconds(100);
 
+class UnresponsiveDeepScanningDialogDelegate
+    : public FakeDeepScanningDialogDelegate {
+ public:
+  using FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate;
+
+  static std::unique_ptr<DeepScanningDialogDelegate> Create(
+      base::RepeatingClosure delete_closure,
+      StatusCallback status_callback,
+      EncryptionStatusCallback encryption_callback,
+      std::string dm_token,
+      content::WebContents* web_contents,
+      Data data,
+      CompletionCallback callback) {
+    auto ret = std::make_unique<UnresponsiveDeepScanningDialogDelegate>(
+        delete_closure, status_callback, encryption_callback,
+        std::move(dm_token), web_contents, std::move(data),
+        std::move(callback));
+    return ret;
+  }
+
+ private:
+  void UploadTextForDeepScanning(
+      std::unique_ptr<BinaryUploadService::Request> request) override {
+    // Do nothing.
+  }
+
+  void UploadFileForDeepScanning(
+      const base::FilePath& path,
+      std::unique_ptr<BinaryUploadService::Request> request) override {
+    // Do nothing.
+  }
+};
+
 }  // namespace
 
 DeepScanningBrowserTestBase::DeepScanningBrowserTestBase() {
@@ -72,6 +105,17 @@ void DeepScanningBrowserTestBase::SetUpDelegate() {
   SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting(kDmToken));
   DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
       &FakeDeepScanningDialogDelegate::Create, base::DoNothing(),
+      base::Bind(&DeepScanningBrowserTestBase::StatusCallback,
+                 base::Unretained(this)),
+      base::Bind(&DeepScanningBrowserTestBase::EncryptionStatusCallback,
+                 base::Unretained(this)),
+      kDmToken));
+}
+
+void DeepScanningBrowserTestBase::SetUpUnresponsiveDelegate() {
+  SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting(kDmToken));
+  DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
+      &UnresponsiveDeepScanningDialogDelegate::Create, base::DoNothing(),
       base::Bind(&DeepScanningBrowserTestBase::StatusCallback,
                  base::Unretained(this)),
       base::Bind(&DeepScanningBrowserTestBase::EncryptionStatusCallback,

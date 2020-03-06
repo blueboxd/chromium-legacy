@@ -60,11 +60,13 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
   void* BaseAddress() const {
     DCHECK(!IsShared());
-    return base_address_;
+    return BaseAddressMaybeShared();
   }
-  void* BaseAddressMaybeShared() const { return base_address_; }
+  void* BaseAddressMaybeShared() const {
+    return !IsDetached() ? raw_base_address_ : nullptr;
+  }
 
-  size_t ByteOffset() const { return byte_offset_; }
+  size_t ByteOffset() const { return !IsDetached() ? raw_byte_offset_ : 0; }
 
   virtual size_t ByteLengthAsSizeT() const = 0;
   virtual unsigned TypeSize() const = 0;
@@ -79,14 +81,15 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   ArrayBufferView(scoped_refptr<ArrayBuffer>, size_t byte_offset);
 
   virtual void Detach();
-
-  // This is the address of the ArrayBuffer's storage, plus the byte offset.
-  void* base_address_;
-
-  size_t byte_offset_;
-  bool is_detachable_;
+  bool IsDetached() const { return !buffer_ || buffer_->IsDetached(); }
 
  private:
+  // The raw_* fields may be stale after Detach. Use getters instead.
+  // This is the address of the ArrayBuffer's storage, plus the byte offset.
+  void* raw_base_address_;
+  size_t raw_byte_offset_;
+  bool is_detachable_;
+
   friend class ArrayBuffer;
   scoped_refptr<ArrayBuffer> buffer_;
   ArrayBufferView* prev_view_;

@@ -47,8 +47,8 @@ DomainReliabilityContext::DomainReliabilityContext(
       scheduler_(time,
                  config_->collectors.size(),
                  scheduler_params,
-                 base::Bind(&DomainReliabilityContext::ScheduleUpload,
-                            base::Unretained(this))),
+                 base::BindRepeating(&DomainReliabilityContext::ScheduleUpload,
+                                     base::Unretained(this))),
       dispatcher_(dispatcher),
       uploader_(uploader),
       uploading_beacons_size_(0),
@@ -106,8 +106,8 @@ void DomainReliabilityContext::ScheduleUpload(
     base::TimeDelta min_delay,
     base::TimeDelta max_delay) {
   dispatcher_->ScheduleTask(
-      base::Bind(&DomainReliabilityContext::CallUploadAllowedCallback,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DomainReliabilityContext::CallUploadAllowedCallback,
+                     weak_factory_.GetWeakPtr()),
       min_delay, max_delay);
 }
 
@@ -150,12 +150,9 @@ void DomainReliabilityContext::StartUpload() {
   DCHECK_NE(-1, max_upload_depth);
 
   uploader_->UploadReport(
-      report_json,
-      max_upload_depth,
-      collector_url,
-      base::Bind(
-          &DomainReliabilityContext::OnUploadComplete,
-          weak_factory_.GetWeakPtr()));
+      report_json, max_upload_depth, collector_url,
+      base::BindOnce(&DomainReliabilityContext::OnUploadComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DomainReliabilityContext::OnUploadComplete(

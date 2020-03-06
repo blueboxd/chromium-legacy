@@ -37,17 +37,21 @@ int App::Run() {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   Initialize();
-  base::RunLoop runloop;
-  base::ScopedDisallowBlocking no_blocking_allowed_on_ui_thread;
   int exit_code = 0;
-  quit_ = base::BindOnce(
-      [](base::OnceClosure quit, int* exit_code_out, int exit_code) {
-        *exit_code_out = exit_code;
-        std::move(quit).Run();
-      },
-      runloop.QuitWhenIdleClosure(), &exit_code);
-  FirstTaskRun();
-  runloop.Run();
+  {
+    base::ScopedDisallowBlocking no_blocking_allowed_on_ui_thread;
+    base::RunLoop runloop;
+    quit_ = base::BindOnce(
+        [](base::OnceClosure quit, int* exit_code_out, int exit_code) {
+          *exit_code_out = exit_code;
+          std::move(quit).Run();
+        },
+        runloop.QuitWhenIdleClosure(), &exit_code);
+    FirstTaskRun();
+    runloop.Run();
+  }
+
+  // Shutting down the thread pool involves joining threads.
   base::ThreadPoolInstance::Get()->Shutdown();
   return exit_code;
 }

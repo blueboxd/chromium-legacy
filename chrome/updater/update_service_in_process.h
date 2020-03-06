@@ -18,7 +18,6 @@ class SequencedTaskRunner;
 }
 
 namespace update_client {
-enum class Error;
 class Configurator;
 class UpdateClient;
 }  // namespace update_client
@@ -47,8 +46,14 @@ class UpdateServiceInProcess : public UpdateService {
 
   // Update-checks all registered applications. Calls |callback| once the
   // operation is complete.
-  void UpdateAll(
-      base::OnceCallback<void(update_client::Error)> callback) override;
+  void UpdateAll(base::OnceCallback<void(Result)> callback) override;
+
+  // Update-checks one registered application. Calls |state_updates| as the
+  // update is processed and |done| once the operation is complete.
+  void Update(const std::string& app_id,
+              Priority priority,
+              base::RepeatingCallback<void(UpdateState)> state_update,
+              base::OnceCallback<void(Result)> done) override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

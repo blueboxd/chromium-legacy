@@ -71,7 +71,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetTabUrl, const GURL&());
   MOCK_CONST_METHOD0(GetTabReferrerUrl, const GURL&());
   MOCK_CONST_METHOD0(GetRequestInitiator, const base::Optional<url::Origin>&());
-  MOCK_CONST_METHOD0(GetNetworkIsolationKey, const net::NetworkIsolationKey&());
   MOCK_CONST_METHOD0(GetSuggestedFilename, std::string());
   MOCK_CONST_METHOD0(GetContentDisposition, std::string());
   MOCK_CONST_METHOD0(GetResponseHeaders,

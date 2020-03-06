@@ -106,7 +106,8 @@ class UiControllerAndroid : public ControllerObserver {
   void OnExpandBottomSheet() override;
   void OnCollapseBottomSheet() override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
-  void OnFormChanged(const FormProto* form) override;
+  void OnFormChanged(const FormProto* form,
+                     const FormProto::Result* result) override;
   void OnClientSettingsChanged(const ClientSettings& settings) override;
   void OnGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) override;

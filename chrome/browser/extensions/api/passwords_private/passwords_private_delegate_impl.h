@@ -80,6 +80,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const api::passwords_private::CompromisedCredential& credential) override;
   bool StartPasswordCheck() override;
   void StopPasswordCheck() override;
+  api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;

@@ -120,7 +120,7 @@ const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
 
 void ExpectRequestNetworkIsolationKey(
     const GURL& request_url,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::NetworkIsolationKey& expected_network_isolation_key,
     base::OnceCallback<void()> function) {
   base::RunLoop request_waiter;
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_ =
@@ -130,8 +130,13 @@ void ExpectRequestNetworkIsolationKey(
                 const network::ResourceRequest& request = params->url_request;
                 if (request.url == request_url) {
                   EXPECT_TRUE(request.trusted_params.has_value());
-                  EXPECT_EQ(request.trusted_params->network_isolation_key,
-                            network_isolation_key);
+                  EXPECT_EQ(expected_network_isolation_key,
+                            request.trusted_params->network_isolation_key);
+                  // SiteForCookies should be consistent with the NIK.
+                  EXPECT_TRUE(
+                      net::SiteForCookies::FromOrigin(
+                          *expected_network_isolation_key.GetTopFrameOrigin())
+                          .IsEquivalent(request.site_for_cookies));
                   request_waiter.Quit();
                 }
                 return false;  // Do not intercept
@@ -2164,7 +2169,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectDownload) {
   // Start a download and explicitly specify to support redirect.
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      first_url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
   download_parameters->set_cross_origin_redirects(
       network::mojom::RedirectMode::kFollow);
   DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
@@ -2197,7 +2202,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FailCrossOriginDownload) {
   // Start a download and explicitly specify to fail cross-origin redirect.
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      first_url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
   download_parameters->set_cross_origin_redirects(
       network::mojom::RedirectMode::kError);
   DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
@@ -2233,7 +2238,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectUnsafeDownload) {
           download_manager, 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      first_url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      first_url, TRAFFIC_ANNOTATION_FOR_TESTS);
   download_parameters->set_cross_origin_redirects(
       network::mojom::RedirectMode::kFollow);
   download_manager->DownloadUrl(std::move(download_parameters));
@@ -3582,12 +3587,17 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   GURL download_url = origin_one.GetURL("/ping");
   GURL referrer_url = origin_one.GetURL(
       std::string("/download-attribute.html?target=") + download_url.spec());
+  GURL final_url = origin_two.GetURL(kOriginTwo, "/download");
+  url::Origin final_url_origin = url::Origin::Create(final_url);
+  // The NetworkIsolationKey after the cross-site redirect should be the same as
+  // if there were a top-level navigation to the final URL.
+  net::NetworkIsolationKey expected_network_isolation_key =
+      net::NetworkIsolationKey(final_url_origin, final_url_origin);
 
   // <origin_one>/download-attribute.html initiates a download of
   // <origin_one>/ping, which redirects to <origin_two>/download.
   origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
-  origin_one.RegisterRequestHandler(
-      CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+  origin_one.RegisterRequestHandler(CreateRedirectHandler("/ping", final_url));
   origin_one.StartAcceptingConnections();
 
   origin_two.RegisterRequestHandler(
@@ -3595,8 +3605,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                                  "application/octet-stream", "Hello"));
   origin_two.StartAcceptingConnections();
 
-  NavigateToCommittedURLAndWaitForDownload(shell(), referrer_url,
-                                           download::DownloadItem::COMPLETE);
+  ExpectRequestNetworkIsolationKey(final_url, expected_network_isolation_key,
+                                   base::BindLambdaForTesting([&]() {
+                                     NavigateToCommittedURLAndWaitForDownload(
+                                         shell(), referrer_url,
+                                         download::DownloadItem::COMPLETE);
+                                   }));
 
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
@@ -4051,12 +4065,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   GURL slow_download_url = embedded_test_server()->GetURL(
       kOriginTwo, SlowDownloadHttpResponse::kKnownSizeUrl);
-  url::Origin top_frame_origin =
-      url::Origin::Create(embedded_test_server()->GetURL(kOriginOne, "/"));
-  url::Origin subframe_origin =
-      url::Origin::Create(embedded_test_server()->GetURL(kOriginTwo, "/"));
+  url::Origin download_origin = url::Origin::Create(slow_download_url);
   net::NetworkIsolationKey expected_network_isolation_key =
-      net::NetworkIsolationKey(top_frame_origin, subframe_origin);
+      net::NetworkIsolationKey(download_origin, download_origin);
 
   GURL frame_url = embedded_test_server()->GetURL(
       kOriginTwo,
@@ -4119,16 +4130,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_one.Start());
   ASSERT_TRUE(origin_two.Start());
 
-  GURL frame_url =
-      origin_one.GetURL("/download-attribute.html?target=" +
-                        origin_two.GetURL("/download-test.lib").spec());
+  GURL download_url = origin_two.GetURL("/download-test.lib");
+  url::Origin download_origin = url::Origin::Create(download_url);
+  // The NetworkIsolationKey of the download should be the same as that of a
+  // top-level navigation to the download.
+  net::NetworkIsolationKey expected_network_isolation_key =
+      net::NetworkIsolationKey(download_origin, download_origin);
+
+  GURL frame_url = origin_one.GetURL("/download-attribute.html?target=" +
+                                     download_url.spec());
   GURL::Replacements replacements;
   replacements.SetHostStr("localhost");
   frame_url = frame_url.ReplaceComponents(replacements);
   GURL document_url =
       origin_two.GetURL("/iframe-host.html?target=" + frame_url.spec());
-  download::DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), document_url);
+  download::DownloadItem* download = nullptr;
+  ExpectRequestNetworkIsolationKey(download_url, expected_network_isolation_key,
+                                   base::BindLambdaForTesting([&]() {
+                                     download = StartDownloadAndReturnItem(
+                                         shell(), document_url);
+                                   }));
+
   WaitForCompletion(download);
 
   EXPECT_STREQ(FILE_PATH_LITERAL("download-test.lib"),
@@ -4484,7 +4506,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUIWithoutRenderer) {
 
   // Creates download parameters without any renderer process information.
   auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
-      webui_url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      webui_url, TRAFFIC_ANNOTATION_FOR_TESTS);
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
   DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();

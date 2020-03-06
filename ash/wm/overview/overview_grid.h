@@ -326,6 +326,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // grid.
   bool IsDeskNameBeingModified() const;
 
+  // Commits any on-going desk name changes if any.
+  void CommitDeskNameChanges();
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -344,6 +347,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
   }
+
+  const views::Widget* desks_widget() const { return desks_widget_.get(); }
 
   const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
 

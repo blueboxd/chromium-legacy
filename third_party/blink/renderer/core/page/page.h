@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
@@ -340,6 +341,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   }
   void ClearMediaFeatureOverrides();
 
+  void SetVisionDeficiency(VisionDeficiency new_vision_deficiency);
+  VisionDeficiency GetVisionDeficiency() const { return vision_deficiency_; }
+
   WebScopedVirtualTimePauser& HistoryNavigationVirtualTimePauser() {
     return history_navigation_virtual_time_pauser_;
   }
@@ -451,8 +455,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   std::unique_ptr<PageScheduler> page_scheduler_;
 
-  // Overrides for various media features set from the devtools.
+  // Overrides for various media features, set from DevTools.
   std::unique_ptr<MediaFeatureOverrides> media_feature_overrides_;
+
+  // Emulated vision deficiency, set from DevTools.
+  VisionDeficiency vision_deficiency_ = VisionDeficiency::kNoVisionDeficiency;
 
   int32_t autoplay_flags_;
 

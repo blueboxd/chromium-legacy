@@ -250,6 +250,9 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // about the list and the user's position within it.
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
+
+  ApplyThemeAndRefreshIcons();
+  ShowKeyword(false);
 }
 
 bool OmniboxResultView::IsSelected() const {

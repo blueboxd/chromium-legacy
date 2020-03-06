@@ -59,7 +59,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   ~WebWidgetTestProxy() override;
 
   // RenderWidget overrides.
-  void BeginMainFrame(base::TimeTicks frame_time) override;
+  void WillBeginCompositorFrame() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void RequestPresentation(PresentationTimeCallback callback) override;

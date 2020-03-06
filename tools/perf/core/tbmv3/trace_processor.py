@@ -20,7 +20,12 @@ EXPORT_JSON_QUERY_TEMPLATE = 'select export_json(%s)\n'
 METRICS_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                              'metrics'))
 
-MetricFiles = namedtuple('MetricFiles', ('sql', 'proto', 'config'))
+
+MetricFiles = namedtuple('MetricFiles', ('sql', 'proto'))
+
+
+class InvalidTraceProcessorOutput(Exception):
+  pass
 
 # This will be set to a path once trace processor has been fetched
 # to avoid downloading several times during one Results Processor run.
@@ -68,8 +73,7 @@ def _CreateMetricFiles(metric_name):
   # revise this decision later.
   metric_files = MetricFiles(
       sql=os.path.join(METRICS_PATH, metric_name + '.sql'),
-      proto=os.path.join(METRICS_PATH, metric_name + '.proto'),
-      config=os.path.join(METRICS_PATH, metric_name + '_config.json'))
+      proto=os.path.join(METRICS_PATH, metric_name + '.proto'))
   for filetype, path in metric_files._asdict().iteritems():
     if not os.path.isfile(path):
       raise RuntimeError('metric %s file not found at %s' % (filetype, path))
@@ -95,6 +99,92 @@ def _ScopedHistogramName(metric_name, histogram_name):
   return '::'.join([scope, histogram_name])
 
 
+class ProtoFieldInfo(object):
+  def __init__(self, name, parent, repeated, field_options):
+    self.name = name
+    self.parent = parent
+    self.repeated = repeated
+    self.field_options = field_options
+
+  @property
+  def path_from_root(self):
+    if self.parent is None:
+      return [self]
+    else:
+      return self.parent.path_from_root + [self]
+
+  def __repr__(self):
+    return 'ProtoFieldInfo("%s", repeated=%s)' %(self.name, self.repeated)
+
+
+def _LeafFieldAnnotations(annotations, parent=None):
+  """Yields leaf fields in the annotations tree, yielding a proto field info
+  each time. Given the following annotation:
+  __annotations: {
+    a: {
+      __field_options: { },
+      b: { __field_options: { unit: "count" }, __repeated: True },
+      c: { __field_options: { unit: "ms" } }
+    }
+  }
+  It yields:
+  ProtoFieldInfo(name="b", parent=FieldInfoForA,
+                 repeated=True, field_options={unit: "count"})
+  ProtoFieldInfo(name="c", parent=FieldInfoForA,
+                 repeated=False, field_options={unit: "ms"})
+
+  """
+  for (name, field_value) in annotations.items():
+    if name[:2] == "__":
+      continue  # internal fields.
+    current_field = ProtoFieldInfo(
+        name=name,
+        parent=parent,
+        repeated=field_value.get('__repeated', False),
+        field_options=field_value.get('__field_options', {}))
+    has_no_descendants = True
+    for descendant in _LeafFieldAnnotations(field_value, current_field):
+      has_no_descendants = False
+      yield descendant
+    if has_no_descendants:
+      yield current_field
+
+
+def _PluckField(json_dict, field_path):
+  """Returns the values of fields matching field_path from json dict.
+
+  Field path is a sequence of ProtoFieldInfo starting from the root dict. Arrays
+  are flattened along the way. For exampe, consider the following json dict:
+  {
+    a: {
+      b: [ { c: 24 }, { c: 25 } ],
+      d: 42,
+    }
+  }
+  Field path (a, d) returns [42]. Field_path (a, b, c) returns [24, 25].
+  """
+  if len(field_path) == 0:
+    return [json_dict]
+  path_head = field_path[0]
+  path_tail = field_path[1:]
+
+  if path_head.repeated:
+    field_values = json_dict[path_head.name]
+    if not isinstance(field_values, list):
+      raise InvalidTraceProcessorOutput(
+          "Field marked as repeated but json value is not list")
+    output = []
+    for field_value in field_values:
+      output.extend(_PluckField(field_value, path_tail))
+    return output
+  else:
+    field_value = json_dict[path_head.name]
+    if isinstance(field_value, list):
+      raise InvalidTraceProcessorOutput(
+          "Field not marked as repeated but json value is list")
+    return _PluckField(field_value, path_tail)
+
+
 def RunMetric(trace_processor_path, trace_file, metric_name):
   """Run a TBMv3 metric using trace processor.
 
@@ -118,17 +208,28 @@ def RunMetric(trace_processor_path, trace_file, metric_name):
   measurements = json.loads(output)
 
   histograms = histogram_set.HistogramSet()
-  with open(metric_files.config) as f:
-    config = json.load(f)
-  metric_root_field = 'perfetto.protos.' + metric_name
-  for histogram_config in config['histograms']:
-    histogram_name = histogram_config['name']
-    samples = measurements[metric_root_field][histogram_name]
+  root_annotations = measurements.get('__annotations', {})
+  full_metric_name = 'perfetto.protos.' + metric_name
+  annotations = root_annotations.get(full_metric_name, None)
+  metric_proto = measurements.get(full_metric_name, None)
+  if metric_proto is None:
+    logging.warn("No metric found in the output.")
+    return histograms
+  elif annotations is None:
+    logging.info("Metric has no field with unit. Histograms will be empty.")
+    return histograms
+
+  for field in _LeafFieldAnnotations(annotations):
+    unit = field.field_options.get('unit', None)
+    if unit is None:
+      logging.debug('Skipping field %s to histograms because it has no unit',
+          field.name)
+      continue
+    histogram_name = ':'.join([field.name for field in field.path_from_root])
+    samples = _PluckField(metric_proto, field.path_from_root)
     scoped_histogram_name = _ScopedHistogramName(metric_name, histogram_name)
-    description = histogram_config['description']
-    histograms.CreateHistogram(scoped_histogram_name,
-                               histogram_config['unit'], samples,
-                               description=description)
+    histograms.CreateHistogram(scoped_histogram_name, unit, samples)
+
   return histograms
 
 

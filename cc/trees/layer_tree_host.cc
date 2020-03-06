@@ -605,20 +605,20 @@ DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  events_metrics_manager_.SaveActiveEventsMetrics();
+  events_metrics_manager_.SaveActiveEventMetrics();
 }
 
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  events_metrics_manager_.SaveActiveEventsMetrics();
+  events_metrics_manager_.SaveActiveEventMetrics();
 }
 
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  events_metrics_manager_.SaveActiveEventsMetrics();
+  events_metrics_manager_.SaveActiveEventMetrics();
 }
 
 bool LayerTreeHost::RequestedMainFramePendingForTesting() {

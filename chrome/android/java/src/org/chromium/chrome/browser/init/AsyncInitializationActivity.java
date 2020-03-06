@@ -247,8 +247,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @CallSuper
     @Override
-    public void onStartupFailure() {
-        throw new ProcessInitException(LoaderErrors.NATIVE_STARTUP_FAILED);
+    public void onStartupFailure(Exception failureCause) {
+        throw new ProcessInitException(LoaderErrors.NATIVE_STARTUP_FAILED, failureCause);
     }
 
     /**

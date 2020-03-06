@@ -6,11 +6,37 @@
 
 #include <memory>
 
+#include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+bool IsDesksBarWidget(const views::Widget* widget) {
+  if (!widget)
+    return false;
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return false;
+
+  auto* session = overview_controller->overview_session();
+  for (const auto& grid : session->grid_list()) {
+    if (widget == grid->desks_widget())
+      return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 DeskNameView::DeskNameView() {
   auto border = std::make_unique<WmHighlightItemBorder>(/*corner_radius=*/4);
@@ -24,6 +50,17 @@ DeskNameView::DeskNameView() {
 }
 
 DeskNameView::~DeskNameView() = default;
+
+// static
+void DeskNameView::CommitChanges(views::Widget* widget) {
+  DCHECK(IsDesksBarWidget(widget));
+
+  auto* focus_manager = widget->GetFocusManager();
+  focus_manager->ClearFocus();
+  // Avoid having the focus restored to the same DeskNameView when the desks bar
+  // widget is refocused, e.g. when the new desk button is pressed.
+  focus_manager->SetStoredFocusView(nullptr);
+}
 
 void DeskNameView::SetTextAndElideIfNeeded(const base::string16& text) {
   SetText(gfx::ElideText(text, GetFontList(), GetContentsBounds().width(),
@@ -48,9 +85,9 @@ gfx::Size DeskNameView::CalculatePreferredSize() const {
 
 bool DeskNameView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // The default behavior of the tab key is that it moves the focus to the next
-  // available DeskNameView. We want the focus to remain in this view until the
-  // changes are committed via Enter or Esc. Tabbing is handled by the
-  // OverviewHighlightController.
+  // available DeskNameView.
+  // We want that to be handled by OverviewHighlightController as part of moving
+  // the highlight forward or backward when tab or shift+tab are pressed.
   if (event.key_code() == ui::VKEY_TAB)
     return true;
 

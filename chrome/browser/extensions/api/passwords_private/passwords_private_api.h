@@ -275,6 +275,19 @@ class PasswordsPrivateStopPasswordCheckFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class PasswordsPrivateGetPasswordCheckStatusFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getPasswordCheckStatus",
+                             PASSWORDSPRIVATE_GETPASSWORDCHECKSTATUS)
+
+ protected:
+  ~PasswordsPrivateGetPasswordCheckStatusFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_API_H_

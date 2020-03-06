@@ -41,6 +41,9 @@ SplashScreen::SplashScreen(const base::string16& bundle_name)
 
 SplashScreen::~SplashScreen() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(crbug.com/1059094) this assert may fire when the dtor is called
+  // while the window is fading out.
   DCHECK(state_ == WindowState::STATE_CREATED ||
          state_ == WindowState::STATE_CLOSED);
 }
@@ -58,6 +61,7 @@ void SplashScreen::Show() {
 }
 
 void SplashScreen::Dismiss(base::OnceClosure on_close_closure) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   on_close_closure_ = std::move(on_close_closure);
   switch (state_) {
     case WindowState::STATE_CREATED:

@@ -39,7 +39,6 @@ const char kPaintPreviewDir[] = "paint_preview";
 const char kCaptureTestDir[] = "capture_test";
 
 struct CaptureMetrics {
-  int compressed_size_bytes;
   base::TimeDelta capture_time;
   ukm::SourceId source_id;
 };
@@ -54,9 +53,10 @@ void CleanupOnFailure(const base::FilePath& root_dir,
 void CleanupAndLogResult(const base::FilePath& zip_path,
                          const CaptureMetrics& metrics,
                          FinishedCallback finished,
-                         bool keep_zip) {
+                         bool keep_zip,
+                         size_t compressed_size_bytes) {
   VLOG(1) << kPaintPreviewTestTag << "Capture Finished Successfully:\n"
-          << "Compressed size " << metrics.compressed_size_bytes << " bytes\n"
+          << "Compressed size " << compressed_size_bytes << " bytes\n"
           << "Time taken in native " << metrics.capture_time.InMilliseconds()
           << " ms";
 
@@ -65,46 +65,39 @@ void CleanupAndLogResult(const base::FilePath& zip_path,
 
   base::UmaHistogramMemoryKB(
       "Browser.PaintPreview.CaptureExperiment.CompressedOnDiskSize",
-      metrics.compressed_size_bytes / 1000);
+      compressed_size_bytes / 1000);
   if (metrics.source_id != ukm::kInvalidSourceId) {
     ukm::builders::PaintPreviewCapture(metrics.source_id)
         .SetCompressedOnDiskSize(
-            ukm::GetExponentialBucketMinForBytes(metrics.compressed_size_bytes))
+            ukm::GetExponentialBucketMinForBytes(compressed_size_bytes))
         .Record(ukm::UkmRecorder::Get());
   }
   std::move(finished).Run(zip_path);
 }
 
-void CompressAndMeasureSize(const base::FilePath& root_dir,
-                            const GURL& url,
-                            std::unique_ptr<PaintPreviewProto> proto,
-                            CaptureMetrics metrics,
-                            FinishedCallback finished,
-                            bool keep_zip) {
-  FileManager manager(root_dir);
-  auto key = manager.CreateKey(url);
-  base::FilePath path;
-  bool success = manager.CreateOrGetDirectory(key, &path);
+void MeasureSize(scoped_refptr<FileManager> manager,
+                 const DirectoryKey& key,
+                 const base::FilePath& root_dir,
+                 CaptureMetrics metrics,
+                 FinishedCallback finished,
+                 bool keep_zip,
+                 bool success) {
   if (!success) {
-    VLOG(1) << kPaintPreviewTestTag << "Failure: could not find url dir.";
     CleanupOnFailure(root_dir, std::move(finished));
     return;
   }
-  if (!manager.SerializePaintPreviewProto(key, *proto)) {
-    VLOG(1) << kPaintPreviewTestTag << "Failure: could not write proto.";
-    CleanupOnFailure(root_dir, std::move(finished));
-    return;
-  }
-  manager.CompressDirectory(key);
-  metrics.compressed_size_bytes = manager.GetSizeOfArtifacts(key);
-
-  CleanupAndLogResult(path.AddExtensionASCII("zip"), metrics,
-                      std::move(finished), keep_zip);
+  manager->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&FileManager::GetSizeOfArtifacts, manager, key),
+      base::BindOnce(
+          &CleanupAndLogResult,
+          root_dir.AppendASCII(key.AsciiDirname()).AddExtensionASCII("zip"),
+          metrics, std::move(finished), keep_zip));
 }
 
-void OnCaptured(base::TimeTicks start_time,
+void OnCaptured(scoped_refptr<FileManager> manager,
+                const DirectoryKey& key,
+                base::TimeTicks start_time,
                 const base::FilePath& root_dir,
-                const GURL& url,
                 ukm::SourceId source_id,
                 FinishedCallback finished,
                 bool keep_zip,
@@ -123,29 +116,21 @@ void OnCaptured(base::TimeTicks start_time,
     return;
   }
 
-  CaptureMetrics result = {0, time_delta, source_id};
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&CompressAndMeasureSize, root_dir, url, std::move(proto),
-                     result, std::move(finished), keep_zip));
+  CaptureMetrics result = {time_delta, source_id};
+  manager->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::SerializePaintPreviewProto, manager, key,
+                     *proto, true),
+      base::BindOnce(&MeasureSize, manager, key, root_dir, result,
+                     std::move(finished), keep_zip));
 }
 
-base::Optional<base::FilePath> CreateDirectoryForURL(
-    const base::FilePath& root_path,
-    const GURL& url) {
-  base::FilePath url_path;
-  FileManager manager(root_path);
-  if (!manager.CreateOrGetDirectory(manager.CreateKey(url), &url_path)) {
-    VLOG(1) << kPaintPreviewTestTag << "Failure: could not create output dir.";
-    return base::nullopt;
-  }
-  return url_path;
-}
-
-void InitiateCapture(content::WebContents* contents,
+void InitiateCapture(scoped_refptr<FileManager> manager,
+                     const DirectoryKey& key,
+                     content::WebContents* contents,
                      FinishedCallback finished,
                      bool keep_zip,
-                     base::Optional<base::FilePath> url_path) {
+                     const base::Optional<base::FilePath>& url_path) {
   if (!url_path.has_value()) {
     std::move(finished).Run(base::nullopt);
     return;
@@ -167,9 +152,9 @@ void InitiateCapture(content::WebContents* contents,
   auto start_time = base::TimeTicks::Now();
   client->CapturePaintPreview(
       params, contents->GetMainFrame(),
-      base::BindOnce(&OnCaptured, start_time, params.root_dir.DirName(),
-                     contents->GetLastCommittedURL(), source_id,
-                     std::move(finished), keep_zip));
+      base::BindOnce(&OnCaptured, manager, key, start_time,
+                     params.root_dir.DirName(), source_id, std::move(finished),
+                     keep_zip));
 }
 
 }  // namespace
@@ -178,17 +163,21 @@ void Capture(content::WebContents* contents,
              FinishedCallback finished,
              bool keep_zip) {
   PaintPreviewClient::CreateForWebContents(contents);
-
   base::FilePath root_path = contents->GetBrowserContext()
                                  ->GetPath()
                                  .AppendASCII(kPaintPreviewDir)
                                  .AppendASCII(kCaptureTestDir);
+  auto manager = base::MakeRefCounted<FileManager>(
+      root_path, base::ThreadPool::CreateSequencedTaskRunner(
+                     {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+                      base::ThreadPolicy::MUST_USE_FOREGROUND}));
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&CreateDirectoryForURL, root_path,
-                     contents->GetLastCommittedURL()),
-      base::BindOnce(&InitiateCapture, base::Unretained(contents),
+  auto key = manager->CreateKey(contents->GetLastCommittedURL());
+  manager->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::CreateOrGetDirectory, manager, key, true),
+      base::BindOnce(&InitiateCapture, manager, key, base::Unretained(contents),
                      std::move(finished), keep_zip));
 }
 

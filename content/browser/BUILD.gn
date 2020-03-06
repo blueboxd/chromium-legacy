@@ -879,8 +879,6 @@ jumbo_source_set("browser") {
     "frame_host/frame_tree_node.h",
     "frame_host/frame_tree_node_blame_context.cc",
     "frame_host/frame_tree_node_blame_context.h",
-    "frame_host/history_navigation_ablation_study_navigation_throttle.cc",
-    "frame_host/history_navigation_ablation_study_navigation_throttle.h",
     "frame_host/input/input_injector_impl.cc",
     "frame_host/input/input_injector_impl.h",
     "frame_host/interstitial_page_impl.cc",

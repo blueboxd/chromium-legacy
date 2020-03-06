@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.media;
 
 import android.content.Context;
-import android.support.v7.media.MediaRouteDiscoveryRequest;
-import android.support.v7.media.MediaRouteProvider;
-import android.support.v7.media.MediaRouteSelector;
+
+import androidx.mediarouter.media.MediaRouteDiscoveryRequest;
+import androidx.mediarouter.media.MediaRouteProvider;
+import androidx.mediarouter.media.MediaRouteSelector;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.remote.RemotePlaybackRoutePublisher;

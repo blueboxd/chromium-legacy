@@ -39,6 +39,7 @@ class WebState;
 
 class GURL;
 @protocol LogoVendor;
+@protocol URLLoadingBridge;
 @class UITextField;
 @class UIView;
 class Browser;
@@ -137,6 +138,11 @@ class ChromeBrowserProvider {
   virtual id<LogoVendor> CreateLogoVendor(ChromeBrowserState* browser_state,
                                           web::WebState* web_state) const
       NS_RETURNS_RETAINED;
+
+  virtual id<LogoVendor> CreateLogoVendor(
+      Browser* browser,
+      web::WebState* web_state,
+      id<URLLoadingBridge> loading_bridge) const NS_RETURNS_RETAINED;
 
   // Returns an instance of the omaha service provider.
   virtual OmahaServiceProvider* GetOmahaServiceProvider() const;

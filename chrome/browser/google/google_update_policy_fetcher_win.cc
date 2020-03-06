@@ -13,6 +13,7 @@
 #include "chrome/install_static/install_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/schema.h"
 #include "google_update/google_update_idl.h"
 
 namespace {
@@ -20,12 +21,12 @@ namespace {
 constexpr char kAutoUpdateCheckPeriodMinutes[] = "AutoUpdateCheckPeriodMinutes";
 constexpr char kDownloadPreference[] = "DownloadPreference";
 constexpr char kInstallPolicy[] = "InstallPolicy";
+constexpr char kRollbackToTargetVersion[] = "RollbackToTargetVersion";
+constexpr char kTargetVersionPrefix[] = "TargetVersionPrefix";
 constexpr char kUpdatePolicy[] = "UpdatePolicy";
 constexpr char kUpdatesSuppressedDurationMin[] = "UpdatesSuppressedDurationMin";
 constexpr char kUpdatesSuppressedStartHour[] = "UpdatesSuppressedStartHour";
 constexpr char kUpdatesSuppressedStartMinute[] = "UpdatesSuppressedStartMinute";
-constexpr char kRollbackToTargetVersion[] = "RollbackToTargetVersion";
-constexpr char kTargetVersionPrefix[] = "TargetVersionPrefix";
 
 // Adds the |value| of |policy_name| to |policies| using a "Mandatory" level,
 // "Machine" scope and "Platform" source.
@@ -42,16 +43,24 @@ void AddPolicy(const char* policy_name,
 
 base::Value GetGoogleUpdatePolicyNames() {
   base::Value names(base::Value::Type::LIST);
-  names.Append(base::Value(kAutoUpdateCheckPeriodMinutes));
-  names.Append(base::Value(kDownloadPreference));
-  names.Append(base::Value(kInstallPolicy));
-  names.Append(base::Value(kUpdatePolicy));
-  names.Append(base::Value(kUpdatesSuppressedDurationMin));
-  names.Append(base::Value(kUpdatesSuppressedStartHour));
-  names.Append(base::Value(kUpdatesSuppressedStartMinute));
-  names.Append(base::Value(kRollbackToTargetVersion));
-  names.Append(base::Value(kTargetVersionPrefix));
+  for (const auto& key_value : GetGoogleUpdatePolicySchemas())
+    names.Append(base::Value(key_value.first));
   return names;
+}
+
+policy::PolicyConversions::PolicyToSchemaMap GetGoogleUpdatePolicySchemas() {
+  // TODO(ydago): Use actual schemas.
+  return policy::PolicyConversions::PolicyToSchemaMap{{
+      {kAutoUpdateCheckPeriodMinutes, policy::Schema()},
+      {kDownloadPreference, policy::Schema()},
+      {kInstallPolicy, policy::Schema()},
+      {kRollbackToTargetVersion, policy::Schema()},
+      {kTargetVersionPrefix, policy::Schema()},
+      {kUpdatePolicy, policy::Schema()},
+      {kUpdatesSuppressedDurationMin, policy::Schema()},
+      {kUpdatesSuppressedStartHour, policy::Schema()},
+      {kUpdatesSuppressedStartMinute, policy::Schema()},
+  }};
 }
 
 std::unique_ptr<policy::PolicyMap> GetGoogleUpdatePolicies() {

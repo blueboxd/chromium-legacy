@@ -121,7 +121,6 @@ int PostToCallbackIfNeeded(bool sync_possible,
 
 }  // namespace
 
-using base::Closure;
 using base::OnceClosure;
 using base::FilePath;
 using base::Time;

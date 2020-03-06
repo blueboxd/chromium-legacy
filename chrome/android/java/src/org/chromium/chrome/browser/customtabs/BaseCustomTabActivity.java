@@ -45,7 +45,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabActivityNavigationController mNavigationController;
     protected CustomTabActivityTabProvider mTabProvider;
     protected CustomTabToolbarColorController mToolbarColorController;
-    protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
 
@@ -63,8 +62,8 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
-        return new BaseCustomTabRootUiCoordinator(
-                this, getShareDelegateSupplier(), mToolbarCoordinator, mNavigationController);
+        return new BaseCustomTabRootUiCoordinator(this, getShareDelegateSupplier(),
+                mToolbarCoordinator, mNavigationController, mToolbarColorController);
     }
 
     /**
@@ -75,7 +74,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         mNavigationController = component.resolveNavigationController();
         mTabProvider = component.resolveTabProvider();
         mToolbarColorController = component.resolveToolbarColorController();
-        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
 
         component.resolveCompositorContentInitializer();
@@ -215,11 +213,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
             return intentDataProvider.getToolbarColor();
         }
         return TabState.UNSPECIFIED_THEME_COLOR;
-    }
-
-    @Override
-    public int getBaseStatusBarColor(Tab tab) {
-        return mStatusBarColorProvider.getBaseStatusBarColor(tab, super.getBaseStatusBarColor(tab));
     }
 
     @Override

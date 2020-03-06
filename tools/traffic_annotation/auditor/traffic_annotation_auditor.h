@@ -9,6 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "third_party/protobuf/src/google/protobuf/compiler/importer.h"
+#include "third_party/protobuf/src/google/protobuf/dynamic_message.h"
 #include "tools/traffic_annotation/auditor/auditor_result.h"
 #include "tools/traffic_annotation/auditor/instance.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
@@ -155,10 +157,17 @@ class TrafficAnnotationAuditor {
 
   void ClearPathFilters() { path_filters_.clear(); }
 
+  std::unique_ptr<google::protobuf::Message> CreateAnnotationProto();
+
  private:
   const base::FilePath source_path_;
   const base::FilePath build_path_;
   std::vector<std::string> path_filters_;
+
+  // Variables used to dynamic the NetworkTrafficAnnotation proto.
+  std::unique_ptr<google::protobuf::DescriptorPool> descriptor_pool_;
+  google::protobuf::DynamicMessageFactory message_factory_;
+  std::unique_ptr<google::protobuf::Message> annotation_prototype_;
 
   base::FilePath absolute_source_path_;
 

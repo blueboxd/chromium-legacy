@@ -74,7 +74,7 @@ jumbo_static_library("metrics") {
     "log_decoder.h",
     "log_store.h",
     "machine_id_provider.h",
-    "machine_id_provider_stub.cc",
+    "machine_id_provider_nonwin.cc",
     "machine_id_provider_win.cc",
     "metrics_log.cc",
     "metrics_log.h",
@@ -165,7 +165,7 @@ jumbo_static_library("metrics") {
   }
 
   if (is_win) {
-    sources -= [ "machine_id_provider_stub.cc" ]
+    sources -= [ "machine_id_provider_nonwin.cc" ]
     deps += [ "//components/browser_watcher:stability_client" ]
     libs = [ "wevtapi.lib" ]
   }
@@ -404,7 +404,7 @@ source_set("unit_tests") {
     "field_trials_provider_unittest.cc",
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
-    "machine_id_provider_win_unittest.cc",
+    "machine_id_provider_nonwin_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",
     "metrics_log_unittest.cc",
@@ -449,6 +449,11 @@ source_set("unit_tests") {
     "//third_party/zlib/google:compression_utils",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    sources -= [ "machine_id_provider_nonwin_unittest.cc" ]
+    sources += [ "machine_id_provider_win_unittest.cc" ]
+  }
 
   if (is_linux) {
     sources += [ "serialization/serialization_utils_unittest.cc" ]

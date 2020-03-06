@@ -41,7 +41,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
     base::TimeDelta retry_after;
   };
 
-  typedef base::Callback<void(const UploadResult& result)> UploadCallback;
+  typedef base::OnceCallback<void(const UploadResult& result)> UploadCallback;
 
   DomainReliabilityUploader();
 
@@ -60,7 +60,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   virtual void UploadReport(const std::string& report_json,
                             int max_beacon_depth,
                             const GURL& upload_url,
-                            const UploadCallback& callback) = 0;
+                            UploadCallback callback) = 0;
 
   // Shuts down the uploader prior to destruction. Currently, terminates pending
   // uploads and prevents the uploader from starting new ones to avoid hairy

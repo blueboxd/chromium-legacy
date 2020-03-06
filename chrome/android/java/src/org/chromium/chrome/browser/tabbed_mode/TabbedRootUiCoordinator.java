@@ -88,7 +88,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
         if (mStatusIndicatorCoordinator != null) {
             mStatusIndicatorCoordinator.removeObserver(mStatusIndicatorObserver);
-            mStatusIndicatorCoordinator.removeObserver(mActivity.getStatusBarColorController());
+            mStatusIndicatorCoordinator.removeObserver(mStatusBarColorController);
             mStatusIndicatorCoordinator.destroy();
         }
 
@@ -183,7 +183,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
                 mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
-                mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator);
+                mStatusBarColorController::getStatusBarColorWithoutStatusIndicator);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
         mStatusIndicatorObserver = new StatusIndicatorCoordinator.StatusIndicatorObserver() {
             @Override
@@ -198,7 +198,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             }
         };
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);
-        mStatusIndicatorCoordinator.addObserver(mActivity.getStatusBarColorController());
+        mStatusIndicatorCoordinator.addObserver(mStatusBarColorController);
 
         // Don't listen to the ConnectivityDetector if the feature is disabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {

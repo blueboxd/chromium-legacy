@@ -1689,6 +1689,51 @@ TEST_F(DesksEditableNamesTest, DontAllowEmptyNames) {
                          {std::string(), std::string()});
 }
 
+TEST_F(DesksEditableNamesTest, SelectAllOnFocus) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ClickOnDeskNameViewAtIndex(0);
+
+  auto* desk_name_view = desks_bar_view()->mini_views()[0]->desk_name_view();
+  EXPECT_TRUE(desk_name_view->HasFocus());
+  EXPECT_TRUE(desk_name_view->HasSelection());
+  auto* desk_1 = controller()->desks()[0].get();
+  EXPECT_EQ(desk_1->name(), desk_name_view->GetSelectedText());
+}
+
+TEST_F(DesksEditableNamesTest, EventsThatCommitChanges) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ClickOnDeskNameViewAtIndex(0);
+  auto* desk_name_view = desks_bar_view()->mini_views()[0]->desk_name_view();
+  EXPECT_TRUE(desk_name_view->HasFocus());
+
+  // Creating a new desk commits the changes.
+  auto* new_desk_button = desks_bar_view()->new_desk_button();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      new_desk_button->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  ASSERT_EQ(3u, controller()->desks().size());
+  EXPECT_FALSE(desk_name_view->HasFocus());
+
+  // Deleting a desk commits the changes.
+  ClickOnDeskNameViewAtIndex(0);
+  EXPECT_TRUE(desk_name_view->HasFocus());
+  CloseDeskFromMiniView(desks_bar_view()->mini_views()[2].get(),
+                        event_generator);
+  ASSERT_EQ(2u, controller()->desks().size());
+  EXPECT_FALSE(desk_name_view->HasFocus());
+
+  // Clicking in the empty area of the desks bar also commits the changes.
+  ClickOnDeskNameViewAtIndex(0);
+  EXPECT_TRUE(desk_name_view->HasFocus());
+  event_generator->MoveMouseTo(gfx::Point(2, 2));
+  event_generator->ClickLeftButton();
+  EXPECT_FALSE(desk_name_view->HasFocus());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+}
+
 class TabletModeDesksTest : public DesksTest {
  public:
   TabletModeDesksTest() = default;

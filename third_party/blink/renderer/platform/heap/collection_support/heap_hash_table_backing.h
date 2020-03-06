@@ -118,9 +118,6 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 
   template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling>
   static void Trace(Visitor* visitor, void* self) {
-    if (visitor->ConcurrentTracingBailOut({self, &Trace}))
-      return;
-
     static_assert(WTF::IsTraceableInCollectionTrait<Traits>::value ||
                       WTF::IsWeak<ValueType>::value,
                   "T should not be traced");

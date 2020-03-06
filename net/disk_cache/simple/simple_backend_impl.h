@@ -150,9 +150,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   using EntryMap = std::unordered_map<uint64_t, SimpleEntryImpl*>;
 
-  using InitializeIndexCallback =
-      base::Callback<void(base::Time mtime, uint64_t max_size, int result)>;
-
   class ActiveEntryProxy;
   friend class ActiveEntryProxy;
 
@@ -276,9 +273,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // The set of all entries which are currently being doomed. To avoid races,
   // these entries cannot have Doom/Create/Open operations run until the doom
-  // is complete. The base::Closure |SimplePostDoomWaiter::run_post_doom| field
-  // is used to store deferred operations to be run at the completion of the
-  // Doom.
+  // is complete. The base::OnceClosure |SimplePostDoomWaiter::run_post_doom|
+  // field is used to store deferred operations to be run at the completion of
+  // the Doom.
   scoped_refptr<SimplePostDoomWaiterTable> post_doom_waiting_;
 
   net::NetLog* const net_log_;

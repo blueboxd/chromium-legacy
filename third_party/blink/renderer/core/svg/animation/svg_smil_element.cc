@@ -703,10 +703,6 @@ SMILTime SVGSMILElement::NextAfter(BeginOrEnd begin_or_end,
                                    SMILTime time) const {
   const Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  if (list.IsEmpty()) {
-    return begin_or_end == kBegin ? SMILTime::Unresolved()
-                                  : SMILTime::Indefinite();
-  }
   // Find the value in |list| that is strictly greater than |time|.
   auto* next_item = std::lower_bound(
       list.begin(), list.end(), time,
@@ -740,11 +736,16 @@ SMILTime SVGSMILElement::RepeatingDuration() const {
 }
 
 SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
-  SMILTime resolved_end = NextAfter(kEnd, resolved_begin);
-  if (resolved_end.IsUnresolved()) {
-    // If we have no pending end conditions, don't generate a new interval.
-    if (!end_times_.IsEmpty() && !has_end_event_conditions_)
-      return SMILTime::Unresolved();
+  SMILTime resolved_end = SMILTime::Indefinite();
+  if (!end_times_.IsEmpty()) {
+    SMILTime next_end = NextAfter(kEnd, resolved_begin);
+    if (next_end.IsUnresolved()) {
+      // If we have no pending end conditions, don't generate a new interval.
+      if (!has_end_event_conditions_)
+        return SMILTime::Unresolved();
+    } else {
+      resolved_end = next_end;
+    }
   }
   // Computing the active duration
   // http://www.w3.org/TR/SMIL2/smil-timing.html#Timing-ComputingActiveDur

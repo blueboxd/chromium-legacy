@@ -46,6 +46,21 @@ chrome.passwordsPrivate.CompromiseType = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.passwordsPrivate.PasswordCheckState = {
+  IDLE: 'IDLE',
+  RUNNING: 'RUNNING',
+  CANCELED: 'CANCELED',
+  OFFLINE: 'OFFLINE',
+  SIGNED_OUT: 'SIGNED_OUT',
+  NO_PASSWORDS: 'NO_PASSWORDS',
+  TOO_MANY_PASSWORDS: 'TOO_MANY_PASSWORDS',
+  QUOTA_LIMIT: 'QUOTA_LIMIT',
+  OTHER_ERROR: 'OTHER_ERROR',
+};
+
+/**
  * @typedef {{
  *   origin: string,
  *   shown: string,
@@ -105,6 +120,15 @@ chrome.passwordsPrivate.CompromisedCredential;
  * }}
  */
 chrome.passwordsPrivate.CompromisedCredentialsInfo;
+
+/**
+ * @typedef {{
+ *   state: !chrome.passwordsPrivate.PasswordCheckState,
+ *   alreadyProcessed: (number|undefined),
+ *   remainingInQueue: (number|undefined)
+ * }}
+ */
+chrome.passwordsPrivate.PasswordCheckStatus;
 
 /**
  * Function that logs that the Passwords page was accessed from the Chrome
@@ -257,6 +281,12 @@ chrome.passwordsPrivate.startPasswordCheck = function(callback) {};
 chrome.passwordsPrivate.stopPasswordCheck = function(callback) {};
 
 /**
+ * Returns the current status of the check via |callback|.
+ * @param {function(!chrome.passwordsPrivate.PasswordCheckStatus):void} callback
+ */
+chrome.passwordsPrivate.getPasswordCheckStatus = function(callback) {};
+
+/**
  * Fired when the saved passwords list has changed, meaning that an entry has
  * been added or removed.
  * @type {!ChromeEvent}
@@ -287,3 +317,9 @@ chrome.passwordsPrivate.onAccountStorageOptInStateChanged;
  * @type {!ChromeEvent}
  */
 chrome.passwordsPrivate.onCompromisedCredentialsInfoChanged;
+
+/**
+ * Fired when the status of the password check changes.
+ * @type {!ChromeEvent}
+ */
+chrome.passwordsPrivate.onPasswordCheckStatusChanged;

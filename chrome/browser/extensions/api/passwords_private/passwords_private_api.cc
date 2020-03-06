@@ -328,4 +328,14 @@ ResponseAction PasswordsPrivateStopPasswordCheckFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+// PasswordsPrivateGetPasswordCheckStatusFunction:
+PasswordsPrivateGetPasswordCheckStatusFunction::
+    ~PasswordsPrivateGetPasswordCheckStatusFunction() = default;
+
+ResponseAction PasswordsPrivateGetPasswordCheckStatusFunction::Run() {
+  return RespondNow(ArgumentList(
+      api::passwords_private::GetPasswordCheckStatus::Results::Create(
+          GetDelegate(browser_context())->GetPasswordCheckStatus())));
+}
+
 }  // namespace extensions

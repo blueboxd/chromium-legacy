@@ -1924,12 +1924,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         triggerUrlFocusAnimation(inTabSwitcherMode && !urlHasFocus());
 
-        if (inTabSwitcherMode) {
-            mUrlBar.setText("");
-        } else if (getToolbarDataProvider() != null
-                && getToolbarDataProvider().getUrlBarData() != null) {
-            mUrlBar.setText(getToolbarDataProvider().getUrlBarData().displayText);
-        }
+        if (inTabSwitcherMode) mUrlBar.setText("");
 
         return true;
     }
@@ -1964,6 +1959,14 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mDelayedTabSwitcherModeAnimation.start();
         } else {
             updateViewsForTabSwitcherMode();
+        }
+
+        // Set the url bar text back after finished hiding the tab switcher.
+        if (getToolbarDataProvider().shouldShowLocationBarInOverviewMode()
+                && mTabSwitcherState == STATIC_TAB && getToolbarDataProvider() != null
+                && getToolbarDataProvider().getUrlBarData() != null) {
+            assert !getToolbarDataProvider().isInOverviewAndShowingOmnibox();
+            mUrlBar.setText(getToolbarDataProvider().getUrlBarData().displayText);
         }
     }
 

@@ -102,7 +102,7 @@ void CompositorFrameReportingController::BeginMainFrameAborted(
   DCHECK(reporters_[PipelineStage::kBeginMainFrame]);
   DCHECK_EQ(reporters_[PipelineStage::kBeginMainFrame]->frame_id_, id);
   auto& begin_main_reporter = reporters_[PipelineStage::kBeginMainFrame];
-  begin_main_reporter->OnAbortBeginMainFrame();
+  begin_main_reporter->OnAbortBeginMainFrame(Now());
 }
 
 void CompositorFrameReportingController::WillCommit() {

@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 
 class Profile;
 
@@ -33,10 +32,6 @@ class FilePath;
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-namespace extensions {
-class Extension;
-}  // namespace extensions
 
 namespace apps {
 
@@ -148,12 +143,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // still launching), create one, which will bind to the app process when it
   // finishes launching.
   AppShimHost* GetHostForRemoteCocoaBrowser(Browser* browser);
-
-  static const extensions::Extension* MaybeGetAppExtension(
-      content::BrowserContext* context,
-      const std::string& extension_id);
-
-  static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
 
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(

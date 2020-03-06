@@ -78,8 +78,7 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
       std::make_unique<download::DownloadUrlParameters>(
           url, render_frame_host->GetRenderViewHost()->GetProcess()->GetID(),
           render_frame_host->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host->GetRoutingID(), traffic_annotation,
-          render_frame_host->GetNetworkIsolationKey());
+          render_frame_host->GetRoutingID(), traffic_annotation);
   params->set_referrer(referrer.url);
   params->set_referrer_policy(
       content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));

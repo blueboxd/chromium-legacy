@@ -52,14 +52,3 @@ void DeleteDownloadsDirectory() {
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&DeleteDownloadsDirectorySync));
 }
-
-NSURL* GetFilesAppDownloadsDirectoryUrl() {
-  base::FilePath download_dir;
-  if (!GetDownloadsDirectory(&download_dir)) {
-    return nil;
-  }
-
-  return [NSURL
-      URLWithString:[NSString stringWithFormat:@"shareddocuments://%s",
-                                               download_dir.value().c_str()]];
-}

@@ -152,6 +152,12 @@ NigoriState NigoriState::CreateFromLocalProto(
     state.pending_keystore_decryptor_token =
         proto.pending_keystore_decryptor_token();
   }
+
+  if (proto.has_last_default_trusted_vault_key_name()) {
+    state.last_default_trusted_vault_key_name =
+        proto.last_default_trusted_vault_key_name();
+  }
+
   return state;
 }
 
@@ -210,6 +216,10 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
     *proto.mutable_pending_keystore_decryptor_token() =
         *pending_keystore_decryptor_token;
   }
+  if (last_default_trusted_vault_key_name.has_value()) {
+    proto.set_last_default_trusted_vault_key_name(
+        *last_default_trusted_vault_key_name);
+  }
   return proto;
 }
 
@@ -236,6 +246,8 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
     UpdateSpecificsFromKeyDerivationParams(
         *custom_passphrase_key_derivation_params, &specifics);
   }
+  // TODO(crbug.com/1020084): populate |keystore_decryptor_token| for trusted
+  // vault passphrase to allow rollbacks.
   if (passphrase_type == sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     // TODO(crbug.com/922900): it seems possible to have corrupted
     // |pending_keystore_decryptor_token| and an ability to recover it in case
@@ -277,6 +289,8 @@ NigoriState NigoriState::Clone() const {
   result.encrypt_everything = encrypt_everything;
   result.keystore_keys_cryptographer = keystore_keys_cryptographer->Clone();
   result.pending_keystore_decryptor_token = pending_keystore_decryptor_token;
+  result.last_default_trusted_vault_key_name =
+      last_default_trusted_vault_key_name;
   return result;
 }
 

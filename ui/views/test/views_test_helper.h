@@ -18,21 +18,18 @@ namespace views {
 // required for running tests.
 class ViewsTestHelper {
  public:
-  ViewsTestHelper();
-  virtual ~ViewsTestHelper();
-
   // Create a platform specific instance.
-  static ViewsTestHelper* Create(ui::ContextFactory* context_factory);
+  static std::unique_ptr<ViewsTestHelper> Create(
+      ui::ContextFactory* context_factory);
 
-  // Creates objects that are needed for tests.
-  virtual void SetUp();
-
-  // Clean up objects that were created for tests.
-  virtual void TearDown();
+  virtual ~ViewsTestHelper() = default;
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
   virtual gfx::NativeWindow GetContext();
+
+ protected:
+  ViewsTestHelper() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelper);

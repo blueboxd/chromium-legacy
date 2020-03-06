@@ -28,6 +28,7 @@ _DEFAULT_TP_PATH = os.path.realpath(os.path.join(
     _CHROMIUM_SRC_PATH, 'out', 'Debug', 'trace_processor_shell'))
 
 
+
 def _WriteHistogramSetToFile(histograms, outfile):
   with open(outfile, 'w') as f:
     json.dump(histograms.AsDicts(), f, indent=2, sort_keys=True,

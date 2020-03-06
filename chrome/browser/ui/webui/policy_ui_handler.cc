@@ -946,6 +946,7 @@ base::Value PolicyUIHandler::GetPolicyValues() const {
     return policy::ArrayPolicyConversions(std::move(client))
         .EnableConvertValues(true)
         .WithUpdaterPolicies(updater_policies_->DeepCopy())
+        .WithUpdaterPolicySchemas(GetGoogleUpdatePolicySchemas())
         .ToValue();
   }
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

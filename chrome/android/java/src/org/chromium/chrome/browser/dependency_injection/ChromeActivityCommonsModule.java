@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -129,11 +128,6 @@ public class ChromeActivityCommonsModule {
     @Provides
     public TabCreatorManager provideTabCreatorManager() {
         return mActivity;
-    }
-
-    @Provides
-    public StatusBarColorController provideStatusBarColorController() {
-        return mActivity.getStatusBarColorController();
     }
 
     @Provides

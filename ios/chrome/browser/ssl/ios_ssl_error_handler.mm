@@ -13,12 +13,12 @@
 #include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#import "ios/chrome/browser/interstitials/ios_blocking_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ssl/captive_portal_metrics.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
-#import "ios/chrome/browser/ssl/ios_ssl_error_tab_helper.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state.h"
 #include "net/ssl/ssl_info.h"
@@ -138,8 +138,8 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
         web_state_, cert_error_, ssl_info_, request_url_, options_mask,
         base::Time::NowFromSystemTime(), std::move(callback_));
     std::string error_html = page->GetHtmlContents();
-    IOSSSLErrorTabHelper::AssociateBlockingPage(web_state_, navigation_id_,
-                                                std::move(page));
+    IOSBlockingPageTabHelper::AssociateBlockingPage(web_state_, navigation_id_,
+                                                    std::move(page));
     std::move(blocking_page_callback_).Run(base::SysUTF8ToNSString(error_html));
   } else {
     // SSLBlockingPage deletes itself when it's dismissed.
@@ -159,8 +159,8 @@ void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
     auto page = std::make_unique<IOSCaptivePortalBlockingPage>(
         web_state_, request_url_, landing_url, std::move(callback_));
     std::string error_html = page->GetHtmlContents();
-    IOSSSLErrorTabHelper::AssociateBlockingPage(web_state_, navigation_id_,
-                                                std::move(page));
+    IOSBlockingPageTabHelper::AssociateBlockingPage(web_state_, navigation_id_,
+                                                    std::move(page));
     std::move(blocking_page_callback_).Run(base::SysUTF8ToNSString(error_html));
   } else {
     // IOSCaptivePortalBlockingPage deletes itself when it's dismissed.

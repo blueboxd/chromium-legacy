@@ -8,7 +8,7 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 
-import android.support.v7.media.MediaRouter;
+import androidx.mediarouter.media.MediaRouter;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

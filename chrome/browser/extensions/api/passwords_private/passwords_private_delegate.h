@@ -142,6 +142,10 @@ class PasswordsPrivateDelegate : public KeyedService {
   virtual bool StartPasswordCheck() = 0;
   // Stops a check for compromised passwords.
   virtual void StopPasswordCheck() = 0;
+
+  // Returns the current status of the password check.
+  virtual api::passwords_private::PasswordCheckStatus
+  GetPasswordCheckStatus() = 0;
 };
 
 }  // namespace extensions

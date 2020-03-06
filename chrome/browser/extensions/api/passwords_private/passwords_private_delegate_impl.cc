@@ -446,6 +446,11 @@ void PasswordsPrivateDelegateImpl::StopPasswordCheck() {
   password_check_delegate_.StopPasswordCheck();
 }
 
+api::passwords_private::PasswordCheckStatus
+PasswordsPrivateDelegateImpl::GetPasswordCheckStatus() {
+  return password_check_delegate_.GetPasswordCheckStatus();
+}
+
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,
     const std::string& folder_name) {

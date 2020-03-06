@@ -321,7 +321,7 @@ public class ChromeBrowserInitializer {
                     new BrowserStartupController.StartupCallback() {
                         @Override
                         public void onFailure() {
-                            delegate.onStartupFailure();
+                            delegate.onStartupFailure(null);
                         }
 
                         @Override

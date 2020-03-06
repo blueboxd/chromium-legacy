@@ -14,11 +14,6 @@
 #include "base/post_task_and_reply_with_result_internal.h"
 #include "base/task_runner.h"
 
-// TODO: Remove these unused includes after fixing IWYU usage in
-// affected files.
-#include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
-
 namespace base {
 
 // When you have these methods

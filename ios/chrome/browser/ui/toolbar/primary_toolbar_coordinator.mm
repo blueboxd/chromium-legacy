@@ -159,10 +159,16 @@
 
 #pragma mark - FakeboxFocuser
 
-- (void)focusLocationBarWithAnimation:(BOOL)animated {
-  self.enableAnimationsForOmniboxFocus = animated;
-  [self transitionToLocationBarFocusedState:YES];
+- (void)focusOmniboxNoAnimation {
+  self.enableAnimationsForOmniboxFocus = NO;
+  [self fakeboxFocused];
   self.enableAnimationsForOmniboxFocus = YES;
+  // If the pasteboard is containing a URL, the omnibox popup suggestions are
+  // displayed as soon as the omnibox is focused.
+  // If the fake omnibox animation is triggered at the same time, it is possible
+  // to see the NTP going up where the real omnibox should be displayed.
+  if ([self.locationBarCoordinator omniboxPopupHasAutocompleteResults])
+    [self onFakeboxAnimationComplete];
 }
 
 - (void)fakeboxFocused {

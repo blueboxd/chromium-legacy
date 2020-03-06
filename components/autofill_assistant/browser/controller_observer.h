@@ -109,7 +109,8 @@ class ControllerObserver : public base::CheckedObserver {
       const UiDelegate::OverlayColors& colors) = 0;
 
   // Called when the form has changed.
-  virtual void OnFormChanged(const FormProto* form) = 0;
+  virtual void OnFormChanged(const FormProto* form,
+                             const FormProto::Result* result) = 0;
 
   // Called when client settings have changed.
   virtual void OnClientSettingsChanged(const ClientSettings& settings) = 0;

@@ -138,9 +138,12 @@ template("chrome_ios_eg2_test") {
     forward_variables_from(invoker,
                            [
                              "bundle_deps",
-                             "xcode_test_application_name",
                              "deps",
                              "data_deps",
+                             "executable_args",
+                             "retries",
+                             "shards",
+                             "xcode_test_application_name",
                            ])
 
     xctest_bundle_principal_class = "ChromeEGTestBundleMain"

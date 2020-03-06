@@ -31,13 +31,13 @@ namespace blink {
 
 ArrayBufferView::ArrayBufferView(scoped_refptr<ArrayBuffer> buffer,
                                  size_t byte_offset)
-    : byte_offset_(byte_offset),
+    : raw_byte_offset_(byte_offset),
       is_detachable_(true),
       buffer_(std::move(buffer)),
       prev_view_(nullptr),
       next_view_(nullptr) {
-  base_address_ =
-      buffer_ ? (static_cast<char*>(buffer_->DataMaybeShared()) + byte_offset_)
+  raw_base_address_ =
+      buffer_ ? (static_cast<char*>(buffer_->DataMaybeShared()) + byte_offset)
               : nullptr;
   if (buffer_)
     buffer_->AddView(this);
@@ -50,8 +50,8 @@ ArrayBufferView::~ArrayBufferView() {
 
 void ArrayBufferView::Detach() {
   buffer_ = nullptr;
-  base_address_ = nullptr;
-  byte_offset_ = 0;
+  raw_base_address_ = nullptr;
+  raw_byte_offset_ = 0;
 }
 
 const char* ArrayBufferView::TypeName() {

@@ -4,52 +4,115 @@
 
 package org.chromium.chrome.browser.ui.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
 import androidx.annotation.ColorInt;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.ToolbarTestUtils;
 import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.util.ColorUtils;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * {@link StatusBarColorController} tests.
  * There are additional status bar color tests in {@link BrandColorTest}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class StatusBarColorControllerTest {
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations
+        .UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+        public class StatusBarColorControllerTest {
+    /**
+     * {@link CallbackHelper} for waiting till the URL expansion reaches the passed-in value.
+     */
+    private static class TestUrlExpansionObserver
+            extends CallbackHelper implements UrlExpansionObserver {
+        private float mCurrentPercentage = -1.0f;
+        private float mWaitingPercentage = -1.0f;
+
+        public void waitForUrlExpansionPercentage(float percentage) throws TimeoutException {
+            mWaitingPercentage = percentage;
+            if (mWaitingPercentage == mCurrentPercentage) return;
+
+            waitForFirst();
+        }
+
+        @Override
+        public void onUrlExpansionPercentageChanged(float percentage) {
+            mCurrentPercentage = percentage;
+            if (mWaitingPercentage == mCurrentPercentage) {
+                notifyCalled();
+            }
+        }
+    }
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
+
     private @ColorInt int mScrimColor;
+
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
+    public void setupNightMode(boolean nightModeEnabled) {
+        ChromeNightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
+        mRenderTestRule.setNightModeEnabled(nightModeEnabled);
+    }
 
     @Before
     public void setUp() {
@@ -64,6 +127,11 @@ public class StatusBarColorControllerTest {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
     }
 
+    @AfterClass
+    public static void tearDownAfterActivityDestroyed() {
+        ChromeNightModeTestUtils.tearDownNightModeAfterChromeActivityDestroyed();
+    }
+
     /**
      * Test that the status bar color is toggled when toggling incognito while in overview mode.
      */
@@ -72,7 +140,7 @@ public class StatusBarColorControllerTest {
     @Feature({"StatusBar"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
-    public void testColorToggleIncongitoInOverview() {
+    public void testColorToggleIncognitoInOverview() {
         ChromeTabbedActivity activity = mActivityTestRule.getActivity();
         Resources resources = activity.getResources();
         final int expectedOverviewStandardColor = defaultColorFallbackToBlack(
@@ -121,6 +189,50 @@ public class StatusBarColorControllerTest {
     }
 
     /**
+     * Test that switching tabs from a page with no brand color to an NTP with a location bar
+     * in dark mode updates the status bar color.
+     */
+    @Test
+    @LargeTest
+    @Feature({"StatusBar"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testSwitchTabPageNoBrandColorToNtp(boolean nightModeEnabled) throws Exception {
+        if (!nightModeEnabled) return;
+
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        Resources resources = activity.getResources();
+
+        final int defaultThemeColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_bg_color_dark_elev_3);
+        final int expectedNtpStatusBarColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_bg_color_dark);
+        assertNotEquals(defaultThemeColor, expectedNtpStatusBarColor);
+
+        TestUrlExpansionObserver urlExpansionObserver = new TestUrlExpansionObserver();
+        TopToolbarCoordinator topToolbarCoordinator =
+                (TopToolbarCoordinator) activity.getToolbarManager().getToolbar();
+        topToolbarCoordinator.addUrlExpansionObserver(urlExpansionObserver);
+
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), activity, R.id.new_tab_menu_id);
+        assertEquals(2, activity.getCurrentTabModel().getCount());
+        NewTabPageTestUtils.waitForNtpLoaded(activity.getActivityTab());
+        urlExpansionObserver.waitForUrlExpansionPercentage(0.0f);
+        ThemeTestUtils.waitForThemeColor(activity, defaultThemeColor);
+        ThemeTestUtils.assertStatusBarColor(activity, expectedNtpStatusBarColor);
+
+        // Return to about:blank by swiping the toolbar right.
+        ChromeTabUtils.selectTabWithAction(
+                InstrumentationRegistry.getInstrumentation(), activity, () -> {
+                    ToolbarTestUtils.performToolbarSideSwipe(activity, ScrollDirection.RIGHT);
+                });
+        assertFalse(activity.getActivityTab().isNativePage());
+        ThemeTestUtils.assertStatusBarColor(activity, defaultThemeColor);
+    }
+
+    /**
      * Test that the status indicator color is included in the color calculation correctly.
      */
     @Test
@@ -131,7 +243,9 @@ public class StatusBarColorControllerTest {
     public void testColorWithStatusIndicator() {
         final ChromeActivity activity = mActivityTestRule.getActivity();
         final StatusBarColorController statusBarColorController =
-                mActivityTestRule.getActivity().getStatusBarColorController();
+                mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting()
+                        .getStatusBarColorControllerForTesting();
         final Supplier<Integer> statusBarColor = () -> activity.getWindow().getStatusBarColor();
         final int initialColor = statusBarColor.get();
 

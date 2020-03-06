@@ -137,14 +137,8 @@ int WebAppFrameRightMargin() {
 // Insets are kept small to avoid increasing web app frame toolbar height.
 void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
                                      bool is_browser_focus_mode) {
-  if (!is_browser_focus_mode) {
-    // We set the kInternalPaddingKey property first, as SetLayoutInsets caches
-    // the resulting total insets.
-    constexpr gfx::Insets kInkDropInsets(2);
-    toolbar_button->SetProperty(views::kInternalPaddingKey, kInkDropInsets);
-
+  if (!is_browser_focus_mode)
     toolbar_button->SetLayoutInsets(gfx::Insets(2));
-  }
 }
 
 const gfx::VectorIcon& GetBackImage(bool touch_ui) {
@@ -722,6 +716,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 
   right_container_ = AddChildView(
       std::make_unique<ToolbarButtonContainer>(widget, browser_view));
+  right_container_->web_app_menu_button()->SetMinSize(GetToolbarButtonSize());
   right_container_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(right_container_->GetFlexRule()).WithOrder(1));
@@ -802,6 +797,14 @@ BrowserActionsContainer* WebAppFrameToolbarView::GetBrowserActionsContainer() {
 ExtensionsToolbarContainer*
 WebAppFrameToolbarView::GetExtensionsToolbarContainer() {
   return right_container_->extensions_container();
+}
+
+gfx::Size WebAppFrameToolbarView::GetToolbarButtonSize() const {
+  constexpr int kFocusModeButtonSize = 34;
+  int size = browser_view_->browser()->is_focus_mode()
+                 ? kFocusModeButtonSize
+                 : GetLayoutConstant(WEB_APP_MENU_BUTTON_SIZE);
+  return gfx::Size(size, size);
 }
 
 views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {

@@ -12,15 +12,15 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/compositor_utils.h"
-#include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
 #include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -34,12 +34,17 @@ const char kPaintPreviewDir[] = "paint_preview";
 
 PaintPreviewBaseService::PaintPreviewBaseService(
     const base::FilePath& path,
-    const std::string& ascii_feature_name,
+    base::StringPiece ascii_feature_name,
     std::unique_ptr<PaintPreviewPolicy> policy,
     bool is_off_the_record)
     : policy_(std::move(policy)),
-      file_manager_(
-          path.AppendASCII(kPaintPreviewDir).AppendASCII(ascii_feature_name)),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+           base::ThreadPolicy::MUST_USE_FOREGROUND})),
+      file_manager_(base::MakeRefCounted<FileManager>(
+          path.AppendASCII(kPaintPreviewDir).AppendASCII(ascii_feature_name),
+          task_runner_)),
       is_off_the_record_(is_off_the_record) {}
 
 PaintPreviewBaseService::~PaintPreviewBaseService() = default;
@@ -47,12 +52,11 @@ PaintPreviewBaseService::~PaintPreviewBaseService() = default;
 void PaintPreviewBaseService::GetCapturedPaintPreviewProto(
     const DirectoryKey& key,
     OnReadProtoCallback on_read_proto_callback) {
-  base::PostTaskAndReplyWithResult(
+  task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&FileManager::DeserializePaintPreviewProto,
-                     base::Unretained(GetFileManager()), key),
-      base::BindOnce(std::move(on_read_proto_callback)));
+      base::BindOnce(&FileManager::DeserializePaintPreviewProto, file_manager_,
+                     key),
+      std::move(on_read_proto_callback));
 }
 
 void PaintPreviewBaseService::CapturePaintPreview(
@@ -70,6 +74,7 @@ void PaintPreviewBaseService::CapturePaintPreview(
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
     OnCapturedCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (policy_ && !policy_->SupportedForContents(web_contents)) {
     std::move(callback).Run(kContentUnsupported, nullptr);
     return;

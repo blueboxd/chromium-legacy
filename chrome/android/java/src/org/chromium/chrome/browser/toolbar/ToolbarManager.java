@@ -106,6 +106,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -181,6 +182,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    private final StatusBarColorController mStatusBarColorController;
     private ObservableSupplierImpl<View> mTabGroupPopUiParentSupplier;
     private @Nullable TabGroupPopupUi mTabGroupPopupUi;
 
@@ -250,6 +252,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             TabObscuringHandler tabObscuringHandler,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier,
+            StatusBarColorController statusBarColorController,
             IdentityDiscController identityDiscController,
             List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider activityTabProvider) {
         mActivity = activity;
@@ -257,6 +260,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
+        mStatusBarColorController = statusBarColorController;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -359,7 +363,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mProgressBarCoordinator = new LoadProgressCoordinator(
                 mActivity.getActivityTabProvider(), mToolbar.getProgressBar());
 
-        mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
+        mToolbar.addUrlExpansionObserver(mStatusBarColorController);
 
         mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
 
@@ -1042,7 +1046,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mTabGroupPopupUi = null;
         }
 
-        mToolbar.removeUrlExpansionObserver(mActivity.getStatusBarColorController());
+        mToolbar.removeUrlExpansionObserver(mStatusBarColorController);
         mToolbar.destroy();
 
         if (mTabObserver != null) {

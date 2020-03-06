@@ -9,6 +9,8 @@ source_set("user_signin") {
   sources = [
     "gradient_view.h",
     "gradient_view.mm",
+    "user_signin_constants.h",
+    "user_signin_constants.mm",
     "user_signin_coordinator.h",
     "user_signin_coordinator.mm",
     "user_signin_mediator.h",

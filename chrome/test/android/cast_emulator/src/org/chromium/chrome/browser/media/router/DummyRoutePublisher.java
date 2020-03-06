@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.media.router;
 
 import android.content.IntentFilter;
-import android.support.v7.media.MediaRouteDescriptor;
-import android.support.v7.media.MediaRouteProvider;
-import android.support.v7.media.MediaRouteProviderDescriptor;
+
+import androidx.mediarouter.media.MediaRouteDescriptor;
+import androidx.mediarouter.media.MediaRouteProvider;
+import androidx.mediarouter.media.MediaRouteProviderDescriptor;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 

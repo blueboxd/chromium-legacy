@@ -450,19 +450,12 @@ using base::UserMetricsAction;
   if (self.disableScrollAnimation)
     return;
 
-  // Focus the location bar if the omnibox is not already focused.
-  if (!self.omniboxFocused) {
-    // Only animated the location bar focus if the header is scrolled to the
-    // top.
-    BOOL animated = [self.delegate isScrolledToTop];
-    [self.dispatcher focusLocationBarWithAnimation:animated];
-  }
-
   void (^animations)() = nil;
   if (![self.delegate isScrolledToTop]) {
     // Only trigger the fake omnibox animation if the header isn't scrolled to
     // the top. Otherwise just rely on the normal animation.
     self.disableScrollAnimation = YES;
+    [self.dispatcher focusOmniboxNoAnimation];
     NamedGuide* omniboxGuide = [NamedGuide guideWithName:kOmniboxGuide
                                                     view:self.headerView];
     // Layout the owning view to make sure that the constrains are applied.

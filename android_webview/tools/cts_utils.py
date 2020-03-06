@@ -26,12 +26,6 @@ sys.path.append(
         'catapult', 'common', 'py_utils'))
 from py_utils import tempfile_ext
 
-sys.path.append(
-    os.path.join(
-        os.path.dirname(__file__), os.pardir, os.pardir, 'third_party',
-        'depot_tools'))
-import gclient_eval
-
 SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
@@ -303,10 +297,25 @@ class ChromiumRepoHelper(object):
   def get_cipd_dependency_rev(self):
     """Return CTS CIPD revision in the checkout's DEPS file."""
     deps_file = os.path.join(self._root_dir, DEPS_FILE)
-    with open(deps_file) as f:
-      contents = f.read()
-    dd = gclient_eval.Parse(contents, deps_file)
-    return gclient_eval.GetCIPD(dd, CTS_DEP_NAME, CTS_DEP_PACKAGE)
+
+    # Use the gclient command instead of gclient_eval since the latter is not
+    # intended for direct use outside of depot_tools.
+    cmd = [
+        'gclient', 'getdep', '--revision',
+        '%s:%s' % (CTS_DEP_NAME, CTS_DEP_PACKAGE), '--deps-file', deps_file
+    ]
+    env = os.environ
+
+    # Disable auto-update of depot tools since update_depot_tools may not be
+    # available (for example, on the presubmit bot), and it's probably best not
+    # to perform surprise updates anyways.
+    env.update({'DEPOT_TOOLS_UPDATE': '0'})
+    status, output, err = cmd_helper.GetCmdStatusOutputAndError(cmd, env=env)
+
+    if status != 0:
+      raise Exception('Command "%s" failed: %s' % (' '.join(cmd), err))
+
+    return output.strip()
 
   def update_cts_cipd_rev(self, new_version):
     """Update references to CTS CIPD revision in checkout.

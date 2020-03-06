@@ -134,4 +134,25 @@ TEST_F(ExitCodeWatcherTest, ExitCodeWatcherOnExitedProcess) {
   EXPECT_TRUE(watcher.exit_code() == kExitCode);
 }
 
+TEST_F(ExitCodeWatcherTest, ExitCodeWatcherStopWatching) {
+  ScopedSleeperProcess sleeper;
+  ASSERT_NO_FATAL_FAILURE(sleeper.Launch());
+
+  ExitCodeWatcher watcher;
+
+  EXPECT_TRUE(watcher.Initialize(sleeper.process().Duplicate()));
+
+  EXPECT_TRUE(watcher.StartWatching());
+
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  watcher.StopWatching();
+
+  // Verify we got the expected exit code
+  EXPECT_TRUE(watcher.exit_code() == STILL_ACTIVE);
+
+  // Cleanup the sleeper, and make sure it's exited before we continue.
+  ASSERT_NO_FATAL_FAILURE(sleeper.Kill(kExitCode, true));
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+}
+
 }  // namespace browser_watcher

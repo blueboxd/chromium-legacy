@@ -2490,7 +2490,11 @@ const char kNetworkProfileWarningsLeft[] = "network_profile.warnings_left";
 // |network_profile.warnings_left| after a silence period.
 const char kNetworkProfileLastWarningTime[] =
     "network_profile.last_warning_time";
-#endif
+
+// The last Chrome version at which
+// shell_integration::win::MigrateTaskbarPins() completed.
+const char kShortcutMigrationVersion[] = "browser.shortcut_migration_version";
+#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
 // The RLZ brand code, if enabled.

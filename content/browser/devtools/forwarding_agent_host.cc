@@ -63,4 +63,8 @@ base::TimeTicks ForwardingAgentHost::GetLastActivityTime() {
   return delegate_->GetLastActivityTime();
 }
 
+std::string ForwardingAgentHost::GetDescription() {
+  return delegate_->GetDescription();
+}
+
 }  // content

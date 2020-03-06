@@ -18,10 +18,10 @@ class TsSectionPmt : public TsSectionPsi {
  public:
   // |stream_type| is defined in "Table 2-34 – Stream type assignments" in H.222
   // TODO(damienv): add the program number.
-  using RegisterPesCb = base::RepeatingCallback<
+  using RegisterPesCB = base::RepeatingCallback<
       void(int pes_pid, int stream_type, const Descriptors& descriptors)>;
 
-  explicit TsSectionPmt(RegisterPesCb register_pes_cb);
+  explicit TsSectionPmt(RegisterPesCB register_pes_cb);
   ~TsSectionPmt() override;
 
   // Mpeg2TsPsiParser implementation.
@@ -29,7 +29,7 @@ class TsSectionPmt : public TsSectionPsi {
   void ResetPsiSection() override;
 
  private:
-  const RegisterPesCb register_pes_cb_;
+  const RegisterPesCB register_pes_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(TsSectionPmt);
 };

@@ -4,9 +4,8 @@
 
 #include "ui/views/test/views_test_helper_aura.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/test/aura_test_helper.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/default_screen_position_client.h"
@@ -14,59 +13,52 @@
 namespace views {
 
 // static
-ViewsTestHelper* ViewsTestHelper::Create(ui::ContextFactory* context_factory) {
-  return new ViewsTestHelperAura(context_factory);
+std::unique_ptr<ViewsTestHelper> ViewsTestHelper::Create(
+    ui::ContextFactory* context_factory) {
+  return base::WrapUnique(new ViewsTestHelperAura(context_factory));
 }
 
 ViewsTestHelperAura::ViewsTestHelperAura(ui::ContextFactory* context_factory)
     : context_factory_(context_factory) {
-  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
-}
+  aura_test_helper_.SetUp(context_factory_);
 
-ViewsTestHelperAura::~ViewsTestHelperAura() = default;
-
-void ViewsTestHelperAura::SetUp() {
-  aura_test_helper_->SetUp(context_factory_);
-
-  // GetContext() may return null. See comment in GetContext().
   gfx::NativeWindow root_window = GetContext();
-  if (!root_window)
-    return;
+  if (root_window) {
+    new wm::DefaultActivationClient(root_window);
 
-  new wm::DefaultActivationClient(root_window);
-
-  if (!aura::client::GetScreenPositionClient(root_window)) {
-    screen_position_client_ =
-        std::make_unique<wm::DefaultScreenPositionClient>();
-    aura::client::SetScreenPositionClient(root_window,
-                                          screen_position_client_.get());
+    if (!aura::client::GetScreenPositionClient(root_window)) {
+      screen_position_client_ =
+          std::make_unique<wm::DefaultScreenPositionClient>();
+      aura::client::SetScreenPositionClient(root_window,
+                                            screen_position_client_.get());
+    }
   }
 }
 
-void ViewsTestHelperAura::TearDown() {
-  // GetContext() may return null. See comment in GetContext().
-  if (GetContext()) {
+ViewsTestHelperAura::~ViewsTestHelperAura() {
+  gfx::NativeWindow root_window = GetContext();
+  if (root_window) {
     // Ensure all Widgets (and windows) are closed in unit tests. This is done
     // automatically when the RootWindow is torn down, but is an error on
     // platforms that must ensure no Compositors are alive when the
     // ContextFactory is torn down.
     // So, although it's optional, check the root window to detect failures
     // before they hit the CQ on other platforms.
-    DCHECK(aura_test_helper_->root_window()->children().empty())
-        << "Not all windows were closed.";
+    DCHECK(root_window->children().empty()) << "Not all windows were closed.";
 
     if (screen_position_client_.get() ==
-        aura::client::GetScreenPositionClient(GetContext()))
-      aura::client::SetScreenPositionClient(GetContext(), nullptr);
+        aura::client::GetScreenPositionClient(root_window))
+      aura::client::SetScreenPositionClient(root_window, nullptr);
   }
 
-  aura_test_helper_->TearDown();
-  CHECK(!wm::CaptureController::Get() ||
-        !wm::CaptureController::Get()->is_active());
+  aura_test_helper_.TearDown();
+
+  const wm::CaptureController* const controller = wm::CaptureController::Get();
+  CHECK(!controller || !controller->is_active());
 }
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
-  return aura_test_helper_->root_window();
+  return aura_test_helper_.root_window();
 }
 
 }  // namespace views

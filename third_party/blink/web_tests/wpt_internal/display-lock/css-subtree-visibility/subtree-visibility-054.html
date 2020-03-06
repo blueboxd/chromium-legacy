@@ -1,0 +1,43 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Subtree Visibility: anchor links paint subtrees</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="subtree-visibility-054-ref.html">
+<meta name="assert" content="subtree-visibility auto subtrees respond to anchor links">
+
+<script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
+
+<style>
+.spacer {
+  width: 150px;
+  height: 3000px;
+  background: lightblue;
+}
+#container {
+  width: 150px;
+  height: 150px;
+  background: lightgreen;
+  subtree-visibility: auto;
+}
+#target {
+  width: 100px;
+  height: 100px;
+  background: green;
+}
+</style>
+
+<div class="spacer"></div>
+<div id="container"><div id="target"></div></div>
+
+<script>
+function runTest() {
+  location.href += "#target";
+  requestAnimationFrame(takeScreenshot);
+}
+
+window.onload = () => { requestAnimationFrame(runTest); };
+</script>
+</html>

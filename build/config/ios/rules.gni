@@ -1723,10 +1723,14 @@ template("ios_xctest_bundle") {
         # For XCTest, Xcode requires specifying the host application path via
         # both BUNDLE_LOADER and TEST_HOST attributes.
         if (invoker.product_type == _ios_xcode_xctest_bundle_id) {
+          _xcode_app_name = invoker.xcode_test_application_name
+          if (defined(invoker.xcode_test_application_output_name)) {
+            _xcode_app_name = invoker.xcode_test_application_output_name
+          }
+
           BUNDLE_LOADER = "\$(TEST_HOST)"
           TEST_HOST =
-              "\$(BUILT_PRODUCTS_DIR)/${invoker.xcode_test_application_name}" +
-              ".app/${invoker.xcode_test_application_name}"
+              "\$(BUILT_PRODUCTS_DIR)/${_xcode_app_name}.app/${_xcode_app_name}"
         }
       }
 
@@ -1786,7 +1790,13 @@ template("ios_xctest_test") {
     output_name = _xctest_output
     product_type = _ios_xcode_xctest_bundle_id
     host_target = _host_target
-    xcode_test_application_name = _host_output
+
+    # TODO(crbug.com/1056328) The change in output name results in a mismatch
+    # between this value and the ios_app_bundle target name. To mitigate, this
+    # has been modified to _host_target. output_name is set to _host_output
+    # to mitigate the naming.
+    xcode_test_application_name = _host_target
+    xcode_test_application_output_name = _host_output
 
     deps = [ _xctest_module_target ]
   }
@@ -1975,10 +1985,14 @@ template("ios_xcuitest_test") {
          "xcode_test_application_name must be defined for $target_name")
 
   _xcuitest_target = target_name
+  if (defined(invoker.output_name)) {
+    _xcuitest_target = invoker.output_name
+  }
+
   _xcuitest_runner_target = _xcuitest_target + "_runner"
   _xcuitest_module_target = _xcuitest_target + "_module"
 
-  group(_xcuitest_target) {
+  group(target_name) {
     testonly = true
 
     deps = [ ":$_xcuitest_runner_target" ]

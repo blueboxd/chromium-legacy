@@ -71,7 +71,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
 
     virtual void Start(const base::Location& posted_from,
                        base::TimeDelta delay,
-                       const base::Closure& user_task) = 0;
+                       base::OnceClosure user_task) = 0;
     virtual void Stop() = 0;
     virtual bool IsRunning() = 0;
 

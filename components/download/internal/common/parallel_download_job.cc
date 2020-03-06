@@ -266,8 +266,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset) {
         })");
   // The parallel requests only use GET method.
   std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(download_item_->GetURL(), traffic_annotation,
-                                download_item_->GetNetworkIsolationKey()));
+      new DownloadUrlParameters(download_item_->GetURL(), traffic_annotation));
   download_params->set_file_path(download_item_->GetFullPath());
   download_params->set_last_modified(download_item_->GetLastModifiedTime());
   download_params->set_etag(download_item_->GetETag());

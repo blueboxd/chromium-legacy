@@ -59,6 +59,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
 
     State state;
 
+    // Identifies where the crash comes from.
+    std::string source;
+
     // Formatted file size for locally stored data.
     base::string16 file_size;
   };

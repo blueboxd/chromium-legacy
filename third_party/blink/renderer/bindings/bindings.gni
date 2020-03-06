@@ -158,7 +158,6 @@ bindings_core_v8_files =
                     "core/v8/v8_object_parser.h",
                     "core/v8/v8_page_popup_controller_binding.cc",
                     "core/v8/v8_page_popup_controller_binding.h",
-                    "core/v8/v8_persistent_value_vector.h",
                     "core/v8/v8_script_runner.cc",
                     "core/v8/v8_script_runner.h",
                     "core/v8/v8_set_return_value_for_core.h",

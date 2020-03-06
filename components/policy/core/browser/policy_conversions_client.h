@@ -32,11 +32,6 @@ class SchemaRegistry;
 // PolicyConversions.
 class POLICY_EXPORT PolicyConversionsClient {
  public:
-  // Maps known policy names to their schema. If a policy is not present, it is
-  // not known (either through policy_templates.json or through an extension's
-  // managed storage schema).
-  using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
-
   PolicyConversionsClient();
   virtual ~PolicyConversionsClient();
 
@@ -63,10 +58,14 @@ class POLICY_EXPORT PolicyConversionsClient {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Sets the updater policies.
   void SetUpdaterPolicies(std::unique_ptr<PolicyMap> policies);
+
   // Returns true if this client is able to return information on the updater's
   // policies.
   bool HasUpdaterPolicies() const;
   base::Value GetUpdaterPolicies();
+
+  // Sets the updater policy schemas.
+  void SetUpdaterPolicySchemas(PolicyConversions::PolicyToSchemaMap schemas);
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // Converts the given |value| to JSON, respecting the configuration
@@ -116,7 +115,8 @@ class POLICY_EXPORT PolicyConversionsClient {
       const std::string& policy_name,
       const PolicyMap::Entry& policy,
       PolicyErrorMap* errors,
-      const base::Optional<PolicyToSchemaMap>& known_policy_schemas) const;
+      const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+          known_policy_schemas) const;
 
   // Returns a description of each policy in |map| as Value, using the
   // optional errors in |errors| to determine the status of each policy.
@@ -126,15 +126,17 @@ class POLICY_EXPORT PolicyConversionsClient {
   base::Value GetPolicyValues(
       const PolicyMap& map,
       PolicyErrorMap* errors,
-      const base::Optional<PolicyToSchemaMap>& known_policy_schemas) const;
+      const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+          known_policy_schemas) const;
 
   // Returns the Schema for |policy_name| if that policy is known. If the policy
   // is unknown, returns |base::nullopt|.
   base::Optional<Schema> GetKnownPolicySchema(
-      const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
+      const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+          known_policy_schemas,
       const std::string& policy_name) const;
 
-  base::Optional<PolicyToSchemaMap> GetKnownPolicies(
+  base::Optional<PolicyConversions::PolicyToSchemaMap> GetKnownPolicies(
       const scoped_refptr<SchemaMap> schema_map,
       const PolicyNamespace& policy_namespace) const;
 
@@ -150,6 +152,7 @@ class POLICY_EXPORT PolicyConversionsClient {
  private:
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::unique_ptr<PolicyMap> updater_policies_;
+  base::Optional<PolicyConversions::PolicyToSchemaMap> updater_policy_schemas_;
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
   bool convert_types_enabled_ = true;

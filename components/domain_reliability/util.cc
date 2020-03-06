@@ -193,8 +193,8 @@ class ActualTimer : public MockableTime::Timer {
   // MockableTime::Timer implementation:
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,
-             const base::Closure& user_task) override {
-    base_timer_.Start(posted_from, delay, user_task);
+             base::OnceClosure user_task) override {
+    base_timer_.Start(posted_from, delay, std::move(user_task));
   }
 
   void Stop() override { base_timer_.Stop(); }

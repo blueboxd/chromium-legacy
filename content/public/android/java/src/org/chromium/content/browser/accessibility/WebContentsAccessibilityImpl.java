@@ -10,6 +10,7 @@ import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -65,24 +66,54 @@ import java.util.Set;
 public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         implements AccessibilityStateChangeListener, WebContentsAccessibility, WindowEventObserver,
                    UserData {
-    // Constants from AccessibilityNodeInfo defined in the K SDK.
+    // The following constants have been hard coded so we can support actions newer than our
+    // minimum SDK without having to break methods into a series of subclasses.
+    // Constants defined by AccessibilityNodeInfo per SDK
+    // source: https://developer.android.com/reference/android/R.id.html
+
+    // Constants defined in the K SDK. (API Level 19, Android 4)
     private static final int ACTION_COLLAPSE = 0x00080000;
     private static final int ACTION_EXPAND = 0x00040000;
 
-    // Constants from AccessibilityNodeInfo defined in the L SDK.
-    private static final int ACTION_SET_TEXT = 0x200000;
+    // Constants defined in the L SDK. (API Level 21+22, Android 5)
+    private static final int ACTION_SET_TEXT = 0x00200000;
     private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
-    private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
 
-    // Constants from AccessibilityNodeInfo defined in the M SDK.
-    // Source: https://developer.android.com/reference/android/R.id.html
-    protected static final int ACTION_CONTEXT_CLICK = 0x0102003c;
-    protected static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
-    protected static final int ACTION_SCROLL_UP = 0x01020038;
-    protected static final int ACTION_SCROLL_DOWN = 0x0102003a;
-    protected static final int ACTION_SCROLL_LEFT = 0x01020039;
-    protected static final int ACTION_SCROLL_RIGHT = 0x0102003b;
+    // Constants defined in the M SDK. (API Level 23, Android 6)
+    private static final int ACTION_CONTEXT_CLICK = 0x0102003c;
+    private static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
+    private static final int ACTION_SCROLL_UP = 0x01020038;
+    private static final int ACTION_SCROLL_DOWN = 0x0102003a;
+    private static final int ACTION_SCROLL_LEFT = 0x01020039;
+    private static final int ACTION_SCROLL_RIGHT = 0x0102003b;
+    private static final int ACTION_SCROLL_TO_POSITION = 0x01020037;
+
+    // Constants defined in the N SDK. (API Level 24+25, Android 7)
+    private static final int ACTION_SET_PROGRESS = 0x0102003d;
+    private static final String ACTION_ARGUMENT_PROGRESS_VALUE =
+            "android.view.accessibility.action.ARGUMENT_PROGRESS_VALUE";
+
+    // Constants defined in the O SDK. (API Level 26+27, Android 8)
+    private static final int ACTION_MOVE_WINDOW = 0x01020042;
+
+    // Constants defined in the P SDK. (API Level 28, Android 9)
+    private static final int ACTION_SHOW_TOOLTIP = 0x01020044;
+    private static final int ACTION_HIDE_TOOLTIP = 0x01020045;
+
+    // Constants defined in the Q SDK. (API Level 29, Android 10)
+    private static final int ACTION_PAGE_UP = 0x01020046;
+    private static final int ACTION_PAGE_DOWN = 0x01020047;
+    private static final int ACTION_PAGE_LEFT = 0x01020048;
+    private static final int ACTION_PAGE_RIGHT = 0x01020049;
+
+    // Constants defined in the R SDK. (API Level 30, Android 11)
+    // TODO (mschillaci) - Replace with set IDs once R SDK finalizes values
+    private static final int ACTION_IME_ENTER =
+            Resources.getSystem().getIdentifier("accessibilityActionImeEnter", "id", "android");
+
+    private static final int ACTION_PRESS_AND_HOLD =
+            Resources.getSystem().getIdentifier("accessibilityActionPressAndHold", "id", "android");
 
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
@@ -98,16 +129,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private Rect mAccessibilityFocusRect;
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
-    protected int mCurrentRootId;
+    private int mCurrentRootId;
     protected ViewGroup mView;
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
     private boolean mAccessibilityEnabledForTesting;
     private int mSelectionGranularity;
-    protected int mAccessibilityFocusId;
-    protected int mSelectionNodeId;
-    private Runnable mSendWindowContentChangedRunnable;
+    private int mAccessibilityFocusId;
+    private int mSelectionNodeId;
     private View mAutofillPopupView;
     private CaptioningController mCaptioningController;
     private boolean mIsCurrentlyExtendingSelection;
@@ -610,17 +640,32 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
                 return true;
             case ACTION_SCROLL_UP:
+            case ACTION_PAGE_UP:
                 return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.UP);
+                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.UP,
+                        action == ACTION_PAGE_UP);
             case ACTION_SCROLL_DOWN:
+            case ACTION_PAGE_DOWN:
                 return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.DOWN);
+                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.DOWN,
+                        action == ACTION_PAGE_DOWN);
             case ACTION_SCROLL_LEFT:
+            case ACTION_PAGE_LEFT:
                 return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.LEFT);
+                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.LEFT,
+                        action == ACTION_PAGE_LEFT);
             case ACTION_SCROLL_RIGHT:
+            case ACTION_PAGE_RIGHT:
                 return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.RIGHT);
+                        WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.RIGHT,
+                        action == ACTION_PAGE_RIGHT);
+            case ACTION_SET_PROGRESS:
+                if (arguments == null) return false;
+                float value = arguments.getFloat(ACTION_ARGUMENT_PROGRESS_VALUE, -1);
+                if (value == -1) return false;
+                return WebContentsAccessibilityImplJni.get().setRangeValue(
+                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, value);
+
             default:
                 break;
         }
@@ -903,7 +948,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, true);
         } else {
             return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                    WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.FORWARD);
+                    WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.FORWARD,
+                    false);
         }
     }
 
@@ -914,7 +960,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, false);
         } else {
             return WebContentsAccessibilityImplJni.get().scroll(mNativeObj,
-                    WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.BACKWARD);
+                    WebContentsAccessibilityImpl.this, virtualViewId, ScrollDirection.BACKWARD,
+                    false);
         }
     }
 
@@ -1281,7 +1328,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             boolean canScrollDown, boolean canScrollLeft, boolean canScrollRight, boolean clickable,
             boolean editableText, boolean enabled, boolean focusable, boolean focused,
             boolean isCollapsed, boolean isExpanded, boolean hasNonEmptyValue,
-            boolean hasNonEmptyInnerText) {
+            boolean hasNonEmptyInnerText, boolean isRangeType) {
         addAction(node, AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         addAction(node, ACTION_SHOW_ON_SCREEN);
@@ -1315,18 +1362,22 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (canScrollUp) {
             addAction(node, ACTION_SCROLL_UP);
+            addAction(node, ACTION_PAGE_UP);
         }
 
         if (canScrollDown) {
             addAction(node, ACTION_SCROLL_DOWN);
+            addAction(node, ACTION_PAGE_DOWN);
         }
 
         if (canScrollLeft) {
             addAction(node, ACTION_SCROLL_LEFT);
+            addAction(node, ACTION_PAGE_LEFT);
         }
 
         if (canScrollRight) {
             addAction(node, ACTION_SCROLL_RIGHT);
+            addAction(node, ACTION_PAGE_RIGHT);
         }
 
         if (focusable) {
@@ -1353,6 +1404,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (isExpanded) {
             addAction(node, ACTION_COLLAPSE);
+        }
+
+        if (isRangeType) {
+            addAction(node, ACTION_SET_PROGRESS);
         }
     }
 
@@ -1742,7 +1797,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         boolean isSlider(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
         boolean scroll(long nativeWebContentsAccessibilityAndroid,
-                WebContentsAccessibilityImpl caller, int id, int direction);
+                WebContentsAccessibilityImpl caller, int id, int direction, boolean pageScroll);
+        boolean setRangeValue(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, int id, float value);
         String getSupportedHtmlElementTypes(
                 long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
         void showContextMenu(long nativeWebContentsAccessibilityAndroid,

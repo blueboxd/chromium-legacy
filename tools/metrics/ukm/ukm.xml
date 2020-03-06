@@ -8359,6 +8359,11 @@ be describing additional metrics about the same event.
       start, or raw key down event.
     </summary>
   </metric>
+  <metric name="SafeBrowsingStatus" enum="PopupSafeBrowsingStatus">
+    <summary>
+      The site's safe browsing status if the pop-up's navigation commits.
+    </summary>
+  </metric>
   <metric name="Trusted">
     <summary>
       Boolean value representing whether the popup was opened via some trusted

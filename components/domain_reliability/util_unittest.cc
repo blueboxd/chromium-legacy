@@ -106,14 +106,9 @@ TEST_F(DomainReliabilityMockTimeTest, TimerReentrantStart) {
   TestCallback callback;
 
   timer->Start(
-      FROM_HERE,
-      delta,
-      base::Bind(
-          &MockTime::Timer::Start,
-          base::Unretained(timer.get()),
-          FROM_HERE,
-          delta,
-          callback.callback()));
+      FROM_HERE, delta,
+      base::BindOnce(&MockTime::Timer::Start, base::Unretained(timer.get()),
+                     FROM_HERE, delta, callback.callback()));
   time_.Advance(delta);
   EXPECT_FALSE(callback.called());
   EXPECT_TRUE(timer->IsRunning());

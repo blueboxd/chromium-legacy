@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -451,9 +453,12 @@ views::LabelButton* ExtensionsToolbarContainer::GetOverflowReferenceView()
 }
 
 gfx::Size ExtensionsToolbarContainer::GetToolbarActionSize() {
-  gfx::Rect rect(gfx::Size(28, 28));
-  rect.Inset(-GetLayoutInsets(TOOLBAR_ACTION_VIEW));
-  return rect.size();
+  constexpr gfx::Size kDefaultSize(28, 28);
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser_);
+  return browser_view
+             ? browser_view->toolbar_button_provider()->GetToolbarButtonSize()
+             : kDefaultSize;
 }
 
 void ExtensionsToolbarContainer::WriteDragDataForView(

@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
-#import "ios/chrome/browser/download/google_drive_app_util.h"
+#import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/test/fakes/fake_download_manager_consumer.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #include "ios/web/public/test/web_task_environment.h"

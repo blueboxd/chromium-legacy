@@ -544,21 +544,25 @@ TEST_F(WebFrameTest, RequestExecuteV8Function) {
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
 
   auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
-    info.GetReturnValue().Set(V8String(info.GetIsolate(), "hello"));
+    EXPECT_EQ(2, info.Length());
+    EXPECT_TRUE(info[0]->IsUndefined());
+    info.GetReturnValue().Set(info[1]);
   };
 
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context =
       web_view_helper.LocalMainFrame()->MainWorldScriptContext();
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
+  v8::Local<v8::Value> args[] = {v8::Undefined(isolate),
+                                 V8String(isolate, "hello")};
   web_view_helper.GetWebView()
       ->MainFrame()
       ->ToWebLocalFrame()
-      ->RequestExecuteV8Function(context, function,
-                                 v8::Undefined(context->GetIsolate()), 0,
-                                 nullptr, &callback_helper);
+      ->RequestExecuteV8Function(context, function, v8::Undefined(isolate),
+                                 base::size(args), args, &callback_helper);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.StringValue());

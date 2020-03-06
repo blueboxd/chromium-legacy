@@ -95,6 +95,8 @@ class ASH_EXPORT DeskMiniView
                        const base::string16& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
+  bool HandleMouseEvent(views::Textfield* sender,
+                        const ui::MouseEvent& mouse_event) override;
 
   // views::ViewObserver:
   void OnViewFocused(views::View* observed_view) override;
@@ -140,6 +142,11 @@ class ASH_EXPORT DeskMiniView
   // We force showing the close button when the mini_view is long pressed or
   // tapped using touch gestures.
   bool force_show_close_button_ = false;
+
+  // When the DeskNameView is focused, we select all its text. However, if it is
+  // focused via a mouse press event, on mouse release will clear the selection.
+  // Therefore, we defer selecting all text until we receive that mouse release.
+  bool defer_select_all_ = false;
 
   bool is_desk_name_being_modified_ = false;
 

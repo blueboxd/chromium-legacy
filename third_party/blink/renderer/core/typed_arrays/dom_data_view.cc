@@ -24,21 +24,24 @@ class DataView final : public ArrayBufferView {
     return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 
-  size_t ByteLengthAsSizeT() const override { return byte_length_; }
+  size_t ByteLengthAsSizeT() const override {
+    return !IsDetached() ? raw_byte_length_ : 0;
+  }
   ViewType GetType() const override { return kTypeDataView; }
   unsigned TypeSize() const override { return 1; }
 
  protected:
   void Detach() override {
     ArrayBufferView::Detach();
-    byte_length_ = 0;
+    raw_byte_length_ = 0;
   }
 
  private:
   DataView(ArrayBuffer* buffer, size_t byte_offset, size_t byte_length)
-      : ArrayBufferView(buffer, byte_offset), byte_length_(byte_length) {}
+      : ArrayBufferView(buffer, byte_offset), raw_byte_length_(byte_length) {}
 
-  size_t byte_length_;
+  // It may be stale after Detach. Use ByteLengthAsSizeT instead.
+  size_t raw_byte_length_;
 };
 
 }  // anonymous namespace

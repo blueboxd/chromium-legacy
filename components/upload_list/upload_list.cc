@@ -52,6 +52,7 @@ UploadList::UploadInfo::UploadInfo(const UploadInfo& upload_info)
       local_id(upload_info.local_id),
       capture_time(upload_info.capture_time),
       state(upload_info.state),
+      source(upload_info.source),
       file_size(upload_info.file_size) {}
 
 UploadList::UploadInfo::~UploadInfo() = default;

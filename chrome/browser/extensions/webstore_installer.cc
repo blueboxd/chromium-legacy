@@ -667,8 +667,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
         })");
   std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_, render_process_host_id, render_view_host_routing_id,
-      render_frame_host->GetRoutingID(), traffic_annotation,
-      render_frame_host->GetNetworkIsolationKey()));
+      render_frame_host->GetRoutingID(), traffic_annotation));
   params->set_file_path(file);
   if (controller.GetVisibleEntry()) {
     content::Referrer referrer = content::Referrer::SanitizeForRequest(

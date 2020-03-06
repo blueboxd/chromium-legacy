@@ -19,7 +19,7 @@ namespace safe_browsing {
 using ::testing::Return;
 using ::testing::ReturnRef;
 
-class DownloadItemRequestTest : public ::testing::Test {
+class DownloadItemRequestTest : public ::testing::TestWithParam<bool> {
  public:
   DownloadItemRequestTest()
       : item_(),
@@ -35,7 +35,8 @@ class DownloadItemRequestTest : public ::testing::Test {
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
 
-    download_contents_ = "download contents";
+    download_contents_ = large_contents() ? std::string(51 * 1024 * 1024, 'a')
+                                          : "download contents";
     file.Write(0, download_contents_.c_str(), download_contents_.size());
     file.Close();
 
@@ -45,6 +46,8 @@ class DownloadItemRequestTest : public ::testing::Test {
         .WillRepeatedly(ReturnRef(download_path_));
     EXPECT_CALL(item_, GetFullPath()).WillRepeatedly(ReturnRef(download_path_));
   }
+
+  bool large_contents() const { return GetParam(); }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -56,7 +59,7 @@ class DownloadItemRequestTest : public ::testing::Test {
   std::string download_contents_;
 };
 
-TEST_F(DownloadItemRequestTest, GetsContentsWaitsUntilRename) {
+TEST_P(DownloadItemRequestTest, GetsContentsWaitsUntilRename) {
   ON_CALL(item_, GetFullPath())
       .WillByDefault(ReturnRef(download_temporary_path_));
 
@@ -74,7 +77,16 @@ TEST_F(DownloadItemRequestTest, GetsContentsWaitsUntilRename) {
   item_.NotifyObserversDownloadUpdated();
 
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ(download_contents, "download contents");
+
+  // The contents should not be read if they are too large.
+  if (large_contents())
+    EXPECT_EQ(download_contents, "");
+  else
+    EXPECT_EQ(download_contents, "download contents");
 }
+
+INSTANTIATE_TEST_SUITE_P(DownloadItemRequestTest,
+                         DownloadItemRequestTest,
+                         testing::Bool());
 
 }  // namespace safe_browsing

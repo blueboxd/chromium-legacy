@@ -17,6 +17,7 @@ class ToolbarButton;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace views {
@@ -34,6 +35,9 @@ class ToolbarButtonProvider {
 
   // Gets the ExtensionsToolbarContainer.
   virtual ExtensionsToolbarContainer* GetExtensionsToolbarContainer() = 0;
+
+  // Get the default size for toolbar buttons.
+  virtual gfx::Size GetToolbarButtonSize() const = 0;
 
   // Gets the default view to use as an anchor for extension dialogs if the
   // ToolbarActionView is not visible or available.

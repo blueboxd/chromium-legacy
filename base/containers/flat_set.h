@@ -95,6 +95,10 @@ namespace base {
 //   pair<iterator, bool> emplace(Args&&...);
 //   iterator             emplace_hint(const_iterator, Args&&...);
 //
+// Underlying type functions:
+//   underlying_type      extract() &&;
+//   void                 replace(underlying_type&&);
+//
 // Erase functions:
 //   iterator erase(iterator);
 //   iterator erase(const_iterator);

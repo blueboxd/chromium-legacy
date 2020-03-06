@@ -31,7 +31,6 @@ class TestOmniboxPopupView : public OmniboxPopupView {
   ~TestOmniboxPopupView() override {}
   bool IsOpen() const override { return false; }
   void InvalidateLine(size_t line) override {}
-  void OnSelectionStateChanged(size_t line) override {}
   void UpdatePopupAppearance() override {}
   void ProvideButtonFocusHint(size_t line) override {}
   void OnMatchIconUpdated(size_t match_index) override {}

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
-import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
@@ -30,7 +29,6 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
     CustomTabDelegateFactory resolveTabDelegateFactory();
-    CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
     CustomTabToolbarColorController resolveToolbarColorController();
     CustomTabTaskDescriptionHelper resolveTaskDescriptionHelper();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();

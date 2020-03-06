@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -39,6 +40,7 @@ namespace extensions {
 namespace {
 
 using autofill::PasswordForm;
+using password_manager::BulkLeakCheckService;
 using password_manager::CanonicalizeUsername;
 using password_manager::CredentialWithPassword;
 using ui::TimeFormat;
@@ -58,6 +60,27 @@ api::passwords_private::CompromiseType ConvertCompromiseType(
 
   NOTREACHED();
   return api::passwords_private::COMPROMISE_TYPE_NONE;
+}
+
+api::passwords_private::PasswordCheckState ConvertPasswordCheckState(
+    BulkLeakCheckService::State state) {
+  switch (state) {
+    case BulkLeakCheckService::State::kIdle:
+      return api::passwords_private::PASSWORD_CHECK_STATE_IDLE;
+    case BulkLeakCheckService::State::kRunning:
+      return api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+    case BulkLeakCheckService::State::kSignedOut:
+      return api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT;
+    case BulkLeakCheckService::State::kNetworkError:
+      return api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE;
+    case BulkLeakCheckService::State::kTokenRequestFailure:
+    case BulkLeakCheckService::State::kHashingFailure:
+    case BulkLeakCheckService::State::kServiceError:
+      return api::passwords_private::PASSWORD_CHECK_STATE_OTHER_ERROR;
+  }
+
+  NOTREACHED();
+  return api::passwords_private::PASSWORD_CHECK_STATE_NONE;
 }
 
 // Computes a map that matches compromised credentials with corresponding saved
@@ -93,6 +116,8 @@ MapCompromisedCredentialsToSavedPasswords(
 
 }  // namespace
 
+constexpr size_t PasswordCheckDelegate::kTooManyPasswords;
+
 PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
     : profile_(profile),
       password_store_(PasswordStoreFactory::GetForProfile(
@@ -104,6 +129,7 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
       bulk_leak_check_service_adapter_(
           &saved_passwords_presenter_,
           BulkLeakCheckServiceFactory::GetForProfile(profile_)) {
+  observed_saved_passwords_presenter_.Add(&saved_passwords_presenter_);
   observed_compromised_credentials_provider_.Add(
       &compromised_credentials_provider_);
   observed_bulk_leak_check_service_.Add(
@@ -253,11 +279,66 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
 }
 
 bool PasswordCheckDelegate::StartPasswordCheck() {
+  is_canceled_ = false;
   return bulk_leak_check_service_adapter_.StartBulkLeakCheck();
 }
 
 void PasswordCheckDelegate::StopPasswordCheck() {
+  if (bulk_leak_check_service_adapter_.GetBulkLeakCheckState() ==
+      BulkLeakCheckService::State::kRunning) {
+    is_canceled_ = true;
+  }
+
   bulk_leak_check_service_adapter_.StopBulkLeakCheck();
+}
+
+api::passwords_private::PasswordCheckStatus
+PasswordCheckDelegate::GetPasswordCheckStatus() const {
+  // TODO(crbug.com/1047726): Add support for QUOTA_LIMIT state.
+  api::passwords_private::PasswordCheckStatus result;
+
+  BulkLeakCheckService::State state =
+      bulk_leak_check_service_adapter_.GetBulkLeakCheckState();
+  SavedPasswordsView saved_passwords =
+      saved_passwords_presenter_.GetSavedPasswords();
+
+  // Handle the currently running case first, only then consider errors.
+  if (state == BulkLeakCheckService::State::kRunning) {
+    result.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+    result.remaining_in_queue = std::make_unique<int>(
+        bulk_leak_check_service_adapter_.GetPendingChecksCount());
+    // Make sure we'll never surface a negative number in the UI.
+    result.already_processed = std::make_unique<int>(
+        std::max(0, base::checked_cast<int>(saved_passwords.size()) -
+                        *result.remaining_in_queue));
+    return result;
+  }
+
+  if (saved_passwords.empty()) {
+    result.state = api::passwords_private::PASSWORD_CHECK_STATE_NO_PASSWORDS;
+    return result;
+  }
+
+  if (saved_passwords.size() >= kTooManyPasswords) {
+    result.state =
+        api::passwords_private::PASSWORD_CHECK_STATE_TOO_MANY_PASSWORDS;
+    return result;
+  }
+
+  if (is_canceled_) {
+    result.state = api::passwords_private::PASSWORD_CHECK_STATE_CANCELED;
+    return result;
+  }
+
+  result.state = ConvertPasswordCheckState(state);
+  return result;
+}
+
+void PasswordCheckDelegate::OnSavedPasswordsChanged(SavedPasswordsView) {
+  // A change in the saved passwords might result in leaving or entering the
+  // NO_PASSWORDS or TOO_MANY_PASSWORDS state, thus we need to trigger a
+  // notification.
+  NotifyPasswordCheckStatusChanged();
 }
 
 void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
@@ -272,9 +353,11 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
 }
 
 void PasswordCheckDelegate::OnStateChanged(
-    password_manager::BulkLeakCheckService::State state) {
-  NOTIMPLEMENTED();
-  // TODO(https://crbug.com/1047726): Implement.
+    password_manager::BulkLeakCheckService::State) {
+  // NotifyPasswordCheckStatusChanged() invokes GetPasswordCheckStatus()
+  // obtaining the relevant information. Thus there is no need to forward the
+  // arguments passed to OnStateChanged().
+  NotifyPasswordCheckStatusChanged();
 }
 
 void PasswordCheckDelegate::OnCredentialDone(
@@ -318,6 +401,13 @@ PasswordCheckDelegate::FindMatchingCompromisedCredential(
   }
 
   return compromised_credential;
+}
+
+void PasswordCheckDelegate::NotifyPasswordCheckStatusChanged() {
+  if (auto* event_router =
+          PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
+    event_router->OnPasswordCheckStatusChanged(GetPasswordCheckStatus());
+  }
 }
 
 }  // namespace extensions

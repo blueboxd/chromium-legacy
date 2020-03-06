@@ -202,6 +202,20 @@ bool ProfileMenuItemComparator(const chrome::mojom::ProfileMenuItemPtr& a,
   return a->menu_index < b->menu_index;
 }
 
+const Extension* MaybeGetAppExtension(content::BrowserContext* context,
+                                      const std::string& extension_id) {
+  if (!context)
+    return nullptr;
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const Extension* extension =
+      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+  return extension &&
+                 (extension->is_platform_app() || extension->is_hosted_app())
+             ? extension
+             : nullptr;
+}
+
 }  // namespace
 
 namespace apps {
@@ -332,16 +346,14 @@ void ExtensionAppShimHandler::Delegate::CloseAppWindows(
 bool ExtensionAppShimHandler::Delegate::AppIsInstalled(
     Profile* profile,
     const std::string& app_id) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   return profile && extension;
 }
 
 bool ExtensionAppShimHandler::Delegate::AppCanCreateHost(
     Profile* profile,
     const std::string& app_id) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (!profile || !extension)
     return false;
   if (extension->is_hosted_app() &&
@@ -357,8 +369,7 @@ bool ExtensionAppShimHandler::Delegate::AppCanCreateHost(
 bool ExtensionAppShimHandler::Delegate::AppIsMultiProfile(
     Profile* profile,
     const std::string& app_id) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (!profile || !extension)
     return false;
   return extension->from_bookmark();
@@ -367,8 +378,7 @@ bool ExtensionAppShimHandler::Delegate::AppIsMultiProfile(
 bool ExtensionAppShimHandler::Delegate::AppUsesRemoteCocoa(
     Profile* profile,
     const std::string& app_id) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (!profile || !extension)
     return false;
   return extension->is_hosted_app() && extension->from_bookmark();
@@ -387,8 +397,7 @@ void ExtensionAppShimHandler::Delegate::EnableExtension(
     Profile* profile,
     const std::string& app_id,
     base::OnceCallback<void()> callback) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (extension)
     std::move(callback).Run();
   else
@@ -399,8 +408,7 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
     const std::string& app_id,
     const std::vector<base::FilePath>& files) {
-  const extensions::Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   DCHECK(extension);
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
@@ -447,8 +455,7 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
     bool recreate_shims,
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
-  const Extension* extension =
-      ExtensionAppShimHandler::MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = MaybeGetAppExtension(profile, app_id);
   if (!extension) {
     std::move(launched_callback).Run(base::Process());
     return;
@@ -524,33 +531,6 @@ AppShimHost* ExtensionAppShimHandler::GetHostForRemoteCocoaBrowser(
   if (!profile_state)
     return nullptr;
   return profile_state->GetHost();
-}
-
-// static
-const Extension* ExtensionAppShimHandler::MaybeGetAppExtension(
-    content::BrowserContext* context,
-    const std::string& extension_id) {
-  if (!context)
-    return NULL;
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  const Extension* extension =
-      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
-  return extension &&
-                 (extension->is_platform_app() || extension->is_hosted_app())
-             ? extension
-             : NULL;
-}
-
-// static
-const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
-    Browser* browser) {
-  if (!browser || !browser->deprecated_is_app())
-    return NULL;
-
-  return MaybeGetAppExtension(
-      browser->profile(),
-      web_app::GetAppIdFromApplicationName(browser->app_name()));
 }
 
 void ExtensionAppShimHandler::OnShimLaunchRequested(

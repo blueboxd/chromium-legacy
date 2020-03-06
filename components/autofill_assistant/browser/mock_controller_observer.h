@@ -51,7 +51,8 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD0(OnCollapseBottomSheet, void());
   MOCK_METHOD1(OnOverlayColorsChanged,
                void(const UiDelegate::OverlayColors& colors));
-  MOCK_METHOD1(OnFormChanged, void(const FormProto* form));
+  MOCK_METHOD2(OnFormChanged,
+               void(const FormProto* form, const FormProto::Result* result));
   MOCK_METHOD1(OnClientSettingsChanged, void(const ClientSettings& settings));
   MOCK_METHOD1(OnGenericUserInterfaceChanged,
                void(const GenericUserInterfaceProto* generic_ui));

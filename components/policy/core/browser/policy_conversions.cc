@@ -41,6 +41,11 @@ PolicyConversions& PolicyConversions::WithUpdaterPolicies(
   client()->SetUpdaterPolicies(std::move(policies));
   return *this;
 }
+PolicyConversions& PolicyConversions::WithUpdaterPolicySchemas(
+    PolicyToSchemaMap schemas) {
+  client()->SetUpdaterPolicySchemas(std::move(schemas));
+  return *this;
+}
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 PolicyConversions& PolicyConversions::EnableConvertTypes(bool enabled) {

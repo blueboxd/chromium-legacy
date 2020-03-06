@@ -19,8 +19,4 @@ bool GetDownloadsDirectory(base::FilePath* directory_path);
 // Asynchronously deletes downloads directory.
 void DeleteDownloadsDirectory();
 
-// Returns URL which can be used to open Chrome's directory in files.app.
-// Returns nil if it cannot get the directory.
-NSURL* GetFilesAppDownloadsDirectoryUrl();
-
 #endif  // IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DIRECTORY_UTIL_H_

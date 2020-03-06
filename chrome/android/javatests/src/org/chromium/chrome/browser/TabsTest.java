@@ -74,6 +74,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.chrome.test.util.ToolbarTestUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.javascript_dialogs.JavascriptTabModalDialog;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -1620,7 +1621,7 @@ public class TabsTest {
                 });
 
         int callLayouChangeCount = staticLayoutCallbackHelper.getCallCount();
-        performToolbarSideSwipe(direction);
+        ToolbarTestUtils.performToolbarSideSwipe(activity, direction);
         staticLayoutCallbackHelper.waitForCallback(callLayouChangeCount, 1);
 
         if (expectsSelection) selectCallback.waitForCallback(tabSelectedCallCount, 1);
@@ -1628,26 +1629,6 @@ public class TabsTest {
 
         Assert.assertEquals("Index after toolbar side swipe is incorrect", finalIndex,
                 activity.getCurrentTabModel().index());
-    }
-
-    private void performToolbarSideSwipe(@ScrollDirection int direction) {
-        Assert.assertTrue("Unexpected direction for side swipe " + direction,
-                direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
-        final View toolbar = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
-        int[] toolbarPos = new int[2];
-        toolbar.getLocationOnScreen(toolbarPos);
-        final int width = toolbar.getWidth();
-        final int height = toolbar.getHeight();
-
-        final int fromX = toolbarPos[0] + width / 2;
-        final int toX = toolbarPos[0] + (direction == ScrollDirection.LEFT ? 0 : width);
-        final int y = toolbarPos[1] + height / 2;
-        final int stepCount = 10;
-
-        long downTime = SystemClock.uptimeMillis();
-        TouchCommon.dragStart(mActivityTestRule.getActivity(), fromX, y, downTime);
-        TouchCommon.dragTo(mActivityTestRule.getActivity(), fromX, toX, y, y, stepCount, downTime);
-        TouchCommon.dragEnd(mActivityTestRule.getActivity(), toX, y, downTime);
     }
 
     /**

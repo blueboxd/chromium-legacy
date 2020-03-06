@@ -90,6 +90,40 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
+  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(this)) {
+    if (const NGFragmentItems* items = box->Items()) {
+      for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNext()) {
+        DCHECK(cursor.Current().Item());
+        const NGFragmentItem& item = *cursor.Current().Item();
+        if (item.Type() == NGFragmentItem::kLine) {
+          AddOutlineRectsForDescendant(
+              {item.LineBoxFragment(), item.OffsetInContainerBlock()},
+              outline_rects, additional_offset, outline_type, containing_block);
+          continue;
+        }
+        if (item.Type() == NGFragmentItem::kBox) {
+          if (const NGPhysicalBoxFragment* child_box = item.BoxFragment()) {
+            DCHECK(!child_box->IsOutOfFlowPositioned());
+            AddOutlineRectsForDescendant(
+                {child_box, item.OffsetInContainerBlock()}, outline_rects,
+                additional_offset, outline_type, containing_block);
+          }
+          continue;
+        }
+        DCHECK(item.IsText());
+      }
+      // Don't add |Children()|. If |this| has |NGFragmentItems|, children are
+      // either line box, which we already handled in items, or OOF, which we
+      // should ignore.
+      DCHECK(std::all_of(PostLayoutChildren().begin(),
+                         PostLayoutChildren().end(), [](const NGLink& child) {
+                           return child->IsLineBox() ||
+                                  child->IsOutOfFlowPositioned();
+                         }));
+      return;
+    }
+  }
+
   for (const auto& child : PostLayoutChildren()) {
     // Outlines of out-of-flow positioned descendants are handled in
     // NGPhysicalBoxFragment::AddSelfOutlineRects().

@@ -18,10 +18,10 @@ namespace mp2t {
 
 class TsSectionCetsPssh : public TsSection {
  public:
-  using RegisterPsshBoxesCb =
+  using RegisterPsshBoxesCB =
       base::RepeatingCallback<void(const std::vector<uint8_t>&)>;
 
-  explicit TsSectionCetsPssh(RegisterPsshBoxesCb register_pssh_boxes_cb);
+  explicit TsSectionCetsPssh(RegisterPsshBoxesCB register_pssh_boxes_cb);
   ~TsSectionCetsPssh() override;
 
   // TsSection implementation.
@@ -32,7 +32,7 @@ class TsSectionCetsPssh : public TsSection {
   void Reset() override;
 
  private:
-  const RegisterPsshBoxesCb register_pssh_boxes_cb_;
+  const RegisterPsshBoxesCB register_pssh_boxes_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(TsSectionCetsPssh);
 };

@@ -27,6 +27,9 @@ namespace paint_preview {
 // Client responsible for making requests to the mojom::PaintPreviewService. A
 // client coordinates between multiple frames and handles capture and
 // aggreagation of data from both the main frame and subframes.
+//
+// Should be created and accessed from the UI thread as WebContentsUserData
+// requires this behavior.
 class PaintPreviewClient
     : public content::WebContentsUserData<PaintPreviewClient>,
       public content::WebContentsObserver {
@@ -56,6 +59,8 @@ class PaintPreviewClient
   };
 
   ~PaintPreviewClient() override;
+
+  // IMPORTANT: The Capture* methods must be called on the UI thread!
 
   // Captures a paint preview corresponding to the content of
   // |render_frame_host|. This will work for capturing entire documents if

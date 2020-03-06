@@ -8,14 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/aura/test/aura_test_helper.h"
 #include "ui/views/test/views_test_helper.h"
 
 namespace aura {
 namespace client {
 class ScreenPositionClient;
-}
-namespace test {
-class AuraTestHelper;
 }
 }  // namespace aura
 
@@ -26,14 +24,12 @@ class ViewsTestHelperAura : public ViewsTestHelper {
   explicit ViewsTestHelperAura(ui::ContextFactory* context_factory);
   ~ViewsTestHelperAura() override;
 
-  // Overridden from ViewsTestHelper:
-  void SetUp() override;
-  void TearDown() override;
+  // ViewsTestHelper:
   gfx::NativeWindow GetContext() override;
 
  private:
   ui::ContextFactory* context_factory_;
-  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  aura::test::AuraTestHelper aura_test_helper_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperAura);

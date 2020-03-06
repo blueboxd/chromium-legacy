@@ -1706,6 +1706,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ColorSchemeChanged();
 
+  // A new vision deficiency is being emulated through DevTools.
+  void VisionDeficiencyChanged();
+
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   // A META element with name=color-scheme was added, removed, or modified.

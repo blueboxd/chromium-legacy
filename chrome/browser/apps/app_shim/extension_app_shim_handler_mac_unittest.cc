@@ -26,8 +26,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -35,9 +33,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
-
-using extensions::Extension;
-typedef extensions::AppWindowRegistry::AppWindowList AppWindowList;
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -361,13 +356,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     host_bb_ = host_bb_unique_->GetWeakPtr();
 
     base::FilePath extension_path("/fake/path");
-    extension_a_ =
-        extensions::ExtensionBuilder("Fake Name")
-            .SetLocation(extensions::Manifest::INTERNAL)
-            .SetPath(extension_path)
-            .SetID(kTestAppIdA)
-            .AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK)
-            .Build();
 
     EXPECT_CALL(*delegate_, AppIsMultiProfile(_, kTestAppIdA))
         .WillRepeatedly(Return(true));
@@ -376,12 +364,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
     EXPECT_CALL(*delegate_, AppUsesRemoteCocoa(_, _))
         .WillRepeatedly(Return(true));
-
-    extension_b_ = extensions::ExtensionBuilder("Fake Name")
-                       .SetLocation(extensions::Manifest::INTERNAL)
-                       .SetPath(extension_path)
-                       .SetID(kTestAppIdB)
-                       .Build();
 
     {
       auto item_a = chrome::mojom::ProfileMenuItem::New();
@@ -539,9 +521,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   base::WeakPtr<TestHost> host_ba_;
   base::WeakPtr<TestHost> host_bb_;
 
-  scoped_refptr<const Extension> extension_a_;
-  scoped_refptr<const Extension> extension_b_;
-
  private:
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTest);
@@ -595,7 +574,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   // App not found.
   EXPECT_CALL(*delegate_, AppIsInstalled(&profile_a_, kTestAppIdA))
       .WillOnce(Return(false))
-      .WillRepeatedly(Return(extension_a_.get()));
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
   NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));

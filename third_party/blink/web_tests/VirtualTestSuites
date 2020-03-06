@@ -725,7 +725,8 @@
   {
     "prefix": "legacy-client-hints-no-fp-delegation",
     "bases": [ "external/wpt/client-hints" ],
-    "args": [ "--enable-features=AllowClientHintsToThirdParty", "--disable-blink-features=FeaturePolicyForClientHints" ]
+    "args": [ "--enable-features=AllowClientHintsToThirdParty",
+              "--disable-features=FeaturePolicyForClientHints" ]
   },
   {
     "prefix": "storage-access-api",

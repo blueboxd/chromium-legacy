@@ -110,9 +110,18 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
     To<NGPhysicalBoxFragment>(PaintFragment()->PhysicalFragment())
         .AddSelfOutlineRects(additional_offset, include_block_overflows,
                              &rects);
-  } else {
-    Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
+    return;
   }
+
+  if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+    if (fragment->HasItems()) {
+      fragment->AddSelfOutlineRects(additional_offset, include_block_overflows,
+                                    &rects);
+      return;
+    }
+  }
+
+  Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
 }
 
 // Retrieve NGBaseline from the current fragment.

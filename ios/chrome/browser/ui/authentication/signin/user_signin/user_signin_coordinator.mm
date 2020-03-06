@@ -5,6 +5,7 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -26,6 +27,10 @@
 
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
+
+namespace {
+const CGFloat kFadeOutAnimationDuration = 0.16f;
+}  // namespace
 
 @interface UserSigninCoordinator () <UnifiedConsentCoordinatorDelegate,
                                      UserSigninViewControllerDelegate,
@@ -49,6 +54,8 @@ using signin_metrics::PromoAction;
 @property(nonatomic, assign) AccessPoint accessPoint;
 // Promo button used to trigger the sign-in.
 @property(nonatomic, assign) PromoAction promoAction;
+// Sign-in intent.
+@property(nonatomic, assign, readonly) UserSigninIntent signinIntent;
 
 @end
 
@@ -60,12 +67,14 @@ using signin_metrics::PromoAction;
                                    browser:(Browser*)browser
                                   identity:(ChromeIdentity*)identity
                                accessPoint:(AccessPoint)accessPoint
-                               promoAction:(PromoAction)promoAction {
+                               promoAction:(PromoAction)promoAction
+                              signinIntent:(UserSigninIntent)signinIntent {
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _defaultIdentity = identity;
     _accessPoint = accessPoint;
     _promoAction = promoAction;
+    _signinIntent = signinIntent;
   }
   return self;
 }
@@ -76,6 +85,8 @@ using signin_metrics::PromoAction;
   [super start];
   self.viewController = [[UserSigninViewController alloc] init];
   self.viewController.delegate = self;
+  self.viewController.useFirstRunSkipButton =
+      self.signinIntent == UserSigninIntentFirstRun;
 
   self.mediator = [[UserSigninMediator alloc]
       initWithAuthenticationService:AuthenticationServiceFactory::
@@ -105,13 +116,28 @@ using signin_metrics::PromoAction;
   // Display UnifiedConsentViewController within the host.
   self.viewController.unifiedConsentViewController =
       self.unifiedConsentCoordinator.viewController;
-  [self.baseViewController presentViewController:self.viewController
-                                        animated:YES
-                                      completion:nil];
+
+  switch (self.signinIntent) {
+    case UserSigninIntentFirstRun: {
+      [self presentFirstRun];
+      break;
+    }
+    case UserSigninIntentSignin:
+    case UserSigninIntentUpgrade: {
+      [self.baseViewController presentViewController:self.viewController
+                                            animated:YES
+                                          completion:nil];
+      break;
+    }
+  }
 }
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
+  // Chrome should never start before the first run is fully finished. Therefore
+  // we do not expect the sign-in to be interrupted for first run.
+  DCHECK(self.signinIntent != UserSigninIntentFirstRun);
+
   __weak UserSigninCoordinator* weakSelf = self;
   if (self.addAccountSigninCoordinator) {
     // |self.addAccountSigninCoordinator| needs to be interupted before
@@ -184,6 +210,8 @@ using signin_metrics::PromoAction;
 }
 
 - (void)userSigninViewControllerDidTapOnAddAccount {
+  [self notifyUserSigninAttempted];
+
   self.addAccountSigninCoordinator = [SigninCoordinator
       addAccountCoordinatorWithBaseViewController:self.viewController
                                           browser:self.browser
@@ -210,6 +238,7 @@ using signin_metrics::PromoAction;
 }
 
 - (void)userSigninViewControllerDidTapOnSignin {
+  [self notifyUserSigninAttempted];
   [self startSigninFlow];
 }
 
@@ -250,7 +279,12 @@ using signin_metrics::PromoAction;
                                        identity:identity
                           settingsLinkWasTapped:settingsWasTapped];
   };
-  [self.viewController dismissViewControllerAnimated:YES completion:completion];
+  // The caller is responsible for cleaning up the base view controller for
+  // first run sign-in.
+  if (self.signinIntent != UserSigninIntentFirstRun) {
+    [self.viewController dismissViewControllerAnimated:YES
+                                            completion:completion];
+  }
 }
 
 - (void)userSigninMediatorNeedPrimaryButtonUpdate {
@@ -258,6 +292,13 @@ using signin_metrics::PromoAction;
 }
 
 #pragma mark - Private
+
+// Notifies the observers that the user is attempting sign-in.
+- (void)notifyUserSigninAttempted {
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kUserSigninAttemptedNotification
+                    object:nil];
+}
 
 // Called when |self.viewController| is dismissed. If |settingsWasTapped| is
 // NO, the sign-in is finished and
@@ -313,6 +354,21 @@ using signin_metrics::PromoAction;
       break;
     }
   }
+}
+
+// Displays the sign-in screen with transitions specific to first-run.
+- (void)presentFirstRun {
+  DCHECK(self.viewController);
+  UINavigationController* navigationController =
+      base::mac::ObjCCastStrict<UINavigationController>(
+          self.baseViewController);
+
+  CATransition* transition = [CATransition animation];
+  transition.duration = kFadeOutAnimationDuration;
+  transition.type = kCATransitionFade;
+  [navigationController.view.layer addAnimation:transition
+                                         forKey:kCATransition];
+  [navigationController pushViewController:self.viewController animated:NO];
 }
 
 // Interrupts the sign-in when |self.viewController| is presented, by dismissing

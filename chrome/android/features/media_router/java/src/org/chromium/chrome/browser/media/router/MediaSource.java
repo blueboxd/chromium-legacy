@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.support.v7.media.MediaRouteSelector;
+import androidx.mediarouter.media.MediaRouteSelector;
 
 /**
  * Abstracts parsing the Cast application id and other parameters from the source URN.

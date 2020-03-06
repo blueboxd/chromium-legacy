@@ -171,6 +171,7 @@ using TreeWithStrangeCompare = flat_tree<int,
                                          NonDefaultConstructibleCompare>;
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 }  // namespace
 
@@ -812,6 +813,31 @@ TEST(FlatTree, EmplacePosition) {
     EXPECT_EQ(1U, cont.size());
     EXPECT_EQ(2, *result);
   }
+}
+
+// ----------------------------------------------------------------------------
+// Underlying type operations.
+
+// underlying_type extract() &&
+TEST(FlatTree, Extract) {
+  IntTree cont;
+  cont.emplace(3);
+  cont.emplace(1);
+  cont.emplace(2);
+  cont.emplace(4);
+
+  std::vector<int> body = std::move(cont).extract();
+  EXPECT_THAT(cont, IsEmpty());
+  EXPECT_THAT(body, ElementsAre(1, 2, 3, 4));
+}
+
+// replace(underlying_type&&)
+TEST(FlatTree, Replace) {
+  std::vector<int> body = {1, 2, 3, 4};
+  IntTree cont;
+  cont.replace(std::move(body));
+
+  EXPECT_THAT(cont, ElementsAre(1, 2, 3, 4));
 }
 
 // ----------------------------------------------------------------------------

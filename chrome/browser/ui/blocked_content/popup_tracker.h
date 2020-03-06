@@ -7,7 +7,10 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -17,14 +20,23 @@ namespace content {
 class WebContents;
 }
 
-
 // This class tracks new popups, and is used to log metrics on the visibility
 // time of the first document in the popup.
 // TODO(csharrison): Consider adding more metrics like total visibility for the
 // lifetime of the WebContents.
 class PopupTracker : public content::WebContentsObserver,
-                     public content::WebContentsUserData<PopupTracker> {
+                     public content::WebContentsUserData<PopupTracker>,
+                     public subresource_filter::SubresourceFilterObserver {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PopupSafeBrowsingStatus {
+    kNoValue = 0,
+    kSafe = 1,
+    kUnsafe = 2,
+    kMaxValue = kUnsafe,
+  };
+
   static PopupTracker* CreateForWebContents(content::WebContents* contents,
                                             content::WebContents* opener);
   ~PopupTracker() override;
@@ -42,6 +54,16 @@ class PopupTracker : public content::WebContentsObserver,
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+
+  // subresource_filter::SubresourceFilterObserver:
+  void OnSafeBrowsingChecksComplete(
+      content::NavigationHandle* navigation_handle,
+      const SafeBrowsingCheckResults& results) override;
+  void OnSubresourceFilterGoingAway() override;
+
+  ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
+                 subresource_filter::SubresourceFilterObserver>
+      scoped_observer_;
 
   // Will be unset until the first navigation commits. Will be set to the total
   // time the contents was visible at commit time.
@@ -61,6 +83,11 @@ class PopupTracker : public content::WebContentsObserver,
   const ukm::SourceId opener_source_id_;
 
   bool is_trusted_ = false;
+
+  // Whether the pop-up navigated to a site on the safe browsing list. Set when
+  // the safe browsing checks complete.
+  PopupSafeBrowsingStatus safe_browsing_status_ =
+      PopupSafeBrowsingStatus::kNoValue;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

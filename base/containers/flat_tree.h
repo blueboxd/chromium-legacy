@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iterator>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "base/stl_util.h"
@@ -197,6 +198,19 @@ class flat_tree {
 
   template <class... Args>
   iterator emplace_hint(const_iterator position_hint, Args&&... args);
+
+  // --------------------------------------------------------------------------
+  // Underlying type operations.
+  //
+  // Assume that either operation invalidates iterators and references.
+
+  // Extracts the underlying_type and returns it to the caller. Ensures that
+  // `this` is `empty()` afterwards.
+  underlying_type extract() &&;
+
+  // Replaces the underlying_type with `body`. Expects that `body` is sorted
+  // and has no repeated elements with regard to value_comp().
+  void replace(underlying_type&& body);
 
   // --------------------------------------------------------------------------
   // Erase operations.
@@ -721,6 +735,27 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint(
     const_iterator position_hint,
     Args&&... args) -> iterator {
   return insert(position_hint, value_type(std::forward<Args>(args)...));
+}
+
+// ----------------------------------------------------------------------------
+// Underlying type operations.
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::
+    extract() && -> underlying_type {
+  return std::exchange(impl_.body_, underlying_type());
+}
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::replace(
+    underlying_type&& body) {
+  // Ensure that |body| is sorted and has no repeated elements.
+  DCHECK(std::is_sorted(body.begin(), body.end(), value_comp()));
+  DCHECK(std::adjacent_find(body.begin(), body.end(),
+                            [this](const auto& lhs, const auto& rhs) {
+                              return !value_comp()(lhs, rhs);
+                            }) == body.end());
+  impl_.body_ = std::move(body);
 }
 
 // ----------------------------------------------------------------------------

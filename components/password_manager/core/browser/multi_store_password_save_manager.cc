@@ -40,6 +40,18 @@ std::vector<const PasswordForm*> ProfileStoreMatches(
   return MatchesInStore(matches, PasswordForm::Store::kProfileStore);
 }
 
+bool AccountStoreMatchesContainForm(
+    const std::vector<const PasswordForm*>& matches,
+    const PasswordForm& form) {
+  PasswordForm form_in_account_store(form);
+  form_in_account_store.in_store = PasswordForm::Store::kAccountStore;
+  for (const PasswordForm* match : matches) {
+    if (form_in_account_store == *match)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 MultiStorePasswordSaveManager::MultiStorePasswordSaveManager(
@@ -136,10 +148,9 @@ bool MultiStorePasswordSaveManager::IsAccountStoreEnabled() {
 void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
   // TODO(crbug.com/1032992): There are other rare corner cases that should
   // still be handled:
-  // 1. Credentials exist in both stores.
-  // 2. Credential exists only in the profile store but a PSL matched one exists
+  // 1. Credential exists only in the profile store but a PSL matched one exists
   // in both profile and account store.
-  // 3. Moving credentials upon an update. FormFetch will have an outdated
+  // 2. Moving credentials upon an update. FormFetch will have an outdated
   // credentials. Fix it if this turns out to be a product requirement.
 
   std::vector<const PasswordForm*> account_store_matches =
@@ -164,8 +175,13 @@ void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
     if (match->username_value != pending_credentials_.username_value)
       continue;
 
-    account_store_form_saver_->Save(*match, account_store_matches,
-                                    /*old_password=*/base::string16());
+    // Don't call Save() if the credential already exists in the account
+    // store, 1) to avoid unnecessary sync cycles, 2) to avoid potential
+    // last_used_date update.
+    if (!AccountStoreMatchesContainForm(account_store_matches, *match)) {
+      account_store_form_saver_->Save(*match, account_store_matches,
+                                      /*old_password=*/base::string16());
+    }
     form_saver_->Remove(*match);
   }
 }

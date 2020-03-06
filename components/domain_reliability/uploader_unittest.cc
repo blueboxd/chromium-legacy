@@ -153,7 +153,8 @@ class TestUploadCallback {
   TestUploadCallback() : called_count_(0u) {}
 
   DomainReliabilityUploader::UploadCallback callback() {
-    return base::Bind(&TestUploadCallback::OnCalled, base::Unretained(this));
+    return base::BindOnce(&TestUploadCallback::OnCalled,
+                          base::Unretained(this));
   }
 
   unsigned called_count() const { return called_count_; }

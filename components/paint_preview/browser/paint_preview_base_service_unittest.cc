@@ -48,6 +48,26 @@ std::unique_ptr<KeyedService> BuildServiceWithRejectionPolicy(
       std::make_unique<RejectionPaintPreviewPolicy>(), key->IsOffTheRecord());
 }
 
+base::FilePath CreateDir(scoped_refptr<FileManager> manager,
+                         const DirectoryKey& key) {
+  base::FilePath out;
+  base::RunLoop loop;
+  manager->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::CreateOrGetDirectory, manager, key, false),
+      base::BindOnce(
+          [](base::OnceClosure quit, base::FilePath* out,
+             const base::Optional<base::FilePath>& path) {
+            EXPECT_TRUE(path.has_value());
+            EXPECT_FALSE(path->empty());
+            *out = path.value();
+            std::move(quit).Run();
+          },
+          loop.QuitClosure(), &out));
+  loop.Run();
+  return out;
+}
+
 }  // namespace
 
 class MockPaintPreviewRecorder : public mojom::PaintPreviewRecorder {
@@ -159,10 +179,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
 
   auto* service = GetService();
   EXPECT_FALSE(service->IsOffTheRecord());
-  base::FilePath path;
-  auto* manager = service->GetFileManager();
-  ASSERT_TRUE(manager->CreateOrGetDirectory(
-      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
+  auto manager = service->GetFileManager();
+  base::FilePath path = CreateDir(
+      manager, manager->CreateKey(web_contents()->GetLastCommittedURL()));
 
   base::RunLoop loop;
   service->CapturePaintPreview(
@@ -191,6 +210,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
             base::FilePath name(base::StrCat({token.ToString(), ".skp"}));
 #endif
             EXPECT_EQ(path.DirName(), expected_path);
+            LOG(ERROR) << expected_path;
             EXPECT_EQ(path.BaseName(), name);
             std::move(quit_closure).Run();
           },
@@ -212,10 +232,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
 
   auto* service = GetService();
   EXPECT_FALSE(service->IsOffTheRecord());
-  base::FilePath path;
-  auto* manager = service->GetFileManager();
-  ASSERT_TRUE(manager->CreateOrGetDirectory(
-      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
+  auto manager = service->GetFileManager();
+  base::FilePath path = CreateDir(
+      manager, manager->CreateKey(web_contents()->GetLastCommittedURL()));
 
   base::RunLoop loop;
   service->CapturePaintPreview(
@@ -247,10 +266,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
 
   auto* service = GetServiceWithRejectionPolicy();
   EXPECT_FALSE(service->IsOffTheRecord());
-  base::FilePath path;
-  auto* manager = service->GetFileManager();
-  ASSERT_TRUE(manager->CreateOrGetDirectory(
-      manager->CreateKey(web_contents()->GetLastCommittedURL()), &path));
+  auto manager = service->GetFileManager();
+  base::FilePath path = CreateDir(
+      manager, manager->CreateKey(web_contents()->GetLastCommittedURL()));
 
   base::RunLoop loop;
   service->CapturePaintPreview(

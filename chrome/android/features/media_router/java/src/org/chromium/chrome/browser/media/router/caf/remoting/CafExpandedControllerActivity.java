@@ -9,12 +9,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v7.app.MediaRouteButton;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import androidx.mediarouter.app.MediaRouteButton;
 
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;

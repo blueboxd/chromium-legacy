@@ -77,7 +77,7 @@ bool OnDeviceHeadSuggestInstallerPolicy::
 }
 
 bool OnDeviceHeadSuggestInstallerPolicy::RequiresNetworkEncryption() const {
-  return true;
+  return false;
 }
 
 update_client::CrxInstaller::Result

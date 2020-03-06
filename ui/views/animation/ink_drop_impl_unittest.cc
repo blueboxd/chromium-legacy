@@ -17,7 +17,6 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {

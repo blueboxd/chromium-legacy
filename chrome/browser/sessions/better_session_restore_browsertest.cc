@@ -885,13 +885,6 @@ class NoClientHintRestoreTest : public NoSessionRestoreTest {
     scoped_feature_list_.InitWithFeatureList(EnabledFeatures());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(aarontag): tie FeaturePolicyForClientHints runtime feature and blink
-    // feature together
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "FeaturePolicyForClientHints");
-  }
-
   std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine("FeaturePolicyForClientHints", "");

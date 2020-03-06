@@ -54,16 +54,17 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
       return;
     }
 
+    base::FilePath build_path;
+    if (!base::PathService::Get(base::DIR_EXE, &build_path)) {
+      LOG(ERROR) << "Could not get executable directory to find build path.";
+      return;
+    }
+
     tests_folder_ = source_path_.Append(kTestsFolder);
     std::vector<std::string> path_filters;
 
-    // As build path is not available and not used in tests, the default (empty)
-    // build path is passed to auditor.
     auditor_ = std::make_unique<TrafficAnnotationAuditor>(
-        source_path_,
-        source_path_.Append(FILE_PATH_LITERAL("out"))
-            .Append(FILE_PATH_LITERAL("Default")),
-        path_filters);
+        source_path_, build_path, path_filters);
 
     id_checker_ = std::make_unique<TrafficAnnotationIDChecker>(
         TrafficAnnotationAuditor::GetReservedIDsSet(), kDummyDeprecatedIDs);

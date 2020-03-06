@@ -23,6 +23,9 @@ Polymer({
      */
     leakedPasswords: {
       type: Array,
+      // Initialized to the empty array on purpose because then array value is
+      // undefined and hasLeakedCredentials_ isn't called from html on page
+      // load.
       value: () => [],
     },
   },
@@ -92,6 +95,6 @@ Polymer({
    * @private
    */
   hasLeakedCredentials_(list) {
-    return list && !!list.length;
+    return !!list.length;
   },
 });

@@ -104,6 +104,13 @@ id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
   return nil;
 }
 
+id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
+    Browser* browser,
+    web::WebState* web_state,
+    id<URLLoadingBridge> loading_bridge) const {
+  return nil;
+}
+
 OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
   return nullptr;
 }

@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.media.remote;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
-import android.support.v7.media.MediaSessionStatus;
+
+import androidx.mediarouter.media.MediaSessionStatus;
 
 /**
  * LocalSessionManager emulates the local management of the playback of media items on Chromecast.

@@ -139,7 +139,22 @@ void ExternalSVGResource::Load(const Document& document) {
   options.initiator_info.name = fetch_initiator_type_names::kCSS;
   FetchParameters params(ResourceRequest(url_), options);
   params.MutableResourceRequest().SetMode(
-      network::mojom::RequestMode::kSameOrigin);
+      network::mojom::blink::RequestMode::kSameOrigin);
+  resource_document_ =
+      DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
+  target_ = ResolveTarget();
+}
+
+void ExternalSVGResource::LoadWithoutCSP(const Document& document) {
+  if (resource_document_)
+    return;
+  ResourceLoaderOptions options;
+  options.initiator_info.name = fetch_initiator_type_names::kCSS;
+  FetchParameters params(ResourceRequest(url_), options);
+  params.SetContentSecurityCheck(
+      network::mojom::blink::CSPDisposition::DO_NOT_CHECK);
+  params.MutableResourceRequest().SetMode(
+      network::mojom::blink::RequestMode::kSameOrigin);
   resource_document_ =
       DocumentResource::FetchSVGDocument(params, document.Fetcher(), this);
   target_ = ResolveTarget();

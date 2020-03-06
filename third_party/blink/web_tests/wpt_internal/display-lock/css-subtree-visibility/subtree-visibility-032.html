@@ -1,0 +1,101 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Subtree Visibility: accessibility</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<meta name="assert" content="subtree-visibility auto subtree is exposed to accessibility">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<style>
+.auto {
+  subtree-visibility: auto;
+}
+</style>
+<div id=spacer style="height: 3000px"></div>
+<div id="container">
+  <div id="target" class=auto>
+    target
+    <div id="child">
+      child
+    </div>
+    <div id="displayNone" style="display:none;">
+      display:none text
+    </div>
+    <div id="hidden" style="visibility:hidden;">
+      hidden text
+    </div>
+  </div>
+</div>
+
+<script>
+
+function axElementById(id) {
+  return accessibilityController.accessibleElementById(id);
+}
+
+async_test(async (t) => {
+  const target = document.getElementById("target");
+  let axTarget = axElementById("target");
+  t.step(() => { assert_false(axTarget.isIgnored); });
+
+  // Expect 7 children: 4 text nodes ("target" and whitespace between the divs) and 3 div children.
+  // TODO(rakina): Make display:none, visiblity:hidden be ignored/not included in tree even when
+  // display target, and make sure whitespace collapsing happen.
+  t.step(() => { assert_equals(axTarget.childrenCount, 7, "Child count after acquire"); });
+
+  // These children are special because their "isVisible" should be false.
+  const displayNoneIndex = 3;
+  t.step(() => { assert_equals(axTarget.childAtIndex(displayNoneIndex), axElementById("displayNone"));});
+  const visibilityHiddenIndex = 5;
+  t.step(() => { assert_equals(axTarget.childAtIndex(visibilityHiddenIndex), axElementById("hidden"));});
+
+  // Check all children are not ignored, and visibility:hidden & display:none child are marked as not visible.
+  for (let i = 0; i < axTarget.childrenCount; ++i) {
+    const axChild = axTarget.childAtIndex(i);
+    t.step(() => { assert_false(axChild.isIgnored, "After acquire, isIgnored is false on child #" + i); });
+    if (i == displayNoneIndex || i == visibilityHiddenIndex) {
+      t.step(() => { assert_false(axChild.isVisible, "After acquire, isVisible is false on child #" + i); });
+    } else {
+      t.step(() => { assert_true(axChild.isVisible, "After acquire, isVisible is true on child #" + i); });
+    }
+  }
+
+  axTarget = axElementById("target");
+  t.step(() => { assert_equals(axTarget.childrenCount, 7, "Child count after update"); });
+
+  // Should stay the same as after acquiring.
+  for (let i = 0; i < axTarget.childrenCount; ++i) {
+    const axChild = axTarget.childAtIndex(i);
+    t.step(() => { assert_false(axChild.isIgnored, "After update, isIgnored is false on child #" + i); });
+    if (i == displayNoneIndex || i == visibilityHiddenIndex) {
+      t.step(() => { assert_false(axChild.isVisible, "After update, isVisible is false on child #" + i); });
+    } else {
+      t.step(() => { assert_true(axChild.isVisible, "After update, isVisible is true on child #" + i); });
+    }
+  }
+
+  // Remove subtree-visibility and force a layout recalc.
+  target.classList.remove("auto");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    target.getBoundingClientRect();
+    axTarget = axElementById("target");
+    // Expect 4 children: the text node "target" and 3 div children (#child, #displayNone, and #hidden).
+    t.step(() => { assert_equals(axTarget.childrenCount, 4, "Child count after commit"); });
+
+    for (let i = 0; i < axTarget.childrenCount; ++i) {
+      const axChild = axTarget.childAtIndex(i);
+      if (axChild == axElementById("hidden") || axChild == axElementById("displayNone")) {
+        t.step(() => { assert_true(axChild.isIgnored, "After commit, isIgnored is true on child #" + i); });
+        t.step(() => { assert_false(axChild.isVisible, "After commit, isVisible is false on child #" + i); });
+      } else {
+        t.step(() => { assert_false(axChild.isIgnored, "After update, isIgnored is false on child #" + i); });
+        t.step(() => { assert_true(axChild.isVisible, "After commit, isVisible is true on child #" + i); });
+      }
+    }
+    t.done();
+  }));
+}, "Nodes in a subtree-visibility auto tree are exposed to accessibility tree");
+</script>

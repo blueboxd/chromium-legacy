@@ -16,7 +16,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

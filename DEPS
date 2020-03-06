@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '93a2a6b8badbca9da7fe260431c4f745812d1336',
+  'skia_revision': '491df6ba72d3ab27c16ef04862b7714bf3c85433',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -191,7 +191,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a095711c5d771437d7f9bfcbd78a82062e19c55e',
+  'swiftshader_revision': '8c13b2f02094bb3f6c223b8ec02c6f56bb0f748b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '51afe2e3ccf5929da6206eaba926b95aa63614c4',
+  'devtools_frontend_revision': '9d8c9bf34d9c488416957dd47a3ce69279b7fb90',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2de34c1791f301f8ec647afd9011dd3afd502465',
+  'dawn_revision': 'e3f3e9a80d5f937470aacda7b810a88fc85e8b19',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -874,7 +874,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c7e1c6b5bd96627e384d486cc78e88e9c0923602',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'f291e9f01a9c1fdb650418bb700545cdc7fad53f',
       'condition': 'checkout_linux',
   },
 
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ee8be8a368620af69739f41046464630ed4f2309',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '94bafe03c84eb364fff90e5a33586770b744adfa',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0b1579a826afd538ce1ae6c9f56373430d6aa40b',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '88d9224c538a2cdb084a29dae0f854a72b2ea4d7',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '33be9dfe7a233b0e458cda61a2a5fc97cfc3256e',
+    Var('webrtc_git') + '/src.git' + '@' + '74dadc1e8e336057dbf22afa419e9aac03f7a613',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9e85398565d3f2c59b67b3277d8b2beaaf4f5530',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6535f4251dfc5a171219d91329cf003f45071c78',
     'condition': 'checkout_src_internal',
   },
 

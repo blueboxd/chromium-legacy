@@ -249,8 +249,13 @@ void CompositorFrameReporter::OnFinishImplFrame(base::TimeTicks timestamp) {
   impl_frame_finish_time_ = timestamp;
 }
 
-void CompositorFrameReporter::OnAbortBeginMainFrame() {
+void CompositorFrameReporter::OnAbortBeginMainFrame(base::TimeTicks timestamp) {
+  DCHECK(!did_abort_main_frame_);
+
   did_abort_main_frame_ = true;
+  impl_frame_finish_time_ = timestamp;
+  // impl_frame_finish_time_ can be used for the end of BeginMain to Commit
+  // stage
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(
@@ -329,6 +334,8 @@ void CompositorFrameReporter::TerminateReporter() {
   // Only report compositor latency histograms if the frame was produced.
   if (report_compositor_latency) {
     DCHECK(stage_history_.size());
+    DCHECK_EQ(SumOfStageHistory(), stage_history_.back().end_time -
+                                       stage_history_.front().start_time);
     stage_history_.emplace_back(StageType::kTotalLatency,
                                 stage_history_.front().start_time,
                                 stage_history_.back().end_time);
@@ -512,6 +519,13 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
             kEventLatencyHistogramBucketCount,
             base::HistogramBase::kUmaTargetedHistogramFlag));
   }
+}
+
+base::TimeDelta CompositorFrameReporter::SumOfStageHistory() const {
+  base::TimeDelta sum;
+  for (const StageData& stage : stage_history_)
+    sum += stage.end_time - stage.start_time;
+  return sum;
 }
 
 }  // namespace cc

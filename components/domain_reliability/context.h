@@ -42,7 +42,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   static const int kMaxUploadDepthToSchedule;
 
   using UploadAllowedCallback =
-      base::Callback<void(const GURL&, base::OnceCallback<void(bool)>)>;
+      base::RepeatingCallback<void(const GURL&,
+                                   base::OnceCallback<void(bool)>)>;
 
   DomainReliabilityContext(
       const MockableTime* time,

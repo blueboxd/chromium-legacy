@@ -300,7 +300,7 @@ int TrialComparisonCertVerifier::Job::Start(
   // callback on destruction.
   primary_error_ = parent_->primary_verifier()->Verify(
       params_, &primary_result_,
-      base::Bind(&Job::OnPrimaryJobCompleted, base::Unretained(this)),
+      base::BindOnce(&Job::OnPrimaryJobCompleted, base::Unretained(this)),
       &primary_request_, net_log_);
 
   if (primary_error_ != ERR_IO_PENDING) {

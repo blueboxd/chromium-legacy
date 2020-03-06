@@ -33,11 +33,10 @@ class DomainReliabilitySchedulerTest : public testing::Test {
 
     num_collectors_ = num_collectors;
     scheduler_.reset(new DomainReliabilityScheduler(
-        &time_,
-        num_collectors_,
-        params_,
-        base::Bind(&DomainReliabilitySchedulerTest::ScheduleUploadCallback,
-                   base::Unretained(this))));
+        &time_, num_collectors_, params_,
+        base::BindRepeating(
+            &DomainReliabilitySchedulerTest::ScheduleUploadCallback,
+            base::Unretained(this))));
     scheduler_->MakeDeterministicForTesting();
   }
 

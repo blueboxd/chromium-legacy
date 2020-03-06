@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
+#import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -514,7 +515,7 @@
 
 - (void)showDownloadsFolder {
   if (base::FeatureList::IsEnabled(kOpenDownloadsInFilesApp)) {
-    NSURL* URL = GetFilesAppDownloadsDirectoryUrl();
+    NSURL* URL = GetFilesAppUrl();
     if (!URL)
       return;
 

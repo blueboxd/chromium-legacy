@@ -4,13 +4,13 @@
 package org.chromium.chrome.browser.media.router.caf;
 
 import android.os.Handler;
-import android.support.v7.media.MediaRouteSelector;
-import android.support.v7.media.MediaRouter;
-import android.support.v7.media.MediaRouter.RouteInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.mediarouter.media.MediaRouteSelector;
+import androidx.mediarouter.media.MediaRouter;
+import androidx.mediarouter.media.MediaRouter.RouteInfo;
 
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
@@ -321,7 +321,7 @@ public abstract class CafBaseMediaRouteProvider
         return sessionController().isConnected();
     }
 
-    abstract public BaseSessionController sessionController();
+    public abstract BaseSessionController sessionController();
 
     /** Adds a route for bookkeeping. */
     protected void addRoute(

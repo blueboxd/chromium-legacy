@@ -116,6 +116,10 @@ struct GetKeyFromValuePairFirst {
 //   iterator             emplace_hint(const_iterator, Args&&...);
 //   pair<iterator, bool> try_emplace(K&&, Args&&...);
 //   iterator             try_emplace(const_iterator hint, K&&, Args&&...);
+
+// Underlying type functions:
+//   underlying_type      extract() &&;
+//   void                 replace(underlying_type&&);
 //
 // Erase functions:
 //   iterator erase(iterator);

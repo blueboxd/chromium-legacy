@@ -107,7 +107,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   int GetMinScrollY() const;
   int GetMaxScrollX() const;
   int GetMaxScrollY() const;
-  bool Scroll(int direction) const;
+  bool Scroll(int direction, bool is_page_scroll) const;
 
   int GetTextChangeFromIndex() const;
   int GetTextChangeAddedCount() const;

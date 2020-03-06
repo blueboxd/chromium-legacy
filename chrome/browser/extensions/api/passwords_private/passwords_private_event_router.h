@@ -63,6 +63,10 @@ class PasswordsPrivateEventRouter : public KeyedService {
       api::passwords_private::CompromisedCredentialsInfo
           compromised_credentials_info);
 
+  // Notifies listeners about a change to the status of the password check.
+  void OnPasswordCheckStatusChanged(
+      const api::passwords_private::PasswordCheckStatus& status);
+
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);
 

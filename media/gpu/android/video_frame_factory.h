@@ -25,9 +25,9 @@ class VideoFrame;
 // safe. Virtual for testing; see VideoFrameFactoryImpl.
 class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
-  using InitCb =
+  using InitCB =
       base::RepeatingCallback<void(scoped_refptr<gpu::TextureOwner>)>;
-  using OnceOutputCb = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
+  using OnceOutputCB = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 
   VideoFrameFactory() = default;
   virtual ~VideoFrameFactory() = default;
@@ -50,7 +50,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
     kSurfaceControlSecure,
     kSurfaceControlInsecure
   };
-  virtual void Initialize(OverlayMode overlay_mode, InitCb init_cb) = 0;
+  virtual void Initialize(OverlayMode overlay_mode, InitCB init_cb) = 0;
 
   // Notify us about the current surface bundle that subsequent video frames
   // should use.
@@ -64,7 +64,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      OnceOutputCb output_cb) = 0;
+      OnceOutputCB output_cb) = 0;
 
   // Runs |closure| on the calling sequence after all previous
   // CreateVideoFrame() calls have completed.

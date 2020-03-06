@@ -62,7 +62,7 @@ struct DestructionObservableMCVD : public DestructionObservable,
 
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
-  MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCb init_cb));
+  MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCB init_cb));
   MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<CodecSurfaceBundle>));
   MOCK_METHOD5(
       MockCreateVideoFrame,
@@ -93,7 +93,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoFrameFactory::OnceOutputCb output_cb) override {
+      VideoFrameFactory::OnceOutputCB output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), texture_owner_, timestamp,
                          natural_size, promotion_hint_cb);
     last_output_buffer_ = std::move(output_buffer);
@@ -145,7 +145,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     auto video_frame_factory =
         std::make_unique<NiceMock<MockVideoFrameFactory>>();
     video_frame_factory_ = video_frame_factory.get();
-    // Set up VFF to pass |texture_owner_| via its InitCb.
+    // Set up VFF to pass |texture_owner_| via its InitCB.
     ON_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
         .WillByDefault(RunCallback<1>(texture_owner));
 

@@ -73,7 +73,8 @@ class OmniboxPopupContentsView : public views::View,
   // OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override;
-  void OnSelectionStateChanged(size_t line) override;
+  void OnSelectedLineChanged(size_t old_selected_line,
+                             size_t new_selected_line) override;
   void UpdatePopupAppearance() override;
   void ProvideButtonFocusHint(size_t line) override;
   void OnMatchIconUpdated(size_t match_index) override;

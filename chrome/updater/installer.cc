@@ -61,9 +61,12 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   // |pv| is the version of the registered app, persisted in prefs, and used
   // in the update checks and pings.
   const auto pv = persisted_data_->GetProductVersion(app_id_);
-  if (pv.IsValid())
+  if (pv.IsValid()) {
     pv_ = pv;
-  fingerprint_ = persisted_data_->GetFingerprint(app_id_);
+    fingerprint_ = persisted_data_->GetFingerprint(app_id_);
+  } else {
+    pv_ = base::Version(kNullVersion);
+  }
 
   update_client::CrxComponent component;
   component.installer = scoped_refptr<Installer>(this);

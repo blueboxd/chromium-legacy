@@ -8,22 +8,15 @@ namespace download {
 
 DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const net::NetworkIsolationKey& network_isolation_key)
-    : DownloadUrlParameters(url,
-                            -1,
-                            -1,
-                            -1,
-                            traffic_annotation,
-                            network_isolation_key) {}
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : DownloadUrlParameters(url, -1, -1, -1, traffic_annotation) {}
 
 DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
     int render_process_host_id,
     int render_view_host_routing_id,
     int render_frame_host_routing_id,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const net::NetworkIsolationKey& network_isolation_key)
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : content_initiated_(false),
       use_if_range_(true),
       method_("GET"),
@@ -43,8 +36,7 @@ DownloadUrlParameters::DownloadUrlParameters(
       transient_(false),
       traffic_annotation_(traffic_annotation),
       download_source_(DownloadSource::UNKNOWN),
-      require_safety_checks_(true),
-      network_isolation_key_(network_isolation_key) {}
+      require_safety_checks_(true) {}
 
 DownloadUrlParameters::~DownloadUrlParameters() = default;
 

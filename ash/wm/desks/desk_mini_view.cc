@@ -27,7 +27,7 @@ namespace ash {
 
 namespace {
 
-constexpr int kLabelPreviewSpacing = 8;
+constexpr int kLabelPreviewSpacing = 4;
 
 constexpr int kCloseButtonMargin = 8;
 
@@ -157,16 +157,16 @@ void DeskMiniView::Layout() {
   desk_name_view_->SetVisible(!compact);
 
   if (!compact) {
-    const gfx::Size previous_size = desk_name_view_->size();
+    const int previous_width = desk_name_view_->width();
     const gfx::Size desk_name_view_size = desk_name_view_->GetPreferredSize();
     const gfx::Rect desk_name_view_bounds{
         preview_bounds.x(), preview_bounds.bottom() + kLabelPreviewSpacing,
         preview_bounds.width(), desk_name_view_size.height()};
     desk_name_view_->SetBoundsRect(desk_name_view_bounds);
 
-    // A change in the DeskNameView's size might mean the need to elide the text
-    // differently.
-    if (previous_size != desk_name_view_bounds.size())
+    // A change in the DeskNameView's width might mean the need to elide the
+    // text differently.
+    if (previous_width != desk_name_view_bounds.width())
       OnDeskNameChanged(desk_->name());
   }
 
@@ -299,11 +299,41 @@ bool DeskMiniView::HandleKeyEvent(views::Textfield* sender,
     return false;
   }
 
-  GetFocusManager()->ClearFocus();
-  // Avoid having the focus restored to the same DeskNameView when the desks bar
-  // widget is refocused, e.g. when the new desk button is pressed.
-  GetFocusManager()->SetStoredFocusView(nullptr);
+  DeskNameView::CommitChanges(GetWidget());
   return true;
+}
+
+bool DeskMiniView::HandleMouseEvent(views::Textfield* sender,
+                                    const ui::MouseEvent& mouse_event) {
+  DCHECK_EQ(sender, desk_name_view_);
+
+  switch (mouse_event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      // If this is the first mouse press on the DeskNameView, then it's not
+      // focused yet. OnViewFocused() should not select all text, since it will
+      // be undone by the mouse release event. Instead we defer it until we get
+      // the mouse release event.
+      if (!is_desk_name_being_modified_)
+        defer_select_all_ = true;
+      break;
+
+    case ui::ET_MOUSE_RELEASED:
+      if (defer_select_all_) {
+        defer_select_all_ = false;
+        // The user may have already clicked and dragged to select some range
+        // other than all the text. In this case, don't mess with an existing
+        // selection.
+        if (!desk_name_view_->HasSelection())
+          desk_name_view_->SelectAll(false);
+        return true;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return false;
 }
 
 void DeskMiniView::OnViewFocused(views::View* observed_view) {
@@ -313,11 +343,15 @@ void DeskMiniView::OnViewFocused(views::View* observed_view) {
   // Set the unelided desk name so that the full name shows up for the user to
   // be able to change it.
   desk_name_view_->SetText(desk_->name());
+
+  if (!defer_select_all_)
+    desk_name_view_->SelectAll(false);
 }
 
 void DeskMiniView::OnViewBlurred(views::View* observed_view) {
   DCHECK_EQ(observed_view, desk_name_view_);
   is_desk_name_being_modified_ = false;
+  defer_select_all_ = false;
 
   // When committing the name, do not allow an empty desk name. Revert back to
   // the default name.

@@ -11,7 +11,6 @@
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/view.h"
 
 namespace views {

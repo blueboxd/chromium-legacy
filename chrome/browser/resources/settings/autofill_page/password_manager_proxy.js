@@ -322,7 +322,9 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  startBulkPasswordCheck() {}
+  startBulkPasswordCheck() {
+    chrome.passwordsPrivate.startPasswordCheck();
+  }
 
   /** @override */
   getCompromisedCredentialsInfo() {

@@ -281,7 +281,7 @@ public class NativeBackgroundTaskTest {
                 doAnswer(new Answer<Void>() {
                     @Override
                     public Void answer(InvocationOnMock invocation) {
-                        mBrowserParts.getValue().onStartupFailure();
+                        mBrowserParts.getValue().onStartupFailure(null);
                         return null;
                     }
                 })

@@ -6,13 +6,15 @@ syntax = "proto2";
 package perfetto.protos;
 
 import "protos/perfetto/metrics/metrics.proto";
+import "protos/perfetto/metrics/custom_options.proto";
 
 // A metric that counts the number of janky scroll gestures and the number
 // of periods of continuous jankiness.
+// Required category: latencyInfo
 
 message JankyScrollPeriods {
-  optional int64 num_gestures = 1;
-  optional int64 num_periods = 2;
+  optional int64 num_gestures = 1 [(unit) = "count_smallerIsBetter"];
+  optional int64 num_periods = 2 [(unit) = "count_smallerIsBetter"];
 }
 
 extend TraceMetrics {

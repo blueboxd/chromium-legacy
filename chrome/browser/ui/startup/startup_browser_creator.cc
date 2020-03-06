@@ -491,6 +491,10 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
 #endif
   registry->RegisterBooleanPref(prefs::kSuppressUnsupportedOSWarning, false);
   registry->RegisterBooleanPref(prefs::kWasRestarted, false);
+
+#if defined(OS_WIN)
+  registry->RegisterStringPref(prefs::kShortcutMigrationVersion, std::string());
+#endif
 }
 
 // static

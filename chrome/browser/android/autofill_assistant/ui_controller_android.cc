@@ -203,6 +203,45 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
   }
   return jsection_list;
 }
+
+base::Optional<int> GetPreviousFormCounterResult(
+    const FormProto::Result* result,
+    int input_index,
+    int counter_index) {
+  if (result == nullptr) {
+    return base::nullopt;
+  }
+
+  if (input_index >= result->input_results().size()) {
+    return base::nullopt;
+  }
+  auto input_result = result->input_results(input_index);
+
+  if (counter_index >= input_result.counter().values().size()) {
+    return base::nullopt;
+  }
+  return input_result.counter().values(counter_index);
+}
+
+base::Optional<bool> GetPreviousFormSelectionResult(
+    const FormProto::Result* result,
+    int input_index,
+    int selection_index) {
+  if (result == nullptr) {
+    return base::nullopt;
+  }
+
+  if (input_index >= result->input_results().size()) {
+    return base::nullopt;
+  }
+  auto input_result = result->input_results(input_index);
+
+  if (selection_index >= input_result.selection().selected().size()) {
+    return base::nullopt;
+  }
+  return input_result.selection().selected(selection_index);
+}
+
 }  // namespace
 
 // static
@@ -300,7 +339,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnTouchableAreaChanged(visual_viewport, area, restricted_area);
     OnViewportModeChanged(ui_delegate->GetViewportMode());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
-    OnFormChanged(ui_delegate->GetForm());
+    OnFormChanged(ui_delegate->GetForm(), ui_delegate->GetFormResult());
     // TODO(b/145204744): Store the collapsed or expanded state from the bottom
     // sheet when detaching the UI so that it can be restored appropriately
     // here.
@@ -1311,7 +1350,8 @@ base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetFormModel() {
   return Java_AssistantModel_getFormModel(AttachCurrentThread(), GetModel());
 }
 
-void UiControllerAndroid::OnFormChanged(const FormProto* form) {
+void UiControllerAndroid::OnFormChanged(const FormProto* form,
+                                        const FormProto::Result* result) {
   JNIEnv* env = AttachCurrentThread();
 
   if (!form) {
@@ -1328,13 +1368,15 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
         CounterInputProto counter_input = input.counter();
 
         auto jcounters = Java_AssistantFormInput_createCounterList(env);
-        for (const CounterInputProto::Counter& counter :
-             counter_input.counters()) {
+        for (int j = 0; j < counter_input.counters_size(); ++j) {
+          const CounterInputProto::Counter& counter = counter_input.counters(j);
+
           std::vector<int> allowed_values;
           for (int value : counter.allowed_values()) {
             allowed_values.push_back(value);
           }
 
+          auto result_value = GetPreviousFormCounterResult(result, i, j);
           Java_AssistantFormInput_addCounter(
               env, jcounters,
               Java_AssistantFormInput_createCounter(
@@ -1344,8 +1386,9 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
                       env, counter.description_line_1()),
                   base::android::ConvertUTF8ToJavaString(
                       env, counter.description_line_2()),
-                  counter.initial_value(), counter.min_value(),
-                  counter.max_value(),
+                  result_value.has_value() ? result_value.value()
+                                           : counter.initial_value(),
+                  counter.min_value(), counter.max_value(),
                   base::android::ToJavaIntArray(env, allowed_values)));
         }
 
@@ -1369,8 +1412,11 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
         SelectionInputProto selection_input = input.selection();
 
         auto jchoices = Java_AssistantFormInput_createChoiceList(env);
-        for (const SelectionInputProto::Choice& choice :
-             selection_input.choices()) {
+        for (int j = 0; j < selection_input.choices_size(); ++j) {
+          const SelectionInputProto::Choice& choice =
+              selection_input.choices(j);
+
+          auto result_value = GetPreviousFormSelectionResult(result, i, j);
           Java_AssistantFormInput_addChoice(
               env, jchoices,
               Java_AssistantFormInput_createChoice(
@@ -1380,7 +1426,8 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
                       env, choice.description_line_1()),
                   base::android::ConvertUTF8ToJavaString(
                       env, choice.description_line_2()),
-                  choice.selected()));
+                  result_value.has_value() ? result_value.value()
+                                           : choice.selected()));
         }
 
         Java_AssistantFormModel_addInput(

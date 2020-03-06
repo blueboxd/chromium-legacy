@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.support.v7.media.MediaRouteProvider;
-import android.support.v7.media.MediaRouteProviderService;
+import androidx.mediarouter.media.MediaRouteProvider;
+import androidx.mediarouter.media.MediaRouteProviderService;
 
 import org.chromium.base.Log;
 

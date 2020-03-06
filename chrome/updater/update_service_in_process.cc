@@ -50,7 +50,7 @@ void UpdateServiceInProcess::RegisterApp(
 }
 
 void UpdateServiceInProcess::UpdateAll(
-    base::OnceCallback<void(update_client::Error)> callback) {
+    base::OnceCallback<void(Result)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto app_ids = persisted_data_->GetAppIds();
@@ -71,6 +71,15 @@ void UpdateServiceInProcess::UpdateAll(
           },
           persisted_data_),
       false, std::move(callback));
+}
+
+void UpdateServiceInProcess::Update(
+    const std::string& app_id,
+    Priority priority,
+    base::RepeatingCallback<void(UpdateState)> state_update,
+    base::OnceCallback<void(Result)> done) {
+  // TODO(crbug.com/1059020): Implement.
+  NOTREACHED();
 }
 
 UpdateServiceInProcess::~UpdateServiceInProcess() {

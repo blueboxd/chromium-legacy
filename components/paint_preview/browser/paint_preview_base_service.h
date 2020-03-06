@@ -7,11 +7,13 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -60,13 +62,13 @@ class PaintPreviewBaseService : public KeyedService {
   // determining whether or not a given WebContents is amenable to paint
   // preview. If nullptr is passed as |policy| all content is deemed amenable.
   PaintPreviewBaseService(const base::FilePath& profile_dir,
-                          const std::string& ascii_feature_name,
+                          base::StringPiece ascii_feature_name,
                           std::unique_ptr<PaintPreviewPolicy> policy,
                           bool is_off_the_record);
   ~PaintPreviewBaseService() override;
 
   // Returns the file manager for the directory associated with the service.
-  FileManager* GetFileManager() { return &file_manager_; }
+  scoped_refptr<FileManager> GetFileManager() { return file_manager_; }
 
   // Returns whether the created service is off the record.
   bool IsOffTheRecord() const { return is_off_the_record_; }
@@ -79,6 +81,11 @@ class PaintPreviewBaseService : public KeyedService {
       const DirectoryKey& key,
       OnReadProtoCallback on_read_proto_callback);
 
+  // Captures need to run on the Browser UI thread! Captures may involve child
+  // frames so the PaintPreviewClient (WebContentsObserver) must be stored as
+  // WebContentsUserData which is not thread safe and must only be accessible
+  // from a specific sequence i.e. the UI thread.
+  //
   // The following methods both capture a Paint Preview; however, their behavior
   // and intended use is different. The first method is intended for capturing
   // full page contents. Generally, this is what you should be using for most
@@ -123,7 +130,8 @@ class PaintPreviewBaseService : public KeyedService {
                   std::unique_ptr<PaintPreviewProto> proto);
 
   std::unique_ptr<PaintPreviewPolicy> policy_ = nullptr;
-  FileManager file_manager_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<FileManager> file_manager_;
   bool is_off_the_record_;
 
   base::WeakPtrFactory<PaintPreviewBaseService> weak_ptr_factory_{this};

@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.media.remote;
 import android.app.PendingIntent;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.support.v7.media.MediaItemStatus;
+
+import androidx.mediarouter.media.MediaItemStatus;
 
 import org.chromium.base.Log;
 

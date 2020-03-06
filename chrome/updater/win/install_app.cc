@@ -487,7 +487,6 @@ InstallAppController::InstallAppController(
 
 InstallAppController::~InstallAppController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  FlushPrefs();
 }
 
 void InstallAppController::InstallApp(const std::string& app_id) {
@@ -550,7 +549,7 @@ void InstallAppController::DoInstallApp() {
 // by calling UpdateClient::GetCrxUpdateState.
 void InstallAppController::InstallComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+  FlushPrefs();
   install_progress_observer_ipc_ = nullptr;
   update_client_->RemoveObserver(this);
   update_client_ = nullptr;
@@ -692,11 +691,7 @@ BOOL InstallAppController::PreTranslateMessage(MSG* msg) {
 
 void InstallAppController::FlushPrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::RunLoop runloop;
-  config_->GetPrefService()->CommitPendingWrite(base::BindOnce(
-      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
-      runloop.QuitWhenIdleClosure()));
-  runloop.Run();
+  config_->GetPrefService()->SchedulePendingLossyWrites();
 }
 
 DWORD InstallAppController::GetUIThreadID() const {
@@ -706,6 +701,7 @@ DWORD InstallAppController::GetUIThreadID() const {
 
 }  // namespace
 
+// Installs the updater and one application specified by |app_id|.
 class AppInstall : public App {
  public:
   explicit AppInstall(const std::string& app_id);
@@ -720,6 +716,10 @@ class AppInstall : public App {
   std::string app_id_;
   scoped_refptr<Configurator> config_;
   std::unique_ptr<InstallAppController> app_install_controller_;
+
+  // The splash screen has a fading effect. That means that the splash screen
+  // needs to be alive for a while, until the fading effect is over.
+  std::unique_ptr<ui::SplashScreen> splash_screen_;
 };
 
 AppInstall::AppInstall(const std::string& app_id) : app_id_(app_id) {}
@@ -732,8 +732,8 @@ void AppInstall::Initialize() {
 void AppInstall::FirstTaskRun() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
-  ui::SplashScreen splash_screen(kAppNameChrome);
-  splash_screen.Show();
+  splash_screen_ = std::make_unique<ui::SplashScreen>(kAppNameChrome);
+  splash_screen_->Show();
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -745,7 +745,7 @@ void AppInstall::FirstTaskRun() {
              base::OnceCallback<void(int)> done, int result) {
             splash_screen->Dismiss(base::BindOnce(std::move(done), result));
           },
-          &splash_screen, base::BindOnce(&AppInstall::SetupDone, this)));
+          splash_screen_.get(), base::BindOnce(&AppInstall::SetupDone, this)));
 }
 
 void AppInstall::SetupDone(int result) {

@@ -39,7 +39,7 @@ public class ChromeNativeBackgroundTaskDelegate implements NativeBackgroundTaskD
                 return serviceManagerOnlyMode;
             }
             @Override
-            public void onStartupFailure() {
+            public void onStartupFailure(Exception failureCause) {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, onFailure);
             }
         };

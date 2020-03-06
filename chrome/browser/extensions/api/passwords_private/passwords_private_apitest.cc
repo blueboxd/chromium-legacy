@@ -239,6 +239,15 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
   void StopPasswordCheck() override { stop_password_check_triggered_ = true; }
 
+  api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus()
+      override {
+    api::passwords_private::PasswordCheckStatus status;
+    status.state = api::passwords_private::PASSWORD_CHECK_STATE_RUNNING;
+    status.already_processed = std::make_unique<int>(5);
+    status.remaining_in_queue = std::make_unique<int>(10);
+    return status;
+  }
+
   void SetOptedInForAccountStorage(bool opted_in) {
     is_opted_in_for_account_storage_ = opted_in;
   }
@@ -507,6 +516,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StopPasswordCheck) {
   EXPECT_FALSE(stop_password_check_triggered());
   EXPECT_TRUE(RunPasswordsSubtest("stopPasswordCheck")) << message_;
   EXPECT_TRUE(stop_password_check_triggered());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordCheckStatus) {
+  EXPECT_TRUE(RunPasswordsSubtest("getPasswordCheckStatus")) << message_;
 }
 
 }  // namespace extensions

@@ -359,6 +359,15 @@ var availableTests = [
       chrome.test.succeed();
     });
   },
+
+  function getPasswordCheckStatus() {
+    chrome.passwordsPrivate.getPasswordCheckStatus(status => {
+      chrome.test.assertEq('RUNNING', status.state);
+      chrome.test.assertEq(5, status.alreadyProcessed);
+      chrome.test.assertEq(10, status.remainingInQueue);
+      chrome.test.succeed();
+    });
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

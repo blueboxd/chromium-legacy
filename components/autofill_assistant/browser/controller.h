@@ -201,6 +201,7 @@ class Controller : public ScriptExecutorDelegate,
   void GetOverlayColors(OverlayColors* colors) const override;
   const ClientSettings& GetClientSettings() const override;
   const FormProto* GetForm() const override;
+  const FormProto::Result* GetFormResult() const override;
   void SetCounterValue(int input_index, int counter_index, int value) override;
   void SetChoiceSelected(int input_index,
                          int choice_index,

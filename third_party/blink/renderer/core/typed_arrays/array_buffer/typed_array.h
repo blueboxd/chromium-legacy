@@ -51,9 +51,9 @@ class TypedArray : public ArrayBufferView {
     return static_cast<T*>(BaseAddressMaybeShared());
   }
 
-  size_t length() const { return length_; }
+  size_t length() const { return !IsDetached() ? raw_length_ : 0; }
 
-  size_t ByteLengthAsSizeT() const final { return length_ * sizeof(T); }
+  size_t ByteLengthAsSizeT() const final { return length() * sizeof(T); }
 
   unsigned TypeSize() const final { return sizeof(T); }
 
@@ -66,22 +66,22 @@ class TypedArray : public ArrayBufferView {
   TypedArray(scoped_refptr<ArrayBuffer> buffer,
              size_t byte_offset,
              size_t length)
-      : ArrayBufferView(std::move(buffer), byte_offset), length_(length) {}
+      : ArrayBufferView(std::move(buffer), byte_offset), raw_length_(length) {}
 
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
   T Item(size_t index) const {
-    SECURITY_DCHECK(index < length_);
+    SECURITY_DCHECK(index < length());
     return Data()[index];
   }
 
  private:
   void Detach() final {
     ArrayBufferView::Detach();
-    length_ = 0;
+    raw_length_ = 0;
   }
-
-  size_t length_;
+  // It may be stale after Detach. Use length() instead.
+  size_t raw_length_;
 };
 
 template <typename T, bool clamped>
@@ -134,7 +134,7 @@ scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
 
 template <typename T, bool clamped>
 inline void TypedArray<T, clamped>::Set(size_t index, double value) {
-  if (index >= length_)
+  if (index >= length())
     return;
   if (std::isnan(value))  // Clamp NaN to 0
     value = 0;
@@ -145,7 +145,7 @@ inline void TypedArray<T, clamped>::Set(size_t index, double value) {
 
 template <>
 inline void TypedArray<uint8_t, true>::Set(size_t index, double value) {
-  if (index >= length_) {
+  if (index >= length()) {
     return;
   }
   if (std::isnan(value) || value < 0) {
@@ -159,28 +159,28 @@ inline void TypedArray<uint8_t, true>::Set(size_t index, double value) {
 
 template <>
 inline void TypedArray<float, false>::Set(size_t index, double value) {
-  if (index >= length_)
+  if (index >= length())
     return;
   Data()[index] = static_cast<float>(value);
 }
 
 template <>
 inline void TypedArray<double, false>::Set(size_t index, double value) {
-  if (index >= length_)
+  if (index >= length())
     return;
   Data()[index] = value;
 }
 
 template <>
 inline void TypedArray<int64_t, false>::Set(size_t index, uint64_t value) {
-  if (index >= length_)
+  if (index >= length())
     return;
   Data()[index] = static_cast<int64_t>(value);
 }
 
 template <>
 inline void TypedArray<uint64_t, false>::Set(size_t index, uint64_t value) {
-  if (index >= length_)
+  if (index >= length())
     return;
   Data()[index] = value;
 }

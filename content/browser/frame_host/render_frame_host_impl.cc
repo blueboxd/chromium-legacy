@@ -3321,10 +3321,10 @@ void RenderFrameHostImpl::DownloadURL(
           }
         })");
   std::unique_ptr<download::DownloadUrlParameters> parameters(
-      new download::DownloadUrlParameters(
-          blink_parameters->url, GetProcess()->GetID(),
-          GetRenderViewHost()->GetRoutingID(), GetRoutingID(),
-          traffic_annotation, network_isolation_key_));
+      new download::DownloadUrlParameters(blink_parameters->url,
+                                          GetProcess()->GetID(),
+                                          GetRenderViewHost()->GetRoutingID(),
+                                          GetRoutingID(), traffic_annotation));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(
       blink_parameters->suggested_name.value_or(base::string16()));

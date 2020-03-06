@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import static org.chromium.chrome.browser.media.router.caf.CastUtils.isSameOrigin;
 
-import android.support.v7.media.MediaRouter;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.mediarouter.media.MediaRouter;
 
 import com.google.android.gms.cast.framework.CastSession;
 

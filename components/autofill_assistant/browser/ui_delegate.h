@@ -190,6 +190,9 @@ class UiDelegate {
   // Returns the current form. May be null if there is no form to show.
   virtual const FormProto* GetForm() const = 0;
 
+  // Returns the current form data. May be null if there is no form to show.
+  virtual const FormProto::Result* GetFormResult() const = 0;
+
   // Sets a counter value.
   virtual void SetCounterValue(int input_index,
                                int counter_index,

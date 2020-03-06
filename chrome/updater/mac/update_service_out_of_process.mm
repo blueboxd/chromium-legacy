@@ -108,7 +108,7 @@ void UpdateServiceOutOfProcess::RegisterApp(
 }
 
 void UpdateServiceOutOfProcess::UpdateAll(
-    base::OnceCallback<void(update_client::Error)> callback) {
+    base::OnceCallback<void(Result)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   __block base::OnceCallback<void(update_client::Error)> block_callback =
@@ -120,6 +120,15 @@ void UpdateServiceOutOfProcess::UpdateAll(
   };
 
   [_client.get() checkForUpdatesWithReply:reply];
+}
+
+void UpdateServiceOutOfProcess::Update(
+    const std::string& app_id,
+    UpdateService::Priority priority,
+    base::RepeatingCallback<void(UpdateState)> state_update,
+    base::OnceCallback<void(Result)> done) {
+  // TODO(crbug.com/1059024): Implement.
+  NOTREACHED();
 }
 
 UpdateServiceOutOfProcess::~UpdateServiceOutOfProcess() {

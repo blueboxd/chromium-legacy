@@ -658,14 +658,14 @@ TEST_F(DesksOverviewHighlightControllerTest, ActivateDeskNameView) {
   EXPECT_TRUE(desk_name_view_2->HasFocus());
   EXPECT_TRUE(desk_bar_view->IsDeskNameBeingModified());
 
-  // Tabbing and the arrow keys should not change neither the focus nor the
-  // highlight.
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(desk_name_view_2, GetHighlightedView());
-  EXPECT_TRUE(desk_name_view_2->HasFocus());
+  // All should be selected.
+  EXPECT_TRUE(desk_name_view_2->HasSelection());
+  const auto* desks_controller = DesksController::Get();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  EXPECT_EQ(desk_2->name(), desk_name_view_2->GetSelectedText());
+
+  // Arrow keys should not change neither the focus nor the highlight.
+  SendKey(ui::VKEY_RIGHT);
   SendKey(ui::VKEY_RIGHT);
   SendKey(ui::VKEY_RIGHT);
   SendKey(ui::VKEY_LEFT);
@@ -675,21 +675,18 @@ TEST_F(DesksOverviewHighlightControllerTest, ActivateDeskNameView) {
   // Select all and delete.
   SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
   SendKey(ui::VKEY_BACK);
-  // Type "code" and hit enter.
+  // Type "code" and hit Tab, this should commit the changes and move the
+  // highlight to the next item.
   SendKey(ui::VKEY_C);
   SendKey(ui::VKEY_O);
   SendKey(ui::VKEY_D);
   SendKey(ui::VKEY_E);
-  SendKey(ui::VKEY_RETURN);
+  SendKey(ui::VKEY_TAB);
 
-  const auto* desks_controller = DesksController::Get();
-  auto* desk_2 = desks_controller->desks()[1].get();
+  EXPECT_FALSE(desk_name_view_2->HasFocus());
+  EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
   EXPECT_EQ(base::UTF8ToUTF16("code"), desk_2->name());
   EXPECT_TRUE(desk_2->is_name_set_by_user());
-
-  // Now tabbing can change the highlight again.
-  SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
 }
 
 }  // namespace ash

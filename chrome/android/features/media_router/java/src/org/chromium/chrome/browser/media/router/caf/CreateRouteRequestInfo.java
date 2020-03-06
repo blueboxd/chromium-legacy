@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
-import android.support.v7.media.MediaRouter;
+import androidx.mediarouter.media.MediaRouter;
 
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;

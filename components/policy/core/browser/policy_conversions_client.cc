@@ -133,7 +133,8 @@ Value PolicyConversionsClient::GetPolicyValue(
     const std::string& policy_name,
     const PolicyMap::Entry& policy,
     PolicyErrorMap* errors,
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas) const {
+    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+        known_policy_schemas) const {
   base::Optional<Schema> known_policy_schema =
       GetKnownPolicySchema(known_policy_schemas, policy_name);
   Value value(Value::Type::DICTIONARY);
@@ -182,7 +183,8 @@ Value PolicyConversionsClient::GetPolicyValue(
     // PolicyErrorMap contains validation errors. Concat the errors.
     auto policy_map_errors = policy.GetLocalizedErrors(
         base::BindRepeating(&l10n_util::GetStringUTF16));
-    auto error_map_errors = errors->GetErrors(policy_name);
+    auto error_map_errors =
+        errors ? errors->GetErrors(policy_name) : base::string16();
     if (policy_map_errors.empty())
       error = error_map_errors;
     else if (error_map_errors.empty())
@@ -220,7 +222,8 @@ Value PolicyConversionsClient::GetPolicyValue(
 Value PolicyConversionsClient::GetPolicyValues(
     const PolicyMap& map,
     PolicyErrorMap* errors,
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas) const {
+    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+        known_policy_schemas) const {
   base::Value values(base::Value::Type::DICTIONARY);
   for (const auto& entry : map) {
     const std::string& policy_name = entry.first;
@@ -235,7 +238,8 @@ Value PolicyConversionsClient::GetPolicyValues(
 }
 
 base::Optional<Schema> PolicyConversionsClient::GetKnownPolicySchema(
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
+    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+        known_policy_schemas,
     const std::string& policy_name) const {
   if (!known_policy_schemas.has_value())
     return base::nullopt;
@@ -245,7 +249,7 @@ base::Optional<Schema> PolicyConversionsClient::GetKnownPolicySchema(
   return known_policy_iterator->second;
 }
 
-base::Optional<PolicyConversionsClient::PolicyToSchemaMap>
+base::Optional<PolicyConversions::PolicyToSchemaMap>
 PolicyConversionsClient::GetKnownPolicies(
     const scoped_refptr<SchemaMap> schema_map,
     const PolicyNamespace& policy_namespace) const {
@@ -262,7 +266,8 @@ PolicyConversionsClient::GetKnownPolicies(
   for (auto it = schema->GetPropertiesIterator(); !it.IsAtEnd(); it.Advance()) {
     policy_to_schema_entries.push_back(std::make_pair(it.key(), it.schema()));
   }
-  return PolicyToSchemaMap(std::move(policy_to_schema_entries));
+  return PolicyConversions::PolicyToSchemaMap(
+      std::move(policy_to_schema_entries));
 }
 
 bool PolicyConversionsClient::GetDeviceLocalAccountPoliciesEnabled() const {
@@ -279,14 +284,19 @@ bool PolicyConversionsClient::GetUserPoliciesEnabled() const {
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 Value PolicyConversionsClient::GetUpdaterPolicies() {
-  return updater_policies_.get()
-             ? GetPolicyValues(*updater_policies_, nullptr, base::nullopt)
-             : base::Value(base::Value::Type::DICTIONARY);
+  return updater_policies_ ? GetPolicyValues(*updater_policies_, nullptr,
+                                             updater_policy_schemas_)
+                           : base::Value(base::Value::Type::DICTIONARY);
 }
 
 bool PolicyConversionsClient::PolicyConversionsClient::HasUpdaterPolicies()
     const {
   return !!updater_policies_;
+}
+
+void PolicyConversionsClient::SetUpdaterPolicySchemas(
+    PolicyConversions::PolicyToSchemaMap schemas) {
+  updater_policy_schemas_ = std::move(schemas);
 }
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

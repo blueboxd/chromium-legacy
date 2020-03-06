@@ -4351,14 +4351,14 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   url_chain.emplace_back(url);
   // Kick off 2 download with the same GUID
   auto params = std::make_unique<DownloadUrlParameters>(
-      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      url, TRAFFIC_ANNOTATION_FOR_TESTS);
   params->set_guid(guid);
   params->set_file_path(target_path);
   params->set_transient(true);
   params->set_require_safety_checks(false);
   in_progress_manager->DownloadUrl(std::move(params));
   auto params2 = std::make_unique<DownloadUrlParameters>(
-      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+      url, TRAFFIC_ANNOTATION_FOR_TESTS);
   params2->set_guid(guid);
   params2->set_file_path(target_path);
   params2->set_transient(true);

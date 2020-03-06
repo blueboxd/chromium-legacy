@@ -4,6 +4,8 @@
 
 #include "components/browser_watcher/exit_code_watcher_win.h"
 
+#include <windows.h>
+
 #include <utility>
 
 #include "base/logging.h"
@@ -15,17 +17,18 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-#include <windows.h>
-
 namespace browser_watcher {
 
 const char kBrowserExitCodeHistogramName[] = "Stability.BrowserExitCodes";
 
 ExitCodeWatcher::ExitCodeWatcher()
-    : background_thread_("ExitCodeWatcherThread"), exit_code_(STILL_ACTIVE) {}
-
-ExitCodeWatcher::~ExitCodeWatcher() {
+    : background_thread_("ExitCodeWatcherThread"),
+      exit_code_(STILL_ACTIVE),
+      stop_watching_handle_(CreateEvent(nullptr, TRUE, FALSE, nullptr)) {
+  DCHECK(stop_watching_handle_.IsValid());
 }
+
+ExitCodeWatcher::~ExitCodeWatcher() {}
 
 bool ExitCodeWatcher::Initialize(base::Process process) {
   if (!process.IsValid()) {
@@ -69,13 +72,20 @@ bool ExitCodeWatcher::StartWatching() {
   return true;
 }
 
-void ExitCodeWatcher::WaitForExit() {
-  if (!process_.WaitForExit(&exit_code_)) {
-    LOG(ERROR) << "Failed to wait for process.";
-    return;
+void ExitCodeWatcher::StopWatching() {
+  if (stop_watching_handle_.IsValid()) {
+    SetEvent(stop_watching_handle_.Get());
   }
+}
 
-  WriteProcessExitCode(exit_code_);
+void ExitCodeWatcher::WaitForExit() {
+  base::Process::WaitExitStatus wait_result =
+      process_.WaitForExitOrEvent(stop_watching_handle_, &exit_code_);
+  if (wait_result == base::Process::WaitExitStatus::PROCESS_EXITED) {
+    WriteProcessExitCode(exit_code_);
+  } else if (wait_result == base::Process::WaitExitStatus::FAILED) {
+    LOG(ERROR) << "Failed to wait for process exit or stop event";
+  }
 }
 
 bool ExitCodeWatcher::WriteProcessExitCode(int exit_code) {

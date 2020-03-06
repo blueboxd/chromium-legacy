@@ -606,6 +606,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriModel& proto) {
   VISIT_REP(encrypted_types_specifics_field_number);
   VISIT_REP(keystore_key);
   VISIT(pending_keystore_decryptor_token);
+  VISIT(last_default_trusted_vault_key_name);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NigoriLocalData& proto) {
@@ -1071,6 +1072,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(exp_year);
   VISIT(billing_address_id);
   VISIT(bank_name);
+  VISIT(nickname);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletMetadataSpecifics& proto) {

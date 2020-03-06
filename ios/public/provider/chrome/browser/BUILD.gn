@@ -15,12 +15,14 @@ source_set("browser") {
     "geolocation_updater_provider.mm",
     "overrides_provider.h",
     "overrides_provider.mm",
+    "url_loading_bridge.h",
   ]
   deps = [
     "//base",
     "//components/metrics",
-    "//ios//web/public",
     "//ios/public/provider/chrome/browser/mailto",
+    "//ios/web/public",
+    "//url",
   ]
   libs = [ "CoreLocation.framework" ]
 }

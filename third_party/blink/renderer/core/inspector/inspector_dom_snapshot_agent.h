@@ -95,8 +95,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   int BuildLayoutTreeNode(LayoutObject*, Node*, int node_index);
   std::unique_ptr<protocol::Array<int>> BuildStylesForNode(Node*);
 
-  void GetOriginUrl(String*, const Node*);
-
   static void TraversePaintLayerTree(Document*, PaintOrderMap* paint_order_map);
   static void VisitPaintLayer(PaintLayer*, PaintOrderMap* paint_order_map);
 

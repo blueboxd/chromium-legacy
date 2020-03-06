@@ -235,9 +235,15 @@ int main() {
 
     base::FilePath user_data_dir =
         command_line->GetSwitchValuePath(switches::kUserDataDir);
-    return crash_reporter::RunAsCrashpadHandler(
+    int crashpad_status = crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess(), user_data_dir,
         switches::kProcessType, switches::kUserDataDir);
+    if (crashpad_status != 0 && exit_code_watcher) {
+      // Crashpad failed to initialize, explicitly stop the exit code watcher
+      // so the crashpad-handler process can exit with an error
+      exit_code_watcher->StopWatching();
+    }
+    return crashpad_status;
   } else if (process_type == crash_reporter::switches::kFallbackCrashHandler) {
     return RunFallbackCrashHandler(*command_line);
   }

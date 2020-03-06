@@ -9,6 +9,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -132,6 +133,33 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
   base::SetCurrentDirectory(original_path);
   absolute_source_path_ = absolute_source_path_.NormalizePathSeparatorsTo('/');
   DCHECK(absolute_source_path_.IsAbsolute());
+
+  // Load a live version traffic_annotation.proto from source files.
+  google::protobuf::compiler::DiskSourceTree source_tree;
+  base::FilePath absolute_build_path_ =
+      build_path_.IsAbsolute() ? build_path_
+                               : absolute_source_path_.Append(build_path_);
+  source_tree.MapPath("",
+                      absolute_source_path_.Append(FILE_PATH_LITERAL("tools"))
+                          .Append(FILE_PATH_LITERAL("traffic_annotation"))
+                          .MaybeAsASCII());
+  source_tree.MapPath("", absolute_build_path_.Append(FILE_PATH_LITERAL("gen"))
+                              .Append(FILE_PATH_LITERAL("components"))
+                              .Append(FILE_PATH_LITERAL("policy"))
+                              .Append(FILE_PATH_LITERAL("proto"))
+                              .MaybeAsASCII());
+  google::protobuf::compiler::SourceTreeDescriptorDatabase db(&source_tree);
+  descriptor_pool_ = std::make_unique<google::protobuf::DescriptorPool>(&db);
+  auto* fd = descriptor_pool_->FindFileByName("traffic_annotation.proto");
+  if (fd != nullptr) {
+    // If we manage to load the proto file, then we load the runtime message.
+    auto* descriptor = fd->FindMessageTypeByName("NetworkTrafficAnnotation");
+    annotation_prototype_ =
+        base::WrapUnique(message_factory_.GetPrototype(descriptor)->New());
+  } else {
+    LOG(WARNING) << "traffic_annotation.proto failed to load at runtime, "
+                 << "reverting to using static proto.";
+  }
 }
 
 TrafficAnnotationAuditor::~TrafficAnnotationAuditor() = default;
@@ -316,6 +344,14 @@ bool TrafficAnnotationAuditor::IsSafeListed(
   return false;
 }
 
+std::unique_ptr<google::protobuf::Message>
+TrafficAnnotationAuditor::CreateAnnotationProto() {
+  if (annotation_prototype_ != nullptr) {
+    return base::WrapUnique(annotation_prototype_->New());
+  }
+  return nullptr;
+}
+
 bool TrafficAnnotationAuditor::ParseExtractorRawOutput() {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
@@ -361,6 +397,7 @@ bool TrafficAnnotationAuditor::ParseExtractorRawOutput() {
 
     if (block_type == "ANNOTATION") {
       AnnotationInstance new_annotation;
+      new_annotation.runtime_proto = CreateAnnotationProto();
       result = new_annotation.Deserialize(lines, current, end_line);
       std::string file_path = result.IsOK()
                                   ? new_annotation.proto.source().file()

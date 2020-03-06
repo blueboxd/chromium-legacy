@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/values.h"
+#include "components/policy/core/browser/policy_conversions.h"
 
 namespace policy {
 class PolicyMap;
@@ -16,6 +17,10 @@ class PolicyMap;
 // Returns a list of all the Google Update policies available through the
 // IPolicyStatus COM interface.
 base::Value GetGoogleUpdatePolicyNames();
+
+// Returns a list of all the Google Update policies available through the
+// IPolicyStatus COM interface.
+policy::PolicyConversions::PolicyToSchemaMap GetGoogleUpdatePolicySchemas();
 
 // Fetches all the Google Update Policies available through the IPolicyStatus
 // COM interface. Only the policies that have been set are returned by this

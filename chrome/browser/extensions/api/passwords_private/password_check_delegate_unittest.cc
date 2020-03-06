@@ -13,10 +13,12 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
@@ -52,6 +54,8 @@ constexpr char kExampleCom[] = "https://example.com";
 constexpr char kExampleOrg[] = "http://www.example.org";
 constexpr char kExampleApp[] = "com.example.app";
 
+constexpr char kTestEmail[] = "user@gmail.com";
+
 constexpr char kUsername1[] = "alice";
 constexpr char kUsername2[] = "bob";
 
@@ -68,6 +72,7 @@ using password_manager::CompromiseType;
 using password_manager::IsLeaked;
 using password_manager::LeakCheckCredential;
 using password_manager::TestPasswordStore;
+using signin::IdentityTestEnvironment;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
@@ -185,10 +190,16 @@ auto ExpectCompromisedCredential(
 
 class PasswordCheckDelegateTest : public ::testing::Test {
  public:
+  PasswordCheckDelegateTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kPasswordCheck);
+  }
+
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
   TestEventRouterObserver& event_router_observer() {
     return event_router_observer_;
   }
+  IdentityTestEnvironment& identity_test_env() { return identity_test_env_; }
   TestPasswordStore& store() { return *store_; }
   BulkLeakCheckService* service() { return bulk_leak_check_service_; }
   PasswordCheckDelegate& delegate() { return delegate_; }
@@ -207,6 +218,7 @@ class PasswordCheckDelegateTest : public ::testing::Test {
                                        &profile_);
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
+  base::test::ScopedFeatureList scoped_feature_list_;
   PasswordCheckDelegate delegate_{&profile_};
 };
 
@@ -604,6 +616,162 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesMultipleCredential) {
                       .create_time = base::Time::Now(),
                       .compromise_type = CompromiseType::kLeaked,
                   }));
+}
+
+// Verifies that the case where the user has no saved passwords is reported
+// correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusNoPasswords) {
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_NO_PASSWORDS,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the user has too many saved passwords is
+// reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusTooManyPasswords) {
+  for (size_t i = 0; i < PasswordCheckDelegate::kTooManyPasswords; ++i) {
+    store().AddLogin(MakeSavedPassword(
+        kExampleCom, base::StrCat({kUsername1, base::NumberToString(i)})));
+  }
+  RunUntilIdle();
+
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_TOO_MANY_PASSWORDS,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the check is idle is reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusIdle) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_IDLE,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the user is signed out is reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusSignedOut) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_SIGNED_OUT,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the check is running is reported correctly and
+// the progress indicator matches expectations.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusRunning) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  api::passwords_private::PasswordCheckStatus status =
+      delegate().GetPasswordCheckStatus();
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING, status.state);
+  EXPECT_EQ(0, *status.already_processed);
+  EXPECT_EQ(1, *status.remaining_in_queue);
+
+  // Make sure that even though the store is emptied after starting a check we
+  // don't report a negative number for already processed.
+  store().RemoveLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  status = delegate().GetPasswordCheckStatus();
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING, status.state);
+  EXPECT_EQ(0, *status.already_processed);
+  EXPECT_EQ(1, *status.remaining_in_queue);
+}
+
+// Verifies that the case where the check is canceled is reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusCanceled) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING,
+            delegate().GetPasswordCheckStatus().state);
+
+  delegate().StopPasswordCheck();
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_CANCELED,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the user is offline is reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusOffline) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
+
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_OFFLINE,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Verifies that the case where the user hits another error (e.g. invalid
+// credentials) is reported correctly.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusOther) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  identity_test_env().WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
+
+  EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_OTHER_ERROR,
+            delegate().GetPasswordCheckStatus().state);
+}
+
+// Test that a change to the saved passwords notifies observers.
+TEST_F(PasswordCheckDelegateTest,
+       NotifyPasswordCheckStatusChangedAfterPasswordChange) {
+  const char* const kEventName =
+      api::passwords_private::OnPasswordCheckStatusChanged::kEventName;
+
+  // Verify that the event was not fired during construction.
+  EXPECT_FALSE(base::Contains(event_router_observer().events(), kEventName));
+
+  // Verify that the event gets fired once the saved passwords provider is
+  // initialized.
+  RunUntilIdle();
+  EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+            event_router_observer().events().at(kEventName)->histogram_value);
+  event_router_observer().ClearEvents();
+
+  // Verify that a subsequent call to AddLogin() results in the expected event.
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+  EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+            event_router_observer().events().at(kEventName)->histogram_value);
+}
+
+// Test that a change to the bulk leak check notifies observers.
+TEST_F(PasswordCheckDelegateTest,
+       NotifyPasswordCheckStatusChangedAfterStateChange) {
+  const char* const kEventName =
+      api::passwords_private::OnPasswordCheckStatusChanged::kEventName;
+
+  // Verify that the event was not fired during construction.
+  EXPECT_FALSE(base::Contains(event_router_observer().events(), kEventName));
+
+  // Verify that the event gets fired once the saved passwords provider is
+  // initialized.
+  RunUntilIdle();
+  EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+            event_router_observer().events().at(kEventName)->histogram_value);
+  event_router_observer().ClearEvents();
+
+  // Verify that a subsequent call to StartPasswordCheck() results in the
+  // expected event.
+  delegate().StartPasswordCheck();
+  EXPECT_EQ(events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+            event_router_observer().events().at(kEventName)->histogram_value);
 }
 
 }  // namespace extensions

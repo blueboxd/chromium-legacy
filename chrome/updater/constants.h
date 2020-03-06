@@ -15,6 +15,8 @@ extern const char kUpdaterAppId[];
 // Chrome's app ID.
 extern const char kChromeAppId[];
 
+// "0.0.0.0". Historically, a null version has been used to indicate a
+// new install.
 extern const char kNullVersion[];
 
 // Command line switches.

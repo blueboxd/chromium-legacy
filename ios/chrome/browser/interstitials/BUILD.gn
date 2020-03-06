@@ -5,6 +5,8 @@
 source_set("interstitials") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "ios_blocking_page_tab_helper.h",
+    "ios_blocking_page_tab_helper.mm",
     "ios_chrome_controller_client.h",
     "ios_chrome_controller_client.mm",
     "ios_chrome_metrics_helper.h",
@@ -30,5 +32,17 @@ source_set("interstitials") {
     "//ios/web/public/security",
     "//ui/base",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "ios_blocking_page_tab_helper_unittest.mm" ]
+  deps = [
+    ":interstitials",
+    "//ios/chrome/browser/interstitials",
+    "//ios/web",
+    "//ios/web/public/test",
   ]
 }

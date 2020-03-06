@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import os
 import shutil
 import tempfile
@@ -24,19 +23,6 @@ class TraceProcessorTestCase(unittest.TestCase):
       pass
     with open(os.path.join(self.temp_dir, 'dummy_metric.proto'), 'w'):
       pass
-    with open(os.path.join(self.temp_dir,
-                           'dummy_metric_config.json'), 'w') as config:
-      json.dump(
-          {
-              'name': 'Dummy Metric',
-              'histograms': [{
-                'name': 'value',
-                'description': 'dummy value',
-                'unit': 'count_smallerIsBetter',
-              }],
-          },
-          config,
-      )
 
   def tearDown(self):
     shutil.rmtree(self.temp_dir)
@@ -46,8 +32,23 @@ class TraceProcessorTestCase(unittest.TestCase):
       trace_processor.ConvertProtoTraceToJson(
           self.tp_path, '/path/to/proto', '/path/to/json')
 
-  def testRunMetric(self):
-    metric_output = '{"perfetto.protos.dummy_metric": {"value": 7}}'
+  def testRunMetricNoRepeated(self):
+    metric_output = """
+    {
+      "perfetto.protos.dummy_metric": {
+        "foo": 7,
+        "bar": 8
+       },
+      "__annotations": {
+        "perfetto.protos.dummy_metric": {
+          "foo": {
+            "__field_options": {
+              "unit": "count_biggerIsBetter"
+            }
+          }
+        }
+      }
+    }"""
 
     with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
       with mock.patch(RUN_METHOD) as run_patch:
@@ -55,7 +56,120 @@ class TraceProcessorTestCase(unittest.TestCase):
         histograms = trace_processor.RunMetric(
             self.tp_path, '/path/to/proto', 'dummy_metric')
 
-    hist = histograms.GetHistogramNamed('dummy::value')
-    self.assertEqual(hist.unit, 'count_smallerIsBetter')
-    self.assertEqual(hist.sample_values, [7])
+    foo_hist = histograms.GetHistogramNamed('dummy::foo')
+    self.assertEqual(foo_hist.unit, 'count_biggerIsBetter')
+    self.assertEqual(foo_hist.sample_values, [7])
 
+    bar_hists = histograms.GetHistogramsNamed('dummy::bar')
+    self.assertEqual(len(bar_hists), 0)
+
+
+  def testRunMetricRepeated(self):
+    metric_output = """
+    {
+      "perfetto.protos.dummy_metric": {
+        "foo": [4, 5, 6],
+        "bar": [{"baz": 10}, {"baz": 11}]
+       },
+      "__annotations": {
+        "perfetto.protos.dummy_metric": {
+          "foo": {
+            "__repeated": true,
+            "__field_options": {
+              "unit": "count_biggerIsBetter"
+            }
+          },
+          "bar": {
+            "__repeated": true,
+            "baz": {
+              "__field_options": {
+                "unit": "ms_smallerIsBetter"
+              }
+            }
+          }
+        }
+      }
+    }"""
+
+    with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
+      with mock.patch(RUN_METHOD) as run_patch:
+        run_patch.return_value = metric_output
+        histograms = trace_processor.RunMetric(
+            self.tp_path, '/path/to/proto', 'dummy_metric')
+
+    foo_hist = histograms.GetHistogramNamed('dummy::foo')
+    self.assertEqual(foo_hist.unit, 'count_biggerIsBetter')
+    self.assertEqual(foo_hist.sample_values, [4, 5, 6])
+
+    baz_hist = histograms.GetHistogramNamed('dummy::bar:baz')
+    self.assertEqual(baz_hist.unit, 'ms_smallerIsBetter')
+    self.assertEqual(baz_hist.sample_values, [10, 11])
+
+  def testMarkedRepeatedButValueIsNotList(self):
+    metric_output = """
+    {
+      "perfetto.protos.dummy_metric": {
+        "foo": 4
+       },
+      "__annotations": {
+        "perfetto.protos.dummy_metric": {
+          "foo": {
+            "__repeated": true,
+            "__field_options": {
+              "unit": "count_biggerIsBetter"
+            }
+          }
+        }
+      }
+    }"""
+
+    with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
+      with mock.patch(RUN_METHOD) as run_patch:
+        run_patch.return_value = metric_output
+        with self.assertRaises(trace_processor.InvalidTraceProcessorOutput):
+          trace_processor.RunMetric(
+              self.tp_path, '/path/to/proto', 'dummy_metric')
+
+  def testMarkedNotRepeatedButValueIsList(self):
+    metric_output = """
+    {
+      "perfetto.protos.dummy_metric": {
+        "foo": [1, 2, 3]
+       },
+      "__annotations": {
+        "perfetto.protos.dummy_metric": {
+          "foo": {
+            "__field_options": {
+              "unit": "count_biggerIsBetter"
+            }
+          }
+        }
+      }
+    }"""
+
+    with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
+      with mock.patch(RUN_METHOD) as run_patch:
+        run_patch.return_value = metric_output
+        with self.assertRaises(trace_processor.InvalidTraceProcessorOutput):
+          trace_processor.RunMetric(
+              self.tp_path, '/path/to/proto', 'dummy_metric')
+
+  def testRunMetricEmpty(self):
+    metric_output = '{}'
+
+    with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
+      with mock.patch(RUN_METHOD) as run_patch:
+          run_patch.return_value = metric_output
+          # Checking that this doesn't throw errors.
+          trace_processor.RunMetric(
+              self.tp_path, '/path/to/proto', 'dummy_metric')
+
+  def testRunMetricNoAnnotations(self):
+    metric_output = '{"perfetto.protos.foo": {"bar": 42}}'
+
+    with mock.patch('core.tbmv3.trace_processor.METRICS_PATH', self.temp_dir):
+      with mock.patch(RUN_METHOD) as run_patch:
+          run_patch.return_value = metric_output
+          # Checking that this doesn't throw errors.
+          trace_processor.RunMetric(
+              self.tp_path, '/path/to/proto', 'dummy_metric')

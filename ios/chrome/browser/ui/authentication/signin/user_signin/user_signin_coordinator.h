@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_USER_SIGNIN_USER_SIGNIN_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 
 // Coordinates the user sign-in with different intents:
 //  + user sign-in when triggered from UI (settings, bookmarks...)
@@ -32,6 +33,7 @@
                       identity:(ChromeIdentity*)identity
                    accessPoint:(signin_metrics::AccessPoint)accessPoint
                    promoAction:(signin_metrics::PromoAction)promoAction
+                  signinIntent:(UserSigninIntent)signinIntent
     NS_DESIGNATED_INITIALIZER;
 
 @end

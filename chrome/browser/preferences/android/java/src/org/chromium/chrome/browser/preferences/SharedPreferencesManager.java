@@ -316,6 +316,7 @@ public class SharedPreferencesManager {
 
     /**
      * Writes the given float value to the named shared preference and immediately commit to disk.
+     *
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
      * @return Whether the operation succeeded.
@@ -341,6 +342,39 @@ public class SharedPreferencesManager {
         mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ContextUtils.getAppSharedPreferences().getFloat(key, defaultValue);
+        }
+    }
+
+    /**
+     * Writes the given double value to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    public void writeDouble(String key, double value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        long ieee754LongValue = Double.doubleToRawLongBits(value);
+        ed.putLong(key, ieee754LongValue);
+        ed.apply();
+    }
+
+    /**
+     * Reads the given double value from the named shared preference.
+     *
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if there's no value stored.
+     * @return The value of the preference if stored; defaultValue otherwise.
+     */
+    public Double readDouble(String key, double defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            if (!prefs.contains(key)) {
+                return defaultValue;
+            }
+            long ieee754LongValue = prefs.getLong(key, 0L);
+            return Double.longBitsToDouble(ieee754LongValue);
         }
     }
 

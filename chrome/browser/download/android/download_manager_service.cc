@@ -516,7 +516,7 @@ void DownloadManagerService::RetryDownloadInternal(
           }
         })");
   auto download_url_params = std::make_unique<download::DownloadUrlParameters>(
-      item->GetURL(), traffic_annotation, item->GetNetworkIsolationKey());
+      item->GetURL(), traffic_annotation);
 
   // Retry allows redirect.
   download_url_params->set_cross_origin_redirects(

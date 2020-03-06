@@ -6,14 +6,6 @@
 
 namespace views {
 
-ViewsTestHelper::ViewsTestHelper() = default;
-
-ViewsTestHelper::~ViewsTestHelper() = default;
-
-void ViewsTestHelper::SetUp() {}
-
-void ViewsTestHelper::TearDown() {}
-
 gfx::NativeWindow ViewsTestHelper::GetContext() {
   return nullptr;
 }

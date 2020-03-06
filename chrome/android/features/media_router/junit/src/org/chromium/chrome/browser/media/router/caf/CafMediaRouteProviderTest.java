@@ -22,7 +22,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import android.content.Context;
-import android.support.v7.media.MediaRouter;
+
+import androidx.mediarouter.media.MediaRouter;
 
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;

@@ -98,12 +98,12 @@ class DomainReliabilityContextTest : public testing::Test {
       : last_network_change_time_(time_.NowTicks()),
         dispatcher_(&time_),
         params_(MakeTestSchedulerParams()),
-        uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
-                             base::Unretained(this))),
+        uploader_(base::BindOnce(&DomainReliabilityContextTest::OnUploadRequest,
+                                 base::Unretained(this))),
         upload_reporter_string_("test-reporter"),
-        upload_allowed_callback_(
-            base::Bind(&DomainReliabilityContextTest::UploadAllowedCallback,
-                       base::Unretained(this))),
+        upload_allowed_callback_(base::BindRepeating(
+            &DomainReliabilityContextTest::UploadAllowedCallback,
+            base::Unretained(this))),
         upload_pending_(false) {
     // Make sure that the last network change does not overlap requests
     // made in test cases, which start 250ms in the past (see |MakeBeacon|).
@@ -149,7 +149,7 @@ class DomainReliabilityContextTest : public testing::Test {
 
   void CallUploadCallback(DomainReliabilityUploader::UploadResult result) {
     ASSERT_TRUE(upload_pending_);
-    upload_callback_.Run(result);
+    std::move(upload_callback_).Run(result);
     upload_pending_ = false;
   }
 
@@ -176,16 +176,15 @@ class DomainReliabilityContextTest : public testing::Test {
   std::unique_ptr<DomainReliabilityContext> context_;
 
  private:
-  void OnUploadRequest(
-      const std::string& report_json,
-      int max_upload_depth,
-      const GURL& upload_url,
-      const DomainReliabilityUploader::UploadCallback& callback) {
+  void OnUploadRequest(const std::string& report_json,
+                       int max_upload_depth,
+                       const GURL& upload_url,
+                       DomainReliabilityUploader::UploadCallback callback) {
     ASSERT_FALSE(upload_pending_);
     upload_report_ = report_json;
     upload_max_depth_ = max_upload_depth;
     upload_url_ = upload_url;
-    upload_callback_ = callback;
+    upload_callback_ = std::move(callback);
     upload_pending_ = true;
   }
 

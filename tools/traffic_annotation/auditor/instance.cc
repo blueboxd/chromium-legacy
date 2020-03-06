@@ -4,6 +4,7 @@
 
 #include "tools/traffic_annotation/auditor/instance.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -117,14 +118,28 @@ AnnotationInstance::AnnotationInstance()
       is_merged(false) {}
 
 AnnotationInstance::AnnotationInstance(const AnnotationInstance& other)
-    : proto(other.proto),
-      type(other.type),
-      second_id(other.second_id),
-      unique_id_hash_code(other.unique_id_hash_code),
-      second_id_hash_code(other.second_id_hash_code),
-      archive_content_hash_code(other.archive_content_hash_code),
-      is_loaded_from_archive(other.is_loaded_from_archive),
-      is_merged(other.is_merged) {}
+    : AnnotationInstance() {
+  *this = other;
+}
+
+AnnotationInstance& AnnotationInstance::operator=(
+    const AnnotationInstance& other) {
+  proto = other.proto;
+  type = other.type;
+  second_id = other.second_id;
+  unique_id_hash_code = other.unique_id_hash_code;
+  second_id_hash_code = other.second_id_hash_code;
+  archive_content_hash_code = other.archive_content_hash_code;
+  is_loaded_from_archive = other.is_loaded_from_archive;
+  is_merged = other.is_merged;
+  if (other.runtime_proto != nullptr) {
+    runtime_proto = base::WrapUnique(other.runtime_proto->New());
+    runtime_proto->MergeFrom(*other.runtime_proto);
+  }
+  return *this;
+}
+
+AnnotationInstance::~AnnotationInstance() = default;
 
 AuditorResult AnnotationInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
@@ -184,12 +199,37 @@ AuditorResult AnnotationInstance::Deserialize(
   SimpleErrorCollector error_collector(line_number);
   google::protobuf::TextFormat::Parser parser;
   parser.RecordErrorsTo(&error_collector);
-  if (!parser.ParseFromString(annotation_text,
-                              (google::protobuf::Message*)&proto)) {
+
+  // We first try to deserialize the annotation using the runtime schema to
+  // check if the proto is valid on the latest version of the schema.
+  if (runtime_proto != nullptr) {
+    if (!parser.ParseFromString(annotation_text, runtime_proto.get())) {
+      return AuditorResult(AuditorResult::Type::ERROR_SYNTAX,
+                           error_collector.GetMessage().c_str(), file_path,
+                           line_number);
+    }
+
+    // Add only set_unique_id to the runtime_proto, as we use it to serialize
+    // the annotation, and we don't want to serialize the traffic source.
+    auto* field = runtime_proto->GetDescriptor()->FindFieldByName("unique_id");
+    runtime_proto->GetReflection()->SetString(runtime_proto.get(), field,
+                                              unique_id);
+
+    // Once we've parsed using the runtime_proto, we can skip unknown fields
+    // since we've confirmed above that the proto is valid.
+    parser.AllowUnknownField(true);
+  }
+
+  if (!parser.ParseFromString(
+          annotation_text, static_cast<google::protobuf::Message*>(&proto))) {
     return AuditorResult(AuditorResult::Type::ERROR_SYNTAX,
                          error_collector.GetMessage().c_str(), file_path,
                          line_number);
   }
+
+  // We still use the static |proto| message, as accessing fields is cleaner
+  // and checked at compile time, whereas |runtime_proto| requires reflection.
+  // This is why we deserialize the annotation a second time above.
 
   // Add other fields.
   traffic_annotation::NetworkTrafficAnnotation_TrafficSource* src =
@@ -475,10 +515,16 @@ int AnnotationInstance::GetContentHashCode() const {
   if (is_loaded_from_archive)
     return archive_content_hash_code;
 
-  traffic_annotation::NetworkTrafficAnnotation source_free_proto = proto;
-  source_free_proto.clear_source();
   std::string content;
-  google::protobuf::TextFormat::PrintToString(source_free_proto, &content);
+  if (runtime_proto != nullptr) {
+    // We try to serialize using the runtime proto, to catch newly added fields.
+    google::protobuf::TextFormat::PrintToString(*runtime_proto, &content);
+  } else {
+    // Otherwise, we default back to using the static proto.
+    traffic_annotation::NetworkTrafficAnnotation source_free_proto = proto;
+    source_free_proto.clear_source();
+    google::protobuf::TextFormat::PrintToString(source_free_proto, &content);
+  }
   return TrafficAnnotationAuditor::ComputeHashValue(content);
 }
 

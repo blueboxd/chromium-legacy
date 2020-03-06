@@ -1774,7 +1774,9 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
   background_tracing_helper.WaitForScenarioAborted();
 }
 
-IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
+// TODO(1008387): Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
+                       DISABLED_ProtoTraceReceived) {
   TestBackgroundTracingHelper background_tracing_helper;
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();

@@ -183,6 +183,35 @@ bool Process::Terminate(int exit_code, bool wait) const {
   return result;
 }
 
+Process::WaitExitStatus Process::WaitForExitOrEvent(
+    const base::win::ScopedHandle& stop_event_handle,
+    int* exit_code) const {
+  // Record the event that this thread is blocking upon (for hang diagnosis).
+  base::debug::ScopedProcessWaitActivity process_activity(this);
+
+  HANDLE events[] = {Handle(), stop_event_handle.Get()};
+  DWORD wait_result =
+      ::WaitForMultipleObjects(base::size(events), events, FALSE, INFINITE);
+
+  if (wait_result == WAIT_OBJECT_0) {
+    DWORD temp_code;  // Don't clobber out-parameters in case of failure.
+    if (!::GetExitCodeProcess(Handle(), &temp_code))
+      return Process::WaitExitStatus::FAILED;
+
+    if (exit_code)
+      *exit_code = temp_code;
+
+    Exited(temp_code);
+    return Process::WaitExitStatus::PROCESS_EXITED;
+  }
+
+  if (wait_result == WAIT_OBJECT_0 + 1) {
+    return Process::WaitExitStatus::STOP_EVENT_SIGNALED;
+  }
+
+  return Process::WaitExitStatus::FAILED;
+}
+
 bool Process::WaitForExit(int* exit_code) const {
   return WaitForExitWithTimeout(TimeDelta::FromMilliseconds(INFINITE),
                                 exit_code);

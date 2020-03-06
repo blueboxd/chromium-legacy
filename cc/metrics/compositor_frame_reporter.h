@@ -144,7 +144,7 @@ class CC_EXPORT CompositorFrameReporter {
   int StageHistorySizeForTesting() { return stage_history_.size(); }
 
   void OnFinishImplFrame(base::TimeTicks timestamp);
-  void OnAbortBeginMainFrame();
+  void OnAbortBeginMainFrame(base::TimeTicks timestamp);
   bool did_finish_impl_frame() const { return did_finish_impl_frame_; }
   bool did_abort_main_frame() const { return did_abort_main_frame_; }
   base::TimeTicks impl_frame_finish_time() const {
@@ -181,6 +181,9 @@ class CC_EXPORT CompositorFrameReporter {
   // to UMA if the termination status is |kPresentedFrame|. Reported data will
   // be divided based on the frame submission status.
   std::vector<StageData> stage_history_;
+
+  // This method is only used for DCheck
+  base::TimeDelta SumOfStageHistory() const;
 
   // List of metrics for events affecting this frame.
   std::vector<EventMetrics> events_metrics_;

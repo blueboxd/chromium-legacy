@@ -472,7 +472,7 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
-    {"close_tab_suggestions_stale_time_ms", "0"}};
+    {"baseline_tab_suggestions", "true"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
     {"close_tab_suggestions_stale_time_ms", "14400000"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {

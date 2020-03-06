@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/chrome_features.h"
@@ -43,9 +44,14 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+
+using extensions::Extension;
+using extensions::ExtensionRegistry;
 
 namespace {
 
@@ -164,9 +170,7 @@ class HostedAppBrowserListObserver : public BrowserListObserver {
 
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override {
-    const extensions::Extension* app =
-        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
-    if (app && app->id() == app_id_) {
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id_) {
       observed_add_ = true;
       if (run_loop_.get())
         run_loop_->Quit();
@@ -174,9 +178,7 @@ class HostedAppBrowserListObserver : public BrowserListObserver {
   }
 
   void OnBrowserRemoved(Browser* browser) override {
-    const extensions::Extension* app =
-        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
-    if (app && app->id() == app_id_) {
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id_) {
       observed_removed_ = true;
       if (run_loop_.get())
         run_loop_->Quit();
@@ -254,8 +256,10 @@ base::FilePath GetAppShimPath(Profile* profile,
 
 Browser* GetFirstHostedAppWindow() {
   for (Browser* browser : *BrowserList::GetInstance()) {
-    const extensions::Extension* extension =
-        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
+    const std::string app_id =
+        web_app::GetAppIdFromApplicationName(browser->app_name());
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());
+    const Extension* extension = registry->enabled_extensions().GetByID(app_id);
     if (extension && extension->is_hosted_app())
       return browser;
   }

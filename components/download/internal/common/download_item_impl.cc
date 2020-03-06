@@ -227,7 +227,6 @@ DownloadItemImpl::RequestInfo::RequestInfo(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     const base::Optional<url::Origin>& request_initiator,
-    const net::NetworkIsolationKey& network_isolation_key,
     const std::string& suggested_filename,
     const base::FilePath& forced_file_path,
     ui::PageTransition transition_type,
@@ -240,7 +239,6 @@ DownloadItemImpl::RequestInfo::RequestInfo(
       tab_url(tab_url),
       tab_referrer_url(tab_referrer_url),
       request_initiator(request_initiator),
-      network_isolation_key(network_isolation_key),
       suggested_filename(suggested_filename),
       forced_file_path(forced_file_path),
       transition_type(transition_type),
@@ -248,12 +246,8 @@ DownloadItemImpl::RequestInfo::RequestInfo(
       remote_address(remote_address),
       start_time(start_time) {}
 
-DownloadItemImpl::RequestInfo::RequestInfo(
-    const GURL& url,
-    const net::NetworkIsolationKey& network_isolation_key)
-    : url_chain(std::vector<GURL>(1, url)),
-      network_isolation_key(network_isolation_key),
-      start_time(base::Time::Now()) {}
+DownloadItemImpl::RequestInfo::RequestInfo(const GURL& url)
+    : url_chain(std::vector<GURL>(1, url)), start_time(base::Time::Now()) {}
 
 DownloadItemImpl::RequestInfo::RequestInfo() = default;
 
@@ -326,7 +320,6 @@ DownloadItemImpl::DownloadItemImpl(
                     tab_url,
                     tab_refererr_url,
                     request_initiator,
-                    net::NetworkIsolationKey::Todo(),  // crbug/1028901
                     std::string(),
                     base::FilePath(),
                     ui::PAGE_TRANSITION_LINK,
@@ -386,7 +379,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                     info.tab_url,
                     info.tab_referrer_url,
                     info.request_initiator,
-                    info.network_isolation_key,
                     base::UTF16ToUTF8(info.save_info->suggested_name),
                     info.save_info->file_path,
                     info.transition_type ? info.transition_type.value()
@@ -430,10 +422,9 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    const net::NetworkIsolationKey& network_isolation_key,
 
     DownloadJob::CancelRequestCallback cancel_request_callback)
-    : request_info_(url, network_isolation_key),
+    : request_info_(url),
       guid_(base::GenerateGUID()),
       download_id_(download_id),
       mime_type_(mime_type),
@@ -856,11 +847,6 @@ const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
 const base::Optional<url::Origin>& DownloadItemImpl::GetRequestInitiator()
     const {
   return request_info_.request_initiator;
-}
-
-const net::NetworkIsolationKey& DownloadItemImpl::GetNetworkIsolationKey()
-    const {
-  return request_info_.network_isolation_key;
 }
 
 std::string DownloadItemImpl::GetSuggestedFilename() const {
@@ -2470,8 +2456,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
   std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(GetURL(), traffic_annotation,
-                                request_info_.network_isolation_key));
+      new DownloadUrlParameters(GetURL(), traffic_annotation));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<DownloadItem::ReceivedSlice> slices_to_download =

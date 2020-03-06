@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/threading/thread.h"
+#include "base/win/scoped_handle.h"
 
 namespace browser_watcher {
 
@@ -22,6 +23,8 @@ class ExitCodeWatcher {
   bool Initialize(base::Process process);
 
   bool StartWatching();
+
+  void StopWatching();
 
   const base::Process& process() const { return process_; }
   int exit_code() const { return exit_code_; }
@@ -42,6 +45,9 @@ class ExitCodeWatcher {
 
   // The exit code of the watched process. Valid after WaitForExit.
   int exit_code_;
+
+  // Event handle to use to stop exit watcher thread
+  base::win::ScopedHandle stop_watching_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitCodeWatcher);
 };

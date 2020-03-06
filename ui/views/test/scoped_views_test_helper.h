@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/compositor/test/test_context_factories.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
 
-class PlatformTestHelper;
 class TestViewsDelegate;
 class ViewsTestHelper;
+class Widget;
 
 // Creates a ViewsTestHelper that is destroyed automatically. Acts like
 // ViewsTestBase but allows a test harness to use a different base class, or
@@ -22,14 +23,11 @@ class ViewsTestHelper;
 // by ViewsTestBase.
 class ScopedViewsTestHelper {
  public:
-  // Initialize with the default TestViewsDelegate,
-  // MessageLoopCurrentForUI::Get() and the default test ContextFactory.
-  ScopedViewsTestHelper();
-
   // Initialize with the given TestViewsDelegate instance, after setting the
   // ContextFactory.
   explicit ScopedViewsTestHelper(
-      std::unique_ptr<TestViewsDelegate> views_delegate);
+      std::unique_ptr<TestViewsDelegate> test_views_delegate =
+          std::make_unique<TestViewsDelegate>());
 
   ~ScopedViewsTestHelper();
 
@@ -37,18 +35,17 @@ class ScopedViewsTestHelper {
   // the RootWindow. Everywhere else, null.
   gfx::NativeWindow GetContext();
 
+  // Simulate an OS-level destruction of the native window held by |widget|.
+  void SimulateNativeDestroy(Widget* widget);
+
   TestViewsDelegate* test_views_delegate() {
     return test_views_delegate_.get();
   }
 
-  PlatformTestHelper* platform_test_helper() {
-    return platform_test_helper_.get();
-  }
-
  private:
+  ui::TestContextFactories context_factories_{false};
   std::unique_ptr<TestViewsDelegate> test_views_delegate_;
   std::unique_ptr<ViewsTestHelper> test_helper_;
-  std::unique_ptr<PlatformTestHelper> platform_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedViewsTestHelper);
 };

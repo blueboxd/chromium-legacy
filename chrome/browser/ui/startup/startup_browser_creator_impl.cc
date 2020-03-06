@@ -22,6 +22,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/apps_launch.h"
@@ -63,6 +64,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -449,11 +451,29 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   }
 
 #if defined(OS_WIN)
-  // TODO(gab): This could now run only during Active Setup (i.e. on explicit
-  // Active Setup versioning and on OS upgrades) instead of every startup.
-  // http://crbug.com/577697
-  if (process_startup)
-    shell_integration::win::MigrateTaskbarPins();
+  if (process_startup) {
+    // Update this number when users should go through a taskbar shortcut
+    // migration again. The last reason to do this was crrev.com/719141 @
+    // 80.0.3978.0.
+    //
+    // Note: If shortcut updates need to be done once after a future OS upgrade,
+    // that should be done by re-versioning Active Setup (see //chrome/installer
+    // and http://crbug.com/577697 for details).
+    const base::Version kLastVersionNeedingMigration({80U, 0U, 3978U, 0U});
+
+    PrefService* local_state = g_browser_process->local_state();
+    if (local_state) {
+      const base::Version last_version_migrated(
+          local_state->GetString(prefs::kShortcutMigrationVersion));
+      if (!last_version_migrated.IsValid() ||
+          last_version_migrated < kLastVersionNeedingMigration) {
+        shell_integration::win::MigrateTaskbarPins(base::BindOnce(
+            &PrefService::SetString, base::Unretained(local_state),
+            prefs::kShortcutMigrationVersion,
+            version_info::GetVersionNumber()));
+      }
+    }
+  }
 #endif  // defined(OS_WIN)
 
   return true;

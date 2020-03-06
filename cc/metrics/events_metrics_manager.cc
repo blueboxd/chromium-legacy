@@ -14,17 +14,15 @@ namespace {
 
 class ScopedMonitorImpl : public EventsMetricsManager::ScopedMonitor {
  public:
-  ScopedMonitorImpl(
-      base::flat_map<ScopedMonitor*, EventMetrics>* events_metrics,
-      const EventMetrics& event_metrics)
-      : events_metrics_(events_metrics) {
-    events_metrics_->emplace(this, event_metrics);
+  explicit ScopedMonitorImpl(base::Optional<EventMetrics>* active_event)
+      : active_event_(active_event) {
+    DCHECK(active_event_);
   }
 
-  ~ScopedMonitorImpl() override { events_metrics_->erase(this); }
+  ~ScopedMonitorImpl() override { *active_event_ = base::nullopt; }
 
  private:
-  base::flat_map<ScopedMonitor*, EventMetrics>* const events_metrics_;
+  base::Optional<EventMetrics>* active_event_;
 };
 
 }  // namespace
@@ -36,16 +34,17 @@ EventsMetricsManager::~EventsMetricsManager() = default;
 
 std::unique_ptr<EventsMetricsManager::ScopedMonitor>
 EventsMetricsManager::GetScopedMonitor(const EventMetrics& event_metrics) {
+  DCHECK(!active_event_);
   if (!event_metrics.IsWhitelisted())
     return nullptr;
-  return std::make_unique<ScopedMonitorImpl>(&active_events_, event_metrics);
+  active_event_ = event_metrics;
+  return std::make_unique<ScopedMonitorImpl>(&active_event_);
 }
 
-void EventsMetricsManager::SaveActiveEventsMetrics() {
-  saved_events_.reserve(saved_events_.size() + active_events_.size());
-  for (auto it = active_events_.begin(); it != active_events_.end();) {
-    saved_events_.push_back(it->second);
-    it = active_events_.erase(it);
+void EventsMetricsManager::SaveActiveEventMetrics() {
+  if (active_event_) {
+    saved_events_.push_back(*active_event_);
+    active_event_ = base::nullopt;
   }
 }
 

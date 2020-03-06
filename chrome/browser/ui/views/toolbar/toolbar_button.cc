@@ -266,6 +266,8 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::SetLayoutInsets(const gfx::Insets& insets) {
+  if (layout_insets_ == insets)
+    return;
   layout_insets_ = insets;
   UpdateColorsAndInsets();
 }

@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.media.router.caf.remoting;
 
-import android.support.v7.media.MediaRouter;
-
 import androidx.annotation.Nullable;
+import androidx.mediarouter.media.MediaRouter;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;

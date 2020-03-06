@@ -14,6 +14,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
@@ -25,6 +26,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_observer.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/event_monitor.h"
@@ -40,7 +42,7 @@ constexpr int kUseCompactLayoutWidthThreshold = 600;
 
 // In the non-compact layout, this is the height allocated for elements other
 // than the desk preview (e.g. the DeskNameView, and the vertical paddings).
-constexpr int kNonPreviewAllocatedHeight = 55;
+constexpr int kNonPreviewAllocatedHeight = 47;
 
 // The local Y coordinate of the mini views in both non-compact and compact
 // layouts respectively.
@@ -278,6 +280,25 @@ void DesksBarView::Layout() {
   }
 }
 
+bool DesksBarView::OnMousePressed(const ui::MouseEvent& event) {
+  DeskNameView::CommitChanges(GetWidget());
+  return false;
+}
+
+void DesksBarView::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_DOWN:
+      DeskNameView::CommitChanges(GetWidget());
+      break;
+
+    default:
+      break;
+  }
+}
+
 bool DesksBarView::UsesCompactLayout() const {
   return width() <= kUseCompactLayoutWidthThreshold ||
          width() <= min_width_to_fit_contents_;
@@ -290,10 +311,12 @@ void DesksBarView::ButtonPressed(views::Button* sender,
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
+  DeskNameView::CommitChanges(GetWidget());
   UpdateNewMiniViews(/*animate=*/true);
 }
 
 void DesksBarView::OnDeskRemoved(const Desk* desk) {
+  DeskNameView::CommitChanges(GetWidget());
   auto iter =
       std::find_if(mini_views_.begin(), mini_views_.end(),
                    [desk](const std::unique_ptr<DeskMiniView>& mini_view) {

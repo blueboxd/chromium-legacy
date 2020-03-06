@@ -374,8 +374,6 @@ void HeapCompact::Initialize(ThreadState* state) {
 }
 
 bool HeapCompact::ShouldRegisterMovingAddress(Address address) {
-  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(address)));
-
   return do_compact_;
 }
 
@@ -444,6 +442,7 @@ void HeapCompact::FilterNonLiveSlots() {
       heap_->GetMovableReferenceWorklist(), WorklistTaskId::MutatorThread);
   MovableReference* slot;
   while (traced_slots.Pop(&slot)) {
+    CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
     if (*slot) {
       Fixups().AddOrFilter(slot);
       last_fixup_count_for_testing_++;

@@ -355,14 +355,6 @@ class LinkedHashSet {
 
   template <typename VisitorDispatcher>
   void Trace(VisitorDispatcher visitor) {
-    if (visitor->ConcurrentTracingBailOut(
-            {this, [](blink::Visitor* visitor, void* object) {
-               reinterpret_cast<LinkedHashSet<ValueArg, HashFunctions,
-                                              TraitsArg, Allocator>*>(object)
-                   ->Trace(visitor);
-             }}))
-      return;
-
     impl_.Trace(visitor);
     // Should the underlying table be moved by GC, register a callback
     // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.

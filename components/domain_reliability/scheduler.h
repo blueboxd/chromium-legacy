@@ -39,7 +39,7 @@ class MockableTime;
 // interval.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
  public:
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)>
+  typedef base::RepeatingCallback<void(base::TimeDelta, base::TimeDelta)>
       ScheduleUploadCallback;
 
   struct Params {

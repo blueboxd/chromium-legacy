@@ -130,10 +130,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // can get the correct updated data.
   const size_t prev_selected_line = selected_line();
   SetSelection(Selection(line, NORMAL));
-  if (prev_selected_line != kNoMatch)
-    view_->OnSelectionStateChanged(prev_selected_line);
-  if (selected_line() != kNoMatch)
-    view_->OnSelectionStateChanged(selected_line());
+  view_->OnSelectedLineChanged(prev_selected_line, selected_line());
 
   if (line == kNoMatch)
     return;

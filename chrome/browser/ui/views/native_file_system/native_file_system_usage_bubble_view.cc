@@ -100,9 +100,6 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
   static constexpr int kExpandedTableRowCount = 3;
 
   explicit CollapsibleListView(ui::TableModel* model) {
-    const SkColor icon_color =
-        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-            ui::NativeTheme::kColorId_DefaultIconColor);
     const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
 
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -138,12 +135,8 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
-    views::SetImageFromVectorIconWithColor(
-        button.get(), kCaretDownIcon, ui::TableModel::kIconSize, icon_color);
     button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND));
-    views::SetToggledImageFromVectorIconWithColor(
-        button.get(), kCaretUpIcon, ui::TableModel::kIconSize, icon_color);
     button->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
     expand_collapse_button_ = label_container->AddChildView(std::move(button));
@@ -171,6 +164,18 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
                   std::min(table_height, kExpandedTableRowCount * row_height) +
                       inset_height));
     table_view_parent_->SetVisible(false);
+  }
+
+  // views::View
+  void OnThemeChanged() override {
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    views::SetImageFromVectorIconWithColor(
+        expand_collapse_button_, kCaretDownIcon, ui::TableModel::kIconSize,
+        icon_color);
+    views::SetToggledImageFromVectorIconWithColor(
+        expand_collapse_button_, kCaretUpIcon, ui::TableModel::kIconSize,
+        icon_color);
   }
 
   // views::ButtonListener:

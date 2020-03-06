@@ -29,6 +29,9 @@ class DeepScanningBrowserTestBase : public InProcessBrowserTest {
   // and EncryptionStatusCallback. Also sets up a test DM token.
   void SetUpDelegate();
 
+  // Sets up a FakeDeepScanningDialogDelegate that never returns responses.
+  void SetUpUnresponsiveDelegate();
+
   // Set up a quit closure to be called by the test. This is useful to control
   // when the test ends.
   void SetQuitClosure(base::RepeatingClosure quit_closure);

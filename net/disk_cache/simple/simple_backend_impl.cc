@@ -48,8 +48,6 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "net/disk_cache/simple/simple_version_upgrade.h"
 
-using base::Callback;
-using base::Closure;
 using base::FilePath;
 using base::Time;
 using base::DirectoryExists;

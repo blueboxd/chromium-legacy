@@ -20,8 +20,10 @@ constexpr char kZipExt[] = ".zip";
 
 }  // namespace
 
-FileManager::FileManager(const base::FilePath& root_directory)
-    : root_directory_(root_directory) {}
+FileManager::FileManager(
+    const base::FilePath& root_directory,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : root_directory_(root_directory), io_task_runner_(io_task_runner) {}
 
 FileManager::~FileManager() = default;
 
@@ -34,7 +36,8 @@ DirectoryKey FileManager::CreateKey(uint64_t tab_id) const {
   return DirectoryKey{base::NumberToString(tab_id)};
 }
 
-size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) {
+size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
@@ -54,39 +57,32 @@ size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) {
   }
 }
 
-bool FileManager::GetCreatedTime(const DirectoryKey& key,
-                                 base::Time* created_time) {
+base::Optional<base::File::Info> FileManager::GetInfo(
+    const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
   if (storage_type == FileManager::StorageType::kNone)
-    return false;
+    return base::nullopt;
   base::File::Info info;
   if (!base::GetFileInfo(path, &info))
-    return false;
-  *created_time = info.creation_time;
-  return true;
+    return base::nullopt;
+  return info;
 }
 
-bool FileManager::GetLastModifiedTime(const DirectoryKey& key,
-                                      base::Time* last_modified_time) {
-  base::FilePath path;
-  StorageType storage_type = GetPathForKey(key, &path);
-  if (storage_type == FileManager::StorageType::kNone)
-    return false;
-  base::File::Info info;
-  if (!base::GetFileInfo(path, &info))
-    return false;
-  *last_modified_time = info.last_modified;
-  return true;
-}
-
-bool FileManager::DirectoryExists(const DirectoryKey& key) {
+bool FileManager::DirectoryExists(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   return GetPathForKey(key, &path) != StorageType::kNone;
 }
 
-bool FileManager::CreateOrGetDirectory(const DirectoryKey& key,
-                                       base::FilePath* directory) {
+base::Optional<base::FilePath> FileManager::CreateOrGetDirectory(
+    const DirectoryKey& key,
+    bool clear) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (clear)
+    DeleteArtifacts(key);
+
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
@@ -94,39 +90,36 @@ bool FileManager::CreateOrGetDirectory(const DirectoryKey& key,
       base::FilePath new_path = root_directory_.AppendASCII(key.AsciiDirname());
       base::File::Error error = base::File::FILE_OK;
       if (base::CreateDirectoryAndGetError(new_path, &error)) {
-        *directory = new_path;
-        return true;
+        return new_path;
       }
       DVLOG(1) << "ERROR: failed to create directory: " << path
                << " with error code " << error;
-      return false;
+      return base::nullopt;
     }
-    case kDirectory: {
-      *directory = path;
-      return true;
-    }
+    case kDirectory:
+      return path;
     case kZip: {
       base::FilePath dst_path = root_directory_.AppendASCII(key.AsciiDirname());
       base::File::Error error = base::File::FILE_OK;
       if (!base::CreateDirectoryAndGetError(dst_path, &error)) {
         DVLOG(1) << "ERROR: failed to create directory: " << path
                  << " with error code " << error;
-        return false;
+        return base::nullopt;
       }
       if (!zip::Unzip(path, dst_path)) {
         DVLOG(1) << "ERROR: failed to unzip: " << path << " to " << dst_path;
-        return false;
+        return base::nullopt;
       }
       base::DeleteFileRecursively(path);
-      *directory = dst_path;
-      return true;
+      return dst_path;
     }
     default:
-      return false;
+      return base::nullopt;
   }
 }
 
-bool FileManager::CompressDirectory(const DirectoryKey& key) {
+bool FileManager::CompressDirectory(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
@@ -149,7 +142,8 @@ bool FileManager::CompressDirectory(const DirectoryKey& key) {
   }
 }
 
-void FileManager::DeleteArtifacts(const DirectoryKey& key) {
+void FileManager::DeleteArtifacts(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
   StorageType storage_type = GetPathForKey(key, &path);
   if (storage_type == FileManager::StorageType::kNone)
@@ -157,33 +151,40 @@ void FileManager::DeleteArtifacts(const DirectoryKey& key) {
   base::DeleteFileRecursively(path);
 }
 
-void FileManager::DeleteArtifacts(const std::vector<DirectoryKey>& keys) {
+void FileManager::DeleteArtifacts(const std::vector<DirectoryKey>& keys) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   for (const auto& key : keys)
     DeleteArtifacts(key);
 }
 
-void FileManager::DeleteAll() {
+void FileManager::DeleteAll() const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::DeleteFileRecursively(root_directory_);
 }
 
 bool FileManager::SerializePaintPreviewProto(const DirectoryKey& key,
-                                             const PaintPreviewProto& proto) {
-  base::FilePath path;
-  if (!CreateOrGetDirectory(key, &path))
+                                             const PaintPreviewProto& proto,
+                                             bool compress) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  auto path = CreateOrGetDirectory(key, false);
+  if (!path.has_value())
     return false;
-  return WriteProtoToFile(path.AppendASCII(kProtoName), proto);
+  return WriteProtoToFile(path->AppendASCII(kProtoName), proto) &&
+         (!compress || CompressDirectory(key));
 }
 
 std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(
-    const DirectoryKey& key) {
-  base::FilePath path;
-  if (!CreateOrGetDirectory(key, &path))
+    const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  auto path = CreateOrGetDirectory(key, false);
+  if (!path.has_value())
     return nullptr;
-  return ReadProtoFromFile(path.AppendASCII(kProtoName));
+  return ReadProtoFromFile(path->AppendASCII(kProtoName));
 }
 
-FileManager::StorageType FileManager::GetPathForKey(const DirectoryKey& key,
-                                                    base::FilePath* path) {
+FileManager::StorageType FileManager::GetPathForKey(
+    const DirectoryKey& key,
+    base::FilePath* path) const {
   base::FilePath directory_path =
       root_directory_.AppendASCII(key.AsciiDirname());
   if (base::PathExists(directory_path)) {

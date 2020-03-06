@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
@@ -53,6 +54,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -78,7 +80,9 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -1626,6 +1630,42 @@ void StyleEngine::ApplyRuleSetChanges(
                               kInvalidateCurrentScope, has_rebuilt_font_cache);
 }
 
+void StyleEngine::LoadVisionDeficiencyFilter() {
+  VisionDeficiency old_vision_deficiency = vision_deficiency_;
+  vision_deficiency_ = GetDocument().GetPage()->GetVisionDeficiency();
+  if (vision_deficiency_ == old_vision_deficiency)
+    return;
+
+  if (vision_deficiency_ == VisionDeficiency::kNoVisionDeficiency) {
+    vision_deficiency_filter_ = nullptr;
+  } else {
+    AtomicString url = CreateVisionDeficiencyFilterUrl(vision_deficiency_);
+    cssvalue::CSSURIValue css_uri_value(url);
+    SVGResource* svg_resource = css_uri_value.EnsureResourceReference();
+    // Note: The fact that we're using data: URLs here is an
+    // implementation detail. Emulating vision deficiencies should still
+    // work even if the Document's Content-Security-Policy disallows
+    // data: URLs.
+    svg_resource->LoadWithoutCSP(GetDocument());
+    vision_deficiency_filter_ =
+        MakeGarbageCollected<ReferenceFilterOperation>(url, svg_resource);
+  }
+}
+
+void StyleEngine::VisionDeficiencyChanged() {
+  MarkViewportStyleDirty();
+}
+
+void StyleEngine::ApplyVisionDeficiencyStyle(
+    scoped_refptr<ComputedStyle> layout_view_style) {
+  LoadVisionDeficiencyFilter();
+  if (vision_deficiency_filter_) {
+    FilterOperations ops;
+    ops.Operations().push_back(vision_deficiency_filter_);
+    layout_view_style->SetFilter(ops);
+  }
+}
+
 const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
   if (!media_query_evaluator_) {
     if (GetDocument().GetFrame()) {
@@ -2135,6 +2175,7 @@ void StyleEngine::Trace(Visitor* visitor) {
   visitor->Trace(active_tree_scopes_);
   visitor->Trace(tree_boundary_crossing_scopes_);
   visitor->Trace(resolver_);
+  visitor->Trace(vision_deficiency_filter_);
   visitor->Trace(viewport_resolver_);
   visitor->Trace(media_query_evaluator_);
   visitor->Trace(global_rule_set_);

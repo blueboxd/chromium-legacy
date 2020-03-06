@@ -23,8 +23,9 @@ class MachineIdProvider {
   static bool HasId();
 
   // Get a string containing machine characteristics, to be used as a machine
-  // id. The implementation is platform specific, with a default implementation
-  // returning an empty string.
+  // id. The implementation is split into Windows and non-Windows. The former
+  // returns the drive serial number and the latter returns the hardware
+  // model name. Should not be called if HasId() returns false.
   // The return value should not be stored to disk or transmitted.
   static std::string GetMachineId();
 

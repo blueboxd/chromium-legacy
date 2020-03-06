@@ -50,7 +50,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       base::SequenceBound<YCbCrHelper> ycbcr_helper);
   ~VideoFrameFactoryImpl() override;
 
-  void Initialize(OverlayMode overlay_mode, InitCb init_cb) override;
+  void Initialize(OverlayMode overlay_mode, InitCB init_cb) override;
   void SetSurfaceBundle(
       scoped_refptr<CodecSurfaceBundle> surface_bundle) override;
   void CreateVideoFrame(
@@ -58,7 +58,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      OnceOutputCb output_cb) override;
+      OnceOutputCB output_cb) override;
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override;
 
   // This should be only used for testing.
@@ -81,7 +81,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // can worry about it.
   static void CreateVideoFrame_OnImageReady(
       base::WeakPtr<VideoFrameFactoryImpl> thiz,
-      OnceOutputCb output_cb,
+      OnceOutputCB output_cb,
       base::TimeDelta timestamp,
       gfx::Size coded_size,
       gfx::Size natural_size,
@@ -101,7 +101,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // Really create the VideoFrame, once we've tried to get the YCbCrInfo if it's
   // needed for it.
   void CreateVideoFrame_Finish(
-      OnceOutputCb output_cb,
+      OnceOutputCB output_cb,
       base::TimeDelta timestamp,
       gfx::Size coded_size,
       gfx::Size natural_size,

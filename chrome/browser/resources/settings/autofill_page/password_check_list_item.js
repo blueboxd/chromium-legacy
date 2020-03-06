@@ -10,8 +10,6 @@
 Polymer({
   is: 'password-check-list-item',
 
-  behaviors: [I18nBehavior],
-
   properties: {
     password_: {
       type: String,

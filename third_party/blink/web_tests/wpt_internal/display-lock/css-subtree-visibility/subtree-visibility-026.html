@@ -1,0 +1,73 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Subtree Visibility: containment added</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<meta name="assert" content="subtree-visibility visible does not add containment">
+<meta name="assert" content="subtree-visibility hidden adds containment">
+<meta name="assert" content="subtree-visibility auto adds containment">
+
+<style>
+.auto {
+  subtree-visibility: auto;
+}
+.hidden {
+  subtree-visibility: hidden;
+}
+</style>
+<div id="container"></div>
+<div id="async_container"></div>
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<script>
+function setUp(container) {
+  container.style = "";
+  container.classList = "";
+  assert_equals(getComputedStyle(container).contain, "none");
+}
+
+test(() => {
+  setUp(container);
+  container.classList.add("hidden");
+  assert_equals(getComputedStyle(container).contain, "size layout style");
+}, "subtree-visibility: hidden adds contain: size layout style;");
+
+async_test((t) => {
+  setUp(async_container);
+  async_container.classList.add("auto");
+  t.step(() => assert_equals(getComputedStyle(async_container).contain, "size layout style"));
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Since container is in the viewport it will not have size containment
+      // when the UA detects it's in the viewport.
+      t.step(() => assert_equals(getComputedStyle(async_container).contain, "layout style"));
+      t.done();
+    });
+  });
+}, "subtree-visibility: auto adds contain: size layout style;");
+
+test(() => {
+  setUp(container);
+  container.classList.add("auto");
+  container.style = "contain: style;";
+  assert_equals(getComputedStyle(container).contain, "size layout style");
+  container.style = "contain: style layout;";
+  assert_equals(getComputedStyle(container).contain, "size layout style");
+  container.style = "";
+  assert_equals(getComputedStyle(container).contain, "size layout style");
+}, "subtree-visibility: auto adds contain: size layout style, can't be overridden");
+
+test(() => {
+  setUp(container);
+  container.classList.add("auto");
+  container.style = "contain: paint;";
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
+  container.style = "contain: strict;";
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
+  container.style = "contain: content;";
+  assert_equals(getComputedStyle(container).contain, "size layout style paint");
+}, "subtree-visibility adds contain: size layout style and keeps paint if it exists");
+</script>

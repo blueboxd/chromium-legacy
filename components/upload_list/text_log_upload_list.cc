@@ -8,6 +8,8 @@
 #include <sstream>
 
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -16,6 +18,13 @@ namespace {
 
 constexpr size_t kUploadTimeIndex = 0;
 constexpr size_t kCaptureTimeIndex = 3;
+
+constexpr char kJsonLogKeyUploadId[] = "upload_id";
+constexpr char kJsonLogKeyUploadTime[] = "upload_time";
+constexpr char kJsonLogKeyLocalId[] = "local_id";
+constexpr char kJsonLogKeyCaptureTime[] = "capture_time";
+constexpr char kJsonLogKeyState[] = "state";
+constexpr char kJsonLogKeySource[] = "source";
 
 std::vector<std::string> SplitIntoLines(const std::string& file_contents) {
   return base::SplitString(file_contents, base::kWhitespaceASCII,
@@ -53,25 +62,52 @@ bool CheckCsvUploadListOutOfRange(const std::string& line,
   return true;
 }
 
+bool CheckFieldOutOfRange(const std::string* time_string,
+                          const base::Time& begin,
+                          const base::Time& end) {
+  if (time_string) {
+    double upload_time_double = 0.0;
+    if (base::StringToDouble(*time_string, &upload_time_double)) {
+      base::Time upload_time = base::Time::FromDoubleT(upload_time_double);
+      if (begin <= upload_time && upload_time <= end)
+        return false;
+    }
+  }
+  return true;
+}
+
+bool CheckJsonUploadListOutOfRange(const base::Value& dict,
+                                   const base::Time& begin,
+                                   const base::Time& end) {
+  const std::string* upload_time_string =
+      dict.FindStringKey(kJsonLogKeyUploadTime);
+
+  const std::string* capture_time_string =
+      dict.FindStringKey(kJsonLogKeyCaptureTime);
+
+  return CheckFieldOutOfRange(upload_time_string, begin, end) &&
+         CheckFieldOutOfRange(capture_time_string, begin, end);
+}
+
 // Tries to parse one upload log line based on CSV format, then converts it to
-// a UploadInfo entry. If the conversion succeeds, it returns true and a valid
-// |info|. Otherwise, it returns false.
-bool TryParseCsvLogEntry(const std::string& log_line,
-                         std::unique_ptr<TextLogUploadList::UploadInfo>& info) {
+// a UploadInfo entry. If the conversion succeeds, it returns a valid UploadInfo
+// instance. Otherwise, it returns nullptr.
+std::unique_ptr<TextLogUploadList::UploadInfo> TryParseCsvLogEntry(
+    const std::string& log_line) {
   std::vector<std::string> components = SplitIntoComponents(log_line);
   // Skip any blank (or corrupted) lines.
   if (components.size() < 2 || components.size() > 5)
-    return false;
+    return nullptr;
   base::Time upload_time;
   double seconds_since_epoch;
   if (!components[kUploadTimeIndex].empty()) {
     if (!base::StringToDouble(components[kUploadTimeIndex],
                               &seconds_since_epoch))
-      return false;
+      return nullptr;
     upload_time = base::Time::FromDoubleT(seconds_since_epoch);
   }
-  info = std::make_unique<TextLogUploadList::UploadInfo>(components[1],
-                                                         upload_time);
+  auto info = std::make_unique<TextLogUploadList::UploadInfo>(components[1],
+                                                              upload_time);
 
   // Add local ID if present.
   if (components.size() > 2)
@@ -91,7 +127,57 @@ bool TryParseCsvLogEntry(const std::string& log_line,
     info->state = static_cast<TextLogUploadList::UploadInfo::State>(state);
   }
 
-  return true;
+  return info;
+}
+
+// Tries to parse one upload log dictionary based on line-based JSON format (no
+// internal additional newline is permitted), then converts it to a UploadInfo
+// entry. If the conversion succeeds, it returns a valid UploadInfo instance.
+// Otherwise, it returns nullptr.
+std::unique_ptr<TextLogUploadList::UploadInfo> TryParseJsonLogEntry(
+    const base::Value& dict) {
+  // Parse upload_id.
+  const base::Value* upload_id_value = dict.FindKey(kJsonLogKeyUploadId);
+  std::string upload_id;
+  if (upload_id_value && !upload_id_value->GetAsString(&upload_id))
+    return nullptr;
+
+  // Parse upload_time.
+  const std::string* upload_time_string =
+      dict.FindStringKey(kJsonLogKeyUploadTime);
+  double upload_time_double = 0.0;
+  if (upload_time_string &&
+      !base::StringToDouble(*upload_time_string, &upload_time_double))
+    return nullptr;
+
+  auto info = std::make_unique<TextLogUploadList::UploadInfo>(
+      upload_id, base::Time::FromDoubleT(upload_time_double));
+
+  // Parse local_id.
+  const std::string* local_id = dict.FindStringKey(kJsonLogKeyLocalId);
+  if (local_id)
+    info->local_id = *local_id;
+
+  // Parse capture_time.
+  const std::string* capture_time_string =
+      dict.FindStringKey(kJsonLogKeyCaptureTime);
+  double capture_time_double = 0.0;
+  if (capture_time_string &&
+      base::StringToDouble(*capture_time_string, &capture_time_double))
+    info->capture_time = base::Time::FromDoubleT(capture_time_double);
+
+  // Parse state.
+  base::Optional<int> state = dict.FindIntKey(kJsonLogKeyState);
+  if (state.has_value())
+    info->state =
+        static_cast<TextLogUploadList::UploadInfo::State>(state.value());
+
+  // Parse source.
+  const std::string* source = dict.FindStringKey(kJsonLogKeySource);
+  if (source)
+    info->source = *source;
+
+  return info;
 }
 
 }  // namespace
@@ -124,7 +210,15 @@ void TextLogUploadList::ClearUploadList(const base::Time& begin,
 
   std::ostringstream new_contents_stream;
   for (const std::string& line : log_entries) {
-    if (CheckCsvUploadListOutOfRange(line, begin, end))
+    base::Optional<base::Value> json = base::JSONReader::Read(line);
+    bool should_copy = false;
+
+    if (json.has_value())
+      should_copy = CheckJsonUploadListOutOfRange(json.value(), begin, end);
+    else
+      should_copy = CheckCsvUploadListOutOfRange(line, begin, end);
+
+    if (should_copy)
       new_contents_stream << line << std::endl;
   }
 
@@ -144,8 +238,14 @@ void TextLogUploadList::ParseLogEntries(
   for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
     const std::string& line = *i;
     std::unique_ptr<UploadInfo> info = nullptr;
+    base::Optional<base::Value> json = base::JSONReader::Read(line);
 
-    if (TryParseCsvLogEntry(line, info))
+    if (json.has_value())
+      info = TryParseJsonLogEntry(json.value());
+    else
+      info = TryParseCsvLogEntry(line);
+
+    if (info)
       uploads->push_back(*info);
   }
 }

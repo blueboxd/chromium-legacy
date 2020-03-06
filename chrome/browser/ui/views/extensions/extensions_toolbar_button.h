@@ -25,8 +25,15 @@ class ExtensionsToolbarButton : public ToolbarButton,
   void UpdateIcon();
 
  private:
+  // ToolbarButton:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  const char* GetClassName() const override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  int GetIconSize() const;
 
   Browser* const browser_;
   views::MenuButtonController* menu_button_controller_;

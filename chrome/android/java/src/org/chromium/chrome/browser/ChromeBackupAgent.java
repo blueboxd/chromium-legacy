@@ -404,7 +404,7 @@ public class ChromeBackupAgent extends BackupAgent {
             }
 
             @Override
-            protected void onFailure() {
+            protected void onFailure(Exception failureCause) {
                 // Ignore failure. Problems with the variation seed can be ignored, and other
                 // problems will either recover or be repeated when Chrome is started synchronously.
                 latch.countDown();

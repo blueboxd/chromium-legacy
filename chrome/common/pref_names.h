@@ -835,6 +835,7 @@ extern const char kShelfDefaultPinLayoutRollsForTabletFormFactor[];
 #if defined(OS_WIN)
 extern const char kNetworkProfileWarningsLeft[];
 extern const char kNetworkProfileLastWarningTime[];
+extern const char kShortcutMigrationVersion[];
 #endif
 
 #if defined(OS_CHROMEOS)

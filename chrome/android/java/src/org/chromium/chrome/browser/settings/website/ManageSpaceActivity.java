@@ -113,7 +113,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                 ManageSpaceActivity.this.finishNativeInitialization();
             }
             @Override
-            public void onStartupFailure() {
+            public void onStartupFailure(Exception failureCause) {
                 mSiteDataSizeText.setText(R.string.storage_management_startup_failure);
                 mUnimportantSiteDataSizeText.setText(R.string.storage_management_startup_failure);
             }
@@ -128,7 +128,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
             String failedVersion = SharedPreferencesManager.getInstance().readString(
                     ChromePreferenceKeys.SETTINGS_WEBSITE_FAILED_BUILD_VERSION, null);
             if (TextUtils.equals(failedVersion, productVersion)) {
-                parts.onStartupFailure();
+                parts.onStartupFailure(null);
                 return;
             }
 

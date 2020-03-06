@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.support.v7.media.MediaRouteProvider;
+import androidx.mediarouter.media.MediaRouteProvider;
 
 /**
  * RoutePublisher interface, which is used to publish routes (sinks) and create {@link

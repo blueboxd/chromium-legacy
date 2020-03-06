@@ -920,9 +920,19 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
 
   // If any desk name is being modified, let the DeskNameView handle the key
   // events.
-  for (const auto& grid : grid_list_) {
-    if (grid->IsDeskNameBeingModified())
-      return;
+  // Note that Tab presses should commit any pending desk name changes.
+  const bool is_key_press = event->type() == ui::ET_KEY_PRESSED;
+  const bool should_commit_name_changes =
+      is_key_press && event->key_code() == ui::VKEY_TAB;
+  for (auto& grid : grid_list_) {
+    if (grid->IsDeskNameBeingModified()) {
+      if (!should_commit_name_changes)
+        return;
+
+      // Commit and proceed.
+      grid->CommitDeskNameChanges();
+      break;
+    }
   }
 
   // Check if we can scroll with the event first as it can use release events as
@@ -933,7 +943,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
-  if (event->type() != ui::ET_KEY_PRESSED)
+  if (!is_key_press)
     return;
 
   switch (event->key_code()) {

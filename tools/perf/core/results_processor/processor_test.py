@@ -40,13 +40,6 @@ import mock
 SAMPLE_HISTOGRAM_NAME = 'foo'
 SAMPLE_HISTOGRAM_UNIT = 'sizeInBytes_smallerIsBetter'
 
-# For testing the TBMv3 workflow we use dummy_metric defined in
-# tools/perf/core/tbmv3/metrics/dummy_metric_*.
-# This metric ignores the trace data and outputs a histogram with
-# the following name and unit:
-DUMMY_HISTOGRAM_NAME = 'dummy::foo'
-DUMMY_HISTOGRAM_UNIT = 'count_biggerIsBetter'
-
 
 class ResultsProcessorIntegrationTests(unittest.TestCase):
   def setUp(self):
@@ -707,8 +700,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
 
-    hist = out_histograms.GetHistogramNamed(DUMMY_HISTOGRAM_NAME)
-    self.assertEqual(hist.unit, DUMMY_HISTOGRAM_UNIT)
+    # For testing the TBMv3 workflow we use dummy_metric defined in
+    # tools/perf/core/tbmv3/metrics/dummy_metric_*.
+    hist = out_histograms.GetHistogramNamed('dummy::simple_field')
+    self.assertEqual(hist.unit, 'count_smallerIsBetter')
 
     self.assertEqual(hist.diagnostics['benchmarks'],
                      generic_set.GenericSet(['benchmark']))
@@ -720,3 +715,66 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
                      generic_set.GenericSet(['label']))
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(1234567890987))
+
+  def testComplexMetricOutput_TBMv3(self):
+    self.SerializeIntermediateResults(
+        testing.TestResult(
+            'benchmark/story',
+            output_artifacts=[
+                self.CreateProtoTraceArtifact(),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']])
+            ],
+            tags=['tbmv3:dummy_metric'],
+            start_time='2009-02-13T23:31:30.987000Z',
+        ),
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    # For testing the TBMv3 workflow we use dummy_metric defined in
+    # tools/perf/core/tbmv3/metrics/dummy_metric_*.
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+
+    simple_field = out_histograms.GetHistogramNamed(
+        "dummy::simple_field")
+    self.assertEqual(simple_field.unit, "count_smallerIsBetter")
+    self.assertEqual((simple_field.num_values, simple_field.average), (1, 42))
+
+    repeated_field = out_histograms.GetHistogramNamed(
+        "dummy::repeated_field")
+    self.assertEqual(repeated_field.unit, "ms_biggerIsBetter")
+    self.assertEqual(repeated_field.num_values, 3)
+    self.assertEqual(repeated_field.sample_values, [1, 2, 3])
+
+    # Unannotated fields should not be included in final histogram output.
+    simple_nested_unannotated = out_histograms.GetHistogramsNamed(
+        "dummy::simple_nested:unannotated_field")
+    self.assertEqual(len(simple_nested_unannotated), 0)
+    repeated_nested_unannotated = out_histograms.GetHistogramsNamed(
+        "dummy::repeated_nested:unannotated_field")
+    self.assertEqual(len(repeated_nested_unannotated), 0)
+
+    simple_nested_annotated = out_histograms.GetHistogramNamed(
+        "dummy::simple_nested:annotated_field")
+    self.assertEqual(simple_nested_annotated.unit, "ms_smallerIsBetter")
+    self.assertEqual(simple_nested_annotated.num_values, 1)
+    self.assertEqual(simple_nested_annotated.average, 44)
+    repeated_nested_annotated = out_histograms.GetHistogramNamed(
+        "dummy::repeated_nested:annotated_field")
+    self.assertEqual(repeated_nested_annotated.unit, "ms_smallerIsBetter")
+    self.assertEqual(repeated_nested_annotated.num_values, 2)
+    self.assertEqual(repeated_nested_annotated.sample_values, [2, 4])

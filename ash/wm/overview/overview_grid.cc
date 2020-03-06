@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -761,6 +762,7 @@ void OverviewGrid::UpdateDropTargetBackgroundVisibility(
 }
 
 void OverviewGrid::OnSelectorItemDragStarted(OverviewItem* item) {
+  CommitDeskNameChanges();
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->OnSelectorItemDragStarted(item);
 }
@@ -1609,6 +1611,13 @@ void OverviewGrid::OnDesksChanged() {
 
 bool OverviewGrid::IsDeskNameBeingModified() const {
   return desks_bar_view_ && desks_bar_view_->IsDeskNameBeingModified();
+}
+
+void OverviewGrid::CommitDeskNameChanges() {
+  // The desks bar widget may not be ready, since it is created asynchronously
+  // later when the entering overview animations finish.
+  if (desks_widget_)
+    DeskNameView::CommitChanges(desks_widget_.get());
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {

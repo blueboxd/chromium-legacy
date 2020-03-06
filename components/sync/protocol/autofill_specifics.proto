@@ -158,6 +158,9 @@ message WalletMaskedCreditCard {
   // Use WalletCreditCardCloudTokenData instead. This field will be set if
   // a cloud token is available for the instrument.
   optional CloudTokenData cloud_token_data = 11;
+
+  // The card's nickname, if it exists.
+  optional string nickname = 12;
 }
 
 // Different than an AutofillProfile because this represents some known address

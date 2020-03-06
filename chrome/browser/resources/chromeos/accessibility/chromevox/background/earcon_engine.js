@@ -381,6 +381,34 @@ EarconEngine = class {
     this.play('selection_reverse');
   }
 
+  onTouchEnterAnchor() {
+    this.play('static', {gain: this.clickVolume});
+    const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, 6);
+    this.generateSinusoidal({
+      attack: 0.0,
+      decay: 0.01,
+      dur: 0.03,
+      gain: 0.5,
+      freq: freq1,
+      overtones: 1,
+      overtoneFactor: 0.8
+    });
+  }
+
+  onTouchExitAnchor() {
+    this.play('static', {gain: this.clickVolume});
+    const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, 13);
+    this.generateSinusoidal({
+      attack: 0.00001,
+      decay: 0.01,
+      dur: 0.1,
+      gain: 0.3,
+      freq: freq1,
+      overtones: 1,
+      overtoneFactor: 0.1
+    });
+  }
+
   /**
    * Generate a synthesized musical note based on a sum of sinusoidals shaped
    * by an envelope, controlled by a number of properties.

@@ -222,14 +222,19 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
                                                    OmniboxPopupModel::KEYWORD);
 }
 
-void OmniboxPopupContentsView::OnSelectionStateChanged(size_t line) {
+void OmniboxPopupContentsView::OnSelectedLineChanged(size_t old_selected_line,
+                                                     size_t new_selected_line) {
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
-    webui_view_->GetWebUIHandler()->OnSelectionStateChanged(line);
+    webui_view_->GetWebUIHandler()->OnSelectedLineChanged(old_selected_line,
+                                                          new_selected_line);
     return;
   }
 
-  result_view_at(line)->OnSelectionStateChanged();
-  InvalidateLine(line);
+  if (old_selected_line != OmniboxPopupModel::kNoMatch)
+    result_view_at(old_selected_line)->OnSelectionStateChanged();
+
+  if (new_selected_line != OmniboxPopupModel::kNoMatch)
+    result_view_at(new_selected_line)->OnSelectionStateChanged();
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {

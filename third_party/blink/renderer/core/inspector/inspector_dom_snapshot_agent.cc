@@ -93,6 +93,53 @@ std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
       .build();
 }
 
+String GetOriginUrlFast(int max_stack_depth) {
+  static const v8::StackTrace::StackTraceOptions stackTraceOptions =
+      static_cast<v8::StackTrace::StackTraceOptions>(v8::StackTrace::kDetailed);
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  DCHECK(isolate);
+
+  v8::Local<v8::StackTrace> v8StackTrace = v8::StackTrace::CurrentStackTrace(
+      isolate, max_stack_depth, stackTraceOptions);
+  if (v8StackTrace.IsEmpty())
+    return String();
+  for (int i = 0, frame_count = v8StackTrace->GetFrameCount(); i < frame_count;
+       ++i) {
+    v8::Local<v8::StackFrame> frame = v8StackTrace->GetFrame(isolate, i);
+    if (frame.IsEmpty())
+      continue;
+    v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
+    if (script_name.IsEmpty() || !script_name->Length())
+      continue;
+    return ToCoreString(script_name);
+  }
+  return String();
+}
+
+String GetOriginUrl(const Node* node) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
+  if (!isolate || !isolate->InContext() || !debugger)
+    return String();
+  v8::HandleScope handleScope(isolate);
+  // Try not getting the entire stack first.
+  String url = GetOriginUrlFast(/* maxStackSize=*/5);
+  if (!url.IsEmpty())
+    return url;
+  url = GetOriginUrlFast(/* maxStackSize=*/200);
+  if (!url.IsEmpty())
+    return url;
+  // If we did not get anything from the sync stack, let's try the slow
+  // way that also checks async stacks.
+  auto trace = debugger->GetV8Inspector()->captureStackTrace(true);
+  if (trace)
+    url = ToCoreString(trace->firstNonEmptySourceURL());
+  if (!url.IsEmpty())
+    return url;
+  // Fall back to document url.
+  return node->GetDocument().Url().GetString();
+}
+
 }  // namespace
 
 // Returns |layout_object|'s bounding box in document coordinates.
@@ -132,42 +179,15 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
 
-void InspectorDOMSnapshotAgent::GetOriginUrl(String* origin_url_ptr,
-                                             const Node* node) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
-  if (!isolate || !isolate->InContext() || !debugger) {
-    origin_url_ptr = nullptr;
-    return;
-  }
-  // First try searching in one frame, since grabbing full trace is
-  // expensive.
-  auto trace = debugger->GetV8Inspector()->captureStackTrace(false);
-  if (!trace) {
-    origin_url_ptr = nullptr;
-    return;
-  }
-  if (!trace->firstNonEmptySourceURL().length())
-    trace = debugger->GetV8Inspector()->captureStackTrace(true);
-  String origin_url = ToCoreString(trace->firstNonEmptySourceURL());
-  if (origin_url.IsEmpty()) {
-    // Fall back to document url.
-    origin_url = node->GetDocument().Url().GetString();
-  }
-  *origin_url_ptr = origin_url;
-}
-
 void InspectorDOMSnapshotAgent::CharacterDataModified(
     CharacterData* character_data) {
-  String origin_url;
-  GetOriginUrl(&origin_url, character_data);
+  String origin_url = GetOriginUrl(character_data);
   if (origin_url)
     origin_url_map_->insert(DOMNodeIds::IdForNode(character_data), origin_url);
 }
 
 void InspectorDOMSnapshotAgent::DidInsertDOMNode(Node* node) {
-  String origin_url;
-  GetOriginUrl(&origin_url, node);
+  String origin_url = GetOriginUrl(node);
   if (origin_url)
     origin_url_map_->insert(DOMNodeIds::IdForNode(node), origin_url);
 }

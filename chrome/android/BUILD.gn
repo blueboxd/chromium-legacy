@@ -379,9 +379,9 @@ android_library("chrome_java") {
     # TODO(bjoyce): Change to AndroidX materials after
     # ClearBrowsingDataTabsFramgent.java is converted to AndroidX.
     "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
+    "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_interpolator_java",
-    "//third_party/android_deps:com_android_support_mediarouter_v7_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
@@ -710,7 +710,7 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_mediarouter_v7_java",
+    "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_googlecode_java_diff_utils_diffutils_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",

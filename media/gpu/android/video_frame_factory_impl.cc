@@ -59,7 +59,7 @@ gpu::TextureOwner::Mode GetTextureOwnerMode(
 // Run on the GPU main thread to allocate the texture owner, and return it
 // via |init_cb|.
 static void AllocateTextureOwnerOnGpuThread(
-    VideoFrameFactory::InitCb init_cb,
+    VideoFrameFactory::InitCB init_cb,
     VideoFrameFactory::OverlayMode overlay_mode,
     scoped_refptr<gpu::SharedContextState> shared_context_state) {
   if (!shared_context_state) {
@@ -94,7 +94,7 @@ VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
 }
 
 void VideoFrameFactoryImpl::Initialize(OverlayMode overlay_mode,
-                                       InitCb init_cb) {
+                                       InitCB init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   overlay_mode_ = overlay_mode;
   // On init success, create the TextureOwner and hop it back to this thread to
@@ -141,7 +141,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    OnceOutputCb output_cb) {
+    OnceOutputCB output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   gfx::Size coded_size = output_buffer->size();
@@ -185,7 +185,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 // static
 void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     base::WeakPtr<VideoFrameFactoryImpl> thiz,
-    OnceOutputCb output_cb,
+    OnceOutputCB output_cb,
     base::TimeDelta timestamp,
     gfx::Size coded_size,
     gfx::Size natural_size,
@@ -269,7 +269,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo(
 }
 
 void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
-    OnceOutputCb output_cb,
+    OnceOutputCB output_cb,
     base::TimeDelta timestamp,
     gfx::Size coded_size,
     gfx::Size natural_size,

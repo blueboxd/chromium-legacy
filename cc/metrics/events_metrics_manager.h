@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_map.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/event_metrics.h"
@@ -46,7 +46,7 @@ class CC_EXPORT EventsMetricsManager {
 
   // Called by clients when a frame needs to be produced. If any scoped monitor
   // is active at this time, its corresponding event metrics would be saved.
-  void SaveActiveEventsMetrics();
+  void SaveActiveEventMetrics();
 
   // Empties the list of saved EventMetrics objects, returning them to the
   // caller.
@@ -55,8 +55,8 @@ class CC_EXPORT EventsMetricsManager {
   void AppendToSavedEventsMetrics(std::vector<EventMetrics> events_metrics);
 
  private:
-  // Map from scoped monitor to corresponding active EventMetrics.
-  base::flat_map<ScopedMonitor*, EventMetrics> active_events_;
+  // Current active EventMetrics, if any.
+  base::Optional<EventMetrics> active_event_;
 
   // List of saved event metrics.
   std::vector<EventMetrics> saved_events_;

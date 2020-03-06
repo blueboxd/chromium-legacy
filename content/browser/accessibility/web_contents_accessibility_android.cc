@@ -703,7 +703,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       node->CanScrollLeft(), node->CanScrollRight(), node->IsClickable(),
       node->IsEditableText(), node->IsEnabled(), node->IsFocusable(),
       node->IsFocused(), node->IsCollapsed(), node->IsExpanded(),
-      node->HasNonEmptyValue(), !node->GetInnerText().empty());
+      node->HasNonEmptyValue(), !node->GetInnerText().empty(),
+      node->IsRangeType());
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoClassName(
       env, obj, info,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));
@@ -1244,12 +1245,40 @@ jboolean WebContentsAccessibilityAndroid::IsAutofillPopupNode(
 bool WebContentsAccessibilityAndroid::Scroll(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              jint unique_id,
-                                             int direction) {
+                                             int direction,
+                                             bool is_page_scroll) {
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (!node)
     return false;
 
-  return node->Scroll(direction);
+  return node->Scroll(direction, is_page_scroll);
+}
+
+bool WebContentsAccessibilityAndroid::SetRangeValue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint unique_id,
+    float value) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return false;
+
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+
+  if (!android_node->IsRangeType())
+    return false;
+
+  float min =
+      node->GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange);
+  float max =
+      node->GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange);
+  if (max <= min)
+    return false;
+
+  value = base::ClampToRange(value, min, max);
+  node->manager()->SetValue(*node, base::NumberToString(value));
+  return true;
 }
 
 jboolean WebContentsAccessibilityAndroid::AreInlineTextBoxesLoaded(

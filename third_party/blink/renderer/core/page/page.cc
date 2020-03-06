@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/visited_link_state.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
@@ -798,6 +799,11 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       }
       break;
     }
+    case SettingsDelegate::kVisionDeficiencyChange: {
+      if (auto* main_local_frame = DynamicTo<LocalFrame>(MainFrame()))
+        main_local_frame->GetDocument()->VisionDeficiencyChanged();
+      break;
+    }
   }
 }
 
@@ -1065,6 +1071,13 @@ void Page::ClearMediaFeatureOverrides() {
   media_feature_overrides_.reset();
   SettingsChanged(SettingsDelegate::kMediaQueryChange);
   SettingsChanged(SettingsDelegate::kColorSchemeChange);
+}
+
+void Page::SetVisionDeficiency(VisionDeficiency new_vision_deficiency) {
+  if (new_vision_deficiency != vision_deficiency_) {
+    vision_deficiency_ = new_vision_deficiency;
+    SettingsChanged(SettingsDelegate::kVisionDeficiencyChange);
+  }
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}

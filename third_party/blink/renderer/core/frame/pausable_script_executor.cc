@@ -14,11 +14,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_persistent_value_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -88,7 +89,7 @@ class V8FunctionExecutor : public PausableScriptExecutor::Executor {
  private:
   TraceWrapperV8Reference<v8::Function> function_;
   TraceWrapperV8Reference<v8::Value> receiver_;
-  V8PersistentValueVector<v8::Value> args_;
+  HeapVector<TraceWrapperV8Reference<v8::Value>> args_;
 };
 
 V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
@@ -96,23 +97,22 @@ V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
                                        v8::Local<v8::Value> receiver,
                                        int argc,
                                        v8::Local<v8::Value> argv[])
-    : function_(isolate, function),
-      receiver_(isolate, receiver),
-      args_(isolate) {
-  args_.ReserveCapacity(argc);
+    : function_(isolate, function), receiver_(isolate, receiver) {
+  args_.ReserveCapacity(SafeCast<wtf_size_t>(argc));
   for (int i = 0; i < argc; ++i)
-    args_.Append(argv[i]);
+    args_.push_back(TraceWrapperV8Reference<v8::Value>(isolate, argv[i]));
 }
 
 Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Vector<v8::Local<v8::Value>> results;
   v8::Local<v8::Value> single_result;
+
   Vector<v8::Local<v8::Value>> args;
-  wtf_size_t args_size = SafeCast<wtf_size_t>(args_.Size());
-  args.ReserveCapacity(args_size);
-  for (wtf_size_t i = 0; i < args_size; ++i)
-    args.push_back(args_.Get(i));
+  args.ReserveCapacity(args_.size());
+  for (wtf_size_t i = 0; i < args_.size(); ++i)
+    args.push_back(args_[i].NewLocal(isolate));
+
   {
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
                                      frame->GetDocument()->ToExecutionContext(),
@@ -127,6 +127,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
 void V8FunctionExecutor::Trace(Visitor* visitor) {
   visitor->Trace(function_);
   visitor->Trace(receiver_);
+  visitor->Trace(args_);
   PausableScriptExecutor::Executor::Trace(visitor);
 }
 

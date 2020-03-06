@@ -507,13 +507,8 @@ INSTANTIATE_TEST_SUITE_P(
         /*response_delay*/
         testing::Values(kNoDelay, kSmallDelay, kNormalDelay)));
 
-#if defined(OS_MACOSX)
-#define MAYBE_Test DISABLED_Test
-#else
-#define MAYBE_Test Test
-#endif
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
-                       MAYBE_Test) {
+                       Test) {
   // Setup policies to enable deep scanning, its UI and the responses to be
   // simulated.
   SetDlpPolicy(CHECK_UPLOADS);
@@ -523,9 +518,10 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
   // Always set this policy so the UI is shown.
   SetWaitPolicy(DELAY_UPLOADS);
 
-  // Set up delegate test values.
+  // Set up delegate test values. An unresponsive delegate is set up to avoid
+  // a race between the file responses and the "Cancel" button being clicked.
   FakeDeepScanningDialogDelegate::SetResponseDelay(kSmallDelay);
-  SetUpDelegate();
+  SetUpUnresponsiveDelegate();
 
   bool called = false;
   base::RunLoop run_loop;

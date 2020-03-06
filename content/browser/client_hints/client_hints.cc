@@ -379,14 +379,16 @@ bool IsFeaturePolicyForClientHintsEnabled() {
 
 bool ShouldAddClientHint(
     const blink::WebEnabledClientHints& main_frame_client_hints,
+    bool is_main_frame,
+    bool is_1p_origin,
     blink::FeaturePolicy* feature_policy,
     const url::Origin& resource_origin,
     blink::mojom::WebClientHintsType type,
     blink::mojom::FeaturePolicyFeature feature) {
   if (!main_frame_client_hints.IsEnabled(type))
     return false;
-  if (!IsFeaturePolicyForClientHintsEnabled())
-    return true;
+  if (!IsFeaturePolicyForClientHintsEnabled() || is_main_frame)
+    return is_1p_origin;
   return feature_policy &&
          feature_policy->IsFeatureEnabledForOrigin(feature, resource_origin);
 }
@@ -433,58 +435,73 @@ void AddNavigationRequestClientHintsHeaders(
     return;
 
   blink::WebEnabledClientHints web_client_hints;
+  url::Origin resource_origin = url::Origin::Create(url);
 
   // If the current frame is the main frame, the URL wasn't committed yet, so in
   // order to get the main frame URL, we should use the provided URL instead.
   // Otherwise, the current frame is an iframe and the main frame URL was
-  // committed, so we can safely get it from it.
-  GURL main_frame_url =
-      frame_tree_node->IsMainFrame() ? url : main_frame->GetLastCommittedURL();
+  // committed, so we can safely get it from it. Similarly, an in-navigation
+  // main frame doesn't yet have a feature policy.
+  bool is_main_frame = frame_tree_node->IsMainFrame();
+  GURL main_frame_url;
+  blink::FeaturePolicy* feature_policy;
+  bool is_1p_origin;
+  if (is_main_frame) {
+    main_frame_url = url;
+    feature_policy = nullptr;
+    is_1p_origin = true;
+  } else {
+    main_frame_url = main_frame->GetLastCommittedURL();
+    feature_policy = main_frame->feature_policy();
+    is_1p_origin =
+        resource_origin.IsSameOriginWith(main_frame->GetLastCommittedOrigin());
+  }
 
   delegate->GetAllowedClientHintsFromSource(main_frame_url, &web_client_hints);
 
-  url::Origin resource_origin = url::Origin::Create(url);
-  blink::FeaturePolicy* feature_policy = main_frame->feature_policy();
 
   // Add Headers
   if (ShouldAddClientHint(
-          web_client_hints, feature_policy, resource_origin,
-          blink::mojom::WebClientHintsType::kDeviceMemory,
+          web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+          resource_origin, blink::mojom::WebClientHintsType::kDeviceMemory,
           blink::mojom::FeaturePolicyFeature::kClientHintDeviceMemory)) {
     AddDeviceMemoryHeader(headers);
   }
-  if (ShouldAddClientHint(web_client_hints, feature_policy, resource_origin,
+  if (ShouldAddClientHint(web_client_hints, is_main_frame, is_1p_origin,
+                          feature_policy, resource_origin,
                           blink::mojom::WebClientHintsType::kDpr,
                           blink::mojom::FeaturePolicyFeature::kClientHintDPR)) {
     AddDPRHeader(headers, context, url);
   }
   if (ShouldAddClientHint(
-          web_client_hints, feature_policy, resource_origin,
-          blink::mojom::WebClientHintsType::kViewportWidth,
+          web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+          resource_origin, blink::mojom::WebClientHintsType::kViewportWidth,
           blink::mojom::FeaturePolicyFeature::kClientHintViewportWidth)) {
     AddViewportWidthHeader(headers, context, url);
   }
   network::NetworkQualityTracker* network_quality_tracker =
       delegate->GetNetworkQualityTracker();
-  if (ShouldAddClientHint(web_client_hints, feature_policy, resource_origin,
+  if (ShouldAddClientHint(web_client_hints, is_1p_origin, is_main_frame,
+                          feature_policy, resource_origin,
                           blink::mojom::WebClientHintsType::kRtt,
                           blink::mojom::FeaturePolicyFeature::kClientHintRTT)) {
     AddRttHeader(headers, network_quality_tracker, url);
   }
   if (ShouldAddClientHint(
-          web_client_hints, feature_policy, resource_origin,
-          blink::mojom::WebClientHintsType::kDownlink,
+          web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+          resource_origin, blink::mojom::WebClientHintsType::kDownlink,
           blink::mojom::FeaturePolicyFeature::kClientHintDownlink)) {
     AddDownlinkHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(web_client_hints, feature_policy, resource_origin,
+  if (ShouldAddClientHint(web_client_hints, is_main_frame, is_1p_origin,
+                          feature_policy, resource_origin,
                           blink::mojom::WebClientHintsType::kEct,
                           blink::mojom::FeaturePolicyFeature::kClientHintECT)) {
     AddEctHeader(headers, network_quality_tracker, url);
   }
   if (ShouldAddClientHint(
-          web_client_hints, feature_policy, resource_origin,
-          blink::mojom::WebClientHintsType::kLang,
+          web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+          resource_origin, blink::mojom::WebClientHintsType::kLang,
           blink::mojom::FeaturePolicyFeature::kClientHintLang)) {
     AddLangHeader(headers, delegate);
   }
@@ -497,6 +514,9 @@ void AddNavigationRequestClientHintsHeaders(
     // (intentionally) different than other client hints.
     //
     // https://tools.ietf.org/html/draft-west-ua-client-hints-00#section-2.4
+    //
+    // TODO(morlovich): This should probably be using ShouldAddClientHint,
+    // to check FP?
     std::string version =
         web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kUA)
             ? ua.full_version
@@ -509,24 +529,24 @@ void AddNavigationRequestClientHintsHeaders(
                 ua.mobile ? "?1" : "?0");
 
     if (ShouldAddClientHint(
-            web_client_hints, feature_policy, resource_origin,
-            blink::mojom::WebClientHintsType::kUAArch,
+            web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+            resource_origin, blink::mojom::WebClientHintsType::kUAArch,
             blink::mojom::FeaturePolicyFeature::kClientHintUAArch)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAArch,
                   AddQuotes(ua.architecture));
     }
 
     if (ShouldAddClientHint(
-            web_client_hints, feature_policy, resource_origin,
-            blink::mojom::WebClientHintsType::kUAPlatform,
+            web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+            resource_origin, blink::mojom::WebClientHintsType::kUAPlatform,
             blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAPlatform,
                   AddBrandVersionQuotes(ua.platform, ua.platform_version));
     }
 
     if (ShouldAddClientHint(
-            web_client_hints, feature_policy, resource_origin,
-            blink::mojom::WebClientHintsType::kUAModel,
+            web_client_hints, is_main_frame, is_1p_origin, feature_policy,
+            resource_origin, blink::mojom::WebClientHintsType::kUAModel,
             blink::mojom::FeaturePolicyFeature::kClientHintUAModel)) {
       AddUAHeader(headers, blink::mojom::WebClientHintsType::kUAModel,
                   AddQuotes(ua.model));

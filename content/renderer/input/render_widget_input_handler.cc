@@ -465,6 +465,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
     }
   }
 
+  // Handling |input_event| is finished and further down, we might start
+  // handling injected scroll events. So, stop monitoring EventMetrics for
+  // |input_event| to avoid nested monitors.
+  scoped_event_metrics_monitor = nullptr;
+
   LogAllPassiveEventListenersUma(input_event, processed, latency_info);
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and

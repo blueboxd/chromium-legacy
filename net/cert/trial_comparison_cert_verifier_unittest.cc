@@ -151,7 +151,7 @@ int FakeCertVerifyProc::VerifyInternal(
     CertVerifyResult* verify_result) {
   *verify_result = result_;
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FakeCertVerifyProc::VerifyCalled, this));
+      FROM_HERE, base::BindOnce(&FakeCertVerifyProc::VerifyCalled, this));
   return result_error_;
 }
 

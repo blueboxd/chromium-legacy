@@ -71,7 +71,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             }
 
             @Override
-            public void onStartupFailure() {
+            public void onStartupFailure(Exception failureCause) {
                 // Startup failed. So notify SigninHelper of changed accounts via
                 // shared prefs.
                 SigninPreferencesManager.getInstance().markAccountsChangedPref();

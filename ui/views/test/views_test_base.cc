@@ -18,7 +18,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/buildflags.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/test_platform_native_widget.h"
 
 #if defined(USE_AURA)
@@ -150,7 +149,7 @@ bool ViewsTestBase::HasCompositingManager() const {
 }
 
 void ViewsTestBase::SimulateNativeDestroy(Widget* widget) {
-  test_helper_->platform_test_helper()->SimulateNativeDestroy(widget);
+  test_helper_->SimulateNativeDestroy(widget);
 }
 
 gfx::NativeWindow ViewsTestBase::GetContext() {

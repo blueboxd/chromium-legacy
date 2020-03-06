@@ -118,6 +118,7 @@ public class CachedFeatureFlags {
     private static Map<String, Boolean> sBoolValuesReturned = new HashMap<>();
     private static Map<String, String> sStringValuesReturned = new HashMap<>();
     private static Map<String, Integer> sIntValuesReturned = new HashMap<>();
+    private static Map<String, Double> sDoubleValuesReturned = new HashMap<>();
     private static String sReachedCodeProfilerTrialGroup;
 
     /**
@@ -380,6 +381,15 @@ public class CachedFeatureFlags {
         return value;
     }
 
+    static double getConsistentDoubleValue(String preferenceName, double defaultValue) {
+        Double value = sDoubleValuesReturned.get(preferenceName);
+        if (value == null) {
+            value = SharedPreferencesManager.getInstance().readDouble(preferenceName, defaultValue);
+            sDoubleValuesReturned.put(preferenceName, value);
+        }
+        return value;
+    }
+
     private static String getPrefForFeatureFlag(String featureName) {
         String grandfatheredPrefKey = sNonDynamicPrefKeys.get(featureName);
         if (grandfatheredPrefKey == null) {
@@ -394,6 +404,7 @@ public class CachedFeatureFlags {
         sBoolValuesReturned.clear();
         sStringValuesReturned.clear();
         sIntValuesReturned.clear();
+        sDoubleValuesReturned.clear();
     }
 
     @VisibleForTesting

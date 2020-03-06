@@ -198,13 +198,8 @@ bool IsValidPassphraseTransition(
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       return false;
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      // TODO(crbug.com/984940): The below should be allowed for
-      // CUSTOM_PASSPHRASE and KEYSTORE_PASSPHRASE but it requires carefully
-      // verifying that the client triggering the transition already had access
-      // to the trusted vault passphrase (e.g. the new keybag must be a
-      // superset of the old and the default key must have changed).
-      NOTIMPLEMENTED();
-      return false;
+      return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE ||
+             new_passphrase_type == NigoriSpecifics::KEYSTORE_PASSPHRASE;
   }
   NOTREACHED();
   return false;
@@ -653,6 +648,9 @@ void NigoriSyncBridgeImpl::AddTrustedVaultDecryptionKeys(
     return;
   }
 
+  state_.last_default_trusted_vault_key_name =
+      state_.cryptographer->GetDefaultEncryptionKeyName();
+
   storage_->StoreData(SerializeAsNigoriLocalData());
   broadcasting_observer_->OnCryptographerStateChanged(
       state_.cryptographer.get(), state_.pending_keys.has_value());
@@ -995,6 +993,17 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::TryDecryptPendingKeysWith(
                       "Received keybag is missing the new default key.");
   }
 
+  if (state_.last_default_trusted_vault_key_name.has_value() &&
+      !new_key_bag.HasKey(*state_.last_default_trusted_vault_key_name)) {
+    // Protocol violation.
+    return ModelError(FROM_HERE,
+                      "Received keybag is missing the last trusted vault key.");
+  }
+
+  // Reset |last_default_trusted_vault_key_name| as |state_| might go out of
+  // TRUSTED_VAULT passphrase type. The callers are responsible to set it again
+  // if needed.
+  state_.last_default_trusted_vault_key_name = base::nullopt;
   state_.cryptographer->EmplaceKeysFrom(new_key_bag);
   state_.cryptographer->SelectDefaultEncryptionKey(new_default_key_name);
   state_.pending_keys.reset();
@@ -1054,6 +1063,7 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   state_.custom_passphrase_time = base::Time();
   state_.keystore_migration_time = base::Time();
   state_.custom_passphrase_key_derivation_params = base::nullopt;
+  state_.last_default_trusted_vault_key_name = base::nullopt;
   broadcasting_observer_->OnCryptographerStateChanged(
       state_.cryptographer.get(),
       /*has_pending_keys=*/false);

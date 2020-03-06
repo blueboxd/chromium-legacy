@@ -107,6 +107,15 @@ void PasswordsPrivateEventRouter::OnCompromisedCredentialsInfoChanged(
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
+void PasswordsPrivateEventRouter::OnPasswordCheckStatusChanged(
+    const api::passwords_private::PasswordCheckStatus& status) {
+  auto extension_event = std::make_unique<Event>(
+      events::PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED,
+      api::passwords_private::OnPasswordCheckStatusChanged::kEventName,
+      api::passwords_private::OnPasswordCheckStatusChanged::Create(status));
+  event_router_->BroadcastEvent(std::move(extension_event));
+}
+
 PasswordsPrivateEventRouter* PasswordsPrivateEventRouter::Create(
     content::BrowserContext* context) {
   return new PasswordsPrivateEventRouter(context);

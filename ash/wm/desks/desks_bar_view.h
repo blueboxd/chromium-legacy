@@ -84,6 +84,8 @@ class ASH_EXPORT DesksBarView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Returns true if the width of the DesksBarView is below a defined
   // threshold or the contents no longer fit within this object's bounds in

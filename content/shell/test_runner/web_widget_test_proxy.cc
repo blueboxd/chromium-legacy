@@ -22,12 +22,13 @@ namespace test_runner {
 
 WebWidgetTestProxy::~WebWidgetTestProxy() = default;
 
-void WebWidgetTestProxy::BeginMainFrame(base::TimeTicks frame_time) {
-  // This must happen before we run BeginMainFrame() in the base class, which
-  // will change states. TestFinished() wants to grab the current state.
+void WebWidgetTestProxy::WillBeginCompositorFrame() {
+  // WillBeginCompositorFrame occurs before we run BeginMainFrame() in the base
+  // class, which will change states. TestFinished() wants to grab the current
+  // state.
   GetTestRunner()->FinishTestIfReady();
 
-  RenderWidget::BeginMainFrame(frame_time);
+  RenderWidget::WillBeginCompositorFrame();
 }
 
 void WebWidgetTestProxy::RequestDecode(

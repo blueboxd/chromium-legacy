@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
+#import "ios/chrome/browser/download/external_app_util.h"
 #include "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -47,7 +48,7 @@ TEST_F(BrowserCoordinatorTest, ShowDownloadsFolder) {
   base::FilePath download_dir;
   ASSERT_TRUE(GetDownloadsDirectory(&download_dir));
 
-  NSURL* url = GetFilesAppDownloadsDirectoryUrl();
+  NSURL* url = GetFilesAppUrl();
   ASSERT_TRUE(url);
 
   UIApplication* shared_application = [UIApplication sharedApplication];

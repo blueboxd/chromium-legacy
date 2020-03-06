@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -39,6 +40,8 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       max_touch_points_(&agent_state_, /*default_value=*/1),
       emulated_media_(&agent_state_, /*default_value=*/WTF::String()),
       emulated_media_features_(&agent_state_, /*default_value=*/WTF::String()),
+      emulated_vision_deficiency_(&agent_state_,
+                                  /*default_value=*/WTF::String()),
       navigator_platform_override_(&agent_state_,
                                    /*default_value=*/WTF::String()),
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
@@ -101,6 +104,8 @@ void InspectorEmulationAgent::Restore() {
                             .build());
   }
   setEmulatedMedia(emulated_media_.Get(), std::move(features));
+  if (!emulated_vision_deficiency_.Get().IsNull())
+    setEmulatedVisionDeficiency(emulated_vision_deficiency_.Get());
   auto rgba = ParseRGBA(default_background_color_override_rgba_.Get());
   if (rgba)
     setDefaultBackgroundColorOverride(std::move(rgba));
@@ -166,6 +171,8 @@ Response InspectorEmulationAgent::disable() {
   // (e.g. if we allowed two different front-ends with the same
   // settings to attach to the same page). TODO: support this use case.
   setEmulatedMedia(String(), {});
+  if (!emulated_vision_deficiency_.Get().IsNull())
+    setEmulatedVisionDeficiency(String("none"));
   setCPUThrottlingRate(1);
   setFocusEmulationEnabled(false);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
@@ -269,6 +276,43 @@ Response InspectorEmulationAgent::setEmulatedMedia(
                                                            value);
     }
   }
+  return response;
+}
+
+Response InspectorEmulationAgent::setEmulatedVisionDeficiency(
+    const String& type) {
+  Response response = AssertPage();
+  if (!response.isSuccess())
+    return response;
+
+  VisionDeficiency vision_deficiency;
+  namespace TypeEnum =
+      protocol::Emulation::SetEmulatedVisionDeficiency::TypeEnum;
+  if (type == TypeEnum::None)
+    vision_deficiency = VisionDeficiency::kNoVisionDeficiency;
+  else if (type == TypeEnum::Achromatomaly)
+    vision_deficiency = VisionDeficiency::kAchromatomaly;
+  else if (type == TypeEnum::Achromatopsia)
+    vision_deficiency = VisionDeficiency::kAchromatopsia;
+  else if (type == TypeEnum::BlurredVision)
+    vision_deficiency = VisionDeficiency::kBlurredVision;
+  else if (type == TypeEnum::Deuteranomaly)
+    vision_deficiency = VisionDeficiency::kDeuteranomaly;
+  else if (type == TypeEnum::Deuteranopia)
+    vision_deficiency = VisionDeficiency::kDeuteranopia;
+  else if (type == TypeEnum::Protanomaly)
+    vision_deficiency = VisionDeficiency::kProtanomaly;
+  else if (type == TypeEnum::Protanopia)
+    vision_deficiency = VisionDeficiency::kProtanopia;
+  else if (type == TypeEnum::Tritanomaly)
+    vision_deficiency = VisionDeficiency::kTritanomaly;
+  else if (type == TypeEnum::Tritanopia)
+    vision_deficiency = VisionDeficiency::kTritanopia;
+  else
+    return Response::InvalidParams("Unknown vision deficiency type");
+
+  emulated_vision_deficiency_.Set(type);
+  GetWebViewImpl()->GetPage()->SetVisionDeficiency(vision_deficiency);
   return response;
 }
 

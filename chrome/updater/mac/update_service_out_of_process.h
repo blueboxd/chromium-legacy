@@ -37,8 +37,11 @@ class UpdateServiceOutOfProcess : public UpdateService {
   void RegisterApp(
       const RegistrationRequest& request,
       base::OnceCallback<void(const RegistrationResponse&)> callback) override;
-  void UpdateAll(
-      base::OnceCallback<void(update_client::Error)> callback) override;
+  void UpdateAll(base::OnceCallback<void(Result)> callback) override;
+  void Update(const std::string& app_id,
+              Priority priority,
+              base::RepeatingCallback<void(UpdateState)> state_update,
+              base::OnceCallback<void(Result)> done) override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

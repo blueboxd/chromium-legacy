@@ -131,6 +131,21 @@ class BASE_EXPORT Process {
   // NOTE: On POSIX |exit_code| is ignored.
   bool Terminate(int exit_code, bool wait) const;
 
+#if defined(OS_WIN)
+  enum class WaitExitStatus {
+    PROCESS_EXITED,
+    STOP_EVENT_SIGNALED,
+    FAILED,
+  };
+
+  // Waits for the process to exit, or the specified |stop_event_handle| to be
+  // set. Returns value indicating which event was set. The given |exit_code|
+  // will be the exit code of the process.
+  WaitExitStatus WaitForExitOrEvent(
+      const base::win::ScopedHandle& stop_event_handle,
+      int* exit_code) const;
+#endif  // OS_WIN
+
   // Waits for the process to exit. Returns true on success.
   // On POSIX, if the process has been signaled then |exit_code| is set to -1.
   // On Linux this must be a child process, however on Mac and Windows it can be

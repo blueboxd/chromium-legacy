@@ -39,6 +39,8 @@
 
 @property(nonatomic, assign, readonly) int acceptSigninButtonStringId;
 
+@property(nonatomic, assign) BOOL useFirstRunSkipButton;
+
 // Informs the view controller that the unified consent has reached the bottom
 // of the screen.
 - (void)markUnifiedConsentScreenReachedBottom;

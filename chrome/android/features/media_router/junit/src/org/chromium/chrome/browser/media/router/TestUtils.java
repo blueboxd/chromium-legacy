@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.support.v7.media.MediaRouter;
-import android.support.v7.media.MediaRouter.RouteInfo;
+import androidx.mediarouter.media.MediaRouter;
+import androidx.mediarouter.media.MediaRouter.RouteInfo;
 
 import org.robolectric.util.ReflectionHelpers;
 

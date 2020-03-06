@@ -387,6 +387,10 @@ const FormProto* Controller::GetForm() const {
   return form_.get();
 }
 
+const FormProto::Result* Controller::GetFormResult() const {
+  return form_result_.get();
+}
+
 bool Controller::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -398,7 +402,7 @@ bool Controller::SetForm(
 
   if (!form) {
     for (ControllerObserver& observer : observers_) {
-      observer.OnFormChanged(nullptr);
+      observer.OnFormChanged(nullptr, nullptr);
     }
     return true;
   }
@@ -451,7 +455,7 @@ bool Controller::SetForm(
   form_changed_callback_.Run(form_result_.get());
 
   for (ControllerObserver& observer : observers_) {
-    observer.OnFormChanged(form_.get());
+    observer.OnFormChanged(form_.get(), form_result_.get());
   }
   return true;
 }

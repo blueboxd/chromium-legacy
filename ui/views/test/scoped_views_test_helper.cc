@@ -6,31 +6,24 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_helper.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace views {
 
-ScopedViewsTestHelper::ScopedViewsTestHelper()
-    : ScopedViewsTestHelper(base::WrapUnique(new TestViewsDelegate)) {}
-
 ScopedViewsTestHelper::ScopedViewsTestHelper(
-    std::unique_ptr<TestViewsDelegate> views_delegate)
-    : test_views_delegate_(std::move(views_delegate)),
-      platform_test_helper_(PlatformTestHelper::Create()) {
-  // The ContextFactory must exist before any Compositors are created.
-  ui::ContextFactory* context_factory =
-      platform_test_helper_->InitializeContextFactory();
-
+    std::unique_ptr<TestViewsDelegate> test_views_delegate)
+    : test_views_delegate_(std::move(test_views_delegate)) {
+  ui::ContextFactory* context_factory = context_factories_.GetContextFactory();
   test_views_delegate_->set_context_factory(context_factory);
-
-  test_helper_.reset(ViewsTestHelper::Create(context_factory));
-  test_helper_->SetUp();
+  test_helper_ = ViewsTestHelper::Create(context_factory);
 
   ui::InitializeInputMethodForTesting();
   ui::TestClipboard::CreateForCurrentThread();
@@ -39,18 +32,16 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
 ScopedViewsTestHelper::~ScopedViewsTestHelper() {
   ui::Clipboard::DestroyClipboardForCurrentThread();
   ui::ShutdownInputMethodForTesting();
-  test_helper_->TearDown();
-  test_helper_.reset();
-
-  test_views_delegate_.reset();
-
-  // The Mus PlatformTestHelper has state that is deleted by destruction of
-  // ui::TestContextFactories.
-  platform_test_helper_.reset();
 }
 
 gfx::NativeWindow ScopedViewsTestHelper::GetContext() {
   return test_helper_->GetContext();
 }
+
+#if defined(USE_AURA)
+void ScopedViewsTestHelper::SimulateNativeDestroy(Widget* widget) {
+  delete widget->GetNativeView();
+}
+#endif
 
 }  // namespace views

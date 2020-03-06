@@ -181,6 +181,10 @@ crbug.com/986110 external/wpt/css/css-transforms/perspective-transforms-equivale
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
+########## display-lock failures ##########
+wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-047.html [ Failure ]
+wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-008.html [ Pass Failure Crash ]
+
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
@@ -6722,6 +6726,9 @@ crbug.com/1056022 [ Fuchsia ] http/tests/uri/escaped-entity.html [ Pass Timeout 
 crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Pass Timeout ]
 crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Pass Timeout ]
 crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Pass Timeout ]
+
+# Temporarily mark new test as slow to avoid false positive timeout
+crbug.com/1043669 [ Mac ] inspector-protocol/emulation/set-vision-deficiency.js [ Slow ]
 
 # Sheriff 2020-02-28
 crbug.com/1057138 [ Linux Debug ] virtual/not-site-per-process/http/tests/devtools/oopif/oopif-storage.js [ Pass Timeout ]

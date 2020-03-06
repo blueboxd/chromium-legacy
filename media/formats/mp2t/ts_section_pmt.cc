@@ -13,7 +13,7 @@
 namespace media {
 namespace mp2t {
 
-TsSectionPmt::TsSectionPmt(RegisterPesCb register_pes_cb)
+TsSectionPmt::TsSectionPmt(RegisterPesCB register_pes_cb)
     : register_pes_cb_(std::move(register_pes_cb)) {}
 
 TsSectionPmt::~TsSectionPmt() {

@@ -92,11 +92,11 @@ class NativeInitializationController {
             }
 
             @Override
-            protected void onFailure() {
+            protected void onFailure(Exception failureCause) {
                 // Initialization has failed, call onStartup failure to abandon the activity.
                 // This is not expected to return, so there is no need to set
                 // mBackgroundTasksComplete or do any other tidying up.
-                mActivityDelegate.onStartupFailure();
+                mActivityDelegate.onStartupFailure(failureCause);
             }
 
         }.startBackgroundTasks(allocateChildConnection, fetchVariationsSeed);

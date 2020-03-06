@@ -3911,13 +3911,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [[OmniboxGeolocationController sharedInstance]
       locationBarDidBecomeFirstResponder:self.browserState];
 
-  // On the non-incognito NTP, the primaryToolbarCoordinator focuses the
-  // location bar itself when focusing the fakebox (while animating the
-  // fakebox). On all other pages, the fakebox is focused here after the
-  // location bar becomes first responder.
-  if (!IsVisibleURLNewTabPage(self.currentWebState) || self.isOffTheRecord) {
-    [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
-  }
+  [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
 }
 
 - (void)locationBarDidResignFirstResponder {

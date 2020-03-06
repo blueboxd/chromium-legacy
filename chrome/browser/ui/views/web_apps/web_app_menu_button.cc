@@ -42,11 +42,6 @@ WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view)
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_WEB_APP_MENU_BUTTON_TOOLTIP, app_name));
 
-  constexpr int focus_mode_app_menu_button_size = 34;
-  bool is_focus_mode = browser_view->browser()->is_focus_mode();
-  int size = is_focus_mode ? focus_mode_app_menu_button_size
-                           : GetLayoutConstant(WEB_APP_MENU_BUTTON_SIZE);
-  SetMinSize(gfx::Size(size, size));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 }
 

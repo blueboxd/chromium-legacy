@@ -36,6 +36,7 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
   void Reload() override;
   bool Close() override;
   base::TimeTicks GetLastActivityTime() override;
+  std::string GetDescription() override;
 
   std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(ForwardingAgentHost);

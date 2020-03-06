@@ -751,7 +751,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestClosingATab) {
 
 // Disabled for flakes. See http://crbug.com/1049178
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLE_TestFocusEditableElements) {
+                       DISABLED_TestFocusEditableElements) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

@@ -29,6 +29,9 @@ std::string GetFileContentsBlocking(base::FilePath path) {
     return "";
 
   int64_t file_size = file.GetLength();
+  if (static_cast<size_t>(file_size) > BinaryUploadService::kMaxUploadSizeBytes)
+    return "";
+
   std::string contents;
   contents.resize(file_size);
 

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.support.v7.app.MediaRouteChooserDialog;
-import android.support.v7.app.MediaRouteControllerDialog;
+import androidx.mediarouter.app.MediaRouteChooserDialog;
+import androidx.mediarouter.app.MediaRouteControllerDialog;
 
 /**
  * A common interface to be implemented by various media route dialog handlers

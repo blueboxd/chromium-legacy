@@ -8,8 +8,9 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v7.media.MediaItemStatus;
-import android.support.v7.media.MediaRouter.RouteInfo;
+
+import androidx.mediarouter.media.MediaItemStatus;
+import androidx.mediarouter.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.Log;
 

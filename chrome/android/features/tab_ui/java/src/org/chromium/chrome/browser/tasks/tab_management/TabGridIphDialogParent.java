@@ -25,7 +25,6 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
-import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * Represents a parent component for TabGridIph related UIs.
@@ -145,12 +144,12 @@ public class TabGridIphDialogParent {
     }
 
     private void updateMargins(int orientation) {
-        int screenHeight = DisplayAndroid.getNonMultiDisplay(mContext).getDisplayHeight();
+        int parentViewHeight = mParentView.getHeight();
         int dialogHeight =
                 (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_height);
-        // Dynamically setup the top margin base on screen height, the minimum top margin is
-        // specified in case the screen height is smaller than or too close to dialog height.
-        int updatedDialogTopMargin = Math.max((screenHeight - dialogHeight) / 2,
+        // Dynamically setup the top margin base on parent view height, the minimum top margin is
+        // specified in case the parent view height is smaller than or too close to dialog height.
+        int updatedDialogTopMargin = Math.max((parentViewHeight - dialogHeight) / 2,
                 (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_top_margin));
 
         int dialogTopMargin;

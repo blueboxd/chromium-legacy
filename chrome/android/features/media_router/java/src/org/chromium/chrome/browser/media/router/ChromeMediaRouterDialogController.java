@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.support.v7.app.MediaRouteChooserDialogFragment;
-import android.support.v7.app.MediaRouteControllerDialogFragment;
-import android.support.v7.media.MediaRouteSelector;
+import androidx.mediarouter.app.MediaRouteChooserDialogFragment;
+import androidx.mediarouter.app.MediaRouteControllerDialogFragment;
+import androidx.mediarouter.media.MediaRouteSelector;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

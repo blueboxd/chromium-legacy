@@ -1264,7 +1264,8 @@ int BrowserAccessibilityAndroid::GetMaxScrollY() const {
   return GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
 }
 
-bool BrowserAccessibilityAndroid::Scroll(int direction) const {
+bool BrowserAccessibilityAndroid::Scroll(int direction,
+                                         bool is_page_scroll) const {
   int x_initial = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
   int x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
   int x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
@@ -1300,9 +1301,15 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
     bounds = GetClippedRootFrameBoundsRect();
   }
 
-  // Scroll by 80% of one page.
-  int page_x = std::max(bounds.width() * 4 / 5, 1);
-  int page_y = std::max(bounds.height() * 4 / 5, 1);
+  // Scroll by 80% of one page, or 100% for page scrolls.
+  int page_x, page_y;
+  if (is_page_scroll) {
+    page_x = std::max(bounds.width(), 1);
+    page_y = std::max(bounds.height(), 1);
+  } else {
+    page_x = std::max(bounds.width() * 4 / 5, 1);
+    page_y = std::max(bounds.height() * 4 / 5, 1);
+  }
 
   if (direction == FORWARD)
     direction = y_max > y_min ? DOWN : RIGHT;

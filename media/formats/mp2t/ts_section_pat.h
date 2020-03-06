@@ -15,10 +15,10 @@ namespace mp2t {
 
 class TsSectionPat : public TsSectionPsi {
  public:
-  // RegisterPmtCb::Run(int program_number, int pmt_pid);
-  using RegisterPmtCb = base::RepeatingCallback<void(int, int)>;
+  // RegisterPmtCB::Run(int program_number, int pmt_pid);
+  using RegisterPmtCB = base::RepeatingCallback<void(int, int)>;
 
-  explicit TsSectionPat(RegisterPmtCb register_pmt_cb);
+  explicit TsSectionPat(RegisterPmtCB register_pmt_cb);
   ~TsSectionPat() override;
 
   // TsSectionPsi implementation.
@@ -26,7 +26,7 @@ class TsSectionPat : public TsSectionPsi {
   void ResetPsiSection() override;
 
  private:
-  const RegisterPmtCb register_pmt_cb_;
+  const RegisterPmtCB register_pmt_cb_;
 
   // Parameters from the PAT.
   int version_number_;

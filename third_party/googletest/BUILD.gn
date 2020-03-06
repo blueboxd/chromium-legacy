@@ -115,7 +115,11 @@ source_set("gtest") {
   # Some files include "src/gtest-internal-inl.h".
   include_dirs = [ "src/googletest" ]
 
+  # TODO(crbug.com/1059240): Remove usage of all_dependent_configs.
   all_dependent_configs = [ ":gtest_config" ]
+  if (!build_with_chromium && gtest_enable_absl_printers) {
+    all_dependent_configs += [ "//third_party/abseil-cpp:absl_include_config" ]
+  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

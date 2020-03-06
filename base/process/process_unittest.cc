@@ -267,6 +267,38 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
   process.Terminate(kDummyExitCode, false);
 }
 
+#if defined(OS_WIN)
+TEST_F(ProcessTest, WaitForExitOrEventWithProcessExit) {
+  Process process(SpawnChild("FastSleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  base::win::ScopedHandle stop_watching_handle(
+      CreateEvent(nullptr, TRUE, FALSE, nullptr));
+
+  const int kDummyExitCode = 42;
+  int exit_code = kDummyExitCode;
+  EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
+            base::Process::WaitExitStatus::PROCESS_EXITED);
+  EXPECT_EQ(0, exit_code);
+}
+
+TEST_F(ProcessTest, WaitForExitOrEventWithEventSet) {
+  Process process(SpawnChild("SleepyChildProcess"));
+  ASSERT_TRUE(process.IsValid());
+
+  base::win::ScopedHandle stop_watching_handle(
+      CreateEvent(nullptr, TRUE, TRUE, nullptr));
+
+  const int kDummyExitCode = 42;
+  int exit_code = kDummyExitCode;
+  EXPECT_EQ(process.WaitForExitOrEvent(stop_watching_handle, &exit_code),
+            base::Process::WaitExitStatus::STOP_EVENT_SIGNALED);
+  EXPECT_EQ(kDummyExitCode, exit_code);
+
+  process.Terminate(kDummyExitCode, false);
+}
+#endif  // OS_WIN
+
 // Ensure that the priority of a process is restored correctly after
 // backgrounding and restoring.
 // Note: a platform may not be willing or able to lower the priority of

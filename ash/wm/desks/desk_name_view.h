@@ -24,6 +24,10 @@ class DeskNameView
   DeskNameView& operator=(const DeskNameView&) = delete;
   ~DeskNameView() override;
 
+  // Commits an on-going desk name change (if any) by bluring the focus away
+  // from any view on |widget|, where |widget| should be the desks bar widget.
+  static void CommitChanges(views::Widget* widget);
+
   void SetTextAndElideIfNeeded(const base::string16& text);
 
   // views::View:

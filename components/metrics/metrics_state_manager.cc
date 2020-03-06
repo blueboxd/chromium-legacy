@@ -22,7 +22,6 @@
 #include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/entropy_state.h"
-#include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
@@ -292,9 +291,6 @@ void MetricsStateManager::ForceClientIdCreation() {
 }
 
 void MetricsStateManager::CheckForClonedInstall() {
-  if (!MachineIdProvider::HasId())
-    return;
-
   cloned_install_detector_.CheckForClonedInstall(local_state_);
 }
 

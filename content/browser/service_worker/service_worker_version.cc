@@ -739,9 +739,13 @@ void ServiceWorkerVersion::AddControllee(
   // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
-  // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
-  // invalid controller status.
-  CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
+
+  // TODO(yuzus, crbug.com/951571): Remove these CHECKs once we figure out the
+  // cause of crash.
+  CHECK_NE(status_, NEW);
+  CHECK_NE(status_, INSTALLING);
+  CHECK_NE(status_, INSTALLED);
+  CHECK_NE(status_, REDUNDANT);
 
   if (base::FeatureList::IsEnabled(
           features::kServiceWorkerTerminationOnNoControllee) &&

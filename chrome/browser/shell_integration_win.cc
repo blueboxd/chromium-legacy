@@ -731,7 +731,7 @@ base::string16 GetChromiumModelIdForProfile(
       profile_path);
 }
 
-void MigrateTaskbarPins() {
+void MigrateTaskbarPins(base::OnceClosure completion_callback) {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
@@ -761,8 +761,10 @@ void MigrateTaskbarPins() {
   base::ThreadPool::CreateCOMSTATaskRunner(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::ThreadPolicy::MUST_USE_FOREGROUND})
-      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
-                                           taskbar_path, implicit_apps_path));
+      ->PostTaskAndReply(FROM_HERE,
+                         base::BindOnce(&MigrateTaskbarPinsCallback,
+                                        taskbar_path, implicit_apps_path),
+                         std::move(completion_callback));
 }
 
 void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,

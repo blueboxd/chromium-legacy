@@ -28,10 +28,6 @@ namespace media {
 
 // A specialized buffer for interfacing with audio / video decoders.
 //
-// Specifically ensures that data is aligned and padded as necessary by the
-// underlying decoding framework.  On desktop platforms this means memory is
-// allocated using FFmpeg with particular alignment and padding requirements.
-//
 // Also includes decoder specific functionality for decryption.
 //
 // NOTE: It is illegal to call any method when end_of_stream() is true.
@@ -47,24 +43,29 @@ class MEDIA_EXPORT DecoderBuffer
 #endif
   };
 
-  // Allocates buffer with |size| >= 0.  Buffer will be padded and aligned
-  // as necessary, and |is_key_frame_| will default to false.
+  // Allocates buffer with |size| >= 0. |is_key_frame_| will default to false.
   explicit DecoderBuffer(size_t size);
 
-  // Create a DecoderBuffer whose |data_| is copied from |data|.  Buffer will be
-  // padded and aligned as necessary.  |data| must not be NULL and |size| >= 0.
-  // The buffer's |is_key_frame_| will default to false.
+  // Create a DecoderBuffer whose |data_| is copied from |data|. |data| must not
+  // be NULL and |size| >= 0. The buffer's |is_key_frame_| will default to
+  // false.
   static scoped_refptr<DecoderBuffer> CopyFrom(const uint8_t* data,
                                                size_t size);
 
   // Create a DecoderBuffer whose |data_| is copied from |data| and |side_data_|
-  // is copied from |side_data|. Buffers will be padded and aligned as necessary
-  // Data pointers must not be NULL and sizes must be >= 0. The buffer's
-  // |is_key_frame_| will default to false.
+  // is copied from |side_data|. Data pointers must not be NULL and sizes must
+  // be >= 0. The buffer's |is_key_frame_| will default to false.
   static scoped_refptr<DecoderBuffer> CopyFrom(const uint8_t* data,
                                                size_t size,
                                                const uint8_t* side_data,
                                                size_t side_data_size);
+
+  // Create a DecoderBuffer where data() of |size| bytes resides within the heap
+  // as byte array. The buffer's |is_key_frame_| will default to false.
+  //
+  // Ownership of |data| is transferred to the buffer.
+  static scoped_refptr<DecoderBuffer> FromArray(std::unique_ptr<uint8_t[]> data,
+                                                size_t size);
 
   // Create a DecoderBuffer where data() of |size| bytes resides within the
   // memory referred to by |region| at non-negative offset |offset|. The
@@ -197,19 +198,21 @@ class MEDIA_EXPORT DecoderBuffer
  protected:
   friend class base::RefCountedThreadSafe<DecoderBuffer>;
 
-  // Allocates a buffer of size |size| >= 0 and copies |data| into it.  Buffer
-  // will be padded and aligned as necessary.  If |data| is NULL then |data_| is
-  // set to NULL and |buffer_size_| to 0.  |is_key_frame_| will default to
-  // false.
+  // Allocates a buffer of size |size| >= 0 and copies |data| into it. If |data|
+  // is NULL then |data_| is set to NULL and |buffer_size_| to 0.
+  // |is_key_frame_| will default to false.
   DecoderBuffer(const uint8_t* data,
                 size_t size,
                 const uint8_t* side_data,
                 size_t side_data_size);
 
+  DecoderBuffer(std::unique_ptr<uint8_t[]> data, size_t size);
+
   DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm, size_t size);
 
   DecoderBuffer(std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping,
                 size_t size);
+
   virtual ~DecoderBuffer();
 
  private:
@@ -221,11 +224,11 @@ class MEDIA_EXPORT DecoderBuffer
   // Size of the encoded data.
   size_t size_;
   // Encoded data, if it is stored on the heap.
-  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> data_;
+  std::unique_ptr<uint8_t[]> data_;
 
   // Side data. Used for alpha channel in VPx, and for text cues.
   size_t side_data_size_;
-  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
+  std::unique_ptr<uint8_t[]> side_data_;
 
   // Encoded data, if it is stored in a shared memory mapping.
   std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping_;

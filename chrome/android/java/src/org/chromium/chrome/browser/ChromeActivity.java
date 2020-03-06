@@ -149,7 +149,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
-import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -198,8 +197,7 @@ import java.util.function.Consumer;
 public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, PolicyChangeListener, ContextualSearchTabPromotionDelegate,
-                   SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
+                   SnackbarManageable, SceneChangeObserver, AppMenuDelegate, AppMenuBlocker,
                    MenuOrKeyboardActionController {
     /**
      * No control container to inflate during initialization.
@@ -264,7 +262,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
-    private StatusBarColorController mStatusBarColorController;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -551,8 +548,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void onInitialLayoutInflationComplete() {
         mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
 
-        getStatusBarColorController().updateStatusBarColor();
-
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
         // If the UI was inflated on a background thread, then the CompositorView may not have been
@@ -590,7 +585,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mTabModelSelector = createTabModelSelector();
         mTabModelSelectorSupplier.set(mTabModelSelector);
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
-        getStatusBarColorController().setTabModelSelector(mTabModelSelector);
 
         if (mTabModelSelector == null) {
             assert isFinishing();
@@ -814,19 +808,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link StatusBarColorController} that adjusts the status bar color.
-     */
-    public final StatusBarColorController getStatusBarColorController() {
-        // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator. This requires
-        // SystemUiCoordinator to be created before WebappActivty#onResume().
-        if (mStatusBarColorController == null) {
-            mStatusBarColorController = new StatusBarColorController(this);
-        }
-
-        return mStatusBarColorController;
-    }
-
-    /**
      * Returns theme color which should be used when:
      * - Web page does not provide a custom theme color.
      * AND
@@ -836,11 +817,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public int getActivityThemeColor() {
         return TabState.UNSPECIFIED_THEME_COLOR;
-    }
-
-    @Override
-    public int getBaseStatusBarColor(Tab tab) {
-        return StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR;
     }
 
     private void createContextReporterIfNeeded() {

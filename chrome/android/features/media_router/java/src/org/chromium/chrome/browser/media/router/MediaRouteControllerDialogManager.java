@@ -8,19 +8,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.MediaRouteControllerDialog;
-import android.support.v7.app.MediaRouteControllerDialogFragment;
-import android.support.v7.media.MediaRouteSelector;
-import android.support.v7.media.MediaRouter;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.mediarouter.app.MediaRouteControllerDialog;
+import androidx.mediarouter.app.MediaRouteControllerDialogFragment;
+import androidx.mediarouter.media.MediaRouteSelector;
+import androidx.mediarouter.media.MediaRouter;
 
 /**
  * Manages the dialog responsible for controlling an existing media route.
  */
 public class MediaRouteControllerDialogManager extends BaseMediaRouteDialogManager {
     private static final String DIALOG_FRAGMENT_TAG =
-            "android.support.v7.mediarouter:MediaRouteControllerDialogFragment";
+            "androidx.mediarouter:MediaRouteControllerDialogFragment";
 
     private final String mMediaRouteId;
 

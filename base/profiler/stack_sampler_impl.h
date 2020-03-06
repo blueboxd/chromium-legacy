@@ -19,8 +19,7 @@ class Unwinder;
 
 // Cross-platform stack sampler implementation. Delegates to StackCopier for the
 // platform-specific stack copying implementation.
-class BASE_EXPORT StackSamplerImpl : public StackSampler,
-                                     public StackCopier::Delegate {
+class BASE_EXPORT StackSamplerImpl : public StackSampler {
  public:
   StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
                    std::unique_ptr<Unwinder> native_unwinder,
@@ -35,9 +34,6 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler,
   void AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) override;
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
-
-  // StackCopier::Delegate:
-  void OnStackCopy() override;
 
   // Exposes the internal function for unit testing.
   static std::vector<Frame> WalkStackForTesting(ModuleCache* module_cache,

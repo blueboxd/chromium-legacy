@@ -342,6 +342,12 @@ Polymer({
         'settings.a11y.tablet_mode_shelf_nav_buttons_enabled', this.prefs));
   },
 
+  /** @private */
+  onShelfNavigationButtonsLearnMoreClicked_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Settings_A11y_ShelfNavigationButtonsLearnMoreClicked');
+  },
+
   /**
    * Handles the <code>tablet_mode_shelf_nav_buttons_enabled</code> setting's
    * toggle changes. It updates the backing pref value, unless the setting is

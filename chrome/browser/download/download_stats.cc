@@ -18,7 +18,7 @@ void RecordDownloadSource(ChromeDownloadSource source) {
 
 void RecordDangerousDownloadWarningShown(
     download::DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("Download.DownloadWarningShown", danger_type,
+  UMA_HISTOGRAM_ENUMERATION("Download.ShowedDownloadWarning", danger_type,
                             download::DOWNLOAD_DANGER_TYPE_MAX);
 }
 

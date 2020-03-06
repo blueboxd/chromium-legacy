@@ -24,12 +24,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "components/paint_preview/browser/jni_headers/PaintPreviewBaseService_jni.h"
-#endif  // defined(OS_ANDROID)
-
 namespace paint_preview {
 
 namespace {
@@ -46,22 +40,9 @@ PaintPreviewBaseService::PaintPreviewBaseService(
     : policy_(std::move(policy)),
       file_manager_(
           path.AppendASCII(kPaintPreviewDir).AppendASCII(ascii_feature_name)),
-      is_off_the_record_(is_off_the_record) {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> java_ref =
-      Java_PaintPreviewBaseService_Constructor(
-          env, reinterpret_cast<intptr_t>(this));
-  java_ref_.Reset(java_ref);
-#endif  // defined(OS_ANDROID)
-}
+      is_off_the_record_(is_off_the_record) {}
 
-PaintPreviewBaseService::~PaintPreviewBaseService() {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PaintPreviewBaseService_onDestroy(env, java_ref_);
-#endif  // defined(OS_ANDROID)
-}
+PaintPreviewBaseService::~PaintPreviewBaseService() = default;
 
 void PaintPreviewBaseService::GetCapturedPaintPreviewProto(
     const DirectoryKey& key,

@@ -66,12 +66,9 @@ class HistoryUiFaviconRequestHandlerImpl
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync or the Google favicon server depending whether
-  // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
-  // TODO(https://crbug.com/978775): Stop plumbing can_query_google_server once
-  // the feature experiment is no longer being run.
+  // retrieve from sync or the Google favicon server depending on the result
+  // given by |can_send_history_data_getter_|.
   void OnBitmapLocalDataAvailable(
-      bool can_query_google_server,
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback response_callback,
@@ -82,10 +79,9 @@ class HistoryUiFaviconRequestHandlerImpl
 
   // Called after the first attempt to retrieve the icon image from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
-  // retrieve from sync or the Google favicon server depending whether
-  // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
+  // retrieve from sync or the Google favicon server depending on the result
+  // given by |can_send_history_data_getter_|.
   void OnImageLocalDataAvailable(
-      bool can_query_google_server,
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
       HistoryUiFaviconRequestOrigin origin_for_uma,
@@ -116,8 +112,6 @@ class HistoryUiFaviconRequestHandlerImpl
       const GURL& group_to_clear,
       base::Time request_start_time_for_uma,
       favicon_base::GoogleFaviconServerRequestStatus status);
-
-  bool CanQueryGoogleServer() const;
 
   FaviconService* const favicon_service_;
 

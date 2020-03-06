@@ -79,7 +79,7 @@ public final class ProxyNativeTask extends NativeBackgroundTask {
 
     @Override
     protected boolean supportsServiceManagerOnly() {
-        // TODO(shaktisahu): Enable service manager only mode for native tasks.
+        // Return true here if you want your task to be run in reduced mode.
         return false;
     }
 

@@ -16,11 +16,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -67,7 +67,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
          * Notifies the subscriber when all animations are finished.
          * @param frontInfoBar The frontmost infobar or {@code null} if none are showing.
          */
-        void notifyAllAnimationsFinished(Item frontInfoBar);
+        void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar);
     }
 
     /**
@@ -164,7 +164,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
                 }
 
                 @Override
-                public void notifyAllAnimationsFinished(Item frontInfoBar) {
+                public void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar) {
                     for (InfoBarAnimationListener listener : mAnimationListeners) {
                         listener.notifyAllAnimationsFinished(frontInfoBar);
                     }

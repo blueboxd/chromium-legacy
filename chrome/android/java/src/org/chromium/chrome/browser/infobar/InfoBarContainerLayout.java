@@ -18,14 +18,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import androidx.annotation.IntDef;
-
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 /**
@@ -68,61 +65,6 @@ import java.util.ArrayList;
  */
 public class InfoBarContainerLayout extends OptimizedFrameLayout {
     /**
-     * An interface for items that can be added to an InfoBarContainerLayout.
-     */
-    public interface Item {
-        // The infobar priority.
-        @IntDef({InfoBarPriority.CRITICAL, InfoBarPriority.USER_TRIGGERED,
-                InfoBarPriority.PAGE_TRIGGERED, InfoBarPriority.BACKGROUND})
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface InfoBarPriority {
-            int CRITICAL = 0;
-            int USER_TRIGGERED = 1;
-            int PAGE_TRIGGERED = 2;
-            int BACKGROUND = 3;
-        }
-
-        /**
-         * Returns the View that represents this infobar. This should have no background or borders;
-         * a background and shadow will be added by a wrapper view.
-         */
-        View getView();
-
-        /**
-         * Returns whether controls for this View should be clickable. If false, all input events on
-         * this item will be ignored.
-         */
-        boolean areControlsEnabled();
-
-        /**
-         * Sets whether or not controls for this View should be clickable. This does not affect the
-         * visual state of the infobar.
-         * @param state If false, all input events on this Item will be ignored.
-         */
-        void setControlsEnabled(boolean state);
-
-        /**
-         * Returns the accessibility text to announce when this infobar is first shown.
-         */
-        CharSequence getAccessibilityText();
-
-        /**
-         * Returns the priority of an infobar. High priority infobar is shown in front of low
-         * priority infobar. If infobars have the same priorities, the most recently added one
-         * is shown behind previous ones.
-         *
-         */
-        int getPriority();
-
-        /**
-         * Returns the type of infobar, as best as can be determined at this time.  See
-         * components/infobars/core/infobar_delegate.h.
-         */
-        @InfoBarIdentifier
-        int getInfoBarIdentifier();
-    }
-
-    /**
      * Creates an empty InfoBarContainerLayout.
      */
     InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable,
@@ -139,7 +81,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * Adds an infobar to the container. The infobar appearing animation will happen after the
      * current animation, if any, finishes.
      */
-    void addInfoBar(Item item) {
+    void addInfoBar(InfoBarUiItem item) {
         mItems.add(findInsertIndex(item), item);
         processPendingAnimations();
     }
@@ -148,7 +90,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * Finds the appropriate index in the infobar stack for inserting this item.
      * @param item The infobar to be inserted.
      */
-    private int findInsertIndex(Item item) {
+    private int findInsertIndex(InfoBarUiItem item) {
         for (int i = 0; i < mItems.size(); ++i) {
             if (item.getPriority() < mItems.get(i).getPriority()) {
                 return i;
@@ -162,14 +104,14 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * Removes an infobar from the container. The infobar will be animated off the screen if it's
      * currently visible.
      */
-    void removeInfoBar(Item item) {
+    void removeInfoBar(InfoBarUiItem item) {
         mItems.remove(item);
         processPendingAnimations();
     }
 
     /**
-     * Notifies that an infobar's View ({@link Item#getView}) has changed. If the
-     * infobar is visible in the front of the stack, the infobar will fade out the old contents,
+     * Notifies that an infobar's View ({@link InfoBarUiItem#getView}) has changed. If
+     * the infobar is visible in the front of the stack, the infobar will fade out the old contents,
      * resize, then fade in the new contents.
      */
     void notifyInfoBarViewChanged() {
@@ -271,11 +213,11 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * content fades in.
      */
     private class FirstInfoBarAppearingAnimation extends InfoBarAnimation {
-        private Item mFrontItem;
+        private InfoBarUiItem mFrontItem;
         private InfoBarWrapper mFrontWrapper;
         private View mFrontContents;
 
-        FirstInfoBarAppearingAnimation(Item frontItem) {
+        FirstInfoBarAppearingAnimation(InfoBarUiItem frontItem) {
             mFrontItem = frontItem;
         }
 
@@ -318,12 +260,12 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * will be resized simulatenously to the new desired size.
      */
     private class FrontInfoBarAppearingAnimation extends InfoBarAnimation {
-        private Item mFrontItem;
+        private InfoBarUiItem mFrontItem;
         private InfoBarWrapper mFrontWrapper;
         private InfoBarWrapper mOldFrontWrapper;
         private View mFrontContents;
 
-        FrontInfoBarAppearingAnimation(Item frontItem) {
+        FrontInfoBarAppearingAnimation(InfoBarUiItem frontItem) {
             mFrontItem = frontItem;
         }
 
@@ -415,7 +357,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
     private class BackInfoBarAppearingAnimation extends InfoBarAnimation {
         private InfoBarWrapper mAppearingWrapper;
 
-        BackInfoBarAppearingAnimation(Item appearingItem) {
+        BackInfoBarAppearingAnimation(InfoBarUiItem appearingItem) {
             mAppearingWrapper = new InfoBarWrapper(getContext(), appearingItem);
         }
 
@@ -714,7 +656,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
      * This list is updated immediately when addInfoBar(), removeInfoBar(), and swapInfoBar() are
      * called; so during animations, it does *not* match the currently visible views.
      */
-    private final ArrayList<Item> mItems = new ArrayList<>();
+    private final ArrayList<InfoBarUiItem> mItems = new ArrayList<>();
 
     /**
      * The currently visible InfoBarWrappers, in front to back order.
@@ -747,7 +689,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
         // First, remove any infobars that are no longer in mItems, if any. Check the back infobars
         // before the front.
         for (int i = mInfoBarWrappers.size() - 1; i >= 0; i--) {
-            Item visibleItem = mInfoBarWrappers.get(i).getItem();
+            InfoBarUiItem visibleItem = mInfoBarWrappers.get(i).getItem();
             if (!mItems.contains(visibleItem)) {
                 if (i == 0 && mInfoBarWrappers.size() >= 2) {
                     // Remove the front infobar and reveal the second-to-front infobar.
@@ -771,7 +713,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
 
         // Second, run swap animation on front infobar if needed.
         if (!mInfoBarWrappers.isEmpty()) {
-            Item frontItem = mInfoBarWrappers.get(0).getItem();
+            InfoBarUiItem frontItem = mInfoBarWrappers.get(0).getItem();
             View frontContents = mInfoBarWrappers.get(0).getChildAt(0);
             if (frontContents != frontItem.getView()) {
                 runAnimation(new FrontInfoBarSwapContentsAnimation());
@@ -785,8 +727,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
         // mInfoBarWrappers.
         if (!mInfoBarWrappers.isEmpty()) {
             // Find the infobar with the highest index that isn't currently being shown.
-            Item currentVisibleItem = mInfoBarWrappers.get(0).getItem();
-            Item itemToInsert = null;
+            InfoBarUiItem currentVisibleItem = mInfoBarWrappers.get(0).getItem();
+            InfoBarUiItem itemToInsert = null;
             for (int checkIndex = 0; checkIndex < mItems.size(); checkIndex++) {
                 if (mItems.get(checkIndex) == currentVisibleItem) {
                     // There are no remaining infobars that can possibly override the
@@ -807,7 +749,7 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
         // Fourth, check if we should add any infobars at the back.
         int desiredChildCount = Math.min(mItems.size(), MAX_STACK_DEPTH);
         if (mInfoBarWrappers.size() < desiredChildCount) {
-            Item itemToShow = mItems.get(mInfoBarWrappers.size());
+            InfoBarUiItem itemToShow = mItems.get(mInfoBarWrappers.size());
             runAnimation(mInfoBarWrappers.isEmpty()
                     ? new FirstInfoBarAppearingAnimation(itemToShow)
                     : new BackInfoBarAppearingAnimation(itemToShow));
@@ -815,7 +757,8 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
         }
 
         // Fifth, now that we've stabilized, let listeners know that we have no more animations.
-        Item frontItem = mInfoBarWrappers.size() > 0 ? mInfoBarWrappers.get(0).getItem() : null;
+        InfoBarUiItem frontItem =
+                mInfoBarWrappers.size() > 0 ? mInfoBarWrappers.get(0).getItem() : null;
         mAnimationListener.notifyAllAnimationsFinished(frontItem);
     }
 

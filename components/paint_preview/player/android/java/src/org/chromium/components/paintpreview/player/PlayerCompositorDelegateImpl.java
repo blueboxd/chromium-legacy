@@ -13,7 +13,7 @@ import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
+import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 
 import javax.annotation.Nonnull;
 
@@ -32,12 +32,12 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     private CompositorListener mCompositorListener;
     private long mNativePlayerCompositorDelegate;
 
-    PlayerCompositorDelegateImpl(PaintPreviewBaseService service, String directoryKey,
+    PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, String directoryKey,
             @Nonnull CompositorListener compositorListener) {
         mCompositorListener = compositorListener;
-        if (service != null && service.getNativePaintPreviewBaseService() != 0) {
+        if (service != null && service.getNativeService() != 0) {
             mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(
-                    this, service.getNativePaintPreviewBaseService(), directoryKey);
+                    this, service.getNativeService(), directoryKey);
         }
         // TODO(crbug.com/1021590): Handle initialization errors when
         // mNativePlayerCompositorDelegate == 0.

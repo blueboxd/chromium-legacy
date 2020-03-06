@@ -64,7 +64,6 @@ class TestStackCopier : public StackCopier {
 
   bool CopyStack(StackBuffer* stack_buffer,
                  uintptr_t* stack_top,
-                 ProfileBuilder* profile_builder,
                  TimeTicks* timestamp,
                  RegisterContext* thread_context,
                  Delegate* delegate) override {
@@ -87,6 +86,20 @@ class TestStackCopier : public StackCopier {
   const std::vector<uintptr_t>& fake_stack_;
 
   const TimeTicks timestamp_;
+};
+
+// A StackCopier that just invokes the expected functions on the delegate.
+class DelegateInvokingStackCopier : public StackCopier {
+ public:
+  bool CopyStack(StackBuffer* stack_buffer,
+                 uintptr_t* stack_top,
+                 TimeTicks* timestamp,
+                 RegisterContext* thread_context,
+                 Delegate* delegate) override {
+    delegate->OnStackCopy();
+    delegate->OnThreadResume();
+    return true;
+  }
 };
 
 // Trivial unwinder implementation for testing.
@@ -124,6 +137,37 @@ class TestUnwinder : public Unwinder {
   size_t stack_size_;
   std::vector<uintptr_t>* stack_copy_;
   uintptr_t* stack_copy_bottom_;
+};
+
+// Records invocations of calls to OnStackCapture()/UpdateModules().
+class CallRecordingUnwinder : public Unwinder {
+ public:
+  void OnStackCapture() override { on_stack_capture_was_invoked_ = true; }
+
+  void UpdateModules(ModuleCache*) override {
+    update_modules_was_invoked_ = true;
+  }
+
+  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+
+  UnwindResult TryUnwind(RegisterContext* thread_context,
+                         uintptr_t stack_top,
+                         ModuleCache* module_cache,
+                         std::vector<Frame>* stack) const override {
+    return UnwindResult::UNRECOGNIZED_FRAME;
+  }
+
+  bool on_stack_capture_was_invoked() const {
+    return on_stack_capture_was_invoked_;
+  }
+
+  bool update_modules_was_invoked() const {
+    return update_modules_was_invoked_;
+  }
+
+ private:
+  bool on_stack_capture_was_invoked_ = false;
+  bool update_modules_was_invoked_ = false;
 };
 
 class TestModule : public ModuleCache::Module {
@@ -265,6 +309,40 @@ TEST(StackSamplerImplTest, CopyStackTimestamp) {
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
 
   EXPECT_EQ(timestamp, profile_builder.last_timestamp());
+}
+
+TEST(StackSamplerImplTest, UnwinderInvokedWhileRecordingStackFrames) {
+  std::unique_ptr<StackBuffer> stack_buffer = std::make_unique<StackBuffer>(10);
+  auto owned_unwinder = std::make_unique<CallRecordingUnwinder>();
+  CallRecordingUnwinder* unwinder = owned_unwinder.get();
+  ModuleCache module_cache;
+  TestProfileBuilder profile_builder(&module_cache);
+  StackSamplerImpl stack_sampler_impl(
+      std::make_unique<DelegateInvokingStackCopier>(),
+      std::move(owned_unwinder), &module_cache);
+
+  stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
+
+  EXPECT_TRUE(unwinder->on_stack_capture_was_invoked());
+  EXPECT_TRUE(unwinder->update_modules_was_invoked());
+}
+
+TEST(StackSamplerImplTest, AuxUnwinderInvokedWhileRecordingStackFrames) {
+  std::unique_ptr<StackBuffer> stack_buffer = std::make_unique<StackBuffer>(10);
+  ModuleCache module_cache;
+  TestProfileBuilder profile_builder(&module_cache);
+  StackSamplerImpl stack_sampler_impl(
+      std::make_unique<DelegateInvokingStackCopier>(),
+      std::make_unique<CallRecordingUnwinder>(), &module_cache);
+
+  auto owned_aux_unwinder = std::make_unique<CallRecordingUnwinder>();
+  CallRecordingUnwinder* aux_unwinder = owned_aux_unwinder.get();
+  stack_sampler_impl.AddAuxUnwinder(std::move(owned_aux_unwinder));
+
+  stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
+
+  EXPECT_TRUE(aux_unwinder->on_stack_capture_was_invoked());
+  EXPECT_TRUE(aux_unwinder->update_modules_was_invoked());
 }
 
 TEST(StackSamplerImplTest, WalkStack_Completed) {

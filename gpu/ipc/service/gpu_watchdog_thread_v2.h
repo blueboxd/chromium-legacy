@@ -14,7 +14,6 @@ namespace gpu {
 // OnGPUWatchdogTimeout for at most 4 times before the gpu thread is killed.
 constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 4;
 #endif
-constexpr base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(60);
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
@@ -26,7 +25,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded,
       base::TimeDelta timeout,
-      base::TimeDelta max_wait_time,
       bool test_mode);
 
   ~GpuWatchdogThreadImplV2() override;
@@ -67,7 +65,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   };
 
   GpuWatchdogThreadImplV2(base::TimeDelta timeout,
-                          base::TimeDelta max_wait_time,
                           bool test_mode);
   void OnAddPowerObserver();
   void RestartWatchdogTimeoutTask(PauseResumeSource source_of_request);
@@ -78,12 +75,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void InProgress();
   bool IsArmed();
   void OnWatchdogTimeout();
-  bool GpuIsAlive();
   bool WatchedThreadNeedsMoreTime(bool no_gpu_hang_detected);
 #if defined(OS_WIN)
   base::ThreadTicks GetWatchedThreadTime();
 #endif
-  bool GpuRespondsAfterWaiting(base::TimeTicks on_watchdog_timeout_start);
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
@@ -98,14 +93,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // time.
   void NumOfUsersWaitingWithExtraThreadTimeHistogram(int count);
 #endif
-
-  // The wait time in OnWatchdogTimeout() for the GPU main thread to make a
-  // progress.
-  void GpuWatchdogWaitTimeHistogram(base::TimeDelta wait_time);
-
-  // The number of users per second stay in Chrome after entering the 60-second
-  // wait time.
-  void NumOfUsersWaitHistogram(int count, bool gpu_is_active);
 
   // Used for metrics. It's 1 minute after the event.
   bool WithinOneMinFromPowerResumed();
@@ -161,9 +148,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // After GPU hang detected, how many times has the GPU thread been allowed to
   // continue due to not enough thread time.
   int count_of_more_gpu_thread_time_allowed_ = 0;
-
-  // The accumulated timeout time the GPU main thread was given.
-  base::TimeDelta time_in_extra_timeouts_;
 #endif
 
 #if defined(USE_X11)
@@ -203,7 +187,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   size_t num_of_timeout_after_foregrounded_ = 0;
   bool foregrounded_event_ = false;
   bool power_resumed_event_ = false;
-  base::TimeDelta max_wait_time_;
 
   // For gpu testing only.
   const bool is_test_mode_;

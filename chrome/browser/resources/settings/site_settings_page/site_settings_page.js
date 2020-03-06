@@ -327,8 +327,6 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-site-settings-page',
 
-    behaviors: [settings.RouteObserverBehavior],
-
     properties: {
       /**
        * @private {{
@@ -477,24 +475,6 @@ cr.define('settings', function() {
      */
     onSiteSettingsItemClick_(event) {
       this.navigateToRoute_(event.detail);
-    },
-
-    /**
-     * Reload the site recent site permission list when the page is navigated
-     * to.
-     * settings.RouteObserverBehavior
-     * @param {!settings.Route} currentRoute
-     * @protected
-     */
-    currentRouteChanged(currentRoute) {
-      if (currentRoute == settings.routes.SITE_SETTINGS &&
-          this.privacySettingsRedesignEnabled_) {
-        // Needs to be async to await the surrounding dom-if, should be removed
-        // when the dom-if is removed.
-        this.async(() => {
-          this.$$('#recentSitePermissions').populateList();
-        });
-      }
     },
 
     /**

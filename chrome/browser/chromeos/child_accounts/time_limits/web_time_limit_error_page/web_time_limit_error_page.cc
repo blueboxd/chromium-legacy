@@ -56,11 +56,11 @@ std::string GetWebTimeLimitErrorPage(base::string16 block_header,
 
 }  // namespace
 
-std::string GetWebTimeLimitChromeErrorPage(base::TimeDelta time_limit,
+std::string GetWebTimeLimitChromeErrorPage(const std::string& domain,
+                                           base::TimeDelta time_limit,
                                            const std::string& app_locale) {
   auto block_header = l10n_util::GetStringFUTF16(
-      IDS_WEB_TIME_LIMIT_ERROR_PAGE_CHROME_HEADER,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+      IDS_WEB_TIME_LIMIT_ERROR_PAGE_CHROME_HEADER, base::UTF8ToUTF16(domain));
 
   auto block_message = l10n_util::GetStringFUTF16(
       IDS_WEB_TIME_LIMIT_ERROR_PAGE_CHROME_MESSAGE,

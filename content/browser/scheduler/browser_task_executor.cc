@@ -129,11 +129,10 @@ QueueType BaseBrowserTaskExecutor::GetQueueType(
         // Note we currently ignore the priority for bootstrap tasks.
         return QueueType::kBootstrap;
 
-      case BrowserTaskType::kNavigation:
       case BrowserTaskType::kPreconnect:
         // Note we currently ignore the priority for navigation and
         // preconnection tasks.
-        return QueueType::kNavigationAndPreconnection;
+        return QueueType::kPreconnection;
 
       case BrowserTaskType::kDefault:
         // Defer to traits.priority() below.

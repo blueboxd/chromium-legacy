@@ -372,30 +372,29 @@ InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
 }
 
 void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
+  ASSERT_FALSE(run_loop_);
+  run_loop_.emplace();
   BrowserChildProcessObserver::Add(this);
   CheckHasRunningChildProcess();
-  run_loop.Run();
+  run_loop_->Run();
+  run_loop_.reset();
   BrowserChildProcessObserver::Remove(this);
 }
 
 void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
+  ASSERT_TRUE(run_loop_);
+
   auto check_has_running_child_process_on_io =
-      [](base::WeakPtr<InProcessUtilityThreadHelper> weak_ptr,
-         base::OnceClosure* quit_closure) {
+      [](base::OnceClosure quit_closure) {
         BrowserChildProcessHostIterator it;
         // If not Done(), we have some running child processes and need to wait.
-        // The |quit_closure| is valid while |weak_ptr| is alive.
-        if (it.Done() && weak_ptr)
-          std::move(*quit_closure).Run();
+        if (it.Done())
+          std::move(quit_closure).Run();
       };
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(check_has_running_child_process_on_io,
-                     weak_ptr_factory_.GetWeakPtr(), &quit_closure_));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(check_has_running_child_process_on_io,
+                                run_loop_->QuitClosure()));
 }
 
 void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(

@@ -53,6 +53,13 @@ class CreateNoteTest : public AshTestBase {
     tool_ = std::make_unique<CreateNoteAction>(palette_tool_delegate_.get());
   }
 
+  void TearDown() override {
+    // This needs to be called first to remove the event handler before the
+    // shell instance gets torn down.
+    tool_.reset();
+    AshTestBase::TearDown();
+  }
+
  protected:
   std::unique_ptr<MockPaletteToolDelegate> palette_tool_delegate_;
   std::unique_ptr<PaletteTool> tool_;
@@ -121,6 +128,18 @@ TEST_F(CreateNoteTest, ClientGetsRemovedAfterViewCreated) {
   note_taking_client.reset();
 
   tool_->OnEnable();
+}
+
+TEST_F(CreateNoteTest, ToolIsEnabledWhenStylusButtonIsPressed) {
+  auto note_taking_client = std::make_unique<TestNoteTakingControllerClient>();
+  std::unique_ptr<views::View> view = base::WrapUnique(tool_->CreateView());
+
+  // Send a stylus button event.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_F19, ui::EF_IS_STYLUS_BUTTON);
+  generator->ReleaseKey(ui::VKEY_F19, ui::EF_IS_STYLUS_BUTTON);
+
+  EXPECT_EQ(1, note_taking_client->GetCreateNoteCount());
 }
 
 }  // namespace ash

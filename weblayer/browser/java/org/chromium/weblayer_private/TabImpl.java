@@ -414,6 +414,25 @@ public final class TabImpl extends ITab.Stub {
         mWebContents.dispatchBeforeUnload(false);
     }
 
+    @Override
+    public boolean dismissTransientUi() {
+        BrowserViewController viewController = getViewController();
+        if (viewController != null && viewController.dismissTabModalOverlay()) return true;
+
+        if (mWebContents.isFullscreenForCurrentTab()) {
+            mWebContents.exitFullscreen();
+            return true;
+        }
+
+        SelectionPopupController popup = SelectionPopupController.fromWebContents(mWebContents);
+        if (popup != null && popup.isSelectActionBarShowing()) {
+            popup.clearSelection();
+            return true;
+        }
+
+        return false;
+    }
+
     @CalledByNative
     private static RectF createRectF(float x, float y, float right, float bottom) {
         return new RectF(x, y, right, bottom);

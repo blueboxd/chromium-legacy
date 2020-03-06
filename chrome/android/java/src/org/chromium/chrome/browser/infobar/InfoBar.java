@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -23,7 +24,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Note that infobars expire by default when a new navigation occurs.
  * Make sure to use setExpireOnNavigation(false) if you want an infobar to be sticky.
  */
-public abstract class InfoBar implements InfoBarView {
+public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiItem {
     private static final String TAG = "InfoBar";
 
     private final int mIconDrawableId;
@@ -130,6 +131,12 @@ public abstract class InfoBar implements InfoBarView {
     protected boolean usesCompactLayout() {
         return false;
     }
+
+    /**
+     * Prepares the InfoBar for display and adds InfoBar-specific controls to the layout.
+     * @param layout Layout containing all of the controls.
+     */
+    protected void createContent(InfoBarLayout layout) {}
 
     /**
      * Prepares and inserts views into an {@link InfoBarCompactLayout}.
@@ -253,6 +260,11 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @Override
+    public void onClick() {
+        setControlsEnabled(false);
+    }
+
+    @Override
     public void onButtonClicked(boolean isPrimaryButton) {
     }
 
@@ -276,10 +288,6 @@ public abstract class InfoBar implements InfoBarView {
         if (mNativeInfoBarPtr != 0 && !mIsDismissed) {
             InfoBarJni.get().onCloseButtonClicked(mNativeInfoBarPtr, InfoBar.this);
         }
-    }
-
-    @Override
-    public void createContent(InfoBarLayout layout) {
     }
 
     @InfoBarIdentifier

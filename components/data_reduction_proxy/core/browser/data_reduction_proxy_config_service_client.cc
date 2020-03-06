@@ -106,8 +106,45 @@ std::vector<DataReductionProxyServer> GetProxiesForHTTP(
           server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
     }
   }
-
   return proxies;
+}
+
+bool AllowInsecurePrefetchProxy() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "allow-insecure-prefetch-proxy-for-testing");
+}
+
+std::vector<GURL> GetPrefetchProxyHosts(
+    const data_reduction_proxy::PrefetchProxyConfig& prefetch_config) {
+  std::vector<GURL> hosts;
+  for (const auto& proxy : prefetch_config.proxy_list()) {
+    if (proxy.type() != PrefetchProxyConfig_Proxy_Type_CONNECT)
+      continue;
+
+    if (proxy.scheme() != PrefetchProxyConfig_Proxy_Scheme_HTTPS &&
+        !AllowInsecurePrefetchProxy()) {
+      LOG(ERROR) << "non-HTTPS PrefetchProxy hosts are not accepted without "
+                    "--allow-insecure-prefetch-proxy-for-testing";
+      continue;
+    }
+
+    std::string scheme =
+        protobuf_parser::SchemeFromPrefetchScheme(proxy.scheme());
+    if (scheme.empty())
+      continue;
+    if (proxy.host().empty())
+      continue;
+    if (proxy.port() == 0)
+      continue;
+
+    url::SchemeHostPort shp(scheme, proxy.host(),
+                            static_cast<uint16_t>(proxy.port()));
+    if (!shp.IsValid())
+      continue;
+
+    hosts.push_back(shp.GetURL());
+  }
+  return hosts;
 }
 
 void RecordAuthExpiredHistogram(bool auth_expired) {
@@ -595,6 +632,9 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!config.has_proxy_config())
     return false;
+
+  service_->UpdatePrefetchProxyHosts(
+      GetPrefetchProxyHosts(config.prefetch_proxy_config()));
 
   service_->SetIgnoreLongTermBlackListRules(
       config.ignore_long_term_black_list_rules());

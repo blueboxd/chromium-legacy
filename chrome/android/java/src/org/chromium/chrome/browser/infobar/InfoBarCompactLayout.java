@@ -33,7 +33,7 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
  * declares itself to be using a compact layout via {@link InfoBar#usesCompactLayout}.
  */
 public class InfoBarCompactLayout extends LinearLayout implements View.OnClickListener {
-    private final InfoBarView mInfoBarView;
+    private final InfoBarInteractionHandler mInfoBar;
     private final int mCompactInfoBarSize;
     private final int mIconWidth;
     private final View mCloseButton;
@@ -41,15 +41,15 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
     /**
      * Constructs a compat layout for the specified infobar.
      * @param context The context used to render.
-     * @param infoBarView {@link InfoBarView} that listens to events.
+     * @param infoBar {@link InfoBarInteractionHandler} that listens to events.
      * @param iconResourceId Resource ID of the icon to use for the infobar.
      * @param iconTintId The {@link ColorRes} used as tint for {@code iconResourceId}.
      * @param iconBitmap Bitmap for the icon to use, if {@code iconResourceId} is not set.
      */
-    InfoBarCompactLayout(Context context, InfoBarView infoBarView, int iconResourceId,
+    InfoBarCompactLayout(Context context, InfoBarInteractionHandler infoBar, int iconResourceId,
             @ColorRes int iconTintId, Bitmap iconBitmap) {
         super(context);
-        mInfoBarView = infoBarView;
+        mInfoBar = infoBar;
         mCompactInfoBarSize =
                 context.getResources().getDimensionPixelOffset(R.dimen.infobar_compact_size);
         mIconWidth = context.getResources().getDimensionPixelOffset(R.dimen.infobar_big_icon_size);
@@ -64,7 +64,7 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.infobar_close_button) {
-            mInfoBarView.onCloseButtonClicked();
+            mInfoBar.onCloseButtonClicked();
         } else {
             assert false;
         }

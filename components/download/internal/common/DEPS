@@ -6,6 +6,7 @@ include_rules = [
   "+components/download/quarantine",
   "+components/filename_generation/filename_generation.h",
   "+components/leveldb_proto",
+  "+components/safe_browsing",
   "+components/services/quarantine/public/cpp/quarantine_features_win.h",
   "+components/ukm/test_ukm_recorder.h",
   "+crypto",

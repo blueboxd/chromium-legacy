@@ -1060,7 +1060,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
   explicit WebContentsDestroyedWatcher(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
         message_loop_runner_(new content::MessageLoopRunner) {
-    EXPECT_TRUE(web_contents != NULL);
+    EXPECT_TRUE(web_contents != nullptr);
   }
   ~WebContentsDestroyedWatcher() override {}
 
@@ -2993,7 +2993,7 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
 
   // Removing |extension1_| from the policy should not be reflected in the
   // launcher and pin will exist.
-  policy_value.Remove(0, NULL);
+  policy_value.Remove(0, nullptr);
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());

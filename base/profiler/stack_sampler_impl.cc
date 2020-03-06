@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
@@ -13,6 +14,7 @@
 #include "base/profiler/stack_copier.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/profiler/unwinder.h"
+#include "build/build_config.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
 // the target thread is suspended so it must not do any allocation from the
@@ -22,6 +24,65 @@
 // HEAP ALLOCATIONS".
 
 namespace base {
+
+namespace {
+
+// Notifies the unwinders about the stack capture, and records metadata, while
+// the thread is suspended.
+class StackCopierDelegate : public StackCopier::Delegate {
+ public:
+  StackCopierDelegate(ModuleCache* module_cache,
+                      Unwinder* native_unwinder,
+                      Unwinder* aux_unwinder,
+                      ProfileBuilder* profile_builder)
+      : module_cache_(module_cache),
+        native_unwinder_(native_unwinder),
+        aux_unwinder_(aux_unwinder),
+        profile_builder_(profile_builder),
+        metadata_provider_(
+            GetSampleMetadataRecorder()->CreateMetadataProvider()) {}
+
+  StackCopierDelegate(const StackCopierDelegate&) = delete;
+  StackCopierDelegate& operator=(const StackCopierDelegate&) = delete;
+
+  // StackCopier::Delegate:
+  // IMPORTANT NOTE: to avoid deadlock this function must not invoke any
+  // non-reentrant code that is also invoked by the target thread. In
+  // particular, it may not perform any heap allocation or deallocation,
+  // including indirectly via use of DCHECK/CHECK or other logging statements.
+  void OnStackCopy() override {
+    native_unwinder_->OnStackCapture();
+    if (aux_unwinder_)
+      aux_unwinder_->OnStackCapture();
+
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
+    profile_builder_->RecordMetadata(metadata_provider_.get());
+#else
+    // TODO(https://crbug.com/1056283): Support metadata recording on POSIX
+    // platforms.
+    ALLOW_UNUSED_LOCAL(profile_builder_);
+#endif
+  }
+
+  void OnThreadResume() override {
+    // Reset this as soon as possible because it may hold a lock on the
+    // metadata.
+    metadata_provider_.reset();
+
+    native_unwinder_->UpdateModules(module_cache_);
+    if (aux_unwinder_)
+      aux_unwinder_->UpdateModules(module_cache_);
+  }
+
+ private:
+  ModuleCache* const module_cache_;
+  Unwinder* const native_unwinder_;
+  Unwinder* const aux_unwinder_;
+  ProfileBuilder* const profile_builder_;
+  std::unique_ptr<ProfileBuilder::MetadataProvider> metadata_provider_;
+};
+
+}  // namespace
 
 StackSamplerImpl::StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
                                    std::unique_ptr<Unwinder> native_unwinder,
@@ -46,9 +107,10 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   RegisterContext thread_context;
   uintptr_t stack_top;
   TimeTicks timestamp;
-  bool success =
-      stack_copier_->CopyStack(stack_buffer, &stack_top, profile_builder,
-                               &timestamp, &thread_context, this);
+  StackCopierDelegate delegate(module_cache_, native_unwinder_.get(),
+                               aux_unwinder_.get(), profile_builder);
+  bool success = stack_copier_->CopyStack(stack_buffer, &stack_top, &timestamp,
+                                          &thread_context, &delegate);
   if (!success)
     return;
 
@@ -59,16 +121,6 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
       WalkStack(module_cache_, &thread_context, stack_top,
                 native_unwinder_.get(), aux_unwinder_.get()),
       timestamp);
-}
-
-// IMPORTANT NOTE: to avoid deadlock this function must not invoke any
-// non-reentrant code that is also invoked by the target thread. In particular,
-// it may not perform any heap allocation or deallocation, including indirectly
-// via use of DCHECK/CHECK or other logging statements.
-void StackSamplerImpl::OnStackCopy() {
-  native_unwinder_->OnStackCapture();
-  if (aux_unwinder_)
-    aux_unwinder_->OnStackCapture();
 }
 
 // static

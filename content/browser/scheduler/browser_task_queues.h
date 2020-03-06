@@ -50,8 +50,8 @@ class CONTENT_EXPORT BrowserTaskQueues {
     // For tasks on the critical path up to issuing the initial navigation.
     kBootstrap,
 
-    // For navigation and preconnection related tasks.
-    kNavigationAndPreconnection,
+    // For preconnection-related tasks.
+    kPreconnection,
 
     // base::TaskPriority::kUserBlocking maps to this task queue. It's for tasks
     // that affect the UI immediately after a user interaction. Has the same

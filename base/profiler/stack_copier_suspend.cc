@@ -4,8 +4,6 @@
 
 #include "base/profiler/stack_copier_suspend.h"
 
-#include "base/profiler/metadata_recorder.h"
-#include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 
@@ -19,13 +17,12 @@ StackCopierSuspend::~StackCopierSuspend() = default;
 
 // Suspends the thread, copies the stack state, and resumes the thread. The
 // copied stack state includes the stack itself, the top address of the stack
-// copy, the register context, and the current metadata state. Returns true on
-// success, and returns the copied state via the params.
+// copy, and the register context. Returns true on success, and returns the
+// copied state via the params.
 //
 // NO HEAP ALLOCATIONS within the ScopedSuspendThread scope.
 bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
                                    uintptr_t* stack_top,
-                                   ProfileBuilder* profile_builder,
                                    TimeTicks* timestamp,
                                    RegisterContext* thread_context,
                                    Delegate* delegate) {
@@ -33,12 +30,6 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
   uintptr_t bottom = 0;
   const uint8_t* stack_copy_bottom = nullptr;
   {
-    // The MetadataProvider must be created before the ScopedSuspendThread
-    // because it acquires a lock in its constructor that might otherwise be
-    // held by the target thread, resulting in deadlock.
-    std::unique_ptr<ProfileBuilder::MetadataProvider> get_metadata_items =
-        GetSampleMetadataRecorder()->CreateMetadataProvider();
-
     // Allocation of the ScopedSuspendThread object itself is OK since it
     // necessarily occurs before the thread is suspended by the object.
     std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
@@ -66,14 +57,14 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
     if (!thread_delegate_->CanCopyStack(bottom))
       return false;
 
-    profile_builder->RecordMetadata(get_metadata_items.get());
-
     delegate->OnStackCopy();
 
     stack_copy_bottom = CopyStackContentsAndRewritePointers(
         reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
         StackBuffer::kPlatformStackAlignment, stack_buffer->buffer());
   }
+
+  delegate->OnThreadResume();
 
   *stack_top = reinterpret_cast<uintptr_t>(stack_copy_bottom) + (top - bottom);
 

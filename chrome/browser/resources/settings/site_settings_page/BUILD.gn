@@ -14,6 +14,8 @@ js_type_check("closure_compile") {
 
 js_library("recent_site_permissions") {
   deps = [
+    "..:route",
+    "..:router",
     "../people_page:sync_browser_proxy",
     "../prefs:prefs_behavior",
     "../site_settings:site_settings_behavior",

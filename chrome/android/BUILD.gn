@@ -388,7 +388,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_android_support_viewpager_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_sdk:android_gcm_java",
@@ -888,7 +888,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk:android_test_runner_java",
@@ -1581,7 +1581,7 @@ android_library("browser_java_test_support") {
     "//components/sync/protocol:protocol_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/junit",
   ]
 }

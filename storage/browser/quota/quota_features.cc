@@ -22,7 +22,7 @@ constexpr base::FeatureParam<double> kPerHostRatio{&kQuotaExpandPoolSize,
 // quota computation takes into account free disk space, in addition to the
 // disk's total capacity.
 const base::Feature kStaticHostQuota{"StaticHostQuota",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // QuotaUnlimitedPoolSize removes limitations around disk space consumption with
 // respect to client-side storage web platform APIs. When enabled, quota will

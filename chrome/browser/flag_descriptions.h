@@ -361,9 +361,6 @@ extern const char kEnableGenericSensorExtraClassesDescription[];
 extern const char kEnableGpuServiceLoggingName[];
 extern const char kEnableGpuServiceLoggingDescription[];
 
-extern const char kEnableHistoryFaviconsGoogleServerQueryName[];
-extern const char kEnableHistoryFaviconsGoogleServerQueryDescription[];
-
 extern const char kEnableImplicitRootScrollerName[];
 extern const char kEnableImplicitRootScrollerDescription[];
 

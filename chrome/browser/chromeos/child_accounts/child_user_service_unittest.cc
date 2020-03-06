@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
@@ -89,9 +89,9 @@ class ChildUserServiceTest : public testing::Test {
 // Tests Per-App Time Limits feature.
 using PerAppTimeLimitsTest = ChildUserServiceTest;
 
-TEST_F(PerAppTimeLimitsTest, GetWebTimeLimitInterface) {
+TEST_F(PerAppTimeLimitsTest, GetAppTimeLimitInterface) {
   EXPECT_EQ(ChildUserServiceFactory::GetForBrowserContext(profile()),
-            app_time::WebTimeLimitInterface::Get(profile()));
+            app_time::AppTimeLimitInterface::Get(profile()));
 }
 
 TEST_F(PerAppTimeLimitsTest, PauseAndResumeWebActivity) {

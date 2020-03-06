@@ -36,7 +36,7 @@ const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCommittedSBInterstitials{
-    "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentComplianceEnabled{
     "SafeBrowsingContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};

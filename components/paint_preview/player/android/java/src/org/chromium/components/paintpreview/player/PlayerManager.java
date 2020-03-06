@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UnguessableToken;
-import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
+import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.components.paintpreview.player.frame.PlayerFrameCoordinator;
 
 import java.util.HashMap;
@@ -29,7 +29,8 @@ public class PlayerManager {
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
 
-    public PlayerManager(Context context, PaintPreviewBaseService service, String directoryKey) {
+    public PlayerManager(
+            Context context, NativePaintPreviewServiceProvider service, String directoryKey) {
         mContext = context;
         mDelegate =
                 new PlayerCompositorDelegateImpl(service, directoryKey, this::onCompositorReady);

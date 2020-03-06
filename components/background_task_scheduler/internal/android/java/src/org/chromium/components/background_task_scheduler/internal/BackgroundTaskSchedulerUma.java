@@ -155,6 +155,11 @@ public class BackgroundTaskSchedulerUma extends BackgroundTaskSchedulerExternalU
         cacheEvent("Android.BackgroundTaskScheduler.TaskStopped", toUmaEnumValueFromTaskId(taskId));
     }
 
+    /** Reports metrics for rescheduling a task. */
+    public void reportTaskRescheduled() {
+        cacheEvent("Android.BackgroundTaskScheduler.TaskRescheduled", 0);
+    }
+
     /** Reports metrics for migrating scheduled tasks to Protocol Buffer data format. */
     public void reportMigrationToProto(int taskId) {
         cacheEvent("Android.BackgroundTaskScheduler.MigrationToProto",

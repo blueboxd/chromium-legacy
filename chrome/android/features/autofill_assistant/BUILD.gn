@@ -219,7 +219,7 @@ android_library("autofill_assistant_java_test_support") {
     "//base:jni_java",
     "//components/autofill_assistant/browser:proto_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -269,7 +269,7 @@ android_library("test_java") {
     "//third_party/android_deps:com_android_support_coordinatorlayout_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_google_android_material_material_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",

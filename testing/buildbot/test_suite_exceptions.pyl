@@ -522,6 +522,11 @@
       'linux-chromeos-rel': {
         'swarming': {
           'shards': 20,
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
         },
       },
       'linux-code-coverage': {

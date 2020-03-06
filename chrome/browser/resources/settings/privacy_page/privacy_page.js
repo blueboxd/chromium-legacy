@@ -116,6 +116,18 @@ cr.define('settings', function() {
       },
 
       /**
+       * Whether the secure DNS setting should be displayed.
+       * @private
+       */
+      showSecureDnsSetting_: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          return loadTimeData.getBoolean('showSecureDnsSetting');
+        },
+      },
+
+      /**
        * Whether the more settings list is opened.
        * @private
        */

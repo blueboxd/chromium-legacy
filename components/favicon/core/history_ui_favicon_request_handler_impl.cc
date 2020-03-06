@@ -7,12 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
@@ -125,8 +122,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
       kFallbackToHost,
       base::BindOnce(
           &HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(), CanQueryGoogleServer(), page_url,
-          desired_size_in_pixel,
+          weak_ptr_factory_.GetWeakPtr(), page_url, desired_size_in_pixel,
           /*response_callback=*/std::move(callback), request_origin_for_uma,
           icon_url_for_uma, base::Time::Now()),
       &cancelable_task_tracker_);
@@ -142,14 +138,13 @@ void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
       page_url,
       base::BindOnce(
           &HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(), CanQueryGoogleServer(), page_url,
+          weak_ptr_factory_.GetWeakPtr(), page_url,
           /*response_callback=*/std::move(callback), request_origin_for_uma,
           icon_url_for_uma, base::Time::Now()),
       &cancelable_task_tracker_);
 }
 
 void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
-    bool can_query_google_server,
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback response_callback,
@@ -168,7 +163,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     return;
   }
 
-  if (can_query_google_server) {
+  if (can_send_history_data_getter_.Run()) {
     // TODO(victorvianna): Avoid using AdaptCallbackForRepeating.
     base::RepeatingCallback<void(const favicon_base::FaviconRawBitmapResult&)>
         repeating_response_callback =
@@ -210,7 +205,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
 }
 
 void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
-    bool can_query_google_server,
     const GURL& page_url,
     favicon_base::FaviconImageCallback response_callback,
     HistoryUiFaviconRequestOrigin origin_for_uma,
@@ -228,7 +222,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     return;
   }
 
-  if (can_query_google_server) {
+  if (can_send_history_data_getter_.Run()) {
     // TODO(victorvianna): Avoid using AdaptCallbackForRepeating.
     base::RepeatingCallback<void(const favicon_base::FaviconImageResult&)>
         repeating_response_callback =
@@ -316,16 +310,10 @@ void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
   // would be effectively sent to the server and become responsible for calling
   // all callbacks in its group once done.
   GURL group_to_clear = group_count == 1 ? group_identifier : GURL();
-  // If |trim_url_path| parameter in the experiment is true, the path part of
-  // the url is stripped in the request, but result is stored under the complete
-  // url.
-  bool should_trim_url_path = base::GetFieldTrialParamByFeatureAsBool(
-      kEnableHistoryFaviconsGoogleServerQuery, "trim_url_path",
-      /* default_value= */ false);
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           page_url,
-          /*may_page_url_be_private=*/true, should_trim_url_path,
+          /*may_page_url_be_private=*/true, /*should_trim_url_path=*/false,
           traffic_annotation,
           base::BindOnce(
               &HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable,
@@ -369,11 +357,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable(
         FaviconAvailability::kNotAvailable);
     std::move(empty_response_callback).Run();
   }
-}
-
-bool HistoryUiFaviconRequestHandlerImpl::CanQueryGoogleServer() const {
-  return can_send_history_data_getter_.Run() &&
-         base::FeatureList::IsEnabled(kEnableHistoryFaviconsGoogleServerQuery);
 }
 
 }  // namespace favicon

@@ -217,7 +217,9 @@ bool DirectCompositionChildSurfaceWin::OnMakeCurrent(GLContext* context) {
       }
       g_current_surface = nullptr;
     }
-    if (draw_texture_) {
+    // We're in the middle of |dcomp_surface_| draw only if |draw_texture_| is
+    // not null.
+    if (dcomp_surface_ && draw_texture_) {
       HRESULT hr = dcomp_surface_->ResumeDraw();
       if (FAILED(hr)) {
         DLOG(ERROR) << "ResumeDraw failed with error " << std::hex << hr;

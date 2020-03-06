@@ -22,14 +22,20 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
     Polymer.dom.flush();
   });
 
+  teardown(function() {
+    testElement.remove();
+  });
+
   test('No recent permissions', async function() {
     browserProxy.setResultFor('getRecentSitePermissions', Promise.resolve([]));
-    await testElement.populateList();
+    testElement.currentRouteChanged(settings.routes.SITE_SETTINGS);
+    await browserProxy.whenCalled('getRecentSitePermissions');
+    Polymer.dom.flush();
     assertTrue(test_util.isVisible(testElement, '#noPermissionsText'));
   });
 
   test('Various recent permissions', async function() {
-    const mock_data = Promise.resolve([
+    const mockData = Promise.resolve([
       {
         origin: 'https://bar.com',
         incognito: true,
@@ -53,9 +59,11 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
         ]
       },
     ]);
-    browserProxy.setResultFor('getRecentSitePermissions', mock_data);
+    browserProxy.setResultFor('getRecentSitePermissions', mockData);
+    testElement.currentRouteChanged(settings.routes.SITE_SETTINGS);
+    await browserProxy.whenCalled('getRecentSitePermissions');
+    Polymer.dom.flush();
 
-    await testElement.populateList();
     assertFalse(testElement.noRecentPermissions);
     assertFalse(test_util.isChildVisible(testElement, '#noPermissionsText'));
 

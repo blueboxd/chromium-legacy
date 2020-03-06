@@ -309,16 +309,14 @@ class span : public internal::ExtentStorage<Extent> {
   // [span.sub], span subviews
   template <size_t Count>
   constexpr span<T, Count> first() const noexcept {
-    static_assert(Extent == dynamic_extent || Count <= Extent,
-                  "Count must not exceed Extent");
+    static_assert(Count <= Extent, "Count must not exceed Extent");
     CHECK(Extent != dynamic_extent || Count <= size());
     return {data(), Count};
   }
 
   template <size_t Count>
   constexpr span<T, Count> last() const noexcept {
-    static_assert(Extent == dynamic_extent || Count <= Extent,
-                  "Count must not exceed Extent");
+    static_assert(Count <= Extent, "Count must not exceed Extent");
     CHECK(Extent != dynamic_extent || Count <= size());
     return {data() + (size() - Count), Count};
   }
@@ -330,10 +328,8 @@ class span : public internal::ExtentStorage<Extent> {
                       : (Extent != dynamic_extent ? Extent - Offset
                                                   : dynamic_extent))>
   subspan() const noexcept {
-    static_assert(Extent == dynamic_extent || Offset <= Extent,
-                  "Offset must not exceed Extent");
-    static_assert(Extent == dynamic_extent || Count == dynamic_extent ||
-                      Count <= Extent - Offset,
+    static_assert(Offset <= Extent, "Offset must not exceed Extent");
+    static_assert(Count == dynamic_extent || Count <= Extent - Offset,
                   "Count must not exceed Extent - Offset");
     CHECK(Extent != dynamic_extent || Offset <= size());
     CHECK(Extent != dynamic_extent || Count == dynamic_extent ||

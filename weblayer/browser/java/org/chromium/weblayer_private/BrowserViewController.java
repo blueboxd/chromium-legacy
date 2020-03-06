@@ -211,8 +211,11 @@ public final class BrowserViewController
                 : mTopControlsContainerView.isTopControlVisible();
     }
 
-    public void dismissTabModalOverlay() {
-        mModalDialogManager.dismissDialogsOfType(
-                ModalDialogType.TAB, DialogDismissalCause.TAB_SWITCHED);
+    /**
+     * @return true if a tab modal was showing and has been dismissed.
+     */
+    public boolean dismissTabModalOverlay() {
+        return mModalDialogManager.dismissActiveDialogOfType(
+                ModalDialogType.TAB, DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
     }
 }

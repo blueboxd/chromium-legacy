@@ -387,6 +387,9 @@ const char kTimeZoneSettingsLearnMoreURL[] =
 
 const char kSmbSharesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=network_file_shares";
+
+const char kTabletModeGesturesLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=tablet_mode_gestures";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

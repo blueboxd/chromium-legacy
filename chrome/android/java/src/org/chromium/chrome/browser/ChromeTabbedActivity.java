@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -172,7 +173,8 @@ import java.util.Locale;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends ChromeActivity implements AccessibilityUtil.Observer {
+public class ChromeTabbedActivity
+        extends ChromeActivity<ChromeActivityComponent> implements AccessibilityUtil.Observer {
     private static final String TAG = "ChromeTabbedActivity";
 
     private static final String HELP_URL_PREFIX = "https://support.google.com/chrome/";
@@ -1127,9 +1129,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements Accessibilit
                             mMainIntentMetrics.setIgnoreEvents(false);
                         }, INITIAL_TAB_CREATION_TIMEOUT_MS);
             }
-
-            RecordHistogram.recordBooleanHistogram(
-                    "MobileStartup.ColdStartupIntent", mIntentWithEffect);
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeState");
         }

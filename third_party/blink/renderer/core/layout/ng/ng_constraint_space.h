@@ -558,8 +558,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
   }
 
-  int LinesUntilClamp() const {
-    return HasRareData() ? rare_data_->LinesUntilClamp() : 0;
+  bool ForceTruncateAtLineClamp() const {
+    return HasRareData() ? rare_data_->ForceTruncateAtLineClamp() : true;
+  }
+
+  base::Optional<int> LinesUntilClamp() const {
+    return HasRareData() ? rare_data_->LinesUntilClamp() : base::nullopt;
   }
 
   // Return true if the two constraint spaces are similar enough that it *may*
@@ -822,12 +826,23 @@ class CORE_EXPORT NGConstraintSpace final {
       EnsureBlockData()->clearance_offset = clearance_offset;
     }
 
-    int LinesUntilClamp() const {
-      return data_union_type == kBlockData ? block_data_.lines_until_clamp : 0;
+    base::Optional<int> LinesUntilClamp() const {
+      return data_union_type == kBlockData ? block_data_.lines_until_clamp
+                                           : base::nullopt;
     }
 
     void SetLinesUntilClamp(int value) {
       EnsureBlockData()->lines_until_clamp = value;
+    }
+
+    int ForceTruncateAtLineClamp() const {
+      return data_union_type == kBlockData
+                 ? block_data_.force_truncate_at_line_clamp
+                 : true;
+    }
+
+    void SetForceTruncateAtLineClamp(bool value) {
+      EnsureBlockData()->force_truncate_at_line_clamp = value;
     }
 
     NGBoxStrut TableCellBorders() const {
@@ -916,20 +931,26 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
     unsigned early_break_appeal : 2;  // NGBreakAppeal
-
    private:
     struct BlockData {
       bool MaySkipLayout(const BlockData& other) const {
-        return lines_until_clamp == other.lines_until_clamp;
+        return lines_until_clamp == other.lines_until_clamp &&
+               force_truncate_at_line_clamp ==
+                   other.force_truncate_at_line_clamp;
       }
 
-      bool IsInitialForMaySkipLayout() const { return lines_until_clamp == 0; }
+      bool IsInitialForMaySkipLayout() const {
+        return !lines_until_clamp.has_value() && force_truncate_at_line_clamp;
+      }
 
       NGMarginStrut margin_strut;
       base::Optional<LayoutUnit> optimistic_bfc_block_offset;
       base::Optional<LayoutUnit> forced_bfc_block_offset;
       LayoutUnit clearance_offset = LayoutUnit::Min();
-      int lines_until_clamp = 0;
+      base::Optional<int> lines_until_clamp;
+      // If true and |lines_until_clamp| == 1, then the line should be truncated
+      // regardless of whether there is more text that follows on the line.
+      bool force_truncate_at_line_clamp = true;
     };
 
     struct TableCellData {

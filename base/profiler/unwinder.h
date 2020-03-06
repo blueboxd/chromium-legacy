@@ -47,6 +47,11 @@ class Unwinder {
   // including indirectly via use of DCHECK/CHECK or other logging statements.
   virtual void OnStackCapture() {}
 
+  // Allows the unwinder to update ModuleCache with any modules it's responsible
+  // for. Invoked for each sample between OnStackCapture() and the initial
+  // invocations of CanUnwindFrom()/TryUnwind().
+  virtual void UpdateModules(ModuleCache* module_cache) {}
+
   // Returns true if the unwinder recognizes the code referenced by
   // |current_frame| as code from which it should be able to unwind. When
   // multiple unwinders are in use, each should return true for a disjoint set

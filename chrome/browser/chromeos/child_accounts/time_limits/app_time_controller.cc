@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -277,9 +276,15 @@ AppTimeController::~AppTimeController() {
 
 bool AppTimeController::IsExtensionWhitelisted(
     const std::string& extension_id) const {
-  NOTIMPLEMENTED();
-
   return true;
+}
+
+base::Optional<base::TimeDelta> AppTimeController::GetTimeLimitForApp(
+    const std::string& app_service_id,
+    apps::mojom::AppType app_type) const {
+  const app_time::AppId app_id =
+      app_service_wrapper_->AppIdFromAppServiceId(app_service_id, app_type);
+  return app_registry_->GetTimeLimit(app_id);
 }
 
 void AppTimeController::SystemClockUpdated() {

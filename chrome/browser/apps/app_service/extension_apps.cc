@@ -25,7 +25,7 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -635,10 +635,10 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
     return;
   }
 
-  chromeos::app_time::WebTimeLimitInterface* web_limit =
-      chromeos::app_time::WebTimeLimitInterface::Get(profile_);
-  DCHECK(web_limit);
-  web_limit->PauseWebActivity(app_id);
+  chromeos::app_time::AppTimeLimitInterface* app_limit =
+      chromeos::app_time::AppTimeLimitInterface::Get(profile_);
+  DCHECK(app_limit);
+  app_limit->PauseWebActivity(app_id);
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
@@ -657,10 +657,10 @@ void ExtensionApps::UnpauseApps(const std::string& app_id) {
     }
   }
 
-  chromeos::app_time::WebTimeLimitInterface* web_limit =
-      chromeos::app_time::WebTimeLimitInterface::Get(profile_);
-  DCHECK(web_limit);
-  web_limit->ResumeWebActivity(app_id);
+  chromeos::app_time::AppTimeLimitInterface* app_time =
+      chromeos::app_time::AppTimeLimitInterface::Get(profile_);
+  DCHECK(app_time);
+  app_time->ResumeWebActivity(app_id);
 }
 
 void ExtensionApps::GetMenuModel(const std::string& app_id,

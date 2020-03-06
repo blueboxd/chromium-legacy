@@ -321,6 +321,12 @@ void DataReductionProxyService::UpdateProxyRequestHeaders(
   UpdateCustomProxyConfig();
 }
 
+void DataReductionProxyService::UpdatePrefetchProxyHosts(
+    const std::vector<GURL>& prefetch_proxies) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  settings_->UpdatePrefetchProxyHosts(std::move(prefetch_proxies));
+}
+
 void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateCustomProxyConfig();

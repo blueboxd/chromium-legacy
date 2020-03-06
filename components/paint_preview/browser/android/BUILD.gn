@@ -14,7 +14,7 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   sources = [
-    "java/src/org/chromium/components/paintpreview/browser/PaintPreviewBaseService.java",
+    "java/src/org/chromium/components/paintpreview/browser/NativePaintPreviewServiceProvider.java",
     "java/src/org/chromium/components/paintpreview/browser/PaintPreviewUtils.java",
   ]
 

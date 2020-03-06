@@ -864,15 +864,21 @@ void SurfaceAggregator::AddDisplayTransformPass() {
     display_transform_render_pass_id_ = next_render_pass_id_++;
 
   auto display_transform_pass = RenderPass::Create(1, 1);
-  display_transform_pass->SetNew(
+  display_transform_pass->SetAll(
       display_transform_render_pass_id_,
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           root_surface_transform_, root_render_pass->output_rect),
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           root_surface_transform_, root_render_pass->damage_rect),
-      gfx::Transform());
-  display_transform_pass->content_color_usage =
-      root_render_pass->content_color_usage;
+      gfx::Transform(),
+      /*filters=*/cc::FilterOperations(),
+      /*backdrop_filters=*/cc::FilterOperations(),
+      /*backdrop_filter_bounds=*/gfx::RRectF(),
+      root_render_pass->content_color_usage,
+      root_render_pass->has_transparent_background,
+      /*cache_render_pass=*/false,
+      /*has_damage_from_contributing_content=*/false,
+      /*generate_mipmap=*/false);
 
   bool are_contents_opaque = true;
   for (const auto* sqs : root_render_pass->shared_quad_state_list) {

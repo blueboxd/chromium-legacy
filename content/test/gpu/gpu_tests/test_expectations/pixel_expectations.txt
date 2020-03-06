@@ -53,22 +53,6 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_CSS3DBlueBox_NoGpuProcess [ Skip ]
 [ chromeos ] Pixel_CSS3DBlueBox_NoGpuProcess [ Skip ]
 
-# Skip tests on Android WebView that requires embedding viz clients. This
-# includes offscreen canvas and other features. crbug.com/805739 tracks
-# making this work.
-crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
-crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
-crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
-crbug.com/805739 [ android android-webview-instrumentation ] Pixel_CanvasLowLatencyWebGL [ Skip ]
-crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
-crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
-
 # Fails on Android WebView due to requiring embedding viz clients. crbug.com/805739
 # Produces black images on Nexus 5Xs in Android Webview (qualcomm-adreno-(tm)-418) crbug.com/984352
 # Fails on Pixel 2 (qualcomm-adreno-(tm)-540) crbug.com/966069

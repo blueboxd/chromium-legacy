@@ -438,27 +438,18 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     @Override
     public void onBackPressed() {
-        if (mExitFullscreenRunnable != null) {
-            mExitFullscreenRunnable.run();
-            return;
-        }
         if (mBrowser != null) {
-            // The menu button is disabled only when there's a tab modal dialog. If this is the
-            // case, dismiss the overlay; if it works, consider the back press to have been handled.
-            if (!mMenuButton.isEnabled()) {
-                mBrowser.getActiveTab().dismissTabModalOverlay();
-                if (mMenuButton.isEnabled()) {
-                    return;
-                }
-            }
+            Tab activeTab = mBrowser.getActiveTab();
 
-            NavigationController controller = mBrowser.getActiveTab().getNavigationController();
+            if (activeTab.dismissTransientUi()) return;
+
+            NavigationController controller = activeTab.getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();
                 return;
             }
             if (!mPreviousTabList.isEmpty()) {
-                mBrowser.getActiveTab().dispatchBeforeUnloadAndClose();
+                activeTab.dispatchBeforeUnloadAndClose();
                 return;
             }
         }

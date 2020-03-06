@@ -30,6 +30,9 @@ message ClientConfig {
   // Prevents the host base and user base blacklisting behaviors for lite pages
   // and server LoFi.
   optional bool ignore_long_term_black_list_rules = 7;
+  // The configuration that the client should use to connect to the prefetch
+  // proxy.
+  optional PrefetchProxyConfig prefetch_proxy_config = 8;
 }
 
 // The configuration for reporting pageload metrics.
@@ -122,6 +125,38 @@ message ProxyServer {
 message ConfigDeviceInfo {
   // Kilobytes of total device memory.
   optional int64 total_device_memory_kb = 1;
+}
+
+// Configuration information for the prefetch proxy service.
+message PrefetchProxyConfig {
+  // Definition of the type and location of prefetch proxy to use.
+  message Proxy {
+    // The type of the proxy server.
+    enum Type {
+      // The proxy type is unspecified.
+      UNSPECIFIED_TYPE = 0;
+      // CONNECT proxy
+      CONNECT = 1;
+    }
+
+    // The scheme of the proxy.
+    enum Scheme {
+      UNSPECIFIED_SCHEME = 0;
+      HTTP = 1;
+      HTTPS = 2;
+    }
+
+    optional Type type = 1;
+
+    // Hostname and port of the prefetch proxy.
+    optional string host = 2;
+    optional int32 port = 3;
+    optional Scheme scheme = 4;
+  }
+
+  // The proxy servers that the client should connect to for the
+  // prefetch proxy service. Listed in order of preference.
+  repeated Proxy proxy_list = 1;
 }
 
 // Request object to create a client configuration object.

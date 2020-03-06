@@ -74,6 +74,10 @@ static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST == 6,
               "If net::EFFECTIVE_CONNECTION_TYPE changes, "
               "PageloadMetrics_EffectiveConnectionType needs to be updated.");
 
+// Returns the corresponding scheme string for the prefetch proto scheme.
+std::string SchemeFromPrefetchScheme(
+    PrefetchProxyConfig_Proxy_Scheme proxy_scheme);
+
 // Returns the |net::ProxyServer::Scheme| for a ProxyServer_ProxyScheme.
 net::ProxyServer::Scheme SchemeFromProxyScheme(
     ProxyServer_ProxyScheme proxy_scheme);

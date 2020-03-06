@@ -119,6 +119,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
 
   AppState GetAppState(const AppId& app_id) const;
 
+  // Returns current time limit for the app identified by |app_id|.
+  // Will return nullopt if there is no limit set.
+  base::Optional<base::TimeDelta> GetTimeLimit(const AppId& app_id) const;
+
   // Returns the vector of paused applications.
   std::vector<PauseAppInfo> GetPausedApps(bool show_pause_dialog) const;
 

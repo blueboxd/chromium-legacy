@@ -11,8 +11,8 @@ namespace background_task {
 // listed here to ensure that there is no overlap of task IDs between different
 // users of the BackgroundTaskScheduler.
 // When adding your job id to the list below, remember to make a corresponding
-// update to the BackgroundTaskSchedulerUma#toUmaEnumValueFromTaskId(int)
-// method. Also, if the new task id is related to a BackgroundTask class in
+// update to the BackgroundTaskSchedulerExternalUma for metrics.
+// Also, if the new task id is related to a BackgroundTask class in
 // //chrome, remember to update
 // ChromeBackgroundTaskFactory#createBackgroundTaskFromTaskId in java.
 // If the task is a native task, also update

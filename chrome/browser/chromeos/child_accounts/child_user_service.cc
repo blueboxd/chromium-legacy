@@ -40,7 +40,7 @@ ChildUserService::ChildUserService(content::BrowserContext* context) {
 
 ChildUserService::~ChildUserService() = default;
 
-void ChildUserService::PauseWebActivity(const std::string& app_id) {
+void ChildUserService::PauseWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
@@ -56,7 +56,7 @@ void ChildUserService::PauseWebActivity(const std::string& app_id) {
   web_time_enforcer->OnWebTimeLimitReached(time_limit->daily_limit().value());
 }
 
-void ChildUserService::ResumeWebActivity(const std::string& app_id) {
+void ChildUserService::ResumeWebActivity(const std::string& app_service_id) {
   DCHECK(app_time_controller_);
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
@@ -64,6 +64,15 @@ void ChildUserService::ResumeWebActivity(const std::string& app_id) {
   DCHECK(web_time_enforcer);
 
   web_time_enforcer->OnWebTimeLimitEnded();
+}
+
+base::Optional<base::TimeDelta> ChildUserService::GetTimeLimitForApp(
+    const std::string& app_service_id,
+    apps::mojom::AppType app_type) {
+  if (!app_time_controller_)
+    return base::nullopt;
+
+  return app_time_controller_->GetTimeLimitForApp(app_service_id, app_type);
 }
 
 app_time::AppActivityReportInterface::ReportParams

@@ -186,7 +186,10 @@ void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
       << "Feature " << feature_name
       << " has conflicting field trial overrides: "
       << overrides_.find(feature_name)->second.field_trial->trial_name()
-      << " / " << field_trial->trial_name();
+      << " / " << field_trial->trial_name()
+      << ". Please make sure that the trial (study) name is consistent across:"
+      << " (1)The server config, (2)The fieldtrial_testing_config, and"
+      << " (3) The about_flags.cc";
 
   RegisterOverride(feature_name, override_state, field_trial);
 }

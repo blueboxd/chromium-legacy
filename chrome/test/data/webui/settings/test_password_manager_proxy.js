@@ -17,13 +17,14 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
       'getCompromisedCredentialsInfo',
     ]);
 
-    this.actual_ = new PasswordManagerExpectations();
+    this.actual_ = new autofill_test_util.PasswordManagerExpectations();
 
     // Set these to have non-empty data.
     this.data = {
       passwords: [],
       exceptions: [],
-      leakedCredentials: FakeDataMaker.makeCompromisedCredentialsInfo([], ''),
+      leakedCredentials:
+          autofill_test_util.makeCompromisedCredentialsInfo([], ''),
     };
 
     // Holds the last callbacks so they can be called when needed/

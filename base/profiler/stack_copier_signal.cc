@@ -11,9 +11,7 @@
 
 #include <atomic>
 
-#include "base/profiler/metadata_recorder.h"
 #include "base/profiler/register_context.h"
-#include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/trace_event/trace_event.h"
@@ -130,9 +128,6 @@ void CopyStackSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
     return;
   }
 
-  // TODO(https://crbug.com/988579): Record metadata while the thread is
-  // suspended.
-
   params->stack_copier_delegate->OnStackCopy();
 
   *params->stack_copy_bottom =
@@ -192,7 +187,6 @@ StackCopierSignal::~StackCopierSignal() = default;
 
 bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
                                   uintptr_t* stack_top,
-                                  ProfileBuilder* profile_builder,
                                   TimeTicks* timestamp,
                                   RegisterContext* thread_context,
                                   Delegate* delegate) {
@@ -234,6 +228,8 @@ bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
       return false;
     }
   }
+
+  delegate->OnThreadResume();
 
   const uintptr_t bottom = RegisterContextStackPointer(params.context);
   for (uintptr_t* reg :

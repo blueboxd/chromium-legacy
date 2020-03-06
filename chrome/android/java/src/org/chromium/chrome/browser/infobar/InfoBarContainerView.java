@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
@@ -92,8 +93,7 @@ public class InfoBarContainerView extends SwipableOverlayView {
                     }
 
                     @Override
-                    public void notifyAllAnimationsFinished(
-                            InfoBarContainerLayout.Item frontInfoBar) {
+                    public void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar) {
                         mContainerViewObserver.notifyAllAnimationsFinished(frontInfoBar);
                     }
                 });

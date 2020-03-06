@@ -41,7 +41,7 @@ cr.define('settings_payments_section', function() {
      */
     function createPaymentsSection(creditCards, upiIds, prefValues) {
       // Override the PaymentsManagerImpl for testing.
-      const paymentsManager = new TestPaymentsManager();
+      const paymentsManager = new autofill_test_util.TestPaymentsManager();
       paymentsManager.data.creditCards = creditCards;
       paymentsManager.data.upiIds = upiIds;
       settings.PaymentsManagerImpl.instance_ = paymentsManager;
@@ -142,12 +142,12 @@ cr.define('settings_payments_section', function() {
 
     test('verifyCreditCardCount', function() {
       const creditCards = [
-        FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry(),
-        FakeDataMaker.creditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
+        autofill_test_util.createCreditCardEntry(),
       ];
 
       const section = createPaymentsSection(
@@ -164,7 +164,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardFields', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#paymentsList'));
@@ -178,7 +178,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardRowButtonIsDropdownWhenLocal', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       creditCard.metadata.isLocal = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -191,7 +191,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardRowButtonIsOutlinkWhenRemote', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       creditCard.metadata.isLocal = false;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -204,9 +204,9 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyAddVsEditCreditCardTitle', function() {
-      const newCreditCard = FakeDataMaker.emptyCreditCardEntry();
+      const newCreditCard = autofill_test_util.createEmptyCreditCardEntry();
       const newCreditCardDialog = createCreditCardDialog(newCreditCard);
-      const oldCreditCard = FakeDataMaker.creditCardEntry();
+      const oldCreditCard = autofill_test_util.createCreditCardEntry();
       const oldCreditCardDialog = createCreditCardDialog(oldCreditCard);
 
       assertNotEquals(oldCreditCardDialog.title_, newCreditCardDialog.title_);
@@ -221,7 +221,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyExpiredCreditCardYear', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       // 2015 is over unless time goes wobbly.
       const twentyFifteen = 2015;
@@ -245,7 +245,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyVeryFutureCreditCardYear', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       // Expiring 25 years from now is unusual.
       const now = new Date();
@@ -270,7 +270,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyVeryNormalCreditCardYear', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       // Expiring 2 years from now is not unusual.
       const now = new Date();
@@ -296,7 +296,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verify save disabled for expired credit card', function() {
-      const creditCard = FakeDataMaker.emptyCreditCardEntry();
+      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
 
       const now = new Date();
       creditCard.expirationYear = now.getFullYear() - 2;
@@ -312,7 +312,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verify save new credit card', function() {
-      const creditCard = FakeDataMaker.emptyCreditCardEntry();
+      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
       const creditCardDialog = createCreditCardDialog(creditCard);
 
       return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
@@ -341,7 +341,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCancelCreditCardEdit', function(done) {
-      const creditCard = FakeDataMaker.emptyCreditCardEntry();
+      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
       const creditCardDialog = createCreditCardDialog(creditCard);
 
       test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
@@ -366,7 +366,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyLocalCreditCardMenu', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       // When credit card is local, |isCached| will be undefined.
       creditCard.metadata.isLocal = true;
@@ -397,7 +397,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCachedCreditCardMenu', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       creditCard.metadata.isLocal = false;
       creditCard.metadata.isCached = true;
@@ -427,7 +427,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyNotCachedCreditCardMenu', function() {
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
 
       creditCard.metadata.isLocal = false;
       creditCard.metadata.isCached = false;
@@ -447,7 +447,7 @@ cr.define('settings_payments_section', function() {
       loadTimeData.overrideValues({migrationEnabled: false});
 
       // Add one migratable credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], {credit_card_enabled: {value: true}});
@@ -457,7 +457,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonNotShownIfCreditCardDisabled', function() {
       // Add one migratable credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       // Mock credit card save toggle is turned off by users.
       const section = createPaymentsSection(
@@ -468,7 +468,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonNotShownIfNoCardIsMigratable', function() {
       // Add one migratable credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       // Mock credit card is not valid.
       creditCard.metadata.isMigratable = false;
       const section = createPaymentsSection(
@@ -479,7 +479,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonShown', function() {
       // Add one migratable credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
+      const creditCard = autofill_test_util.createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], {credit_card_enabled: {value: true}});

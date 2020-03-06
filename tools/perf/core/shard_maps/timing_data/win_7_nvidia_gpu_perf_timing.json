@@ -1,51 +1,11 @@
 [
     {
-        "duration": "19.0",
-        "name": "rendering.desktop/animometer_webgl_attrib_arrays"
-    },
-    {
-        "duration": "17.0",
-        "name": "rendering.desktop/balls_javascript_canvas"
-    },
-    {
-        "duration": "15.0",
-        "name": "rendering.desktop/canvas_05000_pixels_per_second"
-    },
-    {
-        "duration": "20.0",
-        "name": "rendering.desktop/chip_tune"
-    },
-    {
-        "duration": "17.0",
+        "duration": "34.0",
         "name": "rendering.desktop/css_value_type_shadow"
     },
     {
-        "duration": "18.0",
-        "name": "rendering.desktop/fill_shapes"
-    },
-    {
-        "duration": "27.0",
-        "name": "rendering.desktop/ie_chalkboard"
-    },
-    {
-        "duration": "18.0",
+        "duration": "34.0",
         "name": "rendering.desktop/main_30fps_impl_60fps"
-    },
-    {
-        "duration": "20.0",
-        "name": "rendering.desktop/new_tilings"
-    },
-    {
-        "duration": "17.0",
-        "name": "rendering.desktop/transform_transitions_js_block"
-    },
-    {
-        "duration": "15.0",
-        "name": "rendering.desktop/twitch_2018"
-    },
-    {
-        "duration": "17.0",
-        "name": "rendering.desktop/web_animations_staggered_infinite_iterations"
     },
     {
         "duration": "1988.0",

@@ -6,15 +6,22 @@ package org.chromium.components.paintpreview.player;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
+import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 
 /**
- * A simple implementation of {@link PaintPreviewBaseService} used in tests.
+ * A simple implementation of {@link NativePaintPreviewServiceProvider} used in tests.
  */
 @JNINamespace("paint_preview")
-public class TestImplementerService extends PaintPreviewBaseService {
+public class TestImplementerService implements NativePaintPreviewServiceProvider {
+    private long mNativeTestImplementerService;
+
     public TestImplementerService(String storagePath) {
-        super(TestImplementerServiceJni.get().getInstance(storagePath));
+        mNativeTestImplementerService = TestImplementerServiceJni.get().getInstance(storagePath);
+    }
+
+    @Override
+    public long getNativeService() {
+        return mNativeTestImplementerService;
     }
 
     @NativeMethods

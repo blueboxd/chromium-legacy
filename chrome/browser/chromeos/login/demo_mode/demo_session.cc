@@ -28,6 +28,7 @@
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -341,7 +342,8 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
     return true;
   return app_id != GetScreensaverAppId() &&
          app_id != extensions::kWebStoreAppId &&
-         app_id != extension_misc::kGeniusAppId;
+         app_id != extension_misc::kGeniusAppId &&
+         app_id != default_web_apps::kHelpAppId;
 }
 
 // static

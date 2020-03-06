@@ -1951,11 +1951,6 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoEncode),
     },
-    {"enable-history-favicons-google-server-query",
-     flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryName,
-     flag_descriptions::kEnableHistoryFaviconsGoogleServerQueryDescription,
-     kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(favicon::kEnableHistoryFaviconsGoogleServerQuery)},
 #if defined(OS_CHROMEOS)
     {
         "ash-debug-shortcuts",
@@ -3412,7 +3407,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStartSurfaceAndroidDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
                                     kStartSurfaceAndroidVariations,
-                                    "StartSurfaceAndroid")},
+                                    "ChromeStart")},
 
     {"enable-close-tab-suggestions",
      flag_descriptions::kCloseTabSuggestionsName,
@@ -3451,7 +3446,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabSwitcherOnReturnDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabSwitcherOnReturn,
                                     kTabSwitcherOnReturnVariations,
-                                    "TabSwitcherOnReturn")},
+                                    "ChromeStart")},
 
     {"enable-tab-to-gts-animation",
      flag_descriptions::kTabToGTSAnimationAndroidName,

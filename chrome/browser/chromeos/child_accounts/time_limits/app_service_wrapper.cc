@@ -155,6 +155,18 @@ std::string AppServiceWrapper::GetAppServiceId(const AppId& app_id) const {
   return AppServiceIdFromAppId(app_id, profile_);
 }
 
+AppId AppServiceWrapper::AppIdFromAppServiceId(
+    const std::string& app_service_id,
+    apps::mojom::AppType app_type) const {
+  base::Optional<AppId> app_id;
+  GetAppCache().ForOneApp(app_service_id,
+                          [&app_id](const apps::AppUpdate& update) {
+                            app_id = AppIdFromAppUpdate(update);
+                          });
+  DCHECK(app_id);
+  return *app_id;
+}
+
 void AppServiceWrapper::AddObserver(EventListener* listener) {
   DCHECK(listener);
   listeners_.AddObserver(listener);

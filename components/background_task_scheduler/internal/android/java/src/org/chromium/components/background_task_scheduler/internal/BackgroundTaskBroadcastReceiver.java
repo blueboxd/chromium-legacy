@@ -81,7 +81,10 @@ public class BackgroundTaskBroadcastReceiver extends BroadcastReceiver {
             BackgroundTaskSchedulerUma.getInstance().reportTaskStopped(mTaskParams.getTaskId());
 
             boolean reschedule = mBackgroundTask.onStopTask(mContext, mTaskParams);
-            if (reschedule) mBackgroundTask.reschedule(mContext);
+            if (reschedule) {
+                BackgroundTaskSchedulerUma.getInstance().reportTaskRescheduled();
+                mBackgroundTask.reschedule(mContext);
+            }
         }
 
         private void finished(boolean reschedule) {
@@ -89,7 +92,10 @@ public class BackgroundTaskBroadcastReceiver extends BroadcastReceiver {
             if (mHasExecuted) return;
             mHasExecuted = true;
 
-            if (reschedule) mBackgroundTask.reschedule(mContext);
+            if (reschedule) {
+                BackgroundTaskSchedulerUma.getInstance().reportTaskRescheduled();
+                mBackgroundTask.reschedule(mContext);
+            }
             // TODO(crbug.com/970160): Add UMA to record how long the tasks need to complete.
         }
     }

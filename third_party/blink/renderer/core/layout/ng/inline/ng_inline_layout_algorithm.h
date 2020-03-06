@@ -52,6 +52,19 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
+  enum class TruncateType {
+    // Indicates default behavior. The default truncates if the text doesn't
+    // fit and ShouldTruncateOverflowingText() returns true.
+    kDefault,
+
+    // Truncate if NGLineInfo has more lines.
+    kIfNotLastLine,
+
+    // Forces truncation. This is used when line-clamp is set and there are
+    // blocks after this.
+    kAlways,
+  };
+
   unsigned PositionLeadingFloats(NGExclusionSpace*, NGPositionedFloatVector*);
   NGPositionedFloat PositionFloat(LayoutUnit origin_block_bfc_offset,
                                   LayoutObject* floating_object,
@@ -106,6 +119,13 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
+  static TruncateType TruncateTypeFromConstraintSpace(
+      const NGConstraintSpace& space);
+
+  // Returns true if truncuation should happen as a result of line-clamp for
+  // |line_info|.
+  bool ShouldTruncateForLineClamp(const NGLineInfo& line_info) const;
+
   NGLineBoxFragmentBuilder::ChildList line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;
@@ -114,9 +134,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   unsigned is_horizontal_writing_mode_ : 1;
   unsigned quirks_mode_ : 1;
-  // Set to true if the line should be truncated even if there is enough space.
-  // This is set to true for the last line of line-clamp.
-  unsigned force_truncate_ : 1;
+  unsigned truncate_type_ : 2;
 
 #if DCHECK_IS_ON()
   // True if |box_states_| is taken from |context_|, to check the |box_states_|

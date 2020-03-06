@@ -6,6 +6,7 @@ Polymer({
   is: 'settings-recent-site-permissions',
 
   behaviors: [
+    settings.RouteObserverBehavior,
     SiteSettingsBehavior,
     WebUIListenerBehavior,
     I18nBehavior,
@@ -28,6 +29,18 @@ Polymer({
       type: Array,
       value: () => [],
     },
+  },
+
+  /**
+   * Reload the site recent site permission list whenever the user navigates
+   * to the site settings page.
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged(currentRoute) {
+    if (currentRoute.path == settings.routes.SITE_SETTINGS.path) {
+      this.populateList_();
+    }
   },
 
   /** @override */
@@ -214,7 +227,7 @@ Polymer({
     // and we are currently displaying an incognito entry.
     if (hasIncognito === false &&
         this.recentSitePermissionsList_.some(p => p.incognito)) {
-      this.populateList();
+      this.populateList_();
     }
   },
 
@@ -262,7 +275,7 @@ Polymer({
    * the update of the display list.
    * @private
    */
-  async populateList() {
+  async populateList_() {
     this.recentSitePermissionsList_ =
         await this.browserProxy.getRecentSitePermissions(
             this.getCategoryList(), 3);

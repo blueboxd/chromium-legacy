@@ -335,6 +335,13 @@ extern const char kTimeZoneSettingsLearnMoreURL[];
 
 // The URL for the "Learn more" page for the network file shares settings page.
 extern const char kSmbSharesLearnMoreURL[];
+
+// The URL to a support article with more information about gestures available
+// in tablet mode on Chrome OS (gesture to go to home screen, overview, or to go
+// back). Used as a "Learn more" link URL for the accessibility option to shelf
+// navigation buttons in tablet mode (the buttons are hidden by default in
+// favour of the gestures in question).
+extern const char kTabletModeGesturesLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

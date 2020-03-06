@@ -105,8 +105,9 @@ class NativeFileSystemBrowserTest : public testing::WithParamInterface<bool>,
            features::kNativeFileSystemOriginScopedPermissions},
           {});
     } else {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kNativeFileSystemAPI);
+      scoped_feature_list_.InitWithFeatures(
+          {blink::features::kNativeFileSystemAPI},
+          {features::kNativeFileSystemOriginScopedPermissions});
     }
 
     InProcessBrowserTest::SetUp();

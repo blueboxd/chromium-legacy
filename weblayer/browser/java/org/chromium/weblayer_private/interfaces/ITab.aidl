@@ -38,4 +38,5 @@ interface ITab {
 
   void dismissTabModalOverlay() = 10;
   void dispatchBeforeUnloadAndClose() = 11;
+  boolean dismissTransientUi() = 12;
 }

@@ -1219,13 +1219,10 @@ TEST_F(QuotaManagerTest, GetQuotaLowAvailableDiskSpace) {
   const int kPoolSize = 10000000;
   const int kPerHostQuota = kPoolSize / 5;
 
-  // Simulating a low available disk space scenario by making
-  // kMustRemainAvailable 64KB less than GetAvailableDiskSpaceForTest(), which
-  // means there is 64KB of storage quota that can be used before triggering
-  // the low available space logic branch in quota_manager.cc. From the
-  // perspective of QuotaManager, there are 64KB of free space in the temporary
-  // pool, so it should return (64KB + usage) as quota since the sum is less
-  // than the default host quota.
+  // In here, we expect the low available space logic branch
+  // to be ignored. Doing so should have QuotaManager return the same per-host
+  // quota as what is set in QuotaSettings, despite being in a state of low
+  // available space.
   const int kMustRemainAvailable =
       static_cast<int>(GetAvailableDiskSpaceForTest() - 65536);
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailable);
@@ -1234,18 +1231,21 @@ TEST_F(QuotaManagerTest, GetQuotaLowAvailableDiskSpace) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(100000, usage());
-  EXPECT_GT(kPerHostQuota, quota());
-  EXPECT_EQ(65536 + usage(), quota());
+  EXPECT_EQ(kPerHostQuota, quota());
 }
 
-TEST_F(QuotaManagerTest, GetStaticQuotaLowAvailableDiskSpace) {
+TEST_F(QuotaManagerTest,
+       GetQuotaLowAvailableDiskSpace_StaticHostQuotaDisabled) {
   // This test is the same as the previous but with the kStaticHostQuota Finch
-  // feature enabled. In here, we expect the low available space logic branch
-  // to be ignored. Doing so should have QuotaManager return the same per host
-  // quota as what is set in QuotaSettings, despite being in a state of low
-  // available space. Notice the different expectation in the last line of
-  // each test.
-  scoped_feature_list_.InitAndEnableFeature(features::kStaticHostQuota);
+  // feature disabled.
+  // Simulating a low available disk space scenario by making
+  // kMustRemainAvailable 64KB less than GetAvailableDiskSpaceForTest(), which
+  // means there is 64KB of storage quota that can be used before triggering
+  // the low available space logic branch in quota_manager.cc. From the
+  // perspective of QuotaManager, there are 64KB of free space in the temporary
+  // pool, so it should return (64KB + usage) as quota since the sum is less
+  // than the default host quota.
+  scoped_feature_list_.InitAndDisableFeature(features::kStaticHostQuota);
   static const MockOriginData kData[] = {
       {"http://foo.com/", kTemp, 100000},
       {"http://unlimited/", kTemp, 4000000},
@@ -1265,7 +1265,8 @@ TEST_F(QuotaManagerTest, GetStaticQuotaLowAvailableDiskSpace) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(100000, usage());
-  EXPECT_EQ(kPerHostQuota, quota());
+  EXPECT_GT(kPerHostQuota, quota());
+  EXPECT_EQ(65536 + usage(), quota());
 }
 
 TEST_F(QuotaManagerTest, GetSyncableQuota) {
@@ -1276,14 +1277,18 @@ TEST_F(QuotaManagerTest, GetSyncableQuota) {
   EXPECT_LE(kAvailableSpaceForApp,
             QuotaManager::kSyncableStorageDefaultHostQuota);
 
-  // For unlimited origins the quota manager should return
-  // kAvailableSpaceForApp as syncable quota (because of the pre-condition).
+  // The quota manager should return
+  // QuotaManager::kSyncableStorageDefaultHostQuota as syncable quota,
+  // despite available space being less than the desired quota. Only
+  // origins with unlimited storage, which is never the case for syncable
+  // storage, shall have their quota calculation take into account the amount of
+  // available disk space.
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetUsageAndQuotaForWebApps(ToOrigin("http://unlimited/"), kSync);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
   EXPECT_EQ(0, usage());
-  EXPECT_EQ(kAvailableSpaceForApp, quota());
+  EXPECT_EQ(QuotaManager::kSyncableStorageDefaultHostQuota, quota());
 }
 
 TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_MultiOrigins) {

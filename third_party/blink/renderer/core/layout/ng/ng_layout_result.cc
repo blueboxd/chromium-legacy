@@ -77,6 +77,8 @@ NGLayoutResult::NGLayoutResult(
   }
   if (builder->column_spanner_)
     EnsureRareData()->column_spanner = builder->column_spanner_;
+  if (builder->lines_until_clamp_)
+    EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   bitfields_.initial_break_before =
       static_cast<unsigned>(builder->initial_break_before_);
   bitfields_.final_break_after =
@@ -97,8 +99,8 @@ NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey key,
     : NGLayoutResult(/* physical_fragment */ nullptr,
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
   bitfields_.status = status;
-  if (builder->lines_until_clamp_ != 0)
-    EnsureRareData()->lines_until_clamp = builder->lines_until_clamp_;
+  if (builder->lines_until_clamp_)
+    EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
 }

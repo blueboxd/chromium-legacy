@@ -17,7 +17,8 @@ class TimeDelta;
 // |time_limit| is used to specify the amount of time the user can use Chrome
 // and PWAs the following day.
 // |app_locale| is used to specify the locale used by the browser.
-std::string GetWebTimeLimitChromeErrorPage(base::TimeDelta time_limit,
+std::string GetWebTimeLimitChromeErrorPage(const std::string& domain,
+                                           base::TimeDelta time_limit,
                                            const std::string& app_locale);
 
 // Generates the appropriate time limit error page for PWAs.

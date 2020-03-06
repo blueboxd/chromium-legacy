@@ -4,16 +4,14 @@
 
 package org.chromium.chrome.browser.infobar;
 
-
 /**
  * Functions needed to display an InfoBar UI.
  */
-public interface InfoBarView extends InfoBarContainerLayout.Item {
+public interface InfoBarInteractionHandler {
     /**
-     * Prepares the InfoBar for display and adds InfoBar-specific controls to the layout.
-     * @param layout Layout containing all of the controls.
+     * Handles click on the infobar. It is invoked before one of the following functions.
      */
-    public void createContent(InfoBarLayout layout);
+    public void onClick();
 
     /**
      * Takes some action related to the link being clicked.

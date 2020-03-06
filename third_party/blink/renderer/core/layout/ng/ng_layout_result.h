@@ -42,6 +42,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     kBfcBlockOffsetResolved = 1,
     kNeedsEarlierBreak = 2,
     kOutOfFragmentainerSpace = 3,
+    kNeedsRelayoutWithNoForcedTruncateAtLineClamp = 4,
     // When adding new values, make sure the bit size of |Bitfields::status| is
     // large enough to store.
   };
@@ -436,7 +437,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     unsigned initial_break_before : 4;  // EBreakBetween
     unsigned final_break_after : 4;     // EBreakBetween
 
-    unsigned status : 2;  // EStatus
+    unsigned status : 3;  // EStatus
   };
 
   // The constraint space which generated this layout result, may not be valid

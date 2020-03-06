@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/permissions/permission_util.h"
@@ -51,10 +52,19 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
-      is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
-                   : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
-      origin, path, CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  if (base::FeatureList::IsEnabled(
+          features::kNativeFileSystemOriginScopedPermissions)) {
+    AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
+        is_directory
+            ? IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_WRITE_PERMISSION_DIRECTORY_TEXT
+            : IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_WRITE_PERMISSION_FILE_TEXT,
+        origin, path, CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  } else {
+    AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
+        is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
+                     : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
+        origin, path, CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  }
 }
 
 NativeFileSystemPermissionView::~NativeFileSystemPermissionView() {

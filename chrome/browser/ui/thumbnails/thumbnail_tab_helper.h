@@ -12,8 +12,6 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_page_event_adapter.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_page_observer.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"

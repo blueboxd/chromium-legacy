@@ -500,6 +500,7 @@ class QuickViewController {
     const type = typeInfo.type;
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const label = util.getEntryLabel(locationInfo, entry);
+    const entryIsOnDrive = locationInfo && locationInfo.isDriveBased;
 
     /** @type {!QuickViewParams} */
     const params = {
@@ -511,9 +512,14 @@ class QuickViewController {
     };
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-    const localFile = volumeInfo &&
+    let localFile = volumeInfo &&
         QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(
             volumeInfo.volumeType) >= 0;
+
+    // Treat certain types on Drive as if they were local (try auto-play etc).
+    if (entryIsOnDrive && (type === 'audio' || type === 'video')) {
+      localFile = true;
+    }
 
     if (!localFile) {
       // Drive files: fetch their thumbnail if there is one.

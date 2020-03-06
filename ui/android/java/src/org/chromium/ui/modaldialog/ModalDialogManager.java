@@ -333,9 +333,26 @@ public class ModalDialogManager {
     public void dismissDialogsOfType(
             @ModalDialogType int dialogType, @DialogDismissalCause int dismissalCause) {
         dismissPendingDialogsOfType(dialogType, dismissalCause);
+        dismissActiveDialogOfType(dialogType, dismissalCause);
+    }
+
+    /**
+     * Dismiss the dialog currently shown if it is of the specified type.
+     *
+     * Any pending dialogs will then be shown.
+     *
+     * @param dialogType The specified type of dialog.
+     * @param dismissalCause The {@link DialogDismissalCause} that describes why the dialogs are
+     *                       dismissed.
+     * @return true if a dialog was showing and was dismissed.
+     */
+    public boolean dismissActiveDialogOfType(
+            @ModalDialogType int dialogType, @DialogDismissalCause int dismissalCause) {
         if (isShowing() && dialogType == mCurrentType) {
             dismissDialog(mCurrentPresenter.getDialogModel(), dismissalCause);
+            return true;
         }
+        return false;
     }
 
     /** Helper method to dismiss pending dialogs of the specified type. */

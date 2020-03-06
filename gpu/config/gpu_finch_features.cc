@@ -64,7 +64,7 @@ const base::Feature kGpuUseDisplayThreadPriority{
 
 // Gpu watchdog V2 to simplify the logic and reduce GPU hangs
 const base::Feature kGpuWatchdogV2{"GpuWatchdogV2",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use a different set of watchdog timeouts on V1
 const base::Feature kGpuWatchdogV1NewTimeout{"GpuWatchdogV1NewTimeout",

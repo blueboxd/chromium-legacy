@@ -23,10 +23,6 @@
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "content/public/browser/web_contents.h"
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#endif  // defined(OS_ANDROID)
 
 namespace paint_preview {
 
@@ -119,12 +115,6 @@ class PaintPreviewBaseService : public KeyedService {
   std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
       base::OnceClosure disconnect_handler);
 
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() {
-    return java_ref_;
-  }
-#endif  // defined(OS_ANDROID)
-
  private:
   void OnCaptured(base::TimeTicks start_time,
                   OnCapturedCallback callback,
@@ -135,11 +125,6 @@ class PaintPreviewBaseService : public KeyedService {
   std::unique_ptr<PaintPreviewPolicy> policy_ = nullptr;
   FileManager file_manager_;
   bool is_off_the_record_;
-
-#if defined(OS_ANDROID)
-  // Points to the Java reference.
-  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
-#endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<PaintPreviewBaseService> weak_ptr_factory_{this};
 

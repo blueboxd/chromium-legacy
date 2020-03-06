@@ -324,6 +324,19 @@ AppState AppActivityRegistry::GetAppState(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.app_state();
 }
 
+base::Optional<base::TimeDelta> AppActivityRegistry::GetTimeLimit(
+    const AppId& app_id) const {
+  if (!base::Contains(activity_registry_, app_id))
+    return base::nullopt;
+
+  const base::Optional<AppLimit>& limit = activity_registry_.at(app_id).limit;
+  if (!limit || limit->restriction() != AppRestriction::kTimeLimit)
+    return base::nullopt;
+
+  DCHECK(limit->daily_limit());
+  return limit->daily_limit();
+}
+
 std::vector<PauseAppInfo> AppActivityRegistry::GetPausedApps(
     bool show_pause_dialog) const {
   std::vector<PauseAppInfo> paused_apps;

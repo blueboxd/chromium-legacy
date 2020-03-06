@@ -8,7 +8,6 @@
 #include <numeric>
 #include <utility>
 
-#include "base/profiler/profile_builder.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier_suspend.h"
 #include "base/profiler/suspendable_thread_delegate.h"
@@ -83,37 +82,28 @@ class TestSuspendableThreadDelegate : public SuspendableThreadDelegate {
   RegisterContext* thread_context_;
 };
 
-class TestProfileBuilder : public ProfileBuilder {
- public:
-  TestProfileBuilder() = default;
-
-  TestProfileBuilder(const TestProfileBuilder&) = delete;
-  TestProfileBuilder& operator=(const TestProfileBuilder&) = delete;
-
-  // ProfileBuilder
-  ModuleCache* GetModuleCache() override { return nullptr; }
-
-  void RecordMetadata(
-      ProfileBuilder::MetadataProvider* metadata_provider) override {
-    recorded_metadata_ = true;
-  }
-
-  void OnSampleCompleted(std::vector<Frame> frames,
-                         TimeTicks sample_timestamp) override {}
-  void OnProfileCompleted(TimeDelta profile_duration,
-                          TimeDelta sampling_period) override {}
-
- private:
-  bool recorded_metadata_ = false;
-};
-
 class TestStackCopierDelegate : public StackCopier::Delegate {
  public:
-  void OnStackCopy() override { was_invoked_ = true; }
-  bool was_invoked() const { return was_invoked_; }
+  void OnStackCopy() override {
+    // We can't EXPECT_FALSE(on_thread_resume_was_invoked_) here because that
+    // invocation is not reentrant.
+    on_stack_copy_was_invoked_ = true;
+  }
+
+  void OnThreadResume() override {
+    EXPECT_TRUE(on_stack_copy_was_invoked_);
+    on_thread_resume_was_invoked_ = true;
+  }
+
+  bool on_stack_copy_was_invoked() const { return on_stack_copy_was_invoked_; }
+
+  bool on_thread_resume_was_invoked() const {
+    return on_thread_resume_was_invoked_;
+  }
 
  private:
-  bool was_invoked_ = false;
+  bool on_stack_copy_was_invoked_ = false;
+  bool on_thread_resume_was_invoked_ = false;
 };
 
 }  // namespace
@@ -126,12 +116,10 @@ TEST(StackCopierSuspendTest, CopyStack) {
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
-  TestProfileBuilder profile_builder;
   TimeTicks timestamp;
   RegisterContext register_context{};
   TestStackCopierDelegate stack_copier_delegate;
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
 
   uintptr_t* stack_copy_bottom =
@@ -151,12 +139,10 @@ TEST(StackCopierSuspendTest, CopyStackBufferTooSmall) {
   // Make the buffer different than the input stack.
   stack_buffer->buffer()[0] = 100;
   uintptr_t stack_top = 0;
-  TestProfileBuilder profile_builder;
   TimeTicks timestamp;
   RegisterContext register_context{};
   TestStackCopierDelegate stack_copier_delegate;
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
 
   uintptr_t* stack_copy_bottom =
@@ -179,12 +165,10 @@ TEST(StackCopierSuspendTest, CopyStackAndRewritePointers) {
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
-  TestProfileBuilder profile_builder;
   TimeTicks timestamp;
   RegisterContext register_context{};
   TestStackCopierDelegate stack_copier_delegate;
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
 
   uintptr_t* stack_copy_bottom =
@@ -205,14 +189,12 @@ TEST(StackCopierSuspendTest, CopyStackTimeStamp) {
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
-  TestProfileBuilder profile_builder;
   TimeTicks timestamp;
   RegisterContext register_context{};
   TestStackCopierDelegate stack_copier_delegate;
 
   TimeTicks before = TimeTicks::Now();
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
   TimeTicks after = TimeTicks::Now();
 
@@ -228,16 +210,15 @@ TEST(StackCopierSuspendTest, CopyStackDelegateInvoked) {
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
-  TestProfileBuilder profile_builder;
   TimeTicks timestamp;
   RegisterContext register_context{};
   TestStackCopierDelegate stack_copier_delegate;
 
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
 
-  EXPECT_TRUE(stack_copier_delegate.was_invoked());
+  EXPECT_TRUE(stack_copier_delegate.on_stack_copy_was_invoked());
+  EXPECT_TRUE(stack_copier_delegate.on_thread_resume_was_invoked());
 }
 
 TEST(StackCopierSuspendTest, RewriteRegisters) {
@@ -254,9 +235,7 @@ TEST(StackCopierSuspendTest, RewriteRegisters) {
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
   TimeTicks timestamp;
-  TestProfileBuilder profile_builder;
-  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &timestamp,
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top, &timestamp,
                                  &register_context, &stack_copier_delegate);
 
   uintptr_t stack_copy_bottom =

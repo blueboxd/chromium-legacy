@@ -785,7 +785,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::find(const K& key)
     -> iterator {
-  return const_cast_it(as_const(*this).find(key));
+  return const_cast_it(base::as_const(*this).find(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -808,7 +808,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::equal_range(
     const K& key) -> std::pair<iterator, iterator> {
-  auto res = as_const(*this).equal_range(key);
+  auto res = base::as_const(*this).equal_range(key);
   return {const_cast_it(res.first), const_cast_it(res.second)};
 }
 
@@ -829,7 +829,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::lower_bound(
     const K& key) -> iterator {
-  return const_cast_it(as_const(*this).lower_bound(key));
+  return const_cast_it(base::as_const(*this).lower_bound(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -850,7 +850,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::upper_bound(
     const K& key) -> iterator {
-  return const_cast_it(as_const(*this).upper_bound(key));
+  return const_cast_it(base::as_const(*this).upper_bound(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>

@@ -2279,7 +2279,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       }
     }
     void SetShouldCheckForPaintInvalidation() {
-      layout_object_.SetShouldCheckForPaintInvalidation();
+      // This method is only intended to be called when visiting this object
+      // during pre-paint, and as such it should only mark itself, and not the
+      // entire containing block chain.
+      DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
+                DocumentLifecycle::kInPrePaint);
+      layout_object_.bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+      layout_object_.bitfields_.SetShouldCheckForPaintInvalidation(true);
     }
     void SetShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       layout_object_.SetShouldDoFullPaintInvalidation(reason);

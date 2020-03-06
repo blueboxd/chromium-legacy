@@ -4005,9 +4005,7 @@ if (enable_java_templates) {
     } else {
       # Use the regular proto library to generate lite protos.
       _protoc_bin = "//third_party/android_protoc/protoc"
-      _proto_runtime =
-          "//third_party/android_deps:com_google_protobuf_protobuf_lite_java"
-      _protoc_javalite_plugin_dir = "//third_party/protoc_javalite/"
+      _proto_runtime = "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java"
     }
     _proto_path = invoker.proto_path
     _template_name = target_name
@@ -4049,11 +4047,6 @@ if (enable_java_templates) {
 
       if (_generate_nano) {
         args += [ "--nano" ]
-      } else {
-        args += [
-          "--protoc-javalite-plugin-dir",
-          rebase_path(_protoc_javalite_plugin_dir, root_build_dir),
-        ]
       }
     }
 

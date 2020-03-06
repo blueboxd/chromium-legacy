@@ -55,7 +55,7 @@ const char* GetUITaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "ui_best_effort_tq";
     case BrowserTaskQueues::QueueType::kBootstrap:
       return "ui_bootstrap_tq";
-    case BrowserTaskQueues::QueueType::kNavigationAndPreconnection:
+    case BrowserTaskQueues::QueueType::kPreconnection:
       return "ui_navigation_and_preconnection_tq";
     case BrowserTaskQueues::QueueType::kDefault:
       return "ui_default_tq";
@@ -72,7 +72,7 @@ const char* GetIOTaskQueueName(BrowserTaskQueues::QueueType queue_type) {
       return "io_best_effort_tq";
     case BrowserTaskQueues::QueueType::kBootstrap:
       return "io_bootstrap_tq";
-    case BrowserTaskQueues::QueueType::kNavigationAndPreconnection:
+    case BrowserTaskQueues::QueueType::kPreconnection:
       return "io_navigation_and_preconnection_tq";
     case BrowserTaskQueues::QueueType::kDefault:
       return "io_default_tq";
@@ -223,7 +223,7 @@ void BrowserTaskQueues::PostFeatureListInitializationSetup() {
 
     // Navigation and preconnection tasks are also important during startup so
     // prioritize them too.
-    GetBrowserTaskQueue(QueueType::kNavigationAndPreconnection)
+    GetBrowserTaskQueue(QueueType::kPreconnection)
         ->SetQueuePriority(QueuePriority::kHighPriority);
   }
 }

@@ -79,6 +79,11 @@ class IsolatedPrerenderTabHelper
       const base::Optional<NavigationPredictorKeyedService::Prediction>&
           prediction) override;
 
+  // Runs |url| through all the eligibility checks and appends it to
+  // |urls_to_prefetch_| if eligible and returns true. If not eligible, returns
+  // false.
+  bool CheckAndMaybePrefetchURL(const GURL& url);
+
   // Callback for each eligible prediction URL when their cookie list is known.
   // Only urls with no cookies will be prefetched.
   void OnGotCookieList(const GURL& url,

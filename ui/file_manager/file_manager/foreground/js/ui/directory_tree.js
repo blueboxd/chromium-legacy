@@ -1178,6 +1178,10 @@ class VolumeItem extends DirectoryItem {
         util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
     if (backgroundImage !== 'none') {
       icon.setAttribute('style', 'background-image: ' + backgroundImage);
+    } else if (directorytree.FILES_NG_ENABLED) {
+      if (VolumeManagerCommon.shouldProvideIcons(volumeInfo.volumeType)) {
+        icon.setAttribute('use-generic-provided-icon', '');
+      }
     }
 
     icon.setAttribute('volume-type-icon', volumeInfo.volumeType);

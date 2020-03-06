@@ -46,10 +46,6 @@ source_set("browser") {
     "//url",
   ]
 
-  if (is_android) {
-    deps += [ ":jni_headers" ]
-  }
-
   public_deps = [
     "//components/paint_preview/common",
     "//components/paint_preview/common/mojom",
@@ -57,12 +53,6 @@ source_set("browser") {
     "//components/paint_preview/public",
     "//components/services/paint_preview_compositor/public/mojom",
   ]
-}
-
-if (is_android) {
-  generate_jni("jni_headers") {
-    sources = [ "android/java/src/org/chromium/components/paintpreview/browser/PaintPreviewBaseService.java" ]
-  }
 }
 
 source_set("test_support") {

@@ -121,6 +121,13 @@ def _LoadTimingData(args):
   builder, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStoryTimingData(
       configurations=[builder.name], num_last_days=5)
+  # Running against a reference build doubles our runtime.
+  # Double the expected duration of each story to account
+  # for this. Note that gtest perf tests can't run against
+  # reference builds, so this does not apply to them.
+  if builder.run_reference_build:
+    for story in data:
+      story['duration'] = unicode(float(story['duration']) * 2.0)
   for executable in builder.executables:
     data.append({unicode('duration'): unicode(
                     float(executable.estimated_runtime)),
@@ -214,18 +221,15 @@ def _UpdateCycletimesCsv(platforms, benchmark_names, output_path):
        'shards',
        'idealized cycle time (hours)'] + benchmark_names]
   for platform, durations in platforms.iteritems():
-    multiplier = 2.0 if platform.run_reference_build else 1.0
-    estimated_cycle_time = (multiplier * sum(durations.values()) /
-                            60.0 / 60.0 / float(platform.num_shards))
-    # Double all cycle time stats by 2 to account for reference build.
-    columns.append([
-      platform.name,
-      platform.num_shards,
-      '%.2f' % estimated_cycle_time] + [
-          '%.3f' % (multiplier * durations[name] / 60.0 /
-                    60.0 / float(platform.num_shards))
-          for name in benchmark_names]
-    )
+    estimated_cycle_time = (
+        sum(durations.values()) / 60.0 / 60.0 / float(platform.num_shards))
+    columns.append(
+        [platform.name, platform.num_shards,
+         '%.2f' % estimated_cycle_time] + [
+             '%.3f' %
+             (durations[name] / 60.0 / 60.0 / float(platform.num_shards))
+             for name in benchmark_names
+         ])
   # Rotate the columns into rows.
   rows = []
   for row_index in range(len(columns[0])):

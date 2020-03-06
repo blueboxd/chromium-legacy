@@ -927,7 +927,7 @@ char16* WriteInto(string16* str, size_t length_with_null) {
 template <typename list_type, typename string_type>
 static string_type JoinStringT(const list_type& parts,
                                BasicStringPiece<string_type> sep) {
-  if (empty(parts))
+  if (base::empty(parts))
     return string_type();
 
   // Pre-allocate the eventual size of the string. Start with the size of all of

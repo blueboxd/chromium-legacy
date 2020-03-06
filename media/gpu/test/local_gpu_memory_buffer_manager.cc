@@ -97,7 +97,9 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     handle_.type = gfx::NATIVE_PIXMAP;
     // Set a dummy id since this is for testing only.
     handle_.id = gfx::GpuMemoryBufferId(0);
-    for (size_t i = 0; i < gbm_bo_get_plane_count(buffer_object); ++i) {
+
+    for (size_t i = 0;
+         i < static_cast<size_t>(gbm_bo_get_plane_count(buffer_object)); ++i) {
       handle_.native_pixmap_handle.planes.push_back(gfx::NativePixmapPlane(
           gbm_bo_get_stride_for_plane(buffer_object, i),
           gbm_bo_get_offset(buffer_object, i),

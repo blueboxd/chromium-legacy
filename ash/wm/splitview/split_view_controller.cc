@@ -384,17 +384,10 @@ void SplitViewController::SnapWindow(aura::Window* window,
   // will run into problems because |window| will be on the wrong overview grid.
   RemoveSnappingWindowFromOverviewIfApplicable(overview_session, window);
   if (root_window_ != window->GetRootWindow()) {
-    // Use |OverviewSession::set_ignore_window_hierarchy_changes| to prevent
-    // |OverviewSession::OnWindowHierarchyChanged| from ending overview as we
-    // move |window| to |root_window_|.
-    if (overview_session)
-      overview_session->set_ignore_window_hierarchy_changes(true);
     window_util::MoveWindowToDisplay(window,
                                      display::Screen::GetScreen()
                                          ->GetDisplayNearestWindow(root_window_)
                                          .id());
-    if (overview_session)
-      overview_session->set_ignore_window_hierarchy_changes(false);
   }
 
   bool do_divider_spawn_animation = false;

@@ -32,6 +32,10 @@ using DemoModeApp = DemoSessionMetricsRecorder::DemoModeApp;
 // How often to sample.
 constexpr auto kSamplePeriod = base::TimeDelta::FromSeconds(1);
 
+// Redefining chromeos::default_web_apps::kHelpAppId as ash can't depend on
+// chrome.
+constexpr char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
+
 // How many periods to wait for user activity before discarding samples.
 // This timeout is low because demo sessions tend to be very short. If we
 // recorded samples for a full minute while the device is in between uses, we
@@ -64,7 +68,7 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kBrowser;
   if (app_id == extension_misc::kFilesManagerAppId)
     return DemoModeApp::kFiles;
-  if (app_id == extension_misc::kGeniusAppId)
+  if (app_id == kHelpAppId || app_id == extension_misc::kGeniusAppId)
     return DemoModeApp::kGetHelp;
   if (app_id == extension_misc::kGoogleKeepAppId)
     return DemoModeApp::kGoogleKeep;

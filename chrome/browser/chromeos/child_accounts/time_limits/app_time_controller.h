@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TIME_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
+#include "base/optional.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 
@@ -66,6 +69,13 @@ class AppTimeController : public SystemClockClient::Observer,
   ~AppTimeController() override;
 
   bool IsExtensionWhitelisted(const std::string& extension_id) const;
+
+  // Returns current time limit for the app identified by |app_service_id| and
+  // |app_type|.Will return nullopt if there is no limit set or app is not
+  // tracked.
+  base::Optional<base::TimeDelta> GetTimeLimitForApp(
+      const std::string& app_service_id,
+      apps::mojom::AppType app_type) const;
 
   // SystemClockClient::Observer:
   void SystemClockUpdated() override;

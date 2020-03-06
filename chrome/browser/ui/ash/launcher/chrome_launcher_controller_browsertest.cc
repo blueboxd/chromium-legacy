@@ -2011,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
 
   // Find the browser which holds our app.
-  Browser* app_browser = NULL;
+  Browser* app_browser = nullptr;
   const BrowserList* browser_list = BrowserList::GetInstance();
   for (BrowserList::const_reverse_iterator it =
            browser_list->begin_last_active();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings.privacy;
+package org.chromium.chrome.browser.contextualsearch;
 
 import android.os.Bundle;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -10,8 +10,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import androidx.annotation.XmlRes;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;

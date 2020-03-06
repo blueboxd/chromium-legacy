@@ -2388,25 +2388,6 @@
             ]
         }
     ],
-    "GpuWatchdogV2": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GpuWatchdogV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "GwpAsanAndroid": [
         {
             "platforms": [
@@ -5172,26 +5153,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SqlSkipPreload"
-                    ]
-                }
-            ]
-        }
-    ],
-    "StaticHostQuota": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "StaticHostQuota"
                     ]
                 }
             ]

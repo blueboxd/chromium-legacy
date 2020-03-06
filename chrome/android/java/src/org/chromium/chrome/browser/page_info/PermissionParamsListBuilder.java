@@ -212,7 +212,8 @@ class PermissionParamsListBuilder {
     private Runnable createPermissionClickCallback(
             Intent intentOverride, String[] androidPermissions) {
         return () -> {
-            if (intentOverride == null && mPermissionDelegate != null) {
+            if (intentOverride == null && androidPermissions != null
+                    && mPermissionDelegate != null) {
                 // Try and immediately request missing Android permissions where possible.
                 for (int i = 0; i < androidPermissions.length; i++) {
                     if (!mPermissionDelegate.canRequestPermission(androidPermissions[i])) continue;

@@ -263,7 +263,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   MultiUserWindowManagerHelper::CreateInstance();
 
   // On Chrome OS using multi profile we want to switch the content of the shelf
-  // with a user change. Note that for unit tests the instance can be NULL.
+  // with a user change. Note that for unit tests the instance can be nullptr.
   if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
     user_switch_observer_.reset(
         new ChromeLauncherControllerUserSwitchObserver(this));

@@ -68848,6 +68848,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
 </enum>
 
+<enum name="WebViewExtraHeaders">
+  <int value="0" label="Added headers in StartRequest"/>
+  <int value="1" label="Kept headers through same-origin redirect"/>
+  <int value="2" label="Removed headers on cross-origin redirect"/>
+</enum>
+
 <enum name="WebViewUrlScheme">
   <int value="0" label="Empty URL"/>
   <int value="1" label="Unknown scheme"/>

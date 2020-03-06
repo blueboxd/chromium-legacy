@@ -120,8 +120,9 @@ void IsolatedPrerenderTabHelper::Prefetch() {
       features::kPrefetchSRPNavigationPredictions_HTMLOnly));
 
   url_loader_.reset();
-  if (urls_to_prefetch_.empty())
+  if (urls_to_prefetch_.empty()) {
     return;
+  }
 
   if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
       num_prefetches_attempted_ >=
@@ -174,7 +175,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   // base::Unretained is safe because |url_loader_| is owned by |this|.
   url_loader_->SetOnRedirectCallback(base::BindRepeating(
       &IsolatedPrerenderTabHelper::OnPrefetchRedirect, base::Unretained(this)));
-
+  url_loader_->SetAllowHttpErrorResults(true);
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
@@ -186,10 +187,15 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
     const net::RedirectInfo& redirect_info,
     const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* removed_headers) {
-  // TODO(crbug/1023485): Support redirects.
-  // Redirects are currently not supported. Calling |Prefetch| will reset the
-  // current url loader and maybe start a new one.
   DCHECK(PrefetchingActive());
+  // Run the new URL through all the eligibility checks. In the mean time,
+  // continue on with other Prefetches.
+  if (CheckAndMaybePrefetchURL(redirect_info.new_url)) {
+    // The redirect shouldn't count against our prefetch limit if the redirect
+    // was followed.
+    num_prefetches_attempted_--;
+  }
+  // Cancels the current request.
   Prefetch();
 }
 
@@ -250,12 +256,6 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
     return;
   }
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
-  if (!isolated_prerender_service) {
-    return;
-  }
-
   // This is also checked before prefetching from the network, but checking
   // again here allows us to skip querying for cookies if we won't be
   // prefetching the url anyways.
@@ -280,46 +280,58 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   }
 
   for (const GURL& url : prediction.value().sorted_predicted_urls()) {
-    // Don't prefetch anything for Google, i.e.: same origin.
-    if (google_util::IsGoogleAssociatedDomainUrl(url)) {
-      continue;
-    }
-
-    if (url.HostIsIPAddress()) {
-      continue;
-    }
-
-    if (!url.SchemeIs(url::kHttpsScheme)) {
-      continue;
-    }
-
-    content::StoragePartition* default_storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_);
-
-    // Only the default storage partition is supported since that is the only
-    // place where service workers are observed by
-    // |IsolatedPrerenderServiceWorkersObserver|.
-    if (default_storage_partition !=
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile_, url, /*can_create=*/false)) {
-      continue;
-    }
-
-    base::Optional<bool> site_has_service_worker =
-        isolated_prerender_service->service_workers_observer()
-            ->IsServiceWorkerRegisteredForOrigin(url::Origin::Create(url));
-    if (!site_has_service_worker.has_value() ||
-        site_has_service_worker.value()) {
-      continue;
-    }
-
-    net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
-    default_storage_partition->GetCookieManagerForBrowserProcess()
-        ->GetCookieList(
-            url, options,
-            base::BindOnce(&IsolatedPrerenderTabHelper::OnGotCookieList,
-                           weak_factory_.GetWeakPtr(), url));
+    CheckAndMaybePrefetchURL(url);
   }
+}
+
+bool IsolatedPrerenderTabHelper::CheckAndMaybePrefetchURL(const GURL& url) {
+  DCHECK(data_reduction_proxy::DataReductionProxySettings::
+             IsDataSaverEnabledByUser(profile_->IsOffTheRecord(),
+                                      profile_->GetPrefs()));
+
+  if (google_util::IsGoogleAssociatedDomainUrl(url)) {
+    return false;
+  }
+
+  if (url.HostIsIPAddress()) {
+    return false;
+  }
+
+  if (!url.SchemeIs(url::kHttpsScheme)) {
+    return false;
+  }
+
+  content::StoragePartition* default_storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile_);
+
+  // Only the default storage partition is supported since that is the only
+  // place where service workers are observed by
+  // |IsolatedPrerenderServiceWorkersObserver|.
+  if (default_storage_partition !=
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile_, url, /*can_create=*/false)) {
+    return false;
+  }
+
+  IsolatedPrerenderService* isolated_prerender_service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+  if (!isolated_prerender_service) {
+    return false;
+  }
+
+  base::Optional<bool> site_has_service_worker =
+      isolated_prerender_service->service_workers_observer()
+          ->IsServiceWorkerRegisteredForOrigin(url::Origin::Create(url));
+  if (!site_has_service_worker.has_value() || site_has_service_worker.value()) {
+    return false;
+  }
+
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+  default_storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      url, options,
+      base::BindOnce(&IsolatedPrerenderTabHelper::OnGotCookieList,
+                     weak_factory_.GetWeakPtr(), url));
+  return true;
 }
 
 void IsolatedPrerenderTabHelper::OnGotCookieList(
@@ -330,11 +342,11 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
   if (!cookie_with_status_list.empty())
     return;
 
+  // TODO(robertogden): Consider adding redirect URLs to the front of the list.
   urls_to_prefetch_.push_back(url);
 
   if (!PrefetchingActive()) {
     Prefetch();
-    DCHECK(PrefetchingActive());
   }
 }
 

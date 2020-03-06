@@ -51,7 +51,6 @@
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -892,42 +891,6 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
     return;
   }
   RefreshNoWindowsWidgetBounds(/*animate=*/false);
-}
-
-void OverviewSession::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
-  if (ignore_window_hierarchy_changes_)
-    return;
-
-  // Only care about newly added children of |observed_windows_|.
-  if (!observed_windows_.count(params.receiver) ||
-      !observed_windows_.count(params.new_parent)) {
-    return;
-  }
-
-  // Removing a desk while in overview mode results in reparenting the windows
-  // of that desk to the associated container of another desk. This is a window
-  // hierarchy change that shouldn't result in exiting overview mode.
-  if (DesksController::Get()->AreDesksBeingModified())
-    return;
-
-  aura::Window* new_window = params.target;
-  WindowState* state = WindowState::Get(new_window);
-  if (!state->IsUserPositionable() || state->IsPip())
-    return;
-
-  // If the new window is added when splitscreen is active, do nothing.
-  // SplitViewController will do the right thing to snap the window or end
-  // overview mode.
-  if (SplitViewController::Get(new_window)->InSplitViewMode())
-    return;
-
-  if (IsSwitchableContainer(new_window->parent()) &&
-      !::wm::GetTransientParent(new_window)) {
-    // The new window is in one of the switchable containers, abort overview.
-    EndOverview();
-    return;
-  }
 }
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {

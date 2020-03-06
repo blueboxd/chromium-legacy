@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/url_formatter/elide_url.h"
@@ -104,9 +105,16 @@ NativeFileSystemDirectoryAccessConfirmationView::
       base::BindOnce(run_callback, base::Unretained(this),
                      permissions::PermissionAction::DISMISSED));
 
-  AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
-      IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT, origin, path,
-      CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  if (base::FeatureList::IsEnabled(
+          features::kNativeFileSystemOriginScopedPermissions)) {
+    AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
+        IDS_NATIVE_FILE_SYSTEM_ORIGIN_SCOPED_READ_PERMISSION_DIRECTORY_TEXT,
+        origin, path, CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  } else {
+    AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
+        IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT, origin, path,
+        CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
+  }
 }
 
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(

@@ -172,6 +172,42 @@ public class TabCallbackTest {
 
     @Test
     @SmallTest
+    public void testDismissTransientUi() throws TimeoutException {
+        String pageUrl = mActivityTestRule.getTestDataURL("alert.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(pageUrl);
+        Assert.assertNotNull(activity);
+
+        Boolean isTabModalShowingResult[] = new Boolean[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onTabModalStateChanged(boolean isTabModalShowing) {
+                    isTabModalShowingResult[0] = isTabModalShowing;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        int callCount = callbackHelper.getCallCount();
+        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(true, isTabModalShowingResult[0]);
+
+        callCount = callbackHelper.getCallCount();
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getTab().dismissTransientUi()));
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(false, isTabModalShowingResult[0]);
+
+        Assert.assertFalse(TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getTab().dismissTransientUi()));
+    }
+
+    @Test
+    @SmallTest
     public void testTabModalOverlayOnBackgroundTab() throws TimeoutException {
         // Create a tab.
         String url = mActivityTestRule.getTestDataURL("new_browser.html");

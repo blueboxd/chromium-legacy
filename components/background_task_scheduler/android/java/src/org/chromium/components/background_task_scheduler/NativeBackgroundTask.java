@@ -35,11 +35,11 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         int DONE = 2;
     }
 
+    /** The id of the task from {@link TaskParameters}. */
+    protected int mTaskId;
+
     /** Indicates that the task has already been stopped. Should only be accessed on UI Thread. */
     private boolean mTaskStopped;
-
-    /** The id of the task from {@link TaskParameters} used for metrics logging. */
-    private int mTaskId;
 
     /**
      * If true, the task runs in Service Manager Only Mode. If false, the task runs in Full Browser
@@ -162,9 +162,6 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     /**
      * Descendant classes should override this method if they support running in service manager
      * only mode.
-     *
-     * TODO(https://crbug.com/913480): implement in a subclass once it can support running in
-     * ServiceManager only mode.
      *
      * @return if the task supports running in service manager only mode.
      */

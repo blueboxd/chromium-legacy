@@ -77,6 +77,10 @@ class ChromiumDepGraph {
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),
         'com_google_protobuf_protobuf_java': new PropertyOverride(
+            url: "https://github.com/protocolbuffers/protobuf/blob/master/java/README.md",
+            licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
+            licenseName: "BSD"),
+        'com_google_protobuf_protobuf_javalite': new PropertyOverride(
             url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
             licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
             licenseName: "BSD"),

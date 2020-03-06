@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
@@ -36,6 +35,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;
@@ -291,7 +291,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
     public void notifyAnimationFinished(int animationType) {}
 
     @Override
-    public void notifyAllAnimationsFinished(Item frontInfoBar) {
+    public void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar) {
         mLoggingHandler.removeCallbacksAndMessages(null);
 
         // If the survey info bar is in front, start the countdown to log that it was displayed.

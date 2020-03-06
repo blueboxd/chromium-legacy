@@ -50,9 +50,10 @@ import java.util.List;
  * - (optional) One or two buttons with text at the bottom, or a button paired with an ImageView.
  *
  * When adding custom views, widths and heights defined in the LayoutParams will be ignored.
- * Setting a minimum width using {@link View#setMininumWidth()} will be obeyed.
+ * Setting a minimum width using {@link View#setMinimumWidth()} will be obeyed.
  *
- * Logic for what happens when things are clicked should be implemented by the InfoBarView.
+ * Logic for what happens when things are clicked should be implemented by the
+ * InfoBarInteractionHandler.
  */
 public final class InfoBarLayout extends ViewGroup implements View.OnClickListener {
 
@@ -87,7 +88,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     private final int mPadding;
     private final int mMinWidth;
 
-    private final InfoBarView mInfoBarView;
+    private final InfoBarInteractionHandler mInfoBar;
     private final ImageButton mCloseButton;
     private final InfoBarControlLayout mMessageLayout;
     private final List<InfoBarControlLayout> mControlLayouts;
@@ -106,18 +107,18 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * message, the buttons, and/or the custom content using setMessage(), setButtons(), and
      * setCustomContent().
      * @param context The context used to render.
-     * @param infoBarView InfoBarView that listens to events.
+     * @param infoBar InfoBarInteractionHandler that listens to events.
      * @param iconResourceId ID of the icon to use for the infobar.
      * @param iconTintId The {@link ColorRes} used as tint for {@code iconResourceId}.
      * @param iconBitmap Bitmap for the icon to use, if the resource ID wasn't passed through.
      * @param message The message to show in the infobar.
      */
-    public InfoBarLayout(Context context, InfoBarView infoBarView, int iconResourceId,
+    public InfoBarLayout(Context context, InfoBarInteractionHandler infoBar, int iconResourceId,
             @ColorRes int iconTintId, Bitmap iconBitmap, CharSequence message) {
         super(context);
         mControlLayouts = new ArrayList<InfoBarControlLayout>();
 
-        mInfoBarView = infoBarView;
+        mInfoBar = infoBar;
 
         // Cache resource values.
         Resources res = getResources();
@@ -462,14 +463,14 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      */
     @Override
     public void onClick(View view) {
-        mInfoBarView.setControlsEnabled(false);
+        mInfoBar.onClick();
 
         if (view.getId() == R.id.infobar_close_button) {
-            mInfoBarView.onCloseButtonClicked();
+            mInfoBar.onCloseButtonClicked();
         } else if (view.getId() == R.id.button_primary) {
-            mInfoBarView.onButtonClicked(true);
+            mInfoBar.onButtonClicked(true);
         } else if (view.getId() == R.id.button_secondary) {
-            mInfoBarView.onButtonClicked(false);
+            mInfoBar.onButtonClicked(false);
         }
     }
 
@@ -509,7 +510,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     private NoUnderlineClickableSpan createClickableSpan() {
-        return new NoUnderlineClickableSpan(getResources(), (view) -> mInfoBarView.onLinkClicked());
+        return new NoUnderlineClickableSpan(getResources(), (view) -> mInfoBar.onLinkClicked());
     }
 
     /**

@@ -42,9 +42,8 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::string& vm_name,
                            const std::string& container_name,
                            const std::vector<std::string>& terminal_args) {
-  std::string vsh_crosh =
-      base::StrCat({std::string(chrome::kChromeUIUntrustedTerminalURL),
-                    "html/terminal.html"});
+  std::string vsh_crosh = base::StrCat(
+      {chrome::kChromeUIUntrustedTerminalURL, "html/terminal.html"});
   if (!base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
     vsh_crosh =
         extensions::TerminalExtensionHelper::GetCroshURL(profile).spec();
@@ -137,8 +136,7 @@ void LaunchTerminalSettings(Profile* profile, gfx::Point window_origin) {
 
   web_app::LaunchSystemWebApp(
       profile, web_app::SystemAppType::TERMINAL,
-      GURL(base::StrCat(
-          {std::string(chrome::kChromeUIUntrustedTerminalURL), path})),
+      GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL, path})),
       *params);
 }
 

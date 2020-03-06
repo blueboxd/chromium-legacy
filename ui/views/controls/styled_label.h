@@ -72,10 +72,9 @@ class VIEWS_EXPORT StyledLabel : public View {
     // The style::TextStyle for this range.
     base::Optional<int> text_style;
 
-    // Overrides the text color given by |text_style| for this range. Default is
-    // SK_ColorTRANSPARENT, indicating not to override.
+    // Overrides the text color given by |text_style| for this range.
     // DEPRECATED: Use TextStyle.
-    SkColor override_color = SK_ColorTRANSPARENT;
+    base::Optional<SkColor> override_color;
 
     // Tooltip for the range.
     base::string16 tooltip;
@@ -148,8 +147,8 @@ class VIEWS_EXPORT StyledLabel : public View {
   // Gets/Sets the color of the background on which the label is drawn. This
   // won't be explicitly drawn, but the label will force the text color to be
   // readable over it.
-  SkColor GetDisplayedOnBackgroundColor() const;
-  void SetDisplayedOnBackgroundColor(SkColor color);
+  base::Optional<SkColor> GetDisplayedOnBackgroundColor() const;
+  void SetDisplayedOnBackgroundColor(const base::Optional<SkColor>& color);
 
   bool GetAutoColorReadabilityEnabled() const;
   void SetAutoColorReadabilityEnabled(bool auto_color_readability);
@@ -174,6 +173,7 @@ class VIEWS_EXPORT StyledLabel : public View {
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   void PreferredSizeChanged() override;
+  void OnThemeChanged() override;
 
   // Called when any of the child links are clicked.
   void LinkClicked(Link* source, int event_flags);
@@ -224,6 +224,10 @@ class VIEWS_EXPORT StyledLabel : public View {
                                      const RangeStyleInfo& style_info,
                                      const gfx::Range& range) const;
 
+  // Update the label background color from the theme or
+  // |displayed_on_background_color_| if set.
+  void UpdateLabelBackgroundColor();
+
   // The text to display.
   base::string16 text_;
 
@@ -253,8 +257,7 @@ class VIEWS_EXPORT StyledLabel : public View {
   mutable std::unique_ptr<LayoutViews> layout_views_;
 
   // Background color on which the label is drawn, for auto color readability.
-  SkColor displayed_on_background_color_ = SK_ColorWHITE;
-  bool displayed_on_background_color_set_ = false;
+  base::Optional<SkColor> displayed_on_background_color_;
 
   // Controls whether the text is automatically re-colored to be readable on the
   // background.

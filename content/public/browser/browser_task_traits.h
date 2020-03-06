@@ -36,9 +36,6 @@ enum class BrowserTaskType {
   // Critical startup tasks.
   kBootstrap,
 
-  // Navigation related tasks.
-  kNavigation,
-
   // A subset of network tasks related to preconnection.
   kPreconnect,
 

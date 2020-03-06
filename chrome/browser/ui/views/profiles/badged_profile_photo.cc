@@ -51,49 +51,65 @@ void CustomImageView::OnPaint(gfx::Canvas* canvas) {
   ImageView::OnPaint(canvas);
 }
 
-// Helpers --------------------------------------------------------------------
-
-gfx::ImageSkia ImageForBadgeType(BadgedProfilePhoto::BadgeType badge_type) {
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  switch (badge_type) {
-    case BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR:
-      return gfx::CreateVectorIcon(
-          kSupervisorAccountCircleIcon, kBadgeIconSize,
-          native_theme->GetSystemColor(
-              ui::NativeTheme::kColorId_DefaultIconColor));
-    case BadgedProfilePhoto::BADGE_TYPE_CHILD:
-      return gfx::CreateVectorIcon(
-          kAccountChildCircleIcon, kBadgeIconSize,
-          native_theme->GetSystemColor(
-              ui::NativeTheme::kColorId_DefaultIconColor));
-    case BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE:
-      return gfx::CreateVectorIcon(
-          kSyncCircleIcon, kBadgeIconSize,
-          native_theme->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityLow));
-    case BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR:
-      return gfx::CreateVectorIcon(
-          kSyncErrorCircleIcon, kBadgeIconSize,
-          native_theme->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityHigh));
-    case BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED:
-      return gfx::CreateVectorIcon(
-          kSyncPausedCircleIcon, kBadgeIconSize,
-          native_theme->GetSystemColor(
-              ui::NativeTheme::kColorId_ProminentButtonColor));
-    case BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED:
-      return gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
-                                   gfx::kGoogleGrey400);
-    case BadgedProfilePhoto::BADGE_TYPE_SYNC_OFF:
-      return gfx::CreateVectorIcon(kSyncPausedCircleIcon, kBadgeIconSize,
-                                   gfx::kGoogleGrey600);
-    case BadgedProfilePhoto::BADGE_TYPE_NONE:
-      NOTREACHED();
-      return gfx::ImageSkia();
+class BadgeView : public ::views::ImageView {
+ public:
+  explicit BadgeView(BadgedProfilePhoto::BadgeType badge_type)
+      : badge_type_(badge_type) {
+    SizeToPreferredSize();
+    SetPosition(gfx::Point(kBadgedProfilePhotoWidth - kBadgeIconSize,
+                           kBadgedProfilePhotoHeight - kBadgeIconSize));
   }
-  NOTREACHED();
-  return gfx::ImageSkia();
-}
+
+  // views::View
+  void OnThemeChanged() override {
+    switch (badge_type_) {
+      case BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR:
+        SetImage(gfx::CreateVectorIcon(
+            kSupervisorAccountCircleIcon, kBadgeIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_DefaultIconColor)));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_CHILD:
+        SetImage(gfx::CreateVectorIcon(
+            kAccountChildCircleIcon, kBadgeIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_DefaultIconColor)));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE:
+        SetImage(gfx::CreateVectorIcon(
+            kSyncCircleIcon, kBadgeIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_AlertSeverityLow)));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR:
+        SetImage(gfx::CreateVectorIcon(
+            kSyncErrorCircleIcon, kBadgeIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_AlertSeverityHigh)));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED:
+        SetImage(gfx::CreateVectorIcon(
+            kSyncPausedCircleIcon, kBadgeIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_ProminentButtonColor)));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED:
+        SetImage(gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
+                                       gfx::kGoogleGrey400));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_SYNC_OFF:
+        SetImage(gfx::CreateVectorIcon(kSyncPausedCircleIcon, kBadgeIconSize,
+                                       gfx::kGoogleGrey600));
+        break;
+      case BadgedProfilePhoto::BADGE_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  const BadgedProfilePhoto::BadgeType badge_type_;
+};
 
 }  // namespace
 
@@ -116,16 +132,8 @@ BadgedProfilePhoto::BadgedProfilePhoto(BadgeType badge_type,
   profile_photo_view->SizeToPreferredSize();
   AddChildView(profile_photo_view);
 
-  if (badge_type != BADGE_TYPE_NONE) {
-    // Create and add image view for badge icon.
-    views::ImageView* badge_view = new views::ImageView();
-    badge_view->SetImage(ImageForBadgeType(badge_type));
-    badge_view->SizeToPreferredSize();
-    AddChildView(badge_view);
-    badge_view->SetPosition(
-        gfx::Point(kBadgedProfilePhotoWidth - kBadgeIconSize,
-                   kBadgedProfilePhotoHeight - kBadgeIconSize));
-  }
+  if (badge_type != BADGE_TYPE_NONE)
+    AddChildView(std::make_unique<BadgeView>(badge_type));
 
   SetPreferredSize(
       gfx::Size(kBadgedProfilePhotoWidth, kBadgedProfilePhotoHeight));

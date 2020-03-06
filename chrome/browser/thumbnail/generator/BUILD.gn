@@ -61,7 +61,7 @@ if (is_android) {
       "//third_party/android_deps:android_support_v4_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:androidx_collection_collection_java",
-      "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+      "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     ]
 
     sources = [

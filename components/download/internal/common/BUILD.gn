@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/safe_browsing/buildflags.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
@@ -73,6 +75,7 @@ source_set("internal") {
     "//components/download/quarantine",
     "//components/filename_generation",
     "//components/leveldb_proto",
+    "//components/safe_browsing:buildflags",
     "//mojo/public/c/system",
     "//net",
     "//services/device/public/mojom:mojom",
@@ -80,6 +83,11 @@ source_set("internal") {
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp:cpp",
   ]
+
+  # TODO(crbug/1056278): Enable this on Fuchsia
+  if (safe_browsing_mode > 0 && !is_fuchsia) {
+    deps += [ "//components/safe_browsing/core:file_type_policies" ]
+  }
 
   if (is_win) {
     deps += [ "//components/services/quarantine/public/cpp:features" ]

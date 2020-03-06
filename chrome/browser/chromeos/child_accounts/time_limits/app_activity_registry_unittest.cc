@@ -466,6 +466,7 @@ TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
   EXPECT_TRUE(registry().IsAppActive(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(0), registry().GetActiveTime(kApp1));
   EXPECT_EQ(base::nullopt, registry_test().GetAppLimit(kApp1));
+  EXPECT_EQ(base::nullopt, registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::nullopt, registry_test().GetTimeLeft(kApp1));
 
   task_environment().FastForwardBy(base::TimeDelta::FromMinutes(5));
@@ -477,8 +478,7 @@ TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
 
   EXPECT_TRUE(registry().IsAppActive(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(11),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(11), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(6),
             registry_test().GetTimeLeft(kApp1));
 
@@ -486,8 +486,7 @@ TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
 
   EXPECT_TRUE(registry().IsAppActive(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(11),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(11), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(1),
             registry_test().GetTimeLeft(kApp1));
 
@@ -498,8 +497,7 @@ TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
   SetAppLimit(kApp1, limit_increase);
   EXPECT_TRUE(registry().IsAppActive(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(20),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(20), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(10),
             registry_test().GetTimeLeft(kApp1));
 
@@ -511,8 +509,7 @@ TEST_F(AppActivityRegistryTest, LimitChangedForActiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(10), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
             registry_test().GetTimeLeft(kApp1));
 }
@@ -531,8 +528,7 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(5),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(5), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
             registry_test().GetTimeLeft(kApp1));
 
@@ -545,8 +541,7 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(3),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(3), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
             registry_test().GetTimeLeft(kApp1));
 
@@ -559,8 +554,7 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppAvailable(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(10),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(10), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5),
             registry_test().GetTimeLeft(kApp1));
 
@@ -573,8 +567,7 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppAvailable(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(8),
-            registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(8), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(3),
             registry_test().GetTimeLeft(kApp1));
 
@@ -587,8 +580,7 @@ TEST_F(AppActivityRegistryTest, LimitChangesForInactiveApp) {
   EXPECT_FALSE(registry().IsAppActive(kApp1));
   EXPECT_TRUE(registry().IsAppTimeLimitReached(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registry().GetActiveTime(kApp1));
-  EXPECT_EQ(base::TimeDelta::FromMinutes(4),
-            *registry_test().GetAppLimit(kApp1)->daily_limit());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(4), *registry().GetTimeLimit(kApp1));
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
             *registry_test().GetTimeLeft(kApp1));
 }
@@ -608,10 +600,7 @@ TEST_F(AppActivityRegistryTest, RemoveLimitsFromWhitelistedApps) {
   registry().OnTimeLimitWhitelistChanged(wrapper);
 
   EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
-
-  EXPECT_EQ(registry_test().GetAppLimit(kApp2)->daily_limit(),
-            limit.daily_limit());
-
+  EXPECT_EQ(limit.daily_limit(), *registry().GetTimeLimit(kApp2));
   EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
 }
 
@@ -629,10 +618,7 @@ TEST_F(AppActivityRegistryTest, WhitelistedAppsNoLimits) {
   SetAppLimit(kApp2, limit);
 
   EXPECT_FALSE(registry_test().GetAppLimit(kApp1));
-
-  EXPECT_EQ(registry_test().GetAppLimit(kApp2)->daily_limit(),
-            limit.daily_limit());
-
+  EXPECT_EQ(limit.daily_limit(), *registry().GetTimeLimit(kApp2));
   EXPECT_EQ(registry().GetAppState(kApp1), AppState::kAlwaysAvailable);
 }
 

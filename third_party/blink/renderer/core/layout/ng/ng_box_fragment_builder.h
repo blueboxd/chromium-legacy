@@ -204,7 +204,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }
 
-  void SetLinesUntilClamp(int value) { lines_until_clamp_ = value; }
+  void SetLinesUntilClamp(const base::Optional<int>& value) {
+    lines_until_clamp_ = value;
+  }
 
   void SetEarlyBreak(scoped_refptr<const NGEarlyBreak> breakpoint,
                      NGBreakAppeal appeal) {
@@ -362,7 +364,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBorderEdges border_edges_;
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
-  int lines_until_clamp_ = 0;
+  base::Optional<int> lines_until_clamp_;
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

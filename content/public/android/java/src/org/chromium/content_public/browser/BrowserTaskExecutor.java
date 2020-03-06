@@ -95,7 +95,6 @@ public class BrowserTaskExecutor implements TaskExecutor {
 
         switch (impl.getTaskType()) {
             case BrowserTaskType.BOOTSTRAP:
-            case BrowserTaskType.NAVIGATION:
                 return true;
 
             default:

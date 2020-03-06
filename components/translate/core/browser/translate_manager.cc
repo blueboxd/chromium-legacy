@@ -228,7 +228,8 @@ void TranslateManager::InitiateManualTranslation(bool auto_translate) {
           ? translate::TRANSLATE_STEP_AFTER_TRANSLATE
           : translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
   translate_client_->ShowTranslateUI(step, source_code, target_lang,
-                                     TranslateErrors::NONE, false);
+                                     TranslateErrors::NONE,
+                                     true /* triggered_by_menu */);
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,

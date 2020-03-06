@@ -28,7 +28,7 @@ cr.define('settings_passwords_section_cros', function() {
      * tests to track auth token and saved password requests.
      */
     class CrosPasswordSectionElementFactory extends
-        PasswordSectionElementFactory {
+        autofill_test_util.PasswordSectionElementFactory {
       /**
        * @param {HTMLDocument} document The test's |document| object.
        * @param {request: Function} tokenRequestManager Fake for
@@ -119,7 +119,7 @@ cr.define('settings_passwords_section_cros', function() {
       let passwordItem;
       passwordPromise = new Promise(resolve => {
         passwordItem = {
-          entry: FakeDataMaker.passwordEntry(),
+          entry: autofill_test_util.createPasswordEntry(),
           set password(newPassword) {
             if (newPassword && newPassword != this.password_) {
               resolve(newPassword);

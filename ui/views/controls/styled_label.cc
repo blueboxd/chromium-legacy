@@ -157,24 +157,21 @@ void StyledLabel::SetLineHeight(int line_height) {
                     kPropertyEffectsPreferredSizeChanged);
 }
 
-SkColor StyledLabel::GetDisplayedOnBackgroundColor() const {
+base::Optional<SkColor> StyledLabel::GetDisplayedOnBackgroundColor() const {
   return displayed_on_background_color_;
 }
 
-void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
-  if (displayed_on_background_color_ == color &&
-      displayed_on_background_color_set_)
+void StyledLabel::SetDisplayedOnBackgroundColor(
+    const base::Optional<SkColor>& color) {
+  if (displayed_on_background_color_ == color)
     return;
 
   displayed_on_background_color_ = color;
-  displayed_on_background_color_set_ = true;
 
-  for (View* child : children()) {
-    DCHECK((child->GetClassName() == Label::kViewClassName) ||
-           (child->GetClassName() == Link::kViewClassName));
-    static_cast<Label*>(child)->SetBackgroundColor(color);
-  }
-  OnPropertyChanged(&displayed_on_background_color_, kPropertyEffectsNone);
+  if (GetNativeTheme())
+    UpdateLabelBackgroundColor();
+
+  OnPropertyChanged(&displayed_on_background_color_, kPropertyEffectsPaint);
 }
 
 bool StyledLabel::GetAutoColorReadabilityEnabled() const {
@@ -186,7 +183,7 @@ void StyledLabel::SetAutoColorReadabilityEnabled(bool auto_color_readability) {
     return;
 
   auto_color_readability_enabled_ = auto_color_readability;
-  OnPropertyChanged(&auto_color_readability_enabled_, kPropertyEffectsNone);
+  OnPropertyChanged(&auto_color_readability_enabled_, kPropertyEffectsPaint);
 }
 
 const StyledLabel::LayoutSizeInfo& StyledLabel::GetLayoutSizeInfoForWidth(
@@ -294,6 +291,11 @@ void StyledLabel::PreferredSizeChanged() {
   layout_size_info_ = LayoutSizeInfo(0);
   layout_views_.reset();
   View::PreferredSizeChanged();
+}
+
+void StyledLabel::OnThemeChanged() {
+  View::OnThemeChanged();
+  UpdateLabelBackgroundColor();
 }
 
 void StyledLabel::LinkClicked(Link* source, int event_flags) {
@@ -561,15 +563,30 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
         style_info.text_style.value_or(default_text_style_));
   }
 
-  if (style_info.override_color != SK_ColorTRANSPARENT)
-    result->SetEnabledColor(style_info.override_color);
+  if (style_info.override_color)
+    result->SetEnabledColor(style_info.override_color.value());
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
-  if (displayed_on_background_color_set_)
-    result->SetBackgroundColor(displayed_on_background_color_);
+  if (displayed_on_background_color_)
+    result->SetBackgroundColor(displayed_on_background_color_.value());
   result->SetAutoColorReadabilityEnabled(auto_color_readability_enabled_);
 
   return result;
+}
+
+void StyledLabel::UpdateLabelBackgroundColor() {
+  SkColor new_color =
+      displayed_on_background_color_.value_or(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground));
+  for (View* child : children()) {
+    if (!child->owned_by_client()) {
+      // TODO (kylixrd): Should updating the label background color even be
+      // allowed if there are custom views?
+      DCHECK((child->GetClassName() == Label::kViewClassName) ||
+             (child->GetClassName() == Link::kViewClassName));
+      static_cast<Label*>(child)->SetBackgroundColor(new_color);
+    }
+  }
 }
 
 BEGIN_METADATA(StyledLabel)
@@ -578,7 +595,9 @@ ADD_PROPERTY_METADATA(StyledLabel, int, TextContext)
 ADD_PROPERTY_METADATA(StyledLabel, int, DefaultTextStyle)
 ADD_PROPERTY_METADATA(StyledLabel, int, LineHeight)
 ADD_PROPERTY_METADATA(StyledLabel, bool, AutoColorReadabilityEnabled)
-ADD_PROPERTY_METADATA(StyledLabel, SkColor, DisplayedOnBackgroundColor)
+ADD_PROPERTY_METADATA(StyledLabel,
+                      base::Optional<SkColor>,
+                      DisplayedOnBackgroundColor)
 METADATA_PARENT_CLASS(View)
 END_METADATA()
 

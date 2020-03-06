@@ -195,9 +195,10 @@ public class Tab {
     }
 
     /**
-     * Dismisses any active tab modal overlays.
+     * Dismisses the active tab modal overlay.
      *
-     * This has no effect if no tab modal dialog is currently displayed.
+     * If other tab modal dialogs are queued, they will then be shown. This has no effect if no tab
+     * modal dialog is currently displayed.
      *
      * See also {@link TabCallback#onTabModalStateChanged}.
      *
@@ -236,6 +237,30 @@ public class Tab {
         }
         try {
             mImpl.dispatchBeforeUnloadAndClose();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Dismisses one active transient UI, if any.
+     *
+     * This is useful, for example, to handle presses on the system back button. UI such as tab
+     * modal dialogs, text selection popups and fullscreen will be dismissed. At most one piece of
+     * UI will be dismissed, but this distinction isn't very meaningful in practice since only one
+     * such kind of UI would tend to be active at a time.
+     *
+     * @return true if some piece of UI was dismissed, or false if nothing happened.
+     *
+     * @since 82
+     */
+    public boolean dismissTransientUi() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mImpl.dismissTransientUi();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

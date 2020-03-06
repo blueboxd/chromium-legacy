@@ -29,9 +29,9 @@ enum class HistoryUiFaviconRequestOrigin {
 class HistoryUiFaviconRequestHandler : public KeyedService {
  public:
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
-  // Tries to fetch the icon from local storage and falls back to sync, or to
-  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. If a non-empty |icon_url_for_uma| (optional) is passed, it will
+  // Tries to fetch the icon from local storage and falls back to sync, or the
+  // Google favicon server if user settings allow to query it using history
+  // data. If a non-empty |icon_url_for_uma| (optional) is passed, it will
   // be used to record UMA about the grouping of requests to the favicon server.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
@@ -41,9 +41,9 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       const GURL& icon_url_for_uma) = 0;
 
   // Requests favicon image at |page_url|.
-  // Tries to fetch the icon from local storage and falls back to sync, or to
-  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled.
+  // Tries to fetch the icon from local storage and falls back to sync, or the
+  // Google favicon server if user settings allow to query it using history
+  // data.
   // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
   // record UMA about the grouping of requests to the favicon server.
   // This method is only called by desktop code.

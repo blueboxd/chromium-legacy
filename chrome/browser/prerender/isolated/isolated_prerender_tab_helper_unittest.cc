@@ -96,6 +96,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
   int RequestCount() { return test_url_loader_factory_.NumPending(); }
 
   void VerifyCommonRequestState(const GURL& url) {
+    SCOPED_TRACE(url.spec());
     ASSERT_EQ(RequestCount(), 1);
 
     network::TestURLLoaderFactory::PendingRequest* request =
@@ -178,7 +179,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     return result;
   }
 
- private:
+ protected:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
@@ -308,25 +309,6 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
-}
-
-TEST_F(IsolatedPrerenderTabHelperTest, NoRedirects) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
-
-  GURL doc_url("https://www.google.com/search?q=cats");
-  GURL prediction_url("https://www.cat-food.com/");
-  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
-
-  VerifyCommonRequestState(prediction_url);
-  MakeResponseAndWait(net::HTTP_TEMPORARY_REDIRECT, net::OK, kHTMLMimeType,
-                      {"Location: https://foo.com"}, "unused body");
-  // Redirect should not be followed.
-  EXPECT_EQ(RequestCount(), 0);
-  EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
-                ->prefetched_responses_size_for_testing(),
-            0U);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
@@ -525,4 +507,141 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   VerifyCommonRequestState(prediction_url);
+}
+
+class IsolatedPrerenderTabHelperRedirectTest
+    : public IsolatedPrerenderTabHelperTest {
+ public:
+  IsolatedPrerenderTabHelperRedirectTest() = default;
+  ~IsolatedPrerenderTabHelperRedirectTest() override = default;
+
+  void WalkRedirectChainUntilFinalRequest(std::vector<GURL> redirect_chain) {
+    ASSERT_GE(redirect_chain.size(), 2U)
+        << "redirect_chain must contain the full redirect chain, with the "
+           "first element being the first request url, the last element being "
+           "the final request url, and any intermediate steps in the middle";
+
+    // Since the prefetches do not follow redirects, but instead have to pause
+    // and query the cookie jar every time, each step in the redirect chain
+    // needs to be handled like a separate request/response pair.
+    for (size_t i = 0; i < redirect_chain.size() - 1; i++) {
+      network::TestURLLoaderFactory::Redirects redirects;
+      net::RedirectInfo info;
+      info.new_url = redirect_chain[i + 1];
+      info.status_code = net::HTTP_TEMPORARY_REDIRECT;
+      auto head = network::CreateURLResponseHead(net::HTTP_TEMPORARY_REDIRECT);
+      redirects.push_back(std::make_pair(info, head->Clone()));
+
+      network::TestURLLoaderFactory::PendingRequest* request =
+          test_url_loader_factory_.GetPendingRequest(0);
+      ASSERT_TRUE(request);
+      EXPECT_EQ(request->request.url, redirect_chain[i]);
+
+      test_url_loader_factory_.AddResponse(
+          redirect_chain[i], std::move(head), "unused body during redirect",
+          network::URLLoaderCompletionStatus(net::OK), std::move(redirects));
+
+      task_environment()->RunUntilIdle();
+    }
+    // Clear responses in the network service so we can inspect the next
+    // request that comes in before it is responded to.
+    ClearResponses();
+  }
+
+  void MakeFinalResponse(const GURL& final_url,
+                         net::HttpStatusCode final_status,
+                         std::vector<std::string> final_headers,
+                         const std::string& final_body) {
+    auto final_head = network::CreateURLResponseHead(final_status);
+    final_head->mime_type = kHTMLMimeType;
+    for (const std::string& header : final_headers) {
+      final_head->headers->AddHeader(header);
+    }
+    network::TestURLLoaderFactory::PendingRequest* request =
+        test_url_loader_factory_.GetPendingRequest(0);
+    ASSERT_TRUE(request);
+    EXPECT_EQ(final_url, request->request.url);
+    test_url_loader_factory_.AddResponse(
+        final_url, std::move(final_head), final_body,
+        network::URLLoaderCompletionStatus(net::OK));
+    task_environment()->RunUntilIdle();
+
+    // Clear responses in the network service so we can inspect the next request
+    // that comes in before it is responded to.
+    ClearResponses();
+  }
+
+  void RunNoRedirectTest(const GURL& redirect_url) {
+    GURL doc_url("https://www.google.com/search?q=cats");
+    GURL prediction_url("https://www.cat-food.com/");
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+    MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+
+    VerifyCommonRequestState(prediction_url);
+    WalkRedirectChainUntilFinalRequest({prediction_url, redirect_url});
+    // Redirect should not be followed.
+    EXPECT_EQ(RequestCount(), 0);
+    EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
+                  ->prefetched_responses_size_for_testing(),
+              0U);
+  }
+};
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
+  GURL site_with_cookies("https://cookies.com");
+  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
+  RunNoRedirectTest(site_with_cookies);
+}
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
+  RunNoRedirectTest(GURL("http://insecure.com"));
+}
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
+  RunNoRedirectTest(GURL("https://www.google.com"));
+}
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
+  GURL site_with_worker("https://service-worker.com");
+
+  IsolatedPrerenderService* isolated_prerender_service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile());
+  content::ServiceWorkerContextObserver* observer =
+      isolated_prerender_service->service_workers_observer();
+  observer->OnRegistrationCompleted(site_with_worker);
+
+  RunNoRedirectTest(site_with_worker);
+}
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  GURL redirect_url("https://redirect-here.com");
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+  VerifyCommonRequestState(prediction_url);
+
+  WalkRedirectChainUntilFinalRequest({prediction_url, redirect_url});
+  MakeFinalResponse(redirect_url, net::HTTP_OK, {"X-Testing: Hello World"},
+                    kHTMLBody);
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(web_contents());
+  EXPECT_EQ(tab_helper->prefetched_responses_size_for_testing(), 1U);
+
+  std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
+      tab_helper->TakePrefetchResponse(redirect_url);
+  ASSERT_TRUE(resp);
+  EXPECT_EQ(*resp->TakeBody(), kHTMLBody);
+
+  network::mojom::URLResponseHeadPtr head = resp->TakeHead();
+  EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
 }

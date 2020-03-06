@@ -414,6 +414,11 @@
   *** build() return null;
 }
 
+# Protobuf java lite runtime uses reflection
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+  <fields>;
+}
+
 ################################################################################
 # ../../third_party/android_deps/androidx_mediarouter.flags
 ################################################################################

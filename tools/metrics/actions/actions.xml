@@ -18821,6 +18821,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings_A11y_ShelfNavigationButtonsLearnMoreClicked">
+  <owner>gzadina@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Learn more&quot; link for the setting to show
+    shelf navigation buttons when in tablet mode. The setting is part of
+    accessibility settings in Chrome OS settings page.
+  </description>
+</action>
+
 <action name="SettingsAppMonitor.AppFocused">
   <owner>grt@chromium.org</owner>
   <description>The Windows Settings app became focused.</description>

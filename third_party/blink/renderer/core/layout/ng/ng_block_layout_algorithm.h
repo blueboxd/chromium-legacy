@@ -76,6 +76,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NOINLINE scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier(
       const NGEarlyBreak&);
 
+  NOINLINE scoped_refptr<const NGLayoutResult>
+  RelayoutNoForcedTruncateForLineClamp();
+
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
 
@@ -387,7 +390,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   NGExclusionSpace exclusion_space_;
 
-  int lines_until_clamp_ = 0;
+  // If set, this is the number of lines until a clamp. A value of 1 indicates
+  // the current line should be clamped. This may go negative.
+  base::Optional<int> lines_until_clamp_;
+
+  // If true, truncation is forced at the clamped line regardless of whether
+  // there is more text.
+  bool force_truncate_at_line_clamp_ = true;
 
   // If set, one of the lines was clamped and this is the intrinsic size at the
   // time of the clamp.

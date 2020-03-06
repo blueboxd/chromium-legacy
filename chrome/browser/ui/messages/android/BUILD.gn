@@ -18,6 +18,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarControlLayout.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarMessageView.java",
+    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBarUiItem.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/Snackbar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarManager.java",
@@ -29,6 +30,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java",
+    "//components/infobars/core:infobar_enums_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_appcompat_v7_java",
     "//ui/android:ui_full_java",

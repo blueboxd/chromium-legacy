@@ -599,12 +599,6 @@ const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
 
-const char kEnableHistoryFaviconsGoogleServerQueryName[] =
-    "Enable History Favicons Google Server Query";
-const char kEnableHistoryFaviconsGoogleServerQueryDescription[] =
-    "Allow retrieving favicons of non-local entries in the history WebUIs and "
-    "the recent tabs menu using a Google server instead of Sync.";
-
 const char kEnableImplicitRootScrollerName[] = "Implicit Root Scroller";
 const char kEnableImplicitRootScrollerDescription[] =
     "Enables implicitly choosing which scroller on a page is the 'root "

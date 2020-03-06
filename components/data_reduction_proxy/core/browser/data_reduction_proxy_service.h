@@ -150,6 +150,9 @@ class DataReductionProxyService
   // Sends the given |headers| to |DataReductionProxySettings|.
   void UpdateProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
+  // Sends the given |prefetch_proxies| to |DataReductionProxySettings|.
+  void UpdatePrefetchProxyHosts(const std::vector<GURL>& prefetch_proxies);
+
   // Adds a config client that can be used to update Data Reduction Proxy
   // settings.
   void AddCustomProxyConfigClient(

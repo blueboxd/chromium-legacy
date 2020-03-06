@@ -94,7 +94,7 @@ AccessibilityTest.define('SettingsA11yPasswords', {
     'Accessible with 10 passwords': function() {
       const fakePasswords = [];
       for (let i = 0; i < 10; i++) {
-        fakePasswords.push(FakeDataMaker.passwordEntry());
+        fakePasswords.push(autofill_test_util.createPasswordEntry());
       }
       // Set list of passwords.
       this.passwordManager.lastCallback.addSavedPasswordListChangedListener(

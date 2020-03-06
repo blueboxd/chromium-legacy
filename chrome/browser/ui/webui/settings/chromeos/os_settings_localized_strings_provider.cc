@@ -339,6 +339,9 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showTabletModeShelfNavigationButtonsSettings",
       ash::features::IsHideShelfControlsInTabletModeEnabled());
 
+  html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
+                         chrome::kTabletModeGesturesLearnMoreURL);
+
   html_source->AddBoolean("enableLiveCaption",
                           base::FeatureList::IsEnabled(media::kLiveCaption));
 

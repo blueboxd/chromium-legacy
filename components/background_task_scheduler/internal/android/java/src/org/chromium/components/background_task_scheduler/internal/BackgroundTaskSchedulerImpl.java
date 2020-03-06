@@ -207,6 +207,7 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
                     continue;
                 }
 
+                BackgroundTaskSchedulerUma.getInstance().reportTaskRescheduled();
                 backgroundTask.reschedule(context);
             }
         }

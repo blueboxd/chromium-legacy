@@ -403,6 +403,21 @@ def _get_properties_ranking_using_partition_rule(
             for i in range(len(properties_ranking))]))
 
 
+def _best_rank(prop, ranking_map):
+    """Return the best ranking value for the specified property.
+
+    This function collects ranking values for not only the property's real name
+    but also its aliases, and returns the best (lower is better) value.
+    If no ranking values for the property is available, this returns -1.
+    """
+    worst_rank = max(ranking_map.values()) + 1
+    best_rank = ranking_map.get(prop["name"].original, worst_rank)
+
+    for alias_name in prop.get("aliases", []):
+        best_rank = min(best_rank, ranking_map.get(alias_name, worst_rank))
+    return best_rank if best_rank != worst_rank else -1
+
+
 def _evaluate_rare_non_inherited_group(properties, properties_ranking,
                                        num_layers, partition_rule=None):
     """Re-evaluate the grouping of RareNonInherited groups based on each
@@ -431,21 +446,19 @@ def _evaluate_rare_non_inherited_group(properties, properties_ranking,
         properties_ranking, partition_rule)
 
     for property_ in properties:
-        if (property_["field_group"] is not None and
-                "*" in property_["field_group"]
-                and not property_["inherited"] and
-                property_["name"].original in properties_ranking):
+        rank = _best_rank(property_, properties_ranking)
+        if (property_["field_group"] is not None
+                and "*" in property_["field_group"]
+                and not property_["inherited"] and rank >= 0):
 
             assert property_["field_group"] == "*", \
                 "The property {}  will be automatically assigned a group, " \
                 "please put '*' as the field_group".format(property_['name'])
 
-            property_["field_group"] = "->".join(
-                layers_name[0:properties_ranking[property_["name"].original]])
-        elif property_["field_group"] is not None and \
-                "*" in property_["field_group"] and \
-                not property_["inherited"] and \
-                property_["name"].original not in properties_ranking:
+            property_["field_group"] = "->".join(layers_name[0:rank])
+        elif (property_["field_group"] is not None
+              and "*" in property_["field_group"]
+              and not property_["inherited"] and rank < 0):
             group_tree = property_["field_group"].split("->")[1:]
             group_tree = [layers_name[0], layers_name[0] + "-sub"] + group_tree
             property_["field_group"] = "->".join(group_tree)
@@ -481,16 +494,14 @@ def _evaluate_rare_inherit_group(properties, properties_ranking,
         properties_ranking, partition_rule)
 
     for property_ in properties:
-        if property_["field_group"] is not None and \
-                "*" in property_["field_group"] \
-                and property_["inherited"] and \
-                property_["name"].original in properties_ranking:
-            property_["field_group"] = "->".join(
-                layers_name[0:properties_ranking[property_["name"].original]])
-        elif property_["field_group"] is not None and \
-                "*" in property_["field_group"] \
-                and property_["inherited"] and \
-                property_["name"].original not in properties_ranking:
+        rank = _best_rank(property_, properties_ranking)
+        if (property_["field_group"] is not None
+                and "*" in property_["field_group"] and property_["inherited"]
+                and rank >= 0):
+            property_["field_group"] = "->".join(layers_name[0:rank])
+        elif (property_["field_group"] is not None
+              and "*" in property_["field_group"] and property_["inherited"]
+              and rank < 0):
             group_tree = property_["field_group"].split("->")[1:]
             group_tree = [layers_name[0], layers_name[0] + "-sub"] + group_tree
             property_["field_group"] = "->".join(group_tree)

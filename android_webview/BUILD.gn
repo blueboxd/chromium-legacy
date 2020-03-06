@@ -506,7 +506,7 @@ android_library("common_variations_java") {
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
     "//components/variations/android:variations_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
 }
 

@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace chromeos {
 
@@ -139,27 +140,48 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
 
   // Let's get the browser instance from the navigation handle.
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
+
+  // Proceed if the |web_contents| is embedded in another WebContents or if it
+  // is doing background work for another user facing WebContents.
+  if (web_contents->GetOutermostWebContents() != web_contents ||
+      web_contents->GetResponsibleWebContents() != web_contents) {
+    return PROCEED;
+  }
+
   Browser* browser = FindBrowserForWebContents(web_contents);
 
   if (!browser && proceed_if_no_browser)
     return PROCEED;
 
-  Browser::Type type = browser->type();
+  bool is_windowed = false;
+  if (browser) {
+    Browser::Type type = browser->type();
+    is_windowed = (type == Browser::Type::TYPE_APP_POPUP) ||
+                  (type == Browser::Type::TYPE_APP) ||
+                  (type == Browser::Type::TYPE_POPUP);
+  }
+
   web_app::WebAppTabHelperBase* web_app_helper =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents);
 
-  bool is_windowed = (type == Browser::Type::TYPE_APP_POPUP) ||
-                     (type == Browser::Type::TYPE_APP) ||
-                     (type == Browser::Type::TYPE_POPUP);
   bool is_app = web_app_helper && !web_app_helper->GetAppId().empty();
 
   base::TimeDelta time_limit = GetWebTimeLimit(browser_context);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
 
   if (!is_app) {
+    const GURL& url = navigation_handle()->GetURL();
+
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        url, net::registry_controlled_domains::PrivateRegistryFilter::
+                 INCLUDE_PRIVATE_REGISTRIES);
+
+    if (domain.empty())
+      domain = url.has_host() ? url.host() : url.spec();
+
     return NavigationThrottle::ThrottleCheckResult(
         CANCEL, net::ERR_BLOCKED_BY_CLIENT,
-        GetWebTimeLimitChromeErrorPage(time_limit, app_locale));
+        GetWebTimeLimitChromeErrorPage(domain, time_limit, app_locale));
   }
 
   // Don't throttle windowed applications. We show a notification and close

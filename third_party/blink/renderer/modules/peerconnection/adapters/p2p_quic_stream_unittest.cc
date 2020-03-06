@@ -83,12 +83,13 @@ class P2PQuicStreamTest : public testing::Test {
 
 TEST_F(P2PQuicStreamTest, StreamSendsFinAndCanNoLongerWrite) {
   InitializeStream();
-  EXPECT_CALL(session_, WritevData(kStreamId, 0u, 0u,
-                                   quic::StreamSendingState::FIN, false, _))
+  EXPECT_CALL(session_,
+              WritevData(kStreamId, 0u, 0u, quic::StreamSendingState::FIN,
+                         quic::NOT_RETRANSMISSION, _))
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_.ConsumeData(stream_->id(), 0u, 0u,
-                                    quic::StreamSendingState::FIN, false,
-                                    QuicheNullOpt);
+                                    quic::StreamSendingState::FIN,
+                                    quic::NOT_RETRANSMISSION, QuicheNullOpt);
       }));
 
   stream_->WriteData({}, /*fin=*/true);
@@ -122,11 +123,12 @@ TEST_F(P2PQuicStreamTest, StreamOnStreamFrameWithFin) {
 // it has written the FIN bit, then the stream will close.
 TEST_F(P2PQuicStreamTest, StreamClosedAfterSendingThenReceivingFin) {
   InitializeStream();
-  EXPECT_CALL(session_, WritevData(kStreamId, 0u, 0u, _, false, _))
+  EXPECT_CALL(session_,
+              WritevData(kStreamId, 0u, 0u, _, quic::NOT_RETRANSMISSION, _))
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_.ConsumeData(stream_->id(), 0u, 0u,
-                                    quic::StreamSendingState::FIN, false,
-                                    QuicheNullOpt);
+                                    quic::StreamSendingState::FIN,
+                                    quic::NOT_RETRANSMISSION, QuicheNullOpt);
       }));
 
   stream_->WriteData({}, /*fin=*/true);
@@ -148,12 +150,13 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingThenSendingFin) {
   stream_->OnStreamFrame(fin_frame);
   EXPECT_FALSE(stream_->IsClosedForTesting());
 
-  EXPECT_CALL(session_, WritevData(kStreamId, 0u, 0u,
-                                   quic::StreamSendingState::FIN, false, _))
+  EXPECT_CALL(session_,
+              WritevData(kStreamId, 0u, 0u, quic::StreamSendingState::FIN,
+                         quic::NOT_RETRANSMISSION, _))
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_.ConsumeData(stream_->id(), 0u, 0u,
-                                    quic::StreamSendingState::FIN, false,
-                                    QuicheNullOpt);
+                                    quic::StreamSendingState::FIN,
+                                    quic::NOT_RETRANSMISSION, QuicheNullOpt);
       }));
 
   stream_->WriteData({}, /*fin=*/true);
@@ -168,11 +171,11 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterWritingAndReceivingDataWithFin) {
   EXPECT_CALL(session_,
               WritevData(kStreamId,
                          /*write_length=*/base::size(kSomeData), _, _, _, _))
-      .WillOnce(
-          Invoke([this](quic::QuicStreamId id, size_t write_length,
-                        quic::QuicStreamOffset offset,
-                        quic::StreamSendingState state, bool is_retransmission,
-                        quiche::QuicheOptional<quic::EncryptionLevel> level) {
+      .WillOnce(Invoke(
+          [this](quic::QuicStreamId id, size_t write_length,
+                 quic::QuicStreamOffset offset, quic::StreamSendingState state,
+                 quic::TransmissionType type,
+                 quiche::QuicheOptional<quic::EncryptionLevel> level) {
             // WritevData does not pass the data. The data is saved to the
             // stream, so we must grab it before it's consumed, in order to
             // check that it's what was written.
@@ -236,11 +239,11 @@ TEST_F(P2PQuicStreamTest, StreamWritesData) {
   EXPECT_CALL(session_,
               WritevData(kStreamId,
                          /*write_length=*/base::size(kSomeData), _, _, _, _))
-      .WillOnce(
-          Invoke([this](quic::QuicStreamId id, size_t write_length,
-                        quic::QuicStreamOffset offset,
-                        quic::StreamSendingState state, bool is_retransmission,
-                        quiche::QuicheOptional<quic::EncryptionLevel> level) {
+      .WillOnce(Invoke(
+          [this](quic::QuicStreamId id, size_t write_length,
+                 quic::QuicStreamOffset offset, quic::StreamSendingState state,
+                 quic::TransmissionType type,
+                 quiche::QuicheOptional<quic::EncryptionLevel> level) {
             // quic::QuicSession::WritevData does not pass the data. The data is
             // saved to the stream, so we must grab it before it's consumed, in
             // order to check that it's what was written.
@@ -266,11 +269,11 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataWithFin) {
   EXPECT_CALL(session_,
               WritevData(kStreamId,
                          /*write_length=*/base::size(kSomeData), _, _, _, _))
-      .WillOnce(
-          Invoke([this](quic::QuicStreamId id, size_t write_length,
-                        quic::QuicStreamOffset offset,
-                        quic::StreamSendingState state, bool is_retransmission,
-                        quiche::QuicheOptional<quic::EncryptionLevel> level) {
+      .WillOnce(Invoke(
+          [this](quic::QuicStreamId id, size_t write_length,
+                 quic::QuicStreamOffset offset, quic::StreamSendingState state,
+                 quic::TransmissionType type,
+                 quiche::QuicheOptional<quic::EncryptionLevel> level) {
             // WritevData does not pass the data. The data is saved to the
             // stream, so we must grab it before it's consumed, in order to
             // check that it's what was written.
@@ -300,7 +303,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataAndNotConsumedByQuic) {
       .WillOnce(Invoke([](quic::QuicStreamId id, size_t write_length,
                           quic::QuicStreamOffset offset,
                           quic::StreamSendingState state,
-                          bool is_retransmission,
+                          quic::TransmissionType type,
                           quiche::QuicheOptional<quic::EncryptionLevel> level) {
         // We mock that the QUIC library is not consuming the data, meaning it's
         // being buffered. In this case, the OnWriteDataConsumed() callback
@@ -324,12 +327,12 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataAndPartiallyConsumedByQuic) {
   EXPECT_CALL(session_,
               WritevData(kStreamId,
                          /*write_length=*/base::size(kSomeData), _, _, _, _))
-      .WillOnce(
-          Invoke([&amount_consumed_by_quic](
-                     quic::QuicStreamId id, size_t write_length,
-                     quic::QuicStreamOffset offset,
-                     quic::StreamSendingState state, bool is_retransmission,
-                     quiche::QuicheOptional<quic::EncryptionLevel> level) {
+      .WillOnce(Invoke(
+          [&amount_consumed_by_quic](
+              quic::QuicStreamId id, size_t write_length,
+              quic::QuicStreamOffset offset, quic::StreamSendingState state,
+              quic::TransmissionType type,
+              quiche::QuicheOptional<quic::EncryptionLevel> level) {
             // We mock that the QUIC library is only consuming some of the data,
             // meaning the rest is being buffered.
             return quic::QuicConsumedData(
@@ -511,7 +514,7 @@ TEST_F(P2PQuicStreamTest, UnsetDelegateDoesNotFireOnWriteDataConsumed) {
       .WillOnce(Invoke([](quic::QuicStreamId id, size_t write_length,
                           quic::QuicStreamOffset offset,
                           quic::StreamSendingState state,
-                          bool is_retransmission,
+                          quic::TransmissionType type,
                           quiche::QuicheOptional<quic::EncryptionLevel> level) {
         return quic::QuicConsumedData(
             write_length, state != quic::StreamSendingState::NO_FIN);

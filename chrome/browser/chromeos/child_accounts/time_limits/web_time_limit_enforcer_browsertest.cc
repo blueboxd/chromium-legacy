@@ -414,3 +414,4 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
 }
 
 // TODO(yilkal): Add WhitelistedSchemeNotBlocked test for  chrome://settings
+// TODO(yilkal): Add test for blocked web contents without browser window.

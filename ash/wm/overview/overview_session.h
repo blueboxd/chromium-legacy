@@ -326,7 +326,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                uint32_t metrics) override;
 
   // aura::WindowObserver:
-  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // ShelObserver:
@@ -343,11 +342,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnSplitViewDividerPositionChanged() override;
 
   OverviewDelegate* delegate() { return delegate_; }
-
-  void set_ignore_window_hierarchy_changes(
-      bool ignore_window_hierarchy_changes) {
-    ignore_window_hierarchy_changes_ = ignore_window_hierarchy_changes;
-  }
 
   bool is_shutting_down() const { return is_shutting_down_; }
   void set_is_shutting_down(bool is_shutting_down) {
@@ -430,10 +424,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // used to prevent handling the resulting expected activation. This is
   // initially true until this is initialized.
   bool ignore_activations_ = true;
-
-  // True when performing operations that may cause window hierarchy changes.
-  // Used to prevent handling the resulting expected window hierarchy change.
-  bool ignore_window_hierarchy_changes_ = false;
 
   // True when overview mode is exiting.
   bool is_shutting_down_ = false;

@@ -234,6 +234,8 @@ class CSSProperties(object):
                     alias['name'])
             aliased_property = self._properties_by_id[
                 id_for_css_property(alias['alias_for'])]
+            aliased_property.setdefault('aliases', [])
+            aliased_property['aliases'].append(alias['name'].original)
             updated_alias = aliased_property.copy()
             updated_alias['name'] = alias['name']
             updated_alias['alias_for'] = alias['alias_for']

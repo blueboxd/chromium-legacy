@@ -77,11 +77,14 @@ cr.define('settings_passwords_check', function() {
     // Test verifies that compromised credentials are displayed in a proper way
     test('testSomeCompromisedCredentials', function() {
       const leakedPasswords = [
-        FakeDataMaker.makeCompromisedCredentials('one.com', 'test4', 'LEAKED'),
-        FakeDataMaker.makeCompromisedCredentials('two.com', 'test3', 'PHISHED'),
+        autofill_test_util.makeCompromisedCredentials(
+            'one.com', 'test4', 'LEAKED'),
+        autofill_test_util.makeCompromisedCredentials(
+            'two.com', 'test3', 'PHISHED'),
       ];
-      const leakedPasswordsInfo = FakeDataMaker.makeCompromisedCredentialsInfo(
-          leakedPasswords, '5 min ago');
+      const leakedPasswordsInfo =
+          autofill_test_util.makeCompromisedCredentialsInfo(
+              leakedPasswords, '5 min ago');
       passwordManager.data.leakedCredentials = leakedPasswordsInfo;
       const checkPasswordSection = createCheckPasswordSection();
       return passwordManager.whenCalled('getCompromisedCredentialsInfo')

@@ -11,18 +11,18 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 
 /**
  * Layout that holds an infobar's contents and provides a background color and a top shadow.
  */
 class InfoBarWrapper extends FrameLayout {
-
-    private final InfoBarContainerLayout.Item mItem;
+    private final InfoBarUiItem mItem;
 
     /**
      * Constructor for inflating from Java.
      */
-    InfoBarWrapper(Context context, InfoBarContainerLayout.Item item) {
+    InfoBarWrapper(Context context, InfoBarUiItem item) {
         super(context);
         mItem = item;
         Resources res = context.getResources();
@@ -35,7 +35,7 @@ class InfoBarWrapper extends FrameLayout {
         setPadding(0, shadowHeight, 0, 0);
     }
 
-    InfoBarContainerLayout.Item getItem() {
+    InfoBarUiItem getItem() {
         return mItem;
     }
 

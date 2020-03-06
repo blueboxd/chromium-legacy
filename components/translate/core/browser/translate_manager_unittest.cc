@@ -364,7 +364,8 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
   TranslateAcceptLanguages accept_languages(&prefs_, accept_languages_prefs);
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
       .WillByDefault(Return(&accept_languages));
-  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
+  ON_CALL(mock_translate_client_,
+          ShowTranslateUI(_, _, _, _, false /* triggered_from_menu */))
       .WillByDefault(Return(true));
 
   translate_manager_ = std::make_unique<translate::TranslateManager>(
@@ -400,7 +401,8 @@ TEST_F(TranslateManagerTest,
   TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
       .WillByDefault(Return(&accept_langugages));
-  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
+  ON_CALL(mock_translate_client_,
+          ShowTranslateUI(_, _, _, _, false /* triggered_from_menu */))
       .WillByDefault(Return(true));
 
   translate_manager_ = std::make_unique<translate::TranslateManager>(
@@ -1042,6 +1044,34 @@ TEST_F(TranslateManagerTest, PredefinedTargetLanguage_HonourUserSettings) {
       ElementsAre(Bucket(metrics::INITIATION_STATUS_DISABLED_BY_CONFIG, 1),
                   Bucket(metrics::INITIATION_STATUS_AUTO_BY_CONFIG, 1),
                   Bucket(metrics::INITIATION_STATUS_SHOW_ICON, 1)));
+}
+
+TEST_F(TranslateManagerTest, InitiateManualTranslation) {
+  manager_->set_application_locale("en");
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("de", 1.0),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+  EXPECT_CALL(mock_translate_client_,
+              ShowTranslateUI(_, _, _, _, true /* triggered_from_menu */))
+      .WillOnce(Return(true));
+
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_);
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("de", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateManualTranslation();
+
+  // InitiateManualTranslation should only ShowTranslateUI (not do translation).
+  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 }  // namespace testing

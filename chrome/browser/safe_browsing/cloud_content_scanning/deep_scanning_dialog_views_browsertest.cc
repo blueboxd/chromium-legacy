@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
@@ -362,8 +363,13 @@ INSTANTIATE_TEST_SUITE_P(
         /*response_delay*/
         testing::Values(kNoDelay, kSmallDelay, kNormalDelay)));
 
+#if defined(OS_MACOSX)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
 IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
-                       Test) {
+                       MAYBE_Test) {
   // Setup policies to enable deep scanning, its UI and the responses to be
   // simulated.
   SetDlpPolicy(CHECK_UPLOADS);

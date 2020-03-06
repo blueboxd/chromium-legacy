@@ -182,6 +182,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       is_resuming_(IsResumingLayout(params.break_token)),
       exclusion_space_(params.space.ExclusionSpace()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
+      force_truncate_at_line_clamp_(params.space.ForceTruncateAtLineClamp()),
       early_break_(params.early_break) {
   AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
   container_builder_.SetIsNewFormattingContext(
@@ -375,6 +376,11 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     DCHECK(!early_break_);
     DCHECK(result->GetEarlyBreak());
     return RelayoutAndBreakEarlier(*result->GetEarlyBreak());
+  } else if (UNLIKELY(result->Status() ==
+                      NGLayoutResult::
+                          kNeedsRelayoutWithNoForcedTruncateAtLineClamp)) {
+    DCHECK(force_truncate_at_line_clamp_);
+    return RelayoutNoForcedTruncateForLineClamp();
   }
   return result;
 }
@@ -416,6 +422,19 @@ NGBlockLayoutAlgorithm::RelayoutAndBreakEarlier(
   // found in this pass.
   new_builder.PropagateSpaceShortage(container_builder_.MinimalSpaceShortage());
   return algorithm_with_break.Layout();
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGBlockLayoutAlgorithm::RelayoutNoForcedTruncateForLineClamp() {
+  NGLayoutAlgorithmParams params(Node(),
+                                 container_builder_.InitialFragmentGeometry(),
+                                 ConstraintSpace(), BreakToken(), nullptr);
+  NGBlockLayoutAlgorithm algorithm_with_forced_truncate(params);
+  algorithm_with_forced_truncate.force_truncate_at_line_clamp_ = false;
+  NGBoxFragmentBuilder& new_builder =
+      algorithm_with_forced_truncate.container_builder_;
+  new_builder.SetBoxType(container_builder_.BoxType());
+  return algorithm_with_forced_truncate.Layout();
 }
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
@@ -650,6 +669,18 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         has_processed_first_child_ = true;
       }
     }
+  }
+
+  if (UNLIKELY(ConstraintSpace().IsNewFormattingContext() &&
+               force_truncate_at_line_clamp_ &&
+               intrinsic_block_size_when_clamped_ && lines_until_clamp_ == 0)) {
+    // Truncation of the last line was forced, but there are no lines after the
+    // truncated line. Rerun layout without forcing truncation. This is only
+    // done if line-clamp was specified on the element as the element containing
+    // the node may have subsequent lines. If there aren't, the containing
+    // element will relayout.
+    return container_builder_.Abort(
+        NGLayoutResult::kNeedsRelayoutWithNoForcedTruncateAtLineClamp);
   }
 
   if (child_iterator.IsAtEnd()) {
@@ -1825,15 +1856,16 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
   }
 
   // Update |lines_until_clamp_| from the LayoutResult.
-  if (lines_until_clamp_ > 0) {
+  if (lines_until_clamp_) {
     if (const auto* line_box =
             DynamicTo<NGPhysicalLineBoxFragment>(physical_fragment)) {
       if (!line_box->IsEmptyLineBox())
-        --lines_until_clamp_;
+        lines_until_clamp_ = *lines_until_clamp_ - 1;
     } else {
       lines_until_clamp_ = layout_result->LinesUntilClamp();
     }
-    if (lines_until_clamp_ == 0) {
+    if (lines_until_clamp_ <= 0 &&
+        !intrinsic_block_size_when_clamped_.has_value()) {
       // If line-clamping occurred save the intrinsic block-size, as this
       // becomes the final intrinsic block-size.
       intrinsic_block_size_when_clamped_ =
@@ -2440,6 +2472,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
           container_builder_.AdjoiningObjectTypes());
     }
     builder.SetLinesUntilClamp(lines_until_clamp_);
+    builder.SetForceTruncateAtLineClamp(force_truncate_at_line_clamp_);
   } else if (child_data.is_resuming_after_break) {
     // If the child is being resumed after a break, margins inside the child may
     // be adjoining with the fragmentainer boundary, regardless of whether the

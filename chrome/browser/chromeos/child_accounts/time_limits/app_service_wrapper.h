@@ -117,6 +117,10 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // It does not make sense to call it for other apps.
   std::string GetAppServiceId(const AppId& app_id) const;
 
+  // Returns AppId from |app_service_id| and |app_type|.
+  AppId AppIdFromAppServiceId(const std::string& app_service_id,
+                              apps::mojom::AppType app_type) const;
+
   void AddObserver(EventListener* observer);
   void RemoveObserver(EventListener* observer);
 

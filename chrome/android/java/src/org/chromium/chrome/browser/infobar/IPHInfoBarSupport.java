@@ -11,7 +11,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
-import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 
@@ -105,7 +105,7 @@ public class IPHInfoBarSupport implements OnDismissListener,
     // warning for a field guaranteed to be non-null being checked for null equality needs to be
     // suppressed.
     @Override
-    public void notifyAllAnimationsFinished(Item frontInfoBar) {
+    public void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar) {
         View view = frontInfoBar == null ? null : frontInfoBar.getView();
 
         if (mCurrentState != null) {

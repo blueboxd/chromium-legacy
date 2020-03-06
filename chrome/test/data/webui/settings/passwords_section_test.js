@@ -106,7 +106,7 @@ cr.define('settings_passwords_section', function() {
     /** @type {TestPasswordManagerProxy} */
     let passwordManager = null;
 
-    /** @type {PasswordSectionElementFactory} */
+    /** @type {autofill_test_util.PasswordSectionElementFactory} */
     let elementFactory = null;
 
     suiteSetup(function() {
@@ -118,7 +118,8 @@ cr.define('settings_passwords_section', function() {
       // Override the PasswordManagerImpl for testing.
       passwordManager = new TestPasswordManagerProxy();
       PasswordManagerImpl.instance_ = passwordManager;
-      elementFactory = new PasswordSectionElementFactory(document);
+      elementFactory =
+          new autofill_test_util.PasswordSectionElementFactory(document);
     });
 
     test('testPasswordsExtensionIndicator', function() {
@@ -148,12 +149,12 @@ cr.define('settings_passwords_section', function() {
 
     test('verifySavedPasswordLength', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('site1.com', 'luigi', 1),
-        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7),
-        FakeDataMaker.passwordEntry('site2.com', 'mario', 70),
-        FakeDataMaker.passwordEntry('site1.com', 'peach', 11),
-        FakeDataMaker.passwordEntry('google.com', 'mario', 7),
-        FakeDataMaker.passwordEntry('site2.com', 'luigi', 8),
+        autofill_test_util.createPasswordEntry('site1.com', 'luigi', 1),
+        autofill_test_util.createPasswordEntry('longwebsite.com', 'peach', 7),
+        autofill_test_util.createPasswordEntry('site2.com', 'mario', 70),
+        autofill_test_util.createPasswordEntry('site1.com', 'peach', 11),
+        autofill_test_util.createPasswordEntry('google.com', 'mario', 7),
+        autofill_test_util.createPasswordEntry('site2.com', 'luigi', 8),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -174,9 +175,11 @@ cr.define('settings_passwords_section', function() {
     // Test verifies that removing a password will update the elements.
     test('verifyPasswordListRemove', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
-        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
-        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2)
+        autofill_test_util.createPasswordEntry(
+            'anotherwebsite.com', 'luigi', 1, 0),
+        autofill_test_util.createPasswordEntry(
+            'longwebsite.com', 'peach', 7, 1),
+        autofill_test_util.createPasswordEntry('website.com', 'mario', 70, 2)
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -200,8 +203,10 @@ cr.define('settings_passwords_section', function() {
     // Test verifies that adding a password will update the elements.
     test('verifyPasswordListAdd', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
-        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
+        autofill_test_util.createPasswordEntry(
+            'anotherwebsite.com', 'luigi', 1, 0),
+        autofill_test_util.createPasswordEntry(
+            'longwebsite.com', 'peach', 7, 1),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -209,8 +214,8 @@ cr.define('settings_passwords_section', function() {
 
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
       // Simulate 'website.com' being added to the list.
-      passwordList.unshift(
-          FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2));
+      passwordList.unshift(autofill_test_util.createPasswordEntry(
+          'website.com', 'mario', 70, 2));
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
@@ -226,8 +231,8 @@ cr.define('settings_passwords_section', function() {
 
       // Set-up initial list.
       let passwordList = [
-        FakeDataMaker.passwordEntry('website.com', 'mario', 1, 0),
-        FakeDataMaker.passwordEntry('website.com', 'luigi', 7, 1)
+        autofill_test_util.createPasswordEntry('website.com', 'mario', 1, 0),
+        autofill_test_util.createPasswordEntry('website.com', 'luigi', 7, 1)
       ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -254,12 +259,12 @@ cr.define('settings_passwords_section', function() {
     // event. Does not actually remove any passwords.
     test('verifyPasswordItemRemoveButton', function(done) {
       const passwordList = [
-        FakeDataMaker.passwordEntry('one', 'six', 5),
-        FakeDataMaker.passwordEntry('two', 'five', 3),
-        FakeDataMaker.passwordEntry('three', 'four', 1),
-        FakeDataMaker.passwordEntry('four', 'three', 2),
-        FakeDataMaker.passwordEntry('five', 'two', 4),
-        FakeDataMaker.passwordEntry('six', 'one', 6),
+        autofill_test_util.createPasswordEntry('one', 'six', 5),
+        autofill_test_util.createPasswordEntry('two', 'five', 3),
+        autofill_test_util.createPasswordEntry('three', 'four', 1),
+        autofill_test_util.createPasswordEntry('four', 'three', 2),
+        autofill_test_util.createPasswordEntry('five', 'two', 4),
+        autofill_test_util.createPasswordEntry('six', 'one', 6),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -288,7 +293,7 @@ cr.define('settings_passwords_section', function() {
     // (passwordless) credentials. Does not test Copy button.
     test('verifyCopyAbsentForFederatedPasswordInMenu', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('one.com', 'hey', 0),
+        autofill_test_util.createPasswordEntry('one.com', 'hey', 0),
       ];
       passwordList[0].federationText = 'with chromium.org';
 
@@ -304,7 +309,7 @@ cr.define('settings_passwords_section', function() {
     // credentials. Does not test Copy button.
     test('verifyCopyPresentInMenu', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('one.com', 'hey', 5),
+        autofill_test_util.createPasswordEntry('one.com', 'hey', 5),
       ];
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
@@ -316,12 +321,12 @@ cr.define('settings_passwords_section', function() {
 
     test('verifyFilterPasswords', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3),
-        FakeDataMaker.passwordEntry('three.com/show', 'four', 1),
-        FakeDataMaker.passwordEntry('four.com', 'three', 2),
-        FakeDataMaker.passwordEntry('five.com', 'two', 4),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
+        autofill_test_util.createPasswordEntry('one.com', 'SHOW', 5),
+        autofill_test_util.createPasswordEntry('two.com', 'shower', 3),
+        autofill_test_util.createPasswordEntry('three.com/show', 'four', 1),
+        autofill_test_util.createPasswordEntry('four.com', 'three', 2),
+        autofill_test_util.createPasswordEntry('five.com', 'two', 4),
+        autofill_test_util.createPasswordEntry('six-show.com', 'one', 6),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -330,10 +335,10 @@ cr.define('settings_passwords_section', function() {
       Polymer.dom.flush();
 
       const expectedList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3),
-        FakeDataMaker.passwordEntry('three.com/show', 'four', 1),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6),
+        autofill_test_util.createPasswordEntry('one.com', 'SHOW', 5),
+        autofill_test_util.createPasswordEntry('two.com', 'shower', 3),
+        autofill_test_util.createPasswordEntry('three.com/show', 'four', 1),
+        autofill_test_util.createPasswordEntry('six-show.com', 'one', 6),
       ];
 
       validatePasswordList(passwordsSection.$.passwordList, expectedList);
@@ -341,12 +346,12 @@ cr.define('settings_passwords_section', function() {
 
     test('verifyFilterPasswordsWithRemoval', function() {
       const passwordList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
-        FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
-        FakeDataMaker.passwordEntry('four.com', 'three', 2, 3),
-        FakeDataMaker.passwordEntry('five.com', 'two', 4, 4),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
+        autofill_test_util.createPasswordEntry('one.com', 'SHOW', 5, 0),
+        autofill_test_util.createPasswordEntry('two.com', 'shower', 3, 1),
+        autofill_test_util.createPasswordEntry('three.com/show', 'four', 1, 2),
+        autofill_test_util.createPasswordEntry('four.com', 'three', 2, 3),
+        autofill_test_util.createPasswordEntry('five.com', 'two', 4, 4),
+        autofill_test_util.createPasswordEntry('six-show.com', 'one', 6, 5),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -355,10 +360,10 @@ cr.define('settings_passwords_section', function() {
       Polymer.dom.flush();
 
       let expectedList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
-        FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
+        autofill_test_util.createPasswordEntry('one.com', 'SHOW', 5, 0),
+        autofill_test_util.createPasswordEntry('two.com', 'shower', 3, 1),
+        autofill_test_util.createPasswordEntry('three.com/show', 'four', 1, 2),
+        autofill_test_util.createPasswordEntry('six-show.com', 'one', 6, 5),
       ];
 
       validatePasswordList(passwordsSection.$.passwordList, expectedList);
@@ -367,9 +372,9 @@ cr.define('settings_passwords_section', function() {
       passwordList.splice(2, 1);
 
       expectedList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
+        autofill_test_util.createPasswordEntry('one.com', 'SHOW', 5, 0),
+        autofill_test_util.createPasswordEntry('two.com', 'shower', 3, 1),
+        autofill_test_util.createPasswordEntry('six-show.com', 'one', 6, 5),
       ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -380,12 +385,12 @@ cr.define('settings_passwords_section', function() {
 
     test('verifyFilterPasswordExceptions', function() {
       const exceptionList = [
-        FakeDataMaker.exceptionEntry('docsshoW.google.com'),
-        FakeDataMaker.exceptionEntry('showmail.com'),
-        FakeDataMaker.exceptionEntry('google.com'),
-        FakeDataMaker.exceptionEntry('inbox.google.com'),
-        FakeDataMaker.exceptionEntry('mapsshow.google.com'),
-        FakeDataMaker.exceptionEntry('plus.google.comshow'),
+        autofill_test_util.createExceptionEntry('docsshoW.google.com'),
+        autofill_test_util.createExceptionEntry('showmail.com'),
+        autofill_test_util.createExceptionEntry('google.com'),
+        autofill_test_util.createExceptionEntry('inbox.google.com'),
+        autofill_test_util.createExceptionEntry('mapsshow.google.com'),
+        autofill_test_util.createExceptionEntry('plus.google.comshow'),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -394,10 +399,10 @@ cr.define('settings_passwords_section', function() {
       Polymer.dom.flush();
 
       const expectedExceptionList = [
-        FakeDataMaker.exceptionEntry('docsshoW.google.com'),
-        FakeDataMaker.exceptionEntry('showmail.com'),
-        FakeDataMaker.exceptionEntry('mapsshow.google.com'),
-        FakeDataMaker.exceptionEntry('plus.google.comshow'),
+        autofill_test_util.createExceptionEntry('docsshoW.google.com'),
+        autofill_test_util.createExceptionEntry('showmail.com'),
+        autofill_test_util.createExceptionEntry('mapsshow.google.com'),
+        autofill_test_util.createExceptionEntry('plus.google.comshow'),
       ];
 
       validateExceptionList(
@@ -417,12 +422,12 @@ cr.define('settings_passwords_section', function() {
 
     test('verifyPasswordExceptions', function() {
       const exceptionList = [
-        FakeDataMaker.exceptionEntry('docs.google.com'),
-        FakeDataMaker.exceptionEntry('mail.com'),
-        FakeDataMaker.exceptionEntry('google.com'),
-        FakeDataMaker.exceptionEntry('inbox.google.com'),
-        FakeDataMaker.exceptionEntry('maps.google.com'),
-        FakeDataMaker.exceptionEntry('plus.google.com'),
+        autofill_test_util.createExceptionEntry('docs.google.com'),
+        autofill_test_util.createExceptionEntry('mail.com'),
+        autofill_test_util.createExceptionEntry('google.com'),
+        autofill_test_util.createExceptionEntry('inbox.google.com'),
+        autofill_test_util.createExceptionEntry('maps.google.com'),
+        autofill_test_util.createExceptionEntry('plus.google.com'),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -438,12 +443,12 @@ cr.define('settings_passwords_section', function() {
     // Test verifies that removing an exception will update the elements.
     test('verifyPasswordExceptionRemove', function() {
       const exceptionList = [
-        FakeDataMaker.exceptionEntry('docs.google.com'),
-        FakeDataMaker.exceptionEntry('mail.com'),
-        FakeDataMaker.exceptionEntry('google.com'),
-        FakeDataMaker.exceptionEntry('inbox.google.com'),
-        FakeDataMaker.exceptionEntry('maps.google.com'),
-        FakeDataMaker.exceptionEntry('plus.google.com'),
+        autofill_test_util.createExceptionEntry('docs.google.com'),
+        autofill_test_util.createExceptionEntry('mail.com'),
+        autofill_test_util.createExceptionEntry('google.com'),
+        autofill_test_util.createExceptionEntry('inbox.google.com'),
+        autofill_test_util.createExceptionEntry('maps.google.com'),
+        autofill_test_util.createExceptionEntry('plus.google.com'),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -469,12 +474,12 @@ cr.define('settings_passwords_section', function() {
     // event. Does not actually remove any exceptions.
     test('verifyPasswordExceptionRemoveButton', function(done) {
       const exceptionList = [
-        FakeDataMaker.exceptionEntry('docs.google.com'),
-        FakeDataMaker.exceptionEntry('mail.com'),
-        FakeDataMaker.exceptionEntry('google.com'),
-        FakeDataMaker.exceptionEntry('inbox.google.com'),
-        FakeDataMaker.exceptionEntry('maps.google.com'),
-        FakeDataMaker.exceptionEntry('plus.google.com'),
+        autofill_test_util.createExceptionEntry('docs.google.com'),
+        autofill_test_util.createExceptionEntry('mail.com'),
+        autofill_test_util.createExceptionEntry('google.com'),
+        autofill_test_util.createExceptionEntry('inbox.google.com'),
+        autofill_test_util.createExceptionEntry('maps.google.com'),
+        autofill_test_util.createExceptionEntry('plus.google.com'),
       ];
 
       const passwordsSection = elementFactory.createPasswordsSection(
@@ -510,7 +515,7 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('verifyFederatedPassword', function() {
-      const item = FakeDataMaker.passwordEntry('goo.gl', 'bart', 0);
+      const item = autofill_test_util.createPasswordEntry('goo.gl', 'bart', 0);
       item.federationText = 'with chromium.org';
       const passwordDialog = elementFactory.createPasswordEditDialog(item);
 
@@ -524,8 +529,8 @@ cr.define('settings_passwords_section', function() {
 
     test('showSavedPasswordEditDialog', function() {
       const PASSWORD = 'bAn@n@5';
-      const item =
-          FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
+      const item = autofill_test_util.createPasswordEntry(
+          'goo.gl', 'bart', PASSWORD.length);
       const passwordDialog = elementFactory.createPasswordEditDialog(item);
 
       assertFalse(passwordDialog.$.showPasswordButton.hidden);
@@ -541,8 +546,8 @@ cr.define('settings_passwords_section', function() {
 
     test('showSavedPasswordListItem', function() {
       const PASSWORD = 'bAn@n@5';
-      const item =
-          FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
+      const item = autofill_test_util.createPasswordEntry(
+          'goo.gl', 'bart', PASSWORD.length);
       const passwordListItem = elementFactory.createPasswordListItem(item);
       // Hidden passwords should be disabled.
       assertTrue(passwordListItem.$$('#password').disabled);
@@ -564,7 +569,8 @@ cr.define('settings_passwords_section', function() {
     // Tests that invoking the plaintext password sets the corresponding
     // password.
     test('onShowSavedPasswordEditDialog', function() {
-      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
+      const expectedItem =
+          autofill_test_util.createPasswordEntry('goo.gl', 'bart', 8, 1);
       const passwordDialog =
           elementFactory.createPasswordEditDialog(expectedItem);
       assertEquals('', passwordDialog.item.password);
@@ -580,7 +586,8 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('onShowSavedPasswordListItem', function() {
-      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
+      const expectedItem =
+          autofill_test_util.createPasswordEntry('goo.gl', 'bart', 8, 1);
       const passwordListItem =
           elementFactory.createPasswordListItem(expectedItem);
       assertEquals('', passwordListItem.item.password);
@@ -596,7 +603,8 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('onCopyPasswordListItem', function() {
-      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
+      const expectedItem =
+          autofill_test_util.createPasswordEntry('goo.gl', 'bart', 8, 1);
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [expectedItem], []);
 
@@ -611,7 +619,8 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('closingPasswordsSectionHidesUndoToast', function(done) {
-      const passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
+      const passwordEntry =
+          autofill_test_util.createPasswordEntry('goo.gl', 'bart', 1);
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [passwordEntry], []);
       const toastManager = cr.toastManager.getToastManager();
@@ -633,7 +642,7 @@ cr.define('settings_passwords_section', function() {
     // Chrome offers the export option when there are passwords.
     test('offerExportWhenPasswords', function(done) {
       const passwordList = [
-        FakeDataMaker.passwordEntry('googoo.com', 'Larry', 1),
+        autofill_test_util.createPasswordEntry('googoo.com', 'Larry', 1),
       ];
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
@@ -659,7 +668,7 @@ cr.define('settings_passwords_section', function() {
     // dialog.
     test('exportOpen', function(done) {
       const passwordList = [
-        FakeDataMaker.passwordEntry('googoo.com', 'Larry', 1),
+        autofill_test_util.createPasswordEntry('googoo.com', 'Larry', 1),
       ];
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);

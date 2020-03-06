@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
@@ -315,7 +316,14 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
   auto request = std::make_unique<RTLookupRequest>();
   request->set_url(SanitizeURL(url).spec());
   request->set_lookup_type(RTLookupRequest::NAVIGATION);
-  // TODO(crbug.com/1017499): Set ChromeUserPopulation.
+
+  ChromeUserPopulation* user_population = request->mutable_population();
+  user_population->set_user_population(
+      IsEnhancedProtectionEnabled(*pref_service_)
+          ? ChromeUserPopulation::ENHANCED_PROTECTION
+          : IsExtendedReportingEnabled(*pref_service_)
+                ? ChromeUserPopulation::EXTENDED_REPORTING
+                : ChromeUserPopulation::SAFE_BROWSING);
   return request;
 }
 

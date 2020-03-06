@@ -26,6 +26,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class FilePath;
 class Time;
 class TimeDelta;
 }  // namespace base
@@ -265,6 +266,11 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     bool is_parallelizable,
     bool is_parallel_download_enabled,
     DownloadSource download_source);
+
+// Record a dangerous download accept event.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadAccept(
+    DownloadDangerType danger_type,
+    const base::FilePath& file_path);
 
 // Records various metrics at the start of a download resumption.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumption(

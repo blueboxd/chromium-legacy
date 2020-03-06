@@ -29,6 +29,7 @@
 #include "ash/wm/window_util.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -123,6 +124,65 @@ class AtScopeExitRunner {
   base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AtScopeExitRunner);
+};
+
+// Helps with handling the workflow where you drag an overview item from one
+// grid and drop into another grid. The challenge is that if the item represents
+// an ARC window, that window will be moved to the target root asynchronously.
+// |OverviewItemMoveHelper| observes the window until it moves to the target
+// root. Then |OverviewItemMoveHelper| self destructs and adds a new item to
+// represent the window on the target root.
+class OverviewItemMoveHelper : public aura::WindowObserver {
+ public:
+  // |target_item_bounds| is the bounds of the dragged overview item when the
+  // drag ends. |target_item_bounds| is used to put the new item where the old
+  // item ended, so it looks like it is the same item. Then the item is animated
+  // from there to its proper position in the grid.
+  OverviewItemMoveHelper(aura::Window* window,
+                         const gfx::RectF& target_item_bounds)
+      : window_(window), target_item_bounds_(target_item_bounds) {
+    window->AddObserver(this);
+  }
+  OverviewItemMoveHelper(const OverviewItemMoveHelper&) = delete;
+  OverviewItemMoveHelper& operator=(const OverviewItemMoveHelper&) = delete;
+  ~OverviewItemMoveHelper() override {
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (overview_controller->InOverviewSession()) {
+      overview_controller->overview_session()->PositionWindows(
+          /*animate=*/true);
+    }
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroyed(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    delete this;
+  }
+  void OnWindowAddedToRootWindow(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    window->RemoveObserver(this);
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (overview_controller->InOverviewSession()) {
+      OverviewGrid* target_grid =
+          overview_controller->overview_session()->GetGridWithRootWindow(
+              window->GetRootWindow());
+      // Add |window| to |target_grid| with reposition=false and restack=false,
+      // because soon we will handle both repositioning and restacking anyway.
+      target_grid->AddItemInMruOrder(window, /*reposition=*/false,
+                                     /*animate=*/false, /*restack=*/false);
+      OverviewItem* item = target_grid->GetOverviewItemContaining(window);
+      item->SetBounds(target_item_bounds_, OVERVIEW_ANIMATION_NONE);
+      item->set_should_restack_on_animation_end(true);
+      // The destructor will call |OverviewSession::PositionWindows|.
+    }
+    delete this;
+  }
+
+ private:
+  aura::Window* const window_;
+  const gfx::RectF target_item_bounds_;
 };
 
 }  // namespace
@@ -581,36 +641,25 @@ OverviewWindowDragController::CompleteNormalDrag(
       target_root != item_->root_window()) {
     // Get the window and bounds from |item_| before removing it from its grid.
     aura::Window* window = item_->GetWindow();
-    const gfx::RectF bounds = item_->target_bounds();
-    // Remove |item_| from its grid, with reposition=false because soon we will
-    // call |OverviewSession::PositionWindows| anyway.
+    const gfx::RectF target_item_bounds = item_->target_bounds();
+    // Remove |item_| from its grid. Leave the repositioning to the
+    // |OverviewItemMoveHelper|.
     item_->overview_grid()->RemoveItem(item_, /*item_destroying=*/false,
                                        /*reposition=*/false);
     item_ = nullptr;
-    // Use |OverviewSession::set_ignore_window_hierarchy_changes| to prevent
-    // |OverviewSession::OnWindowHierarchyChanged| from ending overview as we
-    // move |window| to |target_root|.
-    overview_session_->set_ignore_window_hierarchy_changes(true);
+    // The |OverviewItemMoveHelper| will self destruct when we move |window| to
+    // |target_root|.
+    new OverviewItemMoveHelper(window, target_item_bounds);
+    // Move |window| to |target_root|. The |OverviewItemMoveHelper| will take
+    // care of the rest.
     window_util::MoveWindowToDisplay(window,
                                      display::Screen::GetScreen()
                                          ->GetDisplayNearestWindow(target_root)
                                          .id());
-    overview_session_->set_ignore_window_hierarchy_changes(false);
-
-    OverviewGrid* target_grid =
-        overview_session_->GetGridWithRootWindow(target_root);
-    // Add |window| to |target_grid| with reposition=false and restack=false,
-    // because soon we will handle both repositioning and restacking anyway.
-    target_grid->AddItemInMruOrder(window, /*reposition=*/false,
-                                   /*animate=*/false, /*restack=*/false);
-    item_ = target_grid->GetOverviewItemContaining(window);
-    // Put the new item where the old item ended, so it looks like it is the
-    // same item. The following call to |OverviewSession::PositionWindows| will
-    // animate it from there.
-    item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  } else {
+    item_->set_should_restack_on_animation_end(true);
+    overview_session_->PositionWindows(/*animate=*/true);
   }
-  item_->set_should_restack_on_animation_end(true);
-  overview_session_->PositionWindows(/*animate=*/true);
   return DragResult::kDropIntoOverview;
 }
 

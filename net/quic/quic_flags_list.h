@@ -388,3 +388,13 @@ QUIC_FLAG(bool,
 // If true, QuicSession::WritevData() will support writing data at a specified
 // encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_writevdata_at_level, false)
+
+// If true, use standard deviation when calculating PTO timeout.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_standard_deviation_for_pto,
+          false)
+
+// If true, QUIC BBRv2 to avoid unnecessary PROBE_RTTs after quiescence.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_avoid_unnecessary_probe_rtt,
+          false)

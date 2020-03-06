@@ -13,9 +13,19 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/safe_browsing/buildflags.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_util.h"
+
+// TODO(crbug/1056278): Launch this on Fuchsia. We should also consider serving
+// an empty FileTypePolicies to platforms without Safe Browsing to remove the
+// BUILDFLAGs and nogncheck here.
+#if (BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)) && \
+    !defined(OS_FUCHSIA)
+#include "components/safe_browsing/core/file_type_policies.h"  // nogncheck
+#endif
 
 namespace download {
 
@@ -229,6 +239,23 @@ void RecordAutoResumeCountLimitReached(DownloadInterruptReason reason) {
       base::CustomHistogram::ArrayToCustomEnumRanges(kAllInterruptReasonCodes);
   UMA_HISTOGRAM_CUSTOM_ENUMERATION(
       "Download.Resume.AutoResumeLimitReached.LastReason", reason, samples);
+}
+
+void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
+                                   const base::FilePath& file_path) {
+  UMA_HISTOGRAM_ENUMERATION("Download.UserValidatedDangerousDownload",
+                            danger_type, DOWNLOAD_DANGER_TYPE_MAX);
+#if (BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)) && \
+    !defined(OS_FUCHSIA)
+  // This can only be recorded for certain platforms, since the enum used for
+  // file types is provided by safe_browsing::FileTypePolicies.
+  if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+    base::UmaHistogramSparse(
+        "Download.DangerousFile.DownloadValidatedByType",
+        safe_browsing::FileTypePolicies::GetInstance()->UmaValueForFile(
+            file_path));
+  }
+#endif
 }
 
 namespace {

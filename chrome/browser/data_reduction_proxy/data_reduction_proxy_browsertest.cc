@@ -160,6 +160,24 @@ class ScopedConfigWaiter
   base::RunLoop run_loop_;
 };
 
+class TestSettingsObserver : public DataReductionProxySettingsObserver {
+ public:
+  TestSettingsObserver() = default;
+  ~TestSettingsObserver() = default;
+
+  void OnPrefetchProxyHostsChanged(
+      const std::vector<GURL>& prefetch_proxies) override {
+    prefetch_proxies_ = prefetch_proxies;
+  }
+
+  const std::vector<GURL>& prefetch_proxies() const {
+    return prefetch_proxies_;
+  }
+
+ private:
+  std::vector<GURL> prefetch_proxies_;
+};
+
 }  // namespace
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -401,6 +419,116 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UpdateConfig) {
       GetURLWithMockHost(original_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(GetBody(), kSecondaryResponse);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       UpdatePrefetchProxyConfig) {
+  TestSettingsObserver observer;
+  DataReductionProxySettings* settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser()->profile());
+  settings->AddDataReductionProxySettingsObserver(&observer);
+
+  net::EmbeddedTestServer original_server;
+  original_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(original_server.Start());
+
+  ClientConfig config = CreateConfigForServer(original_server);
+
+  PrefetchProxyConfig_Proxy* valid_secure_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  valid_secure_proxy->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  valid_secure_proxy->set_host("prefetch-proxy.com");
+  valid_secure_proxy->set_port(443);
+  valid_secure_proxy->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTPS);
+
+  PrefetchProxyConfig_Proxy* non_connect_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  non_connect_proxy->set_type(PrefetchProxyConfig_Proxy_Type_UNSPECIFIED_TYPE);
+  non_connect_proxy->set_host("prefetch-proxy.com");
+  non_connect_proxy->set_port(443);
+  non_connect_proxy->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTPS);
+
+  PrefetchProxyConfig_Proxy* unknown_scheme_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  unknown_scheme_proxy->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  unknown_scheme_proxy->set_host("prefetch-proxy.com");
+  unknown_scheme_proxy->set_port(443);
+  unknown_scheme_proxy->set_scheme(
+      PrefetchProxyConfig_Proxy_Scheme_UNSPECIFIED_SCHEME);
+
+  PrefetchProxyConfig_Proxy* invalid_host =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  invalid_host->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  invalid_host->set_host(std::string());
+  invalid_host->set_port(443);
+  invalid_host->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTPS);
+
+  PrefetchProxyConfig_Proxy* insecure_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  insecure_proxy->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  insecure_proxy->set_host("insecure-prefetch-proxy.com");
+  insecure_proxy->set_port(80);
+  insecure_proxy->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTP);
+
+  SetConfig(config);
+
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  std::vector<GURL> want_hosts = {
+      GURL("https://prefetch-proxy.com:443/"),
+  };
+  EXPECT_EQ(want_hosts, settings->GetPrefetchProxies());
+  EXPECT_EQ(want_hosts, observer.prefetch_proxies());
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       UpdatePrefetchProxyConfig_Insecure) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "allow-insecure-prefetch-proxy-for-testing");
+
+  TestSettingsObserver observer;
+  DataReductionProxySettings* settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser()->profile());
+  settings->AddDataReductionProxySettingsObserver(&observer);
+
+  net::EmbeddedTestServer original_server;
+  original_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(original_server.Start());
+
+  ClientConfig config = CreateConfigForServer(original_server);
+
+  PrefetchProxyConfig_Proxy* valid_secure_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  valid_secure_proxy->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  valid_secure_proxy->set_host("prefetch-proxy.com");
+  valid_secure_proxy->set_port(443);
+  valid_secure_proxy->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTPS);
+
+  PrefetchProxyConfig_Proxy* valid_insecure_proxy =
+      config.mutable_prefetch_proxy_config()->add_proxy_list();
+  valid_insecure_proxy->set_type(PrefetchProxyConfig_Proxy_Type_CONNECT);
+  valid_insecure_proxy->set_host("insecure-prefetch-proxy.com");
+  valid_insecure_proxy->set_port(80);
+  valid_insecure_proxy->set_scheme(PrefetchProxyConfig_Proxy_Scheme_HTTP);
+
+  SetConfig(config);
+
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  std::vector<GURL> want_hosts = {
+      GURL("https://prefetch-proxy.com:443/"),
+      GURL("http://insecure-prefetch-proxy.com/"),
+  };
+  EXPECT_EQ(want_hosts, settings->GetPrefetchProxies());
+  EXPECT_EQ(want_hosts, observer.prefetch_proxies());
 }
 
 // Verify that when a client config with no proxies is provided to Chrome,

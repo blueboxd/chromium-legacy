@@ -254,10 +254,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   const base::TimeTicks first_frame_capture_time = testing_clock_.NowTicks();
 
   // Enqueue a request for a frame.
-  const ReceiveEncodedFrameCallback frame_encoded_callback =
-      base::Bind(&FakeFrameClient::DeliverEncodedFrame,
-                 base::Unretained(&frame_client_));
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(0, frame_client_.number_times_called());
 
@@ -272,7 +270,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   EXPECT_EQ(1, frame_client_.number_times_called());
 
   // Enqueue a second request for a frame, but it should not be fulfilled yet.
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(1, frame_client_.number_times_called());
 
@@ -292,7 +291,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   EXPECT_EQ(1, frame_client_.number_times_called());
 
   // Enqueue a third request for a frame.
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(1, frame_client_.number_times_called());
 
@@ -368,10 +368,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   const base::TimeTicks first_frame_capture_time = testing_clock_.NowTicks();
 
   // Enqueue a request for a frame.
-  const ReceiveEncodedFrameCallback frame_encoded_callback =
-      base::Bind(&FakeFrameClient::DeliverEncodedFrame,
-                 base::Unretained(&frame_client_));
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(0, frame_client_.number_times_called());
 
@@ -386,7 +384,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   EXPECT_EQ(1, frame_client_.number_times_called());
 
   // Enqueue a second request for a frame, but it should not be fulfilled yet.
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(1, frame_client_.number_times_called());
 
@@ -403,7 +402,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   EXPECT_EQ(1, frame_client_.number_times_called());
 
   // Enqueue a third request for a frame.
-  receiver_->RequestEncodedFrame(frame_encoded_callback);
+  receiver_->RequestEncodedFrame(base::BindOnce(
+      &FakeFrameClient::DeliverEncodedFrame, base::Unretained(&frame_client_)));
   task_runner_->RunTasks();
   EXPECT_EQ(1, frame_client_.number_times_called());
 

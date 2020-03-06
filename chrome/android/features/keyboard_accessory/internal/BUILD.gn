@@ -26,6 +26,9 @@ android_library("internal_java") {
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+
+    # TODO(bjoyce): Migrate to androidx after clearbrowsingdatatabsfragment has
+    # been converted to androidx.
     "//third_party/android_deps:com_android_support_viewpager_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java",

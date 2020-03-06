@@ -33,17 +33,13 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
 
   DOMArrayBuffer* buffer() const {
     DCHECK(!IsShared());
-    if (!dom_array_buffer_)
-      dom_array_buffer_ = DOMArrayBuffer::Create(View()->Buffer());
-
+    DCHECK(dom_array_buffer_);
     return static_cast<DOMArrayBuffer*>(dom_array_buffer_.Get());
   }
 
   DOMSharedArrayBuffer* BufferShared() const {
     DCHECK(IsShared());
-    if (!dom_array_buffer_)
-      dom_array_buffer_ = DOMSharedArrayBuffer::Create(View()->Buffer());
-
+    DCHECK(dom_array_buffer_);
     return static_cast<DOMSharedArrayBuffer*>(dom_array_buffer_.Get());
   }
 
@@ -92,10 +88,6 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   }
 
  protected:
-  explicit DOMArrayBufferView(scoped_refptr<ArrayBufferView> buffer_view)
-      : buffer_view_(std::move(buffer_view)) {
-    DCHECK(buffer_view_);
-  }
   DOMArrayBufferView(scoped_refptr<ArrayBufferView> buffer_view,
                      DOMArrayBufferBase* dom_array_buffer)
       : buffer_view_(std::move(buffer_view)),

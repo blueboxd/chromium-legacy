@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_navigation_controller.h"
 
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_constants.h"
-#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -18,17 +17,6 @@ using l10n_util::GetNSString;
 @implementation AdvancedSettingsSigninNavigationController
 
 #pragma mark - UINavigationController
-
-// Calls |viewControllerWasPopped| for the popped view controller.
-- (UIViewController*)popViewControllerAnimated:(BOOL)animated {
-  UIViewController* poppedViewController =
-      [super popViewControllerAnimated:animated];
-  if ([poppedViewController
-          respondsToSelector:@selector(viewControllerWasPopped)]) {
-    [poppedViewController performSelector:@selector(viewControllerWasPopped)];
-  }
-  return poppedViewController;
-}
 
 - (void)pushViewController:(UIViewController*)viewController
                   animated:(BOOL)animated {

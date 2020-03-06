@@ -1499,6 +1499,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-media-foundation-video-capture",
+    "owners": [ "armax", "guidou" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-media-internals-devtools",
     "owners": ["tmathmeyer"],
     "expiry_milestone": 82

@@ -87,6 +87,9 @@ public class DeviceClassManager {
      * @return Whether or not should use the accessibility tab switcher.
      */
     public static boolean enableAccessibilityLayout() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)) {
+            return false;
+        }
         if (getInstance().mEnableAccessibilityLayout) return true;
         if (!AccessibilityUtil.isAccessibilityEnabled()) return false;
         return SharedPreferencesManager.getInstance().readBoolean(

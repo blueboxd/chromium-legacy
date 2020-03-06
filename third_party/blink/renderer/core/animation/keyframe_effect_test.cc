@@ -163,9 +163,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SetAndRetrieveEffectComposite) {
   SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
                               "add");
   KeyframeEffectOptions* effect_options_dictionary =
-      KeyframeEffectOptions::Create();
-  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
-                                  effect_options_dictionary, exception_state);
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), effect_options, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
@@ -189,9 +188,8 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
   SetV8ObjectPropertyAsString(scope.GetIsolate(), effect_options, "composite",
                               "add");
   KeyframeEffectOptions* effect_options_dictionary =
-      KeyframeEffectOptions::Create();
-  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), effect_options,
-                                  effect_options_dictionary, exception_state);
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), effect_options, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   HeapVector<ScriptValue> blink_keyframes = {
@@ -258,11 +256,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
                               "reverse");
   SetV8ObjectPropertyAsString(scope.GetIsolate(), timing_input, "easing",
                               "ease-in-out");
-  KeyframeEffectOptions* timing_input_dictionary =
-      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
-                                  timing_input_dictionary, exception_state);
+  KeyframeEffectOptions* timing_input_dictionary =
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), timing_input, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   KeyframeEffect* animation = CreateAnimationFromOption(
@@ -287,12 +284,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
       v8::Object::New(scope.GetIsolate());
   SetV8ObjectPropertyAsNumber(scope.GetIsolate(), timing_input_with_duration,
                               "duration", 2.5);
-  KeyframeEffectOptions* timing_input_dictionary_with_duration =
-      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::ToImpl(
-      scope.GetIsolate(), timing_input_with_duration,
-      timing_input_dictionary_with_duration, exception_state);
+  KeyframeEffectOptions* timing_input_dictionary_with_duration =
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), timing_input_with_duration, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   KeyframeEffect* animation_with_duration =
@@ -308,10 +303,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
   v8::Local<v8::Object> timing_input_no_duration =
       v8::Object::New(scope.GetIsolate());
   KeyframeEffectOptions* timing_input_dictionary_no_duration =
-      KeyframeEffectOptions::Create();
-  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input_no_duration,
-                                  timing_input_dictionary_no_duration,
-                                  exception_state);
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), timing_input_no_duration, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   KeyframeEffect* animation_no_duration =
@@ -334,11 +327,10 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
   ScriptState* script_state = scope.GetScriptState();
   ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
-  KeyframeEffectOptions* timing_input_dictionary =
-      KeyframeEffectOptions::Create();
   DummyExceptionStateForTesting exception_state;
-  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
-                                  timing_input_dictionary, exception_state);
+  KeyframeEffectOptions* timing_input_dictionary =
+      NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+          scope.GetIsolate(), timing_input, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
   // Since there are no CSS-targeting keyframes, we can create a KeyframeEffect

@@ -95,22 +95,12 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
-  void StartServerWithExpiredCert() {
-    expired_https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    expired_https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    expired_https_server_->AddDefaultHandlers(GetChromeTestDataDir());
-    ASSERT_TRUE(expired_https_server_->Start());
+  ukm::TestAutoSetUkmRecorder* test_ukm_recorder() {
+    return test_ukm_recorder_.get();
   }
-
-  net::EmbeddedTestServer* expired_https_server() {
-    return expired_https_server_.get();
-  }
-
-  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
-  std::unique_ptr<net::EmbeddedTestServer> expired_https_server_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationBrowserTest);
@@ -1443,9 +1433,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Verify UKM.
   using Entry = ukm::builders::HistoryManipulationIntervention;
   const auto& ukm_entries =
-      test_ukm_recorder_->GetEntriesByName(Entry::kEntryName);
+      test_ukm_recorder()->GetEntriesByName(Entry::kEntryName);
   EXPECT_EQ(1u, ukm_entries.size());
-  test_ukm_recorder_->ExpectEntrySourceHasUrl(ukm_entries[0], skippable_url);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(ukm_entries[0], skippable_url);
 
   // Verify the metric where user tries to go specifically to a skippable entry
   // using long press.
@@ -1481,9 +1471,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Verify UKM.
   using Entry = ukm::builders::HistoryManipulationIntervention;
   const auto& ukm_entries =
-      test_ukm_recorder_->GetEntriesByName(Entry::kEntryName);
+      test_ukm_recorder()->GetEntriesByName(Entry::kEntryName);
   EXPECT_EQ(1u, ukm_entries.size());
-  test_ukm_recorder_->ExpectEntrySourceHasUrl(ukm_entries[0], skippable_url);
+  test_ukm_recorder()->ExpectEntrySourceHasUrl(ukm_entries[0], skippable_url);
 }
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature

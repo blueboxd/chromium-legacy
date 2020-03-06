@@ -37,9 +37,8 @@
         android:layout_gravity="center"/>
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/close_button"
-        android:layout_width="0dp"
+        android:layout_width="48dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         style="@style/BottomToolbarButton"
         android:contentDescription="@string/close"
         android:tint="@color/default_icon_color" />

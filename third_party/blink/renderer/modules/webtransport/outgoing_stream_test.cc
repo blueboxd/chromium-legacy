@@ -144,7 +144,7 @@ TEST_F(OutgoingStreamTest, WriteArrayBufferView) {
   auto* script_state = scope.GetScriptState();
   auto* writer =
       outgoing_stream->writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
-  auto buffer = ArrayBuffer::Create("*B", 2);
+  auto* buffer = DOMArrayBuffer::Create("*B", 2);
   // Create a view into the buffer with offset 1, ie. "B".
   auto* chunk = DOMUint8Array::Create(buffer, 1, 1);
   ScriptPromise result =

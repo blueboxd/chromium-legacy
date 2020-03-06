@@ -95,9 +95,21 @@ void SharedWorkerGlobalScope::Initialize(
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
+  // SharedWorkerGlobalScope inherits the outside's CSP instead of the response
+  // CSP headers when the response's url's scheme is a local scheme. Otherwise,
+  // use the response CSP headers. Here a local scheme is defined as follows:
+  // "A local scheme is a scheme that is "about", "blob", or "data"."
+  // https://fetch.spec.whatwg.org/#local-scheme
+  //
+  // https://w3c.github.io/webappsec-csp/#initialize-global-object-csp
   // These should be called after SetAddressSpace() to correctly override the
   // address space by the "treat-as-public-address" CSP directive.
-  InitContentSecurityPolicyFromVector(response_csp_headers);
+  Vector<CSPHeaderAndType> csp_headers =
+      response_url.ProtocolIsAbout() || response_url.ProtocolIsData() ||
+              response_url.ProtocolIs("blob")
+          ? OutsideContentSecurityPolicyHeaders()
+          : response_csp_headers;
+  InitContentSecurityPolicyFromVector(csp_headers);
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this, response_origin_trial_tokens);

@@ -802,18 +802,26 @@ public class WebContentsAccessibilityTest {
         final int textNodeVirtualViewId = waitForNodeWithText(provider, "Text");
 
         // Now call the API we want to test - addExtraDataToAccessibilityNodeInfo.
-        AccessibilityNodeInfo textNode =
+        final AccessibilityNodeInfo initialTextNode =
                 provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
-        Assert.assertNotEquals(textNode, null);
+        Assert.assertNotEquals(initialTextNode, null);
         final Bundle arguments = new Bundle();
         arguments.putInt(EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX, 0);
         arguments.putInt(EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH, 4);
-        provider.addExtraDataToAccessibilityNodeInfo(
-                textNodeVirtualViewId, textNode, EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY, arguments);
+
+        // addExtraDataToAccessibilityNodeInfo() will end up calling RenderFrameHostImpl's method
+        // AccessibilityPerformAction() in the C++ code, which needs to be run from the UI thread.
+        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                provider.addExtraDataToAccessibilityNodeInfo(textNodeVirtualViewId, initialTextNode,
+                        EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY, arguments);
+            }
+        });
 
         // It should return a result, but all of the rects will be the same because it hasn't
         // loaded inline text boxes yet.
-        Bundle extras = textNode.getExtras();
+        Bundle extras = initialTextNode.getExtras();
         RectF[] result =
                 (RectF[]) extras.getParcelableArray(EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
         Assert.assertNotEquals(result, null);
@@ -843,10 +851,16 @@ public class WebContentsAccessibilityTest {
         });
 
         // The final result should be the separate bounding box of all four characters.
-        textNode = provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
-        provider.addExtraDataToAccessibilityNodeInfo(
-                textNodeVirtualViewId, textNode, EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY, arguments);
-        extras = textNode.getExtras();
+        final AccessibilityNodeInfo finalTextNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                provider.addExtraDataToAccessibilityNodeInfo(textNodeVirtualViewId, finalTextNode,
+                        EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY, arguments);
+            }
+        });
+        extras = finalTextNode.getExtras();
         result = (RectF[]) extras.getParcelableArray(EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
         Assert.assertNotEquals(result[0], result[1]);
         Assert.assertNotEquals(result[0], result[2]);

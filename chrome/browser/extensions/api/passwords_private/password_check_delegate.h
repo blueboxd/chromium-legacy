@@ -9,6 +9,9 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
@@ -25,7 +28,8 @@ namespace extensions {
 // This class handles the part of the passwordsPrivate extension API that deals
 // with the bulk password check feature.
 class PasswordCheckDelegate
-    : public password_manager::CompromisedCredentialsProvider::Observer {
+    : public password_manager::CompromisedCredentialsProvider::Observer,
+      public password_manager::BulkLeakCheckService::Observer {
  public:
   using CredentialPasswordsMap =
       std::map<password_manager::CredentialWithPassword,
@@ -69,6 +73,12 @@ class PasswordCheckDelegate
       password_manager::CompromisedCredentialsProvider::CredentialsView
           credentials) override;
 
+  // password_manager::BulkLeakCheckService::Observer:
+  void OnStateChanged(
+      password_manager::BulkLeakCheckService::State state) override;
+  void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
+                        password_manager::IsLeaked is_leaked) override;
+
   const password_manager::CredentialWithPassword*
   FindMatchingCompromisedCredential(
       const api::passwords_private::CompromisedCredential& credential) const;
@@ -92,6 +102,11 @@ class PasswordCheckDelegate
   ScopedObserver<password_manager::CompromisedCredentialsProvider,
                  password_manager::CompromisedCredentialsProvider::Observer>
       observed_compromised_credentials_provider_{this};
+
+  // A scoped observer for the BulkLeakCheckService.
+  ScopedObserver<password_manager::BulkLeakCheckService,
+                 password_manager::BulkLeakCheckService::Observer>
+      observed_bulk_leak_check_service_{this};
 
   // A map that matches CredentialWithPasswords to corresponding PasswordForms.
   // This is required to inject affiliation information into Android

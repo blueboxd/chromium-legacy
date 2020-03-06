@@ -26,7 +26,6 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -671,10 +670,10 @@ public class ExternalNavigationHandler {
         mDelegate.maybeRecordAppHandlersInIntent(targetIntent, resolvingInfos);
 
         if (params.getReferrerUrl() != null) {
-            IntentHandler.setPendingReferrer(targetIntent, params.getReferrerUrl());
+            mDelegate.maybeSetPendingReferrer(targetIntent, params.getReferrerUrl());
         }
 
-        if (params.isIncognito()) IntentHandler.setPendingIncognitoUrl(targetIntent);
+        if (params.isIncognito()) mDelegate.maybeSetPendingIncognitoUrl(targetIntent);
 
         if (shouldProxyForInstantApps) {
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",

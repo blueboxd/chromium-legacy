@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static android.support.v4.view.accessibility.AccessibilityNodeInfoCompat.ACTION_CLICK;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -1576,6 +1578,7 @@ public class TabListMediatorUnitTest {
         doReturn(new Pair<>(1, 0))
                 .when(mTabGridAccessibilityHelper)
                 .getPositionsOfReorderAction(mItemView1, action);
+        doReturn(true).when(mTabGridAccessibilityHelper).isReorderAction(action);
         assertNull(mMediator.getAccessibilityDelegateForTesting());
         mMediator.setupAccessibilityDelegate(mTabGridAccessibilityHelper);
         View.AccessibilityDelegate delegate = mMediator.getAccessibilityDelegateForTesting();
@@ -1585,6 +1588,28 @@ public class TabListMediatorUnitTest {
 
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
         assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+    }
+
+    @Test
+    @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testPerformAccessibilityAction_defaultAccessibilityAction() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+
+        // Setup related mocks and initialize needed components.
+        Bundle args = mock(Bundle.class);
+        int action = ACTION_CLICK;
+        // Mock that the action indicates that tab2 will move to position 2 which is invalid.
+        doReturn(false).when(mTabGridAccessibilityHelper).isReorderAction(action);
+        assertNull(mMediator.getAccessibilityDelegateForTesting());
+        mMediator.setupAccessibilityDelegate(mTabGridAccessibilityHelper);
+        View.AccessibilityDelegate delegate = mMediator.getAccessibilityDelegateForTesting();
+        assertNotNull(delegate);
+
+        delegate.performAccessibilityAction(mItemView1, action, args);
+        verify(mTabGridAccessibilityHelper, never())
+                .getPositionsOfReorderAction(mItemView1, action);
     }
 
     @Test

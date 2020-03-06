@@ -22,20 +22,11 @@ class DOMTypedArray final : public DOMArrayBufferView {
  public:
   typedef typename TypedArray::ValueType ValueType;
 
-  static ThisType* Create(scoped_refptr<TypedArray> buffer_view) {
-    return MakeGarbageCollected<ThisType>(std::move(buffer_view));
+  static ThisType* Create(scoped_refptr<TypedArray> buffer_view,
+                          DOMArrayBufferBase* buffer) {
+    return MakeGarbageCollected<ThisType>(std::move(buffer_view), buffer);
   }
-  static ThisType* Create(size_t length) {
-    return Create(TypedArray::Create(length));
-  }
-  static ThisType* Create(const ValueType* array, size_t length) {
-    return Create(TypedArray::Create(array, length));
-  }
-  static ThisType* Create(scoped_refptr<ArrayBuffer> buffer,
-                          size_t byte_offset,
-                          size_t length) {
-    return Create(TypedArray::Create(std::move(buffer), byte_offset, length));
-  }
+
   static ThisType* Create(DOMArrayBufferBase* buffer,
                           size_t byte_offset,
                           size_t length) {
@@ -44,20 +35,29 @@ class DOMTypedArray final : public DOMArrayBufferView {
     return MakeGarbageCollected<ThisType>(std::move(buffer_view), buffer);
   }
 
+  static ThisType* Create(size_t length) {
+    DOMArrayBuffer* buffer = DOMArrayBuffer::Create(length, sizeof(ValueType));
+    return Create(buffer, 0, length);
+  }
+
+  static ThisType* Create(const ValueType* array, size_t length) {
+    DOMArrayBuffer* buffer =
+        DOMArrayBuffer::Create(array, length * sizeof(ValueType));
+    return Create(buffer, 0, length);
+  }
+
   static ThisType* CreateOrNull(size_t length) {
-    scoped_refptr<ArrayBuffer> buffer =
-        ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
+    DOMArrayBuffer* buffer =
+        DOMArrayBuffer::CreateOrNull(length, sizeof(ValueType));
     return buffer ? Create(std::move(buffer), 0, length) : nullptr;
   }
 
   static ThisType* CreateUninitializedOrNull(size_t length) {
-    scoped_refptr<ArrayBuffer> buffer =
-        ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
-    return buffer ? Create(std::move(buffer), 0, length) : nullptr;
+    DOMArrayBuffer* buffer =
+        DOMArrayBuffer::CreateUninitializedOrNull(length, sizeof(ValueType));
+    return buffer ? Create(buffer, 0, length) : nullptr;
   }
 
-  explicit DOMTypedArray(scoped_refptr<TypedArray> buffer_view)
-      : DOMArrayBufferView(std::move(buffer_view)) {}
   DOMTypedArray(scoped_refptr<TypedArray> buffer_view,
                 DOMArrayBufferBase* dom_array_buffer)
       : DOMArrayBufferView(std::move(buffer_view), dom_array_buffer) {}

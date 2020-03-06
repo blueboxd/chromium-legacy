@@ -15,10 +15,6 @@
 // Notifies the controller that the settings screen is being dismissed.
 - (void)settingsWillBeDismissed;
 
-// Notifies the controller that is popped out from the settings navigation
-// controller.
-- (void)viewControllerWasPopped;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_CONTROLLER_PROTOCOL_H_

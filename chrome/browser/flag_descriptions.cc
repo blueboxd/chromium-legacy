@@ -2825,6 +2825,12 @@ const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
 
+const char kEnableMediaFoundationVideoCaptureName[] =
+    "MediaFoundation Video Capture";
+const char kEnableMediaFoundationVideoCaptureDescription[] =
+    "Enable/Disable the usage of MediaFoundation for video capture. Fall back "
+    "to DirectShow if disabled.";
+
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";

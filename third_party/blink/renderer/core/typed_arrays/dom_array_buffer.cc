@@ -60,6 +60,15 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
   return true;
 }
 
+DOMArrayBuffer* DOMArrayBuffer::CreateOrNull(size_t num_elements,
+                                             size_t element_byte_size) {
+  scoped_refptr<ArrayBuffer> buffer =
+      ArrayBuffer::CreateOrNull(num_elements, element_byte_size);
+  if (!buffer)
+    return nullptr;
+  return Create(std::move(buffer));
+}
+
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
     size_t num_elements,
     size_t element_byte_size) {

@@ -160,6 +160,14 @@ class TabListMediator {
          * @return {@link Pair} that contains previous and target position of this action.
          */
         Pair<Integer, Integer> getPositionsOfReorderAction(View view, int action);
+
+        /**
+         * This method returns whether the given action is a type of the reordering actions.
+         *
+         * @param action The accessibility action.
+         * @return Whether the given action is a reordering action.
+         */
+        boolean isReorderAction(int action);
     }
 
     /**
@@ -1103,6 +1111,10 @@ class TabListMediator {
 
             @Override
             public boolean performAccessibilityAction(View host, int action, Bundle args) {
+                if (!helper.isReorderAction(action)) {
+                    return super.performAccessibilityAction(host, action, args);
+                }
+
                 Pair<Integer, Integer> positions = helper.getPositionsOfReorderAction(host, action);
                 int currentPosition = positions.first;
                 int targetPosition = positions.second;

@@ -68,4 +68,9 @@ void RenderAccessibilityManager::FatalError() {
   CHECK(false) << "Invalid accessibility tree.";
 }
 
+void RenderAccessibilityManager::PerformAction(const ui::AXActionData& data) {
+  DCHECK(render_accessibility_);
+  render_accessibility_->PerformAction(data);
+}
+
 }  // namespace content

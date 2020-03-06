@@ -39,13 +39,6 @@ using VideoFrameDecodedCallback =
                                  base::TimeTicks playout_time,
                                  bool is_continuous)>;
 
-// The following callback delivers encoded frame data and metadata.  The client
-// should examine the |frame_id| field to determine whether any frames have been
-// dropped (i.e., frame_id should be incrementing by one each time).  Note: A
-// NULL pointer can be returned on error.
-typedef base::Callback<void(std::unique_ptr<EncodedFrame>)>
-    ReceiveEncodedFrameCallback;
-
 class CastReceiver {
  public:
   static std::unique_ptr<CastReceiver> Create(

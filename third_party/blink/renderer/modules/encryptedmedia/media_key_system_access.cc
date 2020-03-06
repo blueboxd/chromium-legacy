@@ -98,7 +98,7 @@ static HeapVector<Member<MediaKeySystemMediaCapability>> ConvertCapabilities(
         // accumulated configuration MUST still contain a encryptionScheme
         // field with a value of null, so that polyfills can detect the user
         // agent's support for the field without specifying specific values."
-        capability->setEncryptionSchemeToNull();
+        capability->setEncryptionScheme(String());
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc:
         capability->setEncryptionScheme("cenc");

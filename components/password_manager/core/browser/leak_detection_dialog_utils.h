@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/util/type_safety/strong_alias.h"
-#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"

@@ -4939,6 +4939,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kMultiDisplayOverviewAndSplitView)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+    {"enable-media-foundation-video-capture",
+     flag_descriptions::kEnableMediaFoundationVideoCaptureName,
+     flag_descriptions::kEnableMediaFoundationVideoCaptureDescription, kOsWin,
+     FEATURE_VALUE_TYPE(media::kMediaFoundationVideoCapture)},
+#endif  // defined(OS_WIN)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

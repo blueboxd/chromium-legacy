@@ -264,6 +264,25 @@ DOMArrayBuffer* NativeValueTraits<DOMArrayBuffer>::ArgumentValue(
       isolate, argument_index, value, exception_state);
 }
 
+DOMArrayBuffer* NativeValueTraits<IDLNullable<DOMArrayBuffer>>::NativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return NativeValueTraitsBufferSourcePtrNativeValue<
+      DOMArrayBuffer, V8ArrayBuffer, IDLBufferSourceTypeConvMode::kNullable>(
+      isolate, value, exception_state);
+}
+
+DOMArrayBuffer* NativeValueTraits<IDLNullable<DOMArrayBuffer>>::ArgumentValue(
+    v8::Isolate* isolate,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  return NativeValueTraitsBufferSourcePtrArgumentValue<
+      DOMArrayBuffer, V8ArrayBuffer, IDLBufferSourceTypeConvMode::kNullable>(
+      isolate, argument_index, value, exception_state);
+}
+
 #define DEFINE_NATIVE_VALUE_TRAITS_BUFFER_SOURCE_TYPE_NOT_SHARED(T, V8T)    \
   template <>                                                               \
   CORE_EXPORT NotShared<T> NativeValueTraits<NotShared<T>>::NativeValue(    \

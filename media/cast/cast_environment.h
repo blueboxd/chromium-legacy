@@ -48,7 +48,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
 
   bool PostDelayedTask(ThreadId identifier,
                        const base::Location& from_here,
-                       const base::Closure& task,
+                       base::OnceClosure task,
                        base::TimeDelta delay);
 
   bool CurrentlyOn(ThreadId identifier);

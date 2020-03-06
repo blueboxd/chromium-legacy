@@ -508,6 +508,7 @@ check_targets = [
   "//third_party/pystache/*",
   "//third_party/py_trace_event/*",
   "//third_party/pywebsocket/*",
+  "//third_party/pywebsocket3/*",
   "//third_party/qcms/*",
   "//third_party/quic_trace/*",
   "//third_party/qunit/*",

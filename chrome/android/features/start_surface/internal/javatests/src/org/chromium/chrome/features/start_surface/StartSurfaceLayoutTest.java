@@ -45,6 +45,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
+import android.support.test.espresso.contrib.AccessibilityChecks;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.GridLayoutManager;
@@ -154,6 +155,7 @@ public class StartSurfaceLayoutTest {
 
     @Before
     public void setUp() {
+        AccessibilityChecks.enable();
         // After setUp, Chrome is launched and has one NTP.
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, true);
 
@@ -1375,6 +1377,27 @@ public class StartSurfaceLayoutTest {
             onView(allOf(withId(R.id.new_tab_view), withParent(withId(R.id.tab_switcher_toolbar))))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    public void testCloseTabViaCloseButton() throws Exception {
+        // clang-format on
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+
+        // Restart Chrome to have Group.
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
+        prepareTabs(1, 0, null);
+        enterGTSWithThumbnailChecking();
+
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view))))
+                .perform(click());
     }
 
     private static class TabCountAssertion implements ViewAssertion {

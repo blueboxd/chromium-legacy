@@ -4,6 +4,8 @@
 
 module content.mojom;
 
+import "ui/accessibility/mojom/ax_action_data.mojom";
+
 // Interface for accessibility messages sent from RenderFrameHostImpl in the
 // browser process, implemented by the RenderAccessibilityManager object in the
 // renderer process. This RenderAccessibilityManager object will be owned by the
@@ -22,4 +24,8 @@ interface RenderAccessibility {
   // Kills the renderer. Sent when there is a fatal error in the accessibility
   // tree and the maximum number of resets has been hit.
   FatalError();
+
+  // Relay a request from assistive technology to perform an action, such as
+  // focusing or clicking on a node.
+  PerformAction(ax.mojom.AXActionData action_data);
 };

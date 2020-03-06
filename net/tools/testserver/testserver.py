@@ -42,7 +42,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
 # Insert at the beginning of the path, we want to use our copies of the library
 # unconditionally (since they contain modifications from anything that might be
 # obtained from e.g. PyPi).
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket3', 'src'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
 
 import mod_pywebsocket.standalone
@@ -89,17 +89,15 @@ class WebSocketOptions:
     self.websock_handlers_map_file = None
     self.cgi_directories = []
     self.is_executable_method = None
-    self.allow_draft75 = False
-    self.strict = True
 
     self.use_tls = False
     self.private_key = None
     self.certificate = None
     self.tls_client_auth = False
     self.tls_client_ca = None
-    self.tls_module = 'ssl'
     self.use_basic_auth = False
-    self.basic_auth_credential = 'Basic ' + base64.b64encode('test:test')
+    self.basic_auth_credential = 'Basic ' + base64.b64encode(
+        'test:test').decode()
 
 
 class RecordingSSLSessionCache(object):

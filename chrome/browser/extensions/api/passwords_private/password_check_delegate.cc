@@ -10,9 +10,11 @@
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
+#include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -20,7 +22,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_provider.h"
+#include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
@@ -32,6 +38,8 @@ namespace extensions {
 
 namespace {
 
+using autofill::PasswordForm;
+using password_manager::CanonicalizeUsername;
 using password_manager::CredentialWithPassword;
 using ui::TimeFormat;
 using CompromisedCredentialsView =
@@ -95,6 +103,8 @@ PasswordCheckDelegate::PasswordCheckDelegate(Profile* profile)
                                         &saved_passwords_presenter_) {
   observed_compromised_credentials_provider_.Add(
       &compromised_credentials_provider_);
+  observed_bulk_leak_check_service_.Add(
+      BulkLeakCheckServiceFactory::GetForProfile(profile_));
 
   // Instructs the presenter and provider to initialize and built their caches.
   // This will soon after invoke OnCompromisedCredentialsChanged(), which then
@@ -132,7 +142,7 @@ PasswordCheckDelegate::GetCompromisedCredentialsInfo() {
       // |formatted_orgin| and |change_password_url| need special handling for
       // Android. Here we use affiliation information instead of the
       // signon_realm.
-      const autofill::PasswordForm& android_form =
+      const PasswordForm& android_form =
           credentials_to_forms_.at(credential).at(0);
       api_credential.formatted_origin = android_form.app_display_name;
       api_credential.change_password_url =
@@ -233,7 +243,7 @@ bool PasswordCheckDelegate::RemoveCompromisedCredential(
   // Erase all matching credentials from the store. Return whether any
   // credentials were deleted.
   SavedPasswordsView saved_passwords = it->second;
-  for (const autofill::PasswordForm& saved_password : saved_passwords)
+  for (const PasswordForm& saved_password : saved_passwords)
     password_store_->RemoveLogin(saved_password);
 
   return !saved_passwords.empty();
@@ -247,6 +257,35 @@ void PasswordCheckDelegate::OnCompromisedCredentialsChanged(
           PasswordsPrivateEventRouterFactory::GetForProfile(profile_)) {
     event_router->OnCompromisedCredentialsInfoChanged(
         GetCompromisedCredentialsInfo());
+  }
+}
+
+void PasswordCheckDelegate::OnStateChanged(
+    password_manager::BulkLeakCheckService::State state) {
+  NOTIMPLEMENTED();
+  // TODO(https://crbug.com/1047726): Implement.
+}
+
+void PasswordCheckDelegate::OnCredentialDone(
+    const password_manager::LeakCheckCredential& credential,
+    password_manager::IsLeaked is_leaked) {
+  if (!is_leaked)
+    return;
+
+  const base::string16 canocalized_username =
+      CanonicalizeUsername(credential.username());
+  for (const PasswordForm& saved_password :
+       saved_passwords_presenter_.GetSavedPasswords()) {
+    if (saved_password.password_value == credential.password() &&
+        CanonicalizeUsername(saved_password.username_value) ==
+            canocalized_username) {
+      password_store_->AddCompromisedCredentials({
+          .signon_realm = saved_password.signon_realm,
+          .username = saved_password.username_value,
+          .create_time = base::Time::Now(),
+          .compromise_type = password_manager::CompromiseType::kLeaked,
+      });
+    }
   }
 }
 

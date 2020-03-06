@@ -294,13 +294,128 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
 bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
-
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
+  const WebDocument& document = GetMainDocument();
+  if (document.IsNull())
+    return;
+
+  auto root = WebAXObject::FromWebDocument(document);
+  if (!root.UpdateLayoutAndCheckValidity())
+    return;
+
+  std::unique_ptr<ui::AXActionTarget> target =
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.target_node_id);
+  std::unique_ptr<ui::AXActionTarget> anchor =
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.anchor_node_id);
+  std::unique_ptr<ui::AXActionTarget> focus =
+      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
+                                              data.focus_node_id);
+
+  switch (data.action) {
+    case ax::mojom::Action::kBlur:
+      root.Focus();
+      break;
+    case ax::mojom::Action::kClearAccessibilityFocus:
+      target->ClearAccessibilityFocus();
+      break;
+    case ax::mojom::Action::kDecrement:
+      target->Decrement();
+      break;
+    case ax::mojom::Action::kDoDefault:
+      target->Click();
+      break;
+    case ax::mojom::Action::kGetImageData:
+      OnGetImageData(target.get(), data.target_rect.size());
+      break;
+    case ax::mojom::Action::kHitTest:
+      DCHECK(data.hit_test_event_to_fire != ax::mojom::Event::kNone);
+      OnHitTest(data.target_point, data.hit_test_event_to_fire,
+                data.request_id);
+      break;
+    case ax::mojom::Action::kIncrement:
+      target->Increment();
+      break;
+    case ax::mojom::Action::kScrollToMakeVisible:
+      target->ScrollToMakeVisibleWithSubFocus(
+          data.target_rect, data.horizontal_scroll_alignment,
+          data.vertical_scroll_alignment, data.scroll_behavior);
+      break;
+    case ax::mojom::Action::kScrollToPoint:
+      target->ScrollToGlobalPoint(data.target_point);
+      break;
+    case ax::mojom::Action::kLoadInlineTextBoxes:
+      OnLoadInlineTextBoxes(target.get());
+      break;
+    case ax::mojom::Action::kFocus:
+      target->Focus();
+      break;
+    case ax::mojom::Action::kSetAccessibilityFocus:
+      target->SetAccessibilityFocus();
+      break;
+    case ax::mojom::Action::kSetScrollOffset:
+      target->SetScrollOffset(data.target_point);
+      break;
+    case ax::mojom::Action::kSetSelection:
+      anchor->SetSelection(anchor.get(), data.anchor_offset, focus.get(),
+                           data.focus_offset);
+      HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
+      break;
+    case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
+      target->SetSequentialFocusNavigationStartingPoint();
+      break;
+    case ax::mojom::Action::kSetValue:
+      target->SetValue(data.value);
+      break;
+    case ax::mojom::Action::kShowContextMenu:
+      target->ShowContextMenu();
+      break;
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+      Scroll(target.get(), data.action);
+      break;
+    case ax::mojom::Action::kCustomAction:
+    case ax::mojom::Action::kCollapse:
+    case ax::mojom::Action::kExpand:
+    case ax::mojom::Action::kReplaceSelectedText:
+    case ax::mojom::Action::kNone:
+      NOTREACHED();
+      break;
+    case ax::mojom::Action::kGetTextLocation:
+      break;
+    case ax::mojom::Action::kAnnotatePageImages:
+      // Ensure we aren't already labeling images, in which case this should
+      // not change.
+      if (!ax_image_annotator_) {
+        CreateAXImageAnnotator();
+        // Walk the tree to discover images, and mark them dirty so that
+        // they get added to the annotator.
+        MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
+      }
+      break;
+    case ax::mojom::Action::kSignalEndOfTest:
+      // Wait for 100ms to allow pending events to come in
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+      HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
+      break;
+    case ax::mojom::Action::kShowTooltip:
+    case ax::mojom::Action::kHideTooltip:
+    case ax::mojom::Action::kInternalInvalidateTree:
+      break;
+  }
 }
 
 void RenderAccessibilityImpl::NotifyUpdate(
@@ -734,124 +849,6 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   locations_.swap(new_locations);
 
   Send(new AccessibilityHostMsg_LocationChanges(routing_id(), messages));
-}
-
-void RenderAccessibilityImpl::OnPerformAction(
-    const ui::AXActionData& data) {
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  auto root = WebAXObject::FromWebDocument(document);
-  if (!root.UpdateLayoutAndCheckValidity())
-    return;
-
-  std::unique_ptr<ui::AXActionTarget> target =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.target_node_id);
-  std::unique_ptr<ui::AXActionTarget> anchor =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.anchor_node_id);
-  std::unique_ptr<ui::AXActionTarget> focus =
-      AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
-                                              data.focus_node_id);
-
-  switch (data.action) {
-    case ax::mojom::Action::kBlur:
-      root.Focus();
-      break;
-    case ax::mojom::Action::kClearAccessibilityFocus:
-      target->ClearAccessibilityFocus();
-      break;
-    case ax::mojom::Action::kDecrement:
-      target->Decrement();
-      break;
-    case ax::mojom::Action::kDoDefault:
-      target->Click();
-      break;
-    case ax::mojom::Action::kGetImageData:
-      OnGetImageData(target.get(), data.target_rect.size());
-      break;
-    case ax::mojom::Action::kHitTest:
-      DCHECK(data.hit_test_event_to_fire != ax::mojom::Event::kNone);
-      OnHitTest(data.target_point, data.hit_test_event_to_fire,
-                data.request_id);
-      break;
-    case ax::mojom::Action::kIncrement:
-      target->Increment();
-      break;
-    case ax::mojom::Action::kScrollToMakeVisible:
-      target->ScrollToMakeVisibleWithSubFocus(
-          data.target_rect, data.horizontal_scroll_alignment,
-          data.vertical_scroll_alignment, data.scroll_behavior);
-      break;
-    case ax::mojom::Action::kScrollToPoint:
-      target->ScrollToGlobalPoint(data.target_point);
-      break;
-    case ax::mojom::Action::kLoadInlineTextBoxes:
-      OnLoadInlineTextBoxes(target.get());
-      break;
-    case ax::mojom::Action::kFocus:
-      target->Focus();
-      break;
-    case ax::mojom::Action::kSetAccessibilityFocus:
-      target->SetAccessibilityFocus();
-      break;
-    case ax::mojom::Action::kSetScrollOffset:
-      target->SetScrollOffset(data.target_point);
-      break;
-    case ax::mojom::Action::kSetSelection:
-      anchor->SetSelection(anchor.get(), data.anchor_offset, focus.get(),
-                           data.focus_offset);
-      HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
-      break;
-    case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
-      target->SetSequentialFocusNavigationStartingPoint();
-      break;
-    case ax::mojom::Action::kSetValue:
-      target->SetValue(data.value);
-      break;
-    case ax::mojom::Action::kShowContextMenu:
-      target->ShowContextMenu();
-      break;
-    case ax::mojom::Action::kScrollBackward:
-    case ax::mojom::Action::kScrollForward:
-    case ax::mojom::Action::kScrollUp:
-    case ax::mojom::Action::kScrollDown:
-    case ax::mojom::Action::kScrollLeft:
-    case ax::mojom::Action::kScrollRight:
-      Scroll(target.get(), data.action);
-      break;
-    case ax::mojom::Action::kCustomAction:
-    case ax::mojom::Action::kCollapse:
-    case ax::mojom::Action::kExpand:
-    case ax::mojom::Action::kReplaceSelectedText:
-    case ax::mojom::Action::kNone:
-      NOTREACHED();
-      break;
-    case ax::mojom::Action::kGetTextLocation:
-      break;
-    case ax::mojom::Action::kAnnotatePageImages:
-      // Ensure we aren't already labeling images, in which case this should
-      // not change.
-      if (!ax_image_annotator_) {
-        CreateAXImageAnnotator();
-        // Walk the tree to discover images, and mark them dirty so that
-        // they get added to the annotator.
-        MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
-      }
-      break;
-    case ax::mojom::Action::kSignalEndOfTest:
-      // Wait for 100ms to allow pending events to come in
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-
-      HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
-      break;
-    case ax::mojom::Action::kShowTooltip:
-    case ax::mojom::Action::kHideTooltip:
-    case ax::mojom::Action::kInternalInvalidateTree:
-      break;
-  }
 }
 
 void RenderAccessibilityImpl::OnEventsAck(int ack_token) {

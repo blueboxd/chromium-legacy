@@ -32,6 +32,13 @@ namespace cast {
 
 class CastEnvironment;
 
+// The following callback delivers encoded frame data and metadata.  The client
+// should examine the |frame_id| field to determine whether any frames have been
+// dropped (i.e., frame_id should be incrementing by one each time).  Note: A
+// nullptr can be returned on error.
+using ReceiveEncodedFrameCallback =
+    base::OnceCallback<void(std::unique_ptr<EncodedFrame>)>;
+
 // FrameReceiver receives packets out-of-order while clients make requests for
 // complete frames in-order.  (A frame consists of one or more packets.)
 //
@@ -63,7 +70,7 @@ class FrameReceiver : public RtpPayloadFeedback {
   //
   // The given |callback| is guaranteed to be run at some point in the future,
   // except for those requests still enqueued at destruction time.
-  void RequestEncodedFrame(const ReceiveEncodedFrameCallback& callback);
+  void RequestEncodedFrame(ReceiveEncodedFrameCallback callback);
 
   // Called to deliver another packet, possibly a duplicate, and possibly
   // out-of-order.  Returns true if the parsing of the packet succeeded.
@@ -96,7 +103,7 @@ class FrameReceiver : public RtpPayloadFeedback {
   // This method is used by EmitAvailableEncodedFrames() to return to the event
   // loop, but make sure that FrameReceiver is still alive before the callback
   // is run.
-  void EmitOneFrame(const ReceiveEncodedFrameCallback& callback,
+  void EmitOneFrame(ReceiveEncodedFrameCallback callback,
                     std::unique_ptr<EncodedFrame> encoded_frame) const;
 
   // Computes the playout time for a frame with the given |rtp_timestamp|.

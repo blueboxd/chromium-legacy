@@ -4223,6 +4223,7 @@
                     "name": "EnableWithAdaptiveActivation",
                     "params": {
                         "availability": "any",
+                        "crowd_deny_hold_back_chance": "0.3",
                         "enable_adaptive_activation": "true",
                         "enable_crowd_deny_triggering": "true",
                         "event_trigger": "name:tabgroups_dummy;comparator:any;window:1;storage:1",

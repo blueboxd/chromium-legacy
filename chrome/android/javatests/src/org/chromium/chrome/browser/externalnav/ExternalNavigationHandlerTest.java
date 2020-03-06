@@ -33,7 +33,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -1248,8 +1247,6 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
         Assert.assertEquals(Uri.parse(referrer),
                 mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
-        Assert.assertEquals(
-                1, mDelegate.startActivityIntent.getIntExtra(IntentHandler.EXTRA_REFERRER_ID, 0));
     }
 
     @Test
@@ -1863,6 +1860,16 @@ public class ExternalNavigationHandlerTest {
         @Override
         public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info) {
         }
+
+        @Override
+        public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
+            // This is used in a test to check that ExternalNavigationHandler correctly passes
+            // this data to the delegate when the referrer URL is non-null.
+            intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(referrerUrl));
+        }
+
+        @Override
+        public void maybeSetPendingIncognitoUrl(Intent intent) {}
 
         @Override
         public boolean isChromeAppInForeground() {

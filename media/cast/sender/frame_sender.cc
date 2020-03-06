@@ -110,8 +110,8 @@ void FrameSender::ScheduleNextRtcpReport() {
 
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN, FROM_HERE,
-      base::BindRepeating(&FrameSender::SendRtcpReport,
-                          weak_factory_.GetWeakPtr(), true),
+      base::BindOnce(&FrameSender::SendRtcpReport, weak_factory_.GetWeakPtr(),
+                     true),
       base::TimeDelta::FromMilliseconds(kRtcpReportIntervalMs));
 }
 
@@ -192,8 +192,7 @@ void FrameSender::ScheduleNextResendCheck() {
   time_to_next = std::max(time_to_next, kMinSchedulingDelay);
   cast_environment_->PostDelayedTask(
       CastEnvironment::MAIN, FROM_HERE,
-      base::BindRepeating(&FrameSender::ResendCheck,
-                          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FrameSender::ResendCheck, weak_factory_.GetWeakPtr()),
       time_to_next);
 }
 

@@ -539,4 +539,10 @@ class TabListRecyclerView
         }
         return new Pair<>(currentPosition, targetPosition);
     }
+
+    @Override
+    public boolean isReorderAction(int action) {
+        return action == R.id.move_tab_left || action == R.id.move_tab_right
+                || action == R.id.move_tab_up || action == R.id.move_tab_down;
+    }
 }

@@ -26,7 +26,6 @@ source_set("advanced_settings_signin") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication/signin:signin_protected",
-    "//ios/chrome/browser/ui/settings:settings_controller_protocol",
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/web/public",
     "//ui/base",

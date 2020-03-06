@@ -111,6 +111,15 @@ interface ExternalNavigationDelegate {
     /** Adds the package name of a specialized intent handler. */
     void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info);
 
+    /** Records the pending referrer if desired. */
+    void maybeSetPendingReferrer(Intent intent, @NonNull String referrerUrl);
+
+    /**
+     * Records the pending incognito URL if desired. Called only if the
+     * navigation is occurring in the context of incognito mode.
+     */
+    void maybeSetPendingIncognitoUrl(Intent intent);
+
     /**
      * Determine if the Chrome app is in the foreground.
      */

@@ -588,6 +588,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
+    public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
+        IntentHandler.setPendingReferrer(intent, referrerUrl);
+    }
+
+    @Override
+    public void maybeSetPendingIncognitoUrl(Intent intent) {
+        IntentHandler.setPendingIncognitoUrl(intent);
+    }
+
+    @Override
     public boolean isSerpReferrer() {
         // TODO (thildebr): Investigate whether or not we can use getLastCommittedUrl() instead of
         // the NavigationController.

@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -245,6 +246,42 @@ import java.util.List;
                 delegate.isPdfDownload("http://somesampleurldne.com/image.jpg"));
         Assert.assertFalse("URL is a text file can be viewed in Chrome",
                 delegate.isPdfDownload("http://somesampleurldne.com/copy.txt"));
+    }
+
+    @Test
+    @SmallTest
+    public void testMaybeSetPendingIncognitoUrl() {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                mActivityTestRule.getActivity().getActivityTab());
+
+        String url = "http://www.example.com";
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+
+        delegate.maybeSetPendingIncognitoUrl(intent);
+
+        Assert.assertTrue(
+                intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
+        Assert.assertEquals(url, IntentHandler.getPendingIncognitoUrl());
+    }
+
+    @Test
+    @SmallTest
+    public void testMaybeSetPendingReferrer() {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                mActivityTestRule.getActivity().getActivityTab());
+
+        String url = "http://www.example.com";
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+
+        String referrerUrl = "http://www.example-referrer.com";
+        delegate.maybeSetPendingReferrer(intent, referrerUrl);
+
+        Assert.assertEquals(
+                Uri.parse(referrerUrl), intent.getParcelableExtra(Intent.EXTRA_REFERRER));
+        Assert.assertEquals(1, intent.getIntExtra(IntentHandler.EXTRA_REFERRER_ID, 0));
+        Assert.assertEquals(referrerUrl, IntentHandler.getPendingReferrerUrl(1));
     }
 
     @Before

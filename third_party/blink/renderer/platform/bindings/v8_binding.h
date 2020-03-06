@@ -46,6 +46,10 @@
 
 namespace blink {
 
+namespace bindings {
+class DictionaryBase;
+}
+
 // This file contains bindings helper functions that do not have dependencies
 // to core/ or bindings/core. For core-specific helper functions, see
 // bindings/core/v8/V8BindingForCore.h.
@@ -210,6 +214,14 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
                                  const v8::Local<T> handle,
                                  const ScriptWrappable*) {
   V8SetReturnValue(callback_info, handle);
+}
+
+// Dictionary
+template <class CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      bindings::DictionaryBase* value,
+                      v8::Local<v8::Object> creation_context) {
+  V8SetReturnValue(info, ToV8(value, creation_context, info.GetIsolate()));
 }
 
 // Convert v8::String to a WTF::String. If the V8 string is not already

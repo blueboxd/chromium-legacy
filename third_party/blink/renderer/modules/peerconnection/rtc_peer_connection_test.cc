@@ -814,8 +814,7 @@ class RTCPeerConnectionCallSetupStateTest : public RTCPeerConnectionTest {
     return CallbackType::Create(v8_function);
   }
 
-  ScriptValue ToScriptValue(V8TestingScope& scope,
-                            const IDLDictionaryBase* value) {
+  ScriptValue ToScriptValue(V8TestingScope& scope, RTCOfferOptions* value) {
     v8::Isolate* isolate = scope.GetIsolate();
     return ScriptValue(isolate,
                        ToV8(value, scope.GetContext()->Global(), isolate));

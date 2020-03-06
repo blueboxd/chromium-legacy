@@ -125,11 +125,6 @@ IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
 
-// Relay a request from assistive technology to perform an action,
-// such as focusing or clicking on a node.
-IPC_MESSAGE_ROUTED1(AccessibilityMsg_PerformAction,
-                    ui::AXActionData  /* action parameters */)
-
 // Tells the render view that a AccessibilityHostMsg_EventBundle
 // message was processed and it can send additional updates. The argument
 // must be the same as the ack_token passed to

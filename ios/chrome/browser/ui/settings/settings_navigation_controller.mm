@@ -336,16 +336,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   }
 }
 
-- (UIViewController*)popViewControllerAnimated:(BOOL)animated {
-  UIViewController* poppedViewController =
-      [super popViewControllerAnimated:animated];
-  if ([poppedViewController
-          respondsToSelector:@selector(viewControllerWasPopped)]) {
-    [poppedViewController performSelector:@selector(viewControllerWasPopped)];
-  }
-  return poppedViewController;
-}
-
 #pragma mark - Private
 
 // Creates an autoreleased "Cancel" button that cancels the settings when

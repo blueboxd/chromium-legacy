@@ -7,12 +7,11 @@
 # It is used by test case WebSocketEndToEndTest.TrailingWhitespace.
 
 from mod_pywebsocket import handshake
-from mod_pywebsocket.handshake.hybi import compute_accept
+from mod_pywebsocket.handshake.hybi import compute_accept_from_unicode
 
 
 def web_socket_do_extra_handshake(request):
-  accept = compute_accept(
-      request.headers_in['Sec-WebSocket-Key'].encode('UTF-8'))[0]
+  accept = compute_accept_from_unicode(request.headers_in['Sec-WebSocket-Key'])
   message = (b'HTTP/1.1 101 Switching Protocols\r\n'
              b'Upgrade: websocket\r\n'
              b'Connection: Upgrade\r\n'

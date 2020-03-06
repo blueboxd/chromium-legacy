@@ -495,14 +495,7 @@ bool BookmarkRemoteUpdatesHandler::ProcessCreate(
           ComputeChildNodeIndex(parent_node, update_entity.unique_position,
                                 bookmark_tracker_),
           update_entity.is_folder, bookmark_model_, favicon_service_);
-  if (!bookmark_node) {
-    // We ignore bookmarks we can't add.
-    DLOG(ERROR) << "Failed to create bookmark node with title "
-                << update_entity.specifics.bookmark().title() << " and url "
-                << update_entity.specifics.bookmark().url();
-    LogProblematicBookmark(RemoteBookmarkUpdateError::kCreationFailure);
-    return false;
-  }
+  DCHECK(bookmark_node);
   bookmark_tracker_->Add(update_entity.id, bookmark_node,
                          update.response_version, update_entity.creation_time,
                          update_entity.unique_position,

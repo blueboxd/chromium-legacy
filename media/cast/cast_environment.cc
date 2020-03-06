@@ -36,9 +36,10 @@ bool CastEnvironment::PostTask(ThreadId identifier,
 
 bool CastEnvironment::PostDelayedTask(ThreadId identifier,
                                       const base::Location& from_here,
-                                      const base::Closure& task,
+                                      base::OnceClosure task,
                                       base::TimeDelta delay) {
-  return GetTaskRunner(identifier)->PostDelayedTask(from_here, task, delay);
+  return GetTaskRunner(identifier)
+      ->PostDelayedTask(from_here, std::move(task), delay);
 }
 
 scoped_refptr<SingleThreadTaskRunner> CastEnvironment::GetTaskRunner(

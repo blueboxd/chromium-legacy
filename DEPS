@@ -156,7 +156,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:02ba678a47594da180904851f3e6f809da7e0fc5',
+  'luci_go': 'git_revision:3d22d4e5a77a3d9cbe4b1bf5ed2fc85b61c1e3e6',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -175,7 +175,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '35cb0b3a46979d30f2b863a8af4b556dead4414a',
+  'skia_revision': '93a2a6b8badbca9da7fe260431c4f745812d1336',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '9acaf662604246d482f735339ef7d1d03d268e67',
+  'angle_revision': '1a41937a53219ffd46cba86a606fb4f7d49f5a32',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -955,7 +955,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'fa1c3c4e673cf12ffa22b8fbe4a7c79314571f1b',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'c6a4c6d3d8b5b85b93308336534adf9c1ef0ae66',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'aa95c80e1a89f3db3088dde85b0146fabd595be6',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1250,7 +1250,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'da7fe17f810a6393bec1ed0ab78d1b4ca6de3452',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7e47609cf293761567803b76069f59c6a6cb46dd',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1454,7 +1454,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5415e4d9aec4361c4bd5718e9b7b84551614f2d4',
+    Var('webrtc_git') + '/src.git' + '@' + 'ae9641b6d8b4c09acc4d6e870c3dc3d764c50a97',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1529,7 +1529,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b2d7afd7f7c68cc8526d6d5bef0418311d420904',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7ee8f43f7f37de6cc80c104272dbfe6405ee4d47',
     'condition': 'checkout_src_internal',
   },
 

@@ -101,7 +101,10 @@ class TabGridViewBinder {
             @Nullable PropertyKey propertyKey) {
         if (TabProperties.TITLE == propertyKey) {
             String title = model.get(TabProperties.TITLE);
-            ((TextView) view.fastFindViewById(R.id.tab_title)).setText(title);
+            TextView tabTitleView = (TextView) view.fastFindViewById(R.id.tab_title);
+            tabTitleView.setText(title);
+            tabTitleView.setContentDescription(
+                    view.getResources().getString(R.string.accessibility_tabstrip_tab, title));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             int selectedTabBackground =
                     model.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);

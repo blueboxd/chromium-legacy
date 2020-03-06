@@ -14,23 +14,33 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/test_event_router.h"
 #include "extensions/browser/test_event_router_observer.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,13 +61,20 @@ constexpr char kPassword2[] = "f00b4r";
 using api::passwords_private::CompromisedCredential;
 using api::passwords_private::CompromisedCredentialsInfo;
 using autofill::PasswordForm;
+using password_manager::BulkLeakCheckDelegateInterface;
+using password_manager::BulkLeakCheckService;
+using password_manager::CompromisedCredentials;
 using password_manager::CompromiseType;
+using password_manager::IsLeaked;
+using password_manager::LeakCheckCredential;
 using password_manager::TestPasswordStore;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Field;
+using ::testing::IsEmpty;
 using ::testing::Pointee;
+using ::testing::UnorderedElementsAre;
 
 PasswordsPrivateEventRouter* CreateAndUsePasswordsPrivateEventRouter(
     Profile* profile) {
@@ -93,7 +110,21 @@ scoped_refptr<TestPasswordStore> CreateAndUseTestPasswordStore(
           .get()));
 }
 
-password_manager::CompromisedCredentials MakeCompromised(
+BulkLeakCheckService* CreateAndUseBulkLeakCheckService(
+    signin::IdentityManager* identity_manager,
+    Profile* profile) {
+  return static_cast<BulkLeakCheckService*>(
+      BulkLeakCheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile, base::BindLambdaForTesting([identity_manager](
+                                                  content::BrowserContext*) {
+            return std::unique_ptr<
+                KeyedService>(std::make_unique<BulkLeakCheckService>(
+                identity_manager,
+                base::MakeRefCounted<network::TestSharedURLLoaderFactory>()));
+          })));
+}
+
+CompromisedCredentials MakeCompromised(
     base::StringPiece signon_realm,
     base::StringPiece username,
     base::TimeDelta time_since_creation = base::TimeDelta(),
@@ -108,7 +139,7 @@ password_manager::CompromisedCredentials MakeCompromised(
 
 PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
                                base::StringPiece username,
-                               base::StringPiece password = "",
+                               base::StringPiece password = kPassword1,
                                base::StringPiece username_element = "") {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
@@ -159,15 +190,21 @@ class PasswordCheckDelegateTest : public ::testing::Test {
     return event_router_observer_;
   }
   TestPasswordStore& store() { return *store_; }
+  BulkLeakCheckService* service() { return bulk_leak_check_service_; }
   PasswordCheckDelegate& delegate() { return delegate_; }
 
  private:
-  content::BrowserTaskEnvironment task_env_;
+  content::BrowserTaskEnvironment task_env_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  signin::IdentityTestEnvironment identity_test_env_;
   TestingProfile profile_;
   EventRouter* event_router_ = CreateAndUseEventRouter(&profile_);
   PasswordsPrivateEventRouter* password_router_ =
       CreateAndUsePasswordsPrivateEventRouter(&profile_);
   TestEventRouterObserver event_router_observer_{event_router_};
+  BulkLeakCheckService* bulk_leak_check_service_ =
+      CreateAndUseBulkLeakCheckService(identity_test_env_.identity_manager(),
+                                       &profile_);
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
   PasswordCheckDelegate delegate_{&profile_};
@@ -469,6 +506,104 @@ TEST_F(PasswordCheckDelegateTest, RemoveCompromisedCredentialSuccess) {
 
   // Expect another removal of the same credential to fail.
   EXPECT_FALSE(delegate().RemoveCompromisedCredential(credential));
+}
+
+// Tests that we don't create an entry in the database if there is no matching
+// saved password.
+TEST_F(PasswordCheckDelegateTest, OnLeakFoundDoesNotCreateCredential) {
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                          base::ASCIIToUTF16(kPassword1)),
+      IsLeaked(true));
+  RunUntilIdle();
+
+  EXPECT_THAT(store().compromised_credentials(), IsEmpty());
+}
+
+// Test that we don't create an entry in the password store if IsLeaked is
+// false.
+TEST_F(PasswordCheckDelegateTest, NoLeakedFound) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  RunUntilIdle();
+
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                          base::ASCIIToUTF16(kPassword1)),
+      IsLeaked(false));
+  RunUntilIdle();
+
+  EXPECT_THAT(store().compromised_credentials(), IsEmpty());
+}
+
+// Test that a found leak creates a compromised credential in the password
+// store.
+TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesCredential) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  RunUntilIdle();
+
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                          base::ASCIIToUTF16(kPassword1)),
+      IsLeaked(true));
+  RunUntilIdle();
+
+  EXPECT_THAT(store().compromised_credentials(),
+              ElementsAre(CompromisedCredentials{
+                  .signon_realm = kExampleCom,
+                  .username = base::ASCIIToUTF16(kUsername1),
+                  .create_time = base::Time::Now(),
+                  .compromise_type = CompromiseType::kLeaked,
+              }));
+}
+
+// Test that a found leak creates a compromised credential in the password
+// store for each combination of the same canonicalized username and password.
+TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesMultipleCredential) {
+  const std::string kUsername2Upper = base::ToUpperASCII(kUsername2);
+  const std::string kUsername2Email = base::StrCat({kUsername2, "@email.com"});
+
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2Upper, kPassword2));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername2Email, kPassword2));
+  RunUntilIdle();
+
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                          base::ASCIIToUTF16(kPassword1)),
+      IsLeaked(true));
+  static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
+      LeakCheckCredential(base::ASCIIToUTF16(kUsername2Email),
+                          base::ASCIIToUTF16(kPassword2)),
+      IsLeaked(true));
+  RunUntilIdle();
+
+  EXPECT_THAT(store().compromised_credentials(),
+              UnorderedElementsAre(
+                  CompromisedCredentials{
+                      .signon_realm = kExampleCom,
+                      .username = base::ASCIIToUTF16(kUsername1),
+                      .create_time = base::Time::Now(),
+                      .compromise_type = CompromiseType::kLeaked,
+                  },
+                  CompromisedCredentials{
+                      .signon_realm = kExampleOrg,
+                      .username = base::ASCIIToUTF16(kUsername1),
+                      .create_time = base::Time::Now(),
+                      .compromise_type = CompromiseType::kLeaked,
+                  },
+                  CompromisedCredentials{
+                      .signon_realm = kExampleCom,
+                      .username = base::ASCIIToUTF16(kUsername2Upper),
+                      .create_time = base::Time::Now(),
+                      .compromise_type = CompromiseType::kLeaked,
+                  },
+                  CompromisedCredentials{
+                      .signon_realm = kExampleOrg,
+                      .username = base::ASCIIToUTF16(kUsername2Email),
+                      .create_time = base::Time::Now(),
+                      .compromise_type = CompromiseType::kLeaked,
+                  }));
 }
 
 }  // namespace extensions

@@ -120,6 +120,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void AccessibilityModeChanged(const ui::AXMode& mode) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  void PerformAction(const ui::AXActionData& data);
+
   // blink::mojom::RendererPreferenceObserver implementation.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
@@ -158,7 +160,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnDestruct() override;
 
   // Handlers for messages from the browser to the renderer.
-  void OnPerformAction(const ui::AXActionData& data);
   void OnEventsAck(int ack_token);
   void OnReset(int reset_token);
 

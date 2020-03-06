@@ -218,42 +218,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
                                sizeof(no_lazy_feedback_allocation) - 1);
   }
 
-  if (!base::FeatureList::IsEnabled(features::kV8MemoryReducerForSmallHeaps)) {
-    static const char no_memory_reducer[] =
-        "--no-memory-reducer-for-small-heaps";
-    v8::V8::SetFlagsFromString(no_memory_reducer,
-                               sizeof(no_memory_reducer) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8HugeMaxOldGenerationSize)) {
-    static const char huge_max_old_generation_size[] =
-        "--huge_max_old_generation_size";
-    v8::V8::SetFlagsFromString(huge_max_old_generation_size,
-                               sizeof(huge_max_old_generation_size) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCBackgroundSchedule)) {
-    static const char gc_experiment_background_schedule[] =
-        "--gc_experiment_background_schedule";
-    v8::V8::SetFlagsFromString(gc_experiment_background_schedule,
-                               sizeof(gc_experiment_background_schedule) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCLessCompaction)) {
-    static const char gc_experiment_less_compaction[] =
-        "--gc_experiment_less_compaction";
-    v8::V8::SetFlagsFromString(gc_experiment_less_compaction,
-                               sizeof(gc_experiment_less_compaction) - 1);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kV8GCAlwaysPromoteYoungMC)) {
-    static const char gc_experiment_always_promote_young_mc[] =
-        "--always_promote_young_mc";
-    v8::V8::SetFlagsFromString(
-        gc_experiment_always_promote_young_mc,
-        sizeof(gc_experiment_always_promote_young_mc) - 1);
-  }
-
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentInlining)) {
     static const char tf_experiment_concurrent_inlining[] =
         "--concurrent_inlining";

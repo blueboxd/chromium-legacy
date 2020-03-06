@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/session/user_info.h"
 #include "base/optional.h"
 #include "base/token.h"
 #include "components/account_id/account_id.h"

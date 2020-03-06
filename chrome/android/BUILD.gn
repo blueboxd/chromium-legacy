@@ -385,6 +385,8 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
+
+    # TODO(bjoyce): Change to Androidx after fragment has been converted.
     "//third_party/android_deps:com_android_support_viewpager_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
